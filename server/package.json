@@ -1,0 +1,33 @@
+{
+  "name": "cdi-server",
+  "version": "1.0.0",
+  "description": "Clinical Data Ingestion Server",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon src/index.js",
+    "start:local": "npm install && node -r dotenv/config src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.24.0",
+    "body-parser": "^1.19.0",
+    "btoa": "^1.2.1",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.1",
+    "pg": "^8.7.1",
+    "request": "^2.88.2",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}

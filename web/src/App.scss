@@ -1,0 +1,94 @@
+.App {
+  text-align: center;
+}
+.flex{
+  display: flex;
+}
+.flex-center{
+  align-items: center;
+}
+.link{
+  cursor: pointer;
+}
+.flexWrap{
+  flex-direction: column;
+}
+.left-align{
+  align-items: flex-start;
+}
+*{
+  box-sizing: border-box;
+}
+body{
+  // overflow-y: scroll !important;
+  // padding: 0 !important;
+}
+#topNavbar{
+  header div.MuiToolbar-regular{
+    width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+.page-wrapper{
+  background:  #F6F7FB;
+  min-height: 100vh;
+  position: relative;
+}
+.navigation-panel{
+  .waves{
+    position: absolute;
+    top: 0;
+    width: 125px;
+    right: 0;
+    overflow: hidden;
+    img{
+      transform: scaleX(-1);
+    }
+  }
+  .MuiDrawer-paper{
+    &>button{
+      display: none !important;
+    }
+    background: linear-gradient(to right, rgb(37, 0, 86), rgb(0, 118, 174));
+    padding-top: 15px;
+    border-right: 1px solid #fff;
+    div[class^='Blade-body-']{
+      padding: 0 19px !important;
+    }
+    div[class^='Blade-expandPanel']{
+      display: none;
+    }
+    .Blade-body-8386{
+      padding: 0 15px !important;
+    }
+  }
+  .link{
+    color: #FFFFFF;
+  }
+  .close-panel{
+    color: #FFFFFF;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  button{
+    margin-right: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    padding: 0 10px;
+    font-weight: 400;
+    img{
+      width: 24px;
+      opacity: 0.7;
+      border-radius: 2px;
+      background: #FFFFFF;
+      margin-right: 8px;
+    }
+    &:hover{
+      background-color: rgba(255,255,255,0.24);
+      img{
+        opacity: 1;
+      }
+    }
+  }
+}

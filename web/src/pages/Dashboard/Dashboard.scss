@@ -1,0 +1,126 @@
+.lauchpad-wrapper {
+  background: #f6f7fb;
+  height: calc(100vh - 184px);
+  min-height: 700px;
+}
+
+.header {
+  background-image: url("./bg-image.png"), linear-gradient(#c61138, #7b2883);
+  padding: 16vh 0;
+  width: 100%;
+  color: #f6f7fb;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-position: center 19%;
+  background-size: cover;
+  p {
+    margin: 0px;
+    font-size: 24px;
+    line-height: 29px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  h2 {
+    font-size: 36px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 32px;
+  }
+}
+
+.products {
+  padding: 0px 65px;
+  padding: 0px 5vw;
+  width: 100%;
+  z-index: 1;
+  /* top: 490px;  */
+  margin-top: -3.5vw;
+  padding-bottom: 20px;
+}
+
+.gridContainer {
+  display: flex;
+  grid-template-columns: repeat(5, 1fr);
+  grid-auto-rows: minmax(196px, auto);
+  position: relative;
+  justify-content: space-between;
+}
+
+.gridContainer * {
+  box-sizing: border-box;
+}
+.full-width {
+  width: 100%;
+}
+
+.productBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 31px;
+  text-align: center;
+  width: 16%;
+  width: 13.5vw;
+  height: 13.5vw;
+  padding: 1.5rem;
+  background: linear-gradient(to right, #595959, #999999);
+  box-shadow: 0 5px 10px 1px rgba(0, 0, 0, 0.2);
+
+  img {
+    margin-bottom: 6px;
+    width: 64%;
+  }
+
+  h4 {
+    color: #ffffff;
+    font-size: 1.1vw;
+    font-weight: 500;
+    margin: 0px 0px 10px 0px;
+    padding: 0px 20px;
+  }
+
+  &.haveAccess {
+    cursor: pointer;
+    background: linear-gradient(to left, #0768fd, #0f2252);
+  }
+}
+
+// .productBox img{
+//     margin-bottom: 6px;
+//     width: 64%;
+// }
+
+// .productBox h4{
+//     color: #FFFFFF;
+//     font-size: 1.1vw;
+//     font-weight: 500;
+//     margin: 0px 0px 10px 0px;
+//     padding: 0px 20px;
+// }
+
+// .header p{
+//     margin: 0px;
+//     font-size: 24px;
+//     line-height: 29px;
+//     font-weight: 600;
+//     margin-bottom: 24px;
+// }
+
+// .header h2 {
+//   font-size: 36px;
+//   font-weight: 600;
+//   margin-top: 0;
+//   margin-bottom: 32px;
+// }
+
+// .productBox {
+//     background: linear-gradient(to right, #595959, #999999);
+//     box-shadow: 0 5px 10px 1px rgba(0, 0, 0, 0.2);
+// }
+
+// .productBox.haveAccess {
+//   cursor: pointer;
+//   background: linear-gradient(to left, #0768fd, #0f2252);
+// }
