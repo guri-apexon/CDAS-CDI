@@ -85,8 +85,17 @@ const menuItems = [
     pathname: "/dashboard",
   },
   {
-    text: "Analytics",
-    pathname: "/analytics",
+    text: "Reports",
+    menuItems: [
+      {
+        text: "Policy Management",
+        pathname: "/policy-management",
+      },
+      {
+        text: "Role Management",
+        pathname: "/role-management",
+      },
+    ],
   },
   {
     text: "Admin",
@@ -177,8 +186,8 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
               className={classes.navLogo}
               onClick={() => history.push("launchpad")}
             >
-              IQVIA™
-              <span className={classes.bold}>
+              IQVIA™ 
+              <span style={{ paddingLeft: 5 }} className={classes.bold}>
                 Clinical Data Ingestion
               </span>
             </Typography>

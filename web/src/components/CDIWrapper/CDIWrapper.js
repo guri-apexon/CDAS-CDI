@@ -7,6 +7,7 @@ import { getCookie } from "../../utils";
 import TopNavbar from "../TopNavbar/TopNavbar";
 import AppFooter from "../AppFooter/AppFooter";
 import UserManagement from "../../pages/UserManagement/UserManagement";
+import Dashboard from "../../pages/Dashboard/Dashboard";
 import Logout from "../../pages/Logout/Logout";
 
 const Empty = () => <></>;
@@ -59,13 +60,13 @@ const CDIWrapper = () => {
         <div className="page-wrapper">
           <TopNavbar setLoggedIn={setLoggedIn} />
           <Switch>
-            <Route path="/dashboard" exact render={() => <UserManagement />} />
+            <Route path="/dashboard" exact render={() => <Dashboard />} />
             <Route
               path={`${getUrlPath("/user-management")}`}
               exact
               render={() => <UserManagement />}
             />
-            <Redirect from="/" to="/launchpad" />
+            <Redirect from="/" to="/dashboard" />
           </Switch>
           <AppFooter />
         </div>
