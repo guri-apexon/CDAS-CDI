@@ -19,7 +19,11 @@ const PageHeader = () => {
   ];
   return (
     <div>
-      <ProjectHeader menuItems={menuItems} maxCellWidth={280} />
+      <ProjectHeader
+        menuItems={menuItems}
+        maxCellWidth={280}
+        style={{ height: 64 }}
+      />
     </div>
   );
 };

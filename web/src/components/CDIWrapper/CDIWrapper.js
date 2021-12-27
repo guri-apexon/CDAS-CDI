@@ -55,18 +55,12 @@ const CDIWrapper = () => {
           <Switch>
             <Route path="/dashboard" exact render={() => <Dashboard />} />
             <Route
-              path={`${getUrlPath("/user-management")}`}
-              exact
-              render={() => <UserManagement />}
-            />
-            <Route
-              path={`${getUrlPath("/dataflow-management")}`}
+              path="/dataflow-management"
               exact
               render={() => <DataFlow />}
             />
             <Redirect from="/" to="/dashboard" />
           </Switch>
-          <AppFooter />
         </div>
       ) : (
         <Switch>
