@@ -8,6 +8,7 @@ import TopNavbar from "../TopNavbar/TopNavbar";
 import AppFooter from "../AppFooter/AppFooter";
 import UserManagement from "../../pages/UserManagement/UserManagement";
 import Dashboard from "../../pages/Dashboard/Dashboard";
+import DataFlow from "../../pages/DataFlow/DataFlow";
 import Logout from "../../pages/Logout/Logout";
 
 const Empty = () => <></>;
@@ -57,6 +58,11 @@ const CDIWrapper = () => {
               path={`${getUrlPath("/user-management")}`}
               exact
               render={() => <UserManagement />}
+            />
+            <Route
+              path={`${getUrlPath("/dataflow-management")}`}
+              exact
+              render={() => <DataFlow />}
             />
             <Redirect from="/" to="/dashboard" />
           </Switch>
