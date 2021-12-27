@@ -170,12 +170,6 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
       <Backdrop style={{ zIndex: 1 }} open={open}>
         <CircularProgress variant="indeterminate" size="small" />
       </Backdrop>
-      <Banner
-        variant="error"
-        open={notLoggedOutErr}
-        onClose={() => setNotLoggedOutErr(false)}
-        message="Error: There is some error in logging out!"
-      />
       <NavigationBar
         LogoComponent={() => (
           <div className={classes.centerAligned}>
@@ -219,6 +213,12 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
         className={classes.nav}
       />
       <NavigationPanel open={panelOpen} onClose={onPanelClose} />
+      <Banner
+        variant="error"
+        open={notLoggedOutErr}
+        onClose={() => setNotLoggedOutErr(false)}
+        message="Error: There is some error in logging out!"
+      />
     </div>
   );
 };

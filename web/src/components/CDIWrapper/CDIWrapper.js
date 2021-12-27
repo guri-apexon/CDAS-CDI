@@ -46,14 +46,6 @@ const CDIWrapper = () => {
     }
   }, [checkedOnce, history]);
 
-  useEffect(() => {
-    if (!loggedIn && checkedOnce) {
-      setTimeout(() => {
-        history.push("/not-authenticated");
-      }, 30000);
-    }
-  }, [checkedOnce, history, loggedIn]);
-
   return (
     <Suspense fallback={<Loader isInner />}>
       {loggedIn ? (
