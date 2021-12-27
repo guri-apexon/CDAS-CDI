@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
+import { useDispatch } from "react-redux";
+import { submit } from "redux-form";
 import Box from "apollo-react/components/Box";
 import Drawer from "@material-ui/core/Drawer";
 import Divider from "apollo-react/components/Divider";
@@ -9,6 +11,7 @@ import IconButton from "@material-ui/core/IconButton";
 import ChevronLeftIcon from "apollo-react-icons/ChevronLeft";
 import ChevronRightIcon from "apollo-react-icons/ChevronRight";
 import ChartBar from "apollo-react-icons/ChartBar";
+import Card from "apollo-react-icons/Card";
 import Typography from "apollo-react/components/Typography";
 import Switch from "apollo-react/components/Switch";
 import ArrowRight from "apollo-react-icons/ArrowRight";
@@ -20,9 +23,12 @@ import Tooltip from "apollo-react/components/Tooltip";
 import Button from "apollo-react/components/Button";
 import PlusIcon from "apollo-react-icons/Plus";
 import Search from "apollo-react/components/Search";
+import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
+import ButtonGroup from "apollo-react/components/ButtonGroup";
 
 import PageHeader from "../../components/DataFlow/PageHeader";
 import "./DataFlow.scss";
+import DataFlowForm from "./DataFlowForm";
 
 const drawerWidth = 446;
 
@@ -36,8 +42,8 @@ const useStyles = makeStyles((theme) => ({
     height: 24,
     width: 24,
     position: "relative",
-    left: -41,
-    top: -14,
+    left: 0,
+    top: "23%",
     zIndex: 9999,
     boxShadow: "0 4px 16px 0 rgba(0,0,0,0.08)",
     "&:hover": {
@@ -134,18 +140,40 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   // necessary for content to be below app bar
-  toolbar: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    padding: theme.spacing(0, 1),
-    // necessary for content to be below app bar
-    ...theme.mixins.toolbar,
-  },
+  toolbar: theme.mixins.toolbar,
   content: {
     flexGrow: 1,
-    backgroundColor: theme.palette.background.default,
-    padding: theme.spacing(3),
+  },
+  contentHeader: {
+    paddingTop: 11,
+    padding: "16px 25px",
+    backgroundColor: "#ffffff",
+  },
+  breadcrumbs: {
+    marginBottom: 16,
+    paddingLeft: 0,
+  },
+  contentIcon: {
+    color: "#595959",
+  },
+  contentTitle: {
+    color: "#000000",
+    fontSize: "16px",
+    fontWeight: 600,
+    letterSpacing: 0,
+    lineHeight: "24px",
+    marginLeft: "8px",
+    marginBottom: "8px",
+  },
+  contentSubTitle: {
+    color: "#000000",
+    fontSize: "14px",
+    letterSpacing: 0,
+    lineHeight: "24px",
+  },
+  formSection: {
+    display: "block",
+    margin: "22px 15px",
   },
 }));
 
@@ -167,8 +195,30 @@ const ContextMenu = () => {
   );
 };
 
+const Breadcrumbs = (props) => {
+  return (
+    <BreadcrumbsUI
+      className={props.className}
+      items={[
+        { href: "#" },
+        {
+          title: "Data Flow Settings",
+        },
+      ]}
+    />
+  );
+};
+
+const onSubmit = (values) => {
+  setTimeout(() => {
+    // eslint-disable-next-line no-console
+    console.log(JSON.stringify(values, null, 2));
+  }, 400);
+};
+
 const DataFlow = () => {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const [open, setOpen] = useState(true);
   const handleDrawer = () => {
     setOpen(!open);
@@ -257,7 +307,7 @@ const DataFlow = () => {
         </Box>
       </Drawer>
       <main className={classes.content}>
-        <div className={classes.toolbar} />
+        <div className={classes.toolbar} style={{ minHeight: "30px" }} />
         <IconButton
           color="inherit"
           aria-label="open drawer"
@@ -271,6 +321,35 @@ const DataFlow = () => {
             <ChevronRightIcon className={classes.icon} />
           )}
         </IconButton>
+        <div className={classes.contentHeader}>
+          <Breadcrumbs className={classes.breadcrumbs} />
+          <div style={{ display: "flex" }}>
+            <Card className={classes.contentIcon} />
+            <Typography className={classes.contentTitle}>
+              Virologicclinic-IIBR12-001-Other
+            </Typography>
+          </div>
+          <Typography className={classes.contentSubTitle}>
+            6 datasets
+          </Typography>
+          <ButtonGroup
+            alignItems="right"
+            buttonProps={[
+              {
+                label: "Cancel",
+                onClick: () => console.log("Cancel Clicked"),
+              },
+              {
+                label: "Save",
+                onClick: () => dispatch(submit("DataFlowForm")),
+              },
+            ]}
+          />
+        </div>
+        <Divider />
+        <div className={classes.formSection}>
+          <DataFlowForm onSubmit={onSubmit} />
+        </div>
       </main>
     </div>
   );
