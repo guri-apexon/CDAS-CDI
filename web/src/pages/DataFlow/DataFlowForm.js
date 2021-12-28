@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect } from "react-redux";
@@ -9,6 +10,8 @@ import Radio from "apollo-react/components/Radio";
 import Divider from "apollo-react/components/Divider";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
+import Link from "apollo-react/components/Link";
+import PlusIcon from "apollo-react-icons/Plus";
 import {
   ReduxFormAutocomplete,
   ReduxFormDatePickerV2,
@@ -80,41 +83,55 @@ const DataFlowFormBase = (props) => {
     handleSubmit,
     submitting,
     classes,
+    change,
     locations,
     vendors,
     userName,
     password,
+    serviceOwners,
     changeLocationData,
+    changeFormField,
     connLink,
   } = props;
+  const onChangeServiceOwner = (values) => {
+    change("serviceOwnerValue", values);
+  };
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper}>
         <div className={classes.section}>
           <Typography variant="title1">Flow Details</Typography>
-          <ReduxFormAutocomplete
-            name="vendor"
-            label="Vendor"
-            source={vendors}
-            singleSelect
-            fullWidth
-          />
-          <ReduxFormTextField
-            fullWidth
-            maxlength="30"
-            minHeight={35}
-            name="description"
-            label="Description"
-            sizeAdjustable
-          />
-          <ReduxFormDatePickerV2
-            name="firstFileDate"
-            label="Expected First File Date"
-          />
-          <ReduxFormRadioGroup name="dataflowType" label="Data Flow Type">
-            <Radio value="test" label="Test" />
-            <Radio value="production" label="Production" />
-          </ReduxFormRadioGroup>
+          <div style={{ width: "50%" }}>
+            <ReduxFormAutocomplete
+              name="vendor"
+              label="Vendor"
+              source={vendors}
+              className="autocomplete_field"
+              onChange={(v) => changeFormField(v, "vendor")}
+              singleSelect
+              variant="search"
+              fullWidth
+            />
+            <ReduxFormTextField
+              fullWidth
+              maxLength="30"
+              name="description"
+              onChange={(v) => changeFormField(v, "description")}
+              label="Description"
+            />
+            <ReduxFormDatePickerV2
+              name="firstFileDate"
+              label="Expected First File Date"
+            />
+            <ReduxFormRadioGroup
+              name="dataflowType"
+              onChange={(v) => changeFormField(v, "dataflowType")}
+              label="Data Flow Type"
+            >
+              <Radio value="test" label="Test" />
+              <Radio value="production" label="Production" />
+            </ReduxFormRadioGroup>
+          </div>
         </div>
         <Divider className={classes.divider} />
         <div className={classes.section}>
@@ -141,10 +158,19 @@ const DataFlowFormBase = (props) => {
                 name="locationName"
                 label="Location Name"
                 source={locations}
+                className="autocomplete_field"
+                variant="search"
                 onChange={changeLocationData}
                 singleSelect
                 fullWidth
               />
+              <Link
+                onClick={() => console.log("link clicked")}
+                style={{ fontWeight: 600 }}
+              >
+                <PlusIcon style={{ width: 12, height: 12, marginRight: 8 }} />
+                New Location
+              </Link>
             </Grid>
             <Grid item md={7}>
               <Paper className={classes.locationBox}>
@@ -164,14 +190,20 @@ const DataFlowFormBase = (props) => {
         <Divider className={classes.divider} />
         <div className={classes.section}>
           <Typography variant="title1">Others</Typography>
-          <ReduxFormAutocompleteV2
-            name="serviceOwner"
-            label="Service Owners (Optional)"
-            source={[]}
-            fullWidth
-            chipColor="white"
-            multiple
-          />
+          <div style={{ width: "50%" }}>
+            <ReduxFormAutocompleteV2
+              name="serviceOwner"
+              label="Service Owners (Optional)"
+              source={serviceOwners ?? []}
+              onChange={onChangeServiceOwner}
+              forcePopupIcon={true}
+              fullWidth
+              noOptionsText="No Service Owner"
+              variant="search"
+              chipColor="white"
+              multiple
+            />
+          </div>
         </div>
       </Paper>
     </form>

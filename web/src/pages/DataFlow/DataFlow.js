@@ -10,8 +10,6 @@ import Divider from "apollo-react/components/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import ChevronLeftIcon from "apollo-react-icons/ChevronLeft";
 import ChevronRightIcon from "apollo-react-icons/ChevronRight";
-import ChartBar from "apollo-react-icons/ChartBar";
-import Card from "apollo-react-icons/Card";
 import Typography from "apollo-react/components/Typography";
 import Switch from "apollo-react/components/Switch";
 import ArrowRight from "apollo-react-icons/ArrowRight";
@@ -25,13 +23,15 @@ import PlusIcon from "apollo-react-icons/Plus";
 import Search from "apollo-react/components/Search";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
-
 import PageHeader from "../../components/DataFlow/PageHeader";
 import "./DataFlow.scss";
 import DataFlowForm from "./DataFlowForm";
+import { ReactComponent as DataFlowIcon } from "./dataflow.svg";
+import { ReactComponent as DataPackageIcon } from "./datapackage.svg";
 import {
   getVendorsData,
   updateSelectedLocation,
+  changeFormFieldData,
   getLocationsData,
 } from "../../store/actions/DataFlowAction";
 
@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
     width: 24,
     position: "relative",
     left: 0,
-    top: "23%",
+    top: "4%",
     zIndex: 9999,
     boxShadow: "0 4px 16px 0 rgba(0,0,0,0.08)",
     "&:hover": {
@@ -225,7 +225,9 @@ const DataFlow = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const dataFlowData = useSelector((state) => state.dataFlow);
-  const { selectedLocation } = dataFlowData;
+  const { selectedLocation, description, selectedVendor, dataflowType } =
+    dataFlowData;
+  console.log(description, "description");
   const [open, setOpen] = useState(true);
   const handleDrawer = () => {
     setOpen(!open);
@@ -244,6 +246,9 @@ const DataFlow = () => {
       (loc) => value == loc.loc_id
     );
     dispatch(updateSelectedLocation(location));
+  };
+  const changeFormField = (value, field) => {
+    dispatch(changeFormFieldData(value, field));
   };
   return (
     <div className={classes.root}>
@@ -274,7 +279,7 @@ const DataFlow = () => {
         >
           <div className={classes.drawerHeader}>
             <div className={classes.leftPanel}>
-              <ChartBar className={classes.dataflowLeft} />
+              <DataFlowIcon className={classes.dataflowLeft} />
               <Typography style={{ marginLeft: 7, color: "#595959" }}>
                 Data Flow
               </Typography>
@@ -292,16 +297,20 @@ const DataFlow = () => {
           </div>
           <Divider />
           <div className={classes.drawerContent}>
-            <Tag label="Production" variant="grey" />
+            <Tag
+              label={dataflowType}
+              variant="grey"
+              style={{ textTransform: "capitalize" }}
+            />
             <Typography className={classes.LeftTitle}>
               Virologicclinic-IIBR12-001-Other
             </Typography>
             <Typography className={classes.LeftSubTitle}>
-              Analytical Labs
+              {selectedVendor?.label}
             </Typography>
             <Typography className={classes.description}>
               <ArrowRight className={classes.icon} />
-              Discription
+              {description}
             </Typography>
             <Button variant="primary" style={{ marginTop: 17 }} fullWidth>
               View Settings
@@ -346,7 +355,7 @@ const DataFlow = () => {
         <div className={classes.contentHeader}>
           <Breadcrumbs className={classes.breadcrumbs} />
           <div style={{ display: "flex" }}>
-            <Card className={classes.contentIcon} />
+            <DataPackageIcon className={classes.contentIcon} />
             <Typography className={classes.contentTitle}>
               Virologicclinic-IIBR12-001-Other
             </Typography>
@@ -373,9 +382,11 @@ const DataFlow = () => {
           <DataFlowForm
             onSubmit={onSubmit}
             changeLocationData={changeLocationData}
+            changeFormField={changeFormField}
             userName={selectedLocation?.usr_nm}
             password={selectedLocation?.pswd}
             connLink={selectedLocation?.cnn_url}
+            serviceOwners={selectedLocation?.serv_ownr}
           />
         </div>
       </main>

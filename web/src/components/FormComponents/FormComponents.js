@@ -75,7 +75,7 @@ const RenderAutocompleteV2 = ({
   meta: { touched, error },
   ...rest
 }) => {
-  console.log("input", input);
+  console.log("input", value);
   return (
     <>
       <AutocompleteV2

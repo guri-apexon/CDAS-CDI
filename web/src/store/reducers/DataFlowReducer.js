@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 import produce from "immer";
 import {
   GET_VENDORS_DATA,
@@ -6,12 +7,14 @@ import {
   FETCH_LOCATION_FAILURE,
   FETCH_VENDOR_SUCCESS,
   FETCH_VENDOR_FAILURE,
+  UPDATE_FORM_FIELDS,
   UPDATE_SELECTED_LOCATION,
 } from "../../constants";
 
 export const initialState = {
   loading: false,
   selectedLocation: {},
+  serviceOwner: [],
   locations: [],
   vendors: [],
   userName: "",
@@ -21,6 +24,7 @@ export const initialState = {
   dataflowType: "test",
   dataStructure: "tabular",
   locationType: "SFTP",
+  selectedVendor: {},
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -50,6 +54,17 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case UPDATE_SELECTED_LOCATION:
         newState.selectedLocation = action.location;
+        break;
+      case UPDATE_FORM_FIELDS:
+        // newState[action.field] = action.value;
+        if (action.field === "description" || action.field === "dataflowType") {
+          newState[action.field] = action.value.target.value;
+        } else if (action.field === "vendor") {
+          const vendorId = action.value;
+          newState.selectedVendor = state.vendors?.records?.find(
+            (v) => vendorId == v.vend_id
+          );
+        }
         break;
       default:
         newState.loading = false;

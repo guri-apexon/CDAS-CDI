@@ -1,6 +1,7 @@
 import {
   GET_VENDORS_DATA,
   GET_LOCATIONS_DATA,
+  UPDATE_FORM_FIELDS,
   UPDATE_SELECTED_LOCATION,
 } from "../../constants";
 
@@ -15,6 +16,14 @@ export const updateSelectedLocation = (location) => {
   return {
     type: UPDATE_SELECTED_LOCATION,
     location,
+  };
+};
+
+export const changeFormFieldData = (e, field) => {
+  return {
+    type: UPDATE_FORM_FIELDS,
+    field,
+    value: e,
   };
 };
 
