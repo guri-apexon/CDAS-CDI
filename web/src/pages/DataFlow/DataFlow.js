@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { submit } from "redux-form";
 import Box from "apollo-react/components/Box";
 import Drawer from "@material-ui/core/Drawer";
@@ -29,6 +29,11 @@ import ButtonGroup from "apollo-react/components/ButtonGroup";
 import PageHeader from "../../components/DataFlow/PageHeader";
 import "./DataFlow.scss";
 import DataFlowForm from "./DataFlowForm";
+import {
+  getVendorsData,
+  updateSelectedLocation,
+  getLocationsData,
+} from "../../store/actions/DataFlowAction";
 
 const drawerWidth = 446;
 
@@ -219,9 +224,26 @@ const onSubmit = (values) => {
 const DataFlow = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const dataFlowData = useSelector((state) => state.dataFlow);
+  const { selectedLocation } = dataFlowData;
   const [open, setOpen] = useState(true);
   const handleDrawer = () => {
     setOpen(!open);
+  };
+  const pullVendorandLocation = () => {
+    dispatch(getVendorsData());
+    dispatch(getLocationsData());
+  };
+  useEffect(() => {
+    pullVendorandLocation();
+  }, []);
+  const changeLocationData = (value) => {
+    const locationsRec = dataFlowData.locations?.records ?? [];
+    const location = locationsRec?.find(
+      // eslint-disable-next-line eqeqeq
+      (loc) => value == loc.loc_id
+    );
+    dispatch(updateSelectedLocation(location));
   };
   return (
     <div className={classes.root}>
@@ -348,7 +370,13 @@ const DataFlow = () => {
         </div>
         <Divider />
         <div className={classes.formSection}>
-          <DataFlowForm onSubmit={onSubmit} />
+          <DataFlowForm
+            onSubmit={onSubmit}
+            changeLocationData={changeLocationData}
+            userName={selectedLocation?.usr_nm}
+            password={selectedLocation?.pswd}
+            connLink={selectedLocation?.cnn_url}
+          />
         </div>
       </main>
     </div>

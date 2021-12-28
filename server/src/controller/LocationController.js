@@ -32,7 +32,7 @@ exports.searchLocationList = function (req, res) {
 exports.getLocationList = function (req, res) {
   try {
     let type = req.query.type || null;
-    let select = `loc_id,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm`;
+    let select = `loc_id,loc_id as value,loc_alias_nm as label, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm`;
     let searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.location`;
     let dbQuery = DB.executeQuery(searchQuery);
     if(type) {

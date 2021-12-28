@@ -1,5 +1,3 @@
-import { getPasswordStrength } from "apollo-react/components/PasswordComplexity/PasswordComplexity";
-
 const checkRequired = (value) => {
   if (!value || (typeof value === "string" && !value.trim())) {
     return "Required";
@@ -7,17 +5,9 @@ const checkRequired = (value) => {
   return false;
 };
 
-const checkPasswordStrength = (password) => {
-  const strength = getPasswordStrength(password);
-  if (["short", "weak"].includes(strength)) {
-    return `Password is ${strength}`;
-  }
-  return false;
-};
-
-const checkPasswordMatch = (password, passwordConfirm) => {
-  if (password !== passwordConfirm) {
-    return "Passwords do not match";
+const checkMaxLength = (value) => {
+  if (value && value.length > 30) {
+    return `Must be 30 characters or less`;
   }
   return false;
 };
@@ -30,23 +20,11 @@ const removeUndefined = (arr) =>
       return res;
     }, {});
 
-const validate = ({
-  firstName,
-  lastName,
-  email,
-  agree,
-  password,
-  passwordConfirm,
-}) =>
+const validate = ({ vendor, description, dataflowType }) =>
   removeUndefined({
-    firstName: checkRequired(firstName),
-    lastName: checkRequired(lastName),
-    email: checkRequired(email),
-    password: checkRequired(password) || checkPasswordStrength(password),
-    passwordConfirm:
-      checkRequired(passwordConfirm) ||
-      checkPasswordMatch(password, passwordConfirm),
-    agree: checkRequired(agree),
+    vendor: checkRequired(vendor),
+    description: checkRequired(description) || checkMaxLength(description),
+    dataflowType: checkRequired(dataflowType),
   });
 
 export default validate;

@@ -182,3 +182,15 @@ export const compareDates = (accessor, sortOrder) => {
     return 0;
   };
 };
+
+export const locationTypes = [
+  "SFTP",
+  "FTPS",
+  "Hive CDP",
+  "Hive CDH",
+  "Impala",
+  "MySQL",
+  "Oracle",
+  "PostgreSQL",
+  "SQL Server",
+];

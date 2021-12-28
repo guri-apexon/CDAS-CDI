@@ -3,6 +3,7 @@ import React from "react";
 import { Field } from "redux-form";
 
 import Autocomplete from "apollo-react/components/Autocomplete";
+import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import Button from "apollo-react/components/Button";
 import Checkbox from "apollo-react/components/Checkbox";
 import DatePicker from "apollo-react/components/DatePicker";
@@ -67,6 +68,28 @@ const RenderAutocomplete = ({
 );
 
 export const ReduxFormAutocomplete = reduxFormify(RenderAutocomplete);
+
+const RenderAutocompleteV2 = ({
+  input: { onChange, value, ...input },
+  helperText,
+  meta: { touched, error },
+  ...rest
+}) => {
+  console.log("input", input);
+  return (
+    <>
+      <AutocompleteV2
+        helperText={(touched && error) || helperText}
+        error={touched && !!error}
+        {...input}
+        onChange={(event, v) => onChange(v)}
+        {...rest}
+      />
+    </>
+  );
+};
+
+export const ReduxFormAutocompleteV2 = reduxFormify(RenderAutocompleteV2);
 
 export const RenderCheckbox = ({
   input,

@@ -9,30 +9,17 @@ import Radio from "apollo-react/components/Radio";
 import Divider from "apollo-react/components/Divider";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
-import Button from "apollo-react/components/Button";
 import {
   ReduxFormAutocomplete,
   ReduxFormDatePickerV2,
   ReduxFormRadioGroup,
   ReduxFormSelect,
+  ReduxFormAutocompleteV2,
   ReduxFormTextField,
 } from "../../components/FormComponents/FormComponents";
 import validate from "../../components/FormComponents/validation";
 
-const skills = [
-  { name: "skills.javascript", label: "JavaScript" },
-  { name: "skills.css", label: "CSS" },
-  { name: "skills.reactJS", label: "React JS" },
-  { name: "skills.reactNative", label: "React Native" },
-  { name: "skills.nodeJS", label: "Node JS" },
-  { name: "skills.dotNet", label: ".Net" },
-  { name: "skills.java", label: "Java" },
-  { name: "skills.python", label: "Python" },
-  { name: "skills.rust", label: "Rust" },
-  { name: "skills.sql", label: "SQL" },
-  { name: "skills.mobile", label: "Mobile" },
-  { name: "skills.salesforce", label: "Salesforce" },
-];
+import { locationTypes } from "../../utils";
 
 const styles = {
   paper: {
@@ -89,7 +76,17 @@ const styles = {
 };
 
 const DataFlowFormBase = (props) => {
-  const { handleSubmit, submitting, classes } = props;
+  const {
+    handleSubmit,
+    submitting,
+    classes,
+    locations,
+    vendors,
+    userName,
+    password,
+    changeLocationData,
+    connLink,
+  } = props;
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper}>
@@ -98,13 +95,13 @@ const DataFlowFormBase = (props) => {
           <ReduxFormAutocomplete
             name="vendor"
             label="Vendor"
-            placeholder="Washington"
-            source={skills}
+            source={vendors}
             singleSelect
             fullWidth
           />
           <ReduxFormTextField
             fullWidth
+            maxlength="30"
             minHeight={35}
             name="description"
             label="Description"
@@ -136,12 +133,15 @@ const DataFlowFormBase = (props) => {
                 label="Location Type"
                 fullWidth
               >
-                <MenuItem value="sftp">SFTP</MenuItem>
+                {locationTypes?.map((type) => (
+                  <MenuItem value={type}>{type}</MenuItem>
+                ))}
               </ReduxFormSelect>
               <ReduxFormAutocomplete
                 name="locationName"
                 label="Location Name"
-                source={skills}
+                source={locations}
+                onChange={changeLocationData}
                 singleSelect
                 fullWidth
               />
@@ -150,18 +150,13 @@ const DataFlowFormBase = (props) => {
               <Paper className={classes.locationBox}>
                 <Typography>Location</Typography>
                 <Typography className={classes.formLabel}>Username</Typography>
-                <Typography className={classes.formText}>
-                  ANALYTICALLABSCDR
-                </Typography>
+                <Typography className={classes.formText}>{userName}</Typography>
                 <Typography className={classes.formLabel}>Password</Typography>
-                <Typography className={classes.formPass}>Password</Typography>
+                <Typography className={classes.formPass}>{password}</Typography>
                 <Typography className={classes.formLabel}>
                   Connection URL/IP Server/Database
                 </Typography>
-                <Typography className={classes.formText}>
-                  {`sftp://secure-transfer-ftpsolutions.iqvia.com/home/curepharma/
-d1234c12343/Current_Health/Device`}
-                </Typography>
+                <Typography className={classes.formText}>{connLink}</Typography>
               </Paper>
             </Grid>
           </Grid>
@@ -169,18 +164,14 @@ d1234c12343/Current_Health/Device`}
         <Divider className={classes.divider} />
         <div className={classes.section}>
           <Typography variant="title1">Others</Typography>
-          <ReduxFormAutocomplete
+          <ReduxFormAutocompleteV2
             name="serviceOwner"
             label="Service Owners (Optional)"
-            source={skills}
-            multiple
+            source={[]}
             fullWidth
+            chipColor="white"
+            multiple
           />
-        </div>
-        <div className={classes.submit}>
-          <Button variant="primary" type="submit" disabled={submitting}>
-            Submit
-          </Button>
         </div>
       </Paper>
     </form>
@@ -198,6 +189,8 @@ const ReduxForm = compose(
 const DataFlowForm = connect((state) => ({
   initialValues: state.dataFlow, // pull initial values from account reducer
   values: getFormValues("DataFlowForm")(state),
+  locations: state.dataFlow.locations?.records,
+  vendors: state.dataFlow.vendors?.records,
 }))(ReduxForm);
 
 export default DataFlowForm;
