@@ -86,29 +86,11 @@ const menuItems = [
   },
   {
     text: "Reports",
-    menuItems: [
-      {
-        text: "Policy Management",
-        pathname: "/policy-management",
-      },
-      {
-        text: "Role Management",
-        pathname: "/role-management",
-      },
-    ],
+    menuItems: [],
   },
   {
     text: "Admin",
-    menuItems: [
-      {
-        text: "Policy Management",
-        pathname: "/policy-management",
-      },
-      {
-        text: "Role Management",
-        pathname: "/role-management",
-      },
-    ],
+    menuItems: [],
   },
 ];
 
@@ -180,7 +162,7 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
               className={classes.navLogo}
               onClick={() => history.push("launchpad")}
             >
-              IQVIA™ 
+              IQVIA™
               <span style={{ paddingLeft: 5 }} className={classes.bold}>
                 Clinical Data Ingestion
               </span>

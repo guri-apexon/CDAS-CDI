@@ -6,7 +6,6 @@ import Loader from "apollo-react/components/Loader";
 import { getCookie } from "../../utils";
 import TopNavbar from "../TopNavbar/TopNavbar";
 import AppFooter from "../AppFooter/AppFooter";
-import UserManagement from "../../pages/UserManagement/UserManagement";
 import Dashboard from "../../pages/Dashboard/Dashboard";
 import DataFlow from "../../pages/DataFlow/DataFlow";
 import Logout from "../../pages/Logout/Logout";
@@ -36,7 +35,7 @@ const CDIWrapper = () => {
     const userId = getCookie("user.id");
     console.log(userId);
     if (userId) {
-      history.push("/dashboard");
+      history.push("/");
     } else {
       // eslint-disable-next-line no-lonely-if
       if (!checkedOnce) {
