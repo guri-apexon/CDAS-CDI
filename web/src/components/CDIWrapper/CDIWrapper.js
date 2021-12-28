@@ -5,10 +5,11 @@ import Loader from "apollo-react/components/Loader";
 
 import { getCookie } from "../../utils";
 import TopNavbar from "../TopNavbar/TopNavbar";
-import AppFooter from "../AppFooter/AppFooter";
-import Dashboard from "../../pages/Dashboard/Dashboard";
-import DataFlow from "../../pages/DataFlow/DataFlow";
+// import AppFooter from "../AppFooter/AppFooter";
 import Logout from "../../pages/Logout/Logout";
+
+const Dashboard = lazy(() => import("../../pages/Dashboard/Dashboard"));
+const DataFlow = lazy(() => import("../../pages/DataFlow/DataFlow"));
 
 const Empty = () => <></>;
 
@@ -16,10 +17,6 @@ const CDIWrapper = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [checkedOnce, setCheckedOnce] = useState(false);
   const history = useHistory();
-
-  const getUrlPath = (route) => {
-    return `${route}`;
-  };
 
   useEffect(() => {
     const userId = getCookie("user.id");

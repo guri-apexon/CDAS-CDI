@@ -1,30 +1,30 @@
 import React, { useState, useEffect } from "react";
-import clsx from "clsx";
+// import clsx from "clsx";
 import classNames from "classnames";
 import { makeStyles } from "@material-ui/core/styles";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import Box from "apollo-react/components/Box";
+// import CssBaseline from "@material-ui/core/CssBaseline";
+// import Box from "apollo-react/components/Box";
 import Card from "apollo-react/components/Card";
 import CardContent from "apollo-react/components/CardContent";
 import Panel from "apollo-react/components/Panel";
 import { neutral1, neutral7 } from "apollo-react/colors";
-import Drawer from "@material-ui/core/Drawer";
+// import Drawer from "@material-ui/core/Drawer";
 import Divider from "apollo-react/components/Divider";
-import IconButton from "@material-ui/core/IconButton";
-import ChevronLeftIcon from "apollo-react-icons/ChevronLeft";
-import ChevronRightIcon from "apollo-react-icons/ChevronRight";
+// import IconButton from "@material-ui/core/IconButton";
+// import ChevronLeftIcon from "apollo-react-icons/ChevronLeft";
+// import ChevronRightIcon from "apollo-react-icons/ChevronRight";
 import Typography from "apollo-react/components/Typography";
-import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
-import IconMenuButton from "apollo-react/components/IconMenuButton";
-import Tooltip from "apollo-react/components/Tooltip";
+// import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
+// import IconMenuButton from "apollo-react/components/IconMenuButton";
+// import Tooltip from "apollo-react/components/Tooltip";
 import Search from "apollo-react/components/Search";
 import { useHistory } from "react-router-dom";
-import { titleCase, getUserInfo } from "../../utils/index";
+import { getUserInfo } from "../../utils/index";
 import { ReactComponent as PriorityIcon } from "./priority.svg";
 import { ReactComponent as IngestionIcon } from "./issue.svg";
 import { ReactComponent as StaleFilesIcon } from "./sync.svg";
 
-import AppFooter from "../../components/AppFooter/AppFooter";
+// import AppFooter from "../../components/AppFooter/AppFooter";
 import PageHeader from "../../components/DataFlow/PageHeader";
 
 import "./Dashboard.scss";
@@ -44,6 +44,7 @@ const Dashboard = () => {
       padding: "24px 24px 0px 24px",
       fontWeight: 600,
       marginBottom: 0,
+      fontSize: "16px",
     },
     panelSubtitle: {
       padding: "0px 24px 0px 24px",
@@ -108,9 +109,9 @@ const Dashboard = () => {
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
-  const [open, setOpen] = useState(true);
-  const history = useHistory();
-  const userInfo = getUserInfo();
+  // const [open, setOpen] = useState(true);
+  // const history = useHistory();
+  // const userInfo = getUserInfo();
   const [selectedCard, setSelectedCard] = useState(null);
   const [studyList, setStudyList] = useState([]);
   const [unPinnedStudies, setUnPinnedStudies] = useState([
@@ -140,9 +141,30 @@ const Dashboard = () => {
     },
   ]);
   const [pinnedStudies, setPinnedStudies] = useState([
-    "Card 1",
-    "Card 2",
-    "Card 3",
+    {
+      prot_id: "a020E000005SwPtQAK",
+      protocolnumber: "P16-836",
+      usr_id: "u1105372",
+      sponsorname: "ADDARIO LUNG CANCER MEDICAL INSTIT  [US]",
+      phase: "Phase 4",
+      protocolstatus: "Closed Follow Up / In Analysis",
+      projectcode: "DZA68122",
+      priorityCount: 12,
+      ingestionCount: 120,
+      staleFilesCount: 1,
+    },
+    {
+      prot_id: "a020E000005SwfCQAS",
+      protocolnumber: "20150104",
+      usr_id: "u1105372",
+      sponsorname: "Advaxis, Inc.",
+      phase: "",
+      protocolstatus: "In Development",
+      projectcode: "ZWA22751",
+      priorityCount: 5,
+      ingestionCount: 500,
+      staleFilesCount: 4,
+    },
   ]);
 
   useEffect(() => {
@@ -166,8 +188,9 @@ const Dashboard = () => {
         interactive
         className={classNames(
           classes.card,
-          index === 0 && classes.cardHighlight
+          index === selectedCard && classes.cardHighlight
         )}
+        onClick={() => setSelectedCard(index)}
       >
         <CardContent>
           <div className="cardTopBar">
@@ -199,6 +222,20 @@ const Dashboard = () => {
           <Typography className={classes.cardSponsor} variant="caption">
             {sponsorname}
           </Typography>
+          <div className="cardBottom">
+            <div className="cardPC">
+              <Typography className={classes.bold}>Project Code</Typography>
+              <Typography className={classes.cardProjectCode} variant="caption">
+                {projectcode}
+              </Typography>
+            </div>
+            <div className="cardP">
+              <Typography className={classes.bold}>Phase</Typography>
+              <Typography className={classes.cardPhase} variant="caption">
+                {phase}
+              </Typography>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -230,18 +267,29 @@ const Dashboard = () => {
             <Typography className={classes.pinTitle} variant="caption">
               Pinned Studies
             </Typography>
-            {/* <div className={classNames("customScrollbar", classes.pinnedCards)}>
-              {pinnedStudies.map((title, index) => (
-                // eslint-disable-next-line react/no-array-index-key
-                <CustomCard key={index} title={title} index={index} />
+            <div className={classNames("customScrollbar", classes.pinnedCards)}>
+              {pinnedStudies.map((e, index) => (
+                <CustomCard
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={index}
+                  data={e}
+                  index={`p${index}`}
+                  isPinned={true}
+                />
               ))}
-            </div> */}
+            </div>
             <Divider />
           </div>
           <div className={classNames("customScrollbar", classes.unPinnedCards)}>
             {unPinnedStudies.map((e, index) => (
               // eslint-disable-next-line react/no-array-index-key
-              <CustomCard key={index} data={e} index={index} isPinned={false} />
+              <CustomCard
+                // eslint-disable-next-line react/no-array-index-key
+                key={index}
+                data={e}
+                index={`up${index}`}
+                isPinned={false}
+              />
             ))}
           </div>
         </Panel>
