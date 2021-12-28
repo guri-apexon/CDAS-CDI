@@ -1,0 +1,36 @@
+.data-packages-wrapper{
+    .add-package-box{
+        padding: 25px;
+        min-height: 80vh;
+        .add-btn-container{
+            margin-top: 100px;
+            svg.head-icon{
+                width: 2.5em;
+                height: 2.5em;
+                margin-bottom: 20px;
+                }
+            h3{
+                margin-bottom: 20px;
+            }
+        }
+        .data-setting-header{
+            justify-content: space-between;
+            span{
+                font-weight: 600;
+            }
+        }
+        .package-form{
+            width: 480px;
+            margin-top: 28px;
+        }
+    }
+    .packages-list{
+        .no-result{
+            margin-top: 24px;
+            justify-content: center;
+            svg{
+                margin-right: 10px;
+            }
+        }
+    }
+}

@@ -13,8 +13,26 @@
 .flexWrap{
   flex-direction: column;
 }
+.justify-between{
+  justify-content: space-between;
+}
+.mb-20{
+  margin-bottom: 20px !important;
+}
+.b-font{
+  font-weight: 600 !important;
+}
 .left-align{
   align-items: flex-start;
+}
+.h-v-center{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.flex-column{
+  flex-direction: column;
 }
 *{
   box-sizing: border-box;
@@ -24,6 +42,12 @@ body{
   // padding: 0 !important;
 }
 #topNavbar{
+  top: 0;
+  left: auto;
+  right: 0;
+  position: fixed;
+  width: 100%;
+  z-index: 999;
   header div.MuiToolbar-regular{
     width: 100%;
     padding-left: 10px;
@@ -34,6 +58,7 @@ body{
   background:  #F6F7FB;
   min-height: 100vh;
   position: relative;
+  padding-top: 56px;
 }
 .navigation-panel{
   .waves{
