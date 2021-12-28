@@ -15,7 +15,9 @@ import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import Grid from "apollo-react/components/Grid";
 import Search from "apollo-react/components/Search";
+import CssBaseline from "@material-ui/core/CssBaseline";
 import { toast } from "../../utils";
+import PageHeader from "../../components/DataFlow/PageHeader";
 
 const compressionTypes = [
   { text: "Not Comporessed", value: "not_compressed" },
@@ -61,6 +63,8 @@ const DataPackages = () => {
   return (
     <div className="data-packages-wrapper">
       <Grid container spacing={2}>
+        <PageHeader />
+        <CssBaseline />
         <Grid item xs={4} className="packages-list">
           <Paper>
             <Box padding={4}>
