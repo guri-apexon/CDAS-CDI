@@ -204,6 +204,7 @@ const Breadcrumbs = (props) => {
   return (
     <BreadcrumbsUI
       className={props.className}
+      id="dataflow-breadcrumb"
       items={[
         { href: "#" },
         {

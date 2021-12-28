@@ -106,6 +106,7 @@ const DataFlowFormBase = (props) => {
               name="vendor"
               label="Vendor"
               source={vendors}
+              id="vendor"
               className="autocomplete_field"
               onChange={(v) => changeFormField(v, "vendor")}
               singleSelect
