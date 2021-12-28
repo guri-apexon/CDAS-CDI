@@ -19,9 +19,21 @@ export const STUDY_NOTONBOARDED_STATUS = "STUDY_NOTONBOARDED_STATUS";
 export const STUDY_NOTONBOARDED_SUCCESS = "STUDY_NOTONBOARDED_SUCCESS";
 export const STUDY_NOTONBOARDED_FAILURE = "STUDY_NOTONBOARDED_FAILURE";
 
+export const GET_VENDORS_DATA = "GET_VENDORS_DATA";
+export const GET_LOCATIONS_DATA = "GET_LOCATIONS_DATA";
+
+export const FETCH_LOCATION_SUCCESS = "FETCH_LOCATION_SUCCESS";
+export const FETCH_LOCATION_FAILURE = "FETCH_LOCATION_FAILURE";
+export const FETCH_VENDOR_SUCCESS = "FETCH_VENDOR_SUCCESS";
+export const FETCH_VENDOR_FAILURE = "FETCH_VENDOR_FAILURE";
+export const UPDATE_SELECTED_LOCATION = "UPDATE_SELECTED_LOCATION";
+export const UPDATE_FORM_FIELDS = "UPDATE_FORM_FIELDS";
+
 // API URLS
 
 export const STUDYBOARD_DATA_FETCH = "v1/api/study/list";
 export const STUDYSEARCH = "v1/api/study/search-study";
 export const NOT_ONBOARDED_FETCH = "v1/api/study/notonboarded-studies-stat";
-export const baseURL = process.env.API_URL || "http://localhost:443";
+export const LOCATIONAPI = "v1/api/location";
+export const VENDORAPI = "v1/api/vendor";
+export const baseURL = process.env.API_URL || "http://localhost:4001";

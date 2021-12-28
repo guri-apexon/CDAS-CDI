@@ -82,7 +82,7 @@ const styles = {
 const menuItems = [
   {
     text: "Dashboard",
-    pathname: "/dashboard",
+    pathname: "/dataflow-management",
   },
   {
     text: "Analytics",

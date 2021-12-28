@@ -7,6 +7,7 @@ import { getCookie } from "../../utils";
 import TopNavbar from "../TopNavbar/TopNavbar";
 import AppFooter from "../AppFooter/AppFooter";
 import UserManagement from "../../pages/UserManagement/UserManagement";
+import DataFlow from "../../pages/DataFlow/DataFlow";
 import Logout from "../../pages/Logout/Logout";
 
 const Empty = () => <></>;
@@ -64,6 +65,11 @@ const CDIWrapper = () => {
               path={`${getUrlPath("/user-management")}`}
               exact
               render={() => <UserManagement />}
+            />
+            <Route
+              path={`${getUrlPath("/dataflow-management")}`}
+              exact
+              render={() => <DataFlow />}
             />
             <Redirect from="/" to="/launchpad" />
           </Switch>
