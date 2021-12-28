@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import clsx from "clsx";
 import classNames from "classnames";
 import { makeStyles } from "@material-ui/core/styles";
@@ -20,6 +20,9 @@ import Tooltip from "apollo-react/components/Tooltip";
 import Search from "apollo-react/components/Search";
 import { useHistory } from "react-router-dom";
 import { titleCase, getUserInfo } from "../../utils/index";
+import { ReactComponent as PriorityIcon } from "./priority.svg";
+import { ReactComponent as IngestionIcon } from "./issue.svg";
+import { ReactComponent as StaleFilesIcon } from "./sync.svg";
 
 import AppFooter from "../../components/AppFooter/AppFooter";
 import PageHeader from "../../components/DataFlow/PageHeader";
@@ -34,25 +37,55 @@ const Dashboard = () => {
       backgroundColor: neutral1,
       boxSizing: "content-box",
     },
+    leftPanel: {
+      maxWidth: "calc(100vh - 120px)",
+    },
     panelTitle: {
       padding: "24px 24px 0px 24px",
       fontWeight: 600,
       marginBottom: 0,
     },
     panelSubtitle: {
-      padding: "0px 24px 16px 24px",
+      padding: "0px 24px 0px 24px",
       color: neutral7,
       lineHeight: "24px",
       fontSize: "14px",
     },
+    pinTitle: {
+      margin: "20px",
+    },
+    searchBox: {
+      margin: "20px",
+      marginTop: "5px",
+      width: "calc(100% - 40px)",
+    },
     card: {
-      margin: "8px 24px",
+      margin: "16px 16px 16px 21px",
       cursor: "pointer",
+      boxShadow: "0px 4px 16px 0px rgba(0,0,0,0.04)",
+      backgroundColor: "#ffffff",
+      border: "1px solid #E9E9E9",
+      maxWidth: 354,
     },
     cardHighlight: {
-      backgroundColor: "#d8e7fe",
+      border: "1px solid #0768FD",
+      boxShadow: "0px 8px 16px 0px rgba(0,0,0,0.08)",
     },
-    cardSubtitle: {
+    cardProtocolNo: {
+      color: neutral7,
+      lineHeight: "24px",
+    },
+    cardSponsor: {
+      color: neutral7,
+      lineHeight: "24px",
+      fontSize: "14px",
+      marginBottom: "24px",
+    },
+    cardProjectCode: {
+      color: neutral7,
+      lineHeight: "24px",
+    },
+    cardPhase: {
       color: neutral7,
       lineHeight: "24px",
     },
@@ -62,9 +95,14 @@ const Dashboard = () => {
     page: {
       padding: 24,
     },
-    panelContent: {
+    pinnedCards: {
       overflow: "auto",
-      height: 333,
+      maxHeight: "calc(50vh - 260px)",
+    },
+    unPinnedCards: {
+      paddingTop: 5,
+      overflow: "auto",
+      maxHeight: "calc(80vh - 260px)",
     },
   };
 
@@ -73,46 +111,137 @@ const Dashboard = () => {
   const [open, setOpen] = useState(true);
   const history = useHistory();
   const userInfo = getUserInfo();
+  const [selectedCard, setSelectedCard] = useState(null);
+  const [studyList, setStudyList] = useState([]);
+  const [unPinnedStudies, setUnPinnedStudies] = useState([
+    {
+      prot_id: "a020E000005SwPtQAK",
+      protocolnumber: "P16-836",
+      usr_id: "u1105372",
+      sponsorname: "ADDARIO LUNG CANCER MEDICAL INSTIT  [US]",
+      phase: "Phase 4",
+      protocolstatus: "Closed Follow Up / In Analysis",
+      projectcode: "DZA68122",
+      priorityCount: 12,
+      ingestionCount: 120,
+      staleFilesCount: 1,
+    },
+    {
+      prot_id: "a020E000005SwfCQAS",
+      protocolnumber: "20150104",
+      usr_id: "u1105372",
+      sponsorname: "Advaxis, Inc.",
+      phase: "",
+      protocolstatus: "In Development",
+      projectcode: "ZWA22751",
+      priorityCount: 5,
+      ingestionCount: 500,
+      staleFilesCount: 4,
+    },
+  ]);
+  const [pinnedStudies, setPinnedStudies] = useState([
+    "Card 1",
+    "Card 2",
+    "Card 3",
+  ]);
 
-  const CustomCard = ({ title, index }) => (
-    <Card
-      color="dark"
-      interactive
-      className={classNames(classes.card, index === 0 && classes.cardHighlight)}
-    >
-      <CardContent>
-        <Typography className={classes.bold}>{title}</Typography>
-        <Typography className={classes.cardSubtitle} variant="caption">
-          {`Subtitle for ${title}`}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
+  useEffect(() => {
+    console.log("");
+  }, [studyList]);
 
-  const { fullName } = userInfo;
+  const CustomCard = ({ data, index, isPinned }) => {
+    const {
+      protocolnumber,
+      sponsorname,
+      phase,
+      priorityCount,
+      ingestionCount,
+      staleFilesCount,
+      protocolstatus,
+      projectcode,
+    } = data;
+    return (
+      <Card
+        color="dark"
+        interactive
+        className={classNames(
+          classes.card,
+          index === 0 && classes.cardHighlight
+        )}
+      >
+        <CardContent>
+          <div className="cardTopBar">
+            <div className="cardLeft">
+              {priorityCount && (
+                <span className="priority">
+                  <PriorityIcon />
+                  {priorityCount}
+                </span>
+              )}
+              {ingestionCount && (
+                <span>
+                  <IngestionIcon />
+                  {ingestionCount}
+                </span>
+              )}
+              {staleFilesCount && (
+                <span>
+                  <StaleFilesIcon />
+                  {staleFilesCount}
+                </span>
+              )}
+            </div>
+            <div className="cardRight">
+              {isPinned ? <StaleFilesIcon /> : <StaleFilesIcon />}
+            </div>
+          </div>
+          <Typography className={classes.bold}>{protocolnumber}</Typography>
+          <Typography className={classes.cardSponsor} variant="caption">
+            {sponsorname}
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <>
       <PageHeader />
       <div className={classes.root}>
-        <Panel width={405}>
-          <Typography
-            variant="title1"
-            className={classes.panelTitle}
-            gutterBottom
-          >
-            My Assignments
-          </Typography>
-          <Typography className={classes.panelSubtitle} variant="caption">
-            6 Studies
-          </Typography>
-          <Search
-            placeholder="Search for protocol, project code or sponsor"
-            fullWidth
-          />
-          <div className={classes.panelContent}>
-            {["Card 1", "Card 2", "Card 3", "Card 4"].map((title, index) => (
+        <Panel className={classes.leftPanel} width={407}>
+          <div>
+            <Typography
+              variant="title1"
+              className={classes.panelTitle}
+              gutterBottom
+            >
+              My Assignments
+            </Typography>
+            <Typography className={classes.panelSubtitle} variant="caption">
+              6 Studies
+            </Typography>
+            <Search
+              className={classes.searchBox}
+              placeholder="Search for protocol, project code or sponsor"
+            />
+            <Divider />
+          </div>
+          <div>
+            <Typography className={classes.pinTitle} variant="caption">
+              Pinned Studies
+            </Typography>
+            {/* <div className={classNames("customScrollbar", classes.pinnedCards)}>
+              {pinnedStudies.map((title, index) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <CustomCard key={index} title={title} index={index} />
+              ))}
+            </div> */}
+            <Divider />
+          </div>
+          <div className={classNames("customScrollbar", classes.unPinnedCards)}>
+            {unPinnedStudies.map((e, index) => (
               // eslint-disable-next-line react/no-array-index-key
-              <CustomCard key={index} title={title} index={index} />
+              <CustomCard key={index} data={e} index={index} isPinned={false} />
             ))}
           </div>
         </Panel>
