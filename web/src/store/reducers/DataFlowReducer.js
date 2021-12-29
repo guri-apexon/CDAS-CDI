@@ -8,6 +8,7 @@ import {
   FETCH_VENDOR_SUCCESS,
   FETCH_VENDOR_FAILURE,
   UPDATE_FORM_FIELDS,
+  SAVE_LOCATION_DATA,
   UPDATE_SELECTED_LOCATION,
 } from "../../constants";
 
@@ -65,6 +66,9 @@ const DataFlowReducer = (state = initialState, action) =>
             (v) => vendorId == v.vend_id
           );
         }
+        break;
+      case SAVE_LOCATION_DATA:
+        newState.loading = true;
         break;
       default:
         newState.loading = false;

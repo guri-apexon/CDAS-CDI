@@ -2,6 +2,7 @@ import {
   GET_VENDORS_DATA,
   GET_LOCATIONS_DATA,
   UPDATE_FORM_FIELDS,
+  SAVE_LOCATION_DATA,
   UPDATE_SELECTED_LOCATION,
 } from "../../constants";
 
@@ -30,5 +31,12 @@ export const changeFormFieldData = (e, field) => {
 export const getLocationsData = () => {
   return {
     type: GET_LOCATIONS_DATA,
+  };
+};
+
+export const saveLocationData = (values) => {
+  return {
+    type: SAVE_LOCATION_DATA,
+    values,
   };
 };

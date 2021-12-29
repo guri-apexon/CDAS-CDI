@@ -27,4 +27,19 @@ const validate = ({ vendor, description, dataflowType }) =>
     dataflowType: checkRequired(dataflowType),
   });
 
+export const locationModalValidate = ({
+  locationName,
+  locationType,
+  dataStructure,
+  externalSytemName,
+  ipServer,
+}) =>
+  removeUndefined({
+    locationName: checkRequired(locationName),
+    locationType: checkRequired(locationType),
+    dataStructure: checkRequired(dataStructure),
+    externalSytemName: checkRequired(externalSytemName),
+    ipServer: checkRequired(ipServer),
+  });
+
 export default validate;

@@ -46,3 +46,21 @@ export function* fetchLocationsData() {
     yield put({ type: FETCH_LOCATION_FAILURE, message: e.message });
   }
 }
+
+export function* saveLocationData(action) {
+  try {
+    const fetchSBData = yield call(
+      axios.post,
+      `${baseURL}/${LOCATIONAPI}/create`,
+      action.values
+    );
+
+    // console.log("study", fetchSBData);
+    yield put({
+      type: FETCH_LOCATION_SUCCESS,
+      locations: fetchSBData.data.data,
+    });
+  } catch (e) {
+    yield put({ type: FETCH_LOCATION_FAILURE, message: e.message });
+  }
+}
