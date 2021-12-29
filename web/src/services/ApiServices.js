@@ -4,11 +4,8 @@ import { getCookie } from "../utils/index";
 
 const searchStudy = async (searchQuery = "") => {
   try {
-    const userId = getCookie("user.id");
-    const res = await axios.post(`${baseURL}/${STUDYSEARCH}`, {
-      search: searchQuery,
-      userId,
-    });
+    // const userId = getCookie("user.id");
+    const res = await axios.get(`${baseURL}/${STUDYSEARCH}/${searchQuery}`);
     return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);
