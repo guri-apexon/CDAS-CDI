@@ -1,6 +1,6 @@
 import axios from "axios";
 import { baseURL, STUDYSEARCH } from "../constants";
-import { getCookie } from "../utils/index";
+// import { getCookie } from "../utils/index";
 
 const searchStudy = async (searchQuery = "") => {
   try {
