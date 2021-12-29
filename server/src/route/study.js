@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.get("/listbyUser/:query", StudyController.getUserStudyList);
 router.post("/pinStudy", StudyController.pinStudy);
-router.post("/searchStudy", StudyController.searchUserStudyList);
+router.post("/search-study", StudyController.searchUserStudyList);
 
 module.exports = router;

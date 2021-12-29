@@ -18,8 +18,8 @@ import Typography from "apollo-react/components/Typography";
 // import IconMenuButton from "apollo-react/components/IconMenuButton";
 // import Tooltip from "apollo-react/components/Tooltip";
 import Search from "apollo-react/components/Search";
-import { useHistory } from "react-router-dom";
-import { getUserInfo } from "../../utils/index";
+// import { useHistory } from "react-router-dom";
+// import { getUserInfo } from "../../utils/index";
 import { ReactComponent as PriorityIcon } from "./priority.svg";
 import { ReactComponent as IngestionIcon } from "./issue.svg";
 import { ReactComponent as StaleFilesIcon } from "./sync.svg";
@@ -28,6 +28,9 @@ import { ReactComponent as UnPinnedIcon } from "./unpinned.svg";
 
 // import AppFooter from "../../components/AppFooter/AppFooter";
 import PageHeader from "../../components/DataFlow/PageHeader";
+import RightPanel from "./RightPanel";
+import { debounceFunction } from "../../utils";
+import searchStudy from "../../services/ApiServices";
 
 import "./Dashboard.scss";
 
@@ -41,6 +44,9 @@ const Dashboard = () => {
     },
     leftPanel: {
       maxWidth: "calc(100vh - 120px)",
+    },
+    page: {
+      padding: 24,
     },
     panelTitle: {
       padding: "24px 24px 0px 24px",
@@ -57,7 +63,7 @@ const Dashboard = () => {
     pinTitle: {
       margin: "20px",
     },
-    searchBox: {
+    searchBar: {
       margin: "20px",
       marginTop: "5px",
       width: "calc(100% - 40px)",
@@ -95,9 +101,6 @@ const Dashboard = () => {
     bold: {
       fontWeight: 600,
     },
-    page: {
-      padding: 24,
-    },
     pinnedCards: {
       overflow: "auto",
       maxHeight: "calc(50vh - 260px)",
@@ -115,7 +118,9 @@ const Dashboard = () => {
   // const history = useHistory();
   // const userInfo = getUserInfo();
   const [selectedCard, setSelectedCard] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [studyList, setStudyList] = useState([]);
+  const [searchTxt, setSearchTxt] = useState("");
   const [unPinnedStudies, setUnPinnedStudies] = useState([
     {
       prot_id: "a020E000005SwPtQAK",
@@ -169,6 +174,18 @@ const Dashboard = () => {
     },
   ]);
 
+  const searchTrigger = (e) => {
+    const newValue = e.target.value;
+    setSearchTxt(newValue);
+    debounceFunction(async () => {
+      setLoading(true);
+      const newStudies = await searchStudy(newValue);
+      console.log("event", newValue, newStudies);
+      // setUnPinnedStudies(newStudies);
+      setLoading(false);
+    }, 1000);
+  };
+
   useEffect(() => {
     console.log("");
   }, [studyList]);
@@ -181,7 +198,6 @@ const Dashboard = () => {
       priorityCount,
       ingestionCount,
       staleFilesCount,
-      protocolstatus,
       projectcode,
     } = data;
     return (
@@ -248,7 +264,7 @@ const Dashboard = () => {
       <PageHeader />
       <div className={classes.root}>
         <Panel className={classes.leftPanel} width={407}>
-          <div>
+          <div className="searchBox">
             <Typography
               variant="title1"
               className={classes.panelTitle}
@@ -260,12 +276,14 @@ const Dashboard = () => {
               6 Studies
             </Typography>
             <Search
-              className={classes.searchBox}
+              className={classes.searchBar}
               placeholder="Search for protocol, project code or sponsor"
+              value={searchTxt}
+              onChange={searchTrigger}
             />
             <Divider />
           </div>
-          <div>
+          <div className="pinned-studies">
             <Typography className={classes.pinTitle} variant="caption">
               Pinned Studies
             </Typography>
@@ -282,7 +300,12 @@ const Dashboard = () => {
             </div>
             <Divider />
           </div>
-          <div className={classNames("customScrollbar", classes.unPinnedCards)}>
+          <div
+            className={classNames(
+              "customScrollbar unpinned-studies",
+              classes.unPinnedCards
+            )}
+          >
             {unPinnedStudies.map((e, index) => (
               // eslint-disable-next-line react/no-array-index-key
               <CustomCard
@@ -297,19 +320,9 @@ const Dashboard = () => {
         </Panel>
         <Panel width="100%" hideButton>
           <div className={classes.page}>
-            <Typography variant="title1" gutterBottom>
-              Card 1 Summary
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              Rhoncus dolor purus non enim praesent elementum facilisis leo vel.
-              Risus at ultrices mi tempus imperdiet. Semper risus in hendrerit
-              gravida rutrum quisque non tellus. Convallis convallis tellus id
-              interdum velit laoreet id donec ultrices. Odio morbi quis commodo
-              odio aenean sed adipiscing.
-            </Typography>
+            <RightPanel />
           </div>
+          {/* <AppFooter /> */}
         </Panel>
       </div>
     </>
