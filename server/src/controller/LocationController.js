@@ -5,7 +5,7 @@ const Logger = require("../config/logger");
 exports.searchLocationList = function (req, res) {
   try {
     const searchParam = req.params.query.toLowerCase();
-    const searchQuery = `SELECT loc_id,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm from cdascdi1d.cdascdi.location 
+    const searchQuery = `SELECT src_loc_id,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm from cdascdi1d.cdascdi.source_location 
             WHERE LOWER(loc_typ) LIKE $1 OR 
             LOWER(loc_alias_nm) LIKE $2
             `;
@@ -32,21 +32,21 @@ exports.searchLocationList = function (req, res) {
 exports.getLocationList = function (req, res) {
   try {
     let type = req.query.type || null;
-    let select = `loc_id,loc_id as value,loc_alias_nm as label, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm`;
-    let searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.location`;
+    let select = `src_loc_id,src_loc_id as value,loc_alias_nm as label, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm`;
+    let searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.source_location`;
     let dbQuery = DB.executeQuery(searchQuery);
     if(type) {
         switch(type) {
             case 'rdbms_only':
-                searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.location where loc_typ NOT IN('SFTP','FTPS')`;
+                searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.source_location where loc_typ NOT IN('SFTP','FTPS')`;
                 dbQuery = DB.executeQuery(searchQuery);
             break;
             case 'ftp_only':
-                searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.location where loc_typ IN('SFTP','FTPS')`;
+                searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.source_location where loc_typ IN('SFTP','FTPS')`;
                 dbQuery = DB.executeQuery(searchQuery);
             break;
             default:
-                searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.location where loc_typ = $1`;
+                searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.source_location where loc_typ = $1`;
                 dbQuery = DB.executeQuery(searchQuery, [type]);
         }
     }
@@ -73,8 +73,8 @@ exports.getLocationList = function (req, res) {
 exports.getLocationById = function (req, res) {
   try {
     const id = req.params.location_id;
-    const searchQuery = `SELECT loc_id,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm from cdascdi1d.cdascdi.location 
-            WHERE loc_id = $1`;
+    const searchQuery = `SELECT src_loc_id,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm from cdascdi1d.cdascdi.source_location 
+            WHERE src_loc_id = $1`;
     Logger.info({
       message: "locationList",
     });
