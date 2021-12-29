@@ -23,6 +23,8 @@ import { getUserInfo } from "../../utils/index";
 import { ReactComponent as PriorityIcon } from "./priority.svg";
 import { ReactComponent as IngestionIcon } from "./issue.svg";
 import { ReactComponent as StaleFilesIcon } from "./sync.svg";
+import { ReactComponent as PinnedIcon } from "./pinned.svg";
+import { ReactComponent as UnPinnedIcon } from "./unpinned.svg";
 
 // import AppFooter from "../../components/AppFooter/AppFooter";
 import PageHeader from "../../components/DataFlow/PageHeader";
@@ -215,7 +217,7 @@ const Dashboard = () => {
               )}
             </div>
             <div className="cardRight">
-              {isPinned ? <StaleFilesIcon /> : <StaleFilesIcon />}
+              {isPinned ? <PinnedIcon /> : <UnPinnedIcon />}
             </div>
           </div>
           <Typography className={classes.bold}>{protocolnumber}</Typography>
