@@ -244,7 +244,7 @@ const DataFlow = () => {
     const locationsRec = dataFlowData.locations?.records ?? [];
     const location = locationsRec?.find(
       // eslint-disable-next-line eqeqeq
-      (loc) => value == loc.loc_id
+      (loc) => value == loc.src_loc_id
     );
     dispatch(updateSelectedLocation(location));
   };
