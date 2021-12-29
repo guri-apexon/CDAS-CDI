@@ -34,6 +34,9 @@
 .flex-column{
   flex-direction: column;
 }
+.no-shadow{
+  box-shadow: none !important;
+}
 *{
   box-sizing: border-box;
 }

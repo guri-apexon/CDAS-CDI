@@ -19,9 +19,18 @@ export const STUDY_NOTONBOARDED_STATUS = "STUDY_NOTONBOARDED_STATUS";
 export const STUDY_NOTONBOARDED_SUCCESS = "STUDY_NOTONBOARDED_SUCCESS";
 export const STUDY_NOTONBOARDED_FAILURE = "STUDY_NOTONBOARDED_FAILURE";
 
+export const PACKAGES_LIST = "PACKAGES_LIST";
+export const PACKAGES_LIST_SUCCESS = "PACKAGES_LIST_SUCCESS";
+export const PACKAGES_LIST_FAILURE = "PACKAGES_LIST_FAILURE";
+export const ADD_DATA_PACKAGE = "ADD_DATA_PACKAGE";
+export const ADD_PACKAGE_SUCCESS = "ADD_PACKAGE_SUCCESS";
+export const ADD_PACKAGE_FAILURE = "ADD_PACKAGE_FAILURE";
+
 // API URLS
 
 export const STUDYBOARD_DATA_FETCH = "v1/api/study/list";
 export const STUDYSEARCH = "v1/api/study/search-study";
+export const PACKAGES_SEARCH = "v1/api/data-package/search";
+export const ADD_PACKAGE = "v1/api/data-package/add";
 export const NOT_ONBOARDED_FETCH = "v1/api/study/notonboarded-studies-stat";
-export const baseURL = process.env.API_URL || "http://localhost:443";
+export const baseURL = process.env.API_URL || "http://localhost:4001";
