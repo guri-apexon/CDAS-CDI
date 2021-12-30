@@ -26,11 +26,15 @@ import { ReactComponent as StaleFilesIcon } from "./sync.svg";
 import { ReactComponent as PinnedIcon } from "./pinned.svg";
 import { ReactComponent as UnPinnedIcon } from "./unpinned.svg";
 
-// import AppFooter from "../../components/AppFooter/AppFooter";
 import PageHeader from "../../components/DataFlow/PageHeader";
 import RightPanel from "./RightPanel";
 import { debounceFunction } from "../../utils";
-import searchStudy from "../../services/ApiServices";
+import searchStudy, {
+  getPinnedStudies,
+  getStudies,
+  unPinStudy,
+  pinStudy,
+} from "../../services/ApiServices";
 
 import "./Dashboard.scss";
 
@@ -121,58 +125,21 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [studyList, setStudyList] = useState([]);
   const [searchTxt, setSearchTxt] = useState("");
-  const [unPinnedStudies, setUnPinnedStudies] = useState([
-    {
-      prot_id: "a020E000005SwPtQAK",
-      protocolnumber: "P16-836",
-      usr_id: "u1105372",
-      sponsorname: "ADDARIO LUNG CANCER MEDICAL INSTIT  [US]",
-      phase: "Phase 4",
-      protocolstatus: "Closed Follow Up / In Analysis",
-      projectcode: "DZA68122",
-      priorityCount: 12,
-      ingestionCount: 120,
-      staleFilesCount: 1,
-    },
-    {
-      prot_id: "a020E000005SwfCQAS",
-      protocolnumber: "20150104",
-      usr_id: "u1105372",
-      sponsorname: "Advaxis, Inc.",
-      phase: "",
-      protocolstatus: "In Development",
-      projectcode: "ZWA22751",
-      priorityCount: 5,
-      ingestionCount: 500,
-      staleFilesCount: 4,
-    },
-  ]);
-  const [pinnedStudies, setPinnedStudies] = useState([
-    {
-      prot_id: "a020E000005SwPtQAK",
-      protocolnumber: "P16-836",
-      usr_id: "u1105372",
-      sponsorname: "ADDARIO LUNG CANCER MEDICAL INSTIT  [US]",
-      phase: "Phase 4",
-      protocolstatus: "Closed Follow Up / In Analysis",
-      projectcode: "DZA68122",
-      priorityCount: 12,
-      ingestionCount: 120,
-      staleFilesCount: 1,
-    },
-    {
-      prot_id: "a020E000005SwfCQAS",
-      protocolnumber: "20150104",
-      usr_id: "u1105372",
-      sponsorname: "Advaxis, Inc.",
-      phase: "",
-      protocolstatus: "In Development",
-      projectcode: "ZWA22751",
-      priorityCount: 5,
-      ingestionCount: 500,
-      staleFilesCount: 4,
-    },
-  ]);
+  const [unPinnedStudies, setUnPinnedStudies] = useState([]);
+  const [pinnedStudies, setPinnedStudies] = useState([]);
+  const [pinned, setPinned] = useState([]);
+
+  const updateList = async () => {
+    const newStudies = await getStudies();
+    const newPinned = await getPinnedStudies();
+    // console.log("event", newPinned, newStudies);
+    setStudyList([...newStudies]);
+    setPinned([...newPinned]);
+  };
+
+  useEffect(() => {
+    updateList();
+  }, []);
 
   const searchTrigger = (e) => {
     const newValue = e.target.value;
@@ -181,25 +148,45 @@ const Dashboard = () => {
       setLoading(true);
       const newStudies = await searchStudy(newValue);
       console.log("event", newValue, newStudies);
-      // setUnPinnedStudies(newStudies);
+      // eslint-disable-next-line no-unused-expressions
+      newStudies && newStudies.studies
+        ? setUnPinnedStudies([...newStudies.studies])
+        : setUnPinnedStudies([]);
       setLoading(false);
     }, 1000);
   };
 
+  const pinningStudy = async (id) => {
+    await pinStudy(id);
+    await updateList();
+  };
+
+  const unPinningStudy = async (id) => {
+    await unPinStudy(id);
+    await updateList();
+  };
+
   useEffect(() => {
-    console.log("");
-  }, [studyList]);
+    const pinnedstudy = studyList.filter((e) => pinned.includes(e.prot_id));
+    const unPinnedStudy = studyList.filter((e) => !pinned.includes(e.prot_id));
+    setPinnedStudies([...pinnedstudy]);
+    setUnPinnedStudies([...unPinnedStudy]);
+    // console.log("unpinned", unPinningStudy);
+  }, [studyList, pinned]);
 
   const CustomCard = ({ data, index, isPinned }) => {
+    const priorityCount = 3;
+    const ingestionCount = 2;
+    const staleFilesCount = 1;
+
     const {
+      prot_id: protId,
       protocolnumber,
       sponsorname,
-      phase,
-      priorityCount,
-      ingestionCount,
-      staleFilesCount,
       projectcode,
+      phase,
     } = data;
+
     return (
       <Card
         color="dark"
@@ -233,7 +220,11 @@ const Dashboard = () => {
               )}
             </div>
             <div className="cardRight">
-              {isPinned ? <PinnedIcon /> : <UnPinnedIcon />}
+              {isPinned ? (
+                <PinnedIcon onClick={() => unPinningStudy(protId)} />
+              ) : (
+                <UnPinnedIcon onClick={() => pinningStudy(protId)} />
+              )}
             </div>
           </div>
           <Typography className={classes.bold}>{protocolnumber}</Typography>
@@ -261,6 +252,7 @@ const Dashboard = () => {
 
   return (
     <>
+      {/* {console.log("studies", pinnedStudies, studyList)} */}
       <PageHeader />
       <div className={classes.root}>
         <Panel className={classes.leftPanel} width={407}>
@@ -283,74 +275,54 @@ const Dashboard = () => {
             />
             <Divider />
           </div>
-          <div className="pinned-studies">
-            <Typography className={classes.pinTitle} variant="caption">
-              Pinned Studies
-            </Typography>
-            <div className={classNames("customScrollbar", classes.pinnedCards)}>
-              {pinnedStudies.map((e, index) => (
+          {pinnedStudies.length > 0 && (
+            <div className="pinned-studies">
+              <Typography className={classes.pinTitle} variant="caption">
+                Pinned Studies
+              </Typography>
+              <div
+                className={classNames("customScrollbar", classes.pinnedCards)}
+              >
+                {pinnedStudies.map((e, index) => (
+                  <CustomCard
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={index}
+                    data={e}
+                    index={`p${index}`}
+                    isPinned={true}
+                  />
+                ))}
+              </div>
+              <Divider />
+            </div>
+          )}
+          {unPinnedStudies.length > 0 && (
+            <div
+              className={classNames(
+                "customScrollbar unpinned-studies",
+                classes.unPinnedCards
+              )}
+            >
+              {unPinnedStudies.map((e, index) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <CustomCard
                   // eslint-disable-next-line react/no-array-index-key
                   key={index}
                   data={e}
-                  index={`p${index}`}
-                  isPinned={true}
+                  index={`up${index}`}
+                  isPinned={false}
                 />
               ))}
             </div>
-            <Divider />
-          </div>
-          <div
-            className={classNames(
-              "customScrollbar unpinned-studies",
-              classes.unPinnedCards
-            )}
-          >
-            {unPinnedStudies.map((e, index) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <CustomCard
-                // eslint-disable-next-line react/no-array-index-key
-                key={index}
-                data={e}
-                index={`up${index}`}
-                isPinned={false}
-              />
-            ))}
-          </div>
+          )}
         </Panel>
         <Panel width="100%" hideButton>
           <div className={classes.page}>
             <RightPanel />
           </div>
-          {/* <AppFooter /> */}
         </Panel>
       </div>
     </>
-
-    // <div className={classes.root}>
-    //   <PageHeader />
-    //   <CssBaseline />
-    //   <Panel width="100%">
-    //     <main className={classes.content}>
-    //       <div className={classes.toolbar} />
-    //       <IconButton
-    //         color="inherit"
-    //         aria-label="open drawer"
-    //         edge="start"
-    //         className={classes.iconButton}
-    //         onClick={handleDrawer}
-    //       >
-    //         {open ? (
-    //           <ChevronLeftIcon className={classes.icon} />
-    //         ) : (
-    //           <ChevronRightIcon className={classes.icon} />
-    //         )}
-    //       </IconButton>
-
-    //       <AppFooter />
-    //     </main>
-    //   </Panel>
-    // </div>
   );
 };
 
