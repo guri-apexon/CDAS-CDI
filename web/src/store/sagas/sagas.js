@@ -5,8 +5,13 @@ import {
   PACKAGES_LIST,
   STUDYBOARD_DATA,
   STUDY_NOTONBOARDED_STATUS,
+  UPDATE_DATA_PACKAGE,
 } from "../../constants";
-import { addDataPackage, fetchPackagesData } from "./dataPackage.saga";
+import {
+  addDataPackage,
+  fetchPackagesData,
+  updateDataPackage,
+} from "./dataPackage.saga";
 import {
   fetchStudyboardData,
   fetchNotOnStudyboardStatus,
@@ -17,6 +22,7 @@ function* cdasCoreSaga() {
   yield takeLatest(STUDY_NOTONBOARDED_STATUS, fetchNotOnStudyboardStatus);
   yield takeLatest(PACKAGES_LIST, fetchPackagesData);
   yield takeLatest(ADD_DATA_PACKAGE, addDataPackage);
+  yield takeLatest(UPDATE_DATA_PACKAGE, updateDataPackage);
 }
 
 export default cdasCoreSaga;

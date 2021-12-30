@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Redirect } from "react-router";
 import Typography from "apollo-react/components/Typography";
 import Tooltip from "apollo-react/components/Tooltip";
 import IconButton from "apollo-react/components/IconButton";
 import ArrowDown from "apollo-react-icons/ArrowDown";
 import ArrowRight from "apollo-react-icons/ArrowRight";
-import Table, {
-  compareDates,
-  compareNumbers,
-  compareStrings,
-} from "apollo-react/components/Table";
-import moment from "moment";
-import Button from "apollo-react/components/Button";
+import Table from "apollo-react/components/Table";
+import Tag from "apollo-react/components/Tag";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import EllipsisVerticalIcon from "apollo-react-icons/EllipsisVertical";
+import { useDispatch } from "react-redux";
+import {
+  deletePackage,
+  updateStatus,
+} from "../../store/actions/DataPackageAction";
 
 const ExpandCell = ({ row: { packageName, handleToggleRow, expanded } }) => {
   return (
@@ -22,7 +21,7 @@ const ExpandCell = ({ row: { packageName, handleToggleRow, expanded } }) => {
         <IconButton
           id="expand"
           size="small"
-          onClick={() => handleToggleRow(packageName)}
+          // onClick={() => handleToggleRow(packageName)}
         >
           {expanded ? <ArrowDown /> : <ArrowRight />}
         </IconButton>
@@ -30,73 +29,35 @@ const ExpandCell = ({ row: { packageName, handleToggleRow, expanded } }) => {
     </div>
   );
 };
+const PackageImg = (
+  <img
+    src="assets/svg/datapackage.svg"
+    alt="datapackage"
+    style={{ width: 15, marginRight: 8 }}
+  />
+);
 const NameCustomCell = ({ row, column: { accessor } }) => {
   const title = row[accessor] || row.datapackageid;
   return (
-    <div className="flex">
-      <img
-        src="assets/svg/datapackage.svg"
-        alt="datapackage"
-        style={{ width: 15, marginRight: 8 }}
-      />
-      <span className="b-font">{title || "Unknown"}</span>
+    <div className="flex package-name-td">
+      {PackageImg}
+      <span className="b-font">{title}</span>
     </div>
   );
 };
-
-const ActionCell = ({ row }) => {
-  const { packageName, onRowEdit } = row;
-  const menuItems = [
-    {
-      text: "Set data package active",
-      onClick: () => onRowEdit(packageName),
-    },
-    {
-      text: "Set all dataset to active",
-      onClick: () => onRowEdit(packageName),
-    },
-    {
-      text: "Set all datasets to inactive",
-      onClick: () => onRowEdit(packageName),
-    },
-    {
-      text: "Delete data package",
-      onClick: () => onRowEdit(packageName),
-    },
-  ];
-
+const StatusCustomCell = ({ row, column: { accessor } }) => {
+  const active = Number(row[accessor]);
   return (
-    <div>
-      <Tooltip title="Actions" disableFocusListener>
-        <IconMenuButton id="actions" menuItems={menuItems} size="small">
-          <EllipsisVerticalIcon />
-        </IconMenuButton>
-      </Tooltip>
+    <div className="flex">
+      {active === 1 ? (
+        <Tag label="Active" variant="green" />
+      ) : (
+        <Tag label="Inactive" variant="grey" />
+      )}
     </div>
   );
 };
-const columns = [
-  {
-    accessor: "expand",
-    customCell: ExpandCell,
-    width: 20,
-  },
-  {
-    header: "Package Name",
-    accessor: "name",
-    customCell: NameCustomCell,
-  },
-  {
-    header: "Status",
-    accessor: "status",
-  },
-  {
-    accessor: "action",
-    customCell: ActionCell,
-    align: "right",
-    width: 32,
-  },
-];
+
 const DetailRow = ({ row }) => {
   return (
     <div style={{ display: "flex", padding: "8px 0px 8px 8px" }}>
@@ -104,11 +65,79 @@ const DetailRow = ({ row }) => {
     </div>
   );
 };
-const skillLevels = ["Beginner", "Intermediate", "Expert"];
 
 const PackagesList = ({ data }) => {
+  const dispatch = useDispatch();
   const [expandedRows, setExpandedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
+
+  const setActive = (packageId, active) => {
+    if (packageId) {
+      dispatch(
+        updateStatus({
+          package_id: packageId,
+          active: active === 1 ? "0" : "1",
+        })
+      );
+    }
+  };
+  const ActionCell = ({ row }) => {
+    const { packageName, onRowEdit } = row;
+    const active = row.active && Number(row.active) === 1 ? 1 : 0;
+    const packageId = row.datapackageid || null;
+    const menuItems = [
+      {
+        text: `Set data package ${active === 1 ? "Inactive" : "Active"}`,
+        onClick: () => setActive(packageId, active),
+      },
+      {
+        text: "Set all dataset to active",
+        // onClick: () => onRowEdit(packageName),
+      },
+      {
+        text: "Set all datasets to inactive",
+        // onClick: () => onRowEdit(packageName),
+      },
+      {
+        text: "Delete data package",
+        onClick: () => packageId && dispatch(deletePackage(packageId)),
+      },
+    ];
+
+    return (
+      <div>
+        <Tooltip title="Actions" disableFocusListener>
+          <IconMenuButton id="actions" menuItems={menuItems} size="small">
+            <EllipsisVerticalIcon />
+          </IconMenuButton>
+        </Tooltip>
+      </div>
+    );
+  };
+  const columns = [
+    {
+      accessor: "expand",
+      customCell: ExpandCell,
+      width: 20,
+    },
+    {
+      header: "Package Name",
+      accessor: "name",
+      customCell: NameCustomCell,
+    },
+    {
+      header: "Active",
+      accessor: "active",
+      customCell: StatusCustomCell,
+      width: 80,
+    },
+    {
+      accessor: "action",
+      customCell: ActionCell,
+      align: "right",
+      width: 32,
+    },
+  ];
   const handleToggleRow = (packageName) => {
     // eslint-disable-next-line no-shadow
     setExpandedRows((expandedRows) =>
@@ -118,38 +147,28 @@ const PackagesList = ({ data }) => {
     );
   };
   useEffect(() => {
-    const newData = data.packagesList.data || [];
+    const newData = data.packagesList || [];
     console.log("Tabledata", newData);
-    const updatedData = newData.map((row, i) => ({
-      ...row,
-      description: `${row.name} is an amazing ${
-        row.dept
-      } person. They've been with us for ${Math.floor(
-        moment().diff(moment(row.hireDate, "MM/DD/YYYY"), "years")
-      )} years!`,
-      birthday: moment(row.hireDate, "MM/DD/YYYY")
-        .subtract(23, "years")
-        .format("MM/DD/YYYY"),
-      skillLevel: skillLevels[i % 3],
-    }));
+    const updatedData = newData;
+    // tableData.map((row) => ({
+    //   ...row,
+    //   expanded: expandedRows.includes(row.packageName),
+    //   handleToggleRow,
+    // }));
     setTableData(updatedData);
-  }, [data]);
+  }, [data.packagesList]);
   return (
     <Table
       columns={columns}
       rowId="packageName"
-      rows={tableData.map((row) => ({
-        ...row,
-        expanded: expandedRows.includes(row.packageName),
-        handleToggleRow,
-      }))}
+      rows={tableData}
       rowProps={{ hover: false }}
       hidePagination={true}
-      tablePaginationProps={{
-        labelDisplayedRows: ({ from, to, count }) =>
-          `${count === 1 ? "Package" : "Packages"} ${from}-${to} of ${count}`,
-        truncate: true,
-      }}
+      // tablePaginationProps={{
+      //   labelDisplayedRows: ({ from, to, count }) =>
+      //     `${count === 1 ? "Package" : "Packages"} ${from}-${to} of ${count}`,
+      //   truncate: true,
+      // }}
       ExpandableComponent={DetailRow}
     />
   );

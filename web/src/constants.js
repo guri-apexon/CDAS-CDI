@@ -26,11 +26,17 @@ export const ADD_DATA_PACKAGE = "ADD_DATA_PACKAGE";
 export const ADD_PACKAGE_SUCCESS = "ADD_PACKAGE_SUCCESS";
 export const ADD_PACKAGE_FAILURE = "ADD_PACKAGE_FAILURE";
 
+export const UPDATE_DATA_PACKAGE = "UPDATE_DATA_PACKAGE";
+export const UPDATE_DATA_PACKAGE_SUCCESS = "UPDATE_DATA_PACKAGE_SUCCESS";
+export const UPDATE_DATA_PACKAGE_FAILURE = "UPDATE_DATA_PACKAGE_FAILURE";
+
 // API URLS
 
 export const STUDYBOARD_DATA_FETCH = "v1/api/study/list";
 export const STUDYSEARCH = "v1/api/study/search-study";
 export const PACKAGES_SEARCH = "v1/api/data-package/search";
 export const ADD_PACKAGE = "v1/api/data-package/add";
+export const DELETE_PACKAGE = "v1/api/data-package/delete";
+export const UPDATE_PACKAGE = "v1/api/data-package/update-status";
 export const NOT_ONBOARDED_FETCH = "v1/api/study/notonboarded-studies-stat";
 export const baseURL = process.env.API_URL || "http://localhost:4001";

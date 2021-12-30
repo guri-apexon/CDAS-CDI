@@ -36,6 +36,8 @@
         }
         .list-container{
             height: 40vh;
+            margin: 0 -28px 0 -15px;
+            padding: 0 10px;
             div[class^='Table-tableWrapper-']{
                 overflow: hidden;
             }
@@ -56,6 +58,10 @@
             }
             thead{
                 display: none;
+            }
+            .package-name-td{
+                max-width: 250px;
+                text-overflow: ellipsis;
             }
         }
     }

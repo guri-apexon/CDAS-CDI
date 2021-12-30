@@ -28,7 +28,7 @@ import {
   addDataPackage,
   getPackagesList,
 } from "../../store/actions/DataPackageAction";
-import CreatepackageForm from "./CreatePackageForm";
+// import CreatepackageForm from "./CreatePackageForm";
 
 const compressionTypes = [
   { text: "Not Comporessed", value: "not_compressed" },
@@ -88,16 +88,12 @@ const DataPackages = () => {
   };
 
   useEffect(() => {
-    if (
-      packageData &&
-      packageData.response &&
-      packageData.response.status === 1
-    ) {
+    if (packageData && packageData.refreshData) {
       setSearchTxt("");
       getPackages();
       resetForm();
     }
-  }, [packageData]);
+  }, [packageData.refreshData]);
   useEffect(() => {
     getPackages();
   }, []);
@@ -163,7 +159,7 @@ const DataPackages = () => {
                   ) : (
                     <>
                       <Typography variant="body2" style={{ marginLeft: 10 }}>
-                        {`${packageData.packagesList.data_count} Data Packages`}
+                        {`${packageData.packagesList.length} Data Packages`}
                       </Typography>
                       <PackagesList data={packageData} />
                     </>

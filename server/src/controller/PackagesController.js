@@ -7,8 +7,8 @@ const moment = require("moment");
 exports.searchList = function (req, res) {
   try {
     const searchParam = req.params.query?.toLowerCase() || '';
-    const searchQuery = `SELECT * from cdascdi1d.cdascdi.datapackage 
-            WHERE LOWER(name) LIKE '%${searchParam}%'`;
+    const searchQuery = `SELECT datapackageid, name, active, type from cdascdi1d.cdascdi.datapackage 
+            WHERE LOWER(name) LIKE '%${searchParam}%' AND del_flg = 'N'`;
     Logger.info({
       message: "packagesList",
     });
@@ -22,7 +22,7 @@ exports.searchList = function (req, res) {
     });
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :locationList");
+    Logger.error("catch :List");
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
@@ -45,70 +45,54 @@ exports.addPackage = function (req, res) {
     });
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :locationList");
+    Logger.error("catch :addPackage");
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
   }
 };
 
-exports.getLocationList = function (req, res) {
+exports.changeStatus = function (req, res) {
   try {
-    let type = req.query.type || null;
-    let select = `loc_id,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm`;
-    let searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.location`;
-    let dbQuery = DB.executeQuery(searchQuery);
-    if(type) {
-        switch(type) {
-            case 'rdbms_only':
-                searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.location where loc_typ NOT IN('SFTP','FTPS')`;
-                dbQuery = DB.executeQuery(searchQuery);
-            break;
-            case 'ftp_only':
-                searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.location where loc_typ IN('SFTP','FTPS')`;
-                dbQuery = DB.executeQuery(searchQuery);
-            break;
-            default:
-                searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.location where loc_typ = $1`;
-                dbQuery = DB.executeQuery(searchQuery, [type]);
-        }
-    }
+    const { active, package_id } = req.body;
+    const query = `UPDATE cdascdi1d.cdascdi.datapackage
+    SET active = ${active}
+    WHERE datapackageid = '${package_id}'`;
     Logger.info({
-      message: "locationList",
+      message: "ActivePackage",
     });
 
-    dbQuery.then((response) => {
-      const locations = response.rows || [];
-      return apiResponse.successResponseWithData(res, "Operation success", {
-        records: locations,
-        totalSize: response.rowCount,
+    DB.executeQuery(query).then((response) => {
+      const packages = response.rows || [];
+      return apiResponse.successResponseWithData(res, "Updated successfully", {
       });
     });
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :locationList");
+    Logger.error("catch :packageActive");
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
   }
 };
-
-exports.getLocationById = function (req, res) {
+exports.deletePackage = function (req, res) {
   try {
-    const id = req.params.location_id;
-    const searchQuery = `SELECT loc_id,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm from cdascdi1d.cdascdi.location 
-            WHERE loc_id = $1`;
+    const packageId = req.params.ID;
+    const query = `UPDATE cdascdi1d.cdascdi.datapackage
+    SET del_flg = 'Y'
+    WHERE datapackageid = '${packageId}'`;
+    console.log('query', query);
     Logger.info({
-      message: "locationList",
+      message: "DeletePackage",
     });
 
-    DB.executeQuery(searchQuery, [id]).then((response) => {
-      const locations = response.rows[0] || null;
-      return apiResponse.successResponseWithData(res, "Operation success", locations);
+    DB.executeQuery(query).then((response) => {
+      const packages = response.rows || [];
+      return apiResponse.successResponseWithData(res, "Deleted successfully", {
+      });
     });
   } catch (err) {
     //throw error in json response with status 500.
-    console.log(err)
     Logger.error("catch :locationList");
     Logger.error(err);
 
