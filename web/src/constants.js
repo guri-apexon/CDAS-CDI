@@ -33,6 +33,11 @@ export const UPDATE_FORM_FIELDS = "UPDATE_FORM_FIELDS";
 
 export const STUDYBOARD_DATA_FETCH = "v1/api/study/list";
 export const STUDYSEARCH = "v1/api/study/search-study";
+export const STUDYLIST = "v1/api/study/listbyUser";
+export const PINNEDSTUDY = "v1/api/study/pinnedStudies";
+export const UNPINSTUDY = "v1/api/study/unPinStudy";
+export const PINSTUDY = "v1/api/study/pinStudy";
+
 export const NOT_ONBOARDED_FETCH = "v1/api/study/notonboarded-studies-stat";
 export const LOCATIONAPI = "v1/api/location";
 export const VENDORAPI = "v1/api/vendor";
