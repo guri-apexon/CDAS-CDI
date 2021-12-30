@@ -129,7 +129,7 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
   },
   drawerOpenIcon: {
-    left: "35.2%",
+    left: drawerWidth,
     transition: theme.transitions.create("left", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
