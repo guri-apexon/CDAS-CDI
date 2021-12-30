@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme) => ({
     width: 24,
     position: "fixed",
     top: 145,
-    zIndex: 9999,
+    zIndex: 1215,
     boxShadow: "0 4px 16px 0 rgba(0,0,0,0.08)",
     "&:hover": {
       backgroundColor: "#fff",
