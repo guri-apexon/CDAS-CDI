@@ -1,5 +1,6 @@
 
 .customscroll{
+    overflow-y: auto;
     &::-webkit-scrollbar {
       background-color: #fff;
       width: 16px;

@@ -1,5 +1,6 @@
 import { combineReducers } from "redux";
 import { reducer as reduxFormReducer } from "redux-form";
+import DataPackageReducer from "./DataPackageReducer";
 import StudyBoardReaducer from "./StudyBoardReducer";
 import DataFlowReducer from "./DataFlowReducer";
 
@@ -8,5 +9,6 @@ export const appReducer = combineReducers({
   // launchPad: launchPadReducer,
   form: reduxFormReducer,
   studyBoard: StudyBoardReaducer,
+  dataPackage: DataPackageReducer,
   dataFlow: DataFlowReducer,
 });

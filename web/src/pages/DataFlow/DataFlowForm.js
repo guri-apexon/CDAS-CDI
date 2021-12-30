@@ -83,7 +83,6 @@ const DataFlowFormBase = (props) => {
   const [locationOpen, setLocationOpen] = useState(false);
   const {
     handleSubmit,
-    submitting,
     classes,
     change,
     locations,
@@ -93,6 +92,7 @@ const DataFlowFormBase = (props) => {
     serviceOwners,
     changeLocationData,
     changeFormField,
+    changeLocationType,
     connLink,
   } = props;
   const onChangeServiceOwner = (values) => {
@@ -144,11 +144,14 @@ const DataFlowFormBase = (props) => {
         </div>
         <Divider className={classes.divider} />
         <div className={classes.section}>
-          <Typography variant="title1">Location Details</Typography>
+          <Typography variant="title1" id="locationDetailTitile">
+            Location Details
+          </Typography>
           <Grid container spacing={2}>
             <Grid item md={5}>
               <ReduxFormSelect
                 name="dataStructure"
+                id="dataStructure"
                 label="Data Structure"
                 fullWidth
               >
@@ -159,6 +162,7 @@ const DataFlowFormBase = (props) => {
               <ReduxFormSelect
                 name="locationType"
                 label="Location Type"
+                onChange={(e) => changeLocationType(e.target.value)}
                 fullWidth
               >
                 {locationTypes?.map((type) => (
@@ -184,6 +188,7 @@ const DataFlowFormBase = (props) => {
               </Link>
               <LocationModal
                 locationModalOpen={locationOpen}
+                modalLocationType={props.modalLocationType}
                 handleModalClose={() => setLocationOpen(false)}
               />
             </Grid>

@@ -1,11 +1,14 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { useDispatch, useSelector } from "react-redux";
-import { submit } from "redux-form";
+import { submit, reset } from "redux-form";
 import Box from "apollo-react/components/Box";
 import Drawer from "@material-ui/core/Drawer";
+import Loader from "apollo-react/components/Loader";
+import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import ChevronLeftIcon from "apollo-react-icons/ChevronLeft";
@@ -33,7 +36,8 @@ import {
   updateSelectedLocation,
   getServiceOwnersData,
   changeFormFieldData,
-  getLocationsData,
+  hideErrorMessage,
+  getLocationByType,
 } from "../../store/actions/DataFlowAction";
 
 const drawerWidth = 446;
@@ -47,10 +51,9 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "#FFFFFF",
     height: 24,
     width: 24,
-    position: "relative",
-    left: 0,
-    top: "4%",
-    zIndex: 9999,
+    position: "fixed",
+    top: 145,
+    zIndex: 1215,
     boxShadow: "0 4px 16px 0 rgba(0,0,0,0.08)",
     "&:hover": {
       backgroundColor: "#fff",
@@ -125,6 +128,20 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: "nowrap",
     overflow: "hidden",
   },
+  drawerOpenIcon: {
+    left: drawerWidth,
+    transition: theme.transitions.create("left", {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  drawerCloseIcon: {
+    left: 12,
+    transition: theme.transitions.create("left", {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
   drawerOpen: {
     width: drawerWidth,
     overflow: "hidden",
@@ -174,6 +191,7 @@ const useStyles = makeStyles((theme) => ({
   contentSubTitle: {
     color: "#000000",
     fontSize: "14px",
+    paddingLeft: 11,
     letterSpacing: 0,
     lineHeight: "24px",
   },
@@ -193,7 +211,7 @@ const ContextMenu = () => {
   return (
     <>
       <Tooltip title="Actions" disableFocusListener>
-        <IconMenuButton id="actions" menuItems={menuItems}>
+        <IconMenuButton id="actions" menuItems={menuItems} size="small">
           <EllipsisVertical />
         </IconMenuButton>
       </Tooltip>
@@ -227,20 +245,36 @@ const DataFlow = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const dataFlowData = useSelector((state) => state.dataFlow);
-  const { selectedLocation, description, selectedVendor, dataflowType } =
-    dataFlowData;
+  const {
+    selectedLocation,
+    description,
+    selectedVendor,
+    dataflowType,
+    loading,
+    createTriggered,
+    error,
+  } = dataFlowData;
   const [open, setOpen] = useState(true);
+  const [locType, setLocType] = useState("SFTP");
+  const [modalLocType, setModalLocType] = useState("SFTP");
   const handleDrawer = () => {
     setOpen(!open);
   };
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
-    dispatch(getLocationsData());
+    dispatch(getLocationByType(locType));
     dispatch(getServiceOwnersData());
   };
   useEffect(() => {
     pullVendorandLocation();
   }, []);
+
+  useEffect(() => {
+    if (modalLocType === locType) {
+      dispatch(getLocationByType(locType));
+    }
+  }, [createTriggered]);
+
   const changeLocationData = (value) => {
     const locationsRec = dataFlowData.locations?.records ?? [];
     const location = locationsRec?.find(
@@ -252,10 +286,27 @@ const DataFlow = () => {
   const changeFormField = (value, field) => {
     dispatch(changeFormFieldData(value, field));
   };
+  const changeLocationType = (value) => {
+    dispatch(getLocationByType(value));
+    setLocType(value);
+  };
+  const modalLocationType = (value) => {
+    setModalLocType(value);
+  };
   return (
     <div className={classes.root}>
       <PageHeader />
       <CssBaseline />
+      {loading && <Loader />}
+      {error && (
+        <Banner
+          variant="error"
+          open={true}
+          onClose={() => dispatch(hideErrorMessage())}
+          style={{ zIndex: 9999, top: "15%" }}
+          message={error}
+        />
+      )}
       <div className={classes.toolbar} />
       <Drawer
         variant="permanent"
@@ -302,6 +353,7 @@ const DataFlow = () => {
             <Tag
               label={dataflowType}
               variant="grey"
+              color="#999999"
               style={{ textTransform: "capitalize" }}
             />
             <Typography className={classes.LeftTitle}>
@@ -314,7 +366,12 @@ const DataFlow = () => {
               <ArrowRight className={classes.icon} />
               {description}
             </Typography>
-            <Button variant="primary" style={{ marginTop: 17 }} fullWidth>
+            <Button
+              variant="primary"
+              id="viewSettingsBtn"
+              style={{ marginTop: 17 }}
+              fullWidth
+            >
               View Settings
             </Button>
           </div>
@@ -339,56 +396,63 @@ const DataFlow = () => {
           </div>
         </Box>
       </Drawer>
+      <IconButton
+        color="inherit"
+        aria-label="open drawer"
+        edge="start"
+        className={clsx(classes.iconButton, {
+          [classes.drawerOpenIcon]: open,
+          [classes.drawerCloseIcon]: !open,
+        })}
+        onClick={handleDrawer}
+      >
+        {open ? (
+          <ChevronLeftIcon className={classes.icon} />
+        ) : (
+          <ChevronRightIcon className={classes.icon} />
+        )}
+      </IconButton>
       <main className={classes.content}>
-        <div className={classes.toolbar} style={{ minHeight: "30px" }} />
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          className={classes.iconButton}
-          onClick={handleDrawer}
-        >
-          {open ? (
-            <ChevronLeftIcon className={classes.icon} />
-          ) : (
-            <ChevronRightIcon className={classes.icon} />
-          )}
-        </IconButton>
-        <div className={classes.contentHeader}>
-          <Breadcrumbs className={classes.breadcrumbs} />
-          <div style={{ display: "flex" }}>
-            <DataPackageIcon className={classes.contentIcon} />
-            <Typography className={classes.contentTitle}>
-              Virologicclinic-IIBR12-001-Other
+        <div className={classes.toolbar} />
+        <div className="content">
+          <div className={classes.contentHeader}>
+            <Breadcrumbs className={classes.breadcrumbs} />
+            <div style={{ display: "flex", paddingLeft: 11 }}>
+              <DataPackageIcon className={classes.contentIcon} />
+              <Typography className={classes.contentTitle}>
+                Virologicclinic-IIBR12-001-Other
+              </Typography>
+            </div>
+            <Typography className={classes.contentSubTitle}>
+              6 datasets
             </Typography>
+            <ButtonGroup
+              alignItems="right"
+              buttonProps={[
+                {
+                  label: "Cancel",
+                  onClick: () => dispatch(reset("DataFlowForm")),
+                },
+                {
+                  label: "Save",
+                  onClick: () => dispatch(submit("DataFlowForm")),
+                },
+              ]}
+            />
           </div>
-          <Typography className={classes.contentSubTitle}>
-            6 datasets
-          </Typography>
-          <ButtonGroup
-            alignItems="right"
-            buttonProps={[
-              {
-                label: "Cancel",
-                onClick: () => console.log("Cancel Clicked"),
-              },
-              {
-                label: "Save",
-                onClick: () => dispatch(submit("DataFlowForm")),
-              },
-            ]}
-          />
-        </div>
-        <Divider />
-        <div className={classes.formSection}>
-          <DataFlowForm
-            onSubmit={onSubmit}
-            changeLocationData={changeLocationData}
-            changeFormField={changeFormField}
-            userName={selectedLocation?.usr_nm}
-            password={selectedLocation?.pswd}
-            connLink={selectedLocation?.cnn_url}
-          />
+          <Divider />
+          <div className={classes.formSection}>
+            <DataFlowForm
+              onSubmit={onSubmit}
+              changeLocationData={changeLocationData}
+              changeFormField={changeFormField}
+              changeLocationType={changeLocationType}
+              modalLocationType={modalLocationType}
+              userName={selectedLocation?.usr_nm}
+              password={selectedLocation?.pswd}
+              connLink={selectedLocation?.cnn_url}
+            />
+          </div>
         </div>
       </main>
     </div>

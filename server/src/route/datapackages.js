@@ -1,0 +1,11 @@
+var express = require("express");
+const PackagesController = require("../controller/PackagesController");
+
+var router = express.Router();
+
+router.get("/search/:query?", PackagesController.searchList);
+router.post("/add", PackagesController.addPackage);
+router.get("/delete/:ID", PackagesController.deletePackage);
+router.post("/update-status", PackagesController.changeStatus);
+
+module.exports = router;

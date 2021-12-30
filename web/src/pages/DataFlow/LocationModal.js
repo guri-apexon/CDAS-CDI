@@ -1,6 +1,7 @@
-import React from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect } from "react";
 import { reduxForm, submit, getFormValues } from "redux-form";
-import { useDispatch, connect } from "react-redux";
+import { useDispatch, connect, useSelector } from "react-redux";
 import compose from "@hypnosphi/recompose/compose";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Grid from "apollo-react/components/Grid";
@@ -38,7 +39,7 @@ const useStyles = makeStyles(styles);
 
 const LocationForm = (props) => {
   const classes = useStyles();
-  const [isActive, setIsActive] = React.useState(true);
+  const [isActive, setIsActive] = React.useState(false);
   return (
     <form onSubmit={props.handleSubmit}>
       <div className={classes.section}>
@@ -57,6 +58,7 @@ const LocationForm = (props) => {
               className="activeField"
               size="small"
               labelPlacement="start"
+              value={isActive}
               checked={isActive}
               onChange={(e, checked) => setIsActive(checked)}
             />
@@ -136,12 +138,19 @@ const LocationForm = (props) => {
 const LocationModal = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const dataFlowData = useSelector((state) => state.dataFlow);
+  const { createTriggered } = dataFlowData;
   const onSubmit = (values) => {
     setTimeout(() => {
+      console.log(props);
       // eslint-disable-next-line no-console
+      props.modalLocationType(values?.locationType);
       dispatch(saveLocationData(values));
     }, 400);
   };
+  useEffect(() => {
+    props.handleModalClose();
+  }, [createTriggered]);
   return (
     <Modal
       open={props.locationModalOpen}
