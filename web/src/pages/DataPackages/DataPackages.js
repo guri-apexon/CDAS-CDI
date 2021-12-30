@@ -41,7 +41,7 @@ const compressionTypes = [
   { text: "Not Comporessed", value: "not_compressed" },
   { text: "Zip", value: "zip" },
   { text: "7Z", value: "7z" },
-  { text: "SAS XPT", value: "sas_xpt" },
+  { text: "SAS XPT", value: "xpt" },
   { text: "RAR", value: "rar" },
 ];
 const breadcrumpItems = [
