@@ -187,3 +187,21 @@ export const toast = (text = "", type = "success") => {
   const customEvent = new CustomEvent("toast", { detail: { text, type } });
   document.dispatchEvent(customEvent);
 };
+export const dataStruct = [
+  {
+    value: "tabular",
+    label: "Tabular",
+  },
+];
+
+export const locationTypes = [
+  "SFTP",
+  "FTPS",
+  "Hive CDP",
+  "Hive CDH",
+  "Impala",
+  "MySQL",
+  "Oracle",
+  "PostgreSQL",
+  "SQL Server",
+];

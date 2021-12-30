@@ -29,6 +29,19 @@ export const ADD_PACKAGE_FAILURE = "ADD_PACKAGE_FAILURE";
 export const UPDATE_DATA_PACKAGE = "UPDATE_DATA_PACKAGE";
 export const UPDATE_DATA_PACKAGE_SUCCESS = "UPDATE_DATA_PACKAGE_SUCCESS";
 export const UPDATE_DATA_PACKAGE_FAILURE = "UPDATE_DATA_PACKAGE_FAILURE";
+export const GET_VENDORS_DATA = "GET_VENDORS_DATA";
+export const GET_LOCATIONS_DATA = "GET_LOCATIONS_DATA";
+
+export const FETCH_LOCATION_SUCCESS = "FETCH_LOCATION_SUCCESS";
+export const FETCH_LOCATION_FAILURE = "FETCH_LOCATION_FAILURE";
+export const FETCH_VENDOR_SUCCESS = "FETCH_VENDOR_SUCCESS";
+export const FETCH_VENDOR_FAILURE = "FETCH_VENDOR_FAILURE";
+export const UPDATE_SELECTED_LOCATION = "UPDATE_SELECTED_LOCATION";
+export const UPDATE_FORM_FIELDS = "UPDATE_FORM_FIELDS";
+export const SAVE_LOCATION_DATA = "SAVE_LOCATION_DATA";
+export const GET_SERVICE_OWNERS = "GET_SERVICE_OWNERS";
+export const FETCH_SERVICE_OWNERS_SUCCESS = "FETCH_SERVICE_OWNERS_SUCCESS";
+export const FETCH_SERVICE_OWNERS_FAILURE = "FETCH_SERVICE_OWNERS_FAILURE";
 
 // API URLS
 
@@ -39,4 +52,11 @@ export const ADD_PACKAGE = "v1/api/data-package/add";
 export const DELETE_PACKAGE = "v1/api/data-package/delete";
 export const UPDATE_PACKAGE = "v1/api/data-package/update-status";
 export const NOT_ONBOARDED_FETCH = "v1/api/study/notonboarded-studies-stat";
+export const STUDYLIST = "v1/api/study/listbyUser";
+export const PINNEDSTUDY = "v1/api/study/pinnedStudies";
+export const UNPINSTUDY = "v1/api/study/unPinStudy";
+export const PINSTUDY = "v1/api/study/pinStudy";
+
+export const LOCATIONAPI = "v1/api/location";
+export const VENDORAPI = "v1/api/vendor";
 export const baseURL = process.env.API_URL || "http://localhost:4001";

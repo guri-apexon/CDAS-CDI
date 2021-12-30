@@ -5,11 +5,13 @@ import Loader from "apollo-react/components/Loader";
 
 import { getCookie } from "../../utils";
 import TopNavbar from "../TopNavbar/TopNavbar";
-import AppFooter from "../AppFooter/AppFooter";
-import UserManagement from "../../pages/UserManagement/UserManagement";
+// import AppFooter from "../AppFooter/AppFooter";
 import Logout from "../../pages/Logout/Logout";
 import DataPackages from "../../pages/DataPackages/DataPackages";
 import Toast from "../Common/Toast";
+
+const Dashboard = lazy(() => import("../../pages/Dashboard/Dashboard"));
+const DataFlow = lazy(() => import("../../pages/DataFlow/DataFlow"));
 
 const Empty = () => <></>;
 
@@ -17,10 +19,6 @@ const CDIWrapper = () => {
   const [loggedIn, setLoggedIn] = useState(true);
   const [checkedOnce, setCheckedOnce] = useState(false);
   const history = useHistory();
-
-  const getUrlPath = (route) => {
-    return `${route}`;
-  };
 
   useEffect(() => {
     const userId = getCookie("user.id");
@@ -47,14 +45,6 @@ const CDIWrapper = () => {
     }
   }, [checkedOnce, history]);
 
-  useEffect(() => {
-    if (!loggedIn && checkedOnce) {
-      setTimeout(() => {
-        history.push("/not-authenticated");
-      }, 30000);
-    }
-  }, [checkedOnce, history, loggedIn]);
-
   return (
     <Suspense fallback={<Loader isInner />}>
       {loggedIn ? (
@@ -62,20 +52,19 @@ const CDIWrapper = () => {
           <Toast />
           <TopNavbar setLoggedIn={setLoggedIn} />
           <Switch>
-            <Route path="/dashboard" exact render={() => <UserManagement />} />
+            <Route path="/dashboard" exact render={() => <Dashboard />} />
             <Route
               path="/data-packages"
               exact
               render={() => <DataPackages />}
             />
             <Route
-              path={`${getUrlPath("/user-management")}`}
+              path="/dataflow-management"
               exact
-              render={() => <UserManagement />}
+              render={() => <DataFlow />}
             />
-            <Redirect from="/" to="/launchpad" />
+            <Redirect from="/" to="/dashboard" />
           </Switch>
-          <AppFooter />
         </div>
       ) : (
         <Switch>
