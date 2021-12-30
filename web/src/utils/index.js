@@ -183,6 +183,13 @@ export const compareDates = (accessor, sortOrder) => {
   };
 };
 
+export const dataStruct = [
+  {
+    value: "tabular",
+    label: "Tabular",
+  },
+];
+
 export const locationTypes = [
   "SFTP",
   "FTPS",

@@ -92,3 +92,63 @@ exports.getLocationById = function (req, res) {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+
+exports.saveLocationData = function (req, res) {
+  try {
+    const values = req.body;
+    const body = [
+      values.locationType || null,
+      values.ipServer || null,
+      values.port || null,
+      values.userName || null,
+      values.password || null,
+      values.connURL || null,
+      values.dataStructure || null,
+      values.active == true ? 1 : 0,
+      values.externalSytemName || null,
+      values.locationName || null,
+      null,
+      new Date(),
+      new Date()
+    ];
+    const searchQuery = `INSERT into cdascdi1d.cdascdi.source_location (loc_typ, ip_servr, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, serv_ownr, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`;
+    Logger.info({
+      message: "storeLocation",
+    });
+    DB.executeQuery(searchQuery, body).then((response) => {
+      const location = response || null;
+      console.log(location, "location");
+      return apiResponse.successResponseWithData(res, "Operation success", location);
+    });
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err)
+    Logger.error("catch :storeLocation");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.getServiceOwnersList = function (req, res) {
+  try {
+    let select = `call_back_url_id as value, serv_ownr as label`;
+    let searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.call_back_urls where actv_flg=1 order by serv_ownr asc`;
+    let dbQuery = DB.executeQuery(searchQuery);
+    Logger.info({
+      message: "serviceOwnerList",
+    });
+
+    dbQuery.then((response) => {
+      const vendors = response.rows || [];
+      return apiResponse.successResponseWithData(res, "Operation success", {
+        records: vendors,
+        totalSize: response.rowCount,
+      });
+    });
+  } catch (err) {
+    //throw error in json response with status 500.
+    Logger.error("catch :serviceOwnerList");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+}

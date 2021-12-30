@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
+import React, { useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect } from "react-redux";
 import { reduxForm, getFormValues } from "redux-form";
@@ -21,8 +21,9 @@ import {
   ReduxFormTextField,
 } from "../../components/FormComponents/FormComponents";
 import validate from "../../components/FormComponents/validation";
+import LocationModal from "./LocationModal";
 
-import { locationTypes } from "../../utils";
+import { locationTypes, dataStruct } from "../../utils";
 
 const styles = {
   paper: {
@@ -79,6 +80,7 @@ const styles = {
 };
 
 const DataFlowFormBase = (props) => {
+  const [locationOpen, setLocationOpen] = useState(false);
   const {
     handleSubmit,
     submitting,
@@ -95,6 +97,9 @@ const DataFlowFormBase = (props) => {
   } = props;
   const onChangeServiceOwner = (values) => {
     change("serviceOwnerValue", values);
+  };
+  const openLocationModal = () => {
+    setLocationOpen(true);
   };
   return (
     <form onSubmit={handleSubmit}>
@@ -117,11 +122,13 @@ const DataFlowFormBase = (props) => {
               fullWidth
               maxLength="30"
               name="description"
+              inputProps={{ maxLength: 30 }}
               onChange={(v) => changeFormField(v, "description")}
               label="Description"
             />
             <ReduxFormDatePickerV2
               name="firstFileDate"
+              dateFormat="DD MMM YYYY"
               label="Expected First File Date"
             />
             <ReduxFormRadioGroup
@@ -144,7 +151,9 @@ const DataFlowFormBase = (props) => {
                 label="Data Structure"
                 fullWidth
               >
-                <MenuItem value="tabular">Tabular</MenuItem>
+                {dataStruct?.map((type) => (
+                  <MenuItem value={type.value}>{type.label}</MenuItem>
+                ))}
               </ReduxFormSelect>
               <ReduxFormSelect
                 name="locationType"
@@ -166,12 +175,16 @@ const DataFlowFormBase = (props) => {
                 fullWidth
               />
               <Link
-                onClick={() => console.log("link clicked")}
+                onClick={() => openLocationModal()}
                 style={{ fontWeight: 600 }}
               >
                 <PlusIcon style={{ width: 12, height: 12, marginRight: 8 }} />
                 New Location
               </Link>
+              <LocationModal
+                locationModalOpen={locationOpen}
+                handleModalClose={() => setLocationOpen(false)}
+              />
             </Grid>
             <Grid item md={7}>
               <Paper className={classes.locationBox}>
@@ -224,6 +237,7 @@ const DataFlowForm = connect((state) => ({
   values: getFormValues("DataFlowForm")(state),
   locations: state.dataFlow.locations?.records,
   vendors: state.dataFlow.vendors?.records,
+  serviceOwners: state.dataFlow.serviceOwners?.records,
 }))(ReduxForm);
 
 export default DataFlowForm;
