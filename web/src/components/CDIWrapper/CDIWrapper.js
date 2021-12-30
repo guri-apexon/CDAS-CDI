@@ -7,6 +7,8 @@ import { getCookie } from "../../utils";
 import TopNavbar from "../TopNavbar/TopNavbar";
 // import AppFooter from "../AppFooter/AppFooter";
 import Logout from "../../pages/Logout/Logout";
+import DataPackages from "../../pages/DataPackages/DataPackages";
+import Toast from "../Common/Toast";
 
 const Dashboard = lazy(() => import("../../pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("../../pages/DataFlow/DataFlow"));
@@ -14,7 +16,7 @@ const DataFlow = lazy(() => import("../../pages/DataFlow/DataFlow"));
 const Empty = () => <></>;
 
 const CDIWrapper = () => {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(true);
   const [checkedOnce, setCheckedOnce] = useState(false);
   const history = useHistory();
 
@@ -32,7 +34,7 @@ const CDIWrapper = () => {
     const userId = getCookie("user.id");
     console.log(userId);
     if (userId) {
-      history.push("/");
+      // history.push("/dashboard");
     } else {
       // eslint-disable-next-line no-lonely-if
       if (!checkedOnce) {
@@ -47,9 +49,15 @@ const CDIWrapper = () => {
     <Suspense fallback={<Loader isInner />}>
       {loggedIn ? (
         <div className="page-wrapper">
+          <Toast />
           <TopNavbar setLoggedIn={setLoggedIn} />
           <Switch>
             <Route path="/dashboard" exact render={() => <Dashboard />} />
+            <Route
+              path="/data-packages"
+              exact
+              render={() => <DataPackages />}
+            />
             <Route
               path="/dataflow-management"
               exact

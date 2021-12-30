@@ -183,6 +183,10 @@ export const compareDates = (accessor, sortOrder) => {
   };
 };
 
+export const toast = (text = "", type = "success") => {
+  const customEvent = new CustomEvent("toast", { detail: { text, type } });
+  document.dispatchEvent(customEvent);
+};
 export const dataStruct = [
   {
     value: "tabular",
