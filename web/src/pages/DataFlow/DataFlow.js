@@ -211,7 +211,7 @@ const ContextMenu = () => {
   return (
     <>
       <Tooltip title="Actions" disableFocusListener>
-        <IconMenuButton id="actions" menuItems={menuItems}>
+        <IconMenuButton id="actions" menuItems={menuItems} size="small">
           <EllipsisVertical />
         </IconMenuButton>
       </Tooltip>
