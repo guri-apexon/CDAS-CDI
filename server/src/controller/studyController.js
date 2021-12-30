@@ -4,12 +4,6 @@ const Logger = require("../config/logger");
 const moment = require("moment");
 const _ = require("lodash");
 
-/**
- * Study Search List.
- *
- * @returns {Object}
- */
-
 exports.getUserStudyList = function (req, res) {
   try {
     const userId = req.params.userId;
