@@ -5,10 +5,11 @@ import Loader from "apollo-react/components/Loader";
 
 import { getCookie } from "../../utils";
 import TopNavbar from "../TopNavbar/TopNavbar";
-import AppFooter from "../AppFooter/AppFooter";
-import UserManagement from "../../pages/UserManagement/UserManagement";
-import DataFlow from "../../pages/DataFlow/DataFlow";
+// import AppFooter from "../AppFooter/AppFooter";
 import Logout from "../../pages/Logout/Logout";
+
+const Dashboard = lazy(() => import("../../pages/Dashboard/Dashboard"));
+const DataFlow = lazy(() => import("../../pages/DataFlow/DataFlow"));
 
 const Empty = () => <></>;
 
@@ -16,10 +17,6 @@ const CDIWrapper = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [checkedOnce, setCheckedOnce] = useState(false);
   const history = useHistory();
-
-  const getUrlPath = (route) => {
-    return `${route}`;
-  };
 
   useEffect(() => {
     const userId = getCookie("user.id");
@@ -35,7 +32,7 @@ const CDIWrapper = () => {
     const userId = getCookie("user.id");
     console.log(userId);
     if (userId) {
-      history.push("/dashboard");
+      history.push("/");
     } else {
       // eslint-disable-next-line no-lonely-if
       if (!checkedOnce) {
@@ -46,34 +43,20 @@ const CDIWrapper = () => {
     }
   }, [checkedOnce, history]);
 
-  useEffect(() => {
-    if (!loggedIn && checkedOnce) {
-      setTimeout(() => {
-        history.push("/not-authenticated");
-      }, 30000);
-    }
-  }, [checkedOnce, history, loggedIn]);
-
   return (
     <Suspense fallback={<Loader isInner />}>
       {loggedIn ? (
         <div className="page-wrapper">
           <TopNavbar setLoggedIn={setLoggedIn} />
           <Switch>
-            <Route path="/dashboard" exact render={() => <UserManagement />} />
+            <Route path="/dashboard" exact render={() => <Dashboard />} />
             <Route
-              path={`${getUrlPath("/user-management")}`}
-              exact
-              render={() => <UserManagement />}
-            />
-            <Route
-              path={`${getUrlPath("/dataflow-management")}`}
+              path="/dataflow-management"
               exact
               render={() => <DataFlow />}
             />
-            <Redirect from="/" to="/launchpad" />
+            <Redirect from="/" to="/dashboard" />
           </Switch>
-          <AppFooter />
         </div>
       ) : (
         <Switch>
