@@ -129,7 +129,7 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
   },
   drawerOpenIcon: {
-    left: "35.2%",
+    left: drawerWidth,
     transition: theme.transitions.create("left", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -407,7 +407,7 @@ const DataFlow = () => {
         )}
       </IconButton>
       <main className={classes.content}>
-        <div className={classes.toolbar} style={{ minHeight: "115px" }} />
+        <div className={classes.toolbar} />
         <div className="content">
           <div className={classes.contentHeader}>
             <Breadcrumbs className={classes.breadcrumbs} />
