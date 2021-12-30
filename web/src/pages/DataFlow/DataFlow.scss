@@ -8,10 +8,8 @@
     line-height: 24px;
   }
 }
-.activeField {
-  span:nth-child(1) {
-    // margin-left: 11px;
-  }
+.activeField > span:nth-child(1) {
+    left: 11px;
 }
 
 .autocomplete_field {

@@ -4,6 +4,7 @@ import {
   UPDATE_FORM_FIELDS,
   GET_SERVICE_OWNERS,
   SAVE_LOCATION_DATA,
+  HIDE_ERROR_MSG,
   UPDATE_SELECTED_LOCATION,
 } from "../../constants";
 
@@ -35,6 +36,13 @@ export const getLocationsData = () => {
   };
 };
 
+export const getLocationByType = (value) => {
+  return {
+    type: GET_LOCATIONS_DATA,
+    value,
+  };
+};
+
 export const saveLocationData = (values) => {
   return {
     type: SAVE_LOCATION_DATA,
@@ -45,5 +53,11 @@ export const saveLocationData = (values) => {
 export const getServiceOwnersData = () => {
   return {
     type: GET_SERVICE_OWNERS,
+  };
+};
+
+export const hideErrorMessage = () => {
+  return {
+    type: HIDE_ERROR_MSG,
   };
 };
