@@ -407,7 +407,7 @@ const DataFlow = () => {
         )}
       </IconButton>
       <main className={classes.content}>
-        <div className={classes.toolbar} style={{ minHeight: "115px" }} />
+        <div className={classes.toolbar} />
         <div className="content">
           <div className={classes.contentHeader}>
             <Breadcrumbs className={classes.breadcrumbs} />
