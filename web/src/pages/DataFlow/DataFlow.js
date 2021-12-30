@@ -353,6 +353,7 @@ const DataFlow = () => {
             <Tag
               label={dataflowType}
               variant="grey"
+              color="#999999"
               style={{ textTransform: "capitalize" }}
             />
             <Typography className={classes.LeftTitle}>
@@ -365,7 +366,12 @@ const DataFlow = () => {
               <ArrowRight className={classes.icon} />
               {description}
             </Typography>
-            <Button variant="primary" style={{ marginTop: 17 }} fullWidth>
+            <Button
+              variant="primary"
+              id="viewSettingsBtn"
+              style={{ marginTop: 17 }}
+              fullWidth
+            >
               View Settings
             </Button>
           </div>
