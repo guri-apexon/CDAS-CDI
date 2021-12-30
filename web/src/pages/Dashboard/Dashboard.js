@@ -43,6 +43,9 @@ const Dashboard = () => {
     page: {
       padding: 24,
     },
+    content: {
+      flexGrow: 1,
+    },
     panelTitle: {
       padding: "24px 24px 0px 24px",
       fontWeight: 600,
@@ -308,9 +311,7 @@ const Dashboard = () => {
           )}
         </Panel>
         <Panel width="100%" hideButton>
-          <div className={classes.page}>
-            <RightPanel />
-          </div>
+          <RightPanel />
         </Panel>
       </div>
     </>
