@@ -129,6 +129,7 @@ const DataFlowFormBase = (props) => {
             <ReduxFormDatePickerV2
               name="firstFileDate"
               dateFormat="DD MMM YYYY"
+              placeholder="DD MMM YYYY"
               label="Expected First File Date"
             />
             <ReduxFormRadioGroup
