@@ -6,6 +6,7 @@ import {
   GET_VENDORS_DATA,
   SAVE_LOCATION_DATA,
   GET_LOCATIONS_DATA,
+  GET_SERVICE_OWNERS,
 } from "../../constants";
 
 import {
@@ -16,6 +17,7 @@ import {
 import {
   fetchVendorsData,
   fetchLocationsData,
+  fetchServiceOwnersData,
   saveLocationData,
 } from "./dataFlow.saga";
 
@@ -25,6 +27,7 @@ function* cdasCoreSaga() {
   yield takeLatest(GET_VENDORS_DATA, fetchVendorsData);
   yield takeLatest(GET_LOCATIONS_DATA, fetchLocationsData);
   yield takeLatest(SAVE_LOCATION_DATA, saveLocationData);
+  yield takeLatest(GET_SERVICE_OWNERS, fetchServiceOwnersData);
 }
 
 export default cdasCoreSaga;

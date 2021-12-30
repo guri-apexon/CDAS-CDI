@@ -122,11 +122,13 @@ const DataFlowFormBase = (props) => {
               fullWidth
               maxLength="30"
               name="description"
+              inputProps={{ maxLength: 30 }}
               onChange={(v) => changeFormField(v, "description")}
               label="Description"
             />
             <ReduxFormDatePickerV2
               name="firstFileDate"
+              dateFormat="DD MMM YYYY"
               label="Expected First File Date"
             />
             <ReduxFormRadioGroup
@@ -235,6 +237,7 @@ const DataFlowForm = connect((state) => ({
   values: getFormValues("DataFlowForm")(state),
   locations: state.dataFlow.locations?.records,
   vendors: state.dataFlow.vendors?.records,
+  serviceOwners: state.dataFlow.serviceOwners?.records,
 }))(ReduxForm);
 
 export default DataFlowForm;

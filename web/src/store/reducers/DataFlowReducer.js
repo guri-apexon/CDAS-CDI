@@ -8,6 +8,9 @@ import {
   FETCH_VENDOR_SUCCESS,
   FETCH_VENDOR_FAILURE,
   UPDATE_FORM_FIELDS,
+  GET_SERVICE_OWNERS,
+  FETCH_SERVICE_OWNERS_SUCCESS,
+  FETCH_SERVICE_OWNERS_FAILURE,
   SAVE_LOCATION_DATA,
   UPDATE_SELECTED_LOCATION,
 } from "../../constants";
@@ -16,6 +19,7 @@ export const initialState = {
   loading: false,
   selectedLocation: {},
   serviceOwner: [],
+  serviceOwners: [],
   locations: [],
   vendors: [],
   userName: "",
@@ -43,7 +47,7 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
 
       case FETCH_LOCATION_FAILURE:
-        newState.loading = true;
+        newState.loading = false;
         break;
       case FETCH_VENDOR_SUCCESS:
         newState.loading = false;
@@ -51,13 +55,15 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
 
       case FETCH_VENDOR_FAILURE:
-        newState.loading = true;
+        newState.loading = false;
         break;
       case UPDATE_SELECTED_LOCATION:
         newState.selectedLocation = action.location;
+        newState.loading = false;
         break;
       case UPDATE_FORM_FIELDS:
         // newState[action.field] = action.value;
+        newState.loading = false;
         if (action.field === "description" || action.field === "dataflowType") {
           newState[action.field] = action.value.target.value;
         } else if (action.field === "vendor") {
@@ -69,6 +75,16 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case SAVE_LOCATION_DATA:
         newState.loading = true;
+        break;
+      case GET_SERVICE_OWNERS:
+        newState.loading = true;
+        break;
+      case FETCH_SERVICE_OWNERS_FAILURE:
+        newState.loading = false;
+        break;
+      case FETCH_SERVICE_OWNERS_SUCCESS:
+        newState.loading = false;
+        newState.serviceOwners = action.serviceOwners;
         break;
       default:
         newState.loading = false;

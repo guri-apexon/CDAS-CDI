@@ -31,6 +31,7 @@ import { ReactComponent as DataPackageIcon } from "./datapackage.svg";
 import {
   getVendorsData,
   updateSelectedLocation,
+  getServiceOwnersData,
   changeFormFieldData,
   getLocationsData,
 } from "../../store/actions/DataFlowAction";
@@ -228,7 +229,6 @@ const DataFlow = () => {
   const dataFlowData = useSelector((state) => state.dataFlow);
   const { selectedLocation, description, selectedVendor, dataflowType } =
     dataFlowData;
-  console.log(description, "description");
   const [open, setOpen] = useState(true);
   const handleDrawer = () => {
     setOpen(!open);
@@ -236,6 +236,7 @@ const DataFlow = () => {
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
     dispatch(getLocationsData());
+    dispatch(getServiceOwnersData());
   };
   useEffect(() => {
     pullVendorandLocation();
@@ -387,7 +388,6 @@ const DataFlow = () => {
             userName={selectedLocation?.usr_nm}
             password={selectedLocation?.pswd}
             connLink={selectedLocation?.cnn_url}
-            serviceOwners={selectedLocation?.serv_ownr}
           />
         </div>
       </main>

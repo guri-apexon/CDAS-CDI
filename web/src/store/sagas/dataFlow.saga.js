@@ -7,6 +7,8 @@ import {
   FETCH_LOCATION_FAILURE,
   FETCH_VENDOR_SUCCESS,
   FETCH_VENDOR_FAILURE,
+  FETCH_SERVICE_OWNERS_SUCCESS,
+  FETCH_SERVICE_OWNERS_FAILURE,
   LOCATIONAPI,
   VENDORAPI,
 } from "../../constants";
@@ -62,5 +64,21 @@ export function* saveLocationData(action) {
     });
   } catch (e) {
     yield put({ type: FETCH_LOCATION_FAILURE, message: e.message });
+  }
+}
+
+export function* fetchServiceOwnersData() {
+  try {
+    const fetchSBData = yield call(
+      axios.get,
+      `${baseURL}/${LOCATIONAPI}/service_owners`,
+      {}
+    );
+    yield put({
+      type: FETCH_SERVICE_OWNERS_SUCCESS,
+      serviceOwners: fetchSBData.data.data,
+    });
+  } catch (e) {
+    yield put({ type: FETCH_SERVICE_OWNERS_FAILURE, message: e.message });
   }
 }

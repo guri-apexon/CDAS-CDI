@@ -128,3 +128,27 @@ exports.saveLocationData = function (req, res) {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+
+exports.getServiceOwnersList = function (req, res) {
+  try {
+    let select = `call_back_url_id as value, serv_ownr as label`;
+    let searchQuery = `SELECT ${select} from cdascdi1d.cdascdi.call_back_urls where actv_flg=1 order by serv_ownr asc`;
+    let dbQuery = DB.executeQuery(searchQuery);
+    Logger.info({
+      message: "serviceOwnerList",
+    });
+
+    dbQuery.then((response) => {
+      const vendors = response.rows || [];
+      return apiResponse.successResponseWithData(res, "Operation success", {
+        records: vendors,
+        totalSize: response.rowCount,
+      });
+    });
+  } catch (err) {
+    //throw error in json response with status 500.
+    Logger.error("catch :serviceOwnerList");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+}
