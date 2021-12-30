@@ -22,7 +22,7 @@ const PageHeader = () => {
       <ProjectHeader
         menuItems={menuItems}
         maxCellWidth={280}
-        style={{ height: 64 }}
+        style={{ height: 64, zIndex: 998 }}
       />
     </div>
   );
