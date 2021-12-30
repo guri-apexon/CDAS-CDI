@@ -11,12 +11,17 @@ import {
   GET_SERVICE_OWNERS,
   FETCH_SERVICE_OWNERS_SUCCESS,
   FETCH_SERVICE_OWNERS_FAILURE,
+  STORE_LOCATION_SUCCESS,
+  STORE_LOCATION_FAILURE,
+  HIDE_ERROR_MSG,
   SAVE_LOCATION_DATA,
   UPDATE_SELECTED_LOCATION,
 } from "../../constants";
 
 export const initialState = {
   loading: false,
+  createTriggered: false,
+  error: null,
   selectedLocation: {},
   serviceOwner: [],
   serviceOwners: [],
@@ -85,6 +90,17 @@ const DataFlowReducer = (state = initialState, action) =>
       case FETCH_SERVICE_OWNERS_SUCCESS:
         newState.loading = false;
         newState.serviceOwners = action.serviceOwners;
+        break;
+      case STORE_LOCATION_SUCCESS:
+        newState.loading = false;
+        newState.createTriggered = !state.createTriggered;
+        break;
+      case STORE_LOCATION_FAILURE:
+        newState.loading = false;
+        newState.error = action.message;
+        break;
+      case HIDE_ERROR_MSG:
+        newState.error = action.message;
         break;
       default:
         newState.loading = false;
