@@ -1,5 +1,4 @@
 import Footer from "apollo-react/components/Footer";
-import { withRouter } from "react-router";
 
 const wrapperStyle = {
   background: "#F6F7FB",
@@ -34,4 +33,4 @@ const AppFooter = () => {
   );
 };
 
-export default withRouter(AppFooter);
+export default AppFooter;
