@@ -128,6 +128,9 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: "nowrap",
     overflow: "hidden",
   },
+  paper: {
+    zIndex: 1,
+  },
   drawerOpenIcon: {
     left: drawerWidth,
     transition: theme.transitions.create("left", {
@@ -315,7 +318,7 @@ const DataFlow = () => {
           [classes.drawerClose]: !open,
         })}
         classes={{
-          paper: clsx({
+          paper: clsx(classes.paper, {
             [classes.drawerOpen]: open,
             [classes.drawerClose]: !open,
           }),
@@ -326,7 +329,7 @@ const DataFlow = () => {
           style={{
             overflow: "auto",
             position: "relative",
-            top: 47,
+            top: 56,
             backgroundColor: "#fff",
           }}
         >
