@@ -13,9 +13,9 @@ import Typography from "apollo-react/components/Typography";
 import Search from "apollo-react/components/Search";
 import { ReactComponent as PriorityIcon } from "./priority.svg";
 import { ReactComponent as IngestionIcon } from "./issue.svg";
-import { ReactComponent as StaleFilesIcon } from "./sync.svg";
-import { ReactComponent as PinnedIcon } from "./pinned.svg";
-import { ReactComponent as UnPinnedIcon } from "./unpinned.svg";
+import { ReactComponent as StaleFilesIcon } from "./Stale.svg";
+import { ReactComponent as PinnedIcon } from "./Pin.svg";
+import { ReactComponent as UnPinnedIcon } from "./UnPin.svg";
 
 import PageHeader from "../../components/DataFlow/PageHeader";
 import RightPanel from "./RightPanel";
@@ -124,9 +124,16 @@ const Dashboard = () => {
   const updateList = async () => {
     const newStudies = await getStudies();
     const newPinned = await getPinnedStudies();
-    // console.log("event", newPinned, newStudies);
-    setStudyList([...newStudies]);
-    setPinned([...newPinned]);
+    console.log("event", newPinned, newStudies);
+    // eslint-disable-next-line no-constant-condition
+    if (true) {
+      if (newStudies.length) {
+        setStudyList([...newStudies]);
+      }
+      if (newPinned.length) {
+        setPinned([...newPinned]);
+      }
+    }
   };
 
   useEffect(() => {
