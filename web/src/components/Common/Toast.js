@@ -20,7 +20,7 @@ const Toast = () => {
       }, 3500);
     });
     return () => {
-      document.removeEventListener("toast");
+      document.removeEventListener("toast", null);
     };
   }, []);
   return (
