@@ -6,8 +6,10 @@ import ArrowDown from "apollo-react-icons/ArrowDown";
 import ArrowRight from "apollo-react-icons/ArrowRight";
 import Table from "apollo-react/components/Table";
 import Tag from "apollo-react/components/Tag";
+import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
-import EllipsisVerticalIcon from "apollo-react-icons/EllipsisVertical";
+import Menu from "apollo-react/components/Menu";
+import MenuItem from "apollo-react/components/MenuItem";
 import { useDispatch } from "react-redux";
 import {
   deletePackage,
@@ -70,25 +72,30 @@ const PackagesList = ({ data }) => {
   const dispatch = useDispatch();
   const [expandedRows, setExpandedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
-
-  const setActive = (packageId, active) => {
-    if (packageId) {
-      dispatch(
-        updateStatus({
-          package_id: packageId,
-          active: active === 1 ? "0" : "1",
-        })
-      );
-    }
-  };
   const ActionCell = ({ row }) => {
     const { packageName, onRowEdit } = row;
     const active = row.active && Number(row.active) === 1 ? 1 : 0;
     const packageId = row.datapackageid || null;
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [open, setOpen] = useState(false);
+
+    const handleRequestClose = () => {
+      setOpen(false);
+    };
+    const setActive = (status) => {
+      if (packageId) {
+        dispatch(
+          updateStatus({
+            package_id: packageId,
+            active: status === 1 ? "0" : "1",
+          })
+        );
+      }
+    };
     const menuItems = [
       {
         text: `Set data package ${active === 1 ? "Inactive" : "Active"}`,
-        onClick: () => setActive(packageId, active),
+        onClick: () => setActive(active),
       },
       {
         text: "Set all dataset to active",
@@ -103,15 +110,32 @@ const PackagesList = ({ data }) => {
         onClick: () => packageId && dispatch(deletePackage(packageId)),
       },
     ];
+    const openAction = (e) => {
+      setAnchorEl(e.currentTarget);
+      setOpen(true);
+    };
 
     return (
-      <div>
-        <Tooltip title="Actions" disableFocusListener>
-          <IconMenuButton id="actions" menuItems={menuItems} size="small">
-            <EllipsisVerticalIcon />
-          </IconMenuButton>
-        </Tooltip>
-      </div>
+      <>
+        <EllipsisVertical fontSize="small" onClick={openAction} />
+        <Menu
+          id="tableMenu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleRequestClose}
+        >
+          {menuItems.map((menu) => {
+            return (
+              <MenuItem size="small" onClick={menu.onClick}>
+                {menu.text}
+              </MenuItem>
+            );
+          })}
+        </Menu>
+      </>
+      // <IconMenuButton menuItems={menuItems} size="small">
+      //   <EllipsisVertical />
+      // </IconMenuButton>
     );
   };
   const columns = [

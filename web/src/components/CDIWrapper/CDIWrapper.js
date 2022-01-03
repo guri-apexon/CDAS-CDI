@@ -9,6 +9,7 @@ import TopNavbar from "../TopNavbar/TopNavbar";
 import Logout from "../../pages/Logout/Logout";
 import DataPackages from "../../pages/DataPackages/DataPackages";
 import Toast from "../Common/Toast";
+import AuditLog from "../../pages/AuditLog/AuditLog";
 
 const Dashboard = lazy(() => import("../../pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("../../pages/DataFlow/DataFlow"));
@@ -58,6 +59,7 @@ const CDIWrapper = () => {
               exact
               render={() => <DataPackages />}
             />
+            <Route path="/audit-logs" exact render={() => <AuditLog />} />
             <Route
               path="/dataflow-management"
               exact
