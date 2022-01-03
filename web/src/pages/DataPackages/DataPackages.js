@@ -127,6 +127,7 @@ const DataPackages = () => {
       naming_convention: namingConvention,
       package_password: packagePassword,
       sftp_path: sftpPath,
+      study_id: "a020E000005SwfCQAS",
     };
     console.log("submitPackage", reqBody);
     dispatch(addDataPackage(reqBody));

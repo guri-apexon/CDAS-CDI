@@ -3,7 +3,9 @@ const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const crypto = require("crypto");
 const moment = require("moment");
+const CommonController = require("./CommonController");
 
+const Common = new CommonController();
 exports.searchList = function (req, res) {
   try {
     const searchParam = req.params.query?.toLowerCase() || '';
@@ -21,6 +23,7 @@ exports.searchList = function (req, res) {
       });
     });
   } catch (err) {
+    console.log('err', err);
     //throw error in json response with status 500.
     Logger.error("catch :List");
     Logger.error(err);
@@ -32,14 +35,19 @@ exports.addPackage = function (req, res) {
   try {
     const packageID = crypto.randomBytes(3*4).toString('base64');
     const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-    const { compression_type, naming_convention, package_password, sftp_path } = req.body;
-    const query = `INSERT INTO cdascdi1d.cdascdi.datapackage(datapackageid, type, name, path, password, active, insrt_tm, updt_tm, del_flg) VALUES('${packageID}', '${compression_type}', '${naming_convention}', '${sftp_path}','${package_password}',  '1','${currentTime}','${currentTime}', 'N')`;
+    const { compression_type, naming_convention, package_password, sftp_path, study_id } = req.body;
+    if(study_id==null) {
+      return apiResponse.ErrorResponse(res, "Study not found");
+    }
+    const query = `INSERT INTO cdascdi1d.cdascdi.datapackage(datapackageid, type, name, path, password, active, insrt_tm, updt_tm, del_flg, prot_id) VALUES('${packageID}', '${compression_type}', '${naming_convention}', '${sftp_path}','${package_password}',  '1','${currentTime}','${currentTime}', 'N','${study_id}')`;
     Logger.info({
       message: "AddPackage",
     });
 
-    DB.executeQuery(query).then((response) => {
+    DB.executeQuery(query).then( async (response) => {
       const packages = response.rows || [];
+      // const result = await Common.updateAuditLog();
+      // if(!result) throw new Error('Not updated log');
       return apiResponse.successResponseWithData(res, "Operation success", {
       });
     });

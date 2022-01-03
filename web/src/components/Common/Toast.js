@@ -9,19 +9,19 @@ const Toast = () => {
     setOpen(false);
   };
   useEffect(() => {
-    document.addEventListener("toast", (event) => {
-      const { text, type } = event.detail;
-      setBannerType(type);
-      setBannerText(text);
-      setOpen(true);
-      console.log("event", text, type);
-      setTimeout(() => {
-        setOpen(false);
-      }, 3500);
-    });
-    return () => {
-      document.removeEventListener("toast", null);
-    };
+    // document.addEventListener("toast", (event) => {
+    //   const { text, type } = event.detail;
+    //   setBannerType(type);
+    //   setBannerText(text);
+    //   setOpen(true);
+    //   console.log("event", text, type);
+    //   setTimeout(() => {
+    //     setOpen(false);
+    //   }, 3500);
+    // });
+    // return () => {
+    //   document.removeEventListener("toast");
+    // };
   }, []);
   return (
     <>
