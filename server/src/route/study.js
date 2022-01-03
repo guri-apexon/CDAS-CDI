@@ -1,5 +1,5 @@
 const express = require("express");
-const StudyController = require("../controller/studyController");
+const StudyController = require("../controller/StudyController");
 const router = express.Router();
 
 router.get("/listbyUser/:userId", StudyController.getUserStudyList);

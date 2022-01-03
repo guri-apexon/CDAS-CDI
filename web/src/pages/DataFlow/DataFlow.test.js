@@ -3,6 +3,7 @@ import { Provider } from "react-redux";
 import configureStore from "redux-mock-store";
 import { mount } from "enzyme";
 import DataFlow from "./DataFlow";
+import { ReduxFormSelect } from "../../components/FormComponents/FormComponents";
 
 const middlewares = [];
 const mockStore = configureStore(middlewares);
@@ -44,4 +45,42 @@ test("DataFlow Breadcrumbs available", () => {
   setTimeout(() => {
     expect(p.text()).toBe("Data Flow Settings");
   });
+});
+
+test("DataFlow Location Details available", () => {
+  const wrapper = mount(
+    <Provider store={store}>
+      <DataFlow />
+    </Provider>
+  );
+  const p = wrapper.find(".content #locationDetailTitile");
+  setTimeout(() => {
+    expect(p.text()).toBe("Location Details");
+  });
+});
+
+test("DataFlow Data Structure Dropdown", () => {
+  const wrapper = mount(
+    <Provider store={store}>
+      <DataFlow />
+    </Provider>
+  );
+  const p = wrapper.find("#dataStructure");
+  expect(p.find(ReduxFormSelect)).toHaveLength(1);
+});
+
+test("DataFlow Data Structure change simulate", () => {
+  const callback = jest.fn();
+  const props = {
+    value: "tabular",
+    onChange: callback,
+  };
+  const wrapper = mount(
+    <Provider store={store}>
+      <DataFlow {...props} />
+    </Provider>
+  );
+  const p = wrapper.find("#dataStructure");
+  const select = p.find(ReduxFormSelect);
+  expect(select.props().children[0].props.value).toEqual("tabular");
 });

@@ -128,8 +128,11 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: "nowrap",
     overflow: "hidden",
   },
+  paper: {
+    zIndex: 1,
+  },
   drawerOpenIcon: {
-    left: "35.2%",
+    left: drawerWidth,
     transition: theme.transitions.create("left", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -211,7 +214,7 @@ const ContextMenu = () => {
   return (
     <>
       <Tooltip title="Actions" disableFocusListener>
-        <IconMenuButton id="actions" menuItems={menuItems}>
+        <IconMenuButton id="actions" menuItems={menuItems} size="small">
           <EllipsisVertical />
         </IconMenuButton>
       </Tooltip>
@@ -315,7 +318,7 @@ const DataFlow = () => {
           [classes.drawerClose]: !open,
         })}
         classes={{
-          paper: clsx({
+          paper: clsx(classes.paper, {
             [classes.drawerOpen]: open,
             [classes.drawerClose]: !open,
           }),
@@ -326,7 +329,7 @@ const DataFlow = () => {
           style={{
             overflow: "auto",
             position: "relative",
-            top: 47,
+            top: 56,
             backgroundColor: "#fff",
           }}
         >
@@ -353,6 +356,7 @@ const DataFlow = () => {
             <Tag
               label={dataflowType}
               variant="grey"
+              color="#999999"
               style={{ textTransform: "capitalize" }}
             />
             <Typography className={classes.LeftTitle}>
@@ -365,7 +369,12 @@ const DataFlow = () => {
               <ArrowRight className={classes.icon} />
               {description}
             </Typography>
-            <Button variant="primary" style={{ marginTop: 17 }} fullWidth>
+            <Button
+              variant="primary"
+              id="viewSettingsBtn"
+              style={{ marginTop: 17 }}
+              fullWidth
+            >
               View Settings
             </Button>
           </div>
@@ -407,7 +416,7 @@ const DataFlow = () => {
         )}
       </IconButton>
       <main className={classes.content}>
-        <div className={classes.toolbar} style={{ minHeight: "115px" }} />
+        <div className={classes.toolbar} />
         <div className="content">
           <div className={classes.contentHeader}>
             <Breadcrumbs className={classes.breadcrumbs} />

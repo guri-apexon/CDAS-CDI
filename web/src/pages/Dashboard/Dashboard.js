@@ -8,25 +8,17 @@ import Card from "apollo-react/components/Card";
 import CardContent from "apollo-react/components/CardContent";
 import Panel from "apollo-react/components/Panel";
 import { neutral1, neutral7 } from "apollo-react/colors";
-// import Drawer from "@material-ui/core/Drawer";
 import Divider from "apollo-react/components/Divider";
-// import IconButton from "@material-ui/core/IconButton";
-// import ChevronLeftIcon from "apollo-react-icons/ChevronLeft";
-// import ChevronRightIcon from "apollo-react-icons/ChevronRight";
 import Typography from "apollo-react/components/Typography";
-// import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
-// import IconMenuButton from "apollo-react/components/IconMenuButton";
-// import Tooltip from "apollo-react/components/Tooltip";
 import Search from "apollo-react/components/Search";
-// import { useHistory } from "react-router-dom";
-// import { getUserInfo } from "../../utils/index";
 import { ReactComponent as PriorityIcon } from "./priority.svg";
 import { ReactComponent as IngestionIcon } from "./issue.svg";
-import { ReactComponent as StaleFilesIcon } from "./sync.svg";
-import { ReactComponent as PinnedIcon } from "./pinned.svg";
-import { ReactComponent as UnPinnedIcon } from "./unpinned.svg";
+import { ReactComponent as StaleFilesIcon } from "./Stale.svg";
+import { ReactComponent as PinnedIcon } from "./Pin.svg";
+import { ReactComponent as UnPinnedIcon } from "./UnPin.svg";
 
 import PageHeader from "../../components/DataFlow/PageHeader";
+import Progress from "../../components/Progress";
 import RightPanel from "./RightPanel";
 import { debounceFunction } from "../../utils";
 import searchStudy, {
@@ -38,90 +30,91 @@ import searchStudy, {
 
 import "./Dashboard.scss";
 
-const Dashboard = () => {
-  const styles = {
-    root: {
-      display: "flex",
-      height: "100vh",
-      backgroundColor: neutral1,
-      boxSizing: "content-box",
-    },
-    leftPanel: {
-      maxWidth: "calc(100vh - 120px)",
-    },
-    page: {
-      padding: 24,
-    },
-    panelTitle: {
-      padding: "24px 24px 0px 24px",
-      fontWeight: 600,
-      marginBottom: 0,
-      fontSize: "16px",
-    },
-    panelSubtitle: {
-      padding: "0px 24px 0px 24px",
-      color: neutral7,
-      lineHeight: "24px",
-      fontSize: "14px",
-    },
-    pinTitle: {
-      margin: "20px",
-    },
-    searchBar: {
-      margin: "20px",
-      marginTop: "5px",
-      width: "calc(100% - 40px)",
-    },
-    card: {
-      margin: "16px 16px 16px 21px",
-      cursor: "pointer",
-      boxShadow: "0px 4px 16px 0px rgba(0,0,0,0.04)",
-      backgroundColor: "#ffffff",
-      border: "1px solid #E9E9E9",
-      maxWidth: 354,
-    },
-    cardHighlight: {
-      border: "1px solid #0768FD",
-      boxShadow: "0px 8px 16px 0px rgba(0,0,0,0.08)",
-    },
-    cardProtocolNo: {
-      color: neutral7,
-      lineHeight: "24px",
-    },
-    cardSponsor: {
-      color: neutral7,
-      lineHeight: "24px",
-      fontSize: "14px",
-      marginBottom: "24px",
-    },
-    cardProjectCode: {
-      color: neutral7,
-      lineHeight: "24px",
-    },
-    cardPhase: {
-      color: neutral7,
-      lineHeight: "24px",
-    },
-    bold: {
-      fontWeight: 600,
-    },
-    pinnedCards: {
-      overflow: "auto",
-      maxHeight: "calc(50vh - 260px)",
-    },
-    unPinnedCards: {
-      paddingTop: 5,
-      overflow: "auto",
-      maxHeight: "calc(80vh - 260px)",
-    },
-  };
+const styles = {
+  root: {
+    display: "flex",
+    height: "100vh",
+    backgroundColor: neutral1,
+    boxSizing: "content-box",
+  },
+  leftPanel: {
+    maxWidth: "calc(100vh - 120px)",
+  },
+  page: {
+    padding: 24,
+  },
+  content: {
+    flexGrow: 1,
+  },
+  panelTitle: {
+    padding: "24px 24px 0px 24px",
+    fontWeight: 600,
+    marginBottom: 0,
+    fontSize: "16px",
+  },
+  panelSubtitle: {
+    padding: "0px 24px 0px 24px",
+    color: neutral7,
+    lineHeight: "24px",
+    fontSize: "14px",
+  },
+  pinTitle: {
+    margin: "20px",
+  },
+  searchBar: {
+    margin: "20px",
+    marginTop: "5px",
+    width: "calc(100% - 40px)",
+  },
+  card: {
+    margin: "16px 16px 16px 21px",
+    cursor: "pointer",
+    boxShadow: "0px 4px 16px 0px rgba(0,0,0,0.04)",
+    backgroundColor: "#ffffff",
+    border: "1px solid #E9E9E9",
+    maxWidth: 354,
+  },
+  cardHighlight: {
+    border: "1px solid #0768FD",
+    boxShadow: "0px 8px 16px 0px rgba(0,0,0,0.08)",
+  },
+  cardProtocolNo: {
+    color: neutral7,
+    lineHeight: "24px",
+  },
+  cardSponsor: {
+    color: neutral7,
+    lineHeight: "24px",
+    fontSize: "14px",
+    marginBottom: "24px",
+  },
+  cardProjectCode: {
+    color: neutral7,
+    lineHeight: "24px",
+  },
+  cardPhase: {
+    color: neutral7,
+    lineHeight: "24px",
+  },
+  bold: {
+    fontWeight: 600,
+  },
+  pinnedCards: {
+    overflow: "auto",
+    maxHeight: "calc(50vh - 260px)",
+  },
+  unPinnedCards: {
+    paddingTop: 5,
+    overflow: "auto",
+    maxHeight: "calc(80vh - 260px)",
+  },
+};
 
+const Dashboard = () => {
   const useStyles = makeStyles(styles);
   const classes = useStyles();
-  // const [open, setOpen] = useState(true);
-  // const history = useHistory();
-  // const userInfo = getUserInfo();
-  const [selectedCard, setSelectedCard] = useState(null);
+
+  const [selectedStudy, setSelectedStudy] = useState(null);
   const [loading, setLoading] = useState(false);
   const [studyList, setStudyList] = useState([]);
   const [searchTxt, setSearchTxt] = useState("");
@@ -130,11 +123,17 @@ const Dashboard = () => {
   const [pinned, setPinned] = useState([]);
 
   const updateList = async () => {
+    setLoading(true);
     const newStudies = await getStudies();
     const newPinned = await getPinnedStudies();
     // console.log("event", newPinned, newStudies);
-    setStudyList([...newStudies]);
-    setPinned([...newPinned]);
+    if (newStudies !== undefined && newStudies.length) {
+      setStudyList([...newStudies]);
+    }
+    if (newStudies !== undefined && newStudies.length) {
+      setPinned([...newPinned]);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -152,6 +151,8 @@ const Dashboard = () => {
       newStudies && newStudies.studies
         ? setUnPinnedStudies([...newStudies.studies])
         : setUnPinnedStudies([]);
+      // eslint-disable-next-line no-unused-expressions
+      !newStudies && updateList();
       setLoading(false);
     }, 1000);
   };
@@ -193,9 +194,9 @@ const Dashboard = () => {
         interactive
         className={classNames(
           classes.card,
-          index === selectedCard && classes.cardHighlight
+          index === selectedStudy && classes.cardHighlight
         )}
-        onClick={() => setSelectedCard(index)}
+        onClick={() => setSelectedStudy(index)}
       >
         <CardContent>
           <div className="cardTopBar">
@@ -265,7 +266,9 @@ const Dashboard = () => {
               My Assignments
             </Typography>
             <Typography className={classes.panelSubtitle} variant="caption">
-              6 Studies
+              {studyList.length > 1
+                ? `${studyList.length} Studies`
+                : `${studyList.length} Study`}
             </Typography>
             <Search
               className={classes.searchBar}
@@ -303,23 +306,25 @@ const Dashboard = () => {
                 classes.unPinnedCards
               )}
             >
-              {unPinnedStudies.map((e, index) => (
-                // eslint-disable-next-line react/no-array-index-key
-                <CustomCard
+              {loading ? (
+                <Progress />
+              ) : (
+                unPinnedStudies.map((e, index) => (
                   // eslint-disable-next-line react/no-array-index-key
-                  key={index}
-                  data={e}
-                  index={`up${index}`}
-                  isPinned={false}
-                />
-              ))}
+                  <CustomCard
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={index}
+                    data={e}
+                    index={`up${index}`}
+                    isPinned={false}
+                  />
+                ))
+              )}
             </div>
           )}
         </Panel>
         <Panel width="100%" hideButton>
-          <div className={classes.page}>
-            <RightPanel />
-          </div>
+          <RightPanel />
         </Panel>
       </div>
     </>
