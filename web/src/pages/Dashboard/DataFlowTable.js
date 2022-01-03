@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 // import * as XLSX from "xlsx";
-import { pick } from "lodash";
+// import { pick } from "lodash";
 import { useHistory } from "react-router-dom";
 
 import Table, {
@@ -16,10 +16,11 @@ import Table, {
 import { neutral7, neutral8 } from "apollo-react/colors";
 import Typography from "apollo-react/components/Typography";
 import Button from "apollo-react/components/Button";
+import SegmentedControl from "apollo-react/components/SegmentedControl";
+import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import Tooltip from "apollo-react/components/Tooltip";
-// import DownloadIcon from "apollo-react-icons/Download";
 import FilterIcon from "apollo-react-icons/Filter";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import Link from "apollo-react/components/Link";
@@ -32,6 +33,7 @@ import PlusIcon from "apollo-react-icons/Plus";
 import Progress from "../../components/Progress";
 import { MessageContext } from "../../components/MessageProvider";
 import { ReactComponent as DataFlowIcon } from "./dataflow.svg";
+import { ReactComponent as SyncIcon } from "./sync.svg";
 
 const createAutocompleteFilter =
   (source) =>
@@ -176,6 +178,7 @@ export default function DataFlowTable() {
   const [inlineFilters, setInlineFilters] = useState([]);
   const messageContext = useContext(MessageContext);
   const [expandedRows, setExpandedRows] = useState([]);
+  const [totalRows, setTotalRows] = useState(0);
   const history = useHistory();
 
   const studyData = {
@@ -406,28 +409,50 @@ export default function DataFlowTable() {
     return <span>{date}</span>;
   };
 
+  const syncAction = (e) => {
+    console.log("syncAction", e);
+  };
+
+  const hardDeleteAction = (e) => {
+    console.log("hardDeleteAction", e);
+  };
+
+  const viewAuditLogAction = (e) => {
+    console.log("viewAuditLogAction", e);
+  };
+
+  const cloneDataFlowAction = (e) => {
+    console.log("cloneDataFlowAction", e);
+  };
+  const changeStatusAction = (e) => {
+    console.log("changeStatusAction", e);
+  };
+
   const ActionCell = ({ row }) => {
     const { dataFlowId } = row;
     const menuItems = [
       {
         text: "View autid log",
-        onClick: () => console.log(dataFlowId),
+        onClick: () => viewAuditLogAction(dataFlowId),
       },
       {
         text: "Change status to inactive",
-        onClick: () => console.log(dataFlowId),
+        onClick: () => changeStatusAction(dataFlowId),
       },
       {
         text: "Clone data flow",
-        onClick: () => console.log(dataFlowId),
+        onClick: () => cloneDataFlowAction(dataFlowId),
       },
       {
         text: "Hard delete data flow",
-        onClick: () => console.log(dataFlowId),
+        onClick: () => hardDeleteAction(dataFlowId),
       },
     ];
     return (
       <div style={{ display: "flex", justifyContent: "end" }}>
+        <IconButton onClick={() => syncAction(dataFlowId)} size="small">
+          <SyncIcon />
+        </IconButton>
         <Tooltip title="Actions" disableFocusListener>
           <IconMenuButton id="actions" menuItems={menuItems} size="small">
             <EllipsisVertical />
@@ -516,25 +541,42 @@ export default function DataFlowTable() {
   };
 
   const CustomButtonHeader = ({ toggleFilters }) => (
-    <div>
-      <Button
-        size="small"
-        variant="secondary"
-        icon={PlusIcon}
-        onClick={() => history.push("/dataflow-management")}
-        style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
-      >
-        Add data flow
-      </Button>
-      <Button
-        size="small"
-        variant="secondary"
-        icon={FilterIcon}
-        onClick={toggleFilters}
-      >
-        Filter
-      </Button>
-    </div>
+    <>
+      <div>
+        <SegmentedControlGroup
+          value={selectedFilter}
+          exclusive
+          onChange={(event, value) => setSelectedFilter(value)}
+        >
+          <SegmentedControl value="all">All</SegmentedControl>
+          <SegmentedControl disabled={!(totalRows >= 1)} value="production">
+            Production
+          </SegmentedControl>
+          <SegmentedControl disabled={!(totalRows >= 1)} value="test">
+            Test
+          </SegmentedControl>
+        </SegmentedControlGroup>
+      </div>
+      <div>
+        <Button
+          size="small"
+          variant="secondary"
+          icon={PlusIcon}
+          onClick={() => history.push("/dataflow-management")}
+          style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
+        >
+          Add data flow
+        </Button>
+        <Button
+          size="small"
+          variant="secondary"
+          icon={FilterIcon}
+          onClick={toggleFilters}
+        >
+          Filter
+        </Button>
+      </div>
+    </>
   );
 
   const columns = [
@@ -743,6 +785,7 @@ export default function DataFlowTable() {
   useEffect(() => {
     setTableColumns([...moreColumns]);
     setTableRows([...studyboardData]);
+    setTotalRows(studyboardData.length);
   }, []);
 
   const EmptyTableComponent = () => (
@@ -777,10 +820,17 @@ export default function DataFlowTable() {
           <>
             <Table
               isLoading={loading}
-              title={<>{`${5} data flows`}</>}
+              title={
+                // eslint-disable-next-line react/jsx-wrap-multilines
+                <>
+                  {`${totalRows} ${
+                    totalRows >= 1 ? "Data Flows" : "Data Flow"
+                  }`}
+                </>
+              }
               col
               columns={tableColumns}
-              rows={[]}
+              rows={tableRows}
               initialSortedColumn="dateCreated"
               initialSortOrder="asc"
               sortedColumn={sortedColumnValue}

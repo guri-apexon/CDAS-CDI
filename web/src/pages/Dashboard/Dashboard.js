@@ -254,7 +254,7 @@ const Dashboard = () => {
   return (
     <>
       {/* {console.log("studies", pinnedStudies, studyList)} */}
-      <PageHeader />
+      <PageHeader height={64} />
       <div className={classes.root}>
         <Panel className={classes.leftPanel} width={407}>
           <div className="searchBox">
