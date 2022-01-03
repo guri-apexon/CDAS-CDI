@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 // import * as XLSX from "xlsx";
 import { pick } from "lodash";
+import { useHistory } from "react-router-dom";
 
 import Table, {
   createSelectFilterComponent,
@@ -167,7 +168,6 @@ const createStringArraySearchFilter = (accessor) => {
 
 export default function DataFlowTable() {
   const [loading, setLoading] = useState(false);
-  // const [exportHeader, setExportHeader] = useState([]);
   const [rowsPerPageRecord, setRowPerPageRecord] = useState(10);
   const [pageNo, setPageNo] = useState(0);
   const [sortedColumnValue, setSortedColumnValue] = useState("dateCreated");
@@ -176,6 +176,7 @@ export default function DataFlowTable() {
   const [inlineFilters, setInlineFilters] = useState([]);
   const messageContext = useContext(MessageContext);
   const [expandedRows, setExpandedRows] = useState([]);
+  const history = useHistory();
 
   const studyData = {
     studyboardData: [
@@ -385,10 +386,6 @@ export default function DataFlowTable() {
 
   const obs = ["Failed", "Success", "In Progress"];
 
-  // const types = studyData.uniqurePhase;
-
-  // const status = studyData.uniqueProtocolStatus;
-
   const LinkCell = ({ row, column: { accessor } }) => {
     const rowValue = row[accessor];
     return (
@@ -518,13 +515,13 @@ export default function DataFlowTable() {
     return <div style={{ position: "relative" }}>{description}</div>;
   };
 
-  const CustomButtonHeader = ({ toggleFilters, downloadFile }) => (
+  const CustomButtonHeader = ({ toggleFilters }) => (
     <div>
       <Button
         size="small"
         variant="secondary"
         icon={PlusIcon}
-        onClick={downloadFile}
+        onClick={() => history.push("/dataflow-management")}
         style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
       >
         Add data flow
@@ -685,7 +682,6 @@ export default function DataFlowTable() {
   ];
 
   const [tableRows, setTableRows] = useState([...studyboardData]);
-  const [exportTableRows, setExportTableRows] = useState([...studyboardData]);
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
 
   const handleToggleRow = (dataFlowId) => {
@@ -707,17 +703,6 @@ export default function DataFlowTable() {
   //     setLoading(true);
   //   }
   // }, [studyData.loading, studyboardData, studyData.studyboardFetchSuccess]);
-
-  const exportToCSV = (exportData, headers, fileName) => {
-    console.log("data for export", exportData, headers, fileName);
-    // const wb = XLSX.utils.book_new();
-    // let ws = XLSX.worksheet;
-    // exportData.unshift(headers);
-    // ws = XLSX.utils.json_to_sheet(exportData, { skipHeader: true });
-    // XLSX.utils.book_append_sheet(wb, ws, "studylist");
-    // XLSX.writeFile(wb, fileName);
-    // exportData.shift();
-  };
 
   const applyFilter = (cols, rows, filts) => {
     let filteredRows = rows;
@@ -743,47 +728,20 @@ export default function DataFlowTable() {
       toBeExportRows,
       inlineFilters
     );
-    setExportTableRows(sortedFilteredData);
     return sortedFilteredData;
   };
 
-  const downloadFile = async (e) => {
-    const fileExtension = ".xlsx";
-    const fileName = `StudyList_${moment(new Date()).format("DDMMYYYY")}`;
-    // console.log("inDown", exportHeader);
-    const tempObj = {};
-    const temp = tableColumns
-      .slice(0, -1)
-      .filter((d) => d.hidden !== true)
-      .map((d) => {
-        tempObj[d.accessor] = d.header;
-        return d;
-      });
-    const newData = exportTableRows.map((obj) => {
-      const newObj = pick(obj, Object.keys(tempObj));
-      return newObj;
-    });
-    exportToCSV(newData, tempObj, fileName + fileExtension);
-    const exportRows = exportDataRows();
-    if (exportRows.length <= 0) {
-      e.preventDefault();
-      const message = `There is no data on the screen to download because of which an empty file has been downloaded.`;
-      messageContext.showErrorMessage(message);
-    } else {
-      const message = `File downloaded successfully.`;
-      messageContext.showSuccessMessage(message);
-    }
+  const downloadFile = async () => {
+    history.push("/dataflow-management");
   };
 
   useEffect(() => {
     const rows = exportDataRows();
     setTableRows([...rows]);
-    setExportTableRows(rows);
   }, [inlineFilters, sortedColumnValue, sortOrderValue]);
 
   useEffect(() => {
     setTableColumns([...moreColumns]);
-    setExportTableRows([...studyboardData]);
     setTableRows([...studyboardData]);
   }, []);
 
