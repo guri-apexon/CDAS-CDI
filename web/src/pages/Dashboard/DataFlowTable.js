@@ -632,7 +632,7 @@ export default function DataFlowTable() {
       filterComponent: DateFilter,
     },
     {
-      header: "Onboarding Progress",
+      header: "Description",
       accessor: "description",
       frozen: false,
       customCell: SelectiveCell,
