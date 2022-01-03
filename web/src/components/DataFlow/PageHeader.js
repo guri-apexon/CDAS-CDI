@@ -18,7 +18,7 @@ const PageHeader = ({ height = 120 }) => {
     },
   ];
   return (
-    <div style={{ height }}>
+    <div style={{ height, zIndex: "1201" }}>
       <ProjectHeader
         menuItems={menuItems}
         maxCellWidth={280}
