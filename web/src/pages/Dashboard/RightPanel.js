@@ -21,6 +21,9 @@ const styles = {
   },
   contentTitle: {
     padding: "20px 0px",
+    fontSize: 20,
+    lineHeight: "22px",
+    fontWeight: 500,
   },
 };
 
