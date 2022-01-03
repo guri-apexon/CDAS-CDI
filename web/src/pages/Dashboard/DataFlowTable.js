@@ -177,9 +177,19 @@ export default function DataFlowTable() {
   const [sortOrderValue, setSortOrderValue] = useState("desc");
   const [inlineFilters, setInlineFilters] = useState([]);
   const messageContext = useContext(MessageContext);
-  const [expandedRows, setExpandedRows] = useState([]);
   const [totalRows, setTotalRows] = useState(0);
   const history = useHistory();
+
+  const [expandedRows, setExpandedRows] = useState([]);
+
+  const handleToggleRow = (dataFlowId) => {
+    // eslint-disable-next-line no-shadow
+    setExpandedRows((expandedRows) =>
+      expandedRows.includes(dataFlowId)
+        ? expandedRows.filter((id) => id !== dataFlowId)
+        : [...expandedRows, dataFlowId]
+    );
+  };
 
   const studyData = {
     studyboardData: [
@@ -581,6 +591,10 @@ export default function DataFlowTable() {
 
   const columns = [
     {
+      accessor: "expand",
+      customCell: ExpandCell,
+    },
+    {
       header: "Vendor Source",
       accessor: "vendorSource",
       frozen: true,
@@ -726,14 +740,14 @@ export default function DataFlowTable() {
   const [tableRows, setTableRows] = useState([...studyboardData]);
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
 
-  const handleToggleRow = (dataFlowId) => {
-    // eslint-disable-next-line no-shadow
-    setExpandedRows((expandedRows) =>
-      expandedRows.includes(dataFlowId)
-        ? expandedRows.filter((id) => id !== dataFlowId)
-        : [...expandedRows, dataFlowId]
-    );
-  };
+  // const handleToggleRow = (dataFlowId) => {
+  //   // eslint-disable-next-line no-shadow
+  //   setExpandedRows((expandedRows) =>
+  //     expandedRows.includes(dataFlowId)
+  //       ? expandedRows.filter((id) => id !== dataFlowId)
+  //       : [...expandedRows, dataFlowId]
+  //   );
+  // };
 
   // useEffect(() => {
   //   if (!studyData.loading || studyData.studyboardFetchSuccess) {
@@ -830,7 +844,11 @@ export default function DataFlowTable() {
               }
               col
               columns={tableColumns}
-              rows={tableRows}
+              rows={tableRows.map((row) => ({
+                ...row,
+                expanded: expandedRows.includes(row.employeeId),
+                handleToggleRow,
+              }))}
               initialSortedColumn="dateCreated"
               initialSortOrder="asc"
               sortedColumn={sortedColumnValue}
