@@ -830,7 +830,7 @@ export default function DataFlowTable() {
               tablePaginationProps={{
                 labelDisplayedRows: ({ from, to, count }) =>
                   `${
-                    count === 1 ? "Item " : "Items"
+                    count === 1 ? "Data Flow " : "Data Flows"
                   } ${from}-${to} of ${count}`,
                 truncate: true,
               }}
