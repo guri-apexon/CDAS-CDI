@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -247,6 +248,7 @@ const onSubmit = (values) => {
 const DataFlow = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const history = useHistory();
   const dataFlowData = useSelector((state) => state.dataFlow);
   const {
     selectedLocation,
@@ -296,6 +298,11 @@ const DataFlow = () => {
   const modalLocationType = (value) => {
     setModalLocType(value);
   };
+  const closeForm = async () => {
+    await dispatch(reset("DataFlowForm"));
+    history.push("/dashboard");
+  };
+
   return (
     <div className={classes.root}>
       <PageHeader />
@@ -434,7 +441,7 @@ const DataFlow = () => {
               buttonProps={[
                 {
                   label: "Cancel",
-                  onClick: () => dispatch(reset("DataFlowForm")),
+                  onClick: () => closeForm(),
                 },
                 {
                   label: "Save",
