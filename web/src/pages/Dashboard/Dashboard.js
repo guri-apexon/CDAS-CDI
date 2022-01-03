@@ -13,11 +13,12 @@ import Typography from "apollo-react/components/Typography";
 import Search from "apollo-react/components/Search";
 import { ReactComponent as PriorityIcon } from "./priority.svg";
 import { ReactComponent as IngestionIcon } from "./issue.svg";
-import { ReactComponent as StaleFilesIcon } from "./sync.svg";
-import { ReactComponent as PinnedIcon } from "./pinned.svg";
-import { ReactComponent as UnPinnedIcon } from "./unpinned.svg";
+import { ReactComponent as StaleFilesIcon } from "./Stale.svg";
+import { ReactComponent as PinnedIcon } from "./Pin.svg";
+import { ReactComponent as UnPinnedIcon } from "./UnPin.svg";
 
 import PageHeader from "../../components/DataFlow/PageHeader";
+import Progress from "../../components/Progress";
 import RightPanel from "./RightPanel";
 import { debounceFunction } from "../../utils";
 import searchStudy, {
@@ -122,11 +123,17 @@ const Dashboard = () => {
   const [pinned, setPinned] = useState([]);
 
   const updateList = async () => {
+    setLoading(true);
     const newStudies = await getStudies();
     const newPinned = await getPinnedStudies();
     // console.log("event", newPinned, newStudies);
-    setStudyList([...newStudies]);
-    setPinned([...newPinned]);
+    if (newStudies !== undefined && newStudies.length) {
+      setStudyList([...newStudies]);
+    }
+    if (newStudies !== undefined && newStudies.length) {
+      setPinned([...newPinned]);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -144,6 +151,8 @@ const Dashboard = () => {
       newStudies && newStudies.studies
         ? setUnPinnedStudies([...newStudies.studies])
         : setUnPinnedStudies([]);
+      // eslint-disable-next-line no-unused-expressions
+      !newStudies && updateList();
       setLoading(false);
     }, 1000);
   };
@@ -297,16 +306,20 @@ const Dashboard = () => {
                 classes.unPinnedCards
               )}
             >
-              {unPinnedStudies.map((e, index) => (
-                // eslint-disable-next-line react/no-array-index-key
-                <CustomCard
+              {loading ? (
+                <Progress />
+              ) : (
+                unPinnedStudies.map((e, index) => (
                   // eslint-disable-next-line react/no-array-index-key
-                  key={index}
-                  data={e}
-                  index={`up${index}`}
-                  isPinned={false}
-                />
-              ))}
+                  <CustomCard
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={index}
+                    data={e}
+                    index={`up${index}`}
+                    isPinned={false}
+                  />
+                ))
+              )}
             </div>
           )}
         </Panel>

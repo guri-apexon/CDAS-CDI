@@ -4,31 +4,52 @@ const Logger = require("../config/logger");
 const moment = require("moment");
 const _ = require("lodash");
 
-exports.getStudyDataflows = function (req, res) {
+exports.getStudyDataflows = async (req, res) => {
   try {
-    const userId = req.params.protocolId;
-    const query = `SELECT prot_id, prot_nbr as protocolnumber, s.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM cdascdi.study s INNER JOIN cdascdi.sponsor s2 ON s2.spnsr_id = s.spnsr_id WHERE s.usr_id = $1 ORDER BY sponsorname`;
+    // const protocolId = req.params.protocolId;
+    const query =
+      'select dataflowid as "dataFlowId", data_flow_nm as "dataFlowName", testflag as "type", d.insrt_tm as "dateCreated", vend_nm as "verndorSource", d.description, "type" as "adapter", d.active as "status", d.extrnl_sys_nm as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified", d.refreshtimestamp as "lastSyncDate" from cdascdi.dataflow d inner join cdascdi.vendor v on d.vend_id = v.vend_id inner join cdascdi.source_location sl on d.src_loc_id = sl.src_loc_id';
+    const q2 = `select dataflowid, COUNT(DISTINCT datapackageid) FROM cdascdi.datapackage d GROUP BY dataflowid`;
+    // const q3 = `select datapackageid, COUNT(DISTINCT datasetid) FROM cdascdi.dataset d GROUP BY datapackageid`;
+    Logger.info({ message: "getStudyDataflows" });
+    const $q1 = await DB.executeQuery(query);
+    const $q2 = await DB.executeQuery(q2);
+    // const $q3 = await DB.executeQuery(q3);
 
-    Logger.info({
-      message: "getStudyDataflows",
+    // console.log("results", protocolId, $q1, $q2, $q3);
+
+    // const getTotalCount = (arr) => {
+    //   let sum = [...arr].reduce(
+    //     (previousValue, currentValue) => previousValue + currentValue.count,
+    //     0
+    //   );
+    //   return { count: sum };
+    // };
+
+    const formatDateValues = await $q1.rows.map((e) => {
+      let filterByDF = $q2.rows.filter((d) => d.dataflowid === e.dataFlowId);
+      // let newObj = filterByDF[0] ? getTotalCount([...acc]) : { count: 0 };
+      // let { count: dpCount } = newObj;
+      let dsCount = 10;
+      let dpCount = 5;
+      let editT = moment(e.lastModified).format("MM/DD/YYYY");
+      let addT = moment(e.dateCreated).format("MM/DD/YYYY");
+      let syncT = moment(e.lastSyncDate).format("MM/DD/YYYY");
+      return {
+        ...e,
+        dateCreated: addT,
+        lastModified: editT,
+        lastSyncDate: syncT,
+        dataSets: dsCount,
+        dataPackages: dpCount,
+      };
     });
 
-    DB.executeQuery(query, [userId]).then((resp) => {
-      const studies = resp.rows || [];
-      if (studies.length > 0) {
-        return apiResponse.successResponseWithData(
-          res,
-          "Operation success",
-          studies
-        );
-      } else {
-        return apiResponse.successResponseWithData(
-          res,
-          "Operation success",
-          []
-        );
-      }
-    });
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      formatDateValues
+    );
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :getStudyDataflows");
@@ -59,4 +80,3 @@ exports.getStudyDataflows = function (req, res) {
 //     return apiResponse.ErrorResponse(res, err);
 //   }
 // };
-

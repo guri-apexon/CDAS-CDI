@@ -60,7 +60,8 @@ export const STUDYLIST = "v1/api/study/listbyUser";
 export const PINNEDSTUDY = "v1/api/study/pinnedStudies";
 export const UNPINSTUDY = "v1/api/study/unPinStudy";
 export const PINSTUDY = "v1/api/study/pinStudy";
-
+export const FETCHDATAFLOWS = "v1/api/dataflow/studyDataflowList";
 export const LOCATIONAPI = "v1/api/location";
 export const VENDORAPI = "v1/api/vendor";
+
 export const baseURL = process.env.API_URL || "http://localhost:4001";
