@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ProjectHeader from "apollo-react/components/ProjectHeader";
 
-const PageHeader = () => {
+const PageHeader = ({ height = 120 }) => {
   const menuItems = [
     {
       label: "Protocol Nmber",
@@ -18,7 +18,7 @@ const PageHeader = () => {
     },
   ];
   return (
-    <div style={{ height: 120 }}>
+    <div style={{ height }}>
       <ProjectHeader
         menuItems={menuItems}
         maxCellWidth={280}

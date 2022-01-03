@@ -1,5 +1,4 @@
 import { takeEvery, takeLatest } from "redux-saga/effects";
-// import axios from "axios";
 import {
   ADD_DATA_PACKAGE,
   PACKAGES_LIST,
@@ -10,6 +9,7 @@ import {
   SAVE_LOCATION_DATA,
   GET_LOCATIONS_DATA,
   GET_SERVICE_OWNERS,
+  AUDIT_LOGS,
 } from "../../constants";
 import {
   addDataPackage,
@@ -28,6 +28,7 @@ import {
   fetchServiceOwnersData,
   saveLocationData,
 } from "./dataFlow.saga";
+import { fetchAuditLogs } from "./auditLogs.saga";
 
 function* cdasCoreSaga() {
   yield takeEvery(STUDYBOARD_DATA, fetchStudyboardData);
@@ -39,6 +40,7 @@ function* cdasCoreSaga() {
   yield takeLatest(GET_LOCATIONS_DATA, fetchLocationsData);
   yield takeLatest(SAVE_LOCATION_DATA, saveLocationData);
   yield takeLatest(GET_SERVICE_OWNERS, fetchServiceOwnersData);
+  yield takeLatest(AUDIT_LOGS, fetchAuditLogs);
 }
 
 export default cdasCoreSaga;

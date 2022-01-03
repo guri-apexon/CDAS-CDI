@@ -46,6 +46,9 @@ export const GET_LOCATION_BY_TYPE = "FETCH_SERVICE_OWNERS_FAILURE";
 export const STORE_LOCATION_SUCCESS = "STORE_LOCATION_SUCCESS";
 export const STORE_LOCATION_FAILURE = "STORE_LOCATION_FAILURE";
 export const HIDE_ERROR_MSG = "HIDE_ERROR_MSG";
+export const AUDIT_LOGS = "AUDIT_LOGS";
+export const AUDIT_LOGS_SUCCESS = "AUDIT_LOGS_SUCCESS";
+export const AUDIT_LOGS_FAILURE = "AUDIT_LOGS_FAILURE";
 
 // API URLS
 
@@ -60,6 +63,7 @@ export const STUDYLIST = "v1/api/study/listbyUser";
 export const PINNEDSTUDY = "v1/api/study/pinnedStudies";
 export const UNPINSTUDY = "v1/api/study/unPinStudy";
 export const PINSTUDY = "v1/api/study/pinStudy";
+export const AUDIT_LOGS_FETCH = "v1/api/audit-logs/get";
 
 export const LOCATIONAPI = "v1/api/location";
 export const VENDORAPI = "v1/api/vendor";
