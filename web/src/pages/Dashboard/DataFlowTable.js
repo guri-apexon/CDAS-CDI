@@ -181,25 +181,7 @@ export default function DataFlowTable() {
       {
         studyId: "a020E000005SwPtQAK",
         dataFlowId: "a0A0E000004k79SUAQ",
-        dataSets: "6",
-        dataPackages: "2",
-        studyName: "P16-836",
-        dataFlowName: "IQVIA-TDSE-reference_uatk3",
-        type: 0,
-        dateCreated: "12/21/2021",
-        vendorSource: "IQVIA Connected Devices",
-        description: "IQVIA TDSE reference uatk3",
-        adapter: "Tabular",
-        status: 1,
-        externalSourceSystem: "",
-        locationType: "SFTP",
-        lastModified: "12/21/2021",
-        lastSyncDate: "12/10/2021",
-      },
-      {
-        studyId: "a020E000005SwPtQAK",
-        dataFlowId: "a0A0E000004k79SUAQ",
-        dataSets: "1",
+        dataSets: "7",
         dataPackages: "2",
         studyName: "P16-836",
         dataFlowName: "IQVIA-TDSE-reference_uatk3",
@@ -291,6 +273,7 @@ export default function DataFlowTable() {
 
   const viewAuditLogAction = (e) => {
     console.log("viewAuditLogAction", e);
+    history.push("/audit-logs");
   };
 
   const cloneDataFlowAction = (e) => {
@@ -339,7 +322,7 @@ export default function DataFlowTable() {
       <IconButton
         id="expand"
         size="small"
-        onClick={() => console.log(dataFlowId)}
+        onClick={() => handleToggleRow(dataFlowId)}
       >
         {expanded ? <ChevronDown /> : <ChevronRight />}
       </IconButton>
@@ -368,7 +351,7 @@ export default function DataFlowTable() {
             Data Flow Name
           </Typography>
           <Typography style={{ fontWeight: 500, color: neutral8 }}>
-            {row.dataFlowId}
+            {row.dataFlowName}
           </Typography>
         </div>
         <div style={{ marginLeft: 32 }}>
@@ -376,7 +359,7 @@ export default function DataFlowTable() {
             # Data Packages
           </Typography>
           <Typography style={{ fontWeight: 500, color: neutral8 }}>
-            {row.dataFlowId}
+            {row.dataPackages}
           </Typography>
         </div>
         <div style={{ marginLeft: 32 }}>
@@ -384,7 +367,7 @@ export default function DataFlowTable() {
             Adapter
           </Typography>
           <Typography style={{ fontWeight: 500, color: neutral8 }}>
-            {row.dataFlowId}
+            {row.adapter}
           </Typography>
         </div>
         <div style={{ marginLeft: 32 }}>
@@ -392,7 +375,7 @@ export default function DataFlowTable() {
             Date Created
           </Typography>
           <Typography style={{ fontWeight: 500, color: neutral8 }}>
-            {row.dataFlowId}
+            {row.dateCreated}
           </Typography>
         </div>
       </div>
@@ -854,7 +837,7 @@ export default function DataFlowTable() {
               columns={tableColumns}
               rows={tableRows.map((row) => ({
                 ...row,
-                expanded: expandedRows.includes(row.employeeId),
+                expanded: expandedRows.includes(row.dataFlowId),
                 handleToggleRow,
               }))}
               initialSortedColumn="dateCreated"
@@ -893,6 +876,7 @@ export default function DataFlowTable() {
               emptyProps={{
                 content: <EmptyTableComponent />,
               }}
+              ExpandableComponent={DetailRow}
             />
           </>
         )}
