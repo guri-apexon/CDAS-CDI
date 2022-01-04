@@ -274,7 +274,7 @@ export default function DataFlowTable() {
       )
     : studyData.studyboardData;
 
-  const obs = ["Failed", "Success", "In Progress"];
+  const statuses = ["Active", "Inactive"];
 
   const LinkCell = ({ row, column: { accessor } }) => {
     const rowValue = row[accessor];
@@ -414,17 +414,40 @@ export default function DataFlowTable() {
     );
   };
 
-  const SelectiveCell = ({ row, column: { accessor } }) => {
+  const TypeCell = ({ row, column: { accessor } }) => {
+    const type = row[accessor];
+    if (type === 1) {
+      return <div style={{ position: "relative", marginLeft: 25 }}>Test</div>;
+    }
+    return <div style={{ position: "relative" }}>Production</div>;
+  };
+
+  const StatusCell = ({ row, column: { accessor } }) => {
     const description = row[accessor];
-    // const Img = obIcons[description] || "noIcon";
-    // if (Img === "noIcon") {
-    //   return (
-    //     <div style={{ position: "relative", marginLeft: 25 }}>
-    //       {description}
-    //     </div>
-    //   );
-    // }
-    return <div style={{ position: "relative" }}>{description}</div>;
+    if (description === 1) {
+      return (
+        <div style={{ position: "relative", marginLeft: 25 }}>
+          <Button
+            variant="primary"
+            size="small"
+            style={{ marginRight: 10, background: "#00c221" }}
+          >
+            Active
+          </Button>
+        </div>
+      );
+    }
+    return (
+      <div style={{ position: "relative" }}>
+        <Button
+          variant="primary"
+          size="small"
+          style={{ marginRight: 10, background: "#999999" }}
+        >
+          Inactive
+        </Button>
+      </div>
+    );
   };
 
   const CustomButtonHeader = ({ toggleFilters }) => (
@@ -531,34 +554,14 @@ export default function DataFlowTable() {
       header: "Type",
       accessor: "type",
       frozen: true,
+      customCell: TypeCell,
       sortFunction: compareStrings,
-      filterFunction: createStringArraySearchFilter("type"),
-      filterComponent: createAutocompleteFilter(
-        Array.from(
-          new Set(
-            studyboardData
-              .map((r) => ({ label: r.type }))
-              .map((item) => item.label)
-          )
-        )
-          .map((label) => {
-            return { label };
-          })
-          .sort((a, b) => {
-            if (a.label < b.label) {
-              return -1;
-            }
-            if (a.label > b.label) {
-              return 1;
-            }
-            return 0;
-          })
-      ),
     },
     {
       header: "Status",
       accessor: "status",
       frozen: true,
+      customCell: StatusCell,
       sortFunction: compareStrings,
       filterFunction: createStringArraySearchFilter("status"),
       filterComponent: createAutocompleteFilter(
