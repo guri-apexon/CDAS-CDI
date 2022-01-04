@@ -42,7 +42,7 @@ const AuditLog = () => {
             <div className="flex title">
               <img src="assets/svg/datapackage.svg" alt="datapackage" />
               <Typography className="b-font" variant="title">
-                CTJ301UC201_10032019_11820AB17BA.rar
+                ACUSPHERE-NP-1998-CXA27260
               </Typography>
             </div>
             <div className="flex flex-center justify-between">

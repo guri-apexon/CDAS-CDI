@@ -236,9 +236,7 @@ export default function DataFlowTable() {
   };
 
   const dashboardData = selectedFilter
-    ? dashboard?.dashboardData.filter(
-        (data) => data.description === selectedFilter
-      )
+    ? dashboard?.dashboardData.filter((data) => data.type === selectedFilter)
     : dashboard.dashboardData;
 
   const statuses = ["Active", "Inactive"];
@@ -427,10 +425,10 @@ export default function DataFlowTable() {
           onChange={(event, value) => setSelectedFilter(value)}
         >
           <SegmentedControl value="all">All</SegmentedControl>
-          <SegmentedControl disabled={!(totalRows >= 1)} value="production">
+          <SegmentedControl disabled={!(totalRows >= 1)} value="0">
             Production
           </SegmentedControl>
-          <SegmentedControl disabled={!(totalRows >= 1)} value="test">
+          <SegmentedControl disabled={!(totalRows >= 1)} value="1">
             Test
           </SegmentedControl>
         </SegmentedControlGroup>
