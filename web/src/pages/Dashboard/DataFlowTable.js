@@ -285,7 +285,7 @@ export default function DataFlowTable() {
     const { dataFlowId } = row;
     const menuItems = [
       {
-        text: "View autid log",
+        text: "View audit log",
         onClick: () => viewAuditLogAction(dataFlowId),
       },
       {

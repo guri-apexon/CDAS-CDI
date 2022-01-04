@@ -79,8 +79,8 @@ const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
   const date =
     rowValue && moment(rowValue, "MM/DD/YYYY").isValid()
-      ? moment(rowValue, "MM/DD/YYYY").format("M/D/YYYY")
-      : rowValue;
+      ? moment(rowValue, "MM/DD/YYYY").format("MM/DD/YYYY")
+      : moment(rowValue).format("DD-MMM-YYYY HH:mm A");
 
   return <span>{date}</span>;
 };
