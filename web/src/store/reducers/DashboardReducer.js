@@ -4,6 +4,7 @@ import produce from "immer";
 import {
   STUDYBOARD_FETCH_SUCCESS,
   STUDYBOARD_DATA,
+  PAGEHEADER_UPDATE,
   STUDY_NOTONBOARDED_STATUS,
   STUDY_NOTONBOARDED_SUCCESS,
   STUDY_NOTONBOARDED_FAILURE,
@@ -14,13 +15,28 @@ export const initialState = {
   notOnBoardedStudyStatus: {},
   loading: false,
   exportStudy: null,
+  selectedCard: {
+    phase: "",
+    projectcode: "",
+    prot_id: "",
+    protocolnumber: "",
+    protocolstatus: "",
+    sponsorname: "",
+    vendors: 0,
+    dataFlows: 0,
+    dataSets: 0,
+  },
 };
 
-const StudyBoardReducer = (state = initialState, action) =>
+const DashboardReducer = (state = initialState, action) =>
   produce(state, (newState) => {
     switch (action.type) {
       case STUDYBOARD_DATA:
         newState.loading = true;
+        break;
+
+      case PAGEHEADER_UPDATE:
+        newState.selectedCard = action.study;
         break;
 
       case STUDY_NOTONBOARDED_STATUS:
@@ -50,4 +66,4 @@ const StudyBoardReducer = (state = initialState, action) =>
     }
   });
 
-export default StudyBoardReducer;
+export default DashboardReducer;

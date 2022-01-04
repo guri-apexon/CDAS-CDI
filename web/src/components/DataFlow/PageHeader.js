@@ -1,8 +1,31 @@
 import React, { useEffect, useState } from "react";
 import ProjectHeader from "apollo-react/components/ProjectHeader";
+import { useSelector } from "react-redux";
 
 const PageHeader = ({ height = 120 }) => {
   const [stateMenuItems, setStateMenuItems] = useState([]);
+
+  const dashboardData = useSelector((state) => state.dashboard);
+
+  useEffect(() => {
+    const { selectedCard } = dashboardData;
+    const updateData = [
+      {
+        label: "Protocol Nmber",
+        value: selectedCard.protocolnumber,
+      },
+      { label: "Sponsor", value: selectedCard.sponsorname },
+      { label: "Project Code", value: selectedCard.projectcode },
+      { label: "Study Status", value: selectedCard.protocolstatus },
+      { label: "Vendors", value: selectedCard.vendors },
+      { label: "Data Flows", value: selectedCard.dataFlows },
+      {
+        label: "Datasets",
+        value: selectedCard.dataSets,
+      },
+    ];
+    setStateMenuItems([...updateData]);
+  }, [dashboardData]);
 
   const emptyMenuItems = [
     {
@@ -38,7 +61,7 @@ const PageHeader = ({ height = 120 }) => {
   return (
     <div style={{ height, zIndex: "1201" }}>
       <ProjectHeader
-        menuItems={emptyMenuItems}
+        menuItems={stateMenuItems}
         maxCellWidth={280}
         style={{ height: 64, zIndex: 998 }}
       />
