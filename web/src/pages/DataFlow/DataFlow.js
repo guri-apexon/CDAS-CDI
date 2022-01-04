@@ -205,24 +205,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const menuItems = [
-  { text: "View audit log" },
-  { text: "Clone data flow" },
-  { text: "Hard delete data flow" },
-];
-
-const ContextMenu = () => {
-  return (
-    <>
-      <Tooltip title="Actions" disableFocusListener>
-        <IconMenuButton id="actions" menuItems={menuItems} size="small">
-          <EllipsisVertical />
-        </IconMenuButton>
-      </Tooltip>
-    </>
-  );
-};
-
 const Breadcrumbs = (props) => {
   return (
     <BreadcrumbsUI
@@ -301,6 +283,28 @@ const DataFlow = () => {
   const closeForm = async () => {
     await dispatch(reset("DataFlowForm"));
     history.push("/dashboard");
+  };
+
+  const viewAuditLog = () => {
+    history.push("/audit-logs");
+  };
+
+  const menuItems = [
+    { text: "View audit log", onClick: viewAuditLog },
+    { text: "Clone data flow" },
+    { text: "Hard delete data flow" },
+  ];
+
+  const ContextMenu = () => {
+    return (
+      <>
+        <Tooltip title="Actions" disableFocusListener>
+          <IconMenuButton id="actions" menuItems={menuItems} size="small">
+            <EllipsisVertical />
+          </IconMenuButton>
+        </Tooltip>
+      </>
+    );
   };
 
   return (

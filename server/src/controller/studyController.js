@@ -8,6 +8,8 @@ exports.getUserStudyList = function (req, res) {
   try {
     const userId = req.params.userId;
     const query = `SELECT prot_id, prot_nbr as protocolnumber, s.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM cdascdi.study s INNER JOIN cdascdi.sponsor s2 ON s2.spnsr_id = s.spnsr_id WHERE s.usr_id = $1 ORDER BY sponsorname`;
+    // const q2 = `select dataflowid, COUNT(DISTINCT datapackageid) FROM cdascdi.datapackage d GROUP BY d.dataflowid`
+    // const q3 = `select datapackageid, COUNT(DISTINCT datasetid) FROM cdascdi.dataset d GROUP BY datapackageid`
 
     Logger.info({
       message: "getUserStudyList",
@@ -49,7 +51,11 @@ exports.pinStudy = async (req, res) => {
       message: "pinStudy",
     });
 
-    const inset = await DB.executeQuery(insertQuery, [userId, protocolId, curDate]);
+    const inset = await DB.executeQuery(insertQuery, [
+      userId,
+      protocolId,
+      curDate,
+    ]);
     return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
     //throw error in json response with status 500.
@@ -79,7 +85,7 @@ exports.unPinStudy = async (req, res) => {
   }
 };
 
-exports.getUserPinnedStudies = function(req, res) {
+exports.getUserPinnedStudies = function (req, res) {
   try {
     const userId = req.params.userId;
     const query = `select * from cdascdi.study_user_pin sup where usr_id = $1 order by pinned_stdy_dt desc `;
@@ -111,13 +117,13 @@ exports.getUserPinnedStudies = function(req, res) {
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
-}
+};
 
 exports.searchStudyList = function (req, res) {
   try {
     // const { search, userId } = req.body();
     const searchParam = req.params.searchQuery.toLowerCase();
-    console.log("req",searchParam);
+    console.log("req", searchParam);
     Logger.info({
       message: "searchUserStudyList",
       searchParam,
@@ -126,15 +132,13 @@ exports.searchStudyList = function (req, res) {
     const searchQuery = `SELECT prot_id, prot_nbr as protocolnumber, s.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM cdascdi.study s INNER JOIN cdascdi.sponsor s2 ON s2.spnsr_id = s.spnsr_id 
               WHERE LOWER(prot_id) LIKE $1 OR LOWER(spnsr_nm) LIKE $1 OR LOWER(proj_cd) LIKE $1 LIMIT 10`;
 
-    DB.executeQuery(searchQuery, [`%${searchParam}%`]).then(
-      (response) => {
-        const studies = response.rows || [];
-        return apiResponse.successResponseWithData(res, "Operation success", {
-          studies: studies,
-          totalSize: response.rowCount,
-        });
-      }
-    );
+    DB.executeQuery(searchQuery, [`%${searchParam}%`]).then((response) => {
+      const studies = response.rows || [];
+      return apiResponse.successResponseWithData(res, "Operation success", {
+        studies: studies,
+        totalSize: response.rowCount,
+      });
+    });
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :searchUserStudyList");
