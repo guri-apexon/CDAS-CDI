@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 // import clsx from "clsx";
 import classNames from "classnames";
 import { makeStyles } from "@material-ui/core/styles";
+import { useDispatch } from "react-redux";
 // import CssBaseline from "@material-ui/core/CssBaseline";
 // import Box from "apollo-react/components/Box";
 import Card from "apollo-react/components/Card";
@@ -27,6 +28,7 @@ import searchStudy, {
   unPinStudy,
   pinStudy,
 } from "../../services/ApiServices";
+import { updateSelectedStudy } from "../../store/actions/DashboardAction";
 
 import "./Dashboard.scss";
 
@@ -113,6 +115,7 @@ const styles = {
 const Dashboard = () => {
   const useStyles = makeStyles(styles);
   const classes = useStyles();
+  const dispatch = useDispatch();
 
   const [selectedStudy, setSelectedStudy] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -175,6 +178,14 @@ const Dashboard = () => {
     // console.log("unpinned", unPinningStudy);
   }, [studyList, pinned]);
 
+  useEffect(() => {
+    if (selectedStudy != null) {
+      const clicked = studyList.filter((e) => e.prot_id === selectedStudy)[0];
+      dispatch(updateSelectedStudy(clicked));
+    }
+    // console.log("selected", selectedStudy, clicked);
+  }, [selectedStudy]);
+
   const CustomCard = ({ data, index, isPinned }) => {
     const priorityCount = 3;
     const ingestionCount = 2;
@@ -191,12 +202,13 @@ const Dashboard = () => {
     return (
       <Card
         color="dark"
+        key={index}
         interactive
         className={classNames(
           classes.card,
-          index === selectedStudy && classes.cardHighlight
+          protId === selectedStudy && classes.cardHighlight
         )}
-        onClick={() => setSelectedStudy(index)}
+        onClick={() => setSelectedStudy(protId)}
       >
         <CardContent>
           <div className="cardTopBar">
@@ -254,7 +266,7 @@ const Dashboard = () => {
   return (
     <>
       {/* {console.log("studies", pinnedStudies, studyList)} */}
-      <PageHeader />
+      <PageHeader height={64} />
       <div className={classes.root}>
         <Panel className={classes.leftPanel} width={407}>
           <div className="searchBox">

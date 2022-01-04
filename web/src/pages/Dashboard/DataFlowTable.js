@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 // import * as XLSX from "xlsx";
-import { pick } from "lodash";
+// import { pick } from "lodash";
 import { useHistory } from "react-router-dom";
 
 import Table, {
@@ -16,10 +16,11 @@ import Table, {
 import { neutral7, neutral8 } from "apollo-react/colors";
 import Typography from "apollo-react/components/Typography";
 import Button from "apollo-react/components/Button";
+import SegmentedControl from "apollo-react/components/SegmentedControl";
+import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import Tooltip from "apollo-react/components/Tooltip";
-// import DownloadIcon from "apollo-react-icons/Download";
 import FilterIcon from "apollo-react-icons/Filter";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import Link from "apollo-react/components/Link";
@@ -32,6 +33,7 @@ import PlusIcon from "apollo-react-icons/Plus";
 import Progress from "../../components/Progress";
 import { MessageContext } from "../../components/MessageProvider";
 import { ReactComponent as DataFlowIcon } from "./dataflow.svg";
+import { ReactComponent as SyncIcon } from "./sync.svg";
 
 const createAutocompleteFilter =
   (source) =>
@@ -175,205 +177,93 @@ export default function DataFlowTable() {
   const [sortOrderValue, setSortOrderValue] = useState("desc");
   const [inlineFilters, setInlineFilters] = useState([]);
   const messageContext = useContext(MessageContext);
-  const [expandedRows, setExpandedRows] = useState([]);
+  const [totalRows, setTotalRows] = useState(0);
   const history = useHistory();
+
+  const [expandedRows, setExpandedRows] = useState([]);
+
+  const handleToggleRow = (dataFlowId) => {
+    // eslint-disable-next-line no-shadow
+    setExpandedRows((expandedRows) =>
+      expandedRows.includes(dataFlowId)
+        ? expandedRows.filter((id) => id !== dataFlowId)
+        : [...expandedRows, dataFlowId]
+    );
+  };
 
   const studyData = {
     studyboardData: [
       {
-        dataFlowId: "UXA19251",
-        vendorSource: "AERIE  [US]",
-        type: "Phase 4",
-        status: "Completed",
-        dateCreated: "01/01/2006",
-        lastModified: "01/01/2006",
-        lastSyncDate: "01/01/2021",
-        description: "Success",
-        dataSets: 0,
-        therapeuticarea: "ALLERGY/RESPIRATORY",
-        projectcode: "UXA19251",
+        studyId: "a020E000005SwPtQAK",
+        dataFlowId: "a0A0E000004k79SUAQ",
+        dataSets: "6",
+        dataPackages: "2",
+        studyName: "P16-836",
+        dataFlowName: "IQVIA-TDSE-reference_uatk3",
+        type: 0,
+        dateCreated: "12/21/2021",
+        vendorSource: "IQVIA Connected Devices",
+        description: "IQVIA TDSE reference uatk3",
+        adapter: "Tabular",
+        status: 1,
+        externalSourceSystem: "",
+        locationType: "SFTP",
+        lastModified: "12/21/2021",
+        lastSyncDate: "12/10/2021",
       },
       {
-        dataFlowId: "20180290",
-        vendorSource: "ADIAL PHARMACEUTICALS  [US]",
-        type: "Phase 1",
-        status: "In Development",
-        dateCreated: "01/01/2018",
-        lastModified: "01/01/2018",
-        lastSyncDate: "01/01/2021",
-        description: "In Progress",
-        dataSets: 0,
-        therapeuticarea: "INFECTIOUS DISEASES",
-        projectcode: "PXA71913",
+        studyId: "a020E000005SwPtQAK",
+        dataFlowId: "a0A0E000004k79SUAQ",
+        dataSets: "1",
+        dataPackages: "2",
+        studyName: "P16-836",
+        dataFlowName: "IQVIA-TDSE-reference_uatk3",
+        type: 0,
+        dateCreated: "12/21/2021",
+        vendorSource: "IQVIA Connected Devices",
+        description: "IQVIA TDSE reference uatk3",
+        adapter: "Tabular",
+        status: 1,
+        externalSourceSystem: "",
+        locationType: "SFTP",
+        lastModified: "12/21/2021",
+        lastSyncDate: "12/10/2021",
       },
       {
-        dataFlowId: "UXA19253",
-        vendorSource: "AERAS",
-        type: "Phase 4",
-        status: "Completed",
-        dateCreated: "01/01/2019",
-        lastModified: "01/01/2019",
-        lastSyncDate: "01/01/2021",
-        description: "Success",
-        dataSets: 0,
-        therapeuticarea: "PSYCHIATRY",
-        projectcode: "UXA19253",
+        studyId: "a020E000005SwPtQAK",
+        dataFlowId: "a0A0E000004k7m3UAA",
+        dataSets: "1",
+        dataPackages: "1",
+        studyName: "P16-836",
+        dataFlowName: "IQVIA-TDSE-milestone_attrib_uatk3",
+        type: 0,
+        dateCreated: "12/21/2021",
+        vendorSource: "IQVIA Connected Devices",
+        description: "IQVIA TDSE milestone attrib uatk3",
+        adapter: "Tabular",
+        status: 1,
+        externalSourceSystem: "",
+        locationType: "SFTP",
+        lastModified: "12/21/2021",
+        lastSyncDate: "12/10/2021",
       },
       {
-        dataFlowId: "20150102",
-        vendorSource: "AFFIMED",
-        type: "Phase 1",
-        status: "On Hold",
-        dateCreated: "01/01/2020",
-        lastModified: "01/01/2020",
-        lastSyncDate: "01/01/2021",
-        description: "In Progress",
-        dataSets: 0,
-        therapeuticarea: "INFECTIOUS DISEASE",
-        projectcode: "ZWA22751",
-      },
-      {
-        dataFlowId: "20180059",
-        vendorSource: "Advaxis, Inc.",
-        type: "Phase 4",
-        status: "Completed",
-        dateCreated: "01/01/2021",
-        lastModified: "01/01/2021",
-        lastSyncDate: "01/01/2021",
-        description: "Success",
-        dataSets: 0,
-        therapeuticarea: "SEXUAL HEALTH",
-        projectcode: "ZWAA2751",
-      },
-      {
-        dataFlowId: "NP-1998",
-        vendorSource: "ACUSPHERE  [US]",
-        type: "Phase 3",
-        status: "On Hold",
-        dateCreated: "01/01/2021",
-        lastModified: "01/01/2021",
-        lastSyncDate: "01/01/2021",
-        description: "In Progress",
-        dataSets: 0,
-        therapeuticarea: "ANTI-INFECTIVE",
-        projectcode: "CXA27260",
-      },
-      {
-        dataFlowId: "333369EPY-3002",
-        vendorSource: "AEROVANCE  [US]",
-        type: "Phase 3",
-        status: "Discontinued",
-        dateCreated: "01/01/2021",
-        lastModified: "01/01/2021",
-        lastSyncDate: "01/01/2021",
-        description: "Failed",
-        dataSets: 0,
-        therapeuticarea: "PEDIATRICS",
-        projectcode: "YFA25805",
-      },
-      {
-        dataFlowId: "R076477PSZ3001",
-        vendorSource: "AesRx",
-        type: "Phase 3",
-        status: "Discontinued",
-        dateCreated: "01/01/2021",
-        lastModified: "01/01/2021",
-        lastSyncDate: "01/01/2021",
-        description: "Failed",
-        dataSets: 0,
-        therapeuticarea: "HEPATOLOGY",
-        projectcode: "TEA21349",
-      },
-      {
-        dataFlowId: "JWCI - MC - 4 - 001",
-        vendorSource: "ADVANCED LIFE SCIENCES  [US]",
-        type: "Phase 3",
-        status: "Discontinued",
-        dateCreated: "01/01/2021",
-        lastModified: "01/01/2021",
-        lastSyncDate: "01/01/2021",
-        description: "Failed",
-        dataSets: 0,
-        therapeuticarea: "HEPATOLOGY",
-        projectcode: "",
-      },
-      {
-        dataFlowId: "JWCI - MC - 3 -001",
-        vendorSource: "ADVANCED VIRAL RESEARCH  [US]",
-        type: "Phase 3",
-        status: "Discontinued",
-        dateCreated: "01/01/2021",
-        lastModified: "01/01/2021",
-        lastSyncDate: "01/01/2021",
-        description: "Failed",
-        dataSets: 0,
-        therapeuticarea: "INFECTIOUS DISEASE",
-        projectcode: "",
-      },
-      {
-        dataFlowId: "Safety Study Program",
-        vendorSource: "AEGLEA BIOTHERAPEUTICS  [US]",
-        type: "Phase 1",
-        status: "Discontinued",
-        dateCreated: "01/01/2021",
-        lastModified: "01/01/2021",
-        lastSyncDate: "01/01/2021",
-        description: "Failed",
-        dataSets: 0,
-        therapeuticarea: "VACCINES",
-        projectcode: "NXA57112",
-      },
-      {
-        dataFlowId: "KD019",
-        vendorSource: "AEROVANCE  [US]",
-        type: "Phase 3",
-        status: "Discontinued",
-        dateCreated: "01/01/2021",
-        lastModified: "01/01/2021",
-        lastSyncDate: "01/01/2021",
-        description: "Failed",
-        dataSets: 0,
-        therapeuticarea: "ORTHOPEDICS",
-        projectcode: "LSA81194",
-      },
-      {
-        dataFlowId: "KAI-4169-005",
-        vendorSource: "ACTIVE BIOTECH  [SE]",
-        type: "Phase 2",
-        status: "Discontinued",
-        dateCreated: "01/01/2021",
-        lastModified: "01/01/2021",
-        lastSyncDate: "01/01/2021",
-        description: "Failed",
-        dataSets: 0,
-        therapeuticarea: "GASTROINTESTINAL",
-        projectcode: "kTA85999",
-      },
-      {
-        dataFlowId: "LY333531",
-        vendorSource: "ADDARIO LUNG CANCER MEDICAL INSTIT  [US]",
-        type: "Phase 3",
-        status: "Discontinued",
-        dateCreated: "01/01/2021",
-        lastModified: "01/01/2021",
-        lastSyncDate: "01/01/2021",
-        description: "Failed",
-        dataSets: 0,
-        therapeuticarea: "NEPHROLOGY",
-        projectcode: "AGB00073",
-      },
-      {
-        dataFlowId: "F1D-US-HGLU",
-        vendorSource: "Aerie Pharmaceuticals, Inc.",
-        type: "Phase 4",
-        status: "Discontinued",
-        dateCreated: "01/01/2021",
-        lastModified: "01/01/2021",
-        lastSyncDate: "01/01/2021",
-        description: "Failed",
-        dataSets: 0,
-        therapeuticarea: "INTERNAL MED",
-        projectcode: "FNY00395",
+        studyId: "a020E000005SwPtQAK",
+        dataFlowId: "a0A0E00000322XRUAY",
+        dataSets: "6",
+        dataPackages: "1",
+        studyName: "P16-836",
+        dataFlowName: "TARGETHEALTH-000108-Ferring-1",
+        type: 0,
+        dateCreated: "12/21/2021",
+        vendorSource: "IQVIA-CBEX",
+        description: "TARGETHEALTH 000108 Ferring 1",
+        adapter: "Tabular",
+        status: 1,
+        externalSourceSystem: "",
+        locationType: "SFTP",
+        lastModified: "12/21/2021",
+        lastSyncDate: "12/10/2021",
       },
     ],
   };
@@ -384,7 +274,7 @@ export default function DataFlowTable() {
       )
     : studyData.studyboardData;
 
-  const obs = ["Failed", "Success", "In Progress"];
+  const statuses = ["Active", "Inactive"];
 
   const LinkCell = ({ row, column: { accessor } }) => {
     const rowValue = row[accessor];
@@ -406,28 +296,50 @@ export default function DataFlowTable() {
     return <span>{date}</span>;
   };
 
+  const syncAction = (e) => {
+    console.log("syncAction", e);
+  };
+
+  const hardDeleteAction = (e) => {
+    console.log("hardDeleteAction", e);
+  };
+
+  const viewAuditLogAction = (e) => {
+    console.log("viewAuditLogAction", e);
+  };
+
+  const cloneDataFlowAction = (e) => {
+    console.log("cloneDataFlowAction", e);
+  };
+  const changeStatusAction = (e) => {
+    console.log("changeStatusAction", e);
+  };
+
   const ActionCell = ({ row }) => {
     const { dataFlowId } = row;
     const menuItems = [
       {
         text: "View autid log",
-        onClick: () => console.log(dataFlowId),
+        onClick: () => viewAuditLogAction(dataFlowId),
       },
       {
         text: "Change status to inactive",
-        onClick: () => console.log(dataFlowId),
+        onClick: () => changeStatusAction(dataFlowId),
       },
       {
         text: "Clone data flow",
-        onClick: () => console.log(dataFlowId),
+        onClick: () => cloneDataFlowAction(dataFlowId),
       },
       {
         text: "Hard delete data flow",
-        onClick: () => console.log(dataFlowId),
+        onClick: () => hardDeleteAction(dataFlowId),
       },
     ];
     return (
       <div style={{ display: "flex", justifyContent: "end" }}>
+        <IconButton onClick={() => syncAction(dataFlowId)} size="small">
+          <SyncIcon />
+        </IconButton>
         <Tooltip title="Actions" disableFocusListener>
           <IconMenuButton id="actions" menuItems={menuItems} size="small">
             <EllipsisVertical />
@@ -502,69 +414,97 @@ export default function DataFlowTable() {
     );
   };
 
-  const SelectiveCell = ({ row, column: { accessor } }) => {
+  const TypeCell = ({ row, column: { accessor } }) => {
+    const type = row[accessor];
+    if (type === 1) {
+      return <div style={{ position: "relative", marginLeft: 25 }}>Test</div>;
+    }
+    return <div style={{ position: "relative" }}>Production</div>;
+  };
+
+  const StatusCell = ({ row, column: { accessor } }) => {
     const description = row[accessor];
-    // const Img = obIcons[description] || "noIcon";
-    // if (Img === "noIcon") {
-    //   return (
-    //     <div style={{ position: "relative", marginLeft: 25 }}>
-    //       {description}
-    //     </div>
-    //   );
-    // }
-    return <div style={{ position: "relative" }}>{description}</div>;
+    if (description === 1) {
+      return (
+        <div style={{ position: "relative", marginLeft: 25 }}>
+          <Button
+            variant="primary"
+            size="small"
+            style={{ marginRight: 10, background: "#00c221" }}
+          >
+            Active
+          </Button>
+        </div>
+      );
+    }
+    return (
+      <div style={{ position: "relative" }}>
+        <Button
+          variant="primary"
+          size="small"
+          style={{ marginRight: 10, background: "#999999" }}
+        >
+          Inactive
+        </Button>
+      </div>
+    );
   };
 
   const CustomButtonHeader = ({ toggleFilters }) => (
-    <div>
-      <Button
-        size="small"
-        variant="secondary"
-        icon={PlusIcon}
-        onClick={() => history.push("/dataflow-management")}
-        style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
-      >
-        Add data flow
-      </Button>
-      <Button
-        size="small"
-        variant="secondary"
-        icon={FilterIcon}
-        onClick={toggleFilters}
-      >
-        Filter
-      </Button>
-    </div>
+    <>
+      <div>
+        <SegmentedControlGroup
+          value={selectedFilter}
+          exclusive
+          onChange={(event, value) => setSelectedFilter(value)}
+        >
+          <SegmentedControl value="all">All</SegmentedControl>
+          <SegmentedControl disabled={!(totalRows >= 1)} value="production">
+            Production
+          </SegmentedControl>
+          <SegmentedControl disabled={!(totalRows >= 1)} value="test">
+            Test
+          </SegmentedControl>
+        </SegmentedControlGroup>
+      </div>
+      <div>
+        <Button
+          size="small"
+          variant="secondary"
+          icon={PlusIcon}
+          onClick={() => history.push("/dataflow-management")}
+          style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
+        >
+          Add data flow
+        </Button>
+        <Button
+          size="small"
+          variant="secondary"
+          icon={FilterIcon}
+          onClick={toggleFilters}
+        >
+          Filter
+        </Button>
+      </div>
+    </>
   );
 
   const columns = [
+    {
+      accessor: "expand",
+      customCell: ExpandCell,
+    },
     {
       header: "Vendor Source",
       accessor: "vendorSource",
       frozen: true,
       sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("vendorSource"),
-      filterComponent: TextFieldFilter,
-    },
-    {
-      header: "Description",
-      accessor: "dataFlowId",
-      frozen: true,
-      sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("dataFlowId"),
-      filterComponent: TextFieldFilter,
-    },
-    {
-      header: "Type",
-      accessor: "type",
-      frozen: true,
-      sortFunction: compareStrings,
-      filterFunction: createStringArraySearchFilter("type"),
+      filterFunction: createStringArraySearchFilter("vendorSource"),
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
             studyboardData
-              .map((r) => ({ label: r.type }))
+              .map((r) => ({ label: r.vendorSource }))
               .map((item) => item.label)
           )
         )
@@ -583,16 +523,163 @@ export default function DataFlowTable() {
       ),
     },
     {
+      header: "Description",
+      accessor: "description",
+      frozen: true,
+      sortFunction: compareStrings,
+      filterFunction: createStringArraySearchFilter("description"),
+      filterComponent: createAutocompleteFilter(
+        Array.from(
+          new Set(
+            studyboardData
+              .map((r) => ({ label: r.description }))
+              .map((item) => item.label)
+          )
+        )
+          .map((label) => {
+            return { label };
+          })
+          .sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            }
+            if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          })
+      ),
+    },
+    {
+      header: "Type",
+      accessor: "type",
+      frozen: true,
+      customCell: TypeCell,
+      sortFunction: compareStrings,
+    },
+    {
       header: "Status",
       accessor: "status",
       frozen: true,
+      customCell: StatusCell,
       sortFunction: compareStrings,
       filterFunction: createStringArraySearchFilter("status"),
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
             studyboardData
-              .map((r) => ({ label: r.type }))
+              .map((r) => ({ label: r.status }))
+              .map((item) => item.label)
+          )
+        )
+          .map((label) => {
+            return { label };
+          })
+          .sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            }
+            if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          })
+      ),
+    },
+    {
+      header: "External Source System",
+      accessor: "externalSourceSystem",
+      frozen: false,
+      sortFunction: compareStrings,
+      filterFunction: createStringArraySearchFilter("externalSourceSystem"),
+      filterComponent: createAutocompleteFilter(
+        Array.from(
+          new Set(
+            studyboardData
+              .map((r) => ({ label: r.externalSourceSystem }))
+              .map((item) => item.label)
+          )
+        )
+          .map((label) => {
+            return { label };
+          })
+          .sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            }
+            if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          })
+      ),
+    },
+    {
+      header: "Location Type",
+      accessor: "locationType",
+      frozen: false,
+      sortFunction: compareStrings,
+      filterFunction: createStringArraySearchFilter("locationType"),
+      filterComponent: createAutocompleteFilter(
+        Array.from(
+          new Set(
+            studyboardData
+              .map((r) => ({ label: r.locationType }))
+              .map((item) => item.label)
+          )
+        )
+          .map((label) => {
+            return { label };
+          })
+          .sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            }
+            if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          })
+      ),
+    },
+    {
+      header: "Datasets",
+      accessor: "dataSets",
+      frozen: false,
+      sortFunction: compareNumbers,
+      customCell: LinkCell,
+      filterFunction: numberSearchFilter("dataSets"),
+      filterComponent: IntegerFilter,
+    },
+    {
+      header: "Last Modified",
+      accessor: "lastModified",
+      frozen: false,
+      sortFunction: compareDates,
+      customCell: DateCell,
+      filterFunction: dateFilterV2("lastModified"),
+      filterComponent: DateFilter,
+    },
+
+    {
+      accessor: "action",
+      customCell: ActionCell,
+      width: 32,
+    },
+  ];
+
+  const columnsToAdd = [
+    {
+      header: "Data Flow Name",
+      accessor: "dataFlowName",
+      frozen: false,
+      sortFunction: compareStrings,
+      filterFunction: createStringArraySearchFilter("dataFlowName"),
+      filterComponent: createAutocompleteFilter(
+        Array.from(
+          new Set(
+            studyboardData
+              .map((r) => ({ label: r.dataFlowName }))
               .map((item) => item.label)
           )
         )
@@ -620,58 +707,50 @@ export default function DataFlowTable() {
       filterComponent: DateFilter,
     },
     {
-      header: "Last Modified",
-      accessor: "lastModified",
-      frozen: false,
-      sortFunction: compareDates,
-      customCell: DateCell,
-      filterFunction: dateFilterV2("lastModified"),
-      filterComponent: DateFilter,
-    },
-    {
-      header: "Description",
-      accessor: "description",
-      frozen: false,
-      customCell: SelectiveCell,
-      sortFunction: compareStrings,
-      filterFunction: createStringArraySearchFilter("description"),
-      filterComponent: createSelectFilterComponent(obs, {
-        size: "small",
-        multiple: true,
-      }),
-    },
-    {
-      header: "Datasets",
-      accessor: "dataSets",
+      header: "Data Packages",
+      accessor: "dataPackages",
       frozen: false,
       sortFunction: compareNumbers,
       customCell: LinkCell,
-      filterFunction: numberSearchFilter("dataSets"),
+      filterFunction: numberSearchFilter("dataPackages"),
       filterComponent: IntegerFilter,
     },
     {
-      accessor: "action",
-      customCell: ActionCell,
-      width: 32,
-    },
-  ];
-
-  const columnsToAdd = [
-    {
-      header: "Therapeutic Area",
-      accessor: "therapeuticarea",
+      header: "Last Sync Date",
+      accessor: "lastSyncDate",
       frozen: false,
-      sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("therapeuticarea"),
-      filterComponent: TextFieldFilter,
+      sortFunction: compareDates,
+      customCell: DateCell,
+      filterFunction: dateFilterV2("lastSyncDate"),
+      filterComponent: DateFilter,
     },
     {
-      header: "Project Code",
-      accessor: "projectcode",
+      header: "Adapter",
+      accessor: "adapter",
       frozen: false,
       sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("projectcode"),
-      filterComponent: TextFieldFilter,
+      filterFunction: createStringArraySearchFilter("adapter"),
+      filterComponent: createAutocompleteFilter(
+        Array.from(
+          new Set(
+            studyboardData
+              .map((r) => ({ label: r.adapter }))
+              .map((item) => item.label)
+          )
+        )
+          .map((label) => {
+            return { label };
+          })
+          .sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            }
+            if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          })
+      ),
     },
   ];
 
@@ -684,14 +763,14 @@ export default function DataFlowTable() {
   const [tableRows, setTableRows] = useState([...studyboardData]);
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
 
-  const handleToggleRow = (dataFlowId) => {
-    // eslint-disable-next-line no-shadow
-    setExpandedRows((expandedRows) =>
-      expandedRows.includes(dataFlowId)
-        ? expandedRows.filter((id) => id !== dataFlowId)
-        : [...expandedRows, dataFlowId]
-    );
-  };
+  // const handleToggleRow = (dataFlowId) => {
+  //   // eslint-disable-next-line no-shadow
+  //   setExpandedRows((expandedRows) =>
+  //     expandedRows.includes(dataFlowId)
+  //       ? expandedRows.filter((id) => id !== dataFlowId)
+  //       : [...expandedRows, dataFlowId]
+  //   );
+  // };
 
   // useEffect(() => {
   //   if (!studyData.loading || studyData.studyboardFetchSuccess) {
@@ -743,6 +822,7 @@ export default function DataFlowTable() {
   useEffect(() => {
     setTableColumns([...moreColumns]);
     setTableRows([...studyboardData]);
+    setTotalRows(studyboardData.length);
   }, []);
 
   const EmptyTableComponent = () => (
@@ -777,10 +857,21 @@ export default function DataFlowTable() {
           <>
             <Table
               isLoading={loading}
-              title={<>{`${5} data flows`}</>}
+              title={
+                // eslint-disable-next-line react/jsx-wrap-multilines
+                <>
+                  {`${totalRows} ${
+                    totalRows >= 1 ? "Data Flows" : "Data Flow"
+                  }`}
+                </>
+              }
               col
               columns={tableColumns}
-              rows={[]}
+              rows={tableRows.map((row) => ({
+                ...row,
+                expanded: expandedRows.includes(row.employeeId),
+                handleToggleRow,
+              }))}
               initialSortedColumn="dateCreated"
               initialSortOrder="asc"
               sortedColumn={sortedColumnValue}

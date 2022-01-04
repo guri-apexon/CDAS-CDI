@@ -7,7 +7,7 @@ const _ = require("lodash");
 exports.getStudyDataflows = async (req, res) => {
   try {
     const protocolId = req.params.protocolId;
-    const query = `select s.prot_id as "studyId", d.dataflowid as "dataFlowId", dsetcount.dsCount as "dsCount", dpackagecount.dpCount as "dpCount", s.prot_nbr as "studyName", d.data_flow_nm as "dataFlowName", testflag as "type", d.insrt_tm as "dateCreated", vend_nm as "verndorSource", d.description, d.type as "adapter", d.active as "status", d.extrnl_sys_nm as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified", d.refreshtimestamp as "lastSyncDate" from cdascdi.dataflow d 
+    const query = `select s.prot_id as "studyId", d.dataflowid as "dataFlowId", dsetcount.dsCount as "dataSets", dpackagecount.dpCount as "dataPackages", s.prot_nbr as "studyName", d.data_flow_nm as "dataFlowName", testflag as "type", d.insrt_tm as "dateCreated", vend_nm as "vendorSource", d.description, d.type as "adapter", d.active as "status", d.extrnl_sys_nm as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified", d.refreshtimestamp as "lastSyncDate" from cdascdi.dataflow d 
       inner join cdascdi.vendor v on d.vend_id = v.vend_id 
       inner join cdascdi.source_location sl on d.src_loc_id = sl.src_loc_id 
       inner join cdascdi.datapackage d2 on d.dataflowid = d2.dataflowid 
@@ -36,8 +36,8 @@ exports.getStudyDataflows = async (req, res) => {
       // let filterByDF = $q2.rows.filter((d) => d.dataflowid === e.dataFlowId);
       // let newObj = filterByDF[0] ? getTotalCount([...acc]) : { count: 0 };
       // let { count: dpCount } = newObj;
-      let dsCount = 10;
-      let dpCount = 5;
+      // let dsCount = 10;
+      // let dpCount = 5;
       let editT = moment(e.lastModified).format("MM/DD/YYYY");
       let addT = moment(e.dateCreated).format("MM/DD/YYYY");
       let syncT = moment(e.lastSyncDate).format("MM/DD/YYYY");
@@ -46,8 +46,8 @@ exports.getStudyDataflows = async (req, res) => {
         dateCreated: addT,
         lastModified: editT,
         lastSyncDate: syncT,
-        dataSets: dsCount,
-        dataPackages: dpCount,
+        // dataSets: dsCount,
+        // dataPackages: dpCount,
       };
     });
 
