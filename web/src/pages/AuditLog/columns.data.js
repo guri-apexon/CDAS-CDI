@@ -214,9 +214,9 @@ const columns = [
   },
   {
     header: "Audit Version",
-    accessor: "audit_ver",
+    accessor: "audit_vers",
     sortFunction: compareStrings,
-    filterFunction: createStringSearchFilter("audit_ver"),
+    filterFunction: createStringSearchFilter("audit_vers"),
     filterComponent: TextFieldFilter,
     width: 70,
   },
@@ -230,17 +230,17 @@ const columns = [
   },
   {
     header: "Update Date",
-    accessor: "update_dt",
+    accessor: "audit_updt_dt",
     sortFunction: compareDates,
     customCell: DateCell,
-    filterFunction: dateFilterV2("update_dt"),
+    filterFunction: dateFilterV2("audit_updt_dt"),
     filterComponent: DateFilter,
   },
   {
     header: "User",
-    accessor: "user",
+    accessor: "user_name",
     sortFunction: compareStrings,
-    filterFunction: createStringSearchFilter("user"),
+    filterFunction: createStringSearchFilter("user_name"),
     filterComponent: TextFieldFilter,
   },
   {

@@ -83,6 +83,7 @@ export function getUserInfo() {
     fullName: `${getCookie("user.first_name")} ${getCookie("user.last_name")}`,
     userEmail: decodeURIComponent(getCookie("user.email")),
     lastLogin: getLastLogin(),
+    user_id: getCookie("user.id"),
   };
 }
 
@@ -191,6 +192,33 @@ export const dataStruct = [
   {
     value: "tabular",
     label: "Tabular",
+  },
+];
+
+export const extSysName = [
+  {
+    value: "",
+    label: "None",
+  },
+  {
+    value: "CDR",
+    label: "CDR",
+  },
+  {
+    value: "GDMPM-DAS",
+    label: "GDMPM-DAS",
+  },
+  {
+    value: "IQB",
+    label: "IQB",
+  },
+  {
+    value: "TDSE",
+    label: "TDSE",
+  },
+  {
+    value: "Wingspan",
+    label: "Wingspan",
   },
 ];
 

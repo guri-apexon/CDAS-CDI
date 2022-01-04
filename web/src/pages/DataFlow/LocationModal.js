@@ -8,7 +8,7 @@ import Grid from "apollo-react/components/Grid";
 import Modal from "apollo-react/components/Modal";
 import MenuItem from "apollo-react/components/MenuItem";
 import Button from "apollo-react/components/Button";
-import { locationTypes, dataStruct } from "../../utils";
+import { locationTypes, dataStruct, extSysName } from "../../utils";
 
 import {
   ReduxFormPasswordInput,
@@ -97,11 +97,17 @@ const LocationForm = (props) => {
             </ReduxFormSelect>
           </Grid>
           <Grid item md={5}>
-            <ReduxFormTextField
-              fullWidth
+            <ReduxFormSelect
               name="externalSytemName"
               label="External System Name"
-            />
+              fullWidth
+            >
+              {extSysName?.map((type) => (
+                <MenuItem key={type.value} value={type.value}>
+                  {type.label}
+                </MenuItem>
+              ))}
+            </ReduxFormSelect>
           </Grid>
         </Grid>
         <Grid container spacing={2}>

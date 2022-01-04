@@ -68,7 +68,7 @@ const DetailRow = ({ row }) => {
   );
 };
 
-const PackagesList = ({ data }) => {
+const PackagesList = ({ data, userInfo }) => {
   const dispatch = useDispatch();
   const [expandedRows, setExpandedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
@@ -88,13 +88,21 @@ const PackagesList = ({ data }) => {
           updateStatus({
             package_id: packageId,
             active: status === 1 ? "0" : "1",
+            user_id: userInfo.user_id,
           })
+        );
+      }
+    };
+    const deleteAction = () => {
+      if (packageId) {
+        dispatch(
+          deletePackage({ package_id: packageId, user_id: userInfo.user_id })
         );
       }
     };
     const menuItems = [
       {
-        text: `Set data package ${active === 1 ? "Inactive" : "Active"}`,
+        text: `Set data package ${active === 1 ? "inactive" : "active"}`,
         onClick: () => setActive(active),
       },
       {
@@ -107,7 +115,7 @@ const PackagesList = ({ data }) => {
       },
       {
         text: "Delete data package",
-        onClick: () => packageId && dispatch(deletePackage(packageId)),
+        onClick: deleteAction,
       },
     ];
     const openAction = (e) => {

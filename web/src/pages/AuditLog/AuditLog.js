@@ -25,6 +25,7 @@ const breadcrumpItems = [
 ];
 const AuditLog = () => {
   const dispatch = useDispatch();
+  const auditLogs = useSelector((state) => state.auditLogs);
   const fetchLogs = (query = "") => {
     dispatch(getAuditLogs(query));
   };
@@ -70,7 +71,7 @@ const AuditLog = () => {
           key="frozenExample1"
           title="Data Flow Audit Log"
           columns={columns}
-          rows={rowsWithExtra}
+          rows={auditLogs.data}
           initialSortedColumn="name"
           rowsPerPageOptions={[5, 10, 15, "All"]}
           tablePaginationProps={{
