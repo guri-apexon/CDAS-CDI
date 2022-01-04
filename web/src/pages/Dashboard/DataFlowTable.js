@@ -5,8 +5,6 @@ import moment from "moment";
 import { useHistory } from "react-router-dom";
 
 import Table, {
-  createSelectFilterComponent,
-  createStringSearchFilter,
   dateFilterV2,
   numberSearchFilter,
   compareDates,
@@ -108,19 +106,6 @@ const createAutocompleteFilter =
     );
   };
 
-const TextFieldFilter = ({ accessor, filters, updateFilterValue }) => {
-  return (
-    <TextField
-      value={filters[accessor]}
-      name={accessor}
-      onChange={updateFilterValue}
-      fullWidth
-      margin="none"
-      size="small"
-    />
-  );
-};
-
 const IntegerFilter = ({ accessor, filters, updateFilterValue }) => {
   return (
     <TextField
@@ -191,8 +176,8 @@ export default function DataFlowTable() {
     );
   };
 
-  const studyData = {
-    studyboardData: [
+  const dashboard = {
+    dashboardData: [
       {
         studyId: "a020E000005SwPtQAK",
         dataFlowId: "a0A0E000004k79SUAQ",
@@ -268,11 +253,11 @@ export default function DataFlowTable() {
     ],
   };
 
-  const studyboardData = selectedFilter
-    ? studyData?.studyboardData.filter(
+  const dashboardData = selectedFilter
+    ? dashboard?.dashboardData.filter(
         (data) => data.description === selectedFilter
       )
-    : studyData.studyboardData;
+    : dashboard.dashboardData;
 
   const statuses = ["Active", "Inactive"];
 
@@ -503,7 +488,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            studyboardData
+            dashboardData
               .map((r) => ({ label: r.vendorSource }))
               .map((item) => item.label)
           )
@@ -531,7 +516,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            studyboardData
+            dashboardData
               .map((r) => ({ label: r.description }))
               .map((item) => item.label)
           )
@@ -567,7 +552,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            studyboardData
+            dashboardData
               .map((r) => ({ label: r.status }))
               .map((item) => item.label)
           )
@@ -595,7 +580,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            studyboardData
+            dashboardData
               .map((r) => ({ label: r.externalSourceSystem }))
               .map((item) => item.label)
           )
@@ -623,7 +608,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            studyboardData
+            dashboardData
               .map((r) => ({ label: r.locationType }))
               .map((item) => item.label)
           )
@@ -678,7 +663,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            studyboardData
+            dashboardData
               .map((r) => ({ label: r.dataFlowName }))
               .map((item) => item.label)
           )
@@ -733,7 +718,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            studyboardData
+            dashboardData
               .map((r) => ({ label: r.adapter }))
               .map((item) => item.label)
           )
@@ -760,7 +745,7 @@ export default function DataFlowTable() {
     columns.slice(-1)[0],
   ];
 
-  const [tableRows, setTableRows] = useState([...studyboardData]);
+  const [tableRows, setTableRows] = useState([...dashboardData]);
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
 
   // const handleToggleRow = (dataFlowId) => {
@@ -773,15 +758,15 @@ export default function DataFlowTable() {
   // };
 
   // useEffect(() => {
-  //   if (!studyData.loading || studyData.studyboardFetchSuccess) {
+  //   if (!dashboard.loading || dashboard.studyboardFetchSuccess) {
   //     setLoading(false);
-  //     setTableRows([...studyboardData]);
-  //     setExportTableRows([...studyboardData]);
+  //     setTableRows([...dashboardData]);
+  //     setExportTableRows([...dashboardData]);
   //     setTableColumns([...moreColumns]);
   //   } else {
   //     setLoading(true);
   //   }
-  // }, [studyData.loading, studyboardData, studyData.studyboardFetchSuccess]);
+  // }, [dashboard.loading, dashboardData, dashboard.studyboardFetchSuccess]);
 
   const applyFilter = (cols, rows, filts) => {
     let filteredRows = rows;
@@ -801,7 +786,7 @@ export default function DataFlowTable() {
   };
 
   const exportDataRows = () => {
-    const toBeExportRows = [...studyboardData];
+    const toBeExportRows = [...dashboardData];
     const sortedFilteredData = applyFilter(
       tableColumns,
       toBeExportRows,
@@ -821,8 +806,8 @@ export default function DataFlowTable() {
 
   useEffect(() => {
     setTableColumns([...moreColumns]);
-    setTableRows([...studyboardData]);
-    setTotalRows(studyboardData.length);
+    setTableRows([...dashboardData]);
+    setTotalRows(dashboardData.length);
   }, []);
 
   const EmptyTableComponent = () => (
@@ -925,5 +910,5 @@ export default function DataFlowTable() {
     ]
   );
 
-  return <div className="study-table">{getTableData}</div>;
+  return <div className="dataflow-table">{getTableData}</div>;
 }

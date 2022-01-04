@@ -1,19 +1,9 @@
-import {
-  STUDY_NOTONBOARDED_STATUS,
-  STUDYBOARD_DATA,
-  PAGEHEADER_UPDATE,
-} from "../../constants";
+import { DASHBOARD_DATA, PAGEHEADER_UPDATE } from "../../constants";
 
-// eslint-disable-next-line import/prefer-default-export
-export const getStudyboardData = () => {
+export const getStudyboardData = (protocolId) => {
   return {
-    type: STUDYBOARD_DATA,
-  };
-};
-
-export const getNotOnBordedStatus = () => {
-  return {
-    type: STUDY_NOTONBOARDED_STATUS,
+    type: DASHBOARD_DATA,
+    protocolId,
   };
 };
 

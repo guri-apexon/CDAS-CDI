@@ -2,16 +2,14 @@ import produce from "immer";
 // import moment from "moment";
 
 import {
-  STUDYBOARD_FETCH_SUCCESS,
-  STUDYBOARD_DATA,
+  DASHBOARD_FETCH_SUCCESS,
+  DASHBOARD_FETCH_FAILUR,
+  DASHBOARD_DATA,
   PAGEHEADER_UPDATE,
-  STUDY_NOTONBOARDED_STATUS,
-  STUDY_NOTONBOARDED_SUCCESS,
-  STUDY_NOTONBOARDED_FAILURE,
 } from "../../constants";
 
 export const initialState = {
-  studyboardData: [],
+  dashboardData: [],
   notOnBoardedStudyStatus: {},
   loading: false,
   exportStudy: null,
@@ -22,16 +20,16 @@ export const initialState = {
     protocolnumber: "",
     protocolstatus: "",
     sponsorname: "",
-    vendors: 0,
-    dataFlows: 0,
-    dataSets: 0,
+    vendors: "",
+    dataFlows: "",
+    dataSets: "",
   },
 };
 
 const DashboardReducer = (state = initialState, action) =>
   produce(state, (newState) => {
     switch (action.type) {
-      case STUDYBOARD_DATA:
+      case DASHBOARD_DATA:
         newState.loading = true;
         break;
 
@@ -39,26 +37,19 @@ const DashboardReducer = (state = initialState, action) =>
         newState.selectedCard = action.study;
         break;
 
-      case STUDY_NOTONBOARDED_STATUS:
-        newState.loading = true;
-        break;
-
-      case STUDYBOARD_FETCH_SUCCESS:
+      case DASHBOARD_FETCH_SUCCESS:
         newState.loading = false;
         newState.studyboardData = action.studyboardData;
-        newState.uniqurePhase = action.uniqurePhase;
-        newState.uniqueProtocolStatus = action.uniqueProtocolStatus;
-        newState.studyboardFetchSuccess = true;
-        newState.studyboardFetchFailure = false;
+        newState.vendors = action.vendors;
+        newState.dataFlows = action.dataFlows;
+        newState.dataSets = action.dataSets;
         break;
 
-      case STUDY_NOTONBOARDED_SUCCESS:
+      case DASHBOARD_FETCH_FAILUR:
         newState.loading = false;
-        newState.notOnBoardedStudyStatus = action.notOnBoardedStudyStatus;
-        break;
-
-      case STUDY_NOTONBOARDED_FAILURE:
-        newState.loading = true;
+        newState.vendors = 0;
+        newState.dataFlows = 0;
+        newState.dataSets = 0;
         break;
 
       default:
