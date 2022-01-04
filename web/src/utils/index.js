@@ -83,6 +83,7 @@ export function getUserInfo() {
     fullName: `${getCookie("user.first_name")} ${getCookie("user.last_name")}`,
     userEmail: decodeURIComponent(getCookie("user.email")),
     lastLogin: getLastLogin(),
+    user_id: getCookie("user.id"),
   };
 }
 

@@ -25,10 +25,10 @@ export const updateStatus = (payload) => {
     payload,
   };
 };
-export const deletePackage = (packageId) => {
+export const deletePackage = (payload) => {
   return {
     type: UPDATE_DATA_PACKAGE,
     update_action: "DELETE",
-    payload: { package_id: packageId, delete_package: true },
+    payload: { ...payload, delete_package: true },
   };
 };

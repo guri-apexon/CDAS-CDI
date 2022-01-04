@@ -51,8 +51,9 @@ export function* updateDataPackage(params) {
     let fetchData;
     if (params.update_action === "DELETE") {
       fetchData = yield call(
-        axios.get,
-        `${baseURL}/${DELETE_PACKAGE}/${params.payload.package_id}`
+        axios.post,
+        `${baseURL}/${DELETE_PACKAGE}`,
+        params.payload
       );
     } else {
       fetchData = yield call(

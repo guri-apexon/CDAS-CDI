@@ -15,9 +15,10 @@ export function* fetchAuditLogs(params) {
       `${baseURL}/${AUDIT_LOGS_FETCH}/${params.searchQuery}`,
       {}
     );
+    const logs = fetchData.data?.data?.data || [];
     yield put({
       type: AUDIT_LOGS_SUCCESS,
-      auditLogs: fetchData.data.data,
+      auditLogs: logs,
     });
   } catch (e) {
     yield put({ type: AUDIT_LOGS_FAILURE, message: e.message });

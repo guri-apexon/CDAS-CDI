@@ -29,7 +29,7 @@ import Tooltip from "apollo-react/components/Tooltip";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import EllipsisVerticalIcon from "apollo-react-icons/EllipsisVertical";
 import PageHeader from "../../components/DataFlow/PageHeader";
-import { debounceFunction, toast } from "../../utils";
+import { debounceFunction, getUserInfo, toast } from "../../utils";
 import PackagesList from "./PackagesTable";
 import {
   addDataPackage,
@@ -69,6 +69,7 @@ const DataPackages = () => {
   const dataFlowData = useSelector((state) => state.dataFlow);
   const { selectedLocation, description, selectedVendor, dataflowType } =
     dataFlowData;
+  const userInfo = getUserInfo();
 
   const showConfig = (e, checked) => {
     setConfigShow(checked);
@@ -128,6 +129,8 @@ const DataPackages = () => {
       package_password: packagePassword,
       sftp_path: sftpPath,
       study_id: "a020E000005SwfCQAS",
+      dataflow_id: "a0A0E00000322XRUAY",
+      user_id: userInfo.user_id,
     };
     console.log("submitPackage", reqBody);
     dispatch(addDataPackage(reqBody));
@@ -237,7 +240,7 @@ const DataPackages = () => {
                     <Typography variant="body2" style={{ marginLeft: 10 }}>
                       {`${packageData.packagesList.length} Data Packages`}
                     </Typography>
-                    <PackagesList data={packageData} />
+                    <PackagesList userInfo={userInfo} data={packageData} />
                   </>
                 )}
               </div>
