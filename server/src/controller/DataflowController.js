@@ -6,14 +6,20 @@ const _ = require("lodash");
 
 exports.getStudyDataflows = async (req, res) => {
   try {
-    // const protocolId = req.params.protocolId;
-    const query =
-      'select dataflowid as "dataFlowId", data_flow_nm as "dataFlowName", testflag as "type", d.insrt_tm as "dateCreated", vend_nm as "verndorSource", d.description, "type" as "adapter", d.active as "status", d.extrnl_sys_nm as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified", d.refreshtimestamp as "lastSyncDate" from cdascdi.dataflow d inner join cdascdi.vendor v on d.vend_id = v.vend_id inner join cdascdi.source_location sl on d.src_loc_id = sl.src_loc_id';
-    const q2 = `select dataflowid, COUNT(DISTINCT datapackageid) FROM cdascdi.datapackage d GROUP BY dataflowid`;
+    const protocolId = req.params.protocolId;
+    const query = `select s.prot_id as "studyId", d.dataflowid as "dataFlowId", dsetcount.dsCount as "dsCount", dpackagecount.dpCount as "dpCount", s.prot_nbr as "studyName", d.data_flow_nm as "dataFlowName", testflag as "type", d.insrt_tm as "dateCreated", vend_nm as "verndorSource", d.description, d.type as "adapter", d.active as "status", d.extrnl_sys_nm as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified", d.refreshtimestamp as "lastSyncDate" from cdascdi.dataflow d 
+      inner join cdascdi.vendor v on d.vend_id = v.vend_id 
+      inner join cdascdi.source_location sl on d.src_loc_id = sl.src_loc_id 
+      inner join cdascdi.datapackage d2 on d.dataflowid = d2.dataflowid 
+      inner join cdascdi.study s on d2.prot_id = s.prot_id
+      inner join (select datapackageid, COUNT(DISTINCT datasetid) as dsCount FROM cdascdi.dataset d GROUP BY datapackageid) dsetcount on (d2.datapackageid=dsetcount.datapackageid)
+      inner join (select dataflowid, COUNT(DISTINCT datapackageid) as dpCount FROM cdascdi.datapackage d GROUP BY dataflowid) dpackagecount on (d.dataflowid=dpackagecount.dataflowid)
+      where s.prot_id = $1`;
+    // const q2 = `select dataflowid, COUNT(DISTINCT datapackageid) FROM cdascdi.datapackage d GROUP BY dataflowid`;
     // const q3 = `select datapackageid, COUNT(DISTINCT datasetid) FROM cdascdi.dataset d GROUP BY datapackageid`;
     Logger.info({ message: "getStudyDataflows" });
-    const $q1 = await DB.executeQuery(query);
-    const $q2 = await DB.executeQuery(q2);
+    const $q1 = await DB.executeQuery(query, [protocolId]);
+    // const $q2 = await DB.executeQuery(q2);
     // const $q3 = await DB.executeQuery(q3);
 
     // console.log("results", protocolId, $q1, $q2, $q3);
@@ -27,7 +33,7 @@ exports.getStudyDataflows = async (req, res) => {
     // };
 
     const formatDateValues = await $q1.rows.map((e) => {
-      let filterByDF = $q2.rows.filter((d) => d.dataflowid === e.dataFlowId);
+      // let filterByDF = $q2.rows.filter((d) => d.dataflowid === e.dataFlowId);
       // let newObj = filterByDF[0] ? getTotalCount([...acc]) : { count: 0 };
       // let { count: dpCount } = newObj;
       let dsCount = 10;

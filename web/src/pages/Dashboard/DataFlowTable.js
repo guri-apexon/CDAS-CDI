@@ -760,6 +760,7 @@ export default function DataFlowTable() {
         variant="secondary"
         icon={<PlusIcon />}
         size="small"
+        onClick={() => history.push("/dataflow-management")}
         style={{ marginRight: 10 }}
       >
         Add a data flow

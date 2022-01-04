@@ -195,6 +195,33 @@ export const dataStruct = [
   },
 ];
 
+export const extSysName = [
+  {
+    value: "",
+    label: "None",
+  },
+  {
+    value: "CDR",
+    label: "CDR",
+  },
+  {
+    value: "GDMPM-DAS",
+    label: "GDMPM-DAS",
+  },
+  {
+    value: "IQB",
+    label: "IQB",
+  },
+  {
+    value: "TDSE",
+    label: "TDSE",
+  },
+  {
+    value: "Wingspan",
+    label: "Wingspan",
+  },
+];
+
 export const locationTypes = [
   "SFTP",
   "FTPS",
