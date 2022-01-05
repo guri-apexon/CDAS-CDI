@@ -154,7 +154,7 @@ const DataPackages = () => {
           >
             <div className="flex flex-center">
               <img src="assets/svg/dataflow.svg" alt="dataflow" />
-              <Typography variant="body">Data Flow</Typography>
+              <Typography variant="body1">Data Flow</Typography>
             </div>
             <div>
               <Switch
@@ -173,7 +173,7 @@ const DataPackages = () => {
           <Divider />
           <Box className="sidebar-content">
             <Tag
-              label={dataflowType}
+              label={dataflowType || ""}
               variant="grey"
               style={{ textTransform: "capitalize", marginBottom: 20 }}
             />
@@ -222,6 +222,7 @@ const DataPackages = () => {
             </div>
             <div>
               <Search
+                className="package-searchbox"
                 placeholder="Search"
                 value={searchTxt}
                 onChange={searchTrigger}
@@ -295,6 +296,7 @@ const DataPackages = () => {
                       Data Package Settings
                     </Typography>
                     <Checkbox
+                      className="config-checkbox"
                       size="small"
                       label="Package Level Configuration"
                       checked={configShow}
@@ -312,7 +314,7 @@ const DataPackages = () => {
                         size="small"
                         placeholder="Select type..."
                         onChange={(e) => setCompression(e.target.value)}
-                        className="mb-20"
+                        className="mb-20 package-type"
                       >
                         {compressionTypes.map((type, i) => (
                           <MenuItem key={i} value={type.value}>
