@@ -1,94 +1,143 @@
 .App {
   text-align: center;
 }
-.flex{
+.flex {
   display: flex;
 }
-.flex-center{
+.flex-center {
   align-items: center;
 }
-.link{
+.link {
   cursor: pointer;
 }
-.flexWrap{
+.flexWrap {
   flex-direction: column;
+}
+.justify-between{
+  justify-content: space-between;
+}
+.mb-20{
+  margin-bottom: 20px !important;
+}
+.b-font{
+  font-weight: 600 !important;
 }
 .left-align{
   align-items: flex-start;
 }
-*{
+.h-v-center{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.flex-column{
+  flex-direction: column;
+}
+.no-shadow{
+  box-shadow: none !important;
+}
+.left-align {
+  align-items: flex-start;
+}
+* {
   box-sizing: border-box;
 }
-body{
-  // overflow-y: scroll !important;
-  // padding: 0 !important;
-}
-#topNavbar{
+#topNavbar {
+  top: 0;
+  left: auto;
+  right: 0;
+  position: fixed;
+  width: 100%;
+  z-index: 999;
   header div.MuiToolbar-regular{
     width: 100%;
     padding-left: 10px;
     padding-right: 10px;
   }
 }
-.page-wrapper{
-  background:  #F6F7FB;
+.page-wrapper {
+  background: #f6f7fb;
   min-height: 100vh;
   position: relative;
+  padding-top: 56px;
 }
-.navigation-panel{
-  .waves{
+.navigation-panel {
+  .waves {
     position: absolute;
     top: 0;
     width: 125px;
     right: 0;
     overflow: hidden;
-    img{
+    img {
       transform: scaleX(-1);
     }
   }
-  .MuiDrawer-paper{
-    &>button{
+  .MuiDrawer-paper {
+    & > button {
       display: none !important;
     }
     background: linear-gradient(to right, rgb(37, 0, 86), rgb(0, 118, 174));
     padding-top: 15px;
     border-right: 1px solid #fff;
-    div[class^='Blade-body-']{
+    div[class^="Blade-body-"] {
       padding: 0 19px !important;
     }
-    div[class^='Blade-expandPanel']{
+    div[class^="Blade-expandPanel"] {
       display: none;
     }
-    .Blade-body-8386{
+    .Blade-body-8386 {
       padding: 0 15px !important;
     }
   }
-  .link{
-    color: #FFFFFF;
+  .link {
+    color: #ffffff;
   }
-  .close-panel{
-    color: #FFFFFF;
+  .close-panel {
+    color: #ffffff;
     cursor: pointer;
     margin-left: 8px;
   }
-  button{
+  button {
     margin-right: 10px;
     margin-bottom: 10px;
     font-size: 14px;
     padding: 0 10px;
     font-weight: 400;
-    img{
+    img {
       width: 24px;
       opacity: 0.7;
       border-radius: 2px;
-      background: #FFFFFF;
+      background: #ffffff;
       margin-right: 8px;
     }
-    &:hover{
-      background-color: rgba(255,255,255,0.24);
-      img{
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.24);
+      img {
         opacity: 1;
       }
     }
   }
+}
+
+.customScrollbar::-webkit-scrollbar {
+  background-color: #fff;
+  width: 16px;
+}
+
+/* background of the scrollbar except button or resizer */
+.customScrollbar::-webkit-scrollbar-track {
+  background-color: #fff;
+}
+
+/* scrollbar itself */
+.customScrollbar::-webkit-scrollbar-thumb {
+  background-color: #babac0;
+  border-radius: 16px;
+  border: 4px solid #fff;
+}
+
+/* set button(top and bottom of the scrollbar) */
+.customScrollbar::-webkit-scrollbar-button {
+  display: none;
 }

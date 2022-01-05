@@ -25,6 +25,7 @@
     "moment": "^2.29.1",
     "pg": "^8.7.1",
     "request": "^2.88.2",
+    "uuidv4": "^6.2.12",
     "winston": "^3.3.3"
   },
   "devDependencies": {

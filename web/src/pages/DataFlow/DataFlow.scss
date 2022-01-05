@@ -1,0 +1,29 @@
+.right-panel {
+  .MuiSwitch-sizeSmall {
+    margin-left: 7px;
+  }
+  .MuiFormControlLabel-label {
+    font-size: 14px;
+    letter-spacing: 0;
+    line-height: 24px;
+  }
+}
+.activeField > span:nth-child(1) {
+    left: 11px;
+}
+#viewSettingsBtn {
+  height: 32px;
+  background-color: #0557D5;
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.04), 0 4px 8px 0 rgba(7,104,253,0.32);
+}
+
+.autocomplete_field {
+    div[class^="MuiInputAdornment-"] {
+        color: #595959;
+        right: 0;
+    }
+    input[class^="MuiInputBase-"] {
+        padding-left: 8px;
+        padding-right: 31px;
+    }
+}
