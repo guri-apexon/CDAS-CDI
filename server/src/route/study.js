@@ -1,13 +1,11 @@
-var express = require("express");
+const express = require("express");
 const StudyController = require("../controller/StudyController");
+const router = express.Router();
 
-var router = express.Router();
-
-router.get("/search-study/:query", StudyController.studyList);
-
-router.post("/list", StudyController.getStudyList);
-
-router.get("/notonboarded-studies-stat",  StudyController.noOnboardedStat)
-
+router.get("/listbyUser/:userId", StudyController.getUserStudyList);
+router.post("/pinStudy", StudyController.pinStudy);
+router.get("/search-study/:searchQuery", StudyController.searchStudyList);
+router.get("/pinnedStudies/:userId", StudyController.getUserPinnedStudies);
+router.post("/unPinStudy", StudyController.unPinStudy);
 
 module.exports = router;

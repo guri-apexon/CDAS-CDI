@@ -83,6 +83,7 @@ export function getUserInfo() {
     fullName: `${getCookie("user.first_name")} ${getCookie("user.last_name")}`,
     userEmail: decodeURIComponent(getCookie("user.email")),
     lastLogin: getLastLogin(),
+    user_id: getCookie("user.id"),
   };
 }
 
@@ -182,3 +183,53 @@ export const compareDates = (accessor, sortOrder) => {
     return 0;
   };
 };
+
+export const toast = (text = "", type = "success") => {
+  const customEvent = new CustomEvent("toast", { detail: { text, type } });
+  document.dispatchEvent(customEvent);
+};
+export const dataStruct = [
+  {
+    value: "tabular",
+    label: "Tabular",
+  },
+];
+
+export const extSysName = [
+  {
+    value: "",
+    label: "None",
+  },
+  {
+    value: "CDR",
+    label: "CDR",
+  },
+  {
+    value: "GDMPM-DAS",
+    label: "GDMPM-DAS",
+  },
+  {
+    value: "IQB",
+    label: "IQB",
+  },
+  {
+    value: "TDSE",
+    label: "TDSE",
+  },
+  {
+    value: "Wingspan",
+    label: "Wingspan",
+  },
+];
+
+export const locationTypes = [
+  "SFTP",
+  "FTPS",
+  "Hive CDP",
+  "Hive CDH",
+  "Impala",
+  "MySQL",
+  "Oracle",
+  "PostgreSQL",
+  "SQL Server",
+];

@@ -1,6 +1,8 @@
-import { render } from "@testing-library/react";
+import React from "react";
+import { mount } from "enzyme";
 import Logout from "./Logout";
 
 test("Rendering Progress bar component", () => {
-  render(<Logout />);
+  const wrapper = mount(<Logout />);
+  expect(wrapper.exists(".wrapper")).toBe(true);
 });

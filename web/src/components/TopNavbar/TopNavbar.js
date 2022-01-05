@@ -85,21 +85,12 @@ const menuItems = [
     pathname: "/dashboard",
   },
   {
-    text: "Analytics",
-    pathname: "/analytics",
+    text: "Reports",
+    menuItems: [],
   },
   {
     text: "Admin",
-    menuItems: [
-      {
-        text: "Policy Management",
-        pathname: "/policy-management",
-      },
-      {
-        text: "Role Management",
-        pathname: "/role-management",
-      },
-    ],
+    menuItems: [],
   },
 ];
 
@@ -161,12 +152,6 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
       <Backdrop style={{ zIndex: 1 }} open={open}>
         <CircularProgress variant="indeterminate" size="small" />
       </Backdrop>
-      <Banner
-        variant="error"
-        open={notLoggedOutErr}
-        onClose={() => setNotLoggedOutErr(false)}
-        message="Error: There is some error in logging out!"
-      />
       <NavigationBar
         LogoComponent={() => (
           <div className={classes.centerAligned}>
@@ -178,7 +163,7 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
               onClick={() => history.push("launchpad")}
             >
               IQVIA™
-              <span className={classes.bold}>
+              <span style={{ paddingLeft: 5 }} className={classes.bold}>
                 Clinical Data Ingestion
               </span>
             </Typography>
@@ -210,6 +195,12 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
         className={classes.nav}
       />
       <NavigationPanel open={panelOpen} onClose={onPanelClose} />
+      <Banner
+        variant="error"
+        open={notLoggedOutErr}
+        onClose={() => setNotLoggedOutErr(false)}
+        message="Error: There is some error in logging out!"
+      />
     </div>
   );
 };
