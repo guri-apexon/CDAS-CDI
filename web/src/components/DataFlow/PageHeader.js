@@ -22,7 +22,7 @@ const PageHeader = ({ height = 120 }) => {
   }, [dashboardData]);
 
   return (
-    <div style={{ height, zIndex: "1201" }}>
+    <div style={{ height, zIndex: "1201" }} className="dataflow-header">
       <ProjectHeader
         menuItems={stateMenuItems}
         maxCellWidth={280}

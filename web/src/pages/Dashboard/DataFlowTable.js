@@ -1,7 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
-// import * as XLSX from "xlsx";
-// import { pick } from "lodash";
 import { useHistory } from "react-router-dom";
 
 import Table, {
@@ -30,8 +28,8 @@ import { TextField } from "apollo-react/components/TextField/TextField";
 import PlusIcon from "apollo-react-icons/Plus";
 import Progress from "../../components/Progress";
 import { MessageContext } from "../../components/MessageProvider";
-import { ReactComponent as DataFlowIcon } from "./dataflow.svg";
-import { ReactComponent as SyncIcon } from "./sync.svg";
+import { ReactComponent as DataFlowIcon } from "../../components/Images/Dataflow.svg";
+import { ReactComponent as SyncIcon } from "../../components/Images/Sync.svg";
 
 const createAutocompleteFilter =
   (source) =>
@@ -155,12 +153,7 @@ const createStringArraySearchFilter = (accessor) => {
 
 export default function DataFlowTable() {
   const [loading, setLoading] = useState(false);
-  const [rowsPerPageRecord, setRowPerPageRecord] = useState(10);
-  const [pageNo, setPageNo] = useState(0);
-  const [sortedColumnValue, setSortedColumnValue] = useState("dateCreated");
   const [selectedFilter, setSelectedFilter] = useState(null);
-  const [sortOrderValue, setSortOrderValue] = useState("desc");
-  const [inlineFilters, setInlineFilters] = useState([]);
   const messageContext = useContext(MessageContext);
   const [totalRows, setTotalRows] = useState(0);
   const history = useHistory();
@@ -729,15 +722,6 @@ export default function DataFlowTable() {
   const [tableRows, setTableRows] = useState([...dashboardData]);
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
 
-  // const handleToggleRow = (dataFlowId) => {
-  //   // eslint-disable-next-line no-shadow
-  //   setExpandedRows((expandedRows) =>
-  //     expandedRows.includes(dataFlowId)
-  //       ? expandedRows.filter((id) => id !== dataFlowId)
-  //       : [...expandedRows, dataFlowId]
-  //   );
-  // };
-
   // useEffect(() => {
   //   if (!dashboard.loading || dashboard.studyboardFetchSuccess) {
   //     setLoading(false);
@@ -749,41 +733,41 @@ export default function DataFlowTable() {
   //   }
   // }, [dashboard.loading, dashboardData, dashboard.studyboardFetchSuccess]);
 
-  const applyFilter = (cols, rows, filts) => {
-    let filteredRows = rows;
-    Object.values(cols).forEach((column) => {
-      if (column.filterFunction) {
-        filteredRows = filteredRows.filter((row) => {
-          return column.filterFunction(row, filts);
-        });
-        if (column.sortFunction) {
-          filteredRows.sort(
-            column.sortFunction(sortedColumnValue, sortOrderValue)
-          );
-        }
-      }
-    });
-    return filteredRows;
-  };
+  // const applyFilter = (cols, rows, filts) => {
+  //   let filteredRows = rows;
+  //   Object.values(cols).forEach((column) => {
+  //     if (column.filterFunction) {
+  //       filteredRows = filteredRows.filter((row) => {
+  //         return column.filterFunction(row, filts);
+  //       });
+  //       if (column.sortFunction) {
+  //         filteredRows.sort(
+  //           column.sortFunction(sortedColumnValue, sortOrderValue)
+  //         );
+  //       }
+  //     }
+  //   });
+  //   return filteredRows;
+  // };
 
-  const exportDataRows = () => {
-    const toBeExportRows = [...dashboardData];
-    const sortedFilteredData = applyFilter(
-      tableColumns,
-      toBeExportRows,
-      inlineFilters
-    );
-    return sortedFilteredData;
-  };
+  // const exportDataRows = () => {
+  //   const toBeExportRows = [...dashboardData];
+  //   const sortedFilteredData = applyFilter(
+  //     tableColumns,
+  //     toBeExportRows,
+  //     inlineFilters
+  //   );
+  //   return sortedFilteredData;
+  // };
 
-  const downloadFile = async () => {
+  // useEffect(() => {
+  //   const rows = exportDataRows();
+  //   setTableRows([...rows]);
+  // }, [inlineFilters, sortedColumnValue, sortOrderValue]);
+
+  const toDataflowMgmt = async () => {
     history.push("/dataflow-management");
   };
-
-  useEffect(() => {
-    const rows = exportDataRows();
-    setTableRows([...rows]);
-  }, [inlineFilters, sortedColumnValue, sortOrderValue]);
 
   useEffect(() => {
     setTableColumns([...moreColumns]);
@@ -814,83 +798,133 @@ export default function DataFlowTable() {
     </>
   );
 
-  const getTableData = React.useMemo(
-    () => (
-      <>
-        {loading ? (
-          <Progress />
-        ) : (
-          <>
-            <Table
-              isLoading={loading}
-              title={
-                // eslint-disable-next-line react/jsx-wrap-multilines
-                <>
-                  {`${totalRows} ${
-                    totalRows >= 1 ? "Data Flows" : "Data Flow"
-                  }`}
-                </>
-              }
-              col
-              columns={tableColumns}
-              rows={tableRows.map((row) => ({
-                ...row,
-                expanded: expandedRows.includes(row.dataFlowId),
-                handleToggleRow,
-              }))}
-              initialSortedColumn="dateCreated"
-              initialSortOrder="asc"
-              sortedColumn={sortedColumnValue}
-              sortOrder={sortOrderValue}
-              rowsPerPageOptions={[10, 50, 100, "All"]}
-              tablePaginationProps={{
-                labelDisplayedRows: ({ from, to, count }) =>
-                  `${
-                    count === 1 ? "Data Flow " : "Data Flows"
-                  } ${from}-${to} of ${count}`,
-                truncate: true,
-              }}
-              page={pageNo}
-              rowsPerPage={rowsPerPageRecord}
-              onChange={(rpp, sc, so, filts, page) => {
-                // console.log("onChange", rpp, sc, so, filts, page, others);
-                setRowPerPageRecord(rpp);
-                setSortedColumnValue(sc);
-                setSortOrderValue(so);
-                setInlineFilters(filts);
-                setPageNo(page);
-              }}
-              columnSettings={{
-                enabled: true,
-                frozenColumnsEnabled: true,
-                defaultColumns: moreColumns,
-                onChange: (changeColumns) => {
-                  setTableColumns(changeColumns);
-                },
-              }}
-              CustomHeader={(props) => (
-                <CustomButtonHeader downloadFile={downloadFile} {...props} />
-              )}
-              emptyProps={{
-                content: <EmptyTableComponent />,
-              }}
-              ExpandableComponent={DetailRow}
-            />
-          </>
-        )}
-      </>
-    ),
-    [
-      tableColumns,
-      tableRows,
-      sortOrderValue,
-      moreColumns,
-      sortedColumnValue,
-      pageNo,
-      rowsPerPageRecord,
-      loading,
-    ]
-  );
+  // const getTableData = React.useMemo(
+  //   () => (
+  //     <>
+  //       {loading ? (
+  //         <Progress />
+  //       ) : (
+  //         <>
+  //           <Table
+  //             isLoading={loading}
+  //             title={
+  //               // eslint-disable-next-line react/jsx-wrap-multilines
+  //               <>
+  //                 {`${totalRows} ${
+  //                   totalRows >= 1 ? "Data Flows" : "Data Flow"
+  //                 }`}
+  //               </>
+  //             }
+  //             col
+  //             columns={tableColumns}
+  //             rows={tableRows.map((row) => ({
+  //               ...row,
+  //               expanded: expandedRows.includes(row.dataFlowId),
+  //               handleToggleRow,
+  //             }))}
+  //             initialSortedColumn="dateCreated"
+  //             initialSortOrder="asc"
+  //             // sortedColumn={sortedColumnValue}
+  //             // sortOrder={sortOrderValue}
+  //             rowsPerPageOptions={[10, 50, 100, "All"]}
+  //             tablePaginationProps={{
+  //               labelDisplayedRows: ({ from, to, count }) =>
+  //                 `${
+  //                   count === 1 ? "Data Flow " : "Data Flows"
+  //                 } ${from}-${to} of ${count}`,
+  //               truncate: true,
+  //             }}
+  //             // page={pageNo}
+  //             // rowsPerPage={rowsPerPageRecord}
+  //             onChange={(rpp, sc, so, filts, page) => {
+  //               // console.log("onChange", rpp, sc, so, filts, page, others);
+  //               // setRowPerPageRecord(rpp);
+  //               // setSortedColumnValue(sc);
+  //               // setSortOrderValue(so);
+  //               // setInlineFilters(filts);
+  //               // setPageNo(page);
+  //             }}
+  //             columnSettings={{
+  //               enabled: true,
+  //               frozenColumnsEnabled: true,
+  //               defaultColumns: moreColumns,
+  //               // onChange: (changeColumns) => {
+  //               //   setTableColumns(changeColumns);
+  //               // },
+  //             }}
+  //             CustomHeader={(props) => (
+  //               <CustomButtonHeader
+  //                 toDataflowMgmt={toDataflowMgmt}
+  //                 {...props}
+  //               />
+  //             )}
+  //             emptyProps={{
+  //               content: <EmptyTableComponent />,
+  //             }}
+  //             ExpandableComponent={DetailRow}
+  //           />
+  //         </>
+  //       )}
+  //     </>
+  //   ),
+  //   [
+  //     tableColumns,
+  //     tableRows,
+  //     sortOrderValue,
+  //     moreColumns,
+  //     sortedColumnValue,
+  //     pageNo,
+  //     rowsPerPageRecord,
+  //     loading,
+  //   ]
+  // );
 
-  return <div className="dataflow-table">{getTableData}</div>;
+  return (
+    <div className="dataflow-table">
+      {loading ? (
+        <Progress />
+      ) : (
+        <>
+          <Table
+            isLoading={loading}
+            title={
+              // eslint-disable-next-line react/jsx-wrap-multilines
+              <>
+                {`${totalRows} ${totalRows >= 1 ? "Data Flows" : "Data Flow"}`}
+              </>
+            }
+            col
+            columns={tableColumns}
+            rows={tableRows.map((row) => ({
+              ...row,
+              expanded: expandedRows.includes(row.dataFlowId),
+              handleToggleRow,
+            }))}
+            initialSortedColumn="dateCreated"
+            initialSortOrder="asc"
+            rowsPerPageOptions={[10, 50, 100, "All"]}
+            tablePaginationProps={{
+              labelDisplayedRows: ({ from, to, count }) =>
+                `${
+                  count === 1 ? "Data Flow " : "Data Flows"
+                } ${from}-${to} of ${count}`,
+              truncate: true,
+            }}
+            columnSettings={{
+              enabled: true,
+              frozenColumnsEnabled: true,
+              defaultColumns: moreColumns,
+            }}
+            CustomHeader={(props) => (
+              <CustomButtonHeader toDataflowMgmt={toDataflowMgmt} {...props} />
+            )}
+            emptyProps={{
+              content: <EmptyTableComponent />,
+            }}
+            ExpandableComponent={DetailRow}
+          />
+        </>
+      )}
+    </div>
+  );
 }

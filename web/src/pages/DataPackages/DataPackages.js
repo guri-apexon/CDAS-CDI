@@ -148,7 +148,112 @@ const DataPackages = () => {
       <Grid container>
         <PageHeader />
         <CssBaseline />
-        <Leftbar />
+        <Blade id="leftSidebar" onChange={onLeftbarChange} open={true}>
+          <Box
+            padding="4"
+            className="flex flex-center justify-between header-sidebar"
+          >
+            <div className="flex flex-center">
+              <img src="assets/svg/dataflow.svg" alt="dataflow" />
+              <Typography variant="body1">Data Flow</Typography>
+            </div>
+            <div>
+              <Switch
+                label="Active"
+                checked={true}
+                size="small"
+                onChange={() => console.log("hello")}
+              />
+              <Tooltip title="Actions" disableFocusListener>
+                <IconMenuButton id="actions" menuItems={[]} size="small">
+                  <EllipsisVerticalIcon />
+                </IconMenuButton>
+              </Tooltip>
+            </div>
+          </Box>
+          <Divider />
+          <Box className="sidebar-content">
+            <Tag
+              label={dataflowType || ""}
+              variant="grey"
+              style={{ textTransform: "capitalize", marginBottom: 20 }}
+            />
+            <Typography variant="title1" gutterBottom>
+              Virologicclinic-IIBR12-001-Other
+            </Typography>
+            <Typography variant="title2" gutterBottom>
+              Analytics Labs
+            </Typography>
+            <br />
+            <div className="flex flex-center">
+              <ArrowRight
+                size="small"
+                style={{
+                  marginLeft: -8,
+                  width: 15,
+                  height: 15,
+                  marginRight: 6,
+                }}
+              />
+              <Typography variant="body2">Description</Typography>
+            </div>
+            <Button
+              variant="primary"
+              style={{ marginTop: 17 }}
+              fullWidth
+              size="small"
+            >
+              View Settings
+            </Button>
+          </Box>
+          <Divider />
+          <Box className="packages-list">
+            <div className="flex flex-center justify-between">
+              <Typography className="b-font">
+                Data Packages & Datasets
+              </Typography>
+              <Button
+                variant="secondary"
+                icon={<PlusIcon />}
+                size="small"
+                onClick={setShowForm}
+              >
+                Add Data Package
+              </Button>
+            </div>
+            <div>
+              <Search
+                className="package-searchbox"
+                placeholder="Search"
+                value={searchTxt}
+                onChange={searchTrigger}
+                size="small"
+                fullWidth
+              />
+            </div>
+            {packageData ? (
+              <div className="list-container customscroll">
+                {loading ? (
+                  <Box display="flex" className="loader-container">
+                    <ApolloProgress />
+                  </Box>
+                ) : (
+                  <>
+                    <Typography variant="body2" style={{ marginLeft: 10 }}>
+                      {`${packageData.packagesList.length} Data Packages`}
+                    </Typography>
+                    <PackagesList userInfo={userInfo} data={packageData} />
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="flex no-result">
+                <img src="assets/svg/datapackage.svg" alt="datapackage" />
+                <Typography>No Data Package or Datasets Added</Typography>
+              </div>
+            )}
+          </Box>
+        </Blade>
         <main className="right-content">
           <Paper className="no-shadow">
             <Box className="top-content">
@@ -192,6 +297,7 @@ const DataPackages = () => {
                       Data Package Settings
                     </Typography>
                     <Checkbox
+                      className="config-checkbox"
                       size="small"
                       label="Package Level Configuration"
                       checked={configShow}
@@ -209,7 +315,7 @@ const DataPackages = () => {
                         size="small"
                         placeholder="Select type..."
                         onChange={(e) => setCompression(e.target.value)}
-                        className="mb-20"
+                        className="mb-20 package-type"
                       >
                         {compressionTypes.map((type, i) => (
                           <MenuItem key={i} value={type.value}>
