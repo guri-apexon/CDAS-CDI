@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -15,13 +15,7 @@ import DataSetsForm from "./DataSetsForm";
 import DataSetsColumns from "./DataSetsColumns";
 import DataSetsVLC from "./DataSetsVLC";
 import "./DataSets.scss";
-import {
-  updateSelectedLocation,
-  changeFormFieldData,
-  hideErrorMessage,
-  getLocationByType,
-} from "../../store/actions/DataFlowAction";
-
+import { hideErrorMessage } from "../../store/actions/DataFlowAction";
 import { getDataKindData } from "../../store/actions/DataSetsAction";
 
 const useStyles = makeStyles((theme) => ({
@@ -56,40 +50,14 @@ const DataSets = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const dataFlowData = useSelector((state) => state.dataFlow);
-  const { loading, createTriggered, error } = dataFlowData;
-  const [locType, setLocType] = useState("SFTP");
+  const { loading, error } = dataFlowData;
   const [tabValue, setTabValue] = React.useState(0);
-  const [modalLocType, setModalLocType] = useState("SFTP");
   const tabs = ["Settings", "Dataset Columns", "VLC"];
 
   useEffect(() => {
     dispatch(getDataKindData());
   }, []);
 
-  useEffect(() => {
-    if (modalLocType === locType) {
-      dispatch(getLocationByType(locType));
-    }
-  }, [createTriggered]);
-
-  const changeLocationData = (value) => {
-    const locationsRec = dataFlowData.locations?.records ?? [];
-    const location = locationsRec?.find(
-      // eslint-disable-next-line eqeqeq
-      (loc) => value == loc.src_loc_id
-    );
-    dispatch(updateSelectedLocation(location));
-  };
-  const changeFormField = (value, field) => {
-    dispatch(changeFormFieldData(value, field));
-  };
-  const changeLocationType = (value) => {
-    dispatch(getLocationByType(value));
-    setLocType(value);
-  };
-  const modalLocationType = (value) => {
-    setModalLocType(value);
-  };
   const closeForm = async () => {
     await dispatch(reset("DataSetsForm"));
     history.push("/dashboard");
@@ -133,15 +101,7 @@ const DataSets = () => {
           </div>
           <Divider />
           <div className={classes.formSection}>
-            {tabValue === 0 && (
-              <DataSetsForm
-                onSubmit={onSubmit}
-                changeLocationData={changeLocationData}
-                changeFormField={changeFormField}
-                changeLocationType={changeLocationType}
-                modalLocationType={modalLocationType}
-              />
-            )}
+            {tabValue === 0 && <DataSetsForm onSubmit={onSubmit} />}
             {tabValue === 1 && <DataSetsColumns />}
             {tabValue === 2 && <DataSetsVLC />}
           </div>
