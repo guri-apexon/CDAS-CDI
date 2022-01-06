@@ -235,3 +235,4 @@ export const locationTypes = [
 ];
 
 export const fileTypes = ["SAS", "Excel", "Delimited", "Fixed Width"];
+export const delimeters = ["COMMA", "TAB", "TILDE", "PIPE"];

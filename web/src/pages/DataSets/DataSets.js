@@ -56,7 +56,7 @@ const DataSets = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const dataFlowData = useSelector((state) => state.dataFlow);
-  const { selectedLocation, loading, createTriggered, error } = dataFlowData;
+  const { loading, createTriggered, error } = dataFlowData;
   const [locType, setLocType] = useState("SFTP");
   const [tabValue, setTabValue] = React.useState(0);
   const [modalLocType, setModalLocType] = useState("SFTP");
@@ -91,12 +91,12 @@ const DataSets = () => {
     setModalLocType(value);
   };
   const closeForm = async () => {
-    await dispatch(reset("DataFlowForm"));
+    await dispatch(reset("DataSetsForm"));
     history.push("/dashboard");
   };
 
   const submitForm = () => {
-    dispatch(submit("DataFlowForm"));
+    dispatch(submit("DataSetsForm"));
   };
 
   const handleChangeTab = (event, value) => {
@@ -124,8 +124,8 @@ const DataSets = () => {
         <div className="content">
           <div className={classes.contentHeader}>
             <Header
-              close={closeForm}
-              submit={submitForm()}
+              close={() => closeForm()}
+              submit={() => submitForm()}
               tabs={tabs}
               tabValue={tabValue}
               handleChangeTab={handleChangeTab}
@@ -140,9 +140,6 @@ const DataSets = () => {
                 changeFormField={changeFormField}
                 changeLocationType={changeLocationType}
                 modalLocationType={modalLocationType}
-                userName={selectedLocation?.usr_nm}
-                password={selectedLocation?.pswd}
-                connLink={selectedLocation?.cnn_url}
               />
             )}
             {tabValue === 1 && <DataSetsColumns />}

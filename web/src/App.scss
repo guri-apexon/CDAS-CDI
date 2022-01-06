@@ -141,3 +141,7 @@
 .customScrollbar::-webkit-scrollbar-button {
   display: none;
 }
+
+.MuiSwitch > span:nth-child(1) {
+  left: 11px;
+}

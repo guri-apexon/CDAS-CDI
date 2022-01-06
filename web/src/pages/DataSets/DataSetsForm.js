@@ -6,19 +6,23 @@ import { reduxForm, getFormValues } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
 import Divider from "apollo-react/components/Divider";
-import Typography from "apollo-react/components/Typography";
+import FixedBar from "apollo-react/components/FixedBar";
+import Status from "apollo-react/components/Status";
 import Radio from "apollo-react/components/Radio";
+import RadioError from "apollo-react-icons/RadioError";
+import Typography from "apollo-react/components/Typography";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
 import {
   ReduxFormAutocomplete,
   ReduxFormRadioGroup,
+  ReduxFormSwitch,
   ReduxFormSelect,
   ReduxFormTextField,
 } from "../../components/FormComponents/FormComponents";
 import validate from "../../components/FormComponents/validation";
 
-import { fileTypes } from "../../utils";
+import { fileTypes, delimeters } from "../../utils";
 
 const styles = {
   paper: {
@@ -78,9 +82,32 @@ const DataSetsFormBase = (props) => {
   const { handleSubmit, classes, datakind } = props;
   return (
     <form onSubmit={handleSubmit}>
-      <Paper className={classes.paper}>
+      <Paper className={classes.paper} style={{ paddingTop: 0 }}>
         <div className={classes.section}>
-          <Typography variant="title1">Dataset Settings</Typography>
+          <FixedBar
+            title="Dataset Settings"
+            style={{ padding: 0, border: "none" }}
+          >
+            <ReduxFormSwitch
+              label="Dataset Active"
+              name="active"
+              className="MuiSwitch"
+              size="small"
+              labelPlacement="start"
+            />
+            <Status
+              variant="positive"
+              icon={RadioError}
+              size="small"
+              style={{ marginLeft: 35 }}
+              label={
+                // eslint-disable-next-line react/jsx-wrap-multilines
+                <Typography variant="body2" style={{ color: "#595959" }}>
+                  Ready
+                </Typography>
+              }
+            />
+          </FixedBar>
           <Grid container spacing={3}>
             <Grid item md={5}>
               <ReduxFormTextField
@@ -109,13 +136,16 @@ const DataSetsFormBase = (props) => {
                 <Radio value="WLATIN1" label="WLATIN1" />
                 <Radio value="UTF-8" label="UTF-8" />
               </ReduxFormRadioGroup>
-              <ReduxFormTextField
-                fullWidth
-                name="Delimiter"
+              <ReduxFormSelect
+                name="delimiter"
                 id="delimiter"
-                inputProps={{ maxLength: 255 }}
                 label="Delimiter"
-              />
+                fullWidth
+              >
+                {delimeters?.map((type) => (
+                  <MenuItem value={type}>{type}</MenuItem>
+                ))}
+              </ReduxFormSelect>
               <ReduxFormTextField
                 fullWidth
                 name="escapeCharacter"
@@ -159,7 +189,7 @@ const DataSetsFormBase = (props) => {
               />
             </Grid>
             <Grid item md={1}>
-              <Divider orientation="vertical" />
+              <Divider orientation="vertical" variant="middle" />
             </Grid>
             <Grid item md={6}>
               <ReduxFormAutocomplete
