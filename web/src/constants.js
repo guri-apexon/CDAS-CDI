@@ -29,7 +29,10 @@ export const UPDATE_DATA_PACKAGE_SUCCESS = "UPDATE_DATA_PACKAGE_SUCCESS";
 export const UPDATE_DATA_PACKAGE_FAILURE = "UPDATE_DATA_PACKAGE_FAILURE";
 export const GET_VENDORS_DATA = "GET_VENDORS_DATA";
 export const GET_LOCATIONS_DATA = "GET_LOCATIONS_DATA";
+export const GET_DATA_KIND = "GET_DATA_KIND";
 
+export const FETCH_DATAKIND_SUCCESS = "FETCH_DATAKIND_SUCCESS";
+export const FETCH_DATAKIND_FAILURE = "FETCH_DATAKIND_FAILURE";
 export const FETCH_LOCATION_SUCCESS = "FETCH_LOCATION_SUCCESS";
 export const FETCH_LOCATION_FAILURE = "FETCH_LOCATION_FAILURE";
 export const FETCH_VENDOR_SUCCESS = "FETCH_VENDOR_SUCCESS";
@@ -66,5 +69,6 @@ export const AUDIT_LOGS_FETCH = "v1/api/audit-logs/get";
 export const FETCHDATAFLOWS = "v1/api/dataflow/studyDataflowList";
 export const LOCATIONAPI = "v1/api/location";
 export const VENDORAPI = "v1/api/vendor";
+export const DATAKINDAPI = "v1/api/datakind";
 
 export const baseURL = process.env.API_URL || "http://localhost:4001";

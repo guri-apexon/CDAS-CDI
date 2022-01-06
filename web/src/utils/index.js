@@ -233,3 +233,5 @@ export const locationTypes = [
   "PostgreSQL",
   "SQL Server",
 ];
+
+export const fileTypes = ["SAS", "Excel", "Delimited", "Fixed Width"];

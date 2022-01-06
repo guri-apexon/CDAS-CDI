@@ -1,5 +1,7 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import Tab from "apollo-react/components/Tab";
+import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
@@ -70,6 +72,19 @@ const Header = (props) => {
           },
         ]}
       />
+      {props.tabs && (
+        <Tabs
+          value={props.tabValue}
+          onChange={props.handleChangeTab}
+          size="small"
+          style={{ marginBottom: "-19px" }}
+          truncate
+        >
+          {props.tabs.map((tab) => (
+            <Tab label={tab} />
+          ))}
+        </Tabs>
+      )}
     </>
   );
 };
