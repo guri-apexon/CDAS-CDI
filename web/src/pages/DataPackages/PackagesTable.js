@@ -194,6 +194,7 @@ const PackagesList = ({ data, userInfo }) => {
       columns={columns}
       rowId="packageName"
       rows={tableData}
+      style={{ overflow: "hidden" }}
       rowProps={{ hover: false }}
       hidePagination={true}
       // tablePaginationProps={{
