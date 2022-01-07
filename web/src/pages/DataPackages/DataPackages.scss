@@ -136,3 +136,20 @@
         font-size: 14px;
     }
 }
+.MuiTreeItem-content {
+    padding-left: 0 !important;
+    .MuiTreeItem-iconContainer {
+        margin-right: 20px !important;
+    }
+}
+.datasetCount {
+    color: #444444 !important;
+    font-size: 14px !important;
+    letter-spacing: 0;
+    line-height: 24px;
+    text-align: right;
+}
+.Mui-selected .datasetCount {
+    color: #000 !important;
+    font-weight: 600  !important;
+}
