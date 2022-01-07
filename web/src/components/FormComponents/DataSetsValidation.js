@@ -3,6 +3,7 @@ import {
   removeUndefined,
   checkAlphaNumeric,
   checkNumbers,
+  checkExceSupport,
 } from "./validators";
 
 const dataSetsValidation = ({
@@ -13,6 +14,7 @@ const dataSetsValidation = ({
   fileNamingConvention,
   rowDecreaseAllowed,
   overrideStaleAlert,
+  delimiter,
   headerRowNumber,
   footerRowNumber,
 }) =>
@@ -21,12 +23,16 @@ const dataSetsValidation = ({
     clinicalDataType: checkRequired(clinicalDataType),
     fileType: checkRequired(fileType),
     transferFrequency:
-      checkRequired(transferFrequency) || checkNumbers(overrideStaleAlert),
-    fileNamingConvention: checkRequired(fileNamingConvention),
+      checkRequired(transferFrequency) || checkNumbers(transferFrequency),
+    fileNamingConvention:
+      checkRequired(fileNamingConvention) ||
+      checkExceSupport(fileNamingConvention, fileType),
     rowDecreaseAllowed: checkNumbers(rowDecreaseAllowed),
     overrideStaleAlert: checkNumbers(overrideStaleAlert),
     headerRowNumber: checkNumbers(headerRowNumber),
     footerRowNumber: checkNumbers(footerRowNumber),
+    delimiter:
+      checkRequired(delimiter) && fileType?.toLowerCase() === "delimited",
   });
 
 export default dataSetsValidation;
