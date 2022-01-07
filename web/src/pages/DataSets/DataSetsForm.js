@@ -25,7 +25,7 @@ import {
   ReduxFormSelect,
   ReduxFormTextField,
 } from "../../components/FormComponents/FormComponents";
-import validate from "../../components/FormComponents/validation";
+import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
 
 import { fileTypes, delimeters } from "../../utils";
 
@@ -281,7 +281,7 @@ const ReduxForm = compose(
   withStyles(styles),
   reduxForm({
     form: "DataSetsForm",
-    validate,
+    validate: dataSetsValidation,
   })
 )(DataSetsFormBase);
 
