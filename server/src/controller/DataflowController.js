@@ -86,3 +86,38 @@ exports.getStudyDataflows = async (req, res) => {
 //     return apiResponse.ErrorResponse(res, err);
 //   }
 // };
+
+exports.hardDelete = async (req, res) => {
+  try {
+    const dataflowId = req.params.dataflowId;
+    const hardDeleteQuery = `DELETE FROM cdascdi1d.cdascdi.dataflow
+    WHERE dataflowid = $1`;
+      const values = [
+        dataflowId,
+      ];
+//       DELETE 
+// FROM orders o
+// USING users u
+// WHERE o.userid = u.id
+//   and u.firstname = 'Sam';
+// DELETE a.*, b.* 
+// FROM messages a 
+// LEFT JOIN usersmessages b 
+// ON b.messageid = a.messageid 
+// WHERE a.messageid = 1
+// DELETE df, dh, dl, df FROM cdascdi1d.cdascdi.dataflow df, cdascdi1d.cdascdi.dataflow_history dh, cdascdi1d.cdascdi.dataflow_audit_log dl, cdascdi1d.cdascdi.datapackage dp, cdascdi1d.cdascdi.datapackage_history dph
+// WHERE df.dataflowid = $1 
+// AND df.dataflowid = um.dataflowid 
+      DB.executeQuery(hardDeleteQuery, values).then(
+        async (response) => {
+          return apiResponse.successResponseWithData(
+            response,
+            "Deleted successfully",
+            {}
+          );
+        }
+      );
+  } catch (err) {
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
