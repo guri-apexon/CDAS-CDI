@@ -58,7 +58,7 @@ const DataSets = () => {
   const dataFlowData = useSelector((state) => state.dataFlow);
   const { loading, createTriggered, error } = dataFlowData;
   const [locType, setLocType] = useState("SFTP");
-  const [tabValue, setTabValue] = React.useState(0);
+  const [tabValue, setTabValue] = React.useState(1);
   const [modalLocType, setModalLocType] = useState("SFTP");
   const tabs = ["Settings", "Dataset Columns", "VLC"];
 

@@ -9,7 +9,7 @@ const studyRoute = require("./study");
 const vendorRoute = require("./vendor");
 const dataFlowRoute = require("./dataflow");
 const dataKindRoute = require("./datakind");
-const columnSet = require("./columnSet");
+const columnSetRoute = require("./columnSet");
 
 const router = express.Router();
 
@@ -30,6 +30,6 @@ router.use("/v1/api/vendor/", vendorRoute);
 router.use("/v1/api/audit-logs/", AuditLogRoute);
 router.use("/v1/api/dataflow/", dataFlowRoute);
 router.use("/v1/api/datakind/", dataKindRoute);
-router.use("/v1/api/columnset/", columnSet);
+router.use("/v1/api/columnset/", columnSetRoute);
 
 module.exports = router;

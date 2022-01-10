@@ -66,11 +66,7 @@ const CDIWrapper = () => {
               exact
               render={() => <DataFlow />}
             />
-            <Route
-              path="/datasets-management"
-              exact
-              render={() => <DataSets />}
-            />
+            <Route path="/datasets" exact render={() => <DataSets />} />
             <Redirect from="/" to="/dashboard" />
           </Switch>
         </div>
