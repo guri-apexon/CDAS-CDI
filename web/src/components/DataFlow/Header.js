@@ -39,9 +39,10 @@ const Breadcrumbs = (props) => {
       className={props.className}
       id="dataflow-breadcrumb"
       items={[
-        { href: "#" },
+        { href: "/dashboard" },
         {
           title: "Data Flow Settings",
+          href: "/dataflow-management",
         },
       ]}
     />

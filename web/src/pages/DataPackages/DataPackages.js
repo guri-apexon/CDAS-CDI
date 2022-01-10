@@ -45,7 +45,7 @@ const compressionTypes = [
   { text: "RAR", value: "rar" },
 ];
 const breadcrumpItems = [
-  { href: "/" },
+  { href: "/dashboard" },
   {
     title: "Data Flow Settings",
     href: "/dataflow-management",
