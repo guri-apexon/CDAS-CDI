@@ -13,13 +13,15 @@ exports.searchVendorList = function (req, res) {
       message: "vendorList",
     });
 
-    DB.executeQuery(searchQuery, [`%${searchParam}%`, `%${searchParam}%`]).then((response) => {
-      const vendors = response.rows || [];
-      return apiResponse.successResponseWithData(res, "Operation success", {
-        records: vendors,
-        totalSize: response.rowCount,
-      });
-    });
+    DB.executeQuery(searchQuery, [`%${searchParam}%`, `%${searchParam}%`]).then(
+      (response) => {
+        const vendors = response.rows || [];
+        return apiResponse.successResponseWithData(res, "Operation success", {
+          records: vendors,
+          totalSize: response.rowCount,
+        });
+      }
+    );
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :vendorList");
@@ -65,12 +67,87 @@ exports.getVendorById = function (req, res) {
 
     DB.executeQuery(searchQuery, [id]).then((response) => {
       const vendors = response.rows[0] || null;
-      return apiResponse.successResponseWithData(res, "Operation success", vendors);
+      return apiResponse.successResponseWithData(
+        res,
+        "Operation success",
+        vendors
+      );
     });
   } catch (err) {
     //throw error in json response with status 500.
-    console.log(err)
+    console.log(err);
     Logger.error("catch :vendorList");
+    Logger.error(err);
+
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.createVendor = async (req, res) => {
+  try {
+    const {
+      verdorId,
+      vendorName,
+      vendorNameStd,
+      description,
+      externalSystemName,
+    } = req.body;
+    const curDate = new Date();
+    const insertQuery = `INSERT INTO cdascdi.vendor
+    (vend_id, vend_nm, vend_nm_stnd, description, active, extrnl_sys_nm, insrt_tm, updt_tm)
+    VALUES($2, $3, $4, $5, 0, $6, $1, $1)`;
+
+    Logger.info({
+      message: "createVendor",
+    });
+    const inset = await DB.executeQuery(insertQuery, [
+      curDate,
+      verdorId,
+      vendorName,
+      vendorNameStd,
+      description,
+      externalSystemName,
+    ]);
+    return apiResponse.successResponseWithData(res, "Operation success", inset);
+  } catch (err) {
+    //throw error in json response with status 500.
+    Logger.error("catch :createVendor");
+    Logger.error(err);
+
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.updateVendor = async (req, res) => {
+  try {
+    const {
+      verdorId,
+      vendorName,
+      vendorStatus,
+      description,
+      externalSystemName,
+    } = req.body;
+    const curDate = new Date();
+    const query = `UPDATE cdascdi.vendor
+    SET vend_nm=$3, description=$4, active=$5, updt_tm=$1
+    WHERE vend_id=$2 AND extrnl_sys_nm=$6`;
+
+    Logger.info({
+      message: "updateVendor",
+    });
+
+    const up = await DB.executeQuery(query, [
+      curDate,
+      verdorId,
+      vendorName,
+      description,
+      vendorStatus,
+      externalSystemName,
+    ]);
+    return apiResponse.successResponseWithData(res, "Operation success", up);
+  } catch (err) {
+    //throw error in json response with status 500.
+    Logger.error("catch :updateVendor");
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
