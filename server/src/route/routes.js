@@ -31,7 +31,7 @@ router.use("/v1/api/vendor/", vendorRoute);
 router.use("/v1/api/audit-logs/", AuditLogRoute);
 router.use("/v1/api/dataflow/", dataFlowRoute);
 router.use("/v1/api/columnset/", columnSetRoute);
-router.use("/v1/api/datakind/", datakindRoute);
+router.use("/v1/api/datakind/", dataKindRoute);
 router.use("/v1/api/dataset/", datasetRoute);
 
 module.exports = router;
