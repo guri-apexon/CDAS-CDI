@@ -23,6 +23,7 @@
     "express-session": "^1.17.2",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
+    "node-cron": "^3.0.0",
     "pg": "^8.7.1",
     "request": "^2.88.2",
     "uuidv4": "^6.2.12",

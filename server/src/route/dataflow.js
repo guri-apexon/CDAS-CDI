@@ -6,9 +6,6 @@ router.get(
   "/studyDataflowList/:protocolId",
   DataflowController.getStudyDataflows
 );
-router.get(
-  "/hard-delete/:dataflowId",
-  DataflowController.hardDelete
-);
+router.post("/hard-delete", DataflowController.hardDelete);
 
 module.exports = router;
