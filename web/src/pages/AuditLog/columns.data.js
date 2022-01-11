@@ -75,6 +75,11 @@ const DateFilter = ({ accessor, filters, updateFilterValue }) => {
   );
 };
 
+const VersionCell = ({ row, column: { accessor } }) => {
+  const version = row[accessor];
+  return <span>{`${version}.0`}</span>;
+};
+
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
   const date =
@@ -142,50 +147,6 @@ const createAutocompleteFilter =
     );
   };
 
-const departments = [
-  "Design",
-  "Engineering",
-  "Human Resources",
-  "Marketing",
-  "QA",
-];
-
-const departmentIcons = {
-  Design: Rocket,
-  Engineering: Cog,
-  "Human Resources": User3,
-  Marketing: Services,
-  QA: Bullseye,
-};
-
-const DepartmentCell = ({ row, column: { accessor } }) => {
-  const department = row[accessor];
-  const Icon = departmentIcons[department] || Question;
-  return (
-    <div style={{ position: "relative" }}>
-      <Icon fontSize="small" style={{ position: "relative", top: 5 }} />
-      {department || "Unknown"}
-    </div>
-  );
-};
-
-const ActionCell = ({ row }) => {
-  return (
-    <div style={{ display: "flex", justifyContent: "end" }}>
-      <IconButton
-        size="small"
-        data-id={row.employeeId}
-        style={{ marginRight: 4 }}
-      >
-        <Pencil />
-      </IconButton>
-      <IconButton size="small" data-id={row.employeeId}>
-        <OpenNew />
-      </IconButton>
-    </div>
-  );
-};
-
 export function createStringArraySearchFilter(accessor) {
   return (row, filters) =>
     !Array.isArray(filters[accessor]) ||
@@ -216,6 +177,7 @@ const columns = [
     header: "Audit Version",
     accessor: "audit_vers",
     sortFunction: compareStrings,
+    customCell: VersionCell,
     filterFunction: createStringSearchFilter("audit_vers"),
     filterComponent: TextFieldFilter,
     width: 70,

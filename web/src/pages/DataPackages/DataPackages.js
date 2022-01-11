@@ -14,23 +14,12 @@ import PasswordInput from "apollo-react/components/PasswordInput";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import Grid from "apollo-react/components/Grid";
-import Search from "apollo-react/components/Search";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
-import Blade from "apollo-react/components/Blade";
-import Divider from "apollo-react/components/Divider";
-import Switch from "apollo-react/components/Switch";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
-import ApolloProgress from "apollo-react/components/ApolloProgress";
-import Tag from "apollo-react/components/Tag";
-import ArrowRight from "apollo-react-icons/ArrowRight";
-import Tooltip from "apollo-react/components/Tooltip";
-import IconMenuButton from "apollo-react/components/IconMenuButton";
-import EllipsisVerticalIcon from "apollo-react-icons/EllipsisVertical";
 import PageHeader from "../../components/DataFlow/PageHeader";
 import Leftbar from "../../components/DataFlow/LeftBar";
-import { debounceFunction, getUserInfo, toast } from "../../utils";
-import PackagesList from "./PackagesTable";
+import { getUserInfo, toast } from "../../utils";
 import {
   addDataPackage,
   getPackagesList,
@@ -63,13 +52,7 @@ const DataPackages = () => {
   const [packagePassword, setPackagePassword] = useState("");
   const [sftpPath, setSftpPath] = useState("");
   const [notMatchedType, setNotMatchedType] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [searchTxt, setSearchTxt] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const packageData = useSelector((state) => state.dataPackage);
-  const dataFlowData = useSelector((state) => state.dataFlow);
-  const { selectedLocation, description, selectedVendor, dataflowType } =
-    dataFlowData;
   const userInfo = getUserInfo();
 
   const showConfig = (e, checked) => {
@@ -90,19 +73,9 @@ const DataPackages = () => {
   const getPackages = (query = "") => {
     dispatch(getPackagesList(query));
   };
-  const searchTrigger = (e) => {
-    const newValue = e.target.value;
-    setSearchTxt(newValue);
-    setLoading(true);
-    debounceFunction(async () => {
-      await getPackages(newValue);
-      setLoading(false);
-    }, 1000);
-  };
 
   useEffect(() => {
     if (packageData && packageData.refreshData) {
-      setSearchTxt("");
       getPackages();
       resetForm();
     }
@@ -136,15 +109,8 @@ const DataPackages = () => {
     console.log("submitPackage", reqBody);
     dispatch(addDataPackage(reqBody));
   };
-  const onLeftbarChange = (e, expanded) => {
-    setSidebarOpen(expanded);
-  };
   return (
-    <div
-      className={`data-packages-wrapper ${
-        sidebarOpen ? " sidebar-opened" : ""
-      }`}
-    >
+    <div className="data-packages-wrapper">
       <Grid container>
         <PageHeader />
         <CssBaseline />
@@ -192,6 +158,7 @@ const DataPackages = () => {
                       Data Package Settings
                     </Typography>
                     <Checkbox
+                      className="config-checkbox"
                       size="small"
                       label="Package Level Configuration"
                       checked={configShow}
@@ -209,7 +176,7 @@ const DataPackages = () => {
                         size="small"
                         placeholder="Select type..."
                         onChange={(e) => setCompression(e.target.value)}
-                        className="mb-20"
+                        className="mb-20 package-type"
                       >
                         {compressionTypes.map((type, i) => (
                           <MenuItem key={i} value={type.value}>
