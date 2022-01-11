@@ -13,6 +13,7 @@ import AuditLog from "../../pages/AuditLog/AuditLog";
 
 const Dashboard = lazy(() => import("../../pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("../../pages/DataFlow/DataFlow"));
+const DataSets = lazy(() => import("../../pages/DataSets/DataSets"));
 
 const Empty = () => <></>;
 
@@ -64,6 +65,11 @@ const CDIWrapper = () => {
               path="/dataflow-management"
               exact
               render={() => <DataFlow />}
+            />
+            <Route
+              path="/datasets-management"
+              exact
+              render={() => <DataSets />}
             />
             <Redirect from="/" to="/dashboard" />
           </Switch>
