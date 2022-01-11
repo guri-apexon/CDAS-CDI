@@ -244,32 +244,11 @@ const columns = [
     align: "right",
   },
 ];
-const DataSetsColumns = () => {
+const DatasetTable = () => {
   const classes = useStyles();
   const [rows, setRows] = useState(initialRows);
   const [editedRows, setEditedRows] = useState(initialRows);
-  const [selectedFile, setSelectedFile] = useState();
-  const [isFilePicked, setIsFilePicked] = useState(false);
-  const [fileUploaded, setFileUploaded] = useState();
 
-  const changeHandler = (event) => {
-    event.preventDefault();
-    setSelectedFile(event.target.files[0]);
-    // const f = event.target.files[0];
-    setIsFilePicked(true);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = e.target.result;
-      const readedData = XLSX.read(data, { type: "binary" });
-      const wsname = readedData.SheetNames[0];
-      const ws = readedData.Sheets[wsname];
-      const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
-      setFileUploaded(dataParse);
-    };
-    reader.readAsBinaryString(selectedFile);
-  };
-
-  const handleSubmission = () => {};
   const editMode = editedRows.length > 0;
   const onEditAll = () => {
     setEditedRows(rows);
@@ -342,4 +321,4 @@ const DataSetsColumns = () => {
   );
 };
 
-export default DataSetsColumns;
+export default DatasetTable;
