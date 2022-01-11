@@ -118,8 +118,8 @@ const hardDeleteTrigger = async (dataflowId) => {
 
 const addDeleteTempLog = async (dataflowId, user) => {
   const insertTempQuery = `INSERT INTO cdascdi1d.cdascdi.temp_json_log(temp_json_log_id, dataflowid, trans_typ, trans_stat, no_of_retry_attempted, del_flg, created_by, created_on, updated_by, updated_on) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-  console.log("insertTempQuery", insertTempQuery);
   const tempId = CommonController.createUniqueID();
+  let result;
   const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
   const values = [
     tempId,
@@ -134,9 +134,28 @@ const addDeleteTempLog = async (dataflowId, user) => {
     currentTime,
   ];
   await DB.executeQuery(insertTempQuery, values).then(async (response) => {
-    return true;
+    result = true;
+  }).catch(err=>{
+    result = false;
   });
-  return false;
+  return result;
+}
+exports.cronHardDelete = async (log) => {
+  const { dataflowid: dataflowId, created_by: user_id } = log;
+  DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [user_id]).then(async (response) => {
+    if(response.rows && response.rows.length){
+      const user = response.rows[0];
+      const deleted = await hardDeleteTrigger(dataflowId);
+      if (deleted) {
+        // const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
+        // WHERE da.dataflowid = $1`;
+        // DB.executeQuery(deleteQuery, [dataflowId]).then(async (response) => {
+        //   return true;
+        // });
+      }
+      return false;
+    }
+  });
 }
 exports.hardDelete = async (req, res) => {
   try {
@@ -144,13 +163,14 @@ exports.hardDelete = async (req, res) => {
     DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [user_id]).then(async (response) => {
       if(response.rows && response.rows.length){
         const user = response.rows[0];
-        const inserted = await addDeleteTempLog(dataflowId, user);
-        console.log('inserted', inserted);
-        return false;
         const deleted = await hardDeleteTrigger(dataflowId);
         if (deleted) {
-          return apiResponse.successResponseWithData(res, "Deleted successfully", {
-            success: true,
+          const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
+          WHERE da.dataflowid = $1`;
+          DB.executeQuery(deleteQuery, [dataflowId]).then(async (response) => {
+            return apiResponse.successResponseWithData(res, "Deleted successfully", {
+              success: true,
+            });
           });
         } else {
           const inserted = await addDeleteTempLog(dataflowId, user);
@@ -161,6 +181,12 @@ exports.hardDelete = async (req, res) => {
               {
                 success: false,
               }
+            );
+          }else{
+            return apiResponse.successResponseWithData(
+              res,
+              "Something wrong. Please try again",
+              {}
             );
           }
         }

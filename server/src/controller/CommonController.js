@@ -2,6 +2,7 @@ const DB = require("../config/db");
 const moment = require("moment");
 const crypto = require("crypto");
 const cron = require('node-cron');
+const { cronHardDelete } = require("./DataflowController");
 
 cron.schedule("* * * * *", () => {
   console.log("running a task every minute");
@@ -9,7 +10,9 @@ cron.schedule("* * * * *", () => {
     async (response) => {
       const logs = response.rows || [];
       if (logs.length) {
-        console.log("response", response.rows);
+        logs.forEach(log => {
+          cronHardDelete(log);
+        });
       }
     }
   );
