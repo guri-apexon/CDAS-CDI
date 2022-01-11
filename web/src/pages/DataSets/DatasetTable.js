@@ -1,4 +1,6 @@
+/* eslint-disable react/button-has-type */
 import React, { useState } from "react";
+import * as XLSX from "xlsx";
 import { makeStyles } from "@material-ui/core/styles";
 import { useDispatch } from "react-redux";
 import Table, { createStringSearchFilter } from "apollo-react/components/Table";
@@ -245,11 +247,12 @@ const columns = [
     align: "right",
   },
 ];
-const DataSetsColumns = () => {
+const DatasetTable = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const [rows, setRows] = useState(initialRows);
   const [editedRows, setEditedRows] = useState(initialRows);
+
   const editMode = editedRows.length > 0;
   const onEditAll = () => {
     setEditedRows(rows);
@@ -305,4 +308,4 @@ const DataSetsColumns = () => {
   );
 };
 
-export default DataSetsColumns;
+export default DatasetTable;

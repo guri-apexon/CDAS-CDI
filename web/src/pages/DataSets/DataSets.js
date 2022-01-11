@@ -12,8 +12,8 @@ import PageHeader from "../../components/DataFlow/PageHeader";
 import Leftbar from "../../components/DataFlow/LeftBar";
 import Header from "../../components/DataFlow/Header";
 import DataSetsForm from "./DataSetsForm";
-import DataSetsColumns from "./DataSetsColumns";
-import DataSetsVLC from "./DataSetsVLC";
+import ColumnsTab from "./ColumnsTab";
+import VLCTab from "./VLCTab";
 import "./DataSets.scss";
 import {
   getDataKindData,
@@ -118,7 +118,7 @@ const DataSets = () => {
         />
       )}
       <div className={classes.toolbar} />
-      <Leftbar />
+      {/* <Leftbar /> */}
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <div className="content">
@@ -137,8 +137,8 @@ const DataSets = () => {
           <Divider />
           <div className={classes.formSection}>
             {tabValue === 0 && <DataSetsForm onSubmit={onSubmit} />}
-            {tabValue === 1 && <DataSetsColumns />}
-            {tabValue === 2 && <DataSetsVLC />}
+            {tabValue === 1 && <ColumnsTab />}
+            {tabValue === 2 && <VLCTab />}
           </div>
         </div>
       </main>

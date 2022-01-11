@@ -1,6 +1,22 @@
 const DB = require("../config/db");
 const moment = require("moment");
 const crypto = require("crypto");
+const cron = require('node-cron');
+const { cronHardDelete } = require("./DataflowController");
+
+// cron.schedule("* * * * *", () => {
+//   console.log("running a task every minute");
+//   DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.temp_json_log`).then(
+//     async (response) => {
+//       const logs = response.rows || [];
+//       if (logs.length) {
+//         logs.forEach(log => {
+//           cronHardDelete(log);
+//         });
+//       }
+//     }
+//   );
+// });
 
 module.exports = {
   createUniqueID: () => {
