@@ -52,10 +52,29 @@ exports.getStudyDataflows = async (req, res) => {
       };
     });
 
+    const uniqueDataflows = Array.from(
+      formatDateValues
+        .reduce((acc, { dataSets, dataPackages, dataFlowId, ...r }) => {
+          const current = acc.get(dataFlowId) || {
+            ...r,
+            dataSets: 0,
+            dataPackages: 0,
+          };
+          return acc.set(dataFlowId, {
+            ...current,
+            dataFlowId,
+            dataSets: parseInt(current.dataSets) + parseInt(dataSets),
+            dataPackages:
+              parseInt(current.dataPackages) + parseInt(dataPackages),
+          });
+        }, new Map())
+        .values()
+    );
+
     return apiResponse.successResponseWithData(
       res,
       "Operation success",
-      formatDateValues
+      uniqueDataflows
     );
   } catch (err) {
     //throw error in json response with status 500.
@@ -88,33 +107,38 @@ exports.getStudyDataflows = async (req, res) => {
 //   }
 // };
 
-
 const hardDeleteTrigger = async (dataflowId) => {
   const values = [dataflowId];
   const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.dataflow_audit_log da
       WHERE da.dataflowid = $1`;
   let result;
-  await DB.executeQuery(deleteQuery, values).then(async (response) => {
-    const deleteQuery2 = `DELETE FROM cdascdi1d.cdascdi.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
+  await DB.executeQuery(deleteQuery, values)
+    .then(async (response) => {
+      const deleteQuery2 = `DELETE FROM cdascdi1d.cdascdi.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
     DELETE FROM cdascdi1d.cdascdi.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
-    // DELETE FROM cdascdi1d.cdascdi.dataset ds WHERE ds.dataflowid = $1;
-    // DELETE FROM cdascdi1d.cdascdi.dataset_history dsh WHERE dsh.dataflowid = $1;
-    await DB.executeQuery(deleteQuery2).then(async (response2) => {
-      const deleteQuery3 = `DELETE FROM cdascdi1d.cdascdi.dataflow
+      // DELETE FROM cdascdi1d.cdascdi.dataset ds WHERE ds.dataflowid = $1;
+      // DELETE FROM cdascdi1d.cdascdi.dataset_history dsh WHERE dsh.dataflowid = $1;
+      await DB.executeQuery(deleteQuery2)
+        .then(async (response2) => {
+          const deleteQuery3 = `DELETE FROM cdascdi1d.cdascdi.dataflow
       WHERE dataflowid = $1`;
-      await DB.executeQuery(deleteQuery3, values).then(async (response3) => {
-        result = true;
-      }).catch((err)=>{
-        result = false;
-      });
-    }).catch((err)=>{
+          await DB.executeQuery(deleteQuery3, values)
+            .then(async (response3) => {
+              result = true;
+            })
+            .catch((err) => {
+              result = false;
+            });
+        })
+        .catch((err) => {
+          result = false;
+        });
+    })
+    .catch((err) => {
       result = false;
     });
-  }).catch((err)=>{
-    result = false;
-  });
   return result;
-}
+};
 
 const addDeleteTempLog = async (dataflowId, user) => {
   const insertTempQuery = `INSERT INTO cdascdi1d.cdascdi.temp_json_log(temp_json_log_id, dataflowid, trans_typ, trans_stat, no_of_retry_attempted, del_flg, created_by, created_on, updated_by, updated_on) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
@@ -133,17 +157,21 @@ const addDeleteTempLog = async (dataflowId, user) => {
     user.usr_id,
     currentTime,
   ];
-  await DB.executeQuery(insertTempQuery, values).then(async (response) => {
-    result = true;
-  }).catch(err=>{
-    result = false;
-  });
+  await DB.executeQuery(insertTempQuery, values)
+    .then(async (response) => {
+      result = true;
+    })
+    .catch((err) => {
+      result = false;
+    });
   return result;
-}
+};
 exports.cronHardDelete = async (log) => {
   const { dataflowid: dataflowId, created_by: user_id } = log;
-  DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [user_id]).then(async (response) => {
-    if(response.rows && response.rows.length){
+  DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [
+    user_id,
+  ]).then(async (response) => {
+    if (response.rows && response.rows.length) {
       const user = response.rows[0];
       const deleted = await hardDeleteTrigger(dataflowId);
       if (deleted) {
@@ -156,25 +184,31 @@ exports.cronHardDelete = async (log) => {
       return false;
     }
   });
-}
+};
 exports.hardDelete = async (req, res) => {
   try {
     const { dataflowId, user_id } = req.body;
-    DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [user_id]).then(async (response) => {
-      if(response.rows && response.rows.length){
+    DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [
+      user_id,
+    ]).then(async (response) => {
+      if (response.rows && response.rows.length) {
         const user = response.rows[0];
         const deleted = await hardDeleteTrigger(dataflowId);
         if (deleted) {
           const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
           WHERE da.dataflowid = $1`;
           DB.executeQuery(deleteQuery, [dataflowId]).then(async (response) => {
-            return apiResponse.successResponseWithData(res, "Deleted successfully", {
-              success: true,
-            });
+            return apiResponse.successResponseWithData(
+              res,
+              "Deleted successfully",
+              {
+                success: true,
+              }
+            );
           });
         } else {
           const inserted = await addDeleteTempLog(dataflowId, user);
-          if(inserted) {
+          if (inserted) {
             return apiResponse.successResponseWithData(
               res,
               "Deleted is in queue. System will delete it automatically after sometime.",
@@ -182,7 +216,7 @@ exports.hardDelete = async (req, res) => {
                 success: false,
               }
             );
-          }else{
+          } else {
             return apiResponse.successResponseWithData(
               res,
               "Something wrong. Please try again",
@@ -190,8 +224,8 @@ exports.hardDelete = async (req, res) => {
             );
           }
         }
-      }else{
-        return apiResponse.ErrorResponse(res, 'User not found');
+      } else {
+        return apiResponse.ErrorResponse(res, "User not found");
       }
     });
   } catch (err) {
