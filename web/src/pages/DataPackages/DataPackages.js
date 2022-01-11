@@ -2,6 +2,7 @@
 /* eslint-disable react/no-array-index-key */
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
 import { submit } from "redux-form";
 import "./DataPackages.scss";
 import Paper from "apollo-react/components/Paper";
@@ -24,7 +25,6 @@ import Switch from "apollo-react/components/Switch";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import ApolloProgress from "apollo-react/components/ApolloProgress";
 import Tag from "apollo-react/components/Tag";
-import ArrowRight from "apollo-react-icons/ArrowRight";
 import Tooltip from "apollo-react/components/Tooltip";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import EllipsisVerticalIcon from "apollo-react-icons/EllipsisVertical";
@@ -55,6 +55,7 @@ const breadcrumpItems = [
 ];
 const DataPackages = () => {
   const dispatch = useDispatch();
+  const history = useHistory();
   const [showForm, setShowForm] = useState(false);
   const [configShow, setConfigShow] = useState(false);
   const [compression, setCompression] = useState("not_compressed");
@@ -138,6 +139,14 @@ const DataPackages = () => {
   const onLeftbarChange = (e, expanded) => {
     setSidebarOpen(expanded);
   };
+  const viewAuditLog = () => {
+    history.push("/audit-logs");
+  };
+  const menuItems = [
+    { text: "View audit log", onClick: viewAuditLog },
+    { text: "Clone data flow" },
+    { text: "Hard delete data flow" },
+  ];
   return (
     <div
       className={`data-packages-wrapper ${
@@ -164,7 +173,7 @@ const DataPackages = () => {
                 onChange={() => console.log("hello")}
               />
               <Tooltip title="Actions" disableFocusListener>
-                <IconMenuButton id="actions" menuItems={[]} size="small">
+                <IconMenuButton id="actions" menuItems={menuItems} size="small">
                   <EllipsisVerticalIcon />
                 </IconMenuButton>
               </Tooltip>
@@ -185,15 +194,6 @@ const DataPackages = () => {
             </Typography>
             <br />
             <div className="flex flex-center">
-              <ArrowRight
-                size="small"
-                style={{
-                  marginLeft: -8,
-                  width: 15,
-                  height: 15,
-                  marginRight: 6,
-                }}
-              />
               <Typography variant="body2">Description</Typography>
             </div>
             <Button
