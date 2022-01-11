@@ -8,6 +8,7 @@ import Grid from "apollo-react/components/Grid";
 import IconButton from "apollo-react/components/IconButton";
 import Pencil from "apollo-react-icons/Pencil";
 import Upload from "apollo-react-icons/Upload";
+import Trash from "apollo-react-icons/Trash";
 import Divider from "apollo-react/components/Divider";
 import Search from "apollo-react/components/Search";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
@@ -69,7 +70,7 @@ const ActionCell = ({ row }) => {
     onDelete,
   } = row;
 
-  return (
+  return editMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
       <Button size="small" style={{ marginRight: 8 }} onClick={onCancel}>
         Cancel
@@ -77,6 +78,15 @@ const ActionCell = ({ row }) => {
       <Button size="small" variant="primary">
         Save
       </Button>
+    </div>
+  ) : (
+    <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
+      <IconButton size="small" onClick={() => onRowEdit(columnId)}>
+        <Pencil />
+      </IconButton>
+      <IconButton size="small" onClick={() => onDelete(columnId)}>
+        <Trash />
+      </IconButton>
     </div>
   );
 };
