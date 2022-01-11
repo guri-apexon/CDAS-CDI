@@ -16,7 +16,6 @@ import ChevronLeftIcon from "apollo-react-icons/ChevronLeft";
 import ChevronRightIcon from "apollo-react-icons/ChevronRight";
 import Typography from "apollo-react/components/Typography";
 import Switch from "apollo-react/components/Switch";
-import ArrowRight from "apollo-react-icons/ArrowRight";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Tag from "apollo-react/components/Tag";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
@@ -289,6 +288,10 @@ const DataFlow = () => {
     history.push("/audit-logs");
   };
 
+  const viewDataPackages = () => {
+    history.push("/data-packages");
+  };
+
   const menuItems = [
     { text: "View audit log", onClick: viewAuditLog },
     { text: "Clone data flow" },
@@ -377,7 +380,6 @@ const DataFlow = () => {
               {selectedVendor?.label}
             </Typography>
             <Typography className={classes.description}>
-              <ArrowRight className={classes.icon} />
               {description}
             </Typography>
             <Button
@@ -399,6 +401,7 @@ const DataFlow = () => {
                 variant="secondary"
                 icon={<PlusIcon />}
                 size="small"
+                onClick={viewDataPackages}
                 style={{ marginRight: 10 }}
               >
                 Add data package
