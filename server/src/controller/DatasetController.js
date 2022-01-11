@@ -70,7 +70,7 @@ exports.saveDatasetColumns = async (req, res) => {
       const body = [
         columnId,
         value.variableLabel || null,
-        value.datasetId || null,
+        value.datasetId || "a070E00000Fh5bHQAR",
         value.columnName || null,
         value.dataType || null,
         value.primary == "Yes" ? 1 : 0,
@@ -84,13 +84,13 @@ exports.saveDatasetColumns = async (req, res) => {
         new Date(),
         new Date(),
       ];
-      const searchQuery = `INSERT into cdascdi1d.cdascdi.columndefinition (columnid, VARIABLE, datasetid, name, datatype, primarykey, required, UNIQUE, charactermin, charactermax, position, FORMAT, lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
+      const searchQuery = `INSERT into cdascdi1d.cdascdi.columndefinition (columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
       Logger.info({
         message: "storeDatasetColumns",
       });
       const inserted =  await DB.executeQuery(searchQuery, body).then(() => {
         const hisBody = [columnId + 1, 1, ...body];
-        const hisQuery = `INSERT into cdascdi1d.cdascdi.columndefinition_history (col_def_version_id,version, columnid, VARIABLE, datasetid, name, datatype, primarykey, required, UNIQUE, charactermin, charactermax, position, FORMAT, lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;
+        const hisQuery = `INSERT into cdascdi1d.cdascdi.columndefinition_history (col_def_version_id,version, columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;
         return DB.executeQuery(hisQuery, hisBody).then(() => {
           return "SUCCESS"
         }).catch((err) => {
