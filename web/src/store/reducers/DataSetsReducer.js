@@ -8,11 +8,15 @@ import {
   STORE_DATASET_SUCCESS,
   STORE_DATASET_FAILURE,
   FETCH_DATAKIND_FAILURE,
+  SAVE_DATASET_COLUMNS,
+  STORE_DATASET_COLUMNS_SUCCESS,
+  STORE_DATASET_COLUMNS_FAILURE,
 } from "../../constants";
 
 export const initialState = {
   loading: false,
   createTriggered: false,
+  datasetColumns: [],
   formData: {
     delimiter: "COMMA",
     fileType: "SAS",
@@ -31,6 +35,7 @@ export const initialState = {
   defaultHeaderRowNumber: 1,
   defaultFooterRowNumber: "",
   error: null,
+  sucessMsg: null,
   datakind: [],
 };
 
@@ -60,6 +65,19 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.error = action.message;
         break;
       case HIDE_ERROR_MSG:
+        newState.error = null;
+        newState.sucessMsg = null;
+        break;
+      case SAVE_DATASET_COLUMNS:
+        newState.loading = true;
+        newState.sucessMsg = "Dataset Columns created succesfully";
+        break;
+      case STORE_DATASET_COLUMNS_SUCCESS:
+        newState.loading = false;
+        newState.datasetColumns = action.datasetColumns;
+        break;
+      case STORE_DATASET_COLUMNS_FAILURE:
+        newState.loading = false;
         newState.error = action.message;
         break;
       default:

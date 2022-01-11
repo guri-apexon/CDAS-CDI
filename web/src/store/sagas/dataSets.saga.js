@@ -9,6 +9,8 @@ import {
   FETCH_DATAKIND_FAILURE,
   STORE_DATASET_SUCCESS,
   STORE_DATASET_FAILURE,
+  STORE_DATASET_COLUMNS_SUCCESS,
+  STORE_DATASET_COLUMNS_FAILURE,
 } from "../../constants";
 
 export function* fetchDataKindData(action = null) {
@@ -48,5 +50,22 @@ export function* saveDataset(action) {
     });
   } catch (e) {
     yield put({ type: STORE_DATASET_FAILURE, message: e.message });
+  }
+}
+
+export function* saveDatasetColumns(action) {
+  try {
+    const fetchSBData = yield call(
+      axios.post,
+      `${baseURL}/${DATASETAPI}/create-columns`,
+      action.values
+    );
+    // console.log("study", fetchSBData);
+    yield put({
+      type: STORE_DATASET_COLUMNS_SUCCESS,
+      datasetColumns: fetchSBData.data.data,
+    });
+  } catch (e) {
+    yield put({ type: STORE_DATASET_COLUMNS_FAILURE, message: e.message });
   }
 }

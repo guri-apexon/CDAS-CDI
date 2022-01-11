@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import { useDispatch } from "react-redux";
 import Table, { createStringSearchFilter } from "apollo-react/components/Table";
 import MenuItem from "apollo-react/components/MenuItem";
 import TextField from "apollo-react/components/TextField";
@@ -14,6 +15,8 @@ import Search from "apollo-react/components/Search";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Select from "apollo-react/components/Select";
+
+import { createDatasetData } from "../../store/actions/DataSetsAction";
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -244,6 +247,7 @@ const columns = [
 ];
 const DataSetsColumns = () => {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const [rows, setRows] = useState(initialRows);
   const [editedRows, setEditedRows] = useState(initialRows);
   const editMode = editedRows.length > 0;
@@ -252,7 +256,8 @@ const DataSetsColumns = () => {
   };
   const onSave = () => {
     setRows(editedRows);
-    setEditedRows([]);
+    setEditedRows(rows);
+    dispatch(createDatasetData(editedRows));
   };
 
   const onCancel = () => {

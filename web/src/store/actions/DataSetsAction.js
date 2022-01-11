@@ -1,6 +1,7 @@
 import {
   GET_DATA_KIND,
   SAVE_DATASET_DATA,
+  SAVE_DATASET_COLUMNS,
   HIDE_ERROR_MSG,
 } from "../../constants";
 
@@ -20,6 +21,13 @@ export const hideErrorMessage = () => {
 export const saveDatasetData = (values) => {
   return {
     type: SAVE_DATASET_DATA,
+    values,
+  };
+};
+
+export const createDatasetData = (values) => {
+  return {
+    type: SAVE_DATASET_COLUMNS,
     values,
   };
 };

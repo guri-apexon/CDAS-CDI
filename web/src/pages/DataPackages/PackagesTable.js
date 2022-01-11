@@ -199,9 +199,9 @@ const PackagesList = ({ data, userInfo }) => {
     <>
       <div style={{ maxWidth: 400 }}>
         <TreeView
-          expanded={expandedRows}
-          selected={selectedRows}
-          onNodeToggle={(e, nodeIds) => handleToggle(e, nodeIds)}
+          // expanded={expandedRows}
+          // selected={selectedRows}
+          // onNodeToggle={(e, nodeIds) => handleToggle(e, nodeIds)}
           max={99}
         >
           {tableData.map((node) => renderTree(node))}
