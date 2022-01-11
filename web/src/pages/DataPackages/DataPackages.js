@@ -110,7 +110,7 @@ const DataPackages = () => {
     dispatch(addDataPackage(reqBody));
   };
   return (
-    <div className="data-packages-wrapper">
+    <div className="data-packages-wrapper ">
       <Grid container>
         <PageHeader />
         <CssBaseline />

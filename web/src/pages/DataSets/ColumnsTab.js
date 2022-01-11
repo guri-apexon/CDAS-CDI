@@ -15,6 +15,7 @@ const ColumnsTab = () => {
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
   const [numberOfRows, setNumberOfRows] = useState(null);
+  const [showColumns, setShowColumns] = useState(false);
 
   const allowedTypes = [
     "xlsx",
@@ -58,50 +59,56 @@ const ColumnsTab = () => {
   const handleSubmission = () => {};
   return (
     <div className="tab colums-tab">
-      <>
-        <p className="title">Configure Dataset Column Settings</p>
-        <p className="sub-title">Select an option</p>
-        <div className="cards-box">
-          <Card style={{ maxWidth: 320, height: 300 }} className="card">
-            <Radio
-              value="fileUpload"
-              label="Upload dataset column settings"
-              onClick={handleChange}
-              checked={selectedMethod === "fileUpload"}
-            />
-            <Link onClick={() => console.log("link clicked")}>
-              Download Excel Template
-            </Link>
-            <div className="upload-box">
-              <FileUpload
-                value={selectedFile}
-                onUpload={handleUpload}
-                onFileDelete={handleDelete}
-                maxItems={1}
+      {!showColumns && (
+        <>
+          <p className="title">Configure Dataset Column Settings</p>
+          <p className="sub-title">Select an option</p>
+          <div className="cards-box">
+            <Card style={{ maxWidth: 320, height: 300 }} className="card">
+              <Radio
+                value="fileUpload"
+                label="Upload dataset column settings"
+                onClick={handleChange}
+                checked={selectedMethod === "fileUpload"}
               />
-            </div>
-          </Card>
-          <Card style={{ maxWidth: 320, height: 300 }} className="card">
-            <Radio
-              value="manually"
-              label="Create manually"
-              onClick={handleChange}
-              checked={selectedMethod === "manually"}
-            />
-            <TextField
-              label="Number of rows"
-              onChange={(e) => setNumberOfRows(e.target.value)}
-              defaultValue={numberOfRows}
-            />
-          </Card>
-        </div>
-        <div style={{ display: "flex", justifyContent: "end" }}>
-          <Button variant="primary" style={{ marginRight: 10, float: "right" }}>
-            Create
-          </Button>
-        </div>
-      </>
-      <DatasetTable />
+              <Link onClick={() => console.log("link clicked")}>
+                Download Excel Template
+              </Link>
+              <div className="upload-box">
+                <FileUpload
+                  value={selectedFile}
+                  onUpload={handleUpload}
+                  onFileDelete={handleDelete}
+                  maxItems={1}
+                />
+              </div>
+            </Card>
+            <Card style={{ maxWidth: 320, height: 300 }} className="card">
+              <Radio
+                value="manually"
+                label="Create manually"
+                onClick={handleChange}
+                checked={selectedMethod === "manually"}
+              />
+              <TextField
+                label="Number of rows"
+                onChange={(e) => setNumberOfRows(e.target.value)}
+                defaultValue={numberOfRows}
+              />
+            </Card>
+          </div>
+          <div style={{ display: "flex", justifyContent: "end" }}>
+            <Button
+              variant="primary"
+              style={{ marginRight: 10, float: "right" }}
+              onClick={() => setShowColumns(true)}
+            >
+              Create
+            </Button>
+          </div>
+        </>
+      )}
+      {showColumns && <DatasetTable numberOfRows={numberOfRows || 1} />}
     </div>
   );
 };
