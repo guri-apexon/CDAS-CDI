@@ -11,6 +11,7 @@ import {
   GET_SERVICE_OWNERS,
   AUDIT_LOGS,
   SAVE_DATASET_DATA,
+  SAVE_DATASET_COLUMNS,
 } from "../../constants";
 
 import {
@@ -20,7 +21,11 @@ import {
 } from "./dataPackage.saga";
 
 import { fetchdashboardData } from "./dashboard.saga";
-import { fetchDataKindData, saveDataset } from "./dataSets.saga";
+import {
+  fetchDataKindData,
+  saveDataset,
+  saveDatasetColumns,
+} from "./dataSets.saga";
 
 import {
   fetchVendorsData,
@@ -43,6 +48,7 @@ function* cdasCoreSaga() {
   yield takeLatest(AUDIT_LOGS, fetchAuditLogs);
   yield takeLatest(GET_DATA_KIND, fetchDataKindData);
   yield takeLatest(SAVE_DATASET_DATA, saveDataset);
+  yield takeLatest(SAVE_DATASET_COLUMNS, saveDatasetColumns);
 }
 
 export default cdasCoreSaga;

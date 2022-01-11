@@ -53,7 +53,8 @@ const DataSets = () => {
   const dataSets = useSelector((state) => state.dataSets);
   const packageData = useSelector((state) => state.dataPackage);
   const { optedDataPackages } = packageData;
-  const { loading, error, createTriggered, selectedDataset } = dataSets;
+  const { loading, error, sucessMsg, createTriggered, selectedDataset } =
+    dataSets;
   const [tabValue, setTabValue] = React.useState(0);
   const tabs = ["Settings", "Dataset Columns", "VLC"];
 
@@ -66,7 +67,9 @@ const DataSets = () => {
 
   useEffect(() => {
     console.log(selectedDataset, "selectedDataset");
-    setTabValue(1);
+    if (createTriggered) {
+      setTabValue(1);
+    }
   }, [createTriggered]);
 
   const closeForm = async () => {
@@ -107,9 +110,10 @@ const DataSets = () => {
       <PageHeader />
       <CssBaseline />
       {loading && <Loader />}
-      {error && (
+      {console.log(sucessMsg, error)}
+      {(error || sucessMsg) && (
         <Banner
-          variant="error"
+          variant={sucessMsg ? "success" : "error"}
           open={true}
           onClose={() => dispatch(hideErrorMessage())}
           style={{ zIndex: 9999, top: "5%" }}

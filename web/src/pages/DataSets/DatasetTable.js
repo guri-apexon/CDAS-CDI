@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
 import { makeStyles } from "@material-ui/core/styles";
+import { useDispatch } from "react-redux";
 import Table, { createStringSearchFilter } from "apollo-react/components/Table";
 import MenuItem from "apollo-react/components/MenuItem";
 import TextField from "apollo-react/components/TextField";
@@ -17,6 +18,8 @@ import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Select from "apollo-react/components/Select";
 
+import { createDatasetData } from "../../store/actions/DataSetsAction";
+
 const useStyles = makeStyles(() => ({
   paper: {
     padding: "25px 16px",
@@ -31,22 +34,6 @@ const fieldStyles = {
     marginLeft: -8,
   },
 };
-const initialRows = [
-  {
-    columnId: 1,
-    variableLabel: "",
-    columnName: "",
-    position: "",
-    format: "",
-    dataType: "",
-    primary: "",
-    unique: "",
-    required: "",
-    minLength: "",
-    maxLength: "",
-    values: "",
-  },
-];
 
 const TextFieldFilter = ({ accessor, filters, updateFilterValue }) => {
   return (
@@ -244,8 +231,24 @@ const columns = [
     align: "right",
   },
 ];
-const DatasetTable = () => {
+const DatasetTable = (props) => {
   const classes = useStyles();
+  const dispatch = useDispatch();
+  const { numberOfRows } = props;
+  const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
+    columnId: index + 1,
+    variableLabel: "",
+    columnName: "",
+    position: "",
+    format: "",
+    dataType: "",
+    primary: "",
+    unique: "",
+    required: "",
+    minLength: "",
+    maxLength: "",
+    values: "",
+  }));
   const [rows, setRows] = useState(initialRows);
   const [editedRows, setEditedRows] = useState(initialRows);
 
@@ -255,7 +258,8 @@ const DatasetTable = () => {
   };
   const onSave = () => {
     setRows(editedRows);
-    setEditedRows([]);
+    setEditedRows(rows);
+    dispatch(createDatasetData(editedRows));
   };
 
   const onCancel = () => {
