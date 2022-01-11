@@ -136,3 +136,37 @@
         font-size: 14px;
     }
 }
+.MuiTreeItem-content {
+    padding-left: 0 !important;
+    .MuiTreeItem-iconContainer {
+        margin-right: 20px !important;
+    }
+}
+.datasetCount {
+    color: #444444 !important;
+    font-size: 14px !important;
+    letter-spacing: 0;
+    line-height: 24px;
+    text-align: right;
+}
+.Mui-selected .datasetCount {
+    color: #000 !important;
+    font-weight: 600  !important;
+}
+.datasetType {
+    font-size: 13px;
+    color: #999999;
+    margin-right: 13px;
+}
+.MuiTreeItem-label {
+    align-items: center;
+}
+.datasetStatus.inactive svg{
+    color: #999999;
+}
+.datasetStatus svg{
+    font-size: 12px;
+}
+.datasetStatus p{
+    color: #595959;
+}

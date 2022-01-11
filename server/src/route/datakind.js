@@ -1,8 +1,10 @@
-const express = require("express");
-const DataKindController = require("../controller/DataKindController");
-const router = express.Router();
+var express = require("express");
+const DatakindController = require("../controller/DatakindController");
 
-router.post("/create", DataKindController.createDataKind);
-router.post("/update", DataKindController.updateDataKind);
+var router = express.Router();
+
+router.get("/list", DatakindController.getDatakindList);
+router.post("/create", DatakindController.createDataKind);
+router.post("/update", DatakindController.updateDataKind);
 
 module.exports = router;
