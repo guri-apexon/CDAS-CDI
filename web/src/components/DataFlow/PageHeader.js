@@ -19,17 +19,6 @@ const PageHeader = ({ height = 120 }) => {
       { label: "Datasets", value: dataSets },
     ];
     setStateMenuItems([...updateData]);
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        dataflowId: "a0A0E00000322XRUAY",
-        user_id: "u1112428",
-      }),
-    };
-    fetch("http://localhost:4001/v1/api/dataflow/hard-delete", requestOptions)
-      .then((response) => response.json())
-      .then((data) => console.log("Data", data));
   }, [dashboardData]);
 
   return (
