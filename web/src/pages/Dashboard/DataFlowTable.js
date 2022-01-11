@@ -28,8 +28,8 @@ import { TextField } from "apollo-react/components/TextField/TextField";
 import PlusIcon from "apollo-react-icons/Plus";
 import Progress from "../../components/Progress";
 import { MessageContext } from "../../components/MessageProvider";
-import { ReactComponent as DataFlowIcon } from "../../components/Images/Dataflow.svg";
-import { ReactComponent as SyncIcon } from "../../components/Images/Sync.svg";
+import { ReactComponent as DataFlowIcon } from "../../components/Icons/dataflow.svg";
+import { ReactComponent as SyncIcon } from "../../components/Icons/Sync.svg";
 
 const createAutocompleteFilter =
   (source) =>
