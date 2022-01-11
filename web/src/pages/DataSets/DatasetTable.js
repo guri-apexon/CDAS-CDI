@@ -275,24 +275,6 @@ const DatasetTable = () => {
   };
   return (
     <div>
-      {/* <input type="file" name="file" onChange={changeHandler} />
-      {isFilePicked ? (
-        <div>
-          <p>
-            {selectedFile.name}
-            {selectedFile.size}
-            {selectedFile.type}
-          </p>
-          <p>
-            lastModifiedDate:
-            {selectedFile.lastModifiedDate.toLocaleDateString()}
-          </p>
-        </div>
-      ) : (
-        <p>Select a file to show details</p>
-      )}
-      <div>
-        <button onClick={handleSubmission}>Submit</button> */}
       <div className={classes.section}>
         <Table
           title="Dataset Column Settings"
