@@ -34,22 +34,6 @@ const fieldStyles = {
     marginLeft: -8,
   },
 };
-const initialRows = [
-  {
-    columnId: 1,
-    variableLabel: "",
-    columnName: "",
-    position: "",
-    format: "",
-    dataType: "",
-    primary: "",
-    unique: "",
-    required: "",
-    minLength: "",
-    maxLength: "",
-    values: "",
-  },
-];
 
 const TextFieldFilter = ({ accessor, filters, updateFilterValue }) => {
   return (
@@ -247,9 +231,24 @@ const columns = [
     align: "right",
   },
 ];
-const DatasetTable = () => {
+const DatasetTable = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const { numberOfRows } = props;
+  const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
+    columnId: index + 1,
+    variableLabel: "",
+    columnName: "",
+    position: "",
+    format: "",
+    dataType: "",
+    primary: "",
+    unique: "",
+    required: "",
+    minLength: "",
+    maxLength: "",
+    values: "",
+  }));
   const [rows, setRows] = useState(initialRows);
   const [editedRows, setEditedRows] = useState(initialRows);
 

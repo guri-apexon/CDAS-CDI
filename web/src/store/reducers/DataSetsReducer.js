@@ -70,11 +70,11 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case SAVE_DATASET_COLUMNS:
         newState.loading = true;
-        newState.sucessMsg = "Dataset Columns created succesfully";
         break;
       case STORE_DATASET_COLUMNS_SUCCESS:
         newState.loading = false;
         newState.datasetColumns = action.datasetColumns;
+        newState.sucessMsg = "Dataset Columns created succesfully";
         break;
       case STORE_DATASET_COLUMNS_FAILURE:
         newState.loading = false;

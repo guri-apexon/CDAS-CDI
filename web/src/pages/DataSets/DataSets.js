@@ -67,7 +67,9 @@ const DataSets = () => {
 
   useEffect(() => {
     console.log(selectedDataset, "selectedDataset");
-    // setTabValue(1);
+    if (createTriggered) {
+      setTabValue(1);
+    }
   }, [createTriggered]);
 
   const closeForm = async () => {
@@ -108,6 +110,7 @@ const DataSets = () => {
       <PageHeader />
       <CssBaseline />
       {loading && <Loader />}
+      {console.log(sucessMsg, error)}
       {(error || sucessMsg) && (
         <Banner
           variant={sucessMsg ? "success" : "error"}
