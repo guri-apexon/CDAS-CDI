@@ -1,6 +1,7 @@
 import {
   ADD_DATA_PACKAGE,
   PACKAGES_LIST,
+  REDIRECT_TO_DATASET,
   UPDATE_DATA_PACKAGE,
 } from "../../constants";
 
@@ -30,5 +31,13 @@ export const deletePackage = (payload) => {
     type: UPDATE_DATA_PACKAGE,
     update_action: "DELETE",
     payload: { ...payload, delete_package: true },
+  };
+};
+
+export const redirectToDataSet = (dataflowid, datapackageid) => {
+  return {
+    type: REDIRECT_TO_DATASET,
+    dataflowid,
+    datapackageid,
   };
 };

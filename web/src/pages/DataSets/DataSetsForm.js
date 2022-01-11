@@ -287,7 +287,7 @@ const ReduxForm = compose(
 
 const selector = formValueSelector("DataSetsForm");
 const DataSetsForm = connect((state) => ({
-  initialValues: state.dataSets, // pull initial values from account reducer
+  initialValues: state.dataSets.formData, // pull initial values from account reducer
   values: getFormValues("DataSetsForm")(state),
   formValues: selector(state, "fileType"),
   defaultDelimiter: state.dataSets.defaultDelimiter,

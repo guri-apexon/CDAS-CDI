@@ -4,8 +4,11 @@ import axios from "axios";
 import {
   baseURL,
   DATAKINDAPI,
+  DATASETAPI,
   FETCH_DATAKIND_SUCCESS,
   FETCH_DATAKIND_FAILURE,
+  STORE_DATASET_SUCCESS,
+  STORE_DATASET_FAILURE,
 } from "../../constants";
 
 export function* fetchDataKindData(action = null) {
@@ -27,5 +30,23 @@ export function* fetchDataKindData(action = null) {
     });
   } catch (e) {
     yield put({ type: FETCH_DATAKIND_FAILURE, message: e.message });
+  }
+}
+
+export function* saveDataset(action) {
+  try {
+    const fetchSBData = yield call(
+      axios.post,
+      `${baseURL}/${DATASETAPI}/create`,
+      action.values
+    );
+
+    // console.log("study", fetchSBData);
+    yield put({
+      type: STORE_DATASET_SUCCESS,
+      dataset: fetchSBData.data.data,
+    });
+  } catch (e) {
+    yield put({ type: STORE_DATASET_FAILURE, message: e.message });
   }
 }

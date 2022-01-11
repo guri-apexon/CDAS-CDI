@@ -153,3 +153,20 @@
     color: #000 !important;
     font-weight: 600  !important;
 }
+.datasetType {
+    font-size: 13px;
+    color: #999999;
+    margin-right: 13px;
+}
+.MuiTreeItem-label {
+    align-items: center;
+}
+.datasetStatus.inactive svg{
+    color: #999999;
+}
+.datasetStatus svg{
+    font-size: 12px;
+}
+.datasetStatus p{
+    color: #595959;
+}

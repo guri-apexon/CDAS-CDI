@@ -5,7 +5,6 @@ import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
-import { ReactComponent as DataPackageIcon } from "../Icons/datapackage.svg";
 
 const useStyles = makeStyles(() => ({
   breadcrumbs: {
@@ -34,16 +33,12 @@ const useStyles = makeStyles(() => ({
 }));
 
 const Breadcrumbs = (props) => {
+  const items = props.breadcrumbItems ?? [];
   return (
     <BreadcrumbsUI
       className={props.className}
       id="dataflow-breadcrumb"
-      items={[
-        { href: "#" },
-        {
-          title: "Data Flow Settings",
-        },
-      ]}
+      items={items}
     />
   );
 };
@@ -51,14 +46,21 @@ const Header = (props) => {
   const classes = useStyles();
   return (
     <>
-      <Breadcrumbs className={classes.breadcrumbs} />
+      <Breadcrumbs
+        className={classes.breadcrumbs}
+        breadcrumbItems={props.breadcrumbItems}
+      />
       <div style={{ display: "flex", paddingLeft: 11 }}>
-        <DataPackageIcon className={classes.contentIcon} />
+        {props.icon}
         <Typography className={classes.contentTitle}>
-          Virologicclinic-IIBR12-001-Other
+          {props.headerTitle}
         </Typography>
       </div>
-      <Typography className={classes.contentSubTitle}>6 datasets</Typography>
+      {props.datasetsCount && (
+        <Typography className={classes.contentSubTitle}>
+          {`${props.datasetsCount} datasets`}
+        </Typography>
+      )}
       <ButtonGroup
         alignItems="right"
         buttonProps={[
