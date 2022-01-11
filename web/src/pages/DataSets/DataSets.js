@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -16,13 +16,12 @@ import DataSetsColumns from "./DataSetsColumns";
 import DataSetsVLC from "./DataSetsVLC";
 import "./DataSets.scss";
 import {
-  updateSelectedLocation,
-  changeFormFieldData,
+  getDataKindData,
   hideErrorMessage,
-  getLocationByType,
-} from "../../store/actions/DataFlowAction";
+  saveDatasetData,
+} from "../../store/actions/DataSetsAction";
 
-import { getDataKindData } from "../../store/actions/DataSetsAction";
+import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -32,6 +31,9 @@ const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
   content: {
     flexGrow: 1,
+  },
+  contentIcon: {
+    color: "#595959",
   },
   contentHeader: {
     paddingTop: 11,
@@ -44,52 +46,29 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const onSubmit = (values) => {
-  setTimeout(() => {
-    // eslint-disable-next-line no-console
-    console.log(JSON.stringify(values, null, 2));
-  }, 400);
-};
-
 const DataSets = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
-  const dataFlowData = useSelector((state) => state.dataFlow);
-  const { loading, createTriggered, error } = dataFlowData;
-  const [locType, setLocType] = useState("SFTP");
-  const [tabValue, setTabValue] = React.useState(1);
-  const [modalLocType, setModalLocType] = useState("SFTP");
+  const dataSets = useSelector((state) => state.dataSets);
+  const packageData = useSelector((state) => state.dataPackage);
+  const { optedDataPackages } = packageData;
+  const { loading, error, createTriggered, selectedDataset } = dataSets;
+  const [tabValue, setTabValue] = React.useState(0);
   const tabs = ["Settings", "Dataset Columns", "VLC"];
 
   useEffect(() => {
+    if (Object.keys(optedDataPackages).length === 0) {
+      history.push("/dataflow-management");
+    }
     dispatch(getDataKindData());
   }, []);
 
   useEffect(() => {
-    if (modalLocType === locType) {
-      dispatch(getLocationByType(locType));
-    }
+    console.log(selectedDataset, "selectedDataset");
+    setTabValue(1);
   }, [createTriggered]);
 
-  const changeLocationData = (value) => {
-    const locationsRec = dataFlowData.locations?.records ?? [];
-    const location = locationsRec?.find(
-      // eslint-disable-next-line eqeqeq
-      (loc) => value == loc.src_loc_id
-    );
-    dispatch(updateSelectedLocation(location));
-  };
-  const changeFormField = (value, field) => {
-    dispatch(changeFormFieldData(value, field));
-  };
-  const changeLocationType = (value) => {
-    dispatch(getLocationByType(value));
-    setLocType(value);
-  };
-  const modalLocationType = (value) => {
-    setModalLocType(value);
-  };
   const closeForm = async () => {
     await dispatch(reset("DataSetsForm"));
     history.push("/dashboard");
@@ -103,6 +82,26 @@ const DataSets = () => {
     setTabValue(value);
   };
 
+  const onSubmit = (values) => {
+    setTimeout(() => {
+      // eslint-disable-next-line no-console
+      console.log(JSON.stringify(values, null, 2));
+      dispatch(saveDatasetData(values));
+    }, 400);
+  };
+
+  const breadcrumbItems = [
+    { href: "#" },
+    {
+      title: optedDataPackages.dataflowid ?? "Dataflow Name",
+    },
+    {
+      title: optedDataPackages.datapackageid ?? "Datapackage Name",
+    },
+    {
+      title: "Create Dataset",
+    },
+  ];
   return (
     <div className={classes.root}>
       <PageHeader />
@@ -113,7 +112,7 @@ const DataSets = () => {
           variant="error"
           open={true}
           onClose={() => dispatch(hideErrorMessage())}
-          style={{ zIndex: 9999, top: "15%" }}
+          style={{ zIndex: 9999, top: "5%" }}
           message={error}
         />
       )}
@@ -125,23 +124,18 @@ const DataSets = () => {
           <div className={classes.contentHeader}>
             <Header
               close={() => closeForm()}
+              breadcrumbItems={breadcrumbItems || []}
               submit={() => submitForm()}
               tabs={tabs}
+              headerTitle="Dataset name"
               tabValue={tabValue}
+              icon={<DatasetsIcon className={classes.contentIcon} />}
               handleChangeTab={handleChangeTab}
             />
           </div>
           <Divider />
           <div className={classes.formSection}>
-            {tabValue === 0 && (
-              <DataSetsForm
-                onSubmit={onSubmit}
-                changeLocationData={changeLocationData}
-                changeFormField={changeFormField}
-                changeLocationType={changeLocationType}
-                modalLocationType={modalLocationType}
-              />
-            )}
+            {tabValue === 0 && <DataSetsForm onSubmit={onSubmit} />}
             {tabValue === 1 && <DataSetsColumns />}
             {tabValue === 2 && <DataSetsVLC />}
           </div>

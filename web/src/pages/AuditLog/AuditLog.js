@@ -82,7 +82,11 @@ const AuditLog = () => {
               } ${from}-${to} of ${count}`,
             truncate: true,
           }}
-          columnSettings={{ enabled: true, frozenColumnsEnabled: true }}
+          columnSettings={{
+            enabled: true,
+            frozenColumnsEnabled: true,
+            defaultColumns: columns,
+          }}
         />
       </Box>
     </main>

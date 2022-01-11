@@ -8,12 +8,14 @@ import {
   ADD_PACKAGE_SUCCESS,
   UPDATE_DATA_PACKAGE,
   UPDATE_DATA_PACKAGE_SUCCESS,
+  REDIRECT_TO_DATASET,
   UPDATE_DATA_PACKAGE_FAILURE,
 } from "../../constants";
 
 export const initialState = {
   packagesList: [],
   selectedPackage: {},
+  optedDataPackages: {},
   loading: false,
   refreshData: false,
 };
@@ -79,7 +81,12 @@ const DataPackageReducer = (state = initialState, action) =>
         newState.loading = false;
         newState.response = null;
         break;
-
+      case REDIRECT_TO_DATASET:
+        newState.optedDataPackages = {
+          dataflowid: action.dataflowid,
+          datapackageid: action.datapackageid,
+        };
+        break;
       default:
         break;
     }

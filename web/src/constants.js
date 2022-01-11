@@ -51,6 +51,11 @@ export const AUDIT_LOGS = "AUDIT_LOGS";
 export const AUDIT_LOGS_SUCCESS = "AUDIT_LOGS_SUCCESS";
 export const AUDIT_LOGS_FAILURE = "AUDIT_LOGS_FAILURE";
 
+export const REDIRECT_TO_DATASET = "REDIRECT_TO_DATASET";
+export const SAVE_DATASET_DATA = "SAVE_DATASET_DATA";
+export const STORE_DATASET_SUCCESS = "STORE_DATASET_SUCCESS";
+export const STORE_DATASET_FAILURE = "STORE_DATASET_FAILURE";
+
 // API URLS
 
 export const DASHBOARD_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
@@ -70,5 +75,6 @@ export const FETCHDATAFLOWS = "v1/api/dataflow/studyDataflowList";
 export const LOCATIONAPI = "v1/api/location";
 export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";
+export const DATASETAPI = "v1/api/dataset";
 
 export const baseURL = process.env.API_URL || "http://localhost:4001";

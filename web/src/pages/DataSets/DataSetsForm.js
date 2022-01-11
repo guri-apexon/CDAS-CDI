@@ -1,8 +1,13 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
 import compose from "@hypnosphi/recompose/compose";
-import { connect } from "react-redux";
-import { reduxForm, getFormValues } from "redux-form";
+import { connect, useDispatch } from "react-redux";
+import {
+  reduxForm,
+  getFormValues,
+  formValueSelector,
+  change,
+} from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
 import Divider from "apollo-react/components/Divider";
@@ -20,7 +25,7 @@ import {
   ReduxFormSelect,
   ReduxFormTextField,
 } from "../../components/FormComponents/FormComponents";
-import validate from "../../components/FormComponents/validation";
+import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
 
 import { fileTypes, delimeters } from "../../utils";
 
@@ -79,7 +84,36 @@ const styles = {
 };
 
 const DataSetsFormBase = (props) => {
-  const { handleSubmit, classes, datakind } = props;
+  const dispatch = useDispatch();
+  const {
+    handleSubmit,
+    classes,
+    datakind,
+    formValues,
+    defaultDelimiter,
+    defaultEscapeCharacter,
+    defaultQuote,
+    defaultHeaderRowNumber,
+    defaultFooterRowNumber,
+  } = props;
+
+  const setDefaultValues = (e) => {
+    const fileValue = e.target.value;
+    if (fileValue !== "Delimited") {
+      dispatch(change("DataSetsForm", "delimiter", defaultDelimiter));
+      dispatch(
+        change("DataSetsForm", "escapeCharacter", defaultEscapeCharacter)
+      );
+      dispatch(change("DataSetsForm", "quote", defaultQuote));
+      dispatch(
+        change("DataSetsForm", "headerRowNumber", defaultHeaderRowNumber)
+      );
+      dispatch(
+        change("DataSetsForm", "footerRowNumber", defaultFooterRowNumber)
+      );
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
@@ -121,49 +155,60 @@ const DataSetsFormBase = (props) => {
                 name="fileType"
                 id="fileType"
                 label="File Type"
+                onChange={setDefaultValues}
                 fullWidth
               >
                 {fileTypes?.map((type) => (
                   <MenuItem value={type}>{type}</MenuItem>
                 ))}
               </ReduxFormSelect>
-              <ReduxFormRadioGroup
-                name="encoding"
-                id="encoding"
-                label="Encoding"
-                row
-              >
-                <Radio value="WLATIN1" label="WLATIN1" />
-                <Radio value="UTF-8" label="UTF-8" />
-              </ReduxFormRadioGroup>
-              <ReduxFormSelect
-                name="delimiter"
-                id="delimiter"
-                label="Delimiter"
-                fullWidth
-              >
-                {delimeters?.map((type) => (
-                  <MenuItem value={type}>{type}</MenuItem>
-                ))}
-              </ReduxFormSelect>
-              <ReduxFormTextField
-                fullWidth
-                name="escapeCharacter"
-                id="escapeCharacter"
-                inputProps={{ maxLength: 255 }}
-                label="Escape Character"
-              />
-              <ReduxFormTextField
-                fullWidth
-                name="quote"
-                id="quote"
-                inputProps={{ maxLength: 255 }}
-                label="Quote"
-              />
+              {formValues === "SAS" && (
+                <ReduxFormRadioGroup
+                  name="encoding"
+                  id="encoding"
+                  label="Encoding"
+                  row
+                >
+                  <Radio value="WLATIN1" label="WLATIN1" />
+                  <Radio value="UTF-8" label="UTF-8" />
+                </ReduxFormRadioGroup>
+              )}
+              {(formValues === "SAS" || formValues === "Delimited") && (
+                <>
+                  <ReduxFormSelect
+                    name="delimiter"
+                    id="delimiter"
+                    label="Delimiter"
+                    disabled={formValues === "SAS"}
+                    fullWidth
+                  >
+                    {delimeters?.map((type) => (
+                      <MenuItem value={type}>{type}</MenuItem>
+                    ))}
+                  </ReduxFormSelect>
+                  <ReduxFormTextField
+                    fullWidth
+                    name="escapeCharacter"
+                    id="escapeCharacter"
+                    disabled={formValues === "SAS"}
+                    inputProps={{ maxLength: 255 }}
+                    label="Escape Character"
+                  />
+                  <ReduxFormTextField
+                    fullWidth
+                    name="quote"
+                    id="quote"
+                    disabled={formValues === "SAS"}
+                    inputProps={{ maxLength: 255 }}
+                    label="Quote"
+                  />
+                </>
+              )}
               <ReduxFormTextField
                 fullWidth
                 name="headerRowNumber"
                 id="headerRowNumber"
+                disabled={formValues === "SAS"}
                 inputProps={{ maxLength: 255 }}
                 label="Header Row Number"
               />
@@ -171,6 +216,7 @@ const DataSetsFormBase = (props) => {
                 fullWidth
                 name="footerRowNumber"
                 id="footerRowNumber"
+                disabled={formValues === "SAS"}
                 inputProps={{ maxLength: 255 }}
                 label="Footer Row Number"
               />
@@ -235,13 +281,20 @@ const ReduxForm = compose(
   withStyles(styles),
   reduxForm({
     form: "DataSetsForm",
-    validate,
+    validate: dataSetsValidation,
   })
 )(DataSetsFormBase);
 
+const selector = formValueSelector("DataSetsForm");
 const DataSetsForm = connect((state) => ({
-  initialValues: state.dataSets, // pull initial values from account reducer
+  initialValues: state.dataSets.formData, // pull initial values from account reducer
   values: getFormValues("DataSetsForm")(state),
+  formValues: selector(state, "fileType"),
+  defaultDelimiter: state.dataSets.defaultDelimiter,
+  defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
+  defaultQuote: state.dataSets.defaultQuote,
+  defaultHeaderRowNumber: state.dataSets.defaultHeaderRowNumber,
+  defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
   datakind: state.dataSets.datakind?.records,
 }))(ReduxForm);
 

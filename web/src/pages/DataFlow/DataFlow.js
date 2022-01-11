@@ -22,6 +22,8 @@ import {
   getLocationByType,
 } from "../../store/actions/DataFlowAction";
 
+import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
+
 const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
@@ -48,6 +50,13 @@ const onSubmit = (values) => {
     console.log(JSON.stringify(values, null, 2));
   }, 400);
 };
+
+const breadcrumbItems = [
+  { href: "#" },
+  {
+    title: "Data Flow Settings",
+  },
+];
 
 const DataFlow = () => {
   const classes = useStyles();
@@ -119,7 +128,14 @@ const DataFlow = () => {
         <div className={classes.toolbar} />
         <div className="content">
           <div className={classes.contentHeader}>
-            <Header close={closeForm} submit={submitForm()} />
+            <Header
+              close={closeForm}
+              submit={submitForm()}
+              breadcrumbItems={breadcrumbItems}
+              headerTitle="Virologicclinic-IIBR12-001-Other"
+              icon={<DataPackageIcon className={classes.contentIcon} />}
+              datasetsCount={6}
+            />
           </div>
           <Divider />
           <div className={classes.formSection}>
