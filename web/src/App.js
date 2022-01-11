@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter, useHistory } from "react-router-dom";
 
 import "./App.scss";
-import CDIWrapper from "./components/CDIWrapper/CDIWrapper";
+import CDIWrapper from "./CDIWrapper/CDIWrapper";
 import AppProvider from "./components/AppProvider";
 import MessageProvider from "./components/MessageProvider";
 

@@ -1,7 +1,7 @@
 import React from "react";
 
-const DataSetsVLC = () => {
+const VLCTab = () => {
   return <div>Datasets VLC</div>;
 };
 
-export default DataSetsVLC;
+export default VLCTab;

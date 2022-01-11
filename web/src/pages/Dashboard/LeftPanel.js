@@ -8,11 +8,11 @@ import Divider from "apollo-react/components/Divider";
 import Typography from "apollo-react/components/Typography";
 import Search from "apollo-react/components/Search";
 import { makeStyles } from "@material-ui/core/styles";
-import { ReactComponent as PriorityIcon } from "../../components/Images/Priority.svg";
-import { ReactComponent as IngestionIcon } from "../../components/Images/Issue.svg";
-import { ReactComponent as StaleFilesIcon } from "../../components/Images/Stale.svg";
-import { ReactComponent as PinnedIcon } from "../../components/Images/Pin.svg";
-import { ReactComponent as UnPinnedIcon } from "../../components/Images/UnPin.svg";
+import { ReactComponent as PriorityIcon } from "../../components/Icons/Priority.svg";
+import { ReactComponent as IngestionIcon } from "../../components/Icons/Issue.svg";
+import { ReactComponent as StaleFilesIcon } from "../../components/Icons/Stale.svg";
+import { ReactComponent as PinnedIcon } from "../../components/Icons/Pin.svg";
+import { ReactComponent as UnPinnedIcon } from "../../components/Icons/UnPin.svg";
 import Progress from "../../components/Progress";
 import { debounceFunction } from "../../utils";
 import searchStudy, {

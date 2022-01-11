@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/no-array-index-key */
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import "./AuditLog.scss";
 import Paper from "apollo-react/components/Paper";
@@ -11,13 +11,14 @@ import Table from "apollo-react/components/Table";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import PageHeader from "../../components/DataFlow/PageHeader";
 import columns from "./columns.data";
-import { rowsWithExtra } from "./rows.data";
+// import { rowsWithExtra } from "./rows.data";
 import { getAuditLogs } from "../../store/actions/AuditLogsAction";
 
 const breadcrumpItems = [
-  { href: "/" },
+  { href: "/dashboard" },
   {
     title: "Data Flow Settings",
+    href: "/dataflow-management",
   },
   {
     title: "Audit Log",

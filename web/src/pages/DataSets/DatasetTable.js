@@ -1,4 +1,6 @@
+/* eslint-disable react/button-has-type */
 import React, { useState } from "react";
+import * as XLSX from "xlsx";
 import { makeStyles } from "@material-ui/core/styles";
 import Table, { createStringSearchFilter } from "apollo-react/components/Table";
 import MenuItem from "apollo-react/components/MenuItem";
@@ -242,10 +244,11 @@ const columns = [
     align: "right",
   },
 ];
-const DataSetsColumns = () => {
+const DatasetTable = () => {
   const classes = useStyles();
   const [rows, setRows] = useState(initialRows);
   const [editedRows, setEditedRows] = useState(initialRows);
+
   const editMode = editedRows.length > 0;
   const onEditAll = () => {
     setEditedRows(rows);
@@ -300,4 +303,4 @@ const DataSetsColumns = () => {
   );
 };
 
-export default DataSetsColumns;
+export default DatasetTable;
