@@ -159,6 +159,7 @@ const createStringArraySearchFilter = (accessor) => {
 export default function DataFlowTable() {
   const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState(null);
+  const [topFilterData, setTopFilterData] = useState([]);
   const messageContext = useContext(MessageContext);
   const [totalRows, setTotalRows] = useState(0);
   const [rowData, setRowData] = useState([]);
@@ -178,13 +179,14 @@ export default function DataFlowTable() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line no-nested-ternary
     const dashboardData = selectedFilter
-      ? dashboard?.dashboardData.filter((data) => data.type === selectedFilter)
+      ? selectedFilter === "all"
+        ? dashboard.flowData
+        : dashboard?.flowData.filter((data) => data.type === selectedFilter)
       : dashboard.flowData;
     setRowData([...dashboardData]);
-  }, [dashboard?.dashboardData, dashboard.flowData, selectedFilter]);
-
-  const statuses = ["Active", "Inactive"];
+  }, [dashboard.flowData, selectedFilter]);
 
   const LinkCell = ({ row, column: { accessor } }) => {
     const rowValue = row[accessor];
@@ -375,10 +377,10 @@ export default function DataFlowTable() {
           onChange={(event, value) => setSelectedFilter(value)}
         >
           <SegmentedControl value="all">All</SegmentedControl>
-          <SegmentedControl disabled={!(totalRows >= 1)} value="0">
+          <SegmentedControl disabled={!(totalRows >= 1)} value="Production">
             Production
           </SegmentedControl>
-          <SegmentedControl disabled={!(totalRows >= 1)} value="1">
+          <SegmentedControl disabled={!(totalRows >= 1)} value="Test">
             Test
           </SegmentedControl>
         </SegmentedControlGroup>
