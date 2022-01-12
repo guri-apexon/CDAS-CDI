@@ -1,5 +1,5 @@
 /* eslint-disable react/button-has-type */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { makeStyles } from "@material-ui/core/styles";
 import { useDispatch, useSelector } from "react-redux";
@@ -285,7 +285,7 @@ const DatasetTable = (props) => {
   const dispatch = useDispatch();
   const dataSets = useSelector((state) => state.dataSets);
   const { selectedDataset } = dataSets;
-  const { numberOfRows } = props;
+  const { numberOfRows, dataOrigin, formattedData } = props;
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     columnId: index + 1,
     variableLabel: "",
@@ -302,10 +302,23 @@ const DatasetTable = (props) => {
   }));
   const [rows, setRows] = useState(initialRows);
   const [editedRows, setEditedRows] = useState(initialRows);
+  const [editByRow, setEditByRow] = useState([]);
   const [rowErr, setRowErr] = useState({});
   const editMode = editedRows.length > 0;
+
+  useEffect(() => {
+    if (dataOrigin === "fileUpload") {
+      setRows([...formattedData]);
+    }
+    console.log("dataOrigin", dataOrigin, formattedData, rows);
+  }, [dataOrigin]);
+
   const onEditAll = () => {
     setEditedRows(rows);
+  };
+
+  const onRowEdit = (columnId) => {
+    console.log("rowid", columnId);
   };
   const onSave = () => {
     setRows(editedRows);
@@ -328,21 +341,27 @@ const DatasetTable = (props) => {
     );
     setRowErr((err) => ({ ...err, [key]: errorTxt }));
   };
-  return (
-    <div>
-      <div className={classes.section}>
+
+  const getTableData = React.useMemo(
+    () => (
+      <>
         <Table
           title="Dataset Column Settings"
-          subtitle="0 dataset columns"
+          subtitle={`${
+            rows.length > 1
+              ? `${rows.length}dataset columns`
+              : `${rows.length}dataset columns`
+          }`}
           columns={columns}
           rowId="columnId"
-          hasScroll
+          hasScroll={true}
           rows={(editMode ? editedRows : rows).map((row) => ({
             ...row,
             onDelete,
             editRow,
             editMode,
             selectedDataset,
+            onRowEdit,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}
@@ -354,7 +373,14 @@ const DatasetTable = (props) => {
           CustomHeader={CustomHeader}
           headerProps={{ onSave, onCancel, editMode }}
         />
-      </div>
+      </>
+    ),
+    [columns, editMode, editedRows, rows]
+  );
+
+  return (
+    <div>
+      <div className={classes.section}>{getTableData}</div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React from "react";
 
 const VLCTab = () => {
-  return <div>Datasets VLC</div>;
+  return <div className="tab">test</div>;
 };
 
 export default VLCTab;
