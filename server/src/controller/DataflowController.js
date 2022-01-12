@@ -3,6 +3,7 @@ const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const moment = require("moment");
 const _ = require("lodash");
+const commonController = require("./CommonController")
 
 exports.getStudyDataflows = async (req, res) => {
   try {
@@ -63,6 +64,104 @@ exports.getStudyDataflows = async (req, res) => {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+
+exports.createDataflow = async (req,res) => {
+  try {
+    const uid = commonController.createUniqueID();
+    let {sponsorNameStandard,active,connectionType, sponsorName, externalVersion, protocolNumberStandard,exptDtOfFirstProdFile,
+    vendorName, protocolNumber,type, name, externalID, location, testFlag, prodFlag, description, dataPackage } = req.body;
+    var ResponseBody = {};
+    if(vendorName !== ""){
+      let q = `select vend_id from cdascdi1d.cdascdi.vendor where vend_nm='${vendorName}'`;
+      let {rows} = await DB.executeQuery(q);
+      let q1 = `select src_loc_id from cdascdi1d.cdascdi.source_location where cnn_url='${location}'`;
+      let {rows:data} = await DB.executeQuery(q1);
+      if(rows.length > 0 && data.length > 0){
+        //validation for dataflow metadata
+        if(vendorName !== null && protocolNumberStandard !== null && description !== ""){
+          const query = `insert into cdascdi1d.cdascdi.dataflow 
+          (dataflowid,data_flow_nm,vend_id,type,description,src_loc_id,active,refreshtimestamp,configured,expt_fst_prd_dt,
+            config_json,testflag,data_in_cdr,connectiontype,connectiondriver,data_strc,last_study_sync,
+            last_study_re_proc,last_time_view_was_refer,serv_ownr,src_sys_nm,extrnl_sys_nm,extrnl_id,
+            fsr_stat,insrt_tm,call_back_url_id) VALUES 
+            ('${uid}','${vendorName}-${protocolNumberStandard}-${description}','${rows[0].vend_id}','${type}','${description}',${data[0].src_loc_id},0,
+            null,0,'${exptDtOfFirstProdFile}','',${testFlag === 'false'? 0 : 1},'','${connectionType}','${location}',null,null,null,
+            null,null,null,null,'${externalID}',null,CURRENT_TIMESTAMP,null)`
+            let ts = new Date().toLocaleString()
+            // insert dataflow schema into db
+            let createDF = await DB.executeQuery(query);
+            ResponseBody.action = "Data flow created successfully.";
+            ResponseBody.status = "Inactive";
+            ResponseBody.timestamp = ts;
+            ResponseBody.version = 1;
+            if(dataPackage && dataPackage.length > 0){
+              ResponseBody.data_packages = [];
+              // if datapackage exists
+              for (let each of dataPackage) {
+                let newObj = {};
+                const dpUid = commonController.createUniqueID();
+                if (each.name !== "" && each.path !== "" && each.type !== "") {
+                  let DPQuery = `INSERT INTO cdascdi1d.cdascdi.datapackage(datapackageid, type, name, path, 
+                  password, active,nopackageconfig,extrnl_id, insrt_tm, dataflowid)
+                  VALUES('${dpUid}', '${each.type}', '${each.name}', '${each.path}',
+                  '${each.password}',  '1','${each.noPackageConfig  === 'false'? 0 : 1}',${each.externalID},CURRENT_TIMESTAMP,'${uid}')`;
+                  console.log(DPQuery);
+                  let createDP = await DB.executeQuery(DPQuery);
+                  newObj.timestamp = ts;
+                  newObj.externalId = each.externalID;
+                  newObj.action = "Data package created successfully.";
+                  ResponseBody.data_packages.push(newObj);
+                  if(each.dataSet && each.dataSet.length > 0){
+                    ResponseBody.data_sets = []
+                    // if datasets exists
+                    for (let obj of each.dataSet) {
+                      let newobj = {}
+                      if (obj.name !== "" && obj.path !== "" && obj.mnemonic !== "" && obj.customQuery !== "" && obj.columncount !== null) {
+                        let dataKindQ = `select datakindid from cdascdi1d.cdascdi.datakind where name='${obj.dataKind}'`
+                        let checkDataKind = await DB.executeQuery(dataKindQ);
+                        if (checkDataKind.rows.length > 0 ) {
+                          let datakindid = checkDataKind.rows[0].datakindid
+                          const dsUid = commonController.createUniqueID();
+                          let DSQuery = `insert into cdascdi1d.cdascdi.dataset(datasetid,datapackageid,datakindid,datakind,mnemonic,columncount,incremental,
+                            offsetcolumn,type,path,ovrd_stale_alert,headerrownumber,footerrownumber,customsql,
+                            custm_sql_query,tbl_nm,extrnl_id,insrt_tm) values('${dsUid}','${dpUid}','${datakindid}','${obj.dataKind}','${obj.mnemonic}',${obj.columncount},${obj.incremental},'${obj.offsetColumn}','${obj.type}',
+                              '${obj.path}',${obj.OverrideStaleAlert},${obj.headerRowNumber},${obj.footerRowNumber},'${obj.customSql}',
+                              '${obj.customQuery}','${obj.tableName}',${obj.externalID},CURRENT_TIMESTAMP)`
+                              let createDS = await DB.executeQuery(DSQuery);
+                              newobj.timestamp = ts
+                              newobj.externalId = obj.externalID
+                              newobj.action = "Data set created successfully."
+                              ResponseBody.data_sets.push(newobj);
+                        } else {
+                          return apiResponse.ErrorResponse(res, 'Data set Datakind is required');
+                        }
+                      } else {
+                        return apiResponse.ErrorResponse(res, 'Data set name and path is required');
+                      }
+                    }
+                  }else{
+                    return apiResponse.successResponseWithData(res, "Data flow created successfully", ResponseBody);
+                  }
+                }else{
+                  return apiResponse.ErrorResponse(res, 'Data package name, type and path is required');
+                }
+              }
+            }else{
+              return apiResponse.successResponseWithData(res, "Data flow created successfully", ResponseBody);
+            }
+        }else{
+          return apiResponse.ErrorResponse(res, 'Vendor name , protocol number standard and description is required');
+        }
+      }
+    }
+    return apiResponse.successResponseWithData(res,"Data flow created successfully.",ResponseBody);
+  } catch (err) {
+    //throw error in json response with status 500.
+    Logger.error("catch :createDataflow");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+}
 
 // exports.pinStudy = async (req, res) => {
 //   try {

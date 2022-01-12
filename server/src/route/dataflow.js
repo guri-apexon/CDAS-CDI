@@ -6,5 +6,6 @@ router.get(
   "/studyDataflowList/:protocolId",
   DataflowController.getStudyDataflows
 );
+router.post("/CreateDataflow",DataflowController.createDataflow)
 
 module.exports = router;
