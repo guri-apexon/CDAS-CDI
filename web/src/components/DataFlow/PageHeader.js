@@ -10,7 +10,7 @@ const PageHeader = ({ height = 120 }) => {
   useEffect(() => {
     const { selectedCard, vendors, dataFlows, dataSets } = dashboardData;
     const updateData = [
-      { label: "Protocol Nmber", value: selectedCard.protocolnumber },
+      { label: "Protocol Number", value: selectedCard.protocolnumber },
       { label: "Sponsor", value: selectedCard.sponsorname },
       { label: "Project Code", value: selectedCard.projectcode },
       { label: "Study Status", value: selectedCard.protocolstatus },
