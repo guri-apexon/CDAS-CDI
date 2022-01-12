@@ -17,8 +17,7 @@ exports.getStudyDataflows = async (req, res) => {
       inner join (select datapackageid, COUNT(DISTINCT datasetid) as dsCount FROM cdascdi.dataset d GROUP BY datapackageid) dsetcount on (d2.datapackageid=dsetcount.datapackageid)
       inner join (select dataflowid, COUNT(DISTINCT datapackageid) as dpCount FROM cdascdi.datapackage d GROUP BY dataflowid) dpackagecount on (d.dataflowid=dpackagecount.dataflowid)
       where s.prot_id = $1`;
-    // const q2 = `select dataflowid, COUNT(DISTINCT datapackageid) FROM cdascdi.datapackage d GROUP BY dataflowid`;
-    // const q3 = `select datapackageid, COUNT(DISTINCT datasetid) FROM cdascdi.dataset d GROUP BY datapackageid`;
+
     Logger.info({ message: "getStudyDataflows" });
     const $q1 = await DB.executeQuery(query, [protocolId]);
     // const $q2 = await DB.executeQuery(q2);

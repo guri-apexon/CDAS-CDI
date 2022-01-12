@@ -203,10 +203,6 @@ export default function DataFlowTable() {
     return <span>{date}</span>;
   };
 
-  const syncAction = (e) => {
-    console.log("syncAction", e);
-  };
-
   const hardDeleteAction = async (e) => {
     console.log("hardDeleteAction", e);
     const deleteStatus = await hardDelete(e);
@@ -221,8 +217,8 @@ export default function DataFlowTable() {
   };
 
   const viewAuditLogAction = (e) => {
-    console.log("viewAuditLogAction", e);
-    history.push("/audit-logs");
+    // console.log("viewAuditLogAction", e);
+    history.push(`/audit-logs/${e}`);
   };
 
   const cloneDataFlowAction = (e) => {
@@ -261,9 +257,6 @@ export default function DataFlowTable() {
     ];
     return (
       <div style={{ display: "flex", justifyContent: "end" }}>
-        <IconButton onClick={() => syncAction(dataFlowId)} size="small">
-          <SyncIcon />
-        </IconButton>
         <Tooltip title="Actions" disableFocusListener>
           <IconMenuButton id="actions" menuItems={menuItems} size="small">
             <EllipsisVertical />
