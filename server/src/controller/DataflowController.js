@@ -4,6 +4,7 @@ const Logger = require("../config/logger");
 const moment = require("moment");
 const _ = require("lodash");
 const CommonController = require("./CommonController");
+const helper = require("../helpers/customFunctions");
 
 exports.getStudyDataflows = async (req, res) => {
   try {
@@ -89,29 +90,29 @@ const hardDeleteTrigger = async (dataflowId) => {
   const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.dataflow_audit_log da
       WHERE da.dataflowid = $1`;
   let result;
-  await DB.executeQuery(deleteQuery, values)
-    .then(async (response) => {
-      const deleteQuery2 = `DELETE FROM cdascdi1d.cdascdi.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
-    DELETE FROM cdascdi1d.cdascdi.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
-      // DELETE FROM cdascdi1d.cdascdi.dataset ds WHERE ds.dataflowid = $1;
-      // DELETE FROM cdascdi1d.cdascdi.dataset_history dsh WHERE dsh.dataflowid = $1;
-      await DB.executeQuery(deleteQuery2)
-        .then(async (response2) => {
-          const deleteQuery3 = `DELETE FROM cdascdi1d.cdascdi.dataflow
+  await DB.executeQuery(deleteQuery, values).then(async (response) => {
+    const deleteQuery2 = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
+      WHERE da.dataflowid = '${dataflowId}';
+      DELETE FROM cdascdi1d.cdascdi.columndefinition cd WHERE cd.datasetid in (select datasetid FROM cdascdi1d.cdascdi.dataset ds
+      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='a0A0E000004k79SUAQ'));
+      DELETE FROM cdascdi1d.cdascdi.columndefinition_history cd WHERE cd.datasetid in (select datasetid FROM cdascdi1d.cdascdi.dataset ds
+      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='a0A0E000004k79SUAQ'));
+      DELETE FROM cdascdi1d.cdascdi.dataset ds
+      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='a0A0E000004k79SUAQ');
+      DELETE FROM cdascdi1d.cdascdi.dataset_history ds
+      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='a0A0E000004k79SUAQ');
+      DELETE FROM cdascdi1d.cdascdi.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
+      DELETE FROM cdascdi1d.cdascdi.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
+
+    await DB.executeQuery(deleteQuery2).then(async (response2) => {
+      const deleteQuery3 = `DELETE FROM cdascdi1d.cdascdi.dataflow
       WHERE dataflowid = $1`;
-          await DB.executeQuery(deleteQuery3, values)
-            .then(async (response3) => {
-              result = true;
-            })
-            .catch((err) => {
-              result = false;
-            });
-        })
-        .catch((err) => {
-          result = false;
-        });
-    })
-    .catch((err) => {
+      await DB.executeQuery(deleteQuery3, values).then(async (response3) => {
+        result = response3.rowCount>0 ? 'exist' : true;
+      }).catch((err)=>{
+        result = false;
+      });
+    }).catch((err)=>{
       result = false;
     });
   return result;
@@ -119,7 +120,7 @@ const hardDeleteTrigger = async (dataflowId) => {
 
 const addDeleteTempLog = async (dataflowId, user) => {
   const insertTempQuery = `INSERT INTO cdascdi1d.cdascdi.temp_json_log(temp_json_log_id, dataflowid, trans_typ, trans_stat, no_of_retry_attempted, del_flg, created_by, created_on, updated_by, updated_on) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-  const tempId = CommonController.createUniqueID();
+  const tempId = helper.createUniqueID();
   let result;
   const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
   const values = [
@@ -142,27 +143,29 @@ const addDeleteTempLog = async (dataflowId, user) => {
       result = false;
     });
   return result;
-};
-exports.cronHardDelete = async (log) => {
-  const { dataflowid: dataflowId, created_by: user_id } = log;
-  DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [
-    user_id,
-  ]).then(async (response) => {
-    if (response.rows && response.rows.length) {
-      const user = response.rows[0];
-      const deleted = await hardDeleteTrigger(dataflowId);
-      if (deleted) {
-        // const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
-        // WHERE da.dataflowid = $1`;
-        // DB.executeQuery(deleteQuery, [dataflowId]).then(async (response) => {
-        //   return true;
-        // });
+}
+exports.cronHardDelete = async () => {
+  DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.temp_json_log`).then(
+    async (response) => {
+      const logs = response.rows || [];
+      if (logs.length) {
+        logs.forEach(log => {
+          const { dataflowid: dataflowId, created_by: user_id } = log;
+          DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [user_id]).then(async (response) => {
+            if(response.rows && response.rows.length){
+              const user = response.rows[0];
+              const deleted = await hardDeleteTrigger(dataflowId);
+              if (deleted) {
+                return true;
+              }
+              return false;
+            }
+          });
+        });
       }
-      return false;
     }
-  });
-};
-
+  );
+}
 exports.hardDelete = async (req, res) => {
   try {
     const { dataflowId, user_id } = req.body;
@@ -172,18 +175,13 @@ exports.hardDelete = async (req, res) => {
       if (response.rows && response.rows.length) {
         const user = response.rows[0];
         const deleted = await hardDeleteTrigger(dataflowId);
-        if (deleted) {
-          const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
-          WHERE da.dataflowid = $1`;
-          DB.executeQuery(deleteQuery, [dataflowId]).then(async (response) => {
-            return apiResponse.successResponseWithData(
-              res,
-              "Deleted successfully",
-              {
-                success: true,
-              }
-            );
+        if(deleted=='exist') {
+          return apiResponse.successResponseWithData(res, "Deleted successfully", {
+            success: true,
           });
+        }
+        if (deleted) {
+          return apiResponse.successResponseWithData(res, "Records already deleted", {});
         } else {
           const inserted = await addDeleteTempLog(dataflowId, user);
           if (inserted) {
