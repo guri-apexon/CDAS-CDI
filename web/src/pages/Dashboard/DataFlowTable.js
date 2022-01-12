@@ -262,6 +262,11 @@ export default function DataFlowTable() {
   const hardDeleteAction = async (e) => {
     console.log("hardDeleteAction", e);
     const deleteStatus = await hardDelete(e);
+    console.log("deleteStatus", deleteStatus);
+  };
+
+  const sendSyncRequest = async (e) => {
+    console.log("hardDeleteAction", e.version, e.dataFlowId, "SYNC");
   };
 
   const viewAuditLogAction = (e) => {
@@ -277,7 +282,7 @@ export default function DataFlowTable() {
   };
 
   const ActionCell = ({ row }) => {
-    const { dataFlowId, status } = row;
+    const { dataFlowId, status, version } = row;
     const activeText =
       status === 1 ? "Change status to inactive" : "Change status to active";
     const menuItems = [
@@ -291,7 +296,7 @@ export default function DataFlowTable() {
       },
       {
         text: "Send sync request",
-        onClick: () => changeStatusAction(dataFlowId),
+        onClick: () => sendSyncRequest({ version, dataFlowId }),
       },
       {
         text: "Clone data flow",
@@ -406,7 +411,7 @@ export default function DataFlowTable() {
       );
     }
     return (
-      <div style={{ position: "relative" }}>
+      <div style={{ position: "relative", marginLeft: 25 }}>
         <Button
           variant="primary"
           size="small"
