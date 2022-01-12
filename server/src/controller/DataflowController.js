@@ -96,14 +96,19 @@ const hardDeleteTrigger = async (dataflowId) => {
       WHERE da.dataflowid = $1`;
   let result;
   await DB.executeQuery(deleteQuery, values).then(async (response) => {
-    const deleteQuery2 = `DELETE FROM cdascdi1d.cdascdi.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
-    DELETE FROM cdascdi1d.cdascdi.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
-    // DELETE FROM cdascdi1d.cdascdi.dataset ds WHERE ds.dataflowid = $1;
-    // DELETE FROM cdascdi1d.cdascdi.dataset_history dsh WHERE dsh.dataflowid = $1;
-// DELETE FROM cdascdi1d.cdascdi.dataset ds 
-// using cdascdi1d.cdascdi.datapackage dp 
-// WHERE dp.dataflowid = 'a0A0E000004k79SUAQ'
-// and dp.datapackageid = ds.datapackageid;
+    const deleteQuery2 = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
+      WHERE da.dataflowid = '${dataflowId}';
+      DELETE FROM cdascdi1d.cdascdi.columndefinition cd WHERE cd.datasetid in (select datasetid FROM cdascdi1d.cdascdi.dataset ds
+      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='a0A0E000004k79SUAQ'));
+      DELETE FROM cdascdi1d.cdascdi.columndefinition_history cd WHERE cd.datasetid in (select datasetid FROM cdascdi1d.cdascdi.dataset ds
+      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='a0A0E000004k79SUAQ'));
+      DELETE FROM cdascdi1d.cdascdi.dataset ds
+      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='a0A0E000004k79SUAQ');
+      DELETE FROM cdascdi1d.cdascdi.dataset_history ds
+      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='a0A0E000004k79SUAQ');
+      DELETE FROM cdascdi1d.cdascdi.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
+      DELETE FROM cdascdi1d.cdascdi.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
+
     await DB.executeQuery(deleteQuery2).then(async (response2) => {
       const deleteQuery3 = `DELETE FROM cdascdi1d.cdascdi.dataflow
       WHERE dataflowid = $1`;
