@@ -4,6 +4,7 @@ const Logger = require("../config/logger");
 const moment = require("moment");
 const _ = require("lodash");
 const CommonController = require("./CommonController");
+const helper = require("../helpers/customFunctions");
 
 exports.getStudyDataflows = async (req, res) => {
   try {
@@ -99,6 +100,10 @@ const hardDeleteTrigger = async (dataflowId) => {
     DELETE FROM cdascdi1d.cdascdi.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
     // DELETE FROM cdascdi1d.cdascdi.dataset ds WHERE ds.dataflowid = $1;
     // DELETE FROM cdascdi1d.cdascdi.dataset_history dsh WHERE dsh.dataflowid = $1;
+// DELETE FROM cdascdi1d.cdascdi.dataset ds 
+// using cdascdi1d.cdascdi.datapackage dp 
+// WHERE dp.dataflowid = 'a0A0E000004k79SUAQ'
+// and dp.datapackageid = ds.datapackageid;
     await DB.executeQuery(deleteQuery2).then(async (response2) => {
       const deleteQuery3 = `DELETE FROM cdascdi1d.cdascdi.dataflow
       WHERE dataflowid = $1`;
@@ -118,7 +123,7 @@ const hardDeleteTrigger = async (dataflowId) => {
 
 const addDeleteTempLog = async (dataflowId, user) => {
   const insertTempQuery = `INSERT INTO cdascdi1d.cdascdi.temp_json_log(temp_json_log_id, dataflowid, trans_typ, trans_stat, no_of_retry_attempted, del_flg, created_by, created_on, updated_by, updated_on) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-  const tempId = CommonController.createUniqueID();
+  const tempId = helper.createUniqueID();
   let result;
   const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
   const values = [
@@ -140,22 +145,31 @@ const addDeleteTempLog = async (dataflowId, user) => {
   });
   return result;
 }
-exports.cronHardDelete = async (log) => {
-  const { dataflowid: dataflowId, created_by: user_id } = log;
-  DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [user_id]).then(async (response) => {
-    if(response.rows && response.rows.length){
-      const user = response.rows[0];
-      const deleted = await hardDeleteTrigger(dataflowId);
-      if (deleted) {
-        // const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
-        // WHERE da.dataflowid = $1`;
-        // DB.executeQuery(deleteQuery, [dataflowId]).then(async (response) => {
-        //   return true;
-        // });
+exports.cronHardDelete = async () => {
+  DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.temp_json_log`).then(
+    async (response) => {
+      const logs = response.rows || [];
+      if (logs.length) {
+        logs.forEach(log => {
+          const { dataflowid: dataflowId, created_by: user_id } = log;
+          DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [user_id]).then(async (response) => {
+            if(response.rows && response.rows.length){
+              const user = response.rows[0];
+              const deleted = await hardDeleteTrigger(dataflowId);
+              if (deleted) {
+                const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
+                WHERE da.dataflowid = $1`;
+                DB.executeQuery(deleteQuery, [dataflowId]).then(async (response) => {
+                  return true;
+                });
+              }
+              return false;
+            }
+          });
+        });
       }
-      return false;
     }
-  });
+  );
 }
 exports.hardDelete = async (req, res) => {
   try {
