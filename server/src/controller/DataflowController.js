@@ -231,7 +231,7 @@ exports.activateDataFlow = async (req, res) => {
     const query = `UPDATE cdascdi.dataflow SET active=1 WHERE dataflowid=$1`;
     Logger.info({ message: "activateDataFlow" });
     const $q1 = await DB.executeQuery(query, [protocolId]);
-    return apiResponse.successResponseWithData(res, "Operation success", $q1);
+    return apiResponse.successResponse(res, "Operation success");
   } catch (err) {
     Logger.error("catch :activateDataFlow");
     return apiResponse.ErrorResponse(res, err);
@@ -244,11 +244,7 @@ exports.inActivateDataFlow = async (req, res) => {
     const query = `UPDATE cdascdi.dataflow SET active=0 WHERE dataflowid=$1`;
     Logger.info({ message: "inActivateDataFlow" });
     const $q1 = await DB.executeQuery(query, [protocolId]);
-    return apiResponse.successResponseWithData(
-      res,
-      "Operation success",
-      "success"
-    );
+    return apiResponse.successResponse(res, "Operation success");
   } catch (err) {
     Logger.error("catch :inActivateDataFlow");
     return apiResponse.ErrorResponse(res, err);
