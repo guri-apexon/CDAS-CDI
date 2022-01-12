@@ -3,7 +3,7 @@ const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const moment = require("moment");
 const _ = require("lodash");
-const CommonController = require("./CommonController");
+const {createUniqueID} = require("../helpers/customFunctions");
 const helper = require("../helpers/customFunctions");
 
 exports.getStudyDataflows = async (req, res) => {
@@ -87,7 +87,7 @@ exports.getStudyDataflows = async (req, res) => {
 
 exports.createDataflow = async (req, res) => {
   try {
-    const uid = CommonController.createUniqueID();
+    const uid = createUniqueID();
     let {
       sponsorNameStandard,
       active,
@@ -144,7 +144,7 @@ exports.createDataflow = async (req, res) => {
             // if datapackage exists
             for (let each of dataPackage) {
               let newObj = {};
-              const dpUid = CommonController.createUniqueID();
+              const dpUid = createUniqueID();
               if (each.name !== "" && each.path !== "" && each.type !== "") {
                 let DPQuery = `INSERT INTO cdascdi1d.cdascdi.datapackage(datapackageid, type, name, path, 
                   password, active,nopackageconfig,extrnl_id, insrt_tm, dataflowid)
@@ -154,7 +154,6 @@ exports.createDataflow = async (req, res) => {
                   '${each.password}',  '1','${
                   each.noPackageConfig === "false" ? 0 : 1
                 }',${each.externalID},CURRENT_TIMESTAMP,'${uid}')`;
-                console.log(DPQuery);
                 let createDP = await DB.executeQuery(DPQuery);
                 newObj.timestamp = ts;
                 newObj.externalId = each.externalID;
@@ -176,7 +175,7 @@ exports.createDataflow = async (req, res) => {
                       let checkDataKind = await DB.executeQuery(dataKindQ);
                       if (checkDataKind.rows.length > 0) {
                         let datakindid = checkDataKind.rows[0].datakindid;
-                        const dsUid = CommonController.createUniqueID();
+                        const dsUid = createUniqueID();
                         let DSQuery = `insert into cdascdi1d.cdascdi.dataset(datasetid,datapackageid,datakindid,datakind,mnemonic,columncount,incremental,
                             offsetcolumn,type,path,ovrd_stale_alert,headerrownumber,footerrownumber,customsql,
                             custm_sql_query,tbl_nm,extrnl_id,insrt_tm) values('${dsUid}','${dpUid}','${datakindid}','${obj.dataKind}','${obj.mnemonic}',${obj.columncount},${obj.incremental},'${obj.offsetColumn}','${obj.type}',
