@@ -2,6 +2,7 @@
 /* eslint-disable react/no-array-index-key */
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import "./AuditLog.scss";
 import Paper from "apollo-react/components/Paper";
 import Typography from "apollo-react/components/Typography";
@@ -24,11 +25,12 @@ const breadcrumpItems = [
     title: "Audit Log",
   },
 ];
-const AuditLog = () => {
+const AuditLog = ({ match }) => {
   const dispatch = useDispatch();
+  const { dataflowId } = useParams();
   const auditLogs = useSelector((state) => state.auditLogs);
-  const fetchLogs = (query = "") => {
-    dispatch(getAuditLogs(query));
+  const fetchLogs = () => {
+    dispatch(getAuditLogs(dataflowId));
   };
   useEffect(() => {
     fetchLogs();

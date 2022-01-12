@@ -4,19 +4,10 @@ const crypto = require("crypto");
 const cron = require('node-cron');
 const { cronHardDelete } = require("./DataflowController");
 
-// cron.schedule("* * * * *", () => {
-//   console.log("running a task every minute");
-//   DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.temp_json_log`).then(
-//     async (response) => {
-//       const logs = response.rows || [];
-//       if (logs.length) {
-//         logs.forEach(log => {
-//           cronHardDelete(log);
-//         });
-//       }
-//     }
-//   );
-// });
+cron.schedule("*/30 * * * *", () => {
+  console.log("running a task every 30 minute");
+  cronHardDelete();
+});
 
 module.exports = {
   createUniqueID: () => {
