@@ -3,16 +3,17 @@ import { useHistory } from "react-router-dom";
 import { lazy, Suspense, useState, useEffect } from "react";
 import Loader from "apollo-react/components/Loader";
 
-import { getCookie } from "../../utils";
-import TopNavbar from "../TopNavbar/TopNavbar";
+import { getCookie } from "../utils";
+import TopNavbar from "../components/TopNavbar/TopNavbar";
 // import AppFooter from "../AppFooter/AppFooter";
-import Logout from "../../pages/Logout/Logout";
-import DataPackages from "../../pages/DataPackages/DataPackages";
-import Toast from "../Common/Toast";
-import AuditLog from "../../pages/AuditLog/AuditLog";
+import Logout from "../pages/Logout/Logout";
+import DataPackages from "../pages/DataPackages/DataPackages";
+import Toast from "../components/Common/Toast";
+import AuditLog from "../pages/AuditLog/AuditLog";
 
-const Dashboard = lazy(() => import("../../pages/Dashboard/Dashboard"));
-const DataFlow = lazy(() => import("../../pages/DataFlow/DataFlow"));
+const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
+const DataFlow = lazy(() => import("../pages/DataFlow/DataFlow"));
+const DataSets = lazy(() => import("../pages/DataSets/DataSets"));
 
 const Empty = () => <></>;
 
@@ -64,6 +65,11 @@ const CDIWrapper = () => {
               path="/dataflow-management"
               exact
               render={() => <DataFlow />}
+            />
+            <Route
+              path="/datasets-management"
+              exact
+              render={() => <DataSets />}
             />
             <Redirect from="/" to="/dashboard" />
           </Switch>

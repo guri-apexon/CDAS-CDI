@@ -1,6 +1,3 @@
-/* eslint-disable react/jsx-one-expression-per-line */
-/* eslint-disable prettier/prettier */
-/* eslint-disable no-shadow */
 import { withRouter } from "react-router";
 import { useState } from "react";
 import NavigationBar from "apollo-react/components/NavigationBar";
@@ -106,7 +103,10 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
     name: userInfo.fullName,
     title: userInfo.userEmail,
     email: (
-      <span style={{ fontSize: "13px" }}>Last Login: {userInfo.lastLogin}</span>
+      <span style={{ fontSize: "13px" }}>
+        Last Login:
+        {userInfo.lastLogin}
+      </span>
     ),
     // eslint-disable-next-line no-use-before-define
     logoutButtonProps: { onClick: () => LogOut() },
@@ -160,7 +160,7 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
             </Button>
             <Typography
               className={classes.navLogo}
-              onClick={() => history.push("launchpad")}
+              onClick={() => history.push("dashboard")}
             >
               IQVIA™
               <span style={{ paddingLeft: 5 }} className={classes.bold}>
@@ -177,7 +177,7 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
         checkIsActive={(item) =>
           item.pathname
             ? item.pathname === pathname
-            : item.menuItems.some((item) => item.pathname === pathname)
+            : item.menuItems.some((e) => e.pathname === pathname)
         }
         waves
         notificationsMenuProps={notificationsMenuProps}

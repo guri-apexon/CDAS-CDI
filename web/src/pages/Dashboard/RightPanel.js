@@ -1,8 +1,6 @@
 import React from "react";
 import Typography from "apollo-react/components/Typography";
-// import { connect } from "react-redux";
-import { makeStyles, withStyles } from "@material-ui/core/styles";
-import Paper from "apollo-react/components/Paper";
+import { makeStyles } from "@material-ui/core/styles";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 

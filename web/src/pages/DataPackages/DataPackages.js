@@ -2,7 +2,6 @@
 /* eslint-disable react/no-array-index-key */
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { submit } from "redux-form";
 import "./DataPackages.scss";
 import Paper from "apollo-react/components/Paper";
 import Typography from "apollo-react/components/Typography";
@@ -15,22 +14,12 @@ import PasswordInput from "apollo-react/components/PasswordInput";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import Grid from "apollo-react/components/Grid";
-import Search from "apollo-react/components/Search";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
-import Blade from "apollo-react/components/Blade";
-import Divider from "apollo-react/components/Divider";
-import Switch from "apollo-react/components/Switch";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
-import ApolloProgress from "apollo-react/components/ApolloProgress";
-import Tag from "apollo-react/components/Tag";
-import ArrowRight from "apollo-react-icons/ArrowRight";
-import Tooltip from "apollo-react/components/Tooltip";
-import IconMenuButton from "apollo-react/components/IconMenuButton";
-import EllipsisVerticalIcon from "apollo-react-icons/EllipsisVertical";
 import PageHeader from "../../components/DataFlow/PageHeader";
-import { debounceFunction, getUserInfo, toast } from "../../utils";
-import PackagesList from "./PackagesTable";
+import Leftbar from "../../components/DataFlow/LeftBar";
+import { getUserInfo, toast } from "../../utils";
 import {
   addDataPackage,
   getPackagesList,
@@ -45,9 +34,10 @@ const compressionTypes = [
   { text: "RAR", value: "rar" },
 ];
 const breadcrumpItems = [
-  { href: "/" },
+  { href: "/dashboard" },
   {
     title: "Data Flow Settings",
+    href: "/dataflow-management",
   },
   {
     title: "Data Package Settings",
@@ -62,13 +52,7 @@ const DataPackages = () => {
   const [packagePassword, setPackagePassword] = useState("");
   const [sftpPath, setSftpPath] = useState("");
   const [notMatchedType, setNotMatchedType] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [searchTxt, setSearchTxt] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const packageData = useSelector((state) => state.dataPackage);
-  const dataFlowData = useSelector((state) => state.dataFlow);
-  const { selectedLocation, description, selectedVendor, dataflowType } =
-    dataFlowData;
   const userInfo = getUserInfo();
 
   const showConfig = (e, checked) => {
@@ -89,19 +73,9 @@ const DataPackages = () => {
   const getPackages = (query = "") => {
     dispatch(getPackagesList(query));
   };
-  const searchTrigger = (e) => {
-    const newValue = e.target.value;
-    setSearchTxt(newValue);
-    setLoading(true);
-    debounceFunction(async () => {
-      await getPackages(newValue);
-      setLoading(false);
-    }, 1000);
-  };
 
   useEffect(() => {
     if (packageData && packageData.refreshData) {
-      setSearchTxt("");
       getPackages();
       resetForm();
     }
@@ -135,124 +109,12 @@ const DataPackages = () => {
     console.log("submitPackage", reqBody);
     dispatch(addDataPackage(reqBody));
   };
-  const onLeftbarChange = (e, expanded) => {
-    setSidebarOpen(expanded);
-  };
   return (
-    <div
-      className={`data-packages-wrapper ${
-        sidebarOpen ? " sidebar-opened" : ""
-      }`}
-    >
+    <div className="data-packages-wrapper ">
       <Grid container>
         <PageHeader />
         <CssBaseline />
-        <Blade id="leftSidebar" onChange={onLeftbarChange} open={true}>
-          <Box
-            padding="4"
-            className="flex flex-center justify-between header-sidebar"
-          >
-            <div className="flex flex-center">
-              <img src="assets/svg/dataflow.svg" alt="dataflow" />
-              <Typography variant="body1">Data Flow</Typography>
-            </div>
-            <div>
-              <Switch
-                label="Active"
-                checked={true}
-                size="small"
-                onChange={() => console.log("hello")}
-              />
-              <Tooltip title="Actions" disableFocusListener>
-                <IconMenuButton id="actions" menuItems={[]} size="small">
-                  <EllipsisVerticalIcon />
-                </IconMenuButton>
-              </Tooltip>
-            </div>
-          </Box>
-          <Divider />
-          <Box className="sidebar-content">
-            <Tag
-              label={dataflowType || ""}
-              variant="grey"
-              style={{ textTransform: "capitalize", marginBottom: 20 }}
-            />
-            <Typography variant="title1" gutterBottom>
-              Virologicclinic-IIBR12-001-Other
-            </Typography>
-            <Typography variant="title2" gutterBottom>
-              Analytics Labs
-            </Typography>
-            <br />
-            <div className="flex flex-center">
-              <ArrowRight
-                size="small"
-                style={{
-                  marginLeft: -8,
-                  width: 15,
-                  height: 15,
-                  marginRight: 6,
-                }}
-              />
-              <Typography variant="body2">Description</Typography>
-            </div>
-            <Button
-              variant="primary"
-              style={{ marginTop: 17 }}
-              fullWidth
-              size="small"
-            >
-              View Settings
-            </Button>
-          </Box>
-          <Divider />
-          <Box className="packages-list">
-            <div className="flex flex-center justify-between">
-              <Typography className="b-font">
-                Data Packages & Datasets
-              </Typography>
-              <Button
-                variant="secondary"
-                icon={<PlusIcon />}
-                size="small"
-                onClick={setShowForm}
-              >
-                Add Data Package
-              </Button>
-            </div>
-            <div>
-              <Search
-                className="package-searchbox"
-                placeholder="Search"
-                value={searchTxt}
-                onChange={searchTrigger}
-                size="small"
-                fullWidth
-              />
-            </div>
-            {packageData ? (
-              <div className="list-container customscroll">
-                {loading ? (
-                  <Box display="flex" className="loader-container">
-                    <ApolloProgress />
-                  </Box>
-                ) : (
-                  <>
-                    <Typography variant="body2" style={{ marginLeft: 10 }}>
-                      {`${packageData.packagesList.length} Data Packages`}
-                    </Typography>
-                    <PackagesList userInfo={userInfo} data={packageData} />
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="flex no-result">
-                <img src="assets/svg/datapackage.svg" alt="datapackage" />
-                <Typography>No Data Package or Datasets Added</Typography>
-              </div>
-            )}
-          </Box>
-        </Blade>
+        <Leftbar />
         <main className="right-content">
           <Paper className="no-shadow">
             <Box className="top-content">

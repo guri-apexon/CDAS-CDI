@@ -4,20 +4,31 @@ const Logger = require("../config/logger");
 const moment = require("moment");
 const CommonController = require("./CommonController");
 
-exports.searchList = function (req, res) {
+exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
-    const searchQuery = `SELECT datapackageid, name, active, type from cdascdi1d.cdascdi.datapackage 
+    const searchQuery = `SELECT datapackageid, dataflowid, name, active, type from cdascdi1d.cdascdi.datapackage 
             WHERE LOWER(name) LIKE '%${searchParam}%' AND del_flg = 'N'`;
+    const datasetQuery = `SELECT datasetid, mnemonic, active, type from cdascdi1d.cdascdi.dataset where datapackageid = $1`;
     Logger.info({
       message: "packagesList",
     });
 
-    DB.executeQuery(searchQuery).then((response) => {
+    DB.executeQuery(searchQuery).then( async (response) => {
       const packages = response.rows || [];
-      return apiResponse.successResponseWithData(res, "Operation success", {
-        data: packages,
-        data_count: packages.length,
+      //const dataset = await DB.executeQuery(datasetQuery, package.datapackageid)
+      const datapacs = await packages?.map(async (package) => {
+          const responses =  await DB.executeQuery(datasetQuery, [package.datapackageid]);
+          const pacs =  {...package, datasets: responses.rows};
+          return pacs;
+        });
+      Promise.all(datapacs).then(function(results) {
+        return apiResponse.successResponseWithData(res, "Operation success", {
+          data: results,
+          data_count: results.length,
+        });
+      }).catch(function (err) {
+        return apiResponse.ErrorResponse(res, err);
       });
     });
   } catch (err) {

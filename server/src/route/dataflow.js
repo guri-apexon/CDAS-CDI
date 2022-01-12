@@ -7,5 +7,6 @@ router.get(
   DataflowController.getStudyDataflows
 );
 router.post("/CreateDataflow",DataflowController.createDataflow)
+router.post("/hard-delete", DataflowController.hardDelete);
 
 module.exports = router;
