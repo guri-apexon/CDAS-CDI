@@ -36,7 +36,6 @@ const ColumnsTab = () => {
           allowedTypes.length &&
           !allowedTypes.filter((type) => file.type.includes(type)).length
         ) {
-          console.log("fileType", file.type);
           file.errorMessage = `${
             file.name.split(".")[file.name.split(".").length - 1]
           } format is not supported`;
@@ -62,7 +61,7 @@ const ColumnsTab = () => {
   };
 
   const formatData = () => {
-    console.log("data", importedData, formattedData);
+    // console.log("data", importedData, formattedData);
     const data = importedData.slice(1);
     const newData =
       data.length > 1
@@ -111,7 +110,12 @@ const ColumnsTab = () => {
           <p className="title">Configure Dataset Column Settings</p>
           <p className="sub-title">Select an option</p>
           <div className="cards-box">
-            <Card style={{ maxWidth: 320, height: 300 }} className="card">
+            <Card
+              style={{ maxWidth: 320, height: 300 }}
+              className={
+                selectedMethod === "fileUpload" ? "active card" : "card"
+              }
+            >
               <Radio
                 value="fileUpload"
                 label="Upload dataset column settings"
@@ -130,7 +134,10 @@ const ColumnsTab = () => {
                 />
               </div>
             </Card>
-            <Card style={{ maxWidth: 320, height: 300 }} className="card">
+            <Card
+              style={{ maxWidth: 320, height: 300 }}
+              className={selectedMethod === "manually" ? "active card" : "card"}
+            >
               <Radio
                 value="manually"
                 label="Create manually"
@@ -149,6 +156,12 @@ const ColumnsTab = () => {
               variant="primary"
               style={{ marginRight: 10, float: "right" }}
               onClick={() => setShowColumns(true)}
+              disabled={
+                selectedMethod !== "manually" &&
+                !showColumns &&
+                selectedMethod !== "fileUpload" &&
+                !showColumns
+              }
             >
               Create
             </Button>
@@ -159,6 +172,7 @@ const ColumnsTab = () => {
         <DatasetTable
           numberOfRows={numberOfRows || 1}
           formattedData={formattedData}
+          dataOrigin={selectedMethod}
         />
       )}
     </div>

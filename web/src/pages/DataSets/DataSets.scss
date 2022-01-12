@@ -16,6 +16,9 @@
   }
   .cards-box {
     display: flex;
+    .active {
+      border: 1px solid #0768fd;
+    }
     .card {
       margin-right: 48px;
       text-align: center;

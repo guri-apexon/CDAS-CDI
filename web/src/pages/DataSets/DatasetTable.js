@@ -1,5 +1,5 @@
 /* eslint-disable react/button-has-type */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { makeStyles } from "@material-ui/core/styles";
 import { useDispatch } from "react-redux";
@@ -234,7 +234,7 @@ const columns = [
 const DatasetTable = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { numberOfRows } = props;
+  const { numberOfRows, dataOrigin, formattedData } = props;
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     columnId: index + 1,
     variableLabel: "",
@@ -251,6 +251,13 @@ const DatasetTable = (props) => {
   }));
   const [rows, setRows] = useState(initialRows);
   const [editedRows, setEditedRows] = useState(initialRows);
+
+  useEffect(() => {
+    if (dataOrigin === "fileUpload") {
+      setRows([...formattedData]);
+    }
+    console.log("dataOrigin", dataOrigin, formattedData, rows);
+  }, [dataOrigin]);
 
   const editMode = editedRows.length > 0;
   const onEditAll = () => {
@@ -277,12 +284,17 @@ const DatasetTable = (props) => {
       )
     );
   };
-  return (
-    <div>
-      <div className={classes.section}>
+
+  const getTableData = React.useMemo(
+    () => (
+      <>
         <Table
           title="Dataset Column Settings"
-          subtitle="0 dataset columns"
+          subtitle={`${
+            rows.length > 1
+              ? `${rows.length}dataset columns`
+              : `${rows.length}dataset columns`
+          }`}
           columns={columns}
           rowId="columnId"
           hasScroll
@@ -302,7 +314,14 @@ const DatasetTable = (props) => {
           CustomHeader={CustomHeader}
           headerProps={{ onSave, onCancel, editMode }}
         />
-      </div>
+      </>
+    ),
+    [columns, editMode, editedRows, rows]
+  );
+
+  return (
+    <div>
+      <div className={classes.section}>{getTableData}</div>
     </div>
   );
 };
