@@ -31,7 +31,11 @@ import Progress from "../../components/Progress";
 import { MessageContext } from "../../components/MessageProvider";
 import { ReactComponent as DataFlowIcon } from "../../components/Icons/dataflow.svg";
 import { ReactComponent as SyncIcon } from "../../components/Icons/Sync.svg";
-import { hardDelete } from "../../services/ApiServices";
+import {
+  hardDelete,
+  activateDF,
+  inActivateDF,
+} from "../../services/ApiServices";
 
 const createAutocompleteFilter =
   (source) =>
@@ -224,8 +228,15 @@ export default function DataFlowTable() {
   const cloneDataFlowAction = (e) => {
     console.log("cloneDataFlowAction", e);
   };
-  const changeStatusAction = (e) => {
-    console.log("changeStatusAction", e);
+  const changeStatusAction = async (e) => {
+    // console.log("changeStatusAction", e);
+    if (e.status === 0) {
+      const updatedStatus = await activateDF(e.dataFlowId);
+      console.log(updatedStatus);
+    } else {
+      const updatedStatus = await inActivateDF(e.dataFlowId);
+      console.log(updatedStatus);
+    }
   };
 
   const ActionCell = ({ row }) => {
@@ -239,7 +250,7 @@ export default function DataFlowTable() {
       },
       {
         text: activeText,
-        onClick: () => changeStatusAction(dataFlowId),
+        onClick: () => changeStatusAction({ dataFlowId, status }),
       },
       {
         text: "Send sync request",
