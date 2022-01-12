@@ -61,19 +61,21 @@ const Header = (props) => {
           {`${props.datasetsCount} datasets`}
         </Typography>
       )}
-      <ButtonGroup
-        alignItems="right"
-        buttonProps={[
-          {
-            label: "Cancel",
-            onClick: () => props.close(),
-          },
-          {
-            label: "Save",
-            onClick: () => props.submit(),
-          },
-        ]}
-      />
+      {props.tabValue === 0 && (
+        <ButtonGroup
+          alignItems="right"
+          buttonProps={[
+            {
+              label: "Cancel",
+              onClick: () => props.close(),
+            },
+            {
+              label: "Save",
+              onClick: () => props.submit(),
+            },
+          ]}
+        />
+      )}
       {props.tabs && (
         <Tabs
           value={props.tabValue}

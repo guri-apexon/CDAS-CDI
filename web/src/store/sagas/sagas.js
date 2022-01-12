@@ -2,7 +2,6 @@ import { takeEvery, takeLatest } from "redux-saga/effects";
 import {
   ADD_DATA_PACKAGE,
   PACKAGES_LIST,
-  DASHBOARD_DATA,
   UPDATE_DATA_PACKAGE,
   GET_VENDORS_DATA,
   SAVE_LOCATION_DATA,
@@ -12,6 +11,7 @@ import {
   AUDIT_LOGS,
   SAVE_DATASET_DATA,
   SAVE_DATASET_COLUMNS,
+  GET_DATA_FLOW_LIST,
 } from "../../constants";
 
 import {
@@ -20,7 +20,7 @@ import {
   updateDataPackage,
 } from "./dataPackage.saga";
 
-import { fetchdashboardData } from "./dashboard.saga";
+import { fetchFlowData } from "./dashboard.saga";
 import {
   fetchDataKindData,
   saveDataset,
@@ -37,7 +37,7 @@ import {
 import { fetchAuditLogs } from "./auditLogs.saga";
 
 function* cdasCoreSaga() {
-  yield takeEvery(DASHBOARD_DATA, fetchdashboardData);
+  yield takeEvery(GET_DATA_FLOW_LIST, fetchFlowData);
   yield takeLatest(PACKAGES_LIST, fetchPackagesData);
   yield takeLatest(ADD_DATA_PACKAGE, addDataPackage);
   yield takeLatest(UPDATE_DATA_PACKAGE, updateDataPackage);

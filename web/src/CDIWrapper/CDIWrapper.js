@@ -60,7 +60,11 @@ const CDIWrapper = () => {
               exact
               render={() => <DataPackages />}
             />
-            <Route path="/audit-logs" exact render={() => <AuditLog />} />
+            <Route
+              path="/audit-logs/:dataflowId"
+              exact
+              render={() => <AuditLog />}
+            />
             <Route
               path="/dataflow-management"
               exact
