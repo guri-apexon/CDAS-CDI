@@ -233,6 +233,7 @@ export default function DataFlowTable() {
     if (e.status === 0) {
       const updatedStatus = await activateDF(e.dataFlowId);
       console.log(updatedStatus);
+      // updatedStatus.status === 1 &&
     } else {
       const updatedStatus = await inActivateDF(e.dataFlowId);
       console.log(updatedStatus);
