@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 import { useHistory } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import Table, {
   dateFilterV2,
@@ -30,6 +31,7 @@ import Progress from "../../components/Progress";
 import { MessageContext } from "../../components/MessageProvider";
 import { ReactComponent as DataFlowIcon } from "../../components/Icons/dataflow.svg";
 import { ReactComponent as SyncIcon } from "../../components/Icons/Sync.svg";
+import { hardDelete } from "../../services/ApiServices";
 
 const createAutocompleteFilter =
   (source) =>
@@ -156,7 +158,10 @@ export default function DataFlowTable() {
   const [selectedFilter, setSelectedFilter] = useState(null);
   const messageContext = useContext(MessageContext);
   const [totalRows, setTotalRows] = useState(0);
+  const [rowData, setRowData] = useState([]);
   const history = useHistory();
+
+  const dashboard = useSelector((state) => state.dashboard);
 
   const [expandedRows, setExpandedRows] = useState([]);
 
@@ -169,68 +174,12 @@ export default function DataFlowTable() {
     );
   };
 
-  const dashboard = {
-    dashboardData: [
-      {
-        studyId: "a020E000005SwPtQAK",
-        dataFlowId: "a0A0E000004k79SUAQ",
-        dataSets: "7",
-        dataPackages: "2",
-        studyName: "P16-836",
-        dataFlowName: "IQVIA-TDSE-reference_uatk3",
-        type: 0,
-        dateCreated: "12/21/2021",
-        vendorSource: "IQVIA Connected Devices",
-        description: "IQVIA TDSE reference uatk3",
-        adapter: "Tabular",
-        status: 1,
-        externalSourceSystem: "",
-        locationType: "SFTP",
-        lastModified: "12/21/2021",
-        lastSyncDate: "12/10/2021",
-      },
-      {
-        studyId: "a020E000005SwPtQAK",
-        dataFlowId: "a0A0E000004k7m3UAA",
-        dataSets: "1",
-        dataPackages: "1",
-        studyName: "P16-836",
-        dataFlowName: "IQVIA-TDSE-milestone_attrib_uatk3",
-        type: 0,
-        dateCreated: "12/21/2021",
-        vendorSource: "IQVIA Connected Devices",
-        description: "IQVIA TDSE milestone attrib uatk3",
-        adapter: "Tabular",
-        status: 1,
-        externalSourceSystem: "",
-        locationType: "SFTP",
-        lastModified: "12/21/2021",
-        lastSyncDate: "12/10/2021",
-      },
-      {
-        studyId: "a020E000005SwPtQAK",
-        dataFlowId: "a0A0E00000322XRUAY",
-        dataSets: "6",
-        dataPackages: "1",
-        studyName: "P16-836",
-        dataFlowName: "TARGETHEALTH-000108-Ferring-1",
-        type: 0,
-        dateCreated: "12/21/2021",
-        vendorSource: "IQVIA-CBEX",
-        description: "TARGETHEALTH 000108 Ferring 1",
-        adapter: "Tabular",
-        status: 1,
-        externalSourceSystem: "",
-        locationType: "SFTP",
-        lastModified: "12/21/2021",
-        lastSyncDate: "12/10/2021",
-      },
-    ],
-  };
-
-  const dashboardData = selectedFilter
-    ? dashboard?.dashboardData.filter((data) => data.type === selectedFilter)
-    : dashboard.dashboardData;
+  useEffect(() => {
+    const dashboardData = selectedFilter
+      ? dashboard?.dashboardData.filter((data) => data.type === selectedFilter)
+      : dashboard.flowData;
+    setRowData([...dashboardData]);
+  }, [dashboard?.dashboardData, dashboard.flowData, selectedFilter]);
 
   const statuses = ["Active", "Inactive"];
 
@@ -254,17 +203,22 @@ export default function DataFlowTable() {
     return <span>{date}</span>;
   };
 
-  const syncAction = (e) => {
-    console.log("syncAction", e);
+  const hardDeleteAction = async (e) => {
+    console.log("hardDeleteAction", e);
+    const deleteStatus = await hardDelete(e);
+    if (deleteStatus.success) {
+      // eslint-disable-next-line no-use-before-define
+      deleteLocally(e);
+    }
   };
 
-  const hardDeleteAction = (e) => {
-    console.log("hardDeleteAction", e);
+  const sendSyncRequest = async (e) => {
+    console.log("hardDeleteAction", e.version, e.dataFlowId, "SYNC");
   };
 
   const viewAuditLogAction = (e) => {
-    console.log("viewAuditLogAction", e);
-    history.push("/audit-logs");
+    // console.log("viewAuditLogAction", e);
+    history.push(`/audit-logs/${e}`);
   };
 
   const cloneDataFlowAction = (e) => {
@@ -275,19 +229,26 @@ export default function DataFlowTable() {
   };
 
   const ActionCell = ({ row }) => {
-    const { dataFlowId } = row;
+    const { dataFlowId, status, version } = row;
+    const activeText =
+      status === 1 ? "Change status to inactive" : "Change status to active";
     const menuItems = [
       {
         text: "View audit log",
         onClick: () => viewAuditLogAction(dataFlowId),
       },
       {
-        text: "Change status to inactive",
+        text: activeText,
         onClick: () => changeStatusAction(dataFlowId),
+      },
+      {
+        text: "Send sync request",
+        onClick: () => sendSyncRequest({ version, dataFlowId }),
       },
       {
         text: "Clone data flow",
         onClick: () => cloneDataFlowAction(dataFlowId),
+        disabled: true,
       },
       {
         text: "Hard delete data flow",
@@ -296,9 +257,6 @@ export default function DataFlowTable() {
     ];
     return (
       <div style={{ display: "flex", justifyContent: "end" }}>
-        <IconButton onClick={() => syncAction(dataFlowId)} size="small">
-          <SyncIcon />
-        </IconButton>
         <Tooltip title="Actions" disableFocusListener>
           <IconMenuButton id="actions" menuItems={menuItems} size="small">
             <EllipsisVertical />
@@ -397,7 +355,7 @@ export default function DataFlowTable() {
       );
     }
     return (
-      <div style={{ position: "relative" }}>
+      <div style={{ position: "relative", marginLeft: 25 }}>
         <Button
           variant="primary"
           size="small"
@@ -462,7 +420,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
+            rowData
               .map((r) => ({ label: r.vendorSource }))
               .map((item) => item.label)
           )
@@ -490,7 +448,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
+            rowData
               .map((r) => ({ label: r.description }))
               .map((item) => item.label)
           )
@@ -526,9 +484,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
-              .map((r) => ({ label: r.status }))
-              .map((item) => item.label)
+            rowData.map((r) => ({ label: r.status })).map((item) => item.label)
           )
         )
           .map((label) => {
@@ -554,7 +510,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
+            rowData
               .map((r) => ({ label: r.externalSourceSystem }))
               .map((item) => item.label)
           )
@@ -582,7 +538,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
+            rowData
               .map((r) => ({ label: r.locationType }))
               .map((item) => item.label)
           )
@@ -637,7 +593,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
+            rowData
               .map((r) => ({ label: r.dataFlowName }))
               .map((item) => item.label)
           )
@@ -692,9 +648,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
-              .map((r) => ({ label: r.adapter }))
-              .map((item) => item.label)
+            rowData.map((r) => ({ label: r.adapter })).map((item) => item.label)
           )
         )
           .map((label) => {
@@ -719,19 +673,19 @@ export default function DataFlowTable() {
     columns.slice(-1)[0],
   ];
 
-  const [tableRows, setTableRows] = useState([...dashboardData]);
+  const [tableRows, setTableRows] = useState([...rowData]);
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
 
   // useEffect(() => {
   //   if (!dashboard.loading || dashboard.studyboardFetchSuccess) {
   //     setLoading(false);
-  //     setTableRows([...dashboardData]);
-  //     setExportTableRows([...dashboardData]);
+  //     setTableRows([...rowData]);
+  //     setExportTableRows([...rowData]);
   //     setTableColumns([...moreColumns]);
   //   } else {
   //     setLoading(true);
   //   }
-  // }, [dashboard.loading, dashboardData, dashboard.studyboardFetchSuccess]);
+  // }, [dashboard.loading, rowData, dashboard.studyboardFetchSuccess]);
 
   // const applyFilter = (cols, rows, filts) => {
   //   let filteredRows = rows;
@@ -751,7 +705,7 @@ export default function DataFlowTable() {
   // };
 
   // const exportDataRows = () => {
-  //   const toBeExportRows = [...dashboardData];
+  //   const toBeExportRows = [...rowData];
   //   const sortedFilteredData = applyFilter(
   //     tableColumns,
   //     toBeExportRows,
@@ -769,11 +723,22 @@ export default function DataFlowTable() {
     history.push("/dataflow-management");
   };
 
+  const deleteLocally = (e) => {
+    const newData = tableRows.filter((data) => data.dataFlowId !== e);
+    setTableRows([...newData]);
+  };
+
   useEffect(() => {
     setTableColumns([...moreColumns]);
-    setTableRows([...dashboardData]);
-    setTotalRows(dashboardData.length);
+    setTableRows([...rowData]);
+    setTotalRows(rowData.length);
   }, []);
+
+  useEffect(() => {
+    setTableColumns([...moreColumns]);
+    setTableRows([...rowData]);
+    setTotalRows(rowData.length);
+  }, [rowData]);
 
   const EmptyTableComponent = () => (
     <>
@@ -900,9 +865,11 @@ export default function DataFlowTable() {
               expanded: expandedRows.includes(row.dataFlowId),
               handleToggleRow,
             }))}
+            rowId="dataFlowId"
             initialSortedColumn="dateCreated"
             initialSortOrder="asc"
             rowsPerPageOptions={[10, 50, 100, "All"]}
+            hasScroll={true}
             tablePaginationProps={{
               labelDisplayedRows: ({ from, to, count }) =>
                 `${

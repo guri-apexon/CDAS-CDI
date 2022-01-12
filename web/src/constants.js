@@ -16,6 +16,9 @@ export const DASHBOARD_FETCH_SUCCESS = "DASHBOARD_FETCH_SUCCESS";
 export const DASHBOARD_FETCH_FAILUR = "DASHBOARD_FETCH_FAILUR";
 
 export const PAGEHEADER_UPDATE = "PAGEHEADER_UPDATE";
+export const GET_DATA_FLOW_LIST = "GET_DATA_FLOW_LIST";
+export const GET_DATA_FLOW_LIST_SUCCESS = "GET_DATA_FLOW_LIST_SUCCESS";
+export const GET_DATA_FLOW_LIST_FAILURE = "GET_DATA_FLOW_LIST_FAILURE";
 
 export const PACKAGES_LIST = "PACKAGES_LIST";
 export const PACKAGES_LIST_SUCCESS = "PACKAGES_LIST_SUCCESS";
@@ -61,8 +64,9 @@ export const STORE_DATASET_COLUMNS_FAILURE = "STORE_DATASET_COLUMNS_FAILURE";
 
 // API URLS
 
-export const DASHBOARD_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
+export const FLOW_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
 export const STUDYSEARCH = "v1/api/study/search-study";
+export const HARDDELETE = "v1/api/dataflow/hard-delete";
 export const PACKAGES_SEARCH = "v1/api/data-package/search";
 export const ADD_PACKAGE = "v1/api/data-package/add";
 export const DELETE_PACKAGE = "v1/api/data-package/delete";

@@ -1,7 +1,4 @@
 .colums-tab {
-  border: 1px solid #e9e9e9;
-  background-color: #ffffff;
-  padding: 16px;
   p {
     margin: 0;
   }
@@ -19,6 +16,9 @@
   }
   .cards-box {
     display: flex;
+    .active {
+      border: 1px solid #0768fd;
+    }
     .card {
       margin-right: 48px;
       text-align: center;
@@ -32,4 +32,10 @@
       }
     }
   }
+}
+
+.tab {
+  border: 1px solid #e9e9e9;
+  background-color: #ffffff;
+  padding: 16px;
 }

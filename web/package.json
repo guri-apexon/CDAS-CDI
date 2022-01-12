@@ -38,8 +38,8 @@
     "start": "react-scripts start",
     "start:server:local": "npm run build && (cd ../server && npm run start:local)",
     "build": "react-scripts build",
-    "test": "react-scripts test --detectOpenHandles --updateSnapshot --watchAll=false",
-    "coverage": "react-scripts test --detectOpenHandles --watchAll=false --coverage",
+    "test": "react-scripts test --env=jsdom --detectOpenHandles --updateSnapshot --watchAll=false",
+    "coverage": "react-scripts test --env=jsdom --detectOpenHandles --watchAll=false --coverage",
     "eject": "react-scripts eject",
     "lint": "eslint src"
   },
