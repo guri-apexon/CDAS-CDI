@@ -9,7 +9,7 @@ const helper = require("../helpers/customFunctions");
 exports.getStudyDataflows = async (req, res) => {
   try {
     const protocolId = req.params.protocolId;
-    const query = `select * from (select s.prot_id as "studyId", d.dataflowid as "dataFlowId", row_number () over(partition by d.dataflowid,d2.prot_id order by dh."version" desc) as rnk, dsetcount.dsCount as "dsCount", dpackagecount.dpCount as "dpCount", s.prot_nbr as "studyName", dh."version", d.data_flow_nm as "dataFlowName", d.testflag as "type", d.insrt_tm as "dateCreated", vend_nm as "verndorSource", d.description, d.type as "adapter", d.active as "status", d.extrnl_sys_nm as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified", d.refreshtimestamp as "lastSyncDate" from cdascdi.dataflow d 
+    const query = `select * from (select s.prot_id as "studyId", d.dataflowid as "dataFlowId", row_number () over(partition by d.dataflowid,d2.prot_id order by dh."version" desc) as rnk, dsetcount.dsCount as "dsCount", dpackagecount.dpCount as "dpCount", s.prot_nbr as "studyName", dh."version", d.data_flow_nm as "dataFlowName", d.testflag as "type", d.insrt_tm as "dateCreated", vend_nm as "vendorSource", d.description, d.type as "adapter", d.active as "status", d.extrnl_sys_nm as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified", d.refreshtimestamp as "lastSyncDate" from cdascdi.dataflow d 
     inner join cdascdi.vendor v on d.vend_id = v.vend_id 
     inner join cdascdi.source_location sl on d.src_loc_id = sl.src_loc_id 
     inner join cdascdi.datapackage d2 on d.dataflowid = d2.dataflowid 
@@ -21,41 +21,26 @@ exports.getStudyDataflows = async (req, res) => {
 
     Logger.info({ message: "getStudyDataflows" });
     const $q1 = await DB.executeQuery(query, [protocolId]);
-    // const $q2 = await DB.executeQuery(q2);
-    // const $q3 = await DB.executeQuery(q3);
-
-    // console.log("results", protocolId, $q1, $q2, $q3);
-
-    // const getTotalCount = (arr) => {
-    //   let sum = [...arr].reduce(
-    //     (previousValue, currentValue) => previousValue + currentValue.count,
-    //     0
-    //   );
-    //   return { count: sum };
-    // };
 
     const formatDateValues = await $q1.rows.map((e) => {
-      // let filterByDF = $q2.rows.filter((d) => d.dataflowid === e.dataFlowId);
-      // let newObj = filterByDF[0] ? getTotalCount([...acc]) : { count: 0 };
-      // let { count: dpCount } = newObj;
-      // let dsCount = 10;
-      // let dpCount = 5;
       let editT = moment(e.lastModified).format("MM/DD/YYYY");
       let addT = moment(e.dateCreated).format("MM/DD/YYYY");
       let syncT = moment(e.lastSyncDate).format("MM/DD/YYYY");
+      let status = e.status === 0 ? "Inactive" : "Active";
+      let dfType = e.type === 0 ? "Production" : "Test";
       return {
         ...e,
         dateCreated: addT,
         lastModified: editT,
         lastSyncDate: syncT,
-        // dataSets: dsCount,
-        // dataPackages: dpCount,
+        status: status,
+        type: dfType,
       };
     });
 
     const uniqueDataflows = Array.from(
       formatDateValues
-        .reduce((acc, { dataSets, dataPackages, dataFlowId, ...r }) => {
+        .reduce((acc, { dsCount, dpCount, dataFlowId, ...r }) => {
           const current = acc.get(dataFlowId) || {
             ...r,
             dataSets: 0,
@@ -64,9 +49,8 @@ exports.getStudyDataflows = async (req, res) => {
           return acc.set(dataFlowId, {
             ...current,
             dataFlowId,
-            dataSets: parseInt(current.dataSets) + parseInt(dataSets),
-            dataPackages:
-              parseInt(current.dataPackages) + parseInt(dataPackages),
+            dataSets: parseInt(current.dataSets) + parseInt(dsCount),
+            dataPackages: parseInt(current.dataPackages) + parseInt(dpCount),
           });
         }, new Map())
         .values()
