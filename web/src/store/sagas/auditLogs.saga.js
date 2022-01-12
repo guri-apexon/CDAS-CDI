@@ -12,7 +12,7 @@ export function* fetchAuditLogs(params) {
   try {
     const fetchData = yield call(
       axios.get,
-      `${baseURL}/${AUDIT_LOGS_FETCH}/${params.searchQuery}`,
+      `${baseURL}/${AUDIT_LOGS_FETCH}/${params.dataflowId}`,
       {}
     );
     const logs = fetchData.data?.data?.data || [];

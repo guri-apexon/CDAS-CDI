@@ -113,7 +113,7 @@ const hardDeleteTrigger = async (dataflowId) => {
       const deleteQuery3 = `DELETE FROM cdascdi1d.cdascdi.dataflow
       WHERE dataflowid = $1`;
       await DB.executeQuery(deleteQuery3, values).then(async (response3) => {
-        result = true;
+        result = response3.rowCount>0 ? 'exist' : true;
       }).catch((err)=>{
         result = false;
       });
@@ -162,11 +162,7 @@ exports.cronHardDelete = async () => {
               const user = response.rows[0];
               const deleted = await hardDeleteTrigger(dataflowId);
               if (deleted) {
-                const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
-                WHERE da.dataflowid = $1`;
-                DB.executeQuery(deleteQuery, [dataflowId]).then(async (response) => {
-                  return true;
-                });
+                return true;
               }
               return false;
             }
@@ -183,14 +179,13 @@ exports.hardDelete = async (req, res) => {
       if(response.rows && response.rows.length){
         const user = response.rows[0];
         const deleted = await hardDeleteTrigger(dataflowId);
-        if (deleted) {
-          const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
-          WHERE da.dataflowid = $1`;
-          DB.executeQuery(deleteQuery, [dataflowId]).then(async (response) => {
-            return apiResponse.successResponseWithData(res, "Deleted successfully", {
-              success: true,
-            });
+        if(deleted=='exist') {
+          return apiResponse.successResponseWithData(res, "Deleted successfully", {
+            success: true,
           });
+        }
+        if (deleted) {
+          return apiResponse.successResponseWithData(res, "Records already deleted", {});
         } else {
           const inserted = await addDeleteTempLog(dataflowId, user);
           if(inserted) {
