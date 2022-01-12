@@ -23,7 +23,7 @@ const searchStudy = async (searchQuery = "") => {
 
 export const hardDelete = async (dataFlowId) => {
   try {
-    const res = await axios.post(`${baseURL}/${HARDDELETE}}`, {
+    const res = await axios.post(`${baseURL}/${HARDDELETE}`, {
       dataFlowId,
       user_id: userId,
     });

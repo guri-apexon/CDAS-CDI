@@ -197,7 +197,10 @@ exports.hardDelete = async (req, res) => {
 exports.activateDataFlow = async (req, ser) => {
   try {
     const { protocolId, userId } = req.body;
+    const query = `UPDATE cdascdi.dataflow ET active=1, WHERE dataflowid=$1`;
     Logger.info({ message: "activateDataFlow" });
+    const $q1 = await DB.executeQuery(query, [protocolId]);
+    return apiResponse.successResponseWithData(res, "Operation success", $q1);
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :activateDataFlow");
@@ -209,7 +212,10 @@ exports.activateDataFlow = async (req, ser) => {
 exports.inActivateDataFlow = async (req, ser) => {
   try {
     const { protocolId, userId } = req.body;
+    const query = `UPDATE cdascdi.dataflow ET active=0, WHERE dataflowid=$1`;
     Logger.info({ message: "inActivateDataFlow" });
+    const $q1 = await DB.executeQuery(query, [protocolId]);
+    return apiResponse.successResponseWithData(res, "Operation success", $q1);
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :inActivateDataFlow");

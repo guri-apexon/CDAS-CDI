@@ -262,7 +262,10 @@ export default function DataFlowTable() {
   const hardDeleteAction = async (e) => {
     console.log("hardDeleteAction", e);
     const deleteStatus = await hardDelete(e);
-    console.log("deleteStatus", deleteStatus);
+    if (deleteStatus.success) {
+      // eslint-disable-next-line no-use-before-define
+      deleteLocally(e);
+    }
   };
 
   const sendSyncRequest = async (e) => {
@@ -781,6 +784,11 @@ export default function DataFlowTable() {
 
   const toDataflowMgmt = async () => {
     history.push("/dataflow-management");
+  };
+
+  const deleteLocally = (e) => {
+    const newData = tableRows.filter((data) => data.dataFlowId !== e);
+    setTableRows([...newData]);
   };
 
   useEffect(() => {
