@@ -7,5 +7,7 @@ router.get(
   DataflowController.getStudyDataflows
 );
 router.post("/hard-delete", DataflowController.hardDelete);
+router.post("/activate", DataflowController.activateDataFlow);
+router.post("/inActivate", DataflowController.inActivateDataFlow);
 
 module.exports = router;

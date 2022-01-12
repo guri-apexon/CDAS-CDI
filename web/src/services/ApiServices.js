@@ -7,6 +7,8 @@ import {
   UNPINSTUDY,
   PINSTUDY,
   HARDDELETE,
+  ACTIVATEDF,
+  INACTIVATE,
 } from "../constants";
 import { getCookie } from "../utils/index";
 
@@ -24,6 +26,30 @@ const searchStudy = async (searchQuery = "") => {
 export const hardDelete = async (dataFlowId) => {
   try {
     const res = await axios.post(`${baseURL}/${HARDDELETE}`, {
+      dataFlowId,
+      user_id: userId,
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const activateDF = async (dataFlowId) => {
+  try {
+    const res = await axios.post(`${baseURL}/${ACTIVATEDF}`, {
+      dataFlowId,
+      user_id: userId,
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const inActivateDF = async (dataFlowId) => {
+  try {
+    const res = await axios.post(`${baseURL}/${INACTIVATE}`, {
       dataFlowId,
       user_id: userId,
     });

@@ -266,3 +266,23 @@ content-type: application/json
     }
   ]
 }
+
+### Activate DataFlow
+
+POST http://localhost:4001/v1/api/dataflow/activate HTTP/1.1
+content-type: application/json
+
+{
+"dataFlowId": "a0A0E00000322XRUAY",
+"user_id": "u1105372"
+}
+
+### InActivate DataFlow
+
+POST http://localhost:4001/v1/api/dataflow/inActivate HTTP/1.1
+content-type: application/json
+
+{
+"dataFlowId": "a0A0E00000322XRUAY",
+"user_id": "u1105372"
+}
