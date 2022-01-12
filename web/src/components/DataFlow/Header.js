@@ -61,19 +61,21 @@ const Header = (props) => {
           {`${props.datasetsCount} datasets`}
         </Typography>
       )}
-      <ButtonGroup
-        alignItems="right"
-        buttonProps={[
-          {
-            label: "Cancel",
-            onClick: () => props.close(),
-          },
-          {
-            label: "Save",
-            onClick: () => props.submit(),
-          },
-        ]}
-      />
+      {(!props.tabValue || props.tabValue === 0) && (
+        <ButtonGroup
+          alignItems="right"
+          buttonProps={[
+            {
+              label: "Cancel",
+              onClick: () => props.close(),
+            },
+            {
+              label: "Save",
+              onClick: () => props.submit(),
+            },
+          ]}
+        />
+      )}
       {props.tabs && (
         <Tabs
           value={props.tabValue}
@@ -83,7 +85,13 @@ const Header = (props) => {
           truncate
         >
           {props.tabs.map((tab) => (
-            <Tab label={tab} />
+            <Tab
+              label={tab}
+              disabled={
+                Object.keys(props.selectedDataset).length <= 0 &&
+                tab === "Dataset Columns"
+              }
+            />
           ))}
         </Tabs>
       )}

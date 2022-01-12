@@ -4,6 +4,7 @@ import {
   checkAlphaNumeric,
   checkNumbers,
   checkExceSupport,
+  checkAlphaNumericFileName,
 } from "./validators";
 
 const dataSetsValidation = ({
@@ -26,7 +27,8 @@ const dataSetsValidation = ({
       checkRequired(transferFrequency) || checkNumbers(transferFrequency),
     fileNamingConvention:
       checkRequired(fileNamingConvention) ||
-      checkExceSupport(fileNamingConvention, fileType),
+      checkExceSupport(fileNamingConvention, fileType) ||
+      checkAlphaNumericFileName(fileNamingConvention),
     rowDecreaseAllowed: checkNumbers(rowDecreaseAllowed),
     overrideStaleAlert: checkNumbers(overrideStaleAlert),
     headerRowNumber: checkNumbers(headerRowNumber),
