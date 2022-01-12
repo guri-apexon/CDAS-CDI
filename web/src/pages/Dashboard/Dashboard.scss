@@ -41,11 +41,18 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   .cardP {
-      display: flex;
-      flex-direction: column;
+    display: flex;
+    flex-direction: column;
   }
   .cardPC {
     display: flex;
     flex-direction: column;
   }
+}
+
+.active {
+  background: #00c221;
+}
+.inActive {
+  background: #999999;
 }

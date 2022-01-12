@@ -52,9 +52,10 @@ const onSubmit = (values) => {
 };
 
 const breadcrumbItems = [
-  { href: "#" },
+  { href: "/dashboard" },
   {
     title: "Data Flow Settings",
+    href: "#",
   },
 ];
 

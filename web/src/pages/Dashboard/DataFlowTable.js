@@ -30,7 +30,6 @@ import PlusIcon from "apollo-react-icons/Plus";
 import Progress from "../../components/Progress";
 import { MessageContext } from "../../components/MessageProvider";
 import { ReactComponent as DataFlowIcon } from "../../components/Icons/dataflow.svg";
-import { ReactComponent as SyncIcon } from "../../components/Icons/Sync.svg";
 import {
   hardDelete,
   activateDF,
@@ -232,11 +231,11 @@ export default function DataFlowTable() {
     // console.log("changeStatusAction", e);
     if (e.status === 0) {
       const updatedStatus = await activateDF(e.dataFlowId);
-      console.log(updatedStatus);
+      console.log("updatedStatus", updatedStatus);
       // updatedStatus.status === 1 &&
     } else {
       const updatedStatus = await inActivateDF(e.dataFlowId);
-      console.log(updatedStatus);
+      console.log("updatedStatus", updatedStatus);
     }
   };
 
@@ -353,27 +352,15 @@ export default function DataFlowTable() {
 
   const StatusCell = ({ row, column: { accessor } }) => {
     const description = row[accessor];
-    if (description === 1) {
-      return (
-        <div style={{ position: "relative", marginLeft: 25 }}>
-          <Button
-            variant="primary"
-            size="small"
-            style={{ marginRight: 10, background: "#00c221" }}
-          >
-            Active
-          </Button>
-        </div>
-      );
-    }
     return (
       <div style={{ position: "relative", marginLeft: 25 }}>
         <Button
           variant="primary"
           size="small"
-          style={{ marginRight: 10, background: "#999999" }}
+          style={{ marginRight: 10 }}
+          className={description === "Active" ? "active" : "inActive"}
         >
-          Inactive
+          {description}
         </Button>
       </div>
     );
@@ -483,8 +470,27 @@ export default function DataFlowTable() {
       header: "Type",
       accessor: "type",
       frozen: true,
-      customCell: TypeCell,
       sortFunction: compareStrings,
+      filterFunction: createStringArraySearchFilter("type"),
+      filterComponent: createAutocompleteFilter(
+        Array.from(
+          new Set(
+            rowData.map((r) => ({ label: r.type })).map((item) => item.label)
+          )
+        )
+          .map((label) => {
+            return { label };
+          })
+          .sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            }
+            if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          })
+      ),
     },
     {
       header: "Status",
@@ -587,7 +593,32 @@ export default function DataFlowTable() {
       filterFunction: dateFilterV2("lastModified"),
       filterComponent: DateFilter,
     },
-
+    {
+      header: "Version",
+      accessor: "version",
+      frozen: false,
+      sortFunction: compareNumbers,
+      filterFunction: createStringArraySearchFilter("version"),
+      filterComponent: createAutocompleteFilter(
+        Array.from(
+          new Set(
+            rowData.map((r) => ({ label: r.version })).map((item) => item.label)
+          )
+        )
+          .map((label) => {
+            return { label };
+          })
+          .sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            }
+            if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          })
+      ),
+    },
     {
       accessor: "action",
       customCell: ActionCell,
@@ -687,49 +718,6 @@ export default function DataFlowTable() {
 
   const [tableRows, setTableRows] = useState([...rowData]);
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
-
-  // useEffect(() => {
-  //   if (!dashboard.loading || dashboard.studyboardFetchSuccess) {
-  //     setLoading(false);
-  //     setTableRows([...rowData]);
-  //     setExportTableRows([...rowData]);
-  //     setTableColumns([...moreColumns]);
-  //   } else {
-  //     setLoading(true);
-  //   }
-  // }, [dashboard.loading, rowData, dashboard.studyboardFetchSuccess]);
-
-  // const applyFilter = (cols, rows, filts) => {
-  //   let filteredRows = rows;
-  //   Object.values(cols).forEach((column) => {
-  //     if (column.filterFunction) {
-  //       filteredRows = filteredRows.filter((row) => {
-  //         return column.filterFunction(row, filts);
-  //       });
-  //       if (column.sortFunction) {
-  //         filteredRows.sort(
-  //           column.sortFunction(sortedColumnValue, sortOrderValue)
-  //         );
-  //       }
-  //     }
-  //   });
-  //   return filteredRows;
-  // };
-
-  // const exportDataRows = () => {
-  //   const toBeExportRows = [...rowData];
-  //   const sortedFilteredData = applyFilter(
-  //     tableColumns,
-  //     toBeExportRows,
-  //     inlineFilters
-  //   );
-  //   return sortedFilteredData;
-  // };
-
-  // useEffect(() => {
-  //   const rows = exportDataRows();
-  //   setTableRows([...rows]);
-  // }, [inlineFilters, sortedColumnValue, sortOrderValue]);
 
   const toDataflowMgmt = async () => {
     history.push("/dataflow-management");
