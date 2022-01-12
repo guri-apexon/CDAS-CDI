@@ -48,189 +48,12 @@ const TextFieldFilter = ({ accessor, filters, updateFilterValue }) => {
   );
 };
 
-const ActionCell = ({ row }) => {
-  const {
-    columnId,
-    onRowEdit,
-    onRowSave,
-    editMode,
-    onCancel,
-    editedRow,
-    onDelete,
-  } = row;
-
-  return editMode ? (
-    <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
-      <Button size="small" style={{ marginRight: 8 }} onClick={onCancel}>
-        Cancel
-      </Button>
-      <Button size="small" variant="primary">
-        Save
-      </Button>
-    </div>
-  ) : (
-    <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
-      <IconButton size="small" onClick={() => onRowEdit(columnId)}>
-        <Pencil />
-      </IconButton>
-      <IconButton size="small" onClick={() => onDelete(columnId)}>
-        <Trash />
-      </IconButton>
-    </div>
-  );
-};
-const menuItems = [
-  {
-    text: "Download Template",
-    onClick: console.log("Download Template"),
-  },
-  {
-    text: "Download Table",
-    onClick: console.log("Download Table"),
-  },
-];
-
-const CustomHeader = ({ editMode, onCancel, onSave, onEditAll }) => (
-  <div>
-    <Grid container alignItems="center">
-      <Button size="small" style={{ marginRight: 8 }} onClick={onCancel}>
-        Cancel All
-      </Button>
-      <Button size="small" variant="primary" onClick={onSave}>
-        Save All
-      </Button>
-      <IconButton color="primary" size="small" disabled>
-        <Pencil />
-      </IconButton>
-      <IconButton color="primary" size="small" disabled>
-        <Upload />
-      </IconButton>
-      <Divider
-        orientation="vertical"
-        flexItem
-        style={{ marginLeft: 15, marginRight: 15 }}
-      />
-      <Search
-        placeholder="Search"
-        size="small"
-        style={{ marginTop: "-5px", marginBottom: 0 }}
-        disabled
-      />
-      <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
-        <EllipsisVertical />
-      </IconMenuButton>
-    </Grid>
-  </div>
-);
-const makeEditableSelectCell =
-  (options) =>
-  ({ row, column: { accessor: key } }) =>
-    row.editMode ? (
-      <Select
-        size="small"
-        fullWidth
-        canDeselect={false}
-        value={row[key]}
-        onChange={(e) => row.editRow(row.columnId, key, e.target.value)}
-        {...fieldStyles}
-      >
-        {options.map((option) => (
-          <MenuItem key={option} value={option}>
-            {option}
-          </MenuItem>
-        ))}
-      </Select>
-    ) : (
-      row[key]
-    );
 const Cell = ({ row, column }) => (
   <div style={{ paddingTop: row.editMode ? 12 : 0 }}>
     {row[column.accessor]}
   </div>
 );
-const EditableCell = ({ row, column: { accessor: key } }) =>
-  row.editMode ? (
-    <TextField
-      size="small"
-      fullWidth
-      value={row[key]}
-      onChange={(e) => row.editRow(row.columnId, key, e.target.value)}
-      error={!row[key]}
-      helperText={!row[key] && "Required"}
-      {...fieldStyles}
-    />
-  ) : (
-    row[key]
-  );
-const columns = [
-  {
-    header: "",
-    accessor: "columnId",
-    customCell: Cell,
-  },
-  {
-    header: "Variable Label",
-    accessor: "variableLabel",
-    customCell: EditableCell,
-    filterFunction: createStringSearchFilter("variableLabel"),
-    filterComponent: TextFieldFilter,
-  },
-  {
-    header: "Column Name/Designator",
-    accessor: "columnName",
-    customCell: EditableCell,
-  },
-  {
-    header: "Position",
-    accessor: "position",
-    customCell: EditableCell,
-  },
-  {
-    header: "Format",
-    accessor: "format",
-    customCell: EditableCell,
-  },
-  {
-    header: "Data Type",
-    accessor: "dataType",
-    customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
-  },
-  {
-    header: "Primary?",
-    accessor: "primary",
-    customCell: makeEditableSelectCell(["Yes", "No"]),
-  },
-  {
-    header: "Unique?",
-    accessor: "unique",
-    customCell: makeEditableSelectCell(["Yes", "No"]),
-  },
-  {
-    header: "Required?",
-    accessor: "required",
-    customCell: makeEditableSelectCell(["Yes", "No"]),
-  },
-  {
-    header: "Min length",
-    accessor: "minLength",
-    customCell: EditableCell,
-  },
-  {
-    header: "Max length",
-    accessor: "maxLength",
-    customCell: EditableCell,
-  },
-  {
-    header: "List of values",
-    accessor: "values",
-    customCell: EditableCell,
-  },
-  {
-    accessor: "action",
-    customCell: ActionCell,
-    align: "right",
-  },
-];
+
 const DatasetTable = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -249,8 +72,194 @@ const DatasetTable = (props) => {
     maxLength: "",
     values: "",
   }));
-  const [rows, setRows] = useState(initialRows);
-  const [editedRows, setEditedRows] = useState(initialRows);
+  const [rows, setRows] = useState([...initialRows]);
+  const [editedRows, setEditedRows] = useState([...initialRows]);
+  const [editByRow, setEditByRow] = useState([]);
+  const [editMode, setEditMode] = useState(false);
+
+  const ActionCell = ({ row }) => {
+    const { columnId, onRowEdit, onRowSave, onCancel, editedRow, onDelete } =
+      row;
+
+    return editMode ? (
+      <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
+        <Button size="small" style={{ marginRight: 8 }} onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button size="small" variant="primary">
+          Save
+        </Button>
+      </div>
+    ) : (
+      <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
+        <IconButton size="small" onClick={() => onRowEdit(columnId)}>
+          <Pencil />
+        </IconButton>
+        <IconButton size="small" onClick={() => onDelete(columnId)}>
+          <Trash />
+        </IconButton>
+      </div>
+    );
+  };
+  const menuItems = [
+    {
+      text: "Download Template",
+      onClick: console.log("Download Template"),
+    },
+    {
+      text: "Download Table",
+      onClick: console.log("Download Table"),
+    },
+  ];
+
+  const CustomHeader = ({ onCancel, onSave, onEditAll }) => (
+    <div>
+      <Grid container alignItems="center">
+        <Button size="small" style={{ marginRight: 8 }} onClick={onCancel}>
+          Cancel All
+        </Button>
+        <Button size="small" variant="primary" onClick={onSave}>
+          Save All
+        </Button>
+        <IconButton color="primary" size="small" disabled>
+          <Pencil />
+        </IconButton>
+        <IconButton color="primary" size="small" disabled>
+          <Upload />
+        </IconButton>
+        <Divider
+          orientation="vertical"
+          flexItem
+          style={{ marginLeft: 15, marginRight: 15 }}
+        />
+        <Search
+          placeholder="Search"
+          size="small"
+          style={{ marginTop: "-5px", marginBottom: 0 }}
+          disabled
+        />
+        <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
+          <EllipsisVertical />
+        </IconMenuButton>
+      </Grid>
+    </div>
+  );
+  const makeEditableSelectCell =
+    (options) =>
+    ({ row, column: { accessor: key } }) =>
+      row.editMode ? (
+        <Select
+          size="small"
+          fullWidth
+          canDeselect={false}
+          value={row[key]}
+          onChange={(e) => row.editRow(row.columnId, key, e.target.value)}
+          {...fieldStyles}
+        >
+          {options.map((option) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </Select>
+      ) : (
+        row[key]
+      );
+
+  const EditableCell = ({ row, column: { accessor: key } }) =>
+    row.editMode ? (
+      <TextField
+        size="small"
+        fullWidth
+        value={row[key]}
+        onChange={(e) => row.editRow(row.columnId, key, e.target.value)}
+        error={!row[key]}
+        helperText={!row[key] && "Required"}
+        {...fieldStyles}
+      />
+    ) : (
+      row[key]
+    );
+  const columns = [
+    {
+      header: "",
+      accessor: "columnId",
+      customCell: Cell,
+      frozen: true,
+    },
+    {
+      header: "Variable Label",
+      accessor: "variableLabel",
+      customCell: EditableCell,
+      filterFunction: createStringSearchFilter("variableLabel"),
+      filterComponent: TextFieldFilter,
+      frozen: true,
+    },
+    {
+      header: "Column Name/Designator",
+      accessor: "columnName",
+      customCell: EditableCell,
+      frozen: true,
+    },
+    // {
+    //   header: "Position",
+    //   accessor: "position",
+    //   customCell: EditableCell,
+    // },
+    {
+      header: "Format",
+      accessor: "format",
+      customCell: EditableCell,
+      frozen: false,
+    },
+    {
+      header: "Data Type",
+      accessor: "dataType",
+      customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
+      frozen: false,
+    },
+    {
+      header: "Primary?",
+      accessor: "primary",
+      customCell: makeEditableSelectCell(["Yes", "No"]),
+      frozen: false,
+    },
+    {
+      header: "Unique?",
+      accessor: "unique",
+      customCell: makeEditableSelectCell(["Yes", "No"]),
+      frozen: false,
+    },
+    {
+      header: "Required?",
+      accessor: "required",
+      customCell: makeEditableSelectCell(["Yes", "No"]),
+      frozen: false,
+    },
+    {
+      header: "Min length",
+      accessor: "minLength",
+      customCell: EditableCell,
+      frozen: false,
+    },
+    {
+      header: "Max length",
+      accessor: "maxLength",
+      customCell: EditableCell,
+      frozen: false,
+    },
+    {
+      header: "List of values",
+      accessor: "values",
+      customCell: EditableCell,
+      frozen: false,
+    },
+    {
+      accessor: "action",
+      customCell: ActionCell,
+      align: "right",
+    },
+  ];
 
   useEffect(() => {
     if (dataOrigin === "fileUpload") {
@@ -259,9 +268,13 @@ const DatasetTable = (props) => {
     console.log("dataOrigin", dataOrigin, formattedData, rows);
   }, [dataOrigin]);
 
-  const editMode = editedRows.length > 0;
+  // const editMode = editedRows.length > 0;
   const onEditAll = () => {
     setEditedRows(rows);
+  };
+
+  const onRowEdit = (columnId) => {
+    console.log("rowid", columnId);
   };
   const onSave = () => {
     setRows(editedRows);
@@ -297,12 +310,13 @@ const DatasetTable = (props) => {
           }`}
           columns={columns}
           rowId="columnId"
-          hasScroll
+          hasScroll={true}
           rows={(editMode ? editedRows : rows).map((row) => ({
             ...row,
             onDelete,
             editRow,
             editMode,
+            onRowEdit,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}

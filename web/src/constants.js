@@ -63,6 +63,7 @@ export const STORE_DATASET_COLUMNS_FAILURE = "STORE_DATASET_COLUMNS_FAILURE";
 
 export const DASHBOARD_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
 export const STUDYSEARCH = "v1/api/study/search-study";
+export const HARDDELETE = "v1/api/dataflow/hard-delete";
 export const PACKAGES_SEARCH = "v1/api/data-package/search";
 export const ADD_PACKAGE = "v1/api/data-package/add";
 export const DELETE_PACKAGE = "v1/api/data-package/delete";

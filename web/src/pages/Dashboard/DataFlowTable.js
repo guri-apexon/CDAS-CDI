@@ -30,6 +30,7 @@ import Progress from "../../components/Progress";
 import { MessageContext } from "../../components/MessageProvider";
 import { ReactComponent as DataFlowIcon } from "../../components/Icons/dataflow.svg";
 import { ReactComponent as SyncIcon } from "../../components/Icons/Sync.svg";
+import { hardDelete } from "../../services/ApiServices";
 
 const createAutocompleteFilter =
   (source) =>
@@ -183,7 +184,7 @@ export default function DataFlowTable() {
         vendorSource: "IQVIA Connected Devices",
         description: "IQVIA TDSE reference uatk3",
         adapter: "Tabular",
-        status: 1,
+        status: 0,
         externalSourceSystem: "",
         locationType: "SFTP",
         lastModified: "12/21/2021",
@@ -258,8 +259,9 @@ export default function DataFlowTable() {
     console.log("syncAction", e);
   };
 
-  const hardDeleteAction = (e) => {
+  const hardDeleteAction = async (e) => {
     console.log("hardDeleteAction", e);
+    const deleteStatus = await hardDelete(e);
   };
 
   const viewAuditLogAction = (e) => {
@@ -275,19 +277,26 @@ export default function DataFlowTable() {
   };
 
   const ActionCell = ({ row }) => {
-    const { dataFlowId } = row;
+    const { dataFlowId, status } = row;
+    const activeText =
+      status === 1 ? "Change status to inactive" : "Change status to active";
     const menuItems = [
       {
         text: "View audit log",
         onClick: () => viewAuditLogAction(dataFlowId),
       },
       {
-        text: "Change status to inactive",
+        text: activeText,
+        onClick: () => changeStatusAction(dataFlowId),
+      },
+      {
+        text: "Send sync request",
         onClick: () => changeStatusAction(dataFlowId),
       },
       {
         text: "Clone data flow",
         onClick: () => cloneDataFlowAction(dataFlowId),
+        disabled: true,
       },
       {
         text: "Hard delete data flow",
@@ -903,6 +912,7 @@ export default function DataFlowTable() {
             initialSortedColumn="dateCreated"
             initialSortOrder="asc"
             rowsPerPageOptions={[10, 50, 100, "All"]}
+            hasScroll={true}
             tablePaginationProps={{
               labelDisplayedRows: ({ from, to, count }) =>
                 `${
