@@ -2,17 +2,16 @@ import produce from "immer";
 // import moment from "moment";
 
 import {
-  DASHBOARD_FETCH_SUCCESS,
-  DASHBOARD_FETCH_FAILUR,
-  DASHBOARD_DATA,
   PAGEHEADER_UPDATE,
+  GET_DATA_FLOW_LIST,
+  GET_DATA_FLOW_LIST_SUCCESS,
+  GET_DATA_FLOW_LIST_FAILURE,
 } from "../../constants";
 
 export const initialState = {
-  dashboardData: [],
-  notOnBoardedStudyStatus: {},
   loading: false,
   exportStudy: null,
+  flowData: [],
   selectedCard: {
     phase: "",
     projectcode: "",
@@ -29,27 +28,21 @@ export const initialState = {
 const DashboardReducer = (state = initialState, action) =>
   produce(state, (newState) => {
     switch (action.type) {
-      case DASHBOARD_DATA:
-        newState.loading = true;
-        break;
-
       case PAGEHEADER_UPDATE:
         newState.selectedCard = action.study;
         break;
 
-      case DASHBOARD_FETCH_SUCCESS:
-        newState.loading = false;
-        newState.studyboardData = action.studyboardData;
-        newState.vendors = action.vendors;
-        newState.dataFlows = action.dataFlows;
-        newState.dataSets = action.dataSets;
+      case GET_DATA_FLOW_LIST:
+        newState.loading = true;
         break;
 
-      case DASHBOARD_FETCH_FAILUR:
+      case GET_DATA_FLOW_LIST_SUCCESS:
         newState.loading = false;
-        newState.vendors = 0;
-        newState.dataFlows = 0;
-        newState.dataSets = 0;
+        newState.flowData = action.flowData;
+        break;
+
+      case GET_DATA_FLOW_LIST_FAILURE:
+        newState.loading = false;
         break;
 
       default:

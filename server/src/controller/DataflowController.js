@@ -53,10 +53,29 @@ exports.getStudyDataflows = async (req, res) => {
       };
     });
 
+    const uniqueDataflows = Array.from(
+      formatDateValues
+        .reduce((acc, { dataSets, dataPackages, dataFlowId, ...r }) => {
+          const current = acc.get(dataFlowId) || {
+            ...r,
+            dataSets: 0,
+            dataPackages: 0,
+          };
+          return acc.set(dataFlowId, {
+            ...current,
+            dataFlowId,
+            dataSets: parseInt(current.dataSets) + parseInt(dataSets),
+            dataPackages:
+              parseInt(current.dataPackages) + parseInt(dataPackages),
+          });
+        }, new Map())
+        .values()
+    );
+
     return apiResponse.successResponseWithData(
       res,
       "Operation success",
-      formatDateValues
+      uniqueDataflows
     );
   } catch (err) {
     //throw error in json response with status 500.
@@ -125,7 +144,6 @@ const addDeleteTempLog = async (dataflowId, user) => {
     });
   return result;
 };
-
 exports.cronHardDelete = async (log) => {
   const { dataflowid: dataflowId, created_by: user_id } = log;
   DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [

@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 import { useHistory } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import Table, {
   dateFilterV2,
@@ -157,7 +158,10 @@ export default function DataFlowTable() {
   const [selectedFilter, setSelectedFilter] = useState(null);
   const messageContext = useContext(MessageContext);
   const [totalRows, setTotalRows] = useState(0);
+  const [rowData, setRowData] = useState([]);
   const history = useHistory();
+
+  const dashboard = useSelector((state) => state.dashboard);
 
   const [expandedRows, setExpandedRows] = useState([]);
 
@@ -170,68 +174,12 @@ export default function DataFlowTable() {
     );
   };
 
-  const dashboard = {
-    dashboardData: [
-      {
-        studyId: "a020E000005SwPtQAK",
-        dataFlowId: "a0A0E000004k79SUAQ",
-        dataSets: "7",
-        dataPackages: "2",
-        studyName: "P16-836",
-        dataFlowName: "IQVIA-TDSE-reference_uatk3",
-        type: 0,
-        dateCreated: "12/21/2021",
-        vendorSource: "IQVIA Connected Devices",
-        description: "IQVIA TDSE reference uatk3",
-        adapter: "Tabular",
-        status: 0,
-        externalSourceSystem: "",
-        locationType: "SFTP",
-        lastModified: "12/21/2021",
-        lastSyncDate: "12/10/2021",
-      },
-      {
-        studyId: "a020E000005SwPtQAK",
-        dataFlowId: "a0A0E000004k7m3UAA",
-        dataSets: "1",
-        dataPackages: "1",
-        studyName: "P16-836",
-        dataFlowName: "IQVIA-TDSE-milestone_attrib_uatk3",
-        type: 0,
-        dateCreated: "12/21/2021",
-        vendorSource: "IQVIA Connected Devices",
-        description: "IQVIA TDSE milestone attrib uatk3",
-        adapter: "Tabular",
-        status: 1,
-        externalSourceSystem: "",
-        locationType: "SFTP",
-        lastModified: "12/21/2021",
-        lastSyncDate: "12/10/2021",
-      },
-      {
-        studyId: "a020E000005SwPtQAK",
-        dataFlowId: "a0A0E00000322XRUAY",
-        dataSets: "6",
-        dataPackages: "1",
-        studyName: "P16-836",
-        dataFlowName: "TARGETHEALTH-000108-Ferring-1",
-        type: 0,
-        dateCreated: "12/21/2021",
-        vendorSource: "IQVIA-CBEX",
-        description: "TARGETHEALTH 000108 Ferring 1",
-        adapter: "Tabular",
-        status: 1,
-        externalSourceSystem: "",
-        locationType: "SFTP",
-        lastModified: "12/21/2021",
-        lastSyncDate: "12/10/2021",
-      },
-    ],
-  };
-
-  const dashboardData = selectedFilter
-    ? dashboard?.dashboardData.filter((data) => data.type === selectedFilter)
-    : dashboard.dashboardData;
+  useEffect(() => {
+    const dashboardData = selectedFilter
+      ? dashboard?.dashboardData.filter((data) => data.type === selectedFilter)
+      : dashboard.flowData;
+    setRowData([...dashboardData]);
+  }, [dashboard?.dashboardData, dashboard.flowData, selectedFilter]);
 
   const statuses = ["Active", "Inactive"];
 
@@ -479,7 +427,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
+            rowData
               .map((r) => ({ label: r.vendorSource }))
               .map((item) => item.label)
           )
@@ -507,7 +455,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
+            rowData
               .map((r) => ({ label: r.description }))
               .map((item) => item.label)
           )
@@ -543,9 +491,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
-              .map((r) => ({ label: r.status }))
-              .map((item) => item.label)
+            rowData.map((r) => ({ label: r.status })).map((item) => item.label)
           )
         )
           .map((label) => {
@@ -571,7 +517,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
+            rowData
               .map((r) => ({ label: r.externalSourceSystem }))
               .map((item) => item.label)
           )
@@ -599,7 +545,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
+            rowData
               .map((r) => ({ label: r.locationType }))
               .map((item) => item.label)
           )
@@ -654,7 +600,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
+            rowData
               .map((r) => ({ label: r.dataFlowName }))
               .map((item) => item.label)
           )
@@ -709,9 +655,7 @@ export default function DataFlowTable() {
       filterComponent: createAutocompleteFilter(
         Array.from(
           new Set(
-            dashboardData
-              .map((r) => ({ label: r.adapter }))
-              .map((item) => item.label)
+            rowData.map((r) => ({ label: r.adapter })).map((item) => item.label)
           )
         )
           .map((label) => {
@@ -736,19 +680,19 @@ export default function DataFlowTable() {
     columns.slice(-1)[0],
   ];
 
-  const [tableRows, setTableRows] = useState([...dashboardData]);
+  const [tableRows, setTableRows] = useState([...rowData]);
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
 
   // useEffect(() => {
   //   if (!dashboard.loading || dashboard.studyboardFetchSuccess) {
   //     setLoading(false);
-  //     setTableRows([...dashboardData]);
-  //     setExportTableRows([...dashboardData]);
+  //     setTableRows([...rowData]);
+  //     setExportTableRows([...rowData]);
   //     setTableColumns([...moreColumns]);
   //   } else {
   //     setLoading(true);
   //   }
-  // }, [dashboard.loading, dashboardData, dashboard.studyboardFetchSuccess]);
+  // }, [dashboard.loading, rowData, dashboard.studyboardFetchSuccess]);
 
   // const applyFilter = (cols, rows, filts) => {
   //   let filteredRows = rows;
@@ -768,7 +712,7 @@ export default function DataFlowTable() {
   // };
 
   // const exportDataRows = () => {
-  //   const toBeExportRows = [...dashboardData];
+  //   const toBeExportRows = [...rowData];
   //   const sortedFilteredData = applyFilter(
   //     tableColumns,
   //     toBeExportRows,
@@ -793,9 +737,15 @@ export default function DataFlowTable() {
 
   useEffect(() => {
     setTableColumns([...moreColumns]);
-    setTableRows([...dashboardData]);
-    setTotalRows(dashboardData.length);
+    setTableRows([...rowData]);
+    setTotalRows(rowData.length);
   }, []);
+
+  useEffect(() => {
+    setTableColumns([...moreColumns]);
+    setTableRows([...rowData]);
+    setTotalRows(rowData.length);
+  }, [rowData]);
 
   const EmptyTableComponent = () => (
     <>
@@ -922,6 +872,7 @@ export default function DataFlowTable() {
               expanded: expandedRows.includes(row.dataFlowId),
               handleToggleRow,
             }))}
+            rowId="dataFlowId"
             initialSortedColumn="dateCreated"
             initialSortOrder="asc"
             rowsPerPageOptions={[10, 50, 100, "All"]}
