@@ -99,13 +99,13 @@ const hardDeleteTrigger = async (dataflowId) => {
     const deleteQuery2 = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
       WHERE da.dataflowid = '${dataflowId}';
       DELETE FROM cdascdi1d.cdascdi.columndefinition cd WHERE cd.datasetid in (select datasetid FROM cdascdi1d.cdascdi.dataset ds
-      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='a0A0E000004k79SUAQ'));
+      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='${dataflowId}'));
       DELETE FROM cdascdi1d.cdascdi.columndefinition_history cd WHERE cd.datasetid in (select datasetid FROM cdascdi1d.cdascdi.dataset ds
-      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='a0A0E000004k79SUAQ'));
+      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='${dataflowId}'));
       DELETE FROM cdascdi1d.cdascdi.dataset ds
-      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='a0A0E000004k79SUAQ');
+      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='${dataflowId}');
       DELETE FROM cdascdi1d.cdascdi.dataset_history ds
-      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='a0A0E000004k79SUAQ');
+      WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='${dataflowId}');
       DELETE FROM cdascdi1d.cdascdi.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
       DELETE FROM cdascdi1d.cdascdi.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
 
@@ -113,7 +113,32 @@ const hardDeleteTrigger = async (dataflowId) => {
       const deleteQuery3 = `DELETE FROM cdascdi1d.cdascdi.dataflow
       WHERE dataflowid = $1`;
       await DB.executeQuery(deleteQuery3, values).then(async (response3) => {
-        result = response3.rowCount>0 ? 'exist' : true;
+        if(response3.rowCount && response3.rowCount>0){
+// const insertTempQuery = `INSERT INTO cdascdi1d.cdascdi.deleted_dataflow(df_del_id, dataflow_nm, del_by, del_dt, del_req_dt, prot_id) VALUES($1, $2, $3, $4, $5, $6)`;
+// const deleteDfId = helper.createUniqueID();
+// let result;
+// const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+// const values = [
+//   deleteDfId,
+// dataflowId,
+// "DELETE",
+// "FAILURE",
+// 1,
+// "N",
+// user.usr_id,
+// currentTime,
+// user.usr_id,
+// currentTime,
+// ];
+// await DB.executeQuery(insertTempQuery, values).then(async (response) => {
+// result = true;
+// }).catch(err=>{
+// result = false;
+// });
+          result = 'deleted';
+        }else{
+          result = 'not_found';
+        }
       }).catch((err)=>{
         result = false;
       });
@@ -179,12 +204,11 @@ exports.hardDelete = async (req, res) => {
       if(response.rows && response.rows.length){
         const user = response.rows[0];
         const deleted = await hardDeleteTrigger(dataflowId);
-        if(deleted=='exist') {
+        if(deleted=='deleted') {
           return apiResponse.successResponseWithData(res, "Deleted successfully", {
             success: true,
           });
-        }
-        if (deleted) {
+        }else if (deleted=='not_found'){
           return apiResponse.successResponseWithData(res, "Records already deleted", {});
         } else {
           const inserted = await addDeleteTempLog(dataflowId, user);
