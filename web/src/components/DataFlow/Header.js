@@ -61,7 +61,7 @@ const Header = (props) => {
           {`${props.datasetsCount} datasets`}
         </Typography>
       )}
-      {props.tabValue === 0 && (
+      {(!props.tabValue || props.tabValue === 0) && (
         <ButtonGroup
           alignItems="right"
           buttonProps={[
@@ -85,7 +85,13 @@ const Header = (props) => {
           truncate
         >
           {props.tabs.map((tab) => (
-            <Tab label={tab} />
+            <Tab
+              label={tab}
+              disabled={
+                Object.keys(props.selectedDataset).length <= 0 &&
+                tab === "Dataset Columns"
+              }
+            />
           ))}
         </Tabs>
       )}
