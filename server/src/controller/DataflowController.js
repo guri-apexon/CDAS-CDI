@@ -405,7 +405,7 @@ exports.inActivateDataFlow = async (req, res) => {
 exports.SyncAPI = async(req,res) => {
   try {
     let {version,userId,dataFlowId,action} = req.body;
-    let dbconnection = await oracleDB();
+    var dbconnection = await oracleDB();
     Logger.info({ message: "SyncAPI" });
     let sequenceIdQ = `SELECT MAX(CDR_TA_QUEUE_ID) FROM IDP.CDR_TA_QUEUE`
     const {rows} = await dbconnection.execute(sequenceIdQ);
@@ -421,5 +421,13 @@ exports.SyncAPI = async(req,res) => {
   } catch (error) {
     Logger.error("catch :SyncAPI");
     return apiResponse.ErrorResponse(res, error);
+  } finally {
+    if (dbconnection) {
+      try {
+        await dbconnection.close();
+      } catch (err) {
+        console.error(err);
+      }
+    }
   }
 }
