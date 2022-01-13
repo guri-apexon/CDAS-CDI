@@ -225,11 +225,17 @@ exports.createDataflow = async (req, res) => {
   }
 };
 
-const hardDeleteTrigger = async (dataflowId) => {
+const hardDeleteTrigger = async (dataflowId, user) => {
   const values = [dataflowId];
+  let result, dataFlow;
+  await DB.executeQuery(`SELECT * from cdascdi1d.cdascdi.dataflow WHERE dataflowid=$1`, values).then(async (response) => {
+    dataFlow = response.rows ? response.rows[0] : null;
+  });
+  if(!dataFlow){
+    return 'not_found';
+  }
   const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.dataflow_audit_log da
       WHERE da.dataflowid = $1`;
-  let result;
   await DB.executeQuery(deleteQuery, values).then(async (response) => {
     const deleteQuery2 = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
       WHERE da.dataflowid = '${dataflowId}';
@@ -249,27 +255,24 @@ const hardDeleteTrigger = async (dataflowId) => {
       WHERE dataflowid = $1`;
       await DB.executeQuery(deleteQuery3, values).then(async (response3) => {
         if(response3.rowCount && response3.rowCount>0){
-// const insertTempQuery = `INSERT INTO cdascdi1d.cdascdi.deleted_dataflow(df_del_id, dataflow_nm, del_by, del_dt, del_req_dt, prot_id) VALUES($1, $2, $3, $4, $5, $6)`;
-// const deleteDfId = helper.createUniqueID();
-// let result;
-// const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-// const values = [
-//   deleteDfId,
-// dataflowId,
-// "DELETE",
-// "FAILURE",
-// 1,
-// "N",
-// user.usr_id,
-// currentTime,
-// user.usr_id,
-// currentTime,
-// ];
-// await DB.executeQuery(insertTempQuery, values).then(async (response) => {
-// result = true;
-// }).catch(err=>{
-// result = false;
-// });
+          const insertDeletedQuery = `INSERT INTO cdascdi1d.cdascdi.deleted_dataflow(df_del_id, dataflow_nm, del_by, del_dt, del_req_dt, prot_id) VALUES($1, $2, $3, $4, $5, $6)`;
+          const deleteDfId = helper.createUniqueID();
+          const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+          const deletedValues = [
+            deleteDfId,
+            dataFlow.data_flow_nm,
+            user.usr_id,
+            currentTime,
+            currentTime,
+            "",
+          ];
+          await DB.executeQuery(insertDeletedQuery, deletedValues)
+            .then(async (response) => {
+              result = true;
+            })
+            .catch((err) => {
+              result = false;
+            });
           result = 'deleted';
         }else{
           result = 'not_found';
@@ -320,7 +323,7 @@ exports.cronHardDelete = async () => {
           DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [user_id]).then(async (response) => {
             if(response.rows && response.rows.length){
               const user = response.rows[0];
-              const deleted = await hardDeleteTrigger(dataflowId);
+              const deleted = await hardDeleteTrigger(dataflowId, user);
               if (deleted) {
                 return true;
               }
@@ -338,13 +341,13 @@ exports.hardDelete = async (req, res) => {
     DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [user_id]).then(async (response) => {
       if(response.rows && response.rows.length){
         const user = response.rows[0];
-        const deleted = await hardDeleteTrigger(dataflowId);
+        const deleted = await hardDeleteTrigger(dataflowId, user);
         if(deleted=='deleted') {
           return apiResponse.successResponseWithData(res, "Deleted successfully", {
             success: true,
           });
         }else if (deleted=='not_found'){
-          return apiResponse.successResponseWithData(res, "Records already deleted", {});
+          return apiResponse.successResponseWithData(res, "Dataflow not found", {});
         } else {
           const inserted = await addDeleteTempLog(dataflowId, user);
           if(inserted) {
