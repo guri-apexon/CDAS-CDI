@@ -16,6 +16,8 @@ import {
   HIDE_ERROR_MSG,
   SAVE_LOCATION_DATA,
   UPDATE_SELECTED_LOCATION,
+  FETCH_DATAFLOW_DETAIL_FAILURE,
+  FETCH_DATAFLOW_DETAIL_SUCCESS,
 } from "../../constants";
 
 export const initialState = {
@@ -35,6 +37,7 @@ export const initialState = {
   dataStructure: "tabular",
   locationType: "SFTP",
   selectedVendor: {},
+  dataFlowdetail: {},
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -101,6 +104,14 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case HIDE_ERROR_MSG:
         newState.error = action.message;
+        break;
+      case FETCH_DATAFLOW_DETAIL_FAILURE:
+        newState.loading = false;
+        newState.error = action.message;
+        break;
+      case FETCH_DATAFLOW_DETAIL_SUCCESS:
+        newState.loading = false;
+        newState.dataFlowdetail = action.dataflowDetail;
         break;
       default:
         newState.loading = false;

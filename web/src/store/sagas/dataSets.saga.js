@@ -42,14 +42,15 @@ export function* saveDataset(action) {
       `${baseURL}/${DATASETAPI}/create`,
       action.values
     );
-
-    // console.log("study", fetchSBData);
     yield put({
       type: STORE_DATASET_SUCCESS,
       dataset: fetchSBData.data.data,
     });
   } catch (e) {
-    yield put({ type: STORE_DATASET_FAILURE, message: e.message });
+    const errText = e.response?.data?.message
+      ? e.response.data.message
+      : e.message;
+    yield put({ type: STORE_DATASET_FAILURE, message: errText });
   }
 }
 
@@ -66,6 +67,9 @@ export function* saveDatasetColumns(action) {
       datasetColumns: fetchSBData.data.data,
     });
   } catch (e) {
-    yield put({ type: STORE_DATASET_COLUMNS_FAILURE, message: e.message });
+    const errText = e.response?.data?.message
+      ? e.response.data.message
+      : e.message;
+    yield put({ type: STORE_DATASET_COLUMNS_FAILURE, message: errText });
   }
 }

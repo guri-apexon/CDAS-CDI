@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -12,6 +12,7 @@ import PageHeader from "../../components/DataFlow/PageHeader";
 import Leftbar from "../../components/DataFlow/LeftBar";
 import Header from "../../components/DataFlow/Header";
 import DataSetsForm from "./DataSetsForm";
+import DataSetsFormSQL from "./DataSetsFormSQL";
 import ColumnsTab from "./ColumnsTab";
 import VLCTab from "./VLCTab";
 import "./DataSets.scss";
@@ -20,6 +21,8 @@ import {
   hideErrorMessage,
   saveDatasetData,
 } from "../../store/actions/DataSetsAction";
+
+import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
 
 import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
 
@@ -52,10 +55,13 @@ const DataSets = () => {
   const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
   const packageData = useSelector((state) => state.dataPackage);
+  const dataFlow = useSelector((state) => state.dataFlow);
   const { optedDataPackages } = packageData;
   const { loading, error, sucessMsg, createTriggered, selectedDataset } =
     dataSets;
-  const [tabValue, setTabValue] = React.useState(0);
+  const { dataFlowdetail } = dataFlow;
+  const [tabValue, setTabValue] = useState(0);
+  const [locationType, setLocationType] = useState(null);
   const tabs = ["Settings", "Dataset Columns", "VLC"];
 
   useEffect(() => {
@@ -63,7 +69,15 @@ const DataSets = () => {
       history.push("/dataflow-management");
     }
     dispatch(getDataKindData());
+    if (optedDataPackages?.dataflowid) {
+      dispatch(getDataFlowDetail(optedDataPackages?.dataflowid));
+    }
   }, []);
+
+  useEffect(() => {
+    setLocationType(dataFlowdetail?.loc_typ);
+    console.log(dataFlowdetail);
+  }, [dataFlowdetail]);
 
   useEffect(() => {
     console.log(selectedDataset, "selectedDataset");
@@ -139,7 +153,16 @@ const DataSets = () => {
           </div>
           <Divider />
           <div className={classes.formSection}>
-            {tabValue === 0 && <DataSetsForm onSubmit={onSubmit} />}
+            {tabValue === 0 &&
+              (locationType?.toLowerCase() === "sftp" ||
+                locationType?.toLowerCase() === "ftps") && (
+                <DataSetsForm onSubmit={onSubmit} />
+              )}
+            {tabValue === 0 &&
+              locationType?.toLowerCase() !== "sftp" &&
+              locationType?.toLowerCase() !== "ftps" && (
+                <DataSetsFormSQL onSubmit={onSubmit} />
+              )}
             {tabValue === 1 && <ColumnsTab />}
             {tabValue === 2 && <VLCTab />}
           </div>

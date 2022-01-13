@@ -5,6 +5,8 @@ import {
   checkNumbers,
   checkExceSupport,
   checkAlphaNumericFileName,
+  checkValidQuery,
+  checkfilterCondition,
 } from "./validators";
 
 const dataSetsValidation = ({
@@ -18,6 +20,9 @@ const dataSetsValidation = ({
   delimiter,
   headerRowNumber,
   footerRowNumber,
+  customSQLQuery,
+  sQLQuery,
+  filterCondition,
 }) =>
   removeUndefined({
     datasetName: checkRequired(datasetName) || checkAlphaNumeric(datasetName),
@@ -35,6 +40,9 @@ const dataSetsValidation = ({
     footerRowNumber: checkNumbers(footerRowNumber),
     delimiter:
       checkRequired(delimiter) && fileType?.toLowerCase() === "delimited",
+    customSQLQuery: checkRequired(customSQLQuery),
+    sQLQuery: checkValidQuery(sQLQuery),
+    filterCondition: checkfilterCondition(filterCondition),
   });
 
 export default dataSetsValidation;
