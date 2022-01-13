@@ -3,7 +3,7 @@ const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const moment = require("moment");
 const _ = require("lodash");
-const {createUniqueID} = require("../helpers/customFunctions");
+const { createUniqueID } = require("../helpers/customFunctions");
 const helper = require("../helpers/customFunctions");
 
 exports.getStudyDataflows = async (req, res) => {
