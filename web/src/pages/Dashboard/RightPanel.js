@@ -13,6 +13,7 @@ const styles = {
     flexGrow: 1,
     background: "#f6f7fb",
     minHeight: "calc(100vh - 125px)",
+    maxWidth: "calc(100vw - 425px)",
   },
   contentHeader: {
     paddingTop: 11,
@@ -62,7 +63,7 @@ const RightPanel = () => {
         </Tabs>
       </div>
 
-      <div style={{ padding: 24 }}>
+      <div style={{ padding: 20 }}>
         {value === 0 && (
           <>
             <Typography variant="body2"> Monitor page content</Typography>

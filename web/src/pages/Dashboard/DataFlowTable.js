@@ -852,6 +852,8 @@ export default function DataFlowTable() {
             initialSortOrder="asc"
             rowsPerPageOptions={[10, 50, 100, "All"]}
             hasScroll={true}
+            maxWidth="calc(100vw - 465px)"
+            maxHeight="calc(100vh - 293px)"
             tablePaginationProps={{
               labelDisplayedRows: ({ from, to, count }) =>
                 `${
