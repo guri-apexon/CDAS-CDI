@@ -598,26 +598,8 @@ export default function DataFlowTable() {
       accessor: "version",
       frozen: false,
       sortFunction: compareNumbers,
-      filterFunction: createStringArraySearchFilter("version"),
-      filterComponent: createAutocompleteFilter(
-        Array.from(
-          new Set(
-            rowData.map((r) => ({ label: r.version })).map((item) => item.label)
-          )
-        )
-          .map((label) => {
-            return { label };
-          })
-          .sort((a, b) => {
-            if (a.label < b.label) {
-              return -1;
-            }
-            if (a.label > b.label) {
-              return 1;
-            }
-            return 0;
-          })
-      ),
+      filterFunction: numberSearchFilter("version"),
+      filterComponent: IntegerFilter,
     },
     {
       accessor: "action",
