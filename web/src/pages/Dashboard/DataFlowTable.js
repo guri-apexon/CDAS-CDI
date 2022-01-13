@@ -233,14 +233,15 @@ export default function DataFlowTable() {
   };
   const changeStatusAction = async (e) => {
     // console.log("changeStatusAction", e);
-    if (e.status === 0) {
+    if (e.status === "Inactive") {
       const updatedStatus = await activateDF(e.dataFlowId);
-      console.log("updatedStatus", updatedStatus);
+      // console.log("updatedStatus", updatedStatus);
       dispatch(getFlowDetailsOfStudy("a020E000005SwPtQAK"));
       // updatedStatus.status === 1 &&
     } else {
       const updatedStatus = await inActivateDF(e.dataFlowId);
-      console.log("updatedStatus", updatedStatus);
+      // console.log("updatedStatus", updatedStatus);
+      dispatch(getFlowDetailsOfStudy("a020E000005SwPtQAK"));
     }
   };
 
@@ -298,7 +299,7 @@ export default function DataFlowTable() {
     return (
       <div
         style={{
-          width: 12,
+          width: 32,
           marginTop: 0,
           marginLeft: 0,
         }}
@@ -349,26 +350,18 @@ export default function DataFlowTable() {
     );
   };
 
-  const TypeCell = ({ row, column: { accessor } }) => {
-    const type = row[accessor];
-    if (type === 1) {
-      return <div style={{ position: "relative", marginLeft: 25 }}>Test</div>;
-    }
-    return <div style={{ position: "relative" }}>Production</div>;
-  };
-
   const StatusCell = ({ row, column: { accessor } }) => {
     const description = row[accessor];
     return (
-      <div style={{ position: "relative", marginLeft: 25 }}>
-        <Button
-          variant="primary"
-          size="small"
+      <div style={{ position: "relative" }}>
+        <div
           style={{ marginRight: 10 }}
-          className={description === "Active" ? "active" : "inActive"}
+          className={`status-cell ${
+            description === "Active" ? "active" : "inActive"
+          }`}
         >
           {description}
-        </Button>
+        </div>
       </div>
     );
   };
