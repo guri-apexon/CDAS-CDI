@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Typography from "apollo-react/components/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Tab from "apollo-react/components/Tab";
@@ -13,6 +13,7 @@ const styles = {
     flexGrow: 1,
     background: "#f6f7fb",
     minHeight: "calc(100vh - 125px)",
+    maxWidth: "calc(100vw - 425px)",
   },
   contentHeader: {
     paddingTop: 11,
@@ -31,6 +32,7 @@ const RightPanel = () => {
   const [value, setValue] = React.useState(1);
   const useStyles = makeStyles(styles);
   const dashboard = useSelector((state) => state.dashboard);
+  const [selectedStudy, setSelectedStudy] = useState(null);
   const dispatch = useDispatch();
 
   const classes = useStyles();
@@ -40,10 +42,14 @@ const RightPanel = () => {
     setValue(value);
   };
 
+  const updateData = () => {
+    dispatch(getFlowDetailsOfStudy(dashboard.selectedCard.prot_id));
+  };
+
   useEffect(() => {
-    // dispatch(getFlowDetailsOfStudy(dashboard.selectedCard.prot_id));
-    dispatch(getFlowDetailsOfStudy("a020E000005SwPtQAK"));
-  }, [value, dashboard.selectedCard]);
+    setSelectedStudy(dashboard.selectedCard.prot_id);
+    updateData();
+  }, [dashboard.selectedCard]);
 
   return (
     <main className={classes.content}>
@@ -62,7 +68,7 @@ const RightPanel = () => {
         </Tabs>
       </div>
 
-      <div style={{ padding: 24 }}>
+      <div style={{ padding: 20 }}>
         {value === 0 && (
           <>
             <Typography variant="body2"> Monitor page content</Typography>
@@ -70,7 +76,10 @@ const RightPanel = () => {
         )}
         {value === 1 && (
           <>
-            <DataFlowTable />
+            <DataFlowTable
+              selectedStudy={selectedStudy}
+              updateData={updateData}
+            />
           </>
         )}
       </div>

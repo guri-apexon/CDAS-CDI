@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 import { useHistory } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import Table, {
   dateFilterV2,
@@ -35,7 +35,6 @@ import {
   activateDF,
   inActivateDF,
 } from "../../services/ApiServices";
-import { getFlowDetailsOfStudy } from "../../store/actions/DashboardAction";
 
 const createAutocompleteFilter =
   (source) =>
@@ -157,7 +156,7 @@ const createStringArraySearchFilter = (accessor) => {
     );
 };
 
-export default function DataFlowTable() {
+export default function DataFlowTable({ selectedStudy, updateData }) {
   const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const [topFilterData, setTopFilterData] = useState([]);
@@ -165,7 +164,6 @@ export default function DataFlowTable() {
   const [totalRows, setTotalRows] = useState(0);
   const [rowData, setRowData] = useState([]);
   const history = useHistory();
-  const dispatch = useDispatch();
 
   const dashboard = useSelector((state) => state.dashboard);
 
@@ -214,8 +212,7 @@ export default function DataFlowTable() {
     console.log("hardDeleteAction", e);
     const deleteStatus = await hardDelete(e);
     if (deleteStatus.success) {
-      // eslint-disable-next-line no-use-before-define
-      deleteLocally(e);
+      await updateData();
     }
   };
 
@@ -224,24 +221,20 @@ export default function DataFlowTable() {
   };
 
   const viewAuditLogAction = (e) => {
-    // console.log("viewAuditLogAction", e);
     history.push(`/audit-logs/${e}`);
   };
 
   const cloneDataFlowAction = (e) => {
     console.log("cloneDataFlowAction", e);
   };
+
   const changeStatusAction = async (e) => {
-    // console.log("changeStatusAction", e);
     if (e.status === "Inactive") {
-      const updatedStatus = await activateDF(e.dataFlowId);
-      // console.log("updatedStatus", updatedStatus);
-      dispatch(getFlowDetailsOfStudy("a020E000005SwPtQAK"));
-      // updatedStatus.status === 1 &&
+      await activateDF(e.dataFlowId);
+      await updateData();
     } else {
-      const updatedStatus = await inActivateDF(e.dataFlowId);
-      // console.log("updatedStatus", updatedStatus);
-      dispatch(getFlowDetailsOfStudy("a020E000005SwPtQAK"));
+      await inActivateDF(e.dataFlowId);
+      await updateData();
     }
   };
 
@@ -598,26 +591,8 @@ export default function DataFlowTable() {
       accessor: "version",
       frozen: false,
       sortFunction: compareNumbers,
-      filterFunction: createStringArraySearchFilter("version"),
-      filterComponent: createAutocompleteFilter(
-        Array.from(
-          new Set(
-            rowData.map((r) => ({ label: r.version })).map((item) => item.label)
-          )
-        )
-          .map((label) => {
-            return { label };
-          })
-          .sort((a, b) => {
-            if (a.label < b.label) {
-              return -1;
-            }
-            if (a.label > b.label) {
-              return 1;
-            }
-            return 0;
-          })
-      ),
+      filterFunction: numberSearchFilter("version"),
+      filterComponent: IntegerFilter,
     },
     {
       accessor: "action",
@@ -721,11 +696,6 @@ export default function DataFlowTable() {
 
   const toDataflowMgmt = async () => {
     history.push("/dataflow-management");
-  };
-
-  const deleteLocally = (e) => {
-    const newData = tableRows.filter((data) => data.dataFlowId !== e);
-    setTableRows([...newData]);
   };
 
   useEffect(() => {
@@ -870,6 +840,8 @@ export default function DataFlowTable() {
             initialSortOrder="asc"
             rowsPerPageOptions={[10, 50, 100, "All"]}
             hasScroll={true}
+            maxWidth="calc(100vw - 465px)"
+            maxHeight="calc(100vh - 293px)"
             tablePaginationProps={{
               labelDisplayedRows: ({ from, to, count }) =>
                 `${
