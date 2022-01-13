@@ -49,7 +49,7 @@ exports.saveDatasetData = async (req, res) => {
         return apiResponse.successResponseWithData(
           res,
           "Operation success",
-          body
+          {...values, datasetId: datasetId}
         );
       });
     });
@@ -69,18 +69,18 @@ exports.saveDatasetColumns = async (req, res) => {
       const columnId = helper.generateUniqueID();
       const body = [
         columnId,
-        value.variableLabel || null,
+        value.variableLabel.trim() || null,
         value.datasetId || "a070E00000Fh5bHQAR",
-        value.columnName || null,
-        value.dataType || null,
+        value.columnName.trim() || null,
+        value.dataType.trim() || null,
         value.primary == "Yes" ? 1 : 0,
         value.required == "Yes" ? 1 : 0,
         value.unique == "Yes" ? 1 : 0,
-        value.minLength || null,
-        value.maxLength || null,
-        value.position || null,
-        value.format || null,
-        value.lov || null,
+        value.minLength.trim() || null,
+        value.maxLength.trim() || null,
+        value.position.trim() || null,
+        value.format.trim() || null,
+        value.lov.trim().replace(/(^\~+|\~+$)/, "") || null,
         new Date(),
         new Date(),
       ];

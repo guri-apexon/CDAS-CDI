@@ -6,10 +6,11 @@ const moment = require("moment");
 
 exports.searchList = function (req, res) {
   try {
-    const searchParam = req.params.query?.toLowerCase() || '';
+    const dataflowId = req.params.dataflowId;
     const searchQuery = `SELECT al.*, u.usr_fst_nm user_name, dp.name from cdascdi1d.cdascdi.dataflow_audit_log as al
     LEFT JOIN cdascdi1d.cdascdi.datapackage as dp ON dp.datapackageid = al.datapackageid
-    LEFT JOIN cdascdi1d.cdascdi.user as u ON u.usr_id = al.usr_id`;
+    LEFT JOIN cdascdi1d.cdascdi.user as u ON u.usr_id = al.usr_id
+    WHERE al.dataflowid='${dataflowId}'`;
     Logger.info({
       message: "AuditLogs",
     });

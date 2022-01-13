@@ -13,6 +13,14 @@ export const checkNumbers = (value) => {
   return false;
 };
 
+export const checkNumeric = (value) => {
+  const regexp = /^[0-9.]+$/;
+  if (value !== "" && !regexp.test(value)) {
+    return "Only numeric values are allowed";
+  }
+  return false;
+};
+
 export const checkExceSupport = (value, fileType) => {
   let msg = null;
   const regexpExcel = /(\.xlsx|\.xls)$/i;
@@ -47,10 +55,75 @@ export const checkExceSupport = (value, fileType) => {
   return msg;
 };
 
-export const checkAlphaNumeric = (value) => {
-  const regexp = /^[a-zA-Z0-9-_]+$/;
-  if (value.search(regexp) === -1) {
+export const checkAlphaNumeric = (value, key = "") => {
+  const regexp = key === "values" ? /^[a-zA-Z0-9~_]+$/ : /^[a-zA-Z0-9-_]+$/;
+  if (key === "format") {
+    return false;
+  }
+  if (value && value.search(regexp) === -1) {
     return "Only Alphanumeric format values are allowed";
+  }
+  return false;
+};
+
+export const checkAlphaNumericFileName = (value) => {
+  const regexp = /^[A-Za-z0-9_<.>]+$/;
+  if (value && value.search(regexp) === -1) {
+    return "Special characters are not allowed";
+  }
+  return false;
+};
+
+export const checkRequiredValue = (value, key = "", primary = "") => {
+  return (
+    value &&
+    key === "required" &&
+    value !== primary &&
+    primary === "Yes" &&
+    "Columns with primary keys with value Y should also have Required value Y"
+  );
+};
+
+export const checkCharacterLength = (
+  value,
+  key = "",
+  minLength = "",
+  maxLength
+) => {
+  return (
+    (key === "minLength" || key === "maxLength") &&
+    minLength >= maxLength &&
+    "Max length should be less than the min length"
+  );
+};
+
+export const checkFormat = (value, key = "", dataType = "") => {
+  if (dataType === "Alphanumeric") {
+    const regexp = /^[a-zA-Z0-9-_]+$/;
+    if (value !== "" && !regexp.test(value)) {
+      return (
+        key === "format" &&
+        "Only Alphanumeric format values are allowed for Alphanumeric Data Type"
+      );
+    }
+  }
+  if (dataType === "Numeric") {
+    const regexp = /^[0-9.<>%]+$/;
+    if (value !== "" && !regexp.test(value)) {
+      return (
+        key === "format" &&
+        "Only numeric format values are allowed for Numeric Data Type"
+      );
+    }
+  }
+  if (dataType === "Date") {
+    const regexp = /^[a-zA-Z]+$/;
+    if (value !== "" && !regexp.test(value)) {
+      return (
+        key === "format" &&
+        "Only Date format values are allowed for Date Data Type"
+      );
+    }
   }
   return false;
 };

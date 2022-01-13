@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import FileUpload from "apollo-react/components/FileUpload";
 import Card from "apollo-react/components/Card";
@@ -16,6 +16,8 @@ const ColumnsTab = () => {
   const [selectedMethod, setSelectedMethod] = useState();
   const [numberOfRows, setNumberOfRows] = useState(null);
   const [showColumns, setShowColumns] = useState(false);
+  const [importedData, setImportedData] = useState([]);
+  const [formattedData, setFormattedData] = useState([]);
 
   const allowedTypes = [
     "xlsx",
@@ -34,7 +36,6 @@ const ColumnsTab = () => {
           allowedTypes.length &&
           !allowedTypes.filter((type) => file.type.includes(type)).length
         ) {
-          console.log("fileType", file.type);
           file.errorMessage = `${
             file.name.split(".")[file.name.split(".").length - 1]
           } format is not supported`;
@@ -45,11 +46,56 @@ const ColumnsTab = () => {
       });
 
       setSelectedFile([...files]);
+      const f = files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = e.target.result;
+        const readedData = XLSX.read(data, { type: "binary" });
+        const wsname = readedData.SheetNames[0];
+        const ws = readedData.Sheets[wsname];
+        const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        setImportedData(dataParse);
+      };
+      reader.readAsBinaryString(f);
     }, 1000);
   };
 
-  const handleDelete = (file) => {
+  const formatData = () => {
+    // console.log("data", importedData, formattedData);
+    const data = importedData.slice(1);
+    const newData =
+      data.length > 1
+        ? data.map((e, i) => {
+            const newObj = {
+              columnId: i,
+              variableLabel: e[1] || "",
+              columnName: e[2] || "",
+              position: "",
+              format: e[3] || "",
+              dataType: e[4] || "",
+              primary: e[5] || "",
+              unique: e[6] || "",
+              required: e[7] || "",
+              minLength: e[8] || "",
+              maxLength: e[9] || "",
+              values: e[10] || "",
+            };
+            return newObj;
+          })
+        : [];
+    setFormattedData([...newData]);
+  };
+
+  useEffect(() => {
+    if (importedData.length > 2) {
+      formatData();
+    }
+  }, [importedData]);
+
+  const handleDelete = () => {
     setSelectedFile([]);
+    setImportedData([]);
+    setFormattedData([]);
   };
 
   const handleChange = (e) => {
@@ -58,13 +104,18 @@ const ColumnsTab = () => {
 
   const handleSubmission = () => {};
   return (
-    <div className="colums-tab">
+    <div className="tab colums-tab">
       {!showColumns && (
         <>
           <p className="title">Configure Dataset Column Settings</p>
           <p className="sub-title">Select an option</p>
           <div className="cards-box">
-            <Card style={{ maxWidth: 320, height: 300 }} className="card">
+            <Card
+              style={{ maxWidth: 320, height: 300 }}
+              className={
+                selectedMethod === "fileUpload" ? "active card" : "card"
+              }
+            >
               <Radio
                 value="fileUpload"
                 label="Upload dataset column settings"
@@ -83,7 +134,10 @@ const ColumnsTab = () => {
                 />
               </div>
             </Card>
-            <Card style={{ maxWidth: 320, height: 300 }} className="card">
+            <Card
+              style={{ maxWidth: 320, height: 300 }}
+              className={selectedMethod === "manually" ? "active card" : "card"}
+            >
               <Radio
                 value="manually"
                 label="Create manually"
@@ -102,13 +156,25 @@ const ColumnsTab = () => {
               variant="primary"
               style={{ marginRight: 10, float: "right" }}
               onClick={() => setShowColumns(true)}
+              disabled={
+                selectedMethod !== "manually" &&
+                !showColumns &&
+                selectedMethod !== "fileUpload" &&
+                !showColumns
+              }
             >
               Create
             </Button>
           </div>
         </>
       )}
-      {showColumns && <DatasetTable numberOfRows={numberOfRows || 1} />}
+      {showColumns && (
+        <DatasetTable
+          numberOfRows={numberOfRows || 1}
+          formattedData={formattedData}
+          dataOrigin={selectedMethod}
+        />
+      )}
     </div>
   );
 };
