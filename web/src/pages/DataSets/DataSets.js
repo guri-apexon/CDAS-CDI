@@ -110,7 +110,6 @@ const DataSets = () => {
       <PageHeader />
       <CssBaseline />
       {loading && <Loader />}
-      {console.log(sucessMsg, error)}
       {(error || sucessMsg) && (
         <Banner
           variant={sucessMsg ? "success" : "error"}
@@ -133,6 +132,7 @@ const DataSets = () => {
               tabs={tabs}
               headerTitle="Dataset name"
               tabValue={tabValue}
+              selectedDataset={selectedDataset}
               icon={<DatasetsIcon className={classes.contentIcon} />}
               handleChangeTab={handleChangeTab}
             />

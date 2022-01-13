@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Typography from "apollo-react/components/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
+import { useDispatch, useSelector } from "react-redux";
+import { getFlowDetailsOfStudy } from "../../store/actions/DashboardAction";
 
 import DataFlowTable from "./DataFlowTable";
 
@@ -28,6 +30,8 @@ const styles = {
 const RightPanel = () => {
   const [value, setValue] = React.useState(1);
   const useStyles = makeStyles(styles);
+  const dashboard = useSelector((state) => state.dashboard);
+  const dispatch = useDispatch();
 
   const classes = useStyles();
 
@@ -35,6 +39,12 @@ const RightPanel = () => {
   const handleChangeTab = (event, value) => {
     setValue(value);
   };
+
+  useEffect(() => {
+    // dispatch(getFlowDetailsOfStudy(dashboard.selectedCard.prot_id));
+    dispatch(getFlowDetailsOfStudy("a020E000005SwPtQAK"));
+  }, [value, dashboard.selectedCard]);
+
   return (
     <main className={classes.content}>
       <div className={classes.contentHeader}>

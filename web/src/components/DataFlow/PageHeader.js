@@ -5,12 +5,12 @@ import { useSelector } from "react-redux";
 const PageHeader = ({ height = 120 }) => {
   const [stateMenuItems, setStateMenuItems] = useState([]);
 
-  const dashboardData = useSelector((state) => state.dashboard);
+  const dashboard = useSelector((state) => state.dashboard);
 
   useEffect(() => {
-    const { selectedCard, vendors, dataFlows, dataSets } = dashboardData;
+    const { selectedCard, vendors, dataFlows, dataSets } = dashboard;
     const updateData = [
-      { label: "Protocol Nmber", value: selectedCard.protocolnumber },
+      { label: "Protocol Number", value: selectedCard.protocolnumber },
       { label: "Sponsor", value: selectedCard.sponsorname },
       { label: "Project Code", value: selectedCard.projectcode },
       { label: "Study Status", value: selectedCard.protocolstatus },
@@ -19,7 +19,7 @@ const PageHeader = ({ height = 120 }) => {
       { label: "Datasets", value: dataSets },
     ];
     setStateMenuItems([...updateData]);
-  }, [dashboardData]);
+  }, [dashboard]);
 
   return (
     <div style={{ height, zIndex: "1201" }} className="dataflow-header">

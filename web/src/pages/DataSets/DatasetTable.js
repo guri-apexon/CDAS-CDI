@@ -1,8 +1,8 @@
 /* eslint-disable react/button-has-type */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { makeStyles } from "@material-ui/core/styles";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Table, { createStringSearchFilter } from "apollo-react/components/Table";
 import MenuItem from "apollo-react/components/MenuItem";
 import TextField from "apollo-react/components/TextField";
@@ -18,6 +18,14 @@ import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Select from "apollo-react/components/Select";
 
+import {
+  checkNumeric,
+  checkAlphaNumeric,
+  checkRequired,
+  checkFormat,
+  checkRequiredValue,
+  checkCharacterLength,
+} from "../../components/FormComponents/validators";
 import { createDatasetData } from "../../store/actions/DataSetsAction";
 
 const useStyles = makeStyles(() => ({
@@ -124,14 +132,20 @@ const CustomHeader = ({ editMode, onCancel, onSave, onEditAll }) => (
 );
 const makeEditableSelectCell =
   (options) =>
-  ({ row, column: { accessor: key } }) =>
-    row.editMode ? (
+  ({ row, column: { accessor: key } }) => {
+    const errorText =
+      checkRequired(row[key]) || checkRequiredValue(row[key], key, row.primary);
+    return row.editMode ? (
       <Select
         size="small"
         fullWidth
         canDeselect={false}
         value={row[key]}
-        onChange={(e) => row.editRow(row.columnId, key, e.target.value)}
+        error={errorText ? true : false}
+        helperText={errorText}
+        onChange={(e) =>
+          row.editRow(row.columnId, key, e.target.value, errorText)
+        }
         {...fieldStyles}
       >
         {options.map((option) => (
@@ -143,25 +157,60 @@ const makeEditableSelectCell =
     ) : (
       row[key]
     );
+  };
 const Cell = ({ row, column }) => (
   <div style={{ paddingTop: row.editMode ? 12 : 0 }}>
     {row[column.accessor]}
   </div>
 );
-const EditableCell = ({ row, column: { accessor: key } }) =>
-  row.editMode ? (
+const NumericEditableCell = ({ row, column: { accessor: key } }) => {
+  const errorText =
+    checkRequired(row[key]) ||
+    checkNumeric(row[key]) ||
+    checkCharacterLength(row[key], key, row.minLength, row.maxLength);
+  return row.editMode ? (
     <TextField
       size="small"
       fullWidth
       value={row[key]}
-      onChange={(e) => row.editRow(row.columnId, key, e.target.value)}
-      error={!row[key]}
-      helperText={!row[key] && "Required"}
+      onChange={(e) =>
+        row.editRow(row.columnId, key, e.target.value, errorText)
+      }
+      error={errorText ? true : false}
+      helperText={errorText}
       {...fieldStyles}
     />
   ) : (
     row[key]
   );
+};
+const EditableCell = ({ row, column: { accessor: key } }) => {
+  const errorText =
+    checkRequired(row[key]) ||
+    checkAlphaNumeric(row[key], key) ||
+    checkFormat(row[key], key, row.dataType);
+  return row.editMode ? (
+    <TextField
+      size="small"
+      fullWidth
+      value={row[key]}
+      inputProps={{
+        maxLength:
+          row.selectedDataset?.fileType === "SAS" && key === "columnName"
+            ? 32
+            : null,
+      }}
+      onChange={(e) =>
+        row.editRow(row.columnId, key, e.target.value, errorText)
+      }
+      error={errorText ? true : false}
+      helperText={errorText}
+      {...fieldStyles}
+    />
+  ) : (
+    row[key]
+  );
+};
 const columns = [
   {
     header: "",
@@ -183,7 +232,7 @@ const columns = [
   {
     header: "Position",
     accessor: "position",
-    customCell: EditableCell,
+    customCell: NumericEditableCell,
   },
   {
     header: "Format",
@@ -213,12 +262,12 @@ const columns = [
   {
     header: "Min length",
     accessor: "minLength",
-    customCell: EditableCell,
+    customCell: NumericEditableCell,
   },
   {
     header: "Max length",
     accessor: "maxLength",
-    customCell: EditableCell,
+    customCell: NumericEditableCell,
   },
   {
     header: "List of values",
@@ -234,7 +283,9 @@ const columns = [
 const DatasetTable = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { numberOfRows } = props;
+  const dataSets = useSelector((state) => state.dataSets);
+  const { selectedDataset } = dataSets;
+  const { numberOfRows, dataOrigin, formattedData } = props;
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     columnId: index + 1,
     variableLabel: "",
@@ -251,10 +302,23 @@ const DatasetTable = (props) => {
   }));
   const [rows, setRows] = useState(initialRows);
   const [editedRows, setEditedRows] = useState(initialRows);
-
+  const [editByRow, setEditByRow] = useState([]);
+  const [rowErr, setRowErr] = useState({});
   const editMode = editedRows.length > 0;
+
+  useEffect(() => {
+    if (dataOrigin === "fileUpload") {
+      setRows([...formattedData]);
+    }
+    console.log("dataOrigin", dataOrigin, formattedData, rows);
+  }, [dataOrigin]);
+
   const onEditAll = () => {
     setEditedRows(rows);
+  };
+
+  const onRowEdit = (columnId) => {
+    console.log("rowid", columnId);
   };
   const onSave = () => {
     setRows(editedRows);
@@ -269,28 +333,35 @@ const DatasetTable = (props) => {
     setRows(rows.filter((row) => row.columnId !== columnId));
   };
 
-  const editRow = (columnId, key, value) => {
-    console.log(columnId, "key", key, value);
+  const editRow = (columnId, key, value, errorTxt) => {
     setEditedRows((rws) =>
       rws.map((row) =>
         row.columnId === columnId ? { ...row, [key]: value } : row
       )
     );
+    setRowErr((err) => ({ ...err, [key]: errorTxt }));
   };
-  return (
-    <div>
-      <div className={classes.section}>
+
+  const getTableData = React.useMemo(
+    () => (
+      <>
         <Table
           title="Dataset Column Settings"
-          subtitle="0 dataset columns"
+          subtitle={`${
+            rows.length > 1
+              ? `${rows.length}dataset columns`
+              : `${rows.length}dataset columns`
+          }`}
           columns={columns}
           rowId="columnId"
-          hasScroll
+          hasScroll={true}
           rows={(editMode ? editedRows : rows).map((row) => ({
             ...row,
             onDelete,
             editRow,
             editMode,
+            selectedDataset,
+            onRowEdit,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}
@@ -302,7 +373,14 @@ const DatasetTable = (props) => {
           CustomHeader={CustomHeader}
           headerProps={{ onSave, onCancel, editMode }}
         />
-      </div>
+      </>
+    ),
+    [columns, editMode, editedRows, rows]
+  );
+
+  return (
+    <div>
+      <div className={classes.section}>{getTableData}</div>
     </div>
   );
 };
