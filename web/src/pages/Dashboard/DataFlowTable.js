@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 import { useHistory } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import Table, {
   dateFilterV2,
@@ -35,6 +35,7 @@ import {
   activateDF,
   inActivateDF,
 } from "../../services/ApiServices";
+import { getFlowDetailsOfStudy } from "../../store/actions/DashboardAction";
 
 const createAutocompleteFilter =
   (source) =>
@@ -164,6 +165,7 @@ export default function DataFlowTable() {
   const [totalRows, setTotalRows] = useState(0);
   const [rowData, setRowData] = useState([]);
   const history = useHistory();
+  const dispatch = useDispatch();
 
   const dashboard = useSelector((state) => state.dashboard);
 
@@ -234,6 +236,7 @@ export default function DataFlowTable() {
     if (e.status === 0) {
       const updatedStatus = await activateDF(e.dataFlowId);
       console.log("updatedStatus", updatedStatus);
+      dispatch(getFlowDetailsOfStudy("a020E000005SwPtQAK"));
       // updatedStatus.status === 1 &&
     } else {
       const updatedStatus = await inActivateDF(e.dataFlowId);
@@ -244,7 +247,9 @@ export default function DataFlowTable() {
   const ActionCell = ({ row }) => {
     const { dataFlowId, status, version } = row;
     const activeText =
-      status === 1 ? "Change status to inactive" : "Change status to active";
+      status === "Active"
+        ? "Change status to inactive"
+        : "Change status to active";
     const menuItems = [
       {
         text: "View audit log",
