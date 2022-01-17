@@ -160,6 +160,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.datasetid = datasetid;
         }
         newState.dataFlowdetail = action.datasetDetail;
+        newState.selectedDataset = action.datasetDetail;
         break;
       default:
         newState.loading = false;
