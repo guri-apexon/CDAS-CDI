@@ -434,7 +434,7 @@ exports.inActivateDataFlow = async (req, res) => {
 exports.syncDataFlow = async (req, res) => {
   try {
     let { version, userId, dataFlowId, action } = req.body;
-    console.log("data", version, userId, dataFlowId, action);
+    // console.log("data", version, userId, dataFlowId, action);
     var dbconnection = await oracleDB();
     Logger.info({ message: "syncDataFlow" });
     let sequenceIdQ = `SELECT MAX(CDR_TA_QUEUE_ID) FROM IDP.CDR_TA_QUEUE`;
@@ -456,7 +456,7 @@ exports.syncDataFlow = async (req, res) => {
     );
   } catch (error) {
     Logger.error("catch :syncDataFlow");
-    console.log(error);
+    // console.log(error);
     return apiResponse.ErrorResponse(res, error);
   } finally {
     // await doRelease(dbconnection);
