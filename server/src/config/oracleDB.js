@@ -16,11 +16,3 @@ module.exports = async () => {
     throw err;
   }
 };
-
-module.exports = doRelease = async (connection) => {
-  connection.release(function (err) {
-    if (err) {
-      console.error(err.message);
-    }
-  });
-};
