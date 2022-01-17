@@ -178,7 +178,7 @@ const columns = [
     accessor: "audit_vers",
     sortFunction: compareStrings,
     customCell: VersionCell,
-    filterFunction: createStringSearchFilter("audit_vers"),
+    filterFunction: numberSearchFilter("audit_vers"),
     filterComponent: TextFieldFilter,
     width: 70,
   },
