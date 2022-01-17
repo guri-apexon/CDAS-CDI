@@ -11,8 +11,10 @@ import Table, {
   compareStrings,
 } from "apollo-react/components/Table";
 import { neutral7, neutral8 } from "apollo-react/colors";
+import Modal from "apollo-react/components/Modal";
 import Typography from "apollo-react/components/Typography";
 import Button from "apollo-react/components/Button";
+import Tag from "apollo-react/components/Tag";
 import SegmentedControl from "apollo-react/components/SegmentedControl";
 import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
@@ -34,6 +36,7 @@ import {
   hardDelete,
   activateDF,
   inActivateDF,
+  syncNowDataFlow,
 } from "../../services/ApiServices";
 
 const createAutocompleteFilter =
@@ -161,6 +164,9 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
   const [selectedFilter, setSelectedFilter] = useState(null);
   const [topFilterData, setTopFilterData] = useState([]);
   const messageContext = useContext(MessageContext);
+  const [showSyncNow, setShowSyncNow] = useState(false);
+  const [showHardDelete, setShowHardDelete] = useState(false);
+  const [selectedFlow, setSelectedFlow] = useState(null);
   const [totalRows, setTotalRows] = useState(0);
   const [rowData, setRowData] = useState([]);
   const history = useHistory();
@@ -209,15 +215,41 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
   };
 
   const hardDeleteAction = async (e) => {
-    console.log("hardDeleteAction", e);
-    const deleteStatus = await hardDelete(e);
+    setSelectedFlow(e);
+    setShowHardDelete(true);
+  };
+
+  const hideSyncNow = () => {
+    setSelectedFlow(null);
+    setShowSyncNow(false);
+  };
+
+  const hideHardDelete = () => {
+    setSelectedFlow(null);
+    setShowHardDelete(false);
+  };
+
+  const handleHardDelete = async () => {
+    const { dataFlowId } = selectedFlow;
+    const deleteStatus = await hardDelete(dataFlowId);
     if (deleteStatus.success) {
       await updateData();
     }
+    setShowHardDelete(false);
   };
 
   const sendSyncRequest = async (e) => {
-    console.log("hardDeleteAction", e.version, e.dataFlowId, "SYNC");
+    setSelectedFlow(e);
+    setShowSyncNow(true);
+  };
+
+  const handleSync = async () => {
+    const { dataFlowId, version } = selectedFlow;
+    const syncStatus = await syncNowDataFlow({ version, dataFlowId });
+    if (syncStatus.success) {
+      await updateData();
+    }
+    setShowSyncNow(false);
   };
 
   const viewAuditLogAction = (e) => {
@@ -239,7 +271,7 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
   };
 
   const ActionCell = ({ row }) => {
-    const { dataFlowId, status, version } = row;
+    const { dataFlowId, status } = row;
     const activeText =
       status === "Active"
         ? "Change status to inactive"
@@ -255,7 +287,7 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
       },
       {
         text: "Send sync request",
-        onClick: () => sendSyncRequest({ version, dataFlowId }),
+        onClick: () => sendSyncRequest(row),
       },
       {
         text: "Clone data flow",
@@ -264,7 +296,7 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
       },
       {
         text: "Hard delete data flow",
-        onClick: () => hardDeleteAction(dataFlowId),
+        onClick: () => hardDeleteAction(row),
       },
     ];
     return (
@@ -346,16 +378,13 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
   const StatusCell = ({ row, column: { accessor } }) => {
     const description = row[accessor];
     return (
-      <div style={{ position: "relative" }}>
-        <div
-          style={{ marginRight: 10 }}
-          className={`status-cell ${
-            description === "Active" ? "active" : "inActive"
-          }`}
-        >
-          {description}
-        </div>
-      </div>
+      <Tag
+        style={{ marginRight: 10 }}
+        label={description}
+        className={`status-cell ${
+          description === "Active" ? "active" : "inActive"
+        }`}
+      />
     );
   };
 
@@ -864,6 +893,29 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
           />
         </>
       )}
+      <Modal
+        open={showHardDelete}
+        variant="warning"
+        title="Delete Dataflow"
+        onClose={hideHardDelete}
+        message="Do you want to proceed with data deletion that cannot be undone?"
+        buttonProps={[
+          { label: "Cancel", onClick: hideHardDelete },
+          { label: "Ok", onClick: handleHardDelete },
+        ]}
+        id="deleteDataFlow"
+      />
+      <Modal
+        open={showSyncNow}
+        title="Sync Dataflow"
+        onClose={hideSyncNow}
+        message="Do you want to proceed with SYNC NOW action?"
+        buttonProps={[
+          { label: "Cancel", onClick: hideSyncNow },
+          { label: "Ok", onClick: handleSync },
+        ]}
+        id="syncDataFlow"
+      />
     </div>
   );
 }

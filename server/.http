@@ -274,7 +274,7 @@ content-type: application/json
 
 {
 "dataFlowId": "a0A0E00000322XRUAY",
-"user_id": "u1105372"
+"userId": "u1105372"
 }
 
 ### InActivate DataFlow
@@ -284,5 +284,17 @@ content-type: application/json
 
 {
 "dataFlowId": "a0A0E00000322XRUAY",
-"user_id": "u1105372"
+"userId": "u1105372"
+}
+
+### SyncNow DataFlow
+
+POST http://localhost:4001/v1/api/dataflow/syncNow HTTP/1.1
+content-type: application/json
+
+{
+"version": "",
+"dataFlowId": "a0A0E00000322XRUAY",
+"userId": "u1105372",
+"action": "",
 }

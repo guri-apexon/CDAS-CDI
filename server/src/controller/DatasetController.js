@@ -46,11 +46,10 @@ exports.saveDatasetData = async (req, res) => {
       const hisBody = [datasetId + 1, ...body];
       const hisQuery = `INSERT into cdascdi1d.cdascdi.dataset_history (dataset_vers_id,datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`;
       DB.executeQuery(hisQuery, hisBody).then(() => {
-        return apiResponse.successResponseWithData(
-          res,
-          "Operation success",
-          {...values, datasetId: datasetId}
-        );
+        return apiResponse.successResponseWithData(res, "Operation success", {
+          ...values,
+          datasetId: datasetId,
+        });
       });
     });
   } catch (err) {
@@ -65,7 +64,7 @@ exports.saveDatasetData = async (req, res) => {
 exports.saveDatasetColumns = async (req, res) => {
   try {
     const values = req.body;
-    const inserted = await values.map( async (value) => {
+    const inserted = await values.map(async (value) => {
       const columnId = helper.generateUniqueID();
       const body = [
         columnId,
@@ -88,37 +87,52 @@ exports.saveDatasetColumns = async (req, res) => {
       Logger.info({
         message: "storeDatasetColumns",
       });
-      const inserted =  await DB.executeQuery(searchQuery, body).then(() => {
-        const hisBody = [columnId + 1, 1, ...body];
-        const hisQuery = `INSERT into cdascdi1d.cdascdi.columndefinition_history (col_def_version_id,version, columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;
-        return DB.executeQuery(hisQuery, hisBody).then(() => {
-          return "SUCCESS"
-        }).catch((err) => {
-          console.log("innser err",  err);
+      const inserted = await DB.executeQuery(searchQuery, body)
+        .then(() => {
+          const hisBody = [columnId + 1, 1, ...body];
+          const hisQuery = `INSERT into cdascdi1d.cdascdi.columndefinition_history (col_def_version_id,version, columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;
+          return DB.executeQuery(hisQuery, hisBody)
+            .then(() => {
+              return "SUCCESS";
+            })
+            .catch((err) => {
+              console.log("innser err", err);
+              return err.message;
+            });
+        })
+        .catch((err) => {
+          console.log("outer err", err);
           return err.message;
         });
-      }).catch((err) => {
-        console.log("outer err",  err);
-        return err.message;
-      });
       return inserted;
     });
     Promise.all(inserted).then((response) => {
-       if(response[0] == "SUCCESS") {
+      if (response[0] == "SUCCESS") {
         return apiResponse.successResponseWithData(
           res,
           "Operation success",
           values
         );
-       }  else {
+      } else {
         return apiResponse.ErrorResponse(res, response[0]);
       }
-    })
+    });
   } catch (err) {
     //throw error in json response with status 500.
-    console.log(err, "err");
     Logger.error("catch :storeDatasetColumns");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.getVLCData = async (req, res) => {
+  try {
+    Logger.info({
+      message: "getVLCData",
+    });
+  } catch (error) {
+    Logger.error("catch :getVLCData");
+    Logger.error(error);
+    return apiResponse.ErrorResponse(res, error);
   }
 };
