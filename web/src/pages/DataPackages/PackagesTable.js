@@ -97,18 +97,23 @@ const PackagesList = ({ data, userInfo }) => {
       />
     </div>
   );
-  const renderChildTree = ({ datasetid, mnemonic, type, active }) => (
+  const addDataSet = (dataflowid, datapackageid, datasetid = null) => {
+    dispatch(redirectToDataSet(dataflowid, datapackageid, datasetid));
+    history.push("/datasets-management");
+  };
+  const renderChildTree = (
+    { datasetid, mnemonic, type, active },
+    dataflowid,
+    datapackageid
+  ) => (
     <TreeItem
       key={datasetid}
       nodeId={datasetid}
       label={mnemonic}
       count={<DataSetTitle type={type} active={active} />}
+      onClick={() => addDataSet(dataflowid, datapackageid, datasetid)}
     />
   );
-  const addDataSet = (dataflowid, datapackageid) => {
-    dispatch(redirectToDataSet(dataflowid, datapackageid));
-    history.push("/datasets-management");
-  };
   const DataPackageTitle = (props) => (
     <div>
       <Typography variant="caption" className="datasetCount">
@@ -183,7 +188,9 @@ const PackagesList = ({ data, userInfo }) => {
       children={<DataPackageTitle />}
     >
       {Array.isArray(datasets)
-        ? datasets.map((node) => renderChildTree(node))
+        ? datasets.map((node) =>
+            renderChildTree(node, dataflowid, datapackageid)
+          )
         : null}
     </TreeItem>
   );

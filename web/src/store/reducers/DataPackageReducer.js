@@ -85,6 +85,7 @@ const DataPackageReducer = (state = initialState, action) =>
         newState.optedDataPackages = {
           dataflowid: action.dataflowid,
           datapackageid: action.datapackageid,
+          datasetid: action.datasetid,
         };
         break;
       default:

@@ -34,10 +34,11 @@ export const deletePackage = (payload) => {
   };
 };
 
-export const redirectToDataSet = (dataflowid, datapackageid) => {
+export const redirectToDataSet = (dataflowid, datapackageid, datasetid) => {
   return {
     type: REDIRECT_TO_DATASET,
     dataflowid,
     datapackageid,
+    datasetid,
   };
 };
