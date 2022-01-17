@@ -447,19 +447,22 @@ exports.syncDataFlow = async (req, res) => {
     const result = await dbconnection.execute(q);
     return apiResponse.successResponse(
       res,
-      "Sync Pipeline configs successfully written to Kafka"
+      "Sync Pipeline configs successfully written to Kafka",
+      {
+        success: true,
+      }
     );
   } catch (error) {
     Logger.error("catch :syncDataFlow");
     return apiResponse.ErrorResponse(res, error);
   } finally {
-    await doRelease(dbconnection);
-    // if (dbconnection) {
-    //   try {
-    //     await dbconnection.close();
-    //   } catch (err) {
-    //     console.error(err);
-    //   }
-    // }
+    // await doRelease(dbconnection);
+    if (dbconnection) {
+      try {
+        await dbconnection.close();
+      } catch (err) {
+        console.error(err);
+      }
+    }
   }
 };

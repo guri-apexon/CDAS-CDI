@@ -7,6 +7,7 @@ import {
   UNPINSTUDY,
   PINSTUDY,
   HARDDELETE,
+  SYNCNOW,
   ACTIVATEDF,
   INACTIVATE,
 } from "../constants";
@@ -28,6 +29,20 @@ export const hardDelete = async (dataFlowId) => {
     const res = await axios.post(`${baseURL}/${HARDDELETE}`, {
       dataFlowId,
       userId,
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const syncNowDataFlow = async ({ version, dataFlowId }) => {
+  try {
+    const res = await axios.post(`${baseURL}/${SYNCNOW}`, {
+      version,
+      userId,
+      dataFlowId,
+      action: "SYNC",
     });
     return res.data?.data || [];
   } catch (err) {
