@@ -188,7 +188,7 @@ const DataSets = () => {
               locationType?.toLowerCase() !== "ftps" && (
                 <DataSetsFormSQL onSubmit={onSubmit} />
               )}
-            {tabValue === 1 && <ColumnsTab />}
+            {tabValue === 1 && <ColumnsTab locationType={locationType} />}
             {tabValue === 2 && <VLCTab />}
           </div>
         </div>

@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import * as XLSX from "xlsx";
 import FileUpload from "apollo-react/components/FileUpload";
 import Card from "apollo-react/components/Card";
@@ -8,10 +8,12 @@ import Link from "apollo-react/components/Link";
 import { useHistory } from "react-router-dom";
 import TextField from "apollo-react/components/TextField";
 import Button from "apollo-react/components/Button";
+import { MessageContext } from "../../components/MessageProvider";
 import DatasetTable from "./DatasetTable";
 
-const ColumnsTab = () => {
+const ColumnsTab = ({ locationType }) => {
   const history = useHistory();
+  const messageContext = useContext(MessageContext);
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
   const [numberOfRows, setNumberOfRows] = useState(null);
@@ -85,6 +87,12 @@ const ColumnsTab = () => {
         : [];
     setFormattedData([...newData]);
   };
+
+  // const handleNoHeaders = () => {
+  //   messageContext.showErrorMessage(
+  //     `Import is not available for files with no header row.`
+  //   );
+  // };
 
   useEffect(() => {
     if (importedData.length > 2) {
@@ -173,6 +181,7 @@ const ColumnsTab = () => {
           numberOfRows={numberOfRows || 1}
           formattedData={formattedData}
           dataOrigin={selectedMethod}
+          locationType={locationType}
         />
       )}
     </div>
