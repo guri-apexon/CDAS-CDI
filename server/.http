@@ -273,8 +273,9 @@ POST http://localhost:4001/v1/api/dataflow/activate HTTP/1.1
 content-type: application/json
 
 {
-"dataFlowId": "a0A0E00000322XRUAY",
-"userId": "u1105372"
+"dataFlowId": "a0A0E000004la01ZAA",
+"userId": "u1105372",
+"versionNo": 3
 }
 
 ### InActivate DataFlow
@@ -283,8 +284,9 @@ POST http://localhost:4001/v1/api/dataflow/inActivate HTTP/1.1
 content-type: application/json
 
 {
-"dataFlowId": "a0A0E00000322XRUAY",
-"userId": "u1105372"
+"dataFlowId": "a0A0E000004la01ZAA",
+"userId": "u1105372",
+"versionNo": 2
 }
 
 ### SyncNow DataFlow
