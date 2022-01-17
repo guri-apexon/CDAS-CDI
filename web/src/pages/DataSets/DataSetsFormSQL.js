@@ -1,16 +1,10 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
 import compose from "@hypnosphi/recompose/compose";
-import { connect, useDispatch } from "react-redux";
-import {
-  reduxForm,
-  getFormValues,
-  formValueSelector,
-  change,
-} from "redux-form";
+import { connect } from "react-redux";
+import { reduxForm, getFormValues, formValueSelector } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
-import Divider from "apollo-react/components/Divider";
 import FixedBar from "apollo-react/components/FixedBar";
 import Status from "apollo-react/components/Status";
 import Radio from "apollo-react/components/Radio";
@@ -28,7 +22,7 @@ import {
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
 
-import { fileTypes, delimeters, customSQLQuery } from "../../utils";
+import { customSQLQuery } from "../../utils";
 
 const styles = {
   paper: {
@@ -85,35 +79,7 @@ const styles = {
 };
 
 const DataSetsFormBase = (props) => {
-  const dispatch = useDispatch();
-  const {
-    handleSubmit,
-    classes,
-    datakind,
-    formValues,
-    defaultDelimiter,
-    defaultEscapeCharacter,
-    defaultQuote,
-    defaultHeaderRowNumber,
-    defaultFooterRowNumber,
-  } = props;
-
-  const setDefaultValues = (e) => {
-    const fileValue = e.target.value;
-    if (fileValue !== "Delimited") {
-      dispatch(change("DataSetsForm", "delimiter", defaultDelimiter));
-      dispatch(
-        change("DataSetsForm", "escapeCharacter", defaultEscapeCharacter)
-      );
-      dispatch(change("DataSetsForm", "quote", defaultQuote));
-      dispatch(
-        change("DataSetsForm", "headerRowNumber", defaultHeaderRowNumber)
-      );
-      dispatch(
-        change("DataSetsForm", "footerRowNumber", defaultFooterRowNumber)
-      );
-    }
-  };
+  const { handleSubmit, classes, datakind, formValues } = props;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -254,15 +220,15 @@ const DataSetsFormBase = (props) => {
 const ReduxForm = compose(
   withStyles(styles),
   reduxForm({
-    form: "DataSetsForm",
+    form: "DataSetsFormSQL",
     validate: dataSetsValidation,
   })
 )(DataSetsFormBase);
 
-const selector = formValueSelector("DataSetsForm");
-const DataSetsForm = connect((state) => ({
+const selector = formValueSelector("DataSetsFormSQL");
+const DataSetsFormSQL = connect((state) => ({
   initialValues: state.dataSets.formDataSQL, // pull initial values from account reducer
-  values: getFormValues("DataSetsForm")(state),
+  values: getFormValues("DataSetsFormSQL")(state),
   formValues: selector(state, "customSQLQuery"),
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
@@ -272,4 +238,4 @@ const DataSetsForm = connect((state) => ({
   datakind: state.dataSets.datakind?.records,
 }))(ReduxForm);
 
-export default DataSetsForm;
+export default DataSetsFormSQL;
