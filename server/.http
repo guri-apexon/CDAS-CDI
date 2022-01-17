@@ -293,8 +293,8 @@ POST http://localhost:4001/v1/api/dataflow/syncNow HTTP/1.1
 content-type: application/json
 
 {
-"version": "",
+"version": 2,
 "dataFlowId": "a0A0E00000322XRUAY",
 "userId": "u1105372",
-"action": "",
+"action": "SYNC"
 }
