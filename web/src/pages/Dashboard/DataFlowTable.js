@@ -262,16 +262,16 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
 
   const changeStatusAction = async (e) => {
     if (e.status === "Inactive") {
-      await activateDF(e.dataFlowId);
+      await activateDF(e.dataFlowId, e.version);
       await updateData();
     } else {
-      await inActivateDF(e.dataFlowId);
+      await inActivateDF(e.dataFlowId, e.version);
       await updateData();
     }
   };
 
   const ActionCell = ({ row }) => {
-    const { dataFlowId, status } = row;
+    const { dataFlowId, status, version } = row;
     const activeText =
       status === "Active"
         ? "Change status to inactive"
@@ -283,7 +283,7 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
       },
       {
         text: activeText,
-        onClick: () => changeStatusAction({ dataFlowId, status }),
+        onClick: () => changeStatusAction({ dataFlowId, status, version }),
       },
       {
         text: "Send sync request",

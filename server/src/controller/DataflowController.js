@@ -402,11 +402,28 @@ exports.hardDelete = async (req, res) => {
 
 exports.activateDataFlow = async (req, res) => {
   try {
-    const { dataFlowId, userId } = req.body;
-    // console.log(dataFlowId);
-    const query = `UPDATE cdascdi.dataflow set active=1 WHERE dataflowid=$1`;
+    const dataflowAuditlogId = createUniqueID();
+    const { dataFlowId, userId, versionNo } = req.body;
+    const curDate = new Date();
+    const newVersion = versionNo + 1;
     Logger.info({ message: "activateDataFlow" });
-    const $q1 = await DB.executeQuery(query, [dataFlowId]);
+
+    const q1 = `UPDATE cdascdi.dataflow set active=1 WHERE dataflowid=$1`;
+    const q2 = `INSERT INTO cdascdi.dataflow_audit_log
+    (dataflow_audit_log_id, dataflowid, audit_vers, audit_updt_dt, usr_id, "attribute", old_val, new_val)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+    const $q1 = await DB.executeQuery(q1, [dataFlowId]);
+    const $q2 = await DB.executeQuery(q2, [
+      dataflowAuditlogId,
+      dataFlowId,
+      newVersion,
+      curDate,
+      userId,
+      "active",
+      0,
+      1,
+    ]);
+
     return apiResponse.successResponseWithData(res, "Operation success", {
       success: true,
     });
@@ -418,10 +435,29 @@ exports.activateDataFlow = async (req, res) => {
 
 exports.inActivateDataFlow = async (req, res) => {
   try {
-    const { dataFlowId, userId } = req.body;
-    const query = `UPDATE cdascdi.dataflow set active=0 WHERE dataflowid=$1`;
+    const dataflowAuditlogId = createUniqueID();
+    const { dataFlowId, userId, versionNo } = req.body;
+    const curDate = new Date();
+    const newVersion = versionNo + 1;
     Logger.info({ message: "inActivateDataFlow" });
-    const $q1 = await DB.executeQuery(query, [dataFlowId]);
+
+    const q1 = `UPDATE cdascdi.dataflow set active=0 WHERE dataflowid=$1`;
+    const q2 = `INSERT INTO cdascdi.dataflow_audit_log
+    (dataflow_audit_log_id, dataflowid, audit_vers, audit_updt_dt, usr_id, "attribute", old_val, new_val)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+
+    const $q1 = await DB.executeQuery(q1, [dataFlowId]);
+    const $q2 = await DB.executeQuery(q2, [
+      dataflowAuditlogId,
+      dataFlowId,
+      newVersion,
+      curDate,
+      userId,
+      "active",
+      1,
+      0,
+    ]);
+
     return apiResponse.successResponseWithData(res, "Operation success", {
       success: true,
     });
