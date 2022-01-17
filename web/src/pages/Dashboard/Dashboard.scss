@@ -55,10 +55,11 @@
   padding: 2px 6px;
   width: fit-content;
 }
-
-.active {
-  background: #00c221;
-}
-.inActive {
-  background: #999999;
+.dataflow-table {
+  .active {
+    background: #00c221;
+  }
+  .inActive {
+    background: #999999;
+  }
 }
