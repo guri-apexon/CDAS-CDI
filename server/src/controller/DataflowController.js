@@ -1,4 +1,5 @@
 const DB = require("../config/db");
+const oracleDB = require("../config/oracleDB");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const moment = require("moment");
@@ -401,6 +402,35 @@ exports.inActivateDataFlow = async (req, res) => {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+exports.SyncAPI = async(req,res) => {
+  try {
+    let {version,userId,dataFlowId,action} = req.body;
+    var dbconnection = await oracleDB();
+    Logger.info({ message: "SyncAPI" });
+    let sequenceIdQ = `SELECT MAX(CDR_TA_QUEUE_ID) FROM IDP.CDR_TA_QUEUE`
+    const {rows} = await dbconnection.execute(sequenceIdQ);
+    let SeqID;
+    if (rows.length > 0) {
+      SeqID = rows[0]['MAX(CDR_TA_QUEUE_ID)'] + 1
+    } else {
+      SeqID = 1            
+    }
+    let q = `insert into IDP.CDR_TA_QUEUE(cdr_ta_queue_id,version,dataflowid,action_user,action,STATUS,INSERTTIMESTAMP) values (${SeqID},${version},'${dataFlowId}','${userId}','${action}','QUEUE',CURRENT_TIMESTAMP)`
+    const result = await dbconnection.execute(q);
+    return apiResponse.successResponse(res, "Sync Pipeline configs successfully written to Kafka");
+  } catch (error) {
+    Logger.error("catch :SyncAPI");
+    return apiResponse.ErrorResponse(res, error);
+  } finally {
+    if (dbconnection) {
+      try {
+        await dbconnection.close();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
+}
 
 exports.getDataflowDetail = async (req, res) => {
   try {
