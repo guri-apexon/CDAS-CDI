@@ -10,7 +10,7 @@ import TextField from "apollo-react/components/TextField";
 import Button from "apollo-react/components/Button";
 import DatasetTable from "./DatasetTable";
 
-const ColumnsTab = () => {
+const ColumnsTab = ({ locationType }) => {
   const history = useHistory();
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
@@ -173,6 +173,7 @@ const ColumnsTab = () => {
           numberOfRows={numberOfRows || 1}
           formattedData={formattedData}
           dataOrigin={selectedMethod}
+          locationType={locationType}
         />
       )}
     </div>

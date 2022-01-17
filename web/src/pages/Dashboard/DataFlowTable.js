@@ -262,8 +262,14 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
 
   const changeStatusAction = async (e) => {
     if (e.status === "Inactive") {
-      await activateDF(e.dataFlowId, e.version);
-      await updateData();
+      const updateStataus = await activateDF(e.dataFlowId, e.version);
+      if (updateStataus.success) {
+        await updateData();
+      } else {
+        messageContext.showErrorMessage(
+          `Activate the dataflow is cannot be completed and the dataflow having the issue`
+        );
+      }
     } else {
       await inActivateDF(e.dataFlowId, e.version);
       await updateData();
@@ -762,87 +768,6 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
       </Button>
     </>
   );
-
-  // const getTableData = React.useMemo(
-  //   () => (
-  //     <>
-  //       {loading ? (
-  //         <Progress />
-  //       ) : (
-  //         <>
-  //           <Table
-  //             isLoading={loading}
-  //             title={
-  //               // eslint-disable-next-line react/jsx-wrap-multilines
-  //               <>
-  //                 {`${totalRows} ${
-  //                   totalRows >= 1 ? "Data Flows" : "Data Flow"
-  //                 }`}
-  //               </>
-  //             }
-  //             col
-  //             columns={tableColumns}
-  //             rows={tableRows.map((row) => ({
-  //               ...row,
-  //               expanded: expandedRows.includes(row.dataFlowId),
-  //               handleToggleRow,
-  //             }))}
-  //             initialSortedColumn="dateCreated"
-  //             initialSortOrder="asc"
-  //             // sortedColumn={sortedColumnValue}
-  //             // sortOrder={sortOrderValue}
-  //             rowsPerPageOptions={[10, 50, 100, "All"]}
-  //             tablePaginationProps={{
-  //               labelDisplayedRows: ({ from, to, count }) =>
-  //                 `${
-  //                   count === 1 ? "Data Flow " : "Data Flows"
-  //                 } ${from}-${to} of ${count}`,
-  //               truncate: true,
-  //             }}
-  //             // page={pageNo}
-  //             // rowsPerPage={rowsPerPageRecord}
-  //             onChange={(rpp, sc, so, filts, page) => {
-  //               // console.log("onChange", rpp, sc, so, filts, page, others);
-  //               // setRowPerPageRecord(rpp);
-  //               // setSortedColumnValue(sc);
-  //               // setSortOrderValue(so);
-  //               // setInlineFilters(filts);
-  //               // setPageNo(page);
-  //             }}
-  //             columnSettings={{
-  //               enabled: true,
-  //               frozenColumnsEnabled: true,
-  //               defaultColumns: moreColumns,
-  //               // onChange: (changeColumns) => {
-  //               //   setTableColumns(changeColumns);
-  //               // },
-  //             }}
-  //             CustomHeader={(props) => (
-  //               <CustomButtonHeader
-  //                 toDataflowMgmt={toDataflowMgmt}
-  //                 {...props}
-  //               />
-  //             )}
-  //             emptyProps={{
-  //               content: <EmptyTableComponent />,
-  //             }}
-  //             ExpandableComponent={DetailRow}
-  //           />
-  //         </>
-  //       )}
-  //     </>
-  //   ),
-  //   [
-  //     tableColumns,
-  //     tableRows,
-  //     sortOrderValue,
-  //     moreColumns,
-  //     sortedColumnValue,
-  //     pageNo,
-  //     rowsPerPageRecord,
-  //     loading,
-  //   ]
-  // );
 
   return (
     <div className="dataflow-table">

@@ -1,5 +1,5 @@
 /* eslint-disable react/button-has-type */
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { makeStyles } from "@material-ui/core/styles";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,6 +17,10 @@ import Search from "apollo-react/components/Search";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Select from "apollo-react/components/Select";
+import Plus from "apollo-react-icons/Plus";
+import Tooltip from "apollo-react/components/Tooltip";
+import Modal from "apollo-react/components/Modal";
+import { MessageContext } from "../../components/MessageProvider";
 
 import {
   checkNumeric,
@@ -87,49 +91,45 @@ const ActionCell = ({ row }) => {
     </div>
   );
 };
+
+const addSingleRow = () => {
+  console.log("Add a single row");
+};
+
+const addMultipleRows = () => {
+  console.log("Add multiple rows");
+};
+
+const downloadTemplate = () => {
+  console.log("Download Template");
+};
+
+const downloadTable = () => {
+  console.log("Download Table");
+};
+
 const menuItems = [
   {
     text: "Download Template",
-    onClick: console.log("Download Template"),
+    onClick: downloadTemplate,
   },
   {
     text: "Download Table",
-    onClick: console.log("Download Table"),
+    onClick: downloadTable,
   },
 ];
 
-const CustomHeader = ({ editMode, onCancel, onSave, onEditAll }) => (
-  <div>
-    <Grid container alignItems="center">
-      <Button size="small" style={{ marginRight: 8 }} onClick={onCancel}>
-        Cancel All
-      </Button>
-      <Button size="small" variant="primary" onClick={onSave}>
-        Save All
-      </Button>
-      <IconButton color="primary" size="small" disabled>
-        <Pencil />
-      </IconButton>
-      <IconButton color="primary" size="small" disabled>
-        <Upload />
-      </IconButton>
-      <Divider
-        orientation="vertical"
-        flexItem
-        style={{ marginLeft: 15, marginRight: 15 }}
-      />
-      <Search
-        placeholder="Search"
-        size="small"
-        style={{ marginTop: "-5px", marginBottom: 0 }}
-        disabled
-      />
-      <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
-        <EllipsisVertical />
-      </IconMenuButton>
-    </Grid>
-  </div>
-);
+const addMenuItems = [
+  {
+    text: "Add 1 row",
+    onClick: addSingleRow,
+  },
+  {
+    text: "Add multiple rows",
+    onClick: addMultipleRows,
+  },
+];
+
 const makeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
@@ -283,9 +283,10 @@ const columns = [
 const DatasetTable = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const { selectedDataset } = dataSets;
-  const { numberOfRows, dataOrigin, formattedData } = props;
+  const { numberOfRows, dataOrigin, formattedData, locationType } = props;
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     columnId: index + 1,
     variableLabel: "",
@@ -301,10 +302,60 @@ const DatasetTable = (props) => {
     values: "",
   }));
   const [rows, setRows] = useState(initialRows);
-  const [editedRows, setEditedRows] = useState(initialRows);
+  const [editedRows, setEditedRows] = useState([]);
   const [editByRow, setEditByRow] = useState([]);
   const [rowErr, setRowErr] = useState({});
+  const [showOverWrite, setShowOverWrite] = useState(false);
   const editMode = editedRows.length > 0;
+
+  const CustomHeader = ({ onCancel, onSave, onEditAll }) => (
+    <div>
+      <Grid container alignItems="center">
+        {onEditAll && (
+          <>
+            <Button size="small" style={{ marginRight: 8 }} onClick={onCancel}>
+              Cancel All
+            </Button>
+            <Button size="small" variant="primary" onClick={onSave}>
+              Save All
+            </Button>
+          </>
+        )}
+        <Tooltip title="Add rows" disableFocusListener>
+          <IconMenuButton id="actions-1" menuItems={addMenuItems} size="small">
+            <Plus />
+          </IconMenuButton>
+        </Tooltip>
+        <Tooltip title="Edit all" disableFocusListener>
+          <IconButton color="primary" size="small">
+            <Pencil />
+          </IconButton>
+        </Tooltip>
+        {(locationType?.toLowerCase() === "sftp" ||
+          locationType?.toLowerCase() === "ftps") && (
+          <Tooltip title="Import dataset column settings" disableFocusListener>
+            <IconButton color="primary" size="small">
+              <Upload />
+            </IconButton>
+          </Tooltip>
+        )}
+        <Divider
+          orientation="vertical"
+          flexItem
+          style={{ marginLeft: 15, marginRight: 15 }}
+        />
+        <Search
+          placeholder="Search"
+          size="small"
+          style={{ marginTop: "-5px", marginBottom: 0 }}
+          disabled
+        />
+        <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
+          <EllipsisVertical />
+        </IconMenuButton>
+      </Grid>
+    </div>
+  );
 
   useEffect(() => {
     if (dataOrigin === "fileUpload") {
@@ -341,6 +392,20 @@ const DatasetTable = (props) => {
     );
     setRowErr((err) => ({ ...err, [key]: errorTxt }));
   };
+
+  const hideOverWrite = () => {
+    console.log("close overwrite");
+  };
+
+  const handleOverWrite = () => {
+    console.log("handle overwrite");
+  };
+
+  // const showProtocolNotMatching = () => {
+  //   messageContext.showErrorMessage(
+  //     `Protocol # ‘${}’ in file does not match protocol number ‘${dashboard.selectedCard.protocolnumber}’ for this data flow. Please make sure these match and try again`
+  //   );
+  // };
 
   const getTableData = React.useMemo(
     () => (
@@ -381,6 +446,18 @@ const DatasetTable = (props) => {
   return (
     <div>
       <div className={classes.section}>{getTableData}</div>
+      <Modal
+        open={showOverWrite}
+        variant="warning"
+        title="Overwritte set column attributes"
+        onClose={hideOverWrite}
+        message="The existing data set column attributes will be overwritten. Continue?"
+        buttonProps={[
+          { label: "Cancel", onClick: hideOverWrite },
+          { label: "Ok", onClick: handleOverWrite },
+        ]}
+        id="overWrite"
+      />
     </div>
   );
 };
