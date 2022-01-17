@@ -13,6 +13,7 @@ import Table, {
 import { neutral7, neutral8 } from "apollo-react/colors";
 import Typography from "apollo-react/components/Typography";
 import Button from "apollo-react/components/Button";
+import Tag from "apollo-react/components/Tag";
 import SegmentedControl from "apollo-react/components/SegmentedControl";
 import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
@@ -346,16 +347,13 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
   const StatusCell = ({ row, column: { accessor } }) => {
     const description = row[accessor];
     return (
-      <div style={{ position: "relative" }}>
-        <div
-          style={{ marginRight: 10 }}
-          className={`status-cell ${
-            description === "Active" ? "active" : "inActive"
-          }`}
-        >
-          {description}
-        </div>
-      </div>
+      <Tag
+        style={{ marginRight: 10 }}
+        label={description}
+        className={`status-cell ${
+          description === "Active" ? "active" : "inActive"
+        }`}
+      />
     );
   };
 

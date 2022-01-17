@@ -1,5 +1,5 @@
 const DB = require("../config/db");
-const oracleDB = require("../config/oracleDB");
+const { oracleDB, doRelease } = require("../config/oracleDB");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const moment = require("moment");
@@ -229,16 +229,20 @@ exports.createDataflow = async (req, res) => {
 const hardDeleteTrigger = async (dataflowId, user) => {
   const values = [dataflowId];
   let result, dataFlow;
-  await DB.executeQuery(`SELECT * from cdascdi1d.cdascdi.dataflow WHERE dataflowid=$1`, values).then(async (response) => {
+  await DB.executeQuery(
+    `SELECT * from cdascdi1d.cdascdi.dataflow WHERE dataflowid=$1`,
+    values
+  ).then(async (response) => {
     dataFlow = response.rows ? response.rows[0] : null;
   });
-  if(!dataFlow){
-    return 'not_found';
+  if (!dataFlow) {
+    return "not_found";
   }
   const deleteQuery = `DELETE FROM cdascdi1d.cdascdi.dataflow_audit_log da
       WHERE da.dataflowid = $1`;
-  await DB.executeQuery(deleteQuery, values).then(async (response) => {
-    const deleteQuery2 = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
+  await DB.executeQuery(deleteQuery, values)
+    .then(async (response) => {
+      const deleteQuery2 = `DELETE FROM cdascdi1d.cdascdi.temp_json_log da
       WHERE da.dataflowid = '${dataflowId}';
       DELETE FROM cdascdi1d.cdascdi.columndefinition cd WHERE cd.datasetid in (select datasetid FROM cdascdi1d.cdascdi.dataset ds
       WHERE ds.datapackageid in (select datapackageid from cdascdi.datapackage dp where dp.dataflowid='${dataflowId}'));
@@ -251,44 +255,49 @@ const hardDeleteTrigger = async (dataflowId, user) => {
       DELETE FROM cdascdi1d.cdascdi.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
       DELETE FROM cdascdi1d.cdascdi.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
 
-    await DB.executeQuery(deleteQuery2).then(async (response2) => {
-      const deleteQuery3 = `DELETE FROM cdascdi1d.cdascdi.dataflow
+      await DB.executeQuery(deleteQuery2)
+        .then(async (response2) => {
+          const deleteQuery3 = `DELETE FROM cdascdi1d.cdascdi.dataflow
       WHERE dataflowid = $1`;
-      await DB.executeQuery(deleteQuery3, values).then(async (response3) => {
-        if(response3.rowCount && response3.rowCount>0){
-          const insertDeletedQuery = `INSERT INTO cdascdi1d.cdascdi.deleted_dataflow(df_del_id, dataflow_nm, del_by, del_dt, del_req_dt, prot_id) VALUES($1, $2, $3, $4, $5, $6)`;
-          const deleteDfId = helper.createUniqueID();
-          const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-          const deletedValues = [
-            deleteDfId,
-            dataFlow.data_flow_nm,
-            user.usr_id,
-            currentTime,
-            currentTime,
-            "",
-          ];
-          await DB.executeQuery(insertDeletedQuery, deletedValues)
-            .then(async (response) => {
-              result = true;
+          await DB.executeQuery(deleteQuery3, values)
+            .then(async (response3) => {
+              if (response3.rowCount && response3.rowCount > 0) {
+                const insertDeletedQuery = `INSERT INTO cdascdi1d.cdascdi.deleted_dataflow(df_del_id, dataflow_nm, del_by, del_dt, del_req_dt, prot_id) VALUES($1, $2, $3, $4, $5, $6)`;
+                const deleteDfId = helper.createUniqueID();
+                const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+                const deletedValues = [
+                  deleteDfId,
+                  dataFlow.data_flow_nm,
+                  user.usr_id,
+                  currentTime,
+                  currentTime,
+                  "",
+                ];
+                await DB.executeQuery(insertDeletedQuery, deletedValues)
+                  .then(async (response) => {
+                    result = true;
+                  })
+                  .catch((err) => {
+                    result = false;
+                  });
+                result = "deleted";
+              } else {
+                result = "not_found";
+              }
             })
             .catch((err) => {
               result = false;
             });
-          result = 'deleted';
-        }else{
-          result = 'not_found';
-        }
-      }).catch((err)=>{
-        result = false;
-      });
-    }).catch((err)=>{
+        })
+        .catch((err) => {
+          result = false;
+        });
+    })
+    .catch((err) => {
       result = false;
     });
-  }).catch((err)=>{
-    result = false;
-  });
   return result;
-}
+};
 
 const addDeleteTempLog = async (dataflowId, user) => {
   const insertTempQuery = `INSERT INTO cdascdi1d.cdascdi.temp_json_log(temp_json_log_id, dataflowid, trans_typ, trans_stat, no_of_retry_attempted, del_flg, created_by, created_on, updated_by, updated_on) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
@@ -307,22 +316,27 @@ const addDeleteTempLog = async (dataflowId, user) => {
     user.usr_id,
     currentTime,
   ];
-  await DB.executeQuery(insertTempQuery, values).then(async (response) => {
-    result = true;
-  }).catch(err=>{
-    result = false;
-  });
+  await DB.executeQuery(insertTempQuery, values)
+    .then(async (response) => {
+      result = true;
+    })
+    .catch((err) => {
+      result = false;
+    });
   return result;
-}
+};
 exports.cronHardDelete = async () => {
   DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.temp_json_log`).then(
     async (response) => {
       const logs = response.rows || [];
       if (logs.length) {
-        logs.forEach(log => {
+        logs.forEach((log) => {
           const { dataflowid: dataflowId, created_by: user_id } = log;
-          DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [user_id]).then(async (response) => {
-            if(response.rows && response.rows.length){
+          DB.executeQuery(
+            `SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`,
+            [user_id]
+          ).then(async (response) => {
+            if (response.rows && response.rows.length) {
               const user = response.rows[0];
               const deleted = await hardDeleteTrigger(dataflowId, user);
               if (deleted) {
@@ -335,23 +349,33 @@ exports.cronHardDelete = async () => {
       }
     }
   );
-}
+};
 exports.hardDelete = async (req, res) => {
   try {
-    const { dataflowId, user_id } = req.body;
-    DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [user_id]).then(async (response) => {
-      if(response.rows && response.rows.length){
+    const { dataflowId, userId } = req.body;
+    DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [
+      userId,
+    ]).then(async (response) => {
+      if (response.rows && response.rows.length) {
         const user = response.rows[0];
         const deleted = await hardDeleteTrigger(dataflowId, user);
-        if(deleted=='deleted') {
-          return apiResponse.successResponseWithData(res, "Deleted successfully", {
-            success: true,
-          });
-        }else if (deleted=='not_found'){
-          return apiResponse.successResponseWithData(res, "Dataflow not found", {});
+        if (deleted == "deleted") {
+          return apiResponse.successResponseWithData(
+            res,
+            "Deleted successfully",
+            {
+              success: true,
+            }
+          );
+        } else if (deleted == "not_found") {
+          return apiResponse.successResponseWithData(
+            res,
+            "Dataflow not found",
+            {}
+          );
         } else {
           const inserted = await addDeleteTempLog(dataflowId, user);
-          if(inserted) {
+          if (inserted) {
             return apiResponse.successResponseWithData(
               res,
               "Deleted is in queue. System will delete it automatically after sometime.",
@@ -359,7 +383,7 @@ exports.hardDelete = async (req, res) => {
                 success: false,
               }
             );
-          }else{
+          } else {
             return apiResponse.successResponseWithData(
               res,
               "Something wrong. Please try again",
@@ -367,8 +391,8 @@ exports.hardDelete = async (req, res) => {
             );
           }
         }
-      }else{
-        return apiResponse.ErrorResponse(res, 'User not found');
+      } else {
+        return apiResponse.ErrorResponse(res, "User not found");
       }
     });
   } catch (err) {
@@ -383,7 +407,9 @@ exports.activateDataFlow = async (req, res) => {
     const query = `UPDATE cdascdi.dataflow set active=1 WHERE dataflowid=$1`;
     Logger.info({ message: "activateDataFlow" });
     const $q1 = await DB.executeQuery(query, [dataFlowId]);
-    return apiResponse.successResponse(res, "Operation success");
+    return apiResponse.successResponseWithData(res, "Operation success", {
+      success: true,
+    });
   } catch (err) {
     Logger.error("catch :activateDataFlow");
     return apiResponse.ErrorResponse(res, err);
@@ -396,38 +422,44 @@ exports.inActivateDataFlow = async (req, res) => {
     const query = `UPDATE cdascdi.dataflow set active=0 WHERE dataflowid=$1`;
     Logger.info({ message: "inActivateDataFlow" });
     const $q1 = await DB.executeQuery(query, [dataFlowId]);
-    return apiResponse.successResponse(res, "Operation success");
+    return apiResponse.successResponseWithData(res, "Operation success", {
+      success: true,
+    });
   } catch (err) {
     Logger.error("catch :inActivateDataFlow");
     return apiResponse.ErrorResponse(res, err);
   }
 };
-exports.SyncAPI = async(req,res) => {
+exports.syncDataFlow = async (req, res) => {
   try {
-    let {version,userId,dataFlowId,action} = req.body;
+    let { version, userId, dataFlowId, action } = req.body;
     var dbconnection = await oracleDB();
-    Logger.info({ message: "SyncAPI" });
-    let sequenceIdQ = `SELECT MAX(CDR_TA_QUEUE_ID) FROM IDP.CDR_TA_QUEUE`
-    const {rows} = await dbconnection.execute(sequenceIdQ);
+    Logger.info({ message: "syncDataFlow" });
+    let sequenceIdQ = `SELECT MAX(CDR_TA_QUEUE_ID) FROM IDP.CDR_TA_QUEUE`;
+    const { rows } = await dbconnection.execute(sequenceIdQ);
     let SeqID;
     if (rows.length > 0) {
-      SeqID = rows[0]['MAX(CDR_TA_QUEUE_ID)'] + 1
+      SeqID = rows[0]["MAX(CDR_TA_QUEUE_ID)"] + 1;
     } else {
-      SeqID = 1            
+      SeqID = 1;
     }
-    let q = `insert into IDP.CDR_TA_QUEUE(cdr_ta_queue_id,version,dataflowid,action_user,action,STATUS,INSERTTIMESTAMP) values (${SeqID},${version},'${dataFlowId}','${userId}','${action}','QUEUE',CURRENT_TIMESTAMP)`
+    let q = `insert into IDP.CDR_TA_QUEUE(cdr_ta_queue_id,version,dataflowid,action_user,action,STATUS,INSERTTIMESTAMP) values (${SeqID},${version},'${dataFlowId}','${userId}','${action}','QUEUE',CURRENT_TIMESTAMP)`;
     const result = await dbconnection.execute(q);
-    return apiResponse.successResponse(res, "Sync Pipeline configs successfully written to Kafka");
+    return apiResponse.successResponse(
+      res,
+      "Sync Pipeline configs successfully written to Kafka"
+    );
   } catch (error) {
-    Logger.error("catch :SyncAPI");
+    Logger.error("catch :syncDataFlow");
     return apiResponse.ErrorResponse(res, error);
   } finally {
-    if (dbconnection) {
-      try {
-        await dbconnection.close();
-      } catch (err) {
-        console.error(err);
-      }
-    }
+    await doRelease(dbconnection);
+    // if (dbconnection) {
+    //   try {
+    //     await dbconnection.close();
+    //   } catch (err) {
+    //     console.error(err);
+    //   }
+    // }
   }
-}
+};

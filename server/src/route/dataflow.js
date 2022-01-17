@@ -6,10 +6,10 @@ router.get(
   "/studyDataflowList/:protocolId",
   DataflowController.getStudyDataflows
 );
-router.post("/CreateDataflow", DataflowController.createDataflow);
-router.post("/hard-delete", DataflowController.hardDelete);
+router.post("/createDataflow", DataflowController.createDataflow);
+router.post("/hardDelete", DataflowController.hardDelete);
 router.post("/activate", DataflowController.activateDataFlow);
 router.post("/inActivate", DataflowController.inActivateDataFlow);
-router.post("/SyncAPI", DataflowController.SyncAPI);
+router.post("/syncNow", DataflowController.syncDataFlow);
 
 module.exports = router;
