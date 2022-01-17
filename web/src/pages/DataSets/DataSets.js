@@ -20,6 +20,8 @@ import {
   getDataKindData,
   hideErrorMessage,
   saveDatasetData,
+  updateDatasetData,
+  getDataSetDetail,
 } from "../../store/actions/DataSetsAction";
 
 import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
@@ -72,6 +74,9 @@ const DataSets = () => {
     if (optedDataPackages?.dataflowid) {
       dispatch(getDataFlowDetail(optedDataPackages?.dataflowid));
     }
+    if (optedDataPackages?.datasetid) {
+      dispatch(getDataSetDetail(optedDataPackages?.datasetid));
+    }
   }, []);
 
   useEffect(() => {
@@ -87,23 +92,43 @@ const DataSets = () => {
   }, [createTriggered]);
 
   const closeForm = async () => {
-    await dispatch(reset("DataSetsForm"));
+    if (
+      locationType?.toLowerCase() === "sftp" ||
+      locationType?.toLowerCase() === "ftps"
+    ) {
+      await dispatch(reset("DataSetsForm"));
+    } else {
+      await dispatch(reset("DataSetsFormSQL"));
+    }
     history.push("/dashboard");
   };
 
   const submitForm = () => {
-    dispatch(submit("DataSetsForm"));
+    if (
+      locationType?.toLowerCase() === "sftp" ||
+      locationType?.toLowerCase() === "ftps"
+    ) {
+      dispatch(submit("DataSetsForm"));
+    } else {
+      dispatch(submit("DataSetsFormSQL"));
+    }
   };
 
   const handleChangeTab = (event, value) => {
     setTabValue(value);
   };
 
-  const onSubmit = (values) => {
+  const onSubmit = (formValue) => {
     setTimeout(() => {
-      // eslint-disable-next-line no-console
-      console.log(JSON.stringify(values, null, 2));
-      dispatch(saveDatasetData(values));
+      const data = {
+        ...formValue,
+        datapackageid: optedDataPackages?.datapackageid,
+      };
+      if (data.datasetid) {
+        dispatch(updateDatasetData(data));
+      } else {
+        dispatch(saveDatasetData(data));
+      }
     }, 400);
   };
 
@@ -130,7 +155,7 @@ const DataSets = () => {
           open={true}
           onClose={() => dispatch(hideErrorMessage())}
           style={{ zIndex: 9999, top: "5%" }}
-          message={error}
+          message={error || sucessMsg}
         />
       )}
       <div className={classes.toolbar} />
