@@ -12,6 +12,7 @@ import {
   SAVE_DATASET_DATA,
   SAVE_DATASET_COLUMNS,
   GET_DATA_FLOW_LIST,
+  GET_DATAFLOW_DETAIL,
 } from "../../constants";
 
 import {
@@ -32,6 +33,7 @@ import {
   fetchLocationsData,
   fetchServiceOwnersData,
   saveLocationData,
+  fetchDataflowDetail,
 } from "./dataFlow.saga";
 
 import { fetchAuditLogs } from "./auditLogs.saga";
@@ -49,6 +51,7 @@ function* cdasCoreSaga() {
   yield takeLatest(GET_DATA_KIND, fetchDataKindData);
   yield takeLatest(SAVE_DATASET_DATA, saveDataset);
   yield takeLatest(SAVE_DATASET_COLUMNS, saveDatasetColumns);
+  yield takeLatest(GET_DATAFLOW_DETAIL, fetchDataflowDetail);
 }
 
 export default cdasCoreSaga;
