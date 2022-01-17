@@ -3,11 +3,59 @@ const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
 
-async function checkNameExists(name) {
+async function checkNameExists(name, datasetid = null) {
   const mnemonic = name.toLowerCase();
-  const searchQuery = `SELECT mnemonic from cdascdi1d.cdascdi.dataset where LOWER(mnemonic) = $1`;
-  const res = await DB.executeQuery(searchQuery, [mnemonic]);
+  let searchQuery = `SELECT mnemonic from cdascdi1d.cdascdi.dataset where LOWER(mnemonic) = $1`;
+  let dep = [mnemonic];
+  if (datasetid) {
+    searchQuery = `SELECT mnemonic from cdascdi1d.cdascdi.dataset where LOWER(mnemonic) = $1 and datasetid != $2`;
+    dep = [mnemonic, datasetid];
+  }
+  const res = await DB.executeQuery(searchQuery, dep);
   return res.rowCount;
+}
+
+async function getLastVersion(datasetid) {
+  const searchQuery = `SELECT version from cdascdi1d.cdascdi.dataset_history where datasetid = $1 order by updt_tm desc limit 1`;
+  const res = await DB.executeQuery(searchQuery, [datasetid]);
+  return res.rows[0].version;
+}
+
+async function saveSQLDataset(req, res, values, datasetId) {
+  try {
+    const body = [
+      datasetId,
+      values.datasetName || null,
+      values.active == true ? 1 : 0,
+      values.clinicalDataType ? values.clinicalDataType[0] : null,
+      values.customSQLQuery || null,
+      values.sQLQuery || null,
+      values.tableName || null,
+      new Date(),
+      new Date(),
+      values.datapackageid || null,
+    ];
+    const searchQuery = `INSERT into cdascdi1d.cdascdi.dataset (datasetid, mnemonic, active, datakindid, custm_sql_query, customsql, tbl_nm, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+    Logger.info({
+      message: "storeDataset",
+    });
+    DB.executeQuery(searchQuery, body).then(() => {
+      const hisBody = [datasetId + 1, ...body, 1];
+      const hisQuery = `INSERT into cdascdi1d.cdascdi.dataset_history (dataset_vers_id,datasetid, mnemonic, active, datakindid, custm_sql_query, customsql, tbl_nm, insrt_tm, updt_tm, datapackageid, version) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+      DB.executeQuery(hisQuery, hisBody).then(() => {
+        return apiResponse.successResponseWithData(res, "Operation success", {
+          ...values,
+          datasetId: datasetId,
+        });
+      });
+    });
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err, "err");
+    Logger.error("catch :storeDataset");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
 }
 
 exports.saveDatasetData = async (req, res) => {
@@ -18,6 +66,9 @@ exports.saveDatasetData = async (req, res) => {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
     }
     const datasetId = helper.generateUniqueID();
+    if (values.locationType === "JDBC") {
+      return saveSQLDataset(req, res, values, datasetId);
+    }
     const body = [
       datasetId,
       values.datasetName || null,
@@ -34,22 +85,81 @@ exports.saveDatasetData = async (req, res) => {
       values.clinicalDataType ? values.clinicalDataType[0] : null,
       values.transferFrequency || null,
       values.overrideStaleAlert || null,
-      values.rowDecreaseAllowed || null,
+      values.rowDecreaseAllowed || 0,
       new Date(),
       new Date(),
+      values.datapackageid || null,
     ];
-    const searchQuery = `INSERT into cdascdi1d.cdascdi.dataset (datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`;
+    const searchQuery = `INSERT into cdascdi1d.cdascdi.dataset (datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`;
     Logger.info({
       message: "storeDataset",
     });
     DB.executeQuery(searchQuery, body).then(() => {
-      const hisBody = [datasetId + 1, ...body];
-      const hisQuery = `INSERT into cdascdi1d.cdascdi.dataset_history (dataset_vers_id,datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`;
+      const hisBody = [datasetId + 1, ...body, 1];
+      const hisQuery = `INSERT into cdascdi1d.cdascdi.dataset_history (dataset_vers_id,datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, version) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
       DB.executeQuery(hisQuery, hisBody).then(() => {
         return apiResponse.successResponseWithData(res, "Operation success", {
           ...values,
           datasetId: datasetId,
         });
+      });
+    });
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err, "err");
+    Logger.error("catch :storeDataset");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.updateDatasetData = async (req, res) => {
+  try {
+    const values = req.body;
+    const isExist = await checkNameExists(values.datasetName, values.datasetid);
+    if (isExist > 0) {
+      return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
+    }
+    const version_no = await getLastVersion(values.datasetid);
+    console.log(version_no, "bbb");
+    const body = [
+      values.datasetName || null,
+      values.fileType || null,
+      values.encoding || null,
+      values.delimiter || null,
+      values.escapeCharacter || null,
+      values.quote || null,
+      values.headerRowNumber || null,
+      values.footerRowNumber || null,
+      values.active == true ? 1 : 0,
+      values.fileNamingConvention || null,
+      values.folderPath || null,
+      values.clinicalDataType ? values.clinicalDataType[0] : null,
+      values.transferFrequency || null,
+      values.overrideStaleAlert || null,
+      values.rowDecreaseAllowed || 0,
+      new Date(),
+    ];
+    const searchQuery = `UPDATE cdascdi1d.cdascdi.dataset set mnemonic = $1, type = $2, charset = $3, delimitier = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16 where datasetid = $17`;
+    Logger.info({
+      message: "storeDataset",
+    });
+    DB.executeQuery(searchQuery, [...body, values.datasetid]).then(() => {
+      const hisBody = [
+        values.datasetid + (version_no + 1),
+        values.datasetid,
+        ...body,
+        version_no + 1,
+        new Date(),
+        values.datapackageid,
+      ];
+      const hisQuery = `INSERT into cdascdi1d.cdascdi.dataset_history (dataset_vers_id, datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, updt_tm, version, insrt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
+      DB.executeQuery(hisQuery, hisBody).then(() => {
+        return apiResponse.successResponseWithData(
+          res,
+          "Operation success",
+          true
+        );
       });
     });
   } catch (err) {
@@ -134,5 +244,30 @@ exports.getVLCData = async (req, res) => {
     Logger.error("catch :getVLCData");
     Logger.error(error);
     return apiResponse.ErrorResponse(res, error);
+  }
+};
+
+exports.getDatasetDetail = async (req, res) => {
+  try {
+    const datasetid = req.params.datasetid;
+    const searchQuery = `SELECT datasetid, mnemonic, type, active, headerrownumber, footerrownumber, delimitier, escapecode, quote, datakindid, staledays, rowdecreaseallowed, charset, path, customsql, naming_convention, data_freq, ovrd_stale_alert from cdascdi1d.cdascdi.dataset WHERE datasetid = $1`;
+    Logger.info({
+      message: "datasetDetail",
+    });
+    DB.executeQuery(searchQuery, [datasetid]).then((response) => {
+      const datasetDetail = response.rows[0] || null;
+      return apiResponse.successResponseWithData(
+        res,
+        "Operation success",
+        datasetDetail
+      );
+    });
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error("catch :datasetDetail");
+    Logger.error(err);
+
+    return apiResponse.ErrorResponse(res, err);
   }
 };
