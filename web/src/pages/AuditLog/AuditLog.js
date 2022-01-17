@@ -18,6 +18,7 @@ import FilterIcon from "apollo-react-icons/Filter";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import PageHeader from "../../components/DataFlow/PageHeader";
 import columns from "./columns.data";
+import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 // import { rowsWithExtra } from "./rows.data";
 import { getAuditLogs } from "../../store/actions/AuditLogsAction";
 import { MessageContext } from "../../components/MessageProvider";
@@ -43,7 +44,7 @@ const AuditLog = ({ match }) => {
 
   const [tableRows, setTableRows] = useState([...auditData]);
   const [exportTableRows, setExportTableRows] = useState([...auditData]);
-  // const [tableColumns, setTableColumns] = useState([...moreColumns]);
+  const [tableColumns, setTableColumns] = useState([...columns]);
   const dispatch = useDispatch();
   const { dataflowId } = useParams();
   const messageContext = useContext(MessageContext);
@@ -59,7 +60,6 @@ const AuditLog = ({ match }) => {
     const to = from + rowsPerPageRecord;
     const newData = exportData.slice(from, to);
     newData.unshift(headers);
-    console.log("data", from, rowsPerPageRecord, newData);
     ws = XLSX.utils.json_to_sheet(newData, { skipHeader: true });
     XLSX.utils.book_append_sheet(wb, ws, "studylist");
     XLSX.writeFile(wb, fileName);
@@ -77,6 +77,7 @@ const AuditLog = ({ match }) => {
             column.sortFunction(sortedColumnValue, sortOrderValue)
           );
         }
+        console.log("filteredRows", filteredRows);
       }
     });
     return filteredRows;
@@ -85,7 +86,7 @@ const AuditLog = ({ match }) => {
   const exportDataRows = () => {
     const toBeExportRows = [...auditData];
     const sortedFilteredData = applyFilter(
-      columns,
+      tableColumns,
       toBeExportRows,
       inlineFilters
     );
@@ -98,7 +99,7 @@ const AuditLog = ({ match }) => {
     const fileName = `StudyList_${moment(new Date()).format("DDMMYYYY")}`;
     // console.log("inDown", exportHeader);
     const tempObj = {};
-    const temp = columns
+    const temp = tableColumns
       .filter((d) => d.hidden !== true)
       .map((d) => {
         tempObj[d.accessor] = d.header;
@@ -110,6 +111,7 @@ const AuditLog = ({ match }) => {
     });
     exportToCSV(newData, tempObj, fileName + fileExtension);
     const exportRows = exportDataRows();
+    // console.log("newData", newData, exportRows);
     if (exportRows.length <= 0) {
       e.preventDefault();
       const message = `There is no data on the screen to download because of which an empty file has been downloaded.`;
@@ -144,6 +146,7 @@ const AuditLog = ({ match }) => {
 
   useEffect(() => {
     setTableRows(auditData);
+    setExportTableRows(auditData);
   }, [auditData]);
   useEffect(() => {
     fetchLogs();
@@ -153,7 +156,7 @@ const AuditLog = ({ match }) => {
     <>
       <Table
         title="Data Flow Audit Log"
-        columns={columns}
+        columns={tableColumns}
         rows={tableRows}
         initialSortedColumn="name"
         sortedColumn={sortedColumnValue}
@@ -177,9 +180,9 @@ const AuditLog = ({ match }) => {
         columnSettings={{
           enabled: true,
           defaultColumns: columns,
-          // onChange: (changeColumns) => {
-          //   setTableColumns(changeColumns);
-          // },
+          onChange: (changeColumns) => {
+            setTableColumns(changeColumns);
+          },
         }}
         CustomHeader={(props) => (
           <CustomButtonHeader downloadFile={downloadFileMethod} {...props} />
@@ -196,7 +199,7 @@ const AuditLog = ({ match }) => {
           <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />
           <>
             <div className="flex title">
-              <img src="assets/svg/datapackage.svg" alt="datapackage" />
+              <DataPackageIcon />
               <Typography className="b-font" variant="title">
                 ACUSPHERE-NP-1998-CXA27260
               </Typography>
@@ -222,33 +225,7 @@ const AuditLog = ({ match }) => {
           </>
         </Box>
       </Paper>
-      <Box padding={3}>
-        {getTableData}
-        {/* <Table
-          key="frozenExample1"
-          title="Data Flow Audit Log"
-          columns={columns}
-          rows={auditLogs.data}
-          initialSortedColumn="name"
-          rowsPerPageOptions={[5, 10, 15, "All"]}
-          tablePaginationProps={{
-            labelDisplayedRows: ({ from, to, count }) =>
-              `${
-                count === 1 ? "Employee " : "Employees"
-              } ${from}-${to} of ${count}`,
-            truncate: true,
-          }}
-          columnSettings={{
-            enabled: true,
-            frozenColumnsEnabled: true,
-            defaultColumns: columns,
-          }}
-          CustomHeader={(props) => (
-            <CustomButtonHeader downloadFile={downloadFile} {...props} />
-          )}
-
-        /> */}
-      </Box>
+      <Box padding={3}>{getTableData}</Box>
     </main>
   );
 };
