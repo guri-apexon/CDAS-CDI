@@ -9,7 +9,7 @@ import {
 
 // eslint-disable-next-line import/prefer-default-export
 export function* fetchFlowData(payload) {
-  console.log("before", payload.protocolId);
+  // console.log("before", payload.protocolId);
   try {
     const fetchDBData = yield call(
       axios.get,

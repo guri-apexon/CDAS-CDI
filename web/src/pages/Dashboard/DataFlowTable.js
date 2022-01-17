@@ -263,7 +263,7 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
   const changeStatusAction = async (e) => {
     if (e.status === "Inactive") {
       const updateStataus = await activateDF(e.dataFlowId, e.version);
-      if (updateStataus.success) {
+      if (updateStataus?.success) {
         await updateData();
       } else {
         messageContext.showErrorMessage(

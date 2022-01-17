@@ -416,7 +416,7 @@ exports.activateDataFlow = async (req, res) => {
     if ($q0.rows.map((e) => e.active).includes(1)) {
       const q1 = `UPDATE cdascdi.dataflow set active=1 WHERE dataflowid=$1`;
       const q2 = `INSERT INTO cdascdi.dataflow_audit_log
-      (dataflow_audit_log_id, dataflowid, audit_vers, audit_updt_dt, usr_id, "attribute", old_val, new_val)
+      (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
       VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
       const $q1 = await DB.executeQuery(q1, [dataFlowId]);
       const $q2 = await DB.executeQuery(q2, [
@@ -434,7 +434,7 @@ exports.activateDataFlow = async (req, res) => {
         success: true,
       });
     }
-    return apiResponse.successResponseWithData(res, "Dataflow Having Issue", {
+    return apiResponse.validationErrorWithData(res, "Dataflow Having Issue", {
       success: false,
     });
   } catch (err) {
@@ -453,7 +453,7 @@ exports.inActivateDataFlow = async (req, res) => {
 
     const q1 = `UPDATE cdascdi.dataflow set active=0 WHERE dataflowid=$1`;
     const q2 = `INSERT INTO cdascdi.dataflow_audit_log
-    (dataflow_audit_log_id, dataflowid, audit_vers, audit_updt_dt, usr_id, "attribute", old_val, new_val)
+    (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
     VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
 
     const $q1 = await DB.executeQuery(q1, [dataFlowId]);
