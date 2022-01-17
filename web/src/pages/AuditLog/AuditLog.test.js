@@ -21,7 +21,9 @@ const store = mockStore({
     selectedCard: {},
   },
 });
-
+jest.mock("react-router", () => ({
+  useParams: jest.fn().mockReturnValue({ dataflowId: "a0A0E000004k7m3UAA" }),
+}));
 const wrapper = mount(
   <Provider store={store}>
     <AuditLog />

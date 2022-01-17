@@ -33,7 +33,7 @@ const breadcrumpItems = [
     title: "Audit Log",
   },
 ];
-const AuditLog = ({ match }) => {
+const AuditLog = () => {
   const [rowsPerPageRecord, setRowPerPageRecord] = useState(10);
   const [pageNo, setPageNo] = useState(0);
   const auditLogs = useSelector((state) => state.auditLogs);
@@ -96,7 +96,7 @@ const AuditLog = ({ match }) => {
 
   const downloadFileMethod = async (e) => {
     const fileExtension = ".xlsx";
-    const fileName = `StudyList_${moment(new Date()).format("DDMMYYYY")}`;
+    const fileName = `AuditLog_${moment(new Date()).format("DDMMYYYY")}`;
     // console.log("inDown", exportHeader);
     const tempObj = {};
     const temp = tableColumns
