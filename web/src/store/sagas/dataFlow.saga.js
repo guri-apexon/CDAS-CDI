@@ -13,6 +13,9 @@ import {
   FETCH_SERVICE_OWNERS_FAILURE,
   LOCATIONAPI,
   VENDORAPI,
+  DATAFLOWAPI,
+  FETCH_DATAFLOW_DETAIL_FAILURE,
+  FETCH_DATAFLOW_DETAIL_SUCCESS,
 } from "../../constants";
 
 export function* fetchVendorsData() {
@@ -86,5 +89,24 @@ export function* fetchServiceOwnersData() {
     });
   } catch (e) {
     yield put({ type: FETCH_SERVICE_OWNERS_FAILURE, message: e.message });
+  }
+}
+
+export function* fetchDataflowDetail(action) {
+  try {
+    const fetchSBData = yield call(
+      axios.get,
+      `${baseURL}/${DATAFLOWAPI}/detail/${action.dataflowId}`,
+      {}
+    );
+    yield put({
+      type: FETCH_DATAFLOW_DETAIL_SUCCESS,
+      dataflowDetail: fetchSBData.data.data,
+    });
+  } catch (e) {
+    const errText = e.response?.data?.message
+      ? e.response.data.message
+      : e.message;
+    yield put({ type: FETCH_DATAFLOW_DETAIL_FAILURE, message: errText });
   }
 }

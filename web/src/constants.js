@@ -46,6 +46,11 @@ export const SAVE_LOCATION_DATA = "SAVE_LOCATION_DATA";
 export const GET_SERVICE_OWNERS = "GET_SERVICE_OWNERS";
 export const FETCH_SERVICE_OWNERS_SUCCESS = "FETCH_SERVICE_OWNERS_SUCCESS";
 export const FETCH_SERVICE_OWNERS_FAILURE = "FETCH_SERVICE_OWNERS_FAILURE";
+
+export const GET_DATAFLOW_DETAIL = "GET_DATAFLOW_DETAIL";
+export const FETCH_DATAFLOW_DETAIL_SUCCESS = "FETCH_DATAFLOW_DETAIL_SUCCESS";
+export const FETCH_DATAFLOW_DETAIL_FAILURE = "FETCH_DATAFLOW_DETAIL_FAILURE";
+
 export const GET_LOCATION_BY_TYPE = "FETCH_SERVICE_OWNERS_FAILURE";
 export const STORE_LOCATION_SUCCESS = "STORE_LOCATION_SUCCESS";
 export const STORE_LOCATION_FAILURE = "STORE_LOCATION_FAILURE";
@@ -66,7 +71,8 @@ export const STORE_DATASET_COLUMNS_FAILURE = "STORE_DATASET_COLUMNS_FAILURE";
 
 export const FLOW_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
 export const STUDYSEARCH = "v1/api/study/search-study";
-export const HARDDELETE = "v1/api/dataflow/hard-delete";
+export const HARDDELETE = "v1/api/dataflow/hardDelete";
+export const SYNCNOW = "v1/api/dataflow/syncNow";
 export const ACTIVATEDF = "v1/api/dataflow/activate";
 export const INACTIVATE = "v1/api/dataflow/inActivate";
 export const PACKAGES_SEARCH = "v1/api/data-package/search";
@@ -85,5 +91,6 @@ export const LOCATIONAPI = "v1/api/location";
 export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";
 export const DATASETAPI = "v1/api/dataset";
+export const DATAFLOWAPI = "v1/api/dataflow";
 
 export const baseURL = process.env.API_URL || "http://localhost:4001";

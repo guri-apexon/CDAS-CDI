@@ -18,6 +18,7 @@ import RadioError from "apollo-react-icons/RadioError";
 import Typography from "apollo-react/components/Typography";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
+import Button from "apollo-react/components/Button";
 import {
   ReduxFormAutocomplete,
   ReduxFormRadioGroup,
@@ -27,7 +28,7 @@ import {
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
 
-import { fileTypes, delimeters } from "../../utils";
+import { fileTypes, delimeters, customSQLQuery } from "../../utils";
 
 const styles = {
   paper: {
@@ -147,105 +148,12 @@ const DataSetsFormBase = (props) => {
               <ReduxFormTextField
                 fullWidth
                 maxLength="30"
+                style={{ width: 275 }}
                 name="datasetName"
-                size="small"
                 inputProps={{ maxLength: 30 }}
                 label="Data Set Name (Mnemonic)"
-              />
-              <ReduxFormSelect
-                name="fileType"
-                id="fileType"
-                label="File Type"
                 size="small"
-                onChange={setDefaultValues}
-                fullWidth
-              >
-                {fileTypes?.map((type) => (
-                  <MenuItem value={type}>{type}</MenuItem>
-                ))}
-              </ReduxFormSelect>
-              {formValues === "SAS" && (
-                <ReduxFormRadioGroup
-                  name="encoding"
-                  id="encoding"
-                  label="Encoding"
-                  size="small"
-                  row
-                >
-                  <Radio value="WLATIN1" label="WLATIN1" />
-                  <Radio value="UTF-8" label="UTF-8" />
-                </ReduxFormRadioGroup>
-              )}
-              {(formValues === "SAS" || formValues === "Delimited") && (
-                <>
-                  <ReduxFormSelect
-                    name="delimiter"
-                    id="delimiter"
-                    label="Delimiter"
-                    size="small"
-                    disabled={formValues === "SAS"}
-                    fullWidth
-                  >
-                    {delimeters?.map((type) => (
-                      <MenuItem value={type}>{type}</MenuItem>
-                    ))}
-                  </ReduxFormSelect>
-                  <ReduxFormTextField
-                    fullWidth
-                    name="escapeCharacter"
-                    id="escapeCharacter"
-                    disabled={formValues === "SAS"}
-                    inputProps={{ maxLength: 255 }}
-                    size="small"
-                    label="Escape Character"
-                  />
-                  <ReduxFormTextField
-                    fullWidth
-                    name="quote"
-                    id="quote"
-                    disabled={formValues === "SAS"}
-                    size="small"
-                    inputProps={{ maxLength: 255 }}
-                    label="Quote"
-                  />
-                </>
-              )}
-              <ReduxFormTextField
-                fullWidth
-                name="headerRowNumber"
-                id="headerRowNumber"
-                disabled={formValues === "SAS"}
-                inputProps={{ maxLength: 255 }}
-                size="small"
-                label="Header Row Number"
               />
-              <ReduxFormTextField
-                fullWidth
-                name="footerRowNumber"
-                id="footerRowNumber"
-                disabled={formValues === "SAS"}
-                inputProps={{ maxLength: 255 }}
-                size="small"
-                label="Footer Row Number"
-              />
-              <ReduxFormTextField
-                fullWidth
-                name="fileNamingConvention"
-                id="fileNamingConvention"
-                inputProps={{ maxLength: 255 }}
-                size="small"
-                label="File Naming Convention"
-              />
-              <ReduxFormTextField
-                fullWidth
-                name="folderPath"
-                id="folderPath"
-                size="small"
-                label="sFTP Folder Path"
-              />
-            </Grid>
-            <Grid item md={1}>
-              <Divider orientation="vertical" variant="middle" />
             </Grid>
             <Grid item md={6}>
               <ReduxFormAutocomplete
@@ -256,34 +164,87 @@ const DataSetsFormBase = (props) => {
                 className="smallSize_autocomplete"
                 variant="search"
                 singleSelect
-                fullWidth
-              />
-              <ReduxFormTextField
-                fullWidth
-                name="transferFrequency"
-                id="transferFrequency"
-                inputProps={{ maxLength: 255 }}
                 size="small"
-                label="Transfer Frequency"
-              />
-              <ReduxFormTextField
                 fullWidth
-                name="overrideStaleAlert"
-                id="overrideStaleAlert"
-                inputProps={{ maxLength: 255 }}
-                size="small"
-                label="Override Stale Alert (days)"
-              />
-              <ReduxFormTextField
-                fullWidth
-                name="rowDecreaseAllowed"
-                id="rowDecreaseAllowed"
-                inputProps={{ maxLength: 255 }}
-                size="small"
-                label="Row Decrease % Allowed"
               />
             </Grid>
           </Grid>
+          <ReduxFormSelect
+            name="customSQLQuery"
+            id="customSQLQuery"
+            size="small"
+            label="Custom SQL Query"
+          >
+            {customSQLQuery?.map((type) => (
+              <MenuItem value={type}>{type}</MenuItem>
+            ))}
+          </ReduxFormSelect>
+          {formValues === "Yes" && (
+            <div style={{ display: "flex", alignItems: "flex-end" }}>
+              <ReduxFormTextField
+                fullWidth
+                name="sQLQuery"
+                id="sQLQuery"
+                size="small"
+                minHeight={32}
+                multiline
+                sizeAdjustable
+                inputProps={{ maxLength: 255 }}
+                label="SQL Query"
+              />
+              <Button
+                variant="secondary"
+                size="small"
+                style={{ marginRight: 10, top: "-9px", marginLeft: 24 }}
+              >
+                Preview SQL
+              </Button>
+            </div>
+          )}
+          {formValues !== "Yes" && (
+            <>
+              <ReduxFormTextField
+                name="tableName"
+                id="tableName"
+                size="small"
+                style={{ width: 272, display: "flex" }}
+                inputProps={{ maxLength: 255 }}
+                label="Table Name"
+              />
+              <ReduxFormTextField
+                fullWidth
+                name="filterCondition"
+                id="filterCondition"
+                style={{ width: "70%", display: "flex" }}
+                size="small"
+                minHeight={32}
+                multiline
+                sizeAdjustable
+                inputProps={{ maxLength: 255 }}
+                label="Filter Condition"
+              />
+              <ReduxFormRadioGroup
+                name="dataType"
+                id="dataType"
+                size="small"
+                label="Type of Data"
+              >
+                <Radio value="Cumulative" label="Cumulative" />
+                <Radio value="Incremental" label="Incremental" />
+              </ReduxFormRadioGroup>
+              <ReduxFormSelect
+                name="offsetColumn"
+                id="offsetColumn"
+                label="Offset Column"
+                style={{ width: 272 }}
+                size="small"
+                disabled
+              >
+                <MenuItem value="Enabled">Enabled</MenuItem>
+                <MenuItem value="Disabled">Disabled</MenuItem>
+              </ReduxFormSelect>
+            </>
+          )}
         </div>
       </Paper>
     </form>
@@ -300,9 +261,9 @@ const ReduxForm = compose(
 
 const selector = formValueSelector("DataSetsForm");
 const DataSetsForm = connect((state) => ({
-  initialValues: state.dataSets.formData, // pull initial values from account reducer
+  initialValues: state.dataSets.formDataSQL, // pull initial values from account reducer
   values: getFormValues("DataSetsForm")(state),
-  formValues: selector(state, "fileType"),
+  formValues: selector(state, "customSQLQuery"),
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
   defaultQuote: state.dataSets.defaultQuote,

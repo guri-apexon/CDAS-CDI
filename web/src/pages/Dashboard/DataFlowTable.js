@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 import { useHistory } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import Table, {
   dateFilterV2,
@@ -11,8 +11,10 @@ import Table, {
   compareStrings,
 } from "apollo-react/components/Table";
 import { neutral7, neutral8 } from "apollo-react/colors";
+import Modal from "apollo-react/components/Modal";
 import Typography from "apollo-react/components/Typography";
 import Button from "apollo-react/components/Button";
+import Tag from "apollo-react/components/Tag";
 import SegmentedControl from "apollo-react/components/SegmentedControl";
 import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
@@ -34,8 +36,8 @@ import {
   hardDelete,
   activateDF,
   inActivateDF,
+  syncNowDataFlow,
 } from "../../services/ApiServices";
-import { getFlowDetailsOfStudy } from "../../store/actions/DashboardAction";
 
 const createAutocompleteFilter =
   (source) =>
@@ -157,15 +159,17 @@ const createStringArraySearchFilter = (accessor) => {
     );
 };
 
-export default function DataFlowTable() {
+export default function DataFlowTable({ selectedStudy, updateData }) {
   const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const [topFilterData, setTopFilterData] = useState([]);
   const messageContext = useContext(MessageContext);
+  const [showSyncNow, setShowSyncNow] = useState(false);
+  const [showHardDelete, setShowHardDelete] = useState(false);
+  const [selectedFlow, setSelectedFlow] = useState(null);
   const [totalRows, setTotalRows] = useState(0);
   const [rowData, setRowData] = useState([]);
   const history = useHistory();
-  const dispatch = useDispatch();
 
   const dashboard = useSelector((state) => state.dashboard);
 
@@ -211,42 +215,63 @@ export default function DataFlowTable() {
   };
 
   const hardDeleteAction = async (e) => {
-    console.log("hardDeleteAction", e);
-    const deleteStatus = await hardDelete(e);
+    setSelectedFlow(e);
+    setShowHardDelete(true);
+  };
+
+  const hideSyncNow = () => {
+    setSelectedFlow(null);
+    setShowSyncNow(false);
+  };
+
+  const hideHardDelete = () => {
+    setSelectedFlow(null);
+    setShowHardDelete(false);
+  };
+
+  const handleHardDelete = async () => {
+    const { dataFlowId } = selectedFlow;
+    const deleteStatus = await hardDelete(dataFlowId);
     if (deleteStatus.success) {
-      // eslint-disable-next-line no-use-before-define
-      deleteLocally(e);
+      await updateData();
     }
+    setShowHardDelete(false);
   };
 
   const sendSyncRequest = async (e) => {
-    console.log("hardDeleteAction", e.version, e.dataFlowId, "SYNC");
+    setSelectedFlow(e);
+    setShowSyncNow(true);
+  };
+
+  const handleSync = async () => {
+    const { dataFlowId, version } = selectedFlow;
+    const syncStatus = await syncNowDataFlow({ version, dataFlowId });
+    if (syncStatus.success) {
+      await updateData();
+    }
+    setShowSyncNow(false);
   };
 
   const viewAuditLogAction = (e) => {
-    // console.log("viewAuditLogAction", e);
     history.push(`/audit-logs/${e}`);
   };
 
   const cloneDataFlowAction = (e) => {
     console.log("cloneDataFlowAction", e);
   };
+
   const changeStatusAction = async (e) => {
-    // console.log("changeStatusAction", e);
     if (e.status === "Inactive") {
-      const updatedStatus = await activateDF(e.dataFlowId);
-      // console.log("updatedStatus", updatedStatus);
-      dispatch(getFlowDetailsOfStudy("a020E000005SwPtQAK"));
-      // updatedStatus.status === 1 &&
+      await activateDF(e.dataFlowId);
+      await updateData();
     } else {
-      const updatedStatus = await inActivateDF(e.dataFlowId);
-      // console.log("updatedStatus", updatedStatus);
-      dispatch(getFlowDetailsOfStudy("a020E000005SwPtQAK"));
+      await inActivateDF(e.dataFlowId);
+      await updateData();
     }
   };
 
   const ActionCell = ({ row }) => {
-    const { dataFlowId, status, version } = row;
+    const { dataFlowId, status } = row;
     const activeText =
       status === "Active"
         ? "Change status to inactive"
@@ -262,7 +287,8 @@ export default function DataFlowTable() {
       },
       {
         text: "Send sync request",
-        onClick: () => sendSyncRequest({ version, dataFlowId }),
+        onClick: () => sendSyncRequest(row),
+        disabled: !(status === "Active"),
       },
       {
         text: "Clone data flow",
@@ -271,7 +297,7 @@ export default function DataFlowTable() {
       },
       {
         text: "Hard delete data flow",
-        onClick: () => hardDeleteAction(dataFlowId),
+        onClick: () => hardDeleteAction(row),
       },
     ];
     return (
@@ -353,16 +379,13 @@ export default function DataFlowTable() {
   const StatusCell = ({ row, column: { accessor } }) => {
     const description = row[accessor];
     return (
-      <div style={{ position: "relative" }}>
-        <div
-          style={{ marginRight: 10 }}
-          className={`status-cell ${
-            description === "Active" ? "active" : "inActive"
-          }`}
-        >
-          {description}
-        </div>
-      </div>
+      <Tag
+        style={{ marginRight: 10 }}
+        label={description}
+        className={`status-cell ${
+          description === "Active" ? "active" : "inActive"
+        }`}
+      />
     );
   };
 
@@ -598,26 +621,8 @@ export default function DataFlowTable() {
       accessor: "version",
       frozen: false,
       sortFunction: compareNumbers,
-      filterFunction: createStringArraySearchFilter("version"),
-      filterComponent: createAutocompleteFilter(
-        Array.from(
-          new Set(
-            rowData.map((r) => ({ label: r.version })).map((item) => item.label)
-          )
-        )
-          .map((label) => {
-            return { label };
-          })
-          .sort((a, b) => {
-            if (a.label < b.label) {
-              return -1;
-            }
-            if (a.label > b.label) {
-              return 1;
-            }
-            return 0;
-          })
-      ),
+      filterFunction: numberSearchFilter("version"),
+      filterComponent: IntegerFilter,
     },
     {
       accessor: "action",
@@ -721,11 +726,6 @@ export default function DataFlowTable() {
 
   const toDataflowMgmt = async () => {
     history.push("/dataflow-management");
-  };
-
-  const deleteLocally = (e) => {
-    const newData = tableRows.filter((data) => data.dataFlowId !== e);
-    setTableRows([...newData]);
   };
 
   useEffect(() => {
@@ -870,6 +870,8 @@ export default function DataFlowTable() {
             initialSortOrder="asc"
             rowsPerPageOptions={[10, 50, 100, "All"]}
             hasScroll={true}
+            maxWidth="calc(100vw - 465px)"
+            maxHeight="calc(100vh - 293px)"
             tablePaginationProps={{
               labelDisplayedRows: ({ from, to, count }) =>
                 `${
@@ -892,6 +894,29 @@ export default function DataFlowTable() {
           />
         </>
       )}
+      <Modal
+        open={showHardDelete}
+        variant="warning"
+        title="Delete Dataflow"
+        onClose={hideHardDelete}
+        message="Do you want to proceed with data deletion that cannot be undone?"
+        buttonProps={[
+          { label: "Cancel", onClick: hideHardDelete },
+          { label: "Ok", onClick: handleHardDelete },
+        ]}
+        id="deleteDataFlow"
+      />
+      <Modal
+        open={showSyncNow}
+        title="Sync Dataflow"
+        onClose={hideSyncNow}
+        message="Do you want to proceed with SYNC NOW action?"
+        buttonProps={[
+          { label: "Cancel", onClick: hideSyncNow },
+          { label: "Ok", onClick: handleSync },
+        ]}
+        id="syncDataFlow"
+      />
     </div>
   );
 }

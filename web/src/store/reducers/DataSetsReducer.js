@@ -17,6 +17,12 @@ export const initialState = {
   loading: false,
   createTriggered: false,
   datasetColumns: [],
+  formDataSQL: {
+    active: true,
+    customSQLQuery: "Yes",
+    dataType: "Cumulative",
+    offsetColumn: "Disabled",
+  },
   formData: {
     delimiter: "COMMA",
     fileType: "SAS",

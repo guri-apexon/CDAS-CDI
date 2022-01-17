@@ -5,6 +5,20 @@ export const checkRequired = (value) => {
   return false;
 };
 
+export const checkValidQuery = (value) => {
+  if (value !== "" && value?.toLowerCase().trim().indexOf("select *") > -1) {
+    return "Custom SQL Query should not contain select *";
+  }
+  return false;
+};
+
+export const checkfilterCondition = (value) => {
+  if (value !== "" && !value?.toLowerCase().trim().startsWith("where")) {
+    return "Filter condition should start with WHERE";
+  }
+  return false;
+};
+
 export const checkNumbers = (value) => {
   const regexp = /^[0-9\b]+$/;
   if (value !== "" && !regexp.test(value)) {
