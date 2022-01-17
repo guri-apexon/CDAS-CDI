@@ -430,6 +430,7 @@ exports.inActivateDataFlow = async (req, res) => {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+
 exports.syncDataFlow = async (req, res) => {
   try {
     let { version, userId, dataFlowId, action } = req.body;
@@ -464,5 +465,30 @@ exports.syncDataFlow = async (req, res) => {
         console.error(err);
       }
     }
+  }
+};
+
+exports.getDataflowDetail = async (req, res) => {
+  try {
+    const dataFlowId = req.params.dataFlowId;
+    const searchQuery = `SELECT data_flow_nm, type, description, loc_typ from cdascdi1d.cdascdi.dataflow as dataflowTbl JOIN cdascdi1d.cdascdi.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id WHERE dataflowid = $1`;
+    Logger.info({
+      message: "datafloDetail",
+    });
+    DB.executeQuery(searchQuery, [dataFlowId]).then((response) => {
+      const dataflowDetail = response.rows[0] || null;
+      return apiResponse.successResponseWithData(
+        res,
+        "Operation success",
+        dataflowDetail
+      );
+    });
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error("catch :datafloDetail");
+    Logger.error(err);
+
+    return apiResponse.ErrorResponse(res, err);
   }
 };

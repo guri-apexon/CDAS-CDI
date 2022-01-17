@@ -46,6 +46,11 @@ export const SAVE_LOCATION_DATA = "SAVE_LOCATION_DATA";
 export const GET_SERVICE_OWNERS = "GET_SERVICE_OWNERS";
 export const FETCH_SERVICE_OWNERS_SUCCESS = "FETCH_SERVICE_OWNERS_SUCCESS";
 export const FETCH_SERVICE_OWNERS_FAILURE = "FETCH_SERVICE_OWNERS_FAILURE";
+
+export const GET_DATAFLOW_DETAIL = "GET_DATAFLOW_DETAIL";
+export const FETCH_DATAFLOW_DETAIL_SUCCESS = "FETCH_DATAFLOW_DETAIL_SUCCESS";
+export const FETCH_DATAFLOW_DETAIL_FAILURE = "FETCH_DATAFLOW_DETAIL_FAILURE";
+
 export const GET_LOCATION_BY_TYPE = "FETCH_SERVICE_OWNERS_FAILURE";
 export const STORE_LOCATION_SUCCESS = "STORE_LOCATION_SUCCESS";
 export const STORE_LOCATION_FAILURE = "STORE_LOCATION_FAILURE";
@@ -86,5 +91,6 @@ export const LOCATIONAPI = "v1/api/location";
 export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";
 export const DATASETAPI = "v1/api/dataset";
+export const DATAFLOWAPI = "v1/api/dataflow";
 
 export const baseURL = process.env.API_URL || "http://localhost:4001";

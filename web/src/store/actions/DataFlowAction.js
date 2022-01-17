@@ -7,6 +7,7 @@ import {
   SAVE_LOCATION_DATA,
   HIDE_ERROR_MSG,
   UPDATE_SELECTED_LOCATION,
+  GET_DATAFLOW_DETAIL,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -54,6 +55,13 @@ export const saveLocationData = (values) => {
 export const getServiceOwnersData = () => {
   return {
     type: GET_SERVICE_OWNERS,
+  };
+};
+
+export const getDataFlowDetail = (dataflowId) => {
+  return {
+    type: GET_DATAFLOW_DETAIL,
+    dataflowId,
   };
 };
 
