@@ -300,3 +300,11 @@ content-type: application/json
 "userId": "u1105372",
 "action": "SYNC"
 }
+
+### Get VLC Data
+
+POST http://localhost:4001/v1/api/dataset/getVLCData HTTP/1.1
+content-type: application/json
+
+{
+}
