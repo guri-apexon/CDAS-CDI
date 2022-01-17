@@ -7,8 +7,12 @@ const CommonController = require("./CommonController");
 exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
-    const searchQuery = `SELECT datapackageid, dataflowid, name, active, type from cdascdi1d.cdascdi.datapackage 
-            WHERE LOWER(name) LIKE '%${searchParam}%' AND del_flg = 'N'`;
+    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from cdascdi1d.cdascdi.datapackage 
+            WHERE del_flg = 'N'`;
+    if(searchParam) { 
+      searchQuery = `SELECT datapackageid, dataflowid, name, active, type from cdascdi1d.cdascdi.datapackage 
+      WHERE LOWER(name) LIKE '%${searchParam}%' AND del_flg = 'N'`;
+    }
     const datasetQuery = `SELECT datasetid, mnemonic, active, type from cdascdi1d.cdascdi.dataset where datapackageid = $1`;
     Logger.info({
       message: "packagesList",
