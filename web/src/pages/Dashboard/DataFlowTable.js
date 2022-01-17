@@ -288,6 +288,7 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
       {
         text: "Send sync request",
         onClick: () => sendSyncRequest(row),
+        disabled: !(status === "Active"),
       },
       {
         text: "Clone data flow",
