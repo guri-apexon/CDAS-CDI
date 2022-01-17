@@ -50,11 +50,12 @@ export const syncNowDataFlow = async ({ version, dataFlowId }) => {
   }
 };
 
-export const activateDF = async (dataFlowId) => {
+export const activateDF = async (dataFlowId, versionNo) => {
   try {
     const res = await axios.post(`${baseURL}/${ACTIVATEDF}`, {
       dataFlowId,
       userId,
+      versionNo,
     });
     return res.data?.data || [];
   } catch (err) {
@@ -62,11 +63,12 @@ export const activateDF = async (dataFlowId) => {
   }
 };
 
-export const inActivateDF = async (dataFlowId) => {
+export const inActivateDF = async (dataFlowId, versionNo) => {
   try {
     const res = await axios.post(`${baseURL}/${INACTIVATE}`, {
       dataFlowId,
       userId,
+      versionNo,
     });
     return res.data?.data || [];
   } catch (err) {
