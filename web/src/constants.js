@@ -74,7 +74,9 @@ export const STORE_DATASET_COLUMNS_SUCCESS = "STORE_DATASET_COLUMNS_SUCCESS";
 export const STORE_DATASET_COLUMNS_FAILURE = "STORE_DATASET_COLUMNS_FAILURE";
 export const UPDATE_DATASET_SUCCESS = "UPDATE_DATASET_SUCCESS";
 export const UPDATE_DATASET_FAILURE = "UPDATE_DATASET_FAILURE";
-
+export const GET_DATASET_COLUMNS = "GET_DATASET_COLUMNS";
+export const FETCH_DATASET_COLUMNS_SUCCESS = "FETCH_DATASET_COLUMNS_SUCCESS";
+export const FETCH_DATASET_COLUMNS_FAILURE = "FETCH_DATASET_COLUMNS_FAILURE";
 // API URLS
 
 export const FLOW_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
@@ -100,5 +102,6 @@ export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";
 export const DATASETAPI = "v1/api/dataset";
 export const DATAFLOWAPI = "v1/api/dataflow";
+export const VLCDATAAPI = "v1/api/dataset/getVLCData";
 
 export const baseURL = process.env.API_URL || "http://localhost:4001";

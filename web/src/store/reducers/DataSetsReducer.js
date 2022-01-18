@@ -18,6 +18,9 @@ import {
   UPDATE_DATASET_SUCCESS,
   UPDATE_DATASET_FAILURE,
   UPDATE_DATASET_DATA,
+  GET_DATASET_COLUMNS,
+  FETCH_DATASET_COLUMNS_SUCCESS,
+  FETCH_DATASET_COLUMNS_FAILURE,
 } from "../../constants";
 
 export const initialState = {
@@ -161,6 +164,17 @@ const DataFlowReducer = (state = initialState, action) =>
         }
         newState.dataFlowdetail = action.datasetDetail;
         newState.selectedDataset = action.datasetDetail;
+        break;
+      case GET_DATASET_COLUMNS:
+        newState.loading = true;
+        break;
+      case FETCH_DATASET_COLUMNS_SUCCESS:
+        newState.loading = false;
+        newState.datasetColumns = action.datasetColumns;
+        break;
+      case FETCH_DATASET_COLUMNS_FAILURE:
+        newState.loading = false;
+        newState.error = action.message;
         break;
       default:
         newState.loading = false;

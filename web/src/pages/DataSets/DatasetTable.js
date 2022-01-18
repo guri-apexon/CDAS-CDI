@@ -31,7 +31,7 @@ import {
   checkRequiredValue,
   checkCharacterLength,
 } from "../../components/FormComponents/validators";
-import { createDatasetData } from "../../store/actions/DataSetsAction";
+import { createDatasetColumns } from "../../store/actions/DataSetsAction";
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -143,6 +143,41 @@ const EditableCell = ({ row, column: { accessor: key } }) => {
   );
 };
 
+const ActionCell = ({ row }) => {
+  const {
+    columnId,
+    onRowEdit,
+    onCancel,
+    onDelete,
+    editMode: eMode,
+    onRowSave,
+  } = row;
+
+  return eMode ? (
+    <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
+      <Button size="small" style={{ marginRight: 8 }} onClick={onCancel}>
+        Cancel
+      </Button>
+      <Button
+        size="small"
+        variant="primary"
+        onClick={() => onRowSave(columnId)}
+      >
+        Save
+      </Button>
+    </div>
+  ) : (
+    <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
+      <IconButton size="small" onClick={() => onRowEdit(columnId)}>
+        <Pencil />
+      </IconButton>
+      <IconButton size="small" onClick={() => onDelete(columnId)}>
+        <Trash />
+      </IconButton>
+    </div>
+  );
+};
+
 const DatasetTable = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -167,6 +202,7 @@ const DatasetTable = (props) => {
   const [rows, setRows] = useState(initialRows);
   const [editedRows, setEditedRows] = useState([]);
   const [editByRow, setEditByRow] = useState([]);
+  const [searchValue, setSearchValue] = useState(null);
   const [rowErr, setRowErr] = useState({});
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
@@ -193,40 +229,84 @@ const DatasetTable = (props) => {
     return <Link onClick={() => handleViewLOV(row)}>View LOVs</Link>;
   };
 
-  const ActionCell = ({ row }) => {
-    const { columnId, onRowEdit, onRowSave, onCancel, onDelete } = row;
-
-    return editMode ? (
-      <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
-        <Button size="small" style={{ marginRight: 8 }} onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button
-          size="small"
-          variant="primary"
-          onClick={() => onRowSave(columnId)}
-        >
-          Save
-        </Button>
-      </div>
-    ) : (
-      <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
-        <IconButton size="small" onClick={() => onRowEdit(columnId)}>
-          <Pencil />
-        </IconButton>
-        <IconButton size="small" onClick={() => onDelete(columnId)}>
-          <Trash />
-        </IconButton>
-      </div>
-    );
+  const searchRows = (e) => {
+    // eslint-disable-next-line prefer-destructuring
+    setSearchValue(e.target.value);
+    const value = e.target.value?.toLowerCase();
+    const filteredRows = rows?.filter((rw) => {
+      return (
+        rw?.variableLabel?.toLowerCase().includes(value) ||
+        rw?.columnName?.toLowerCase().includes(value) ||
+        rw?.position?.toLowerCase().includes(value) ||
+        rw?.format?.toLowerCase().includes(value) ||
+        rw?.dataType?.toLowerCase().includes(value) ||
+        rw?.primary?.toLowerCase().includes(value) ||
+        rw?.unique?.toLowerCase().includes(value) ||
+        rw?.required?.toLowerCase().includes(value) ||
+        rw?.minLength?.toString().includes(value) ||
+        rw?.maxLength?.toString().includes(value) ||
+        rw?.values?.toLowerCase().includes(value)
+      );
+    });
+    console.log(filteredRows, "filteredRows");
+    // setFilteredRows([...filteredRows]);
   };
 
   const addSingleRow = () => {
-    console.log("Add a single row");
+    setRows((rw) => [
+      ...rw,
+      {
+        columnId: rw.length + 1,
+        variableLabel: "",
+        columnName: "",
+        position: "",
+        format: "",
+        dataType: "",
+        primary: "",
+        unique: "",
+        required: "",
+        minLength: "",
+        maxLength: "",
+        values: "",
+      },
+    ]);
+    setEditByRow([rows.length + 1]);
   };
 
   const addMultipleRows = () => {
     setIsMultiAdd(true);
+  };
+
+  const cancelMulti = () => {
+    setIsMultiAdd(false);
+  };
+
+  const addMulti = () => {
+    setIsMultiAdd(false);
+    if (parseInt(newRows, 10) > 0) {
+      const multiRows = Array.from(
+        { length: parseInt(newRows, 10) },
+        (i, index) => ({
+          columnId: rows.length + index + 1,
+          variableLabel: "",
+          columnName: "",
+          position: "",
+          format: "",
+          dataType: "",
+          primary: "",
+          unique: "",
+          required: "",
+          minLength: "",
+          maxLength: "",
+          values: "",
+        })
+      );
+      setRows((rw) => [...rw, ...multiRows]);
+      const rowsId = Array(parseInt(newRows, 10))
+        .fill(null)
+        .map((_, i) => rows.length + i + 1);
+      setEditByRow([...rowsId]);
+    }
   };
 
   const downloadTemplate = () => {
@@ -338,13 +418,7 @@ const DatasetTable = (props) => {
     columns.slice(-1)[0],
   ];
 
-  const CustomHeader = ({
-    onCancelAll,
-    onSaveAll,
-    onEditAll,
-    cancelMulti,
-    addMulti,
-  }) => (
+  const CustomHeader = ({ onCancelAll, onSaveAll, onEditAll }) => (
     <div>
       <Grid container alignItems="center">
         {isEditAll && (
@@ -416,7 +490,9 @@ const DatasetTable = (props) => {
           placeholder="Search"
           size="small"
           style={{ marginTop: "-5px", marginBottom: 0 }}
-          disabled
+          onChange={searchRows}
+          value={searchValue}
+          disabled={isEditAll}
         />
         <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
           <EllipsisVertical />
@@ -428,8 +504,16 @@ const DatasetTable = (props) => {
   useEffect(() => {
     if (dataOrigin === "fileUpload") {
       setRows([...formattedData]);
+    } else {
+      // eslint-disable-next-line no-lonely-if
+      if (formattedData.length > 0) {
+        // setEditedRows([...formattedData]);
+        setRows([...formattedData]);
+      } else {
+        setIsEditAll(true);
+        setEditedRows(initialRows);
+      }
     }
-    console.log("dataOrigin", dataOrigin, formattedData, rows);
   }, [dataOrigin]);
 
   const onEditAll = () => {
@@ -440,7 +524,7 @@ const DatasetTable = (props) => {
   const onSaveAll = () => {
     setRows(editedRows);
     setEditedRows(rows);
-    // dispatch(createDatasetData(editedRows));
+    dispatch(createDatasetColumns(editedRows, selectedDataset?.datasetid));
   };
 
   const onCancelAll = () => {
@@ -448,8 +532,18 @@ const DatasetTable = (props) => {
     setIsEditAll(false);
   };
 
+  const onCancel = () => {
+    setEditByRow([]);
+  };
+  const onRowSave = (columnId) => {
+    // setRows(rows.map((row) => (row.columnId === editedRow.columnId ? editedRow : row)));
+    const editedRow = rows.find((row) => row.columnId === columnId);
+    console.log(columnId, "columnId", editedRow);
+    setEditByRow([]);
+  };
+
   const onRowEdit = (columnId) => {
-    console.log("rowid", columnId);
+    setEditByRow([columnId]);
   };
 
   const onDelete = (columnId) => {
@@ -457,12 +551,18 @@ const DatasetTable = (props) => {
   };
 
   const editRow = (columnId, key, value, errorTxt) => {
+    console.log(columnId, "ColumdIn");
     setEditedRows((rws) =>
       rws.map((row) =>
         row.columnId === columnId ? { ...row, [key]: value } : row
       )
     );
-    setRowErr((err) => ({ ...err, [key]: errorTxt }));
+    setRows((rws) =>
+      rws.map((row) =>
+        row.columnId === columnId ? { ...row, [key]: value } : row
+      )
+    );
+    // setRowErr((err) => ({ ...err, [key]: errorTxt }));
   };
 
   const hideOverWrite = () => {
@@ -478,7 +578,7 @@ const DatasetTable = (props) => {
   //     `Protocol # ‘${}’ in file does not match protocol number ‘${dashboard.selectedCard.protocolnumber}’ for this data flow. Please make sure these match and try again`
   //   );
   // };
-
+  console.log(editByRow, "editByRow");
   const getTableData = React.useMemo(
     () => (
       <>
@@ -496,8 +596,10 @@ const DatasetTable = (props) => {
             ...row,
             onDelete,
             editRow,
-            editMode,
+            onRowSave,
+            editMode: editMode || editByRow?.includes(row.columnId),
             selectedDataset,
+            onCancel,
             onRowEdit,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
@@ -508,11 +610,18 @@ const DatasetTable = (props) => {
             truncate: true,
           }}
           CustomHeader={CustomHeader}
-          headerProps={{ onSaveAll, onCancelAll, onEditAll, editMode }}
+          headerProps={{
+            onSaveAll,
+            onCancelAll,
+            onEditAll,
+            editMode,
+            cancelMulti,
+            addMulti,
+          }}
         />
       </>
     ),
-    [moreColumns, editMode, editedRows, rows]
+    [moreColumns, editMode, editedRows]
   );
 
   return (
@@ -546,7 +655,6 @@ const DatasetTable = (props) => {
         }
         id="overWrite"
       />
-      {console.log("selectedRow", selectedRow)}
       <Modal
         open={showOverWrite}
         variant="warning"
