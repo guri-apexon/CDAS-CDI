@@ -3,6 +3,14 @@
     div[class^=Blade-body]{
         padding: 0;
     }
+    .MuiDrawer-paperAnchorDockedLeft>div{
+        @extend .customscroll;
+    }
+    .top-status-checkbox{
+        label>span{
+            margin-right: 10px;
+        }
+    }
     .header-sidebar{
         height: 70px;
         padding: 0 25px;
@@ -25,6 +33,15 @@
             width: 20px;
             margin-left: 6px;
             cursor: pointer;
+        }
+        .dataset-count-td{
+            width: 41px;
+            display: flex;
+            justify-content: space-between;
+            span{
+                display: flex;
+                align-items: center;
+            }
         }
         .datasets-list{
             .dataset-row {
@@ -73,8 +90,11 @@
                 display: none;
             }
             .package-name-td{
-                max-width: 200px;
-                text-overflow: ellipsis;
+                span{
+                    max-width: 180px;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                }
             }
         }
     }

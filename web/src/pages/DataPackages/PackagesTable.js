@@ -20,9 +20,7 @@ import {
   updateStatus,
 } from "../../store/actions/DataPackageAction";
 
-const ExpandCell = ({
-  row: { name, handleToggleRow, expanded, datapackageid },
-}) => {
+const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
     <div style={{ width: 12 }}>
       <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
@@ -84,12 +82,12 @@ const PackagesList = ({ data, userInfo }) => {
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
-        <Tooltip title="Add Dataset" placement="bottom">
+        <span customtooltip="Add Dataset">
           <RoundPlusSvg
             className="add-dataset-btn"
             onClick={() => addDataSet(row.dataflowid, row.datapackageid)}
           />
-        </Tooltip>
+        </span>
       </div>
     );
   };

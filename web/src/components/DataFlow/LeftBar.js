@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import clsx from "clsx";
 import "../../styles/packageList.scss";
 import { makeStyles } from "@material-ui/core/styles";
@@ -23,9 +23,12 @@ import IconButton from "@material-ui/core/IconButton";
 import ChevronLeftIcon from "apollo-react-icons/ChevronLeft";
 import ChevronRightIcon from "apollo-react-icons/ChevronRight";
 import { ReactComponent as DataFlowIcon } from "../Icons/dataflow.svg";
-import { getUserInfo, debounceFunction } from "../../utils";
 import PackagesList from "../../pages/DataPackages/PackagesTable";
-import { getPackagesList } from "../../store/actions/DataPackageAction";
+import { getUserInfo, debounceFunction } from "../../utils";
+import {
+  getPackagesList,
+  addPackageBtnAction,
+} from "../../store/actions/DataPackageAction";
 
 const drawerWidth = 446;
 
@@ -51,10 +54,8 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     alignItems: "center",
     padding: 25,
+    height: 70,
     justifyContent: "space-between",
-  },
-  drawerContent: {
-    padding: "16px 25px",
   },
   leftPanel: {
     display: "inline-flex",
@@ -64,17 +65,6 @@ const useStyles = makeStyles((theme) => ({
   dataPackage: {
     color: "#595959",
     padding: "25px 16px",
-  },
-  dataPackHead: {
-    justifyContent: "space-between",
-    display: "flex",
-    alignItems: "center",
-  },
-  DataPackageTitle: {
-    fontSize: "16px",
-    fontWeight: 600,
-    letterSpacing: 0,
-    lineHeight: "24px",
   },
   LeftTitle: {
     fontSize: 20,
@@ -160,6 +150,7 @@ const Leftbar = () => {
   const dataFlowData = useSelector((state) => state.dataFlow);
   const { description, selectedVendor, dataflowType, loading } = dataFlowData;
   const userInfo = getUserInfo();
+  const location = useLocation();
   const handleDrawer = () => {
     setOpen(!open);
   };
@@ -180,7 +171,11 @@ const Leftbar = () => {
     }, 1000);
   };
   const redirectDataPackage = () => {
-    history.push("/data-packages");
+    if (location.pathname === "/data-packages") {
+      dispatch(addPackageBtnAction());
+    } else {
+      history.push("/data-packages");
+    }
   };
   const menuItems = [
     { text: "View audit log", onClick: viewAuditLog },
@@ -230,7 +225,7 @@ const Leftbar = () => {
                 Data Flow
               </Typography>
             </div>
-            <div className="right-panel">
+            <div className="right-panel top-status-checkbox">
               <FormControlLabel
                 style={{ fontSize: 14 }}
                 value="true"
