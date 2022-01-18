@@ -56,8 +56,10 @@ const AuditLog = () => {
     // console.log("data for export", exportData, headers, fileName);
     const wb = XLSX.utils.book_new();
     let ws = XLSX.worksheet;
-    const from = pageNo * rowsPerPageRecord;
-    const to = from + rowsPerPageRecord;
+    const rowPerPage =
+      rowsPerPageRecord === "All" ? exportData.length : rowsPerPageRecord;
+    const from = pageNo * rowPerPage;
+    const to = from + rowPerPage;
     const newData = exportData.slice(from, to);
     newData.unshift(headers);
     ws = XLSX.utils.json_to_sheet(newData, { skipHeader: true });
@@ -111,7 +113,6 @@ const AuditLog = () => {
     });
     exportToCSV(newData, tempObj, fileName + fileExtension);
     const exportRows = exportDataRows();
-    // console.log("newData", newData, exportRows);
     if (exportRows.length <= 0) {
       e.preventDefault();
       const message = `There is no data on the screen to download because of which an empty file has been downloaded.`;

@@ -14,4 +14,10 @@
             }
         }
     }
+    tr{
+        height: 0 !important;
+    }
+    tr[class*=" MuiTableRow-hover-"]{
+        height: 48px !important;
+    }
 }
