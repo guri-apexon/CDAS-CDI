@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useContext, useEffect } from "react";
+import { useSelector } from "react-redux";
 import * as XLSX from "xlsx";
 import FileUpload from "apollo-react/components/FileUpload";
 import Card from "apollo-react/components/Card";
@@ -14,6 +15,8 @@ import DatasetTable from "./DatasetTable";
 const ColumnsTab = ({ locationType }) => {
   const history = useHistory();
   const messageContext = useContext(MessageContext);
+  const dataSets = useSelector((state) => state.dataSets);
+  const { datasetColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
   const [numberOfRows, setNumberOfRows] = useState(null);
@@ -62,6 +65,31 @@ const ColumnsTab = ({ locationType }) => {
     }, 1000);
   };
 
+  const formatDBColumns = (datacolumns) => {
+    const newData =
+      datacolumns.length > 1
+        ? datacolumns.map((column, i) => {
+            const newObj = {
+              columnId: i + 1,
+              dbColumnId: column.columnid,
+              variableLabel: column.VARIABLE || "",
+              columnName: column.name || "",
+              position: column.position || "",
+              format: column.FORMAT || "",
+              dataType: column.datatype || "",
+              primary: column.primarykey === 1 ? "Yes" : "No",
+              unique: column.UNIQUE === 1 ? "Yes" : "No",
+              required: column.required === 1 ? "Yes" : "No",
+              minLength: column.charactermin || "",
+              maxLength: column.charactermax || "",
+              values: column.lov || "",
+            };
+            return newObj;
+          })
+        : [];
+    setFormattedData([...newData]);
+  };
+
   const formatData = () => {
     // console.log("data", importedData, formattedData);
     const data = importedData.slice(1);
@@ -69,7 +97,7 @@ const ColumnsTab = ({ locationType }) => {
       data.length > 1
         ? data.map((e, i) => {
             const newObj = {
-              columnId: i,
+              columnId: i + 1,
               variableLabel: e[1] || "",
               columnName: e[2] || "",
               position: "",
@@ -99,6 +127,15 @@ const ColumnsTab = ({ locationType }) => {
       formatData();
     }
   }, [importedData]);
+
+  useEffect(() => {
+    if (datasetColumns.length > 0) {
+      setShowColumns(true);
+      formatDBColumns(datasetColumns);
+    } else {
+      setShowColumns(false);
+    }
+  }, [datasetColumns]);
 
   const handleDelete = () => {
     setSelectedFile([]);

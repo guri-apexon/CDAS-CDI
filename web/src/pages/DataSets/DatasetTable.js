@@ -31,7 +31,7 @@ import {
   checkRequiredValue,
   checkCharacterLength,
 } from "../../components/FormComponents/validators";
-import { createDatasetData } from "../../store/actions/DataSetsAction";
+import { createDatasetColumns } from "../../store/actions/DataSetsAction";
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -116,6 +116,7 @@ const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   );
 };
 const EditableCell = ({ row, column: { accessor: key } }) => {
+  console.log(row, "row");
   const errorText =
     checkRequired(row[key]) ||
     checkAlphaNumeric(row[key], key) ||
@@ -428,6 +429,15 @@ const DatasetTable = (props) => {
   useEffect(() => {
     if (dataOrigin === "fileUpload") {
       setRows([...formattedData]);
+    } else {
+      // eslint-disable-next-line no-lonely-if
+      if (formattedData.length > 0) {
+        // setEditedRows([...formattedData]);
+        setRows([...formattedData]);
+      } else {
+        setIsEditAll(true);
+        setEditedRows(initialRows);
+      }
     }
     console.log("dataOrigin", dataOrigin, formattedData, rows);
   }, [dataOrigin]);
@@ -440,7 +450,7 @@ const DatasetTable = (props) => {
   const onSaveAll = () => {
     setRows(editedRows);
     setEditedRows(rows);
-    // dispatch(createDatasetData(editedRows));
+    dispatch(createDatasetColumns(editedRows, selectedDataset?.datasetid));
   };
 
   const onCancelAll = () => {
@@ -462,7 +472,7 @@ const DatasetTable = (props) => {
         row.columnId === columnId ? { ...row, [key]: value } : row
       )
     );
-    setRowErr((err) => ({ ...err, [key]: errorTxt }));
+    // setRowErr((err) => ({ ...err, [key]: errorTxt }));
   };
 
   const hideOverWrite = () => {

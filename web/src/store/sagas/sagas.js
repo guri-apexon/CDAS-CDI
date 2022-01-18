@@ -15,6 +15,7 @@ import {
   GET_DATAFLOW_DETAIL,
   GET_DATASET_DETAIL,
   UPDATE_DATASET_DATA,
+  GET_DATASET_COLUMNS,
 } from "../../constants";
 
 import {
@@ -30,6 +31,7 @@ import {
   saveDatasetColumns,
   fetchDatasetDetail,
   updateDataset,
+  fetchDatasetColumns,
 } from "./dataSets.saga";
 
 import {
@@ -58,6 +60,7 @@ function* cdasCoreSaga() {
   yield takeLatest(GET_DATAFLOW_DETAIL, fetchDataflowDetail);
   yield takeLatest(GET_DATASET_DETAIL, fetchDatasetDetail);
   yield takeLatest(UPDATE_DATASET_DATA, updateDataset);
+  yield takeLatest(GET_DATASET_COLUMNS, fetchDatasetColumns);
 }
 
 export default cdasCoreSaga;
