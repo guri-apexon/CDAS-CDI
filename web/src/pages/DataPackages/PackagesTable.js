@@ -1,37 +1,138 @@
-/* eslint-disable react/jsx-wrap-multilines */
-/* eslint-disable react/jsx-indent */
-/* eslint-disable prettier/prettier */
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { useHistory } from "react-router-dom";
+import Typography from "apollo-react/components/Typography";
 import Tooltip from "apollo-react/components/Tooltip";
 import IconButton from "apollo-react/components/IconButton";
-import TreeItem from "apollo-react/components/TreeItem";
-import TreeView from "apollo-react/components/TreeView";
 import ArrowDown from "apollo-react-icons/ArrowDown";
 import ArrowRight from "apollo-react-icons/ArrowRight";
-import AddCircleIcon from "@material-ui/icons/AddCircle";
-import StatusDotSolid from "apollo-react-icons/StatusDotSolid";
-import Status from "apollo-react/components/Status";
-import Typography from "apollo-react/components/Typography";
+import Table from "apollo-react/components/Table";
 import Tag from "apollo-react/components/Tag";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
-import IconMenuButton from "apollo-react/components/IconMenuButton";
-import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
+import Menu from "apollo-react/components/Menu";
+import Status from "apollo-react/components/Status";
+import StatusDotSolid from "apollo-react-icons/StatusDotSolid";
+import MenuItem from "apollo-react/components/MenuItem";
+import { useDispatch } from "react-redux";
+import { useHistory } from "react-router-dom";
+import { ReactComponent as RoundPlusSvg } from "../../components/Icons/roundplus.svg";
 import {
   deletePackage,
   redirectToDataSet,
   updateStatus,
 } from "../../store/actions/DataPackageAction";
 
+const ExpandCell = ({
+  row: { name, handleToggleRow, expanded, datapackageid },
+}) => {
+  return (
+    <div style={{ width: 12 }}>
+      <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
+        <IconButton
+          id="expand"
+          size="small"
+          onClick={() => handleToggleRow(datapackageid)}
+        >
+          {expanded ? <ArrowDown /> : <ArrowRight />}
+        </IconButton>
+      </Tooltip>
+    </div>
+  );
+};
+const PackageImg = (
+  <img
+    src="assets/svg/datapackage.svg"
+    alt="datapackage"
+    style={{ width: 15, marginRight: 8 }}
+  />
+);
+const NameCustomCell = ({ row, column: { accessor } }) => {
+  const title = row[accessor] || row.datapackageid;
+  return (
+    <div className="flex package-name-td">
+      {PackageImg}
+      <span className="b-font">{title}</span>
+    </div>
+  );
+};
+const StatusCustomCell = ({ row, column: { accessor } }) => {
+  const active = Number(row[accessor]);
+  return (
+    <div className="flex">
+      {active === 1 ? (
+        <Tag label="Active" variant="green" />
+      ) : (
+        <Tag label="Inactive" variant="grey" />
+      )}
+    </div>
+  );
+};
+
 const PackagesList = ({ data, userInfo }) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const [expandedRows, setExpandedRows] = useState([]);
-  const [selectedRows, setSelectedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
-  const ContextMenu = (props) => {
-    const setActive = (packageId, status) => {
+
+  const addDataSet = (dataflowid, datapackageid, datasetid = null) => {
+    dispatch(redirectToDataSet(dataflowid, datapackageid, datasetid));
+    history.push("/datasets-management");
+  };
+
+  const DataSetsCell = ({ row, column: { accessor } }) => {
+    const datasets = row[accessor] || row.datasets;
+    return (
+      <div className="flex flex-center dataset-count-td">
+        <Typography variant="caption" className="datasetCount">
+          {datasets.length || 0}
+        </Typography>
+        <Tooltip title="Add Dataset" placement="bottom">
+          <RoundPlusSvg
+            className="add-dataset-btn"
+            onClick={() => addDataSet(row.dataflowid, row.datapackageid)}
+          />
+        </Tooltip>
+      </div>
+    );
+  };
+  const DetailRow = ({ row }) => {
+    return (
+      <div className="datasets-list">
+        {row.datasets?.map((dataset, i) => {
+          return (
+            <div className="dataset-row flex" key={dataset.datasetid}>
+              <Typography variant="caption" className="dataset-name">
+                {dataset.name?.toUpperCase() ||
+                  dataset.datasetid ||
+                  "DataSet Name"}
+              </Typography>
+              <Typography variant="caption">
+                {dataset.type?.toUpperCase() || "FileType"}
+              </Typography>
+              <Status
+                variant="positive"
+                label={dataset.active ? "Active" : "Inactive"}
+                size="small"
+                className={`datasetStatus ${
+                  dataset.active ? "active" : "inactive"
+                }`}
+                icon={StatusDotSolid}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+  const ActionCell = ({ row }) => {
+    const { packageName, onRowEdit } = row;
+    const active = row.active && Number(row.active) === 1 ? 1 : 0;
+    const packageId = row.datapackageid || null;
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [open, setOpen] = useState(false);
+
+    const handleRequestClose = () => {
+      setOpen(false);
+    };
+    const setActive = (status) => {
       if (packageId) {
         dispatch(
           updateStatus({
@@ -42,7 +143,7 @@ const PackagesList = ({ data, userInfo }) => {
         );
       }
     };
-    const deleteAction = (packageId) => {
+    const deleteAction = () => {
       if (packageId) {
         dispatch(
           deletePackage({ package_id: packageId, user_id: userInfo.user_id })
@@ -51,173 +152,114 @@ const PackagesList = ({ data, userInfo }) => {
     };
     const menuItems = [
       {
-        text: `Set data package ${props.active === 1 ? "inactive" : "active"}`,
-        onClick: () => setActive(props.datapackageid, props.active),
+        text: `Set data package ${active === 1 ? "inactive" : "active"}`,
+        onClick: () => setActive(active),
       },
       {
         text: "Set all dataset to active",
-        // onClick: () => onRowEdit(props.datapackageid),
+        // onClick: () => onRowEdit(packageName),
       },
       {
         text: "Set all datasets to inactive",
-        // onClick: () => onRowEdit(props.datapackageid),
+        // onClick: () => onRowEdit(packageName),
       },
       {
         text: "Delete data package",
-        onClick: () => deleteAction(props.datapackageid),
+        onClick: deleteAction,
       },
     ];
+    const openAction = (e) => {
+      setAnchorEl(e.currentTarget);
+      setOpen(true);
+    };
+
     return (
-      <>
-        <Tooltip title="Actions" disableFocusListener>
-          <IconMenuButton id="actions" menuItems={menuItems} size="small">
-            <EllipsisVertical />
-          </IconMenuButton>
-        </Tooltip>
-      </>
+      <div className="flex">
+        <EllipsisVertical fontSize="small" onClick={openAction} />
+        <Menu
+          id="tableMenu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleRequestClose}
+        >
+          {menuItems.map((menu) => {
+            return (
+              <MenuItem size="small" onClick={menu.onClick}>
+                {menu.text}
+              </MenuItem>
+            );
+          })}
+        </Menu>
+      </div>
     );
   };
-  const DataSetTitle = (props) => (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}
-    >
-      <Typography variant="caption" className="datasetType">
-        {props.type.toUpperCase()}
-      </Typography>
-      <Status
-        variant="positive"
-        label={props.active ? "Active" : "Inactive"}
-        size="small"
-        className={`datasetStatus ${props.active ? "active" : "inactive"}`}
-        icon={StatusDotSolid}
-      />
-    </div>
-  );
-  const addDataSet = (dataflowid, datapackageid, datasetid = null) => {
-    dispatch(redirectToDataSet(dataflowid, datapackageid, datasetid));
-    history.push("/datasets-management");
+  const columns = [
+    {
+      accessor: "expand",
+      customCell: ExpandCell,
+      width: 20,
+    },
+    {
+      header: "Package Name",
+      accessor: "name",
+      customCell: NameCustomCell,
+    },
+    {
+      header: "Datasets",
+      accessor: "datasets",
+      customCell: DataSetsCell,
+    },
+    {
+      header: "Active",
+      accessor: "active",
+      customCell: StatusCustomCell,
+      width: 80,
+    },
+    {
+      accessor: "action",
+      customCell: ActionCell,
+      align: "right",
+      width: 32,
+    },
+  ];
+  const handleToggleRow = (datapackageid) => {
+    // eslint-disable-next-line no-shadow
+    setExpandedRows((expandedRows) =>
+      expandedRows.includes(datapackageid)
+        ? expandedRows.filter((id) => id !== datapackageid)
+        : [...expandedRows, datapackageid]
+    );
+    setTimeout(() => {
+      console.log(
+        "packageName",
+        expandedRows.filter((id) => id !== datapackageid),
+        expandedRows,
+        datapackageid
+      );
+    }, 1000);
   };
-  const renderChildTree = (
-    { datasetid, mnemonic, type, active },
-    dataflowid,
-    datapackageid
-  ) => (
-    <TreeItem
-      key={datasetid}
-      nodeId={datasetid}
-      label={mnemonic}
-      count={<DataSetTitle type={type} active={active} />}
-      onClick={() => addDataSet(dataflowid, datapackageid, datasetid)}
-    />
-  );
-  const DataPackageTitle = (props) => (
-    <div>
-      <Typography variant="caption" className="datasetCount">
-        {props.count}
-      </Typography>
-      <Tooltip title="Add Dataset" placement="bottom">
-        <IconButton
-          size="small"
-          onClick={() => addDataSet(props.dataflowid, props.datapackageid)}
-        >
-          <AddCircleIcon />
-        </IconButton>
-      </Tooltip>
-      <Tag
-        label={props.active ? "Active" : "Inactive"}
-        variant={props.active ? "green" : "grey"}
-      />
-      <ContextMenu {...props} />
-    </div>
-  );
-  const renderTree = ({
-    datapackageid,
-    name,
-    datasets,
-    active,
-    dataflowid,
-  }) => (
-    <TreeItem
-      key={datapackageid}
-      nodeId={datapackageid}
-      label={name}
-      count={
-        <DataPackageTitle
-          active={active}
-          datapackageid={datapackageid}
-          dataflowid={dataflowid}
-          name={name}
-          count={datasets.length || 0}
-        />
-      }
-      icon={
-        <>
-          {expandedRows.indexOf(datapackageid) === -1 && (
-            <ArrowRight
-              style={{
-                padding: "4px 4px 4px 0px",
-                fontSize: "16px !important",
-                paddingLeft: "5px !important",
-              }}
-            />
-          )}
-          {expandedRows.indexOf(datapackageid) > -1 && (
-            <ArrowDown
-              style={{
-                padding: "4px 4px 4px 0px",
-                fontSize: "16px !important",
-                paddingLeft: "5px !important",
-              }}
-            />
-          )}
-          <DataPackageIcon
-            style={{
-              marginTop: "1px",
-              marginLeft: "-4px",
-              marginRight: "-16px",
-              color: "#595959",
-            }}
-          />
-        </>
-      }
-      // eslint-disable-next-line react/no-children-prop
-      children={<DataPackageTitle />}
-    >
-      {Array.isArray(datasets)
-        ? datasets.map((node) =>
-            renderChildTree(node, dataflowid, datapackageid)
-          )
-        : null}
-    </TreeItem>
-  );
   useEffect(() => {
     const newData = data.packagesList || [];
-    const updatedData = newData;
-    setTableData(updatedData);
+    setTableData(newData);
   }, [data.packagesList]);
-  const handleToggle = (e, nodeIds) => {
-    setExpandedRows(nodeIds);
-  };
-  const handleSelect = (e, nodeIds) => {
-    setSelectedRows(nodeIds);
-  };
   return (
-    <>
-      <div style={{ maxWidth: 400 }}>
-        <TreeView
-          expanded={expandedRows}
-          selected={selectedRows}
-          onNodeToggle={(e, nodeIds) => handleToggle(e, nodeIds)}
-          max={99}
-        >
-          {tableData.map((node) => renderTree(node))}
-        </TreeView>
-      </div>
-    </>
+    <Table
+      columns={columns}
+      rowId="packageName"
+      rows={tableData.map((row) => ({
+        ...row,
+        expanded: expandedRows.includes(row.datapackageid),
+        handleToggleRow,
+      }))}
+      rowProps={{ hover: false }}
+      hidePagination={true}
+      // tablePaginationProps={{
+      //   labelDisplayedRows: ({ from, to, count }) =>
+      //     `${count === 1 ? "Package" : "Packages"} ${from}-${to} of ${count}`,
+      //   truncate: true,
+      // }}
+      ExpandableComponent={DetailRow}
+    />
   );
 };
 export default PackagesList;

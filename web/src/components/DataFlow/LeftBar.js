@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import clsx from "clsx";
+import "../../styles/packageList.scss";
 import { makeStyles } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
 import Box from "apollo-react/components/Box";
@@ -200,6 +201,7 @@ const Leftbar = () => {
   return (
     <>
       <Drawer
+        id="leftSidebar"
         variant="permanent"
         className={clsx(classes.drawer, {
           [classes.drawerOpen]: open,
@@ -240,12 +242,11 @@ const Leftbar = () => {
             </div>
           </div>
           <Divider />
-          <div className={classes.drawerContent}>
+          <Box className="sidebar-content">
             <Tag
               label={dataflowType}
               variant="grey"
-              color="#999999"
-              style={{ textTransform: "capitalize" }}
+              style={{ textTransform: "capitalize", marginBottom: 20 }}
             />
             <Typography className={classes.LeftTitle}>
               Virologicclinic-IIBR12-001-Other
@@ -259,29 +260,30 @@ const Leftbar = () => {
             </Typography>
             <Button
               variant="primary"
-              id="viewSettingsBtn"
               style={{ marginTop: 17 }}
               fullWidth
+              size="small"
             >
               View Settings
             </Button>
-          </div>
+          </Box>
+
           <Divider />
-          <div className={classes.dataPackage}>
-            <div className={classes.dataPackHead}>
-              <Typography className={classes.DataPackageTitle}>
+          <div className="packages-list">
+            <div className="flex flex-center justify-between">
+              <Typography className="b-font">
                 Data Packages & Datasets
               </Typography>
               <Button
                 variant="secondary"
                 icon={<PlusIcon />}
-                onClick={redirectDataPackage}
                 size="small"
-                style={{ marginRight: 10 }}
+                onClick={redirectDataPackage}
               >
-                Add data package
+                Add Data Package
               </Button>
             </div>
+
             <div style={{ maxWidth: 400 }}>
               <Search
                 placeholder="Search"
