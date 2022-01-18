@@ -1,4 +1,5 @@
 const DB = require("../config/db");
+const oracleDB = require("../config/oracleDB");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
@@ -240,6 +241,10 @@ exports.getVLCData = async (req, res) => {
     Logger.info({
       message: "getVLCData",
     });
+    const dbconnection = await oracleDB();
+    const q1 = `SELECT VERSION, EXT_RULEID, QC_TYPE, RULESEQ, RULEEXPR, ERRORCODE, ERRORMESSAGE FROM IDP.DATASET_QC_RULES`;
+    const { rows } = await dbconnection.execute(q1);
+    return apiResponse.successResponseWithData(res, "Operation success", rows);
   } catch (error) {
     Logger.error("catch :getVLCData");
     Logger.error(error);
