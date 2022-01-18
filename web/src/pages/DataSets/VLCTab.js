@@ -12,6 +12,11 @@ import Tooltip from "apollo-react/components/Tooltip";
 import FilterIcon from "apollo-react-icons/Filter";
 import Link from "apollo-react/components/Link";
 import IconButton from "apollo-react/components/IconButton";
+import Tag from "apollo-react/components/Tag";
+import Modal from "apollo-react/components/Modal";
+import Search from "apollo-react/components/Search";
+import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
+import IconMenuButton from "apollo-react/components/IconMenuButton";
 import { TextField } from "apollo-react/components/TextField/TextField";
 import Progress from "../../components/Progress";
 import { MessageContext } from "../../components/MessageProvider";
@@ -115,9 +120,9 @@ const createStringArraySearchFilter = (accessor) => {
 
 export default function VLCTab() {
   const [loading, setLoading] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
   const messageContext = useContext(MessageContext);
-  const [totalRows, setTotalRows] = useState(0);
+  const [isViewData, setIsViewData] = useState(false);
   const [rowData, setRowData] = useState([]);
 
   const history = useHistory();
@@ -152,10 +157,53 @@ export default function VLCTab() {
     );
   };
 
+  const hanldeView = (row) => {
+    setSelectedRow(row);
+    setIsViewData(false);
+  };
+
+  const hideViewData = () => {
+    setSelectedRow(null);
+    setIsViewData(false);
+  };
+
   const LinkCell = ({ row }) => {
     // eslint-disable-next-line jsx-a11y/anchor-is-valid
-    return <Link onClick={() => console.log(row)}>View</Link>;
+    return <Link onClick={() => hanldeView(row)}>View</Link>;
   };
+
+  const downloadTable = () => {
+    console.log("downloadTable");
+  };
+
+  const menuItems = [
+    {
+      text: "Download Table",
+      onClick: downloadTable,
+    },
+  ];
+
+  const CustomButtonHeader = ({ toggleFilters }) => (
+    <div>
+      <Search
+        placeholder="Search"
+        size="small"
+        style={{ marginTop: "-5px", marginBottom: 0, marginRight: "15px" }}
+        disabled
+      />
+      <Button
+        size="small"
+        variant="secondary"
+        icon={FilterIcon}
+        onClick={toggleFilters}
+      >
+        Filter
+      </Button>
+      <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
+        <EllipsisVertical />
+      </IconMenuButton>
+    </div>
+  );
 
   const columns = [
     {
@@ -355,14 +403,24 @@ export default function VLCTab() {
             rowsPerPageOptions={[10, 50, 100, "All"]}
             hasScroll={true}
             maxHeight="calc(100vh - 293px)"
+            maxWidth="calc(100vw - 40px)"
             tablePaginationProps={{
               labelDisplayedRows: ({ from, to, count }) =>
                 `${count === 1 ? "Item " : "Items"} ${from}-${to} of ${count}`,
               truncate: true,
             }}
+            CustomHeader={(props) => <CustomButtonHeader {...props} />}
           />
         </>
       )}
+      <Modal
+        open={isViewData}
+        title="VLC Rule"
+        onClose={hideViewData}
+        message="Do you want to proceed with data deletion that cannot be undone?"
+        buttonProps={[{ label: "Ok", onClick: hideViewData }]}
+        id="deleteDataFlow"
+      />
     </div>
   );
 }
