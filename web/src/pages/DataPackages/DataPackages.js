@@ -107,7 +107,7 @@ const DataPackages = () => {
       package_password: packagePassword,
       sftp_path: sftpPath,
       study_id: "a020E000005SwfCQAS",
-      dataflow_id: "a0A0E00000322XRUAY",
+      dataflow_id: "a0A0E000004la01ZLL",
       user_id: userInfo.user_id,
     };
     console.log("submitPackage", reqBody);
