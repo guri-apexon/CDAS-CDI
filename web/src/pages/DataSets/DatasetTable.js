@@ -202,6 +202,7 @@ const DatasetTable = (props) => {
   const [rows, setRows] = useState(initialRows);
   const [editedRows, setEditedRows] = useState([]);
   const [editByRow, setEditByRow] = useState([]);
+  const [searchValue, setSearchValue] = useState(null);
   const [rowErr, setRowErr] = useState({});
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
@@ -230,6 +231,7 @@ const DatasetTable = (props) => {
 
   const searchRows = (e) => {
     // eslint-disable-next-line prefer-destructuring
+    setSearchValue(e.target.value);
     const value = e.target.value?.toLowerCase();
     const filteredRows = rows?.filter((rw) => {
       return (
@@ -246,7 +248,8 @@ const DatasetTable = (props) => {
         rw?.values?.toLowerCase().includes(value)
       );
     });
-    setRows([...filteredRows]);
+    console.log(filteredRows, "filteredRows");
+    // setFilteredRows([...filteredRows]);
   };
 
   const addSingleRow = () => {
@@ -488,6 +491,7 @@ const DatasetTable = (props) => {
           size="small"
           style={{ marginTop: "-5px", marginBottom: 0 }}
           onChange={searchRows}
+          value={searchValue}
           disabled={isEditAll}
         />
         <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
@@ -617,7 +621,7 @@ const DatasetTable = (props) => {
         />
       </>
     ),
-    [moreColumns, editMode, editedRows, rows]
+    [moreColumns, editMode, editedRows]
   );
 
   return (
