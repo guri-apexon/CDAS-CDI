@@ -116,7 +116,6 @@ const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   );
 };
 const EditableCell = ({ row, column: { accessor: key } }) => {
-  console.log(row, "row");
   const errorText =
     checkRequired(row[key]) ||
     checkAlphaNumeric(row[key], key) ||
@@ -195,9 +194,16 @@ const DatasetTable = (props) => {
   };
 
   const ActionCell = ({ row }) => {
-    const { columnId, onRowEdit, onRowSave, onCancel, onDelete } = row;
+    const {
+      columnId,
+      onRowEdit,
+      onRowSave,
+      onCancel,
+      onDelete,
+      editMode: eMode,
+    } = row;
 
-    return editMode ? (
+    return editMode || eMode ? (
       <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
         <Button size="small" style={{ marginRight: 8 }} onClick={onCancel}>
           Cancel
@@ -223,11 +229,60 @@ const DatasetTable = (props) => {
   };
 
   const addSingleRow = () => {
-    console.log("Add a single row");
+    setRows((rw) => [
+      ...rw,
+      {
+        columnId: rw.length + 1,
+        variableLabel: "",
+        columnName: "",
+        position: "",
+        format: "",
+        dataType: "",
+        primary: "",
+        unique: "",
+        required: "",
+        minLength: "",
+        maxLength: "",
+        values: "",
+      },
+    ]);
+    setEditByRow([rows.length + 1]);
   };
 
   const addMultipleRows = () => {
     setIsMultiAdd(true);
+  };
+
+  const cancelMulti = () => {
+    setIsMultiAdd(false);
+  };
+
+  const addMulti = () => {
+    setIsMultiAdd(false);
+    if (parseInt(newRows, 10) > 0) {
+      const multiRows = Array.from(
+        { length: parseInt(newRows, 10) },
+        (i, index) => ({
+          columnId: rows.length + index + 1,
+          variableLabel: "",
+          columnName: "",
+          position: "",
+          format: "",
+          dataType: "",
+          primary: "",
+          unique: "",
+          required: "",
+          minLength: "",
+          maxLength: "",
+          values: "",
+        })
+      );
+      setRows((rw) => [...rw, ...multiRows]);
+      const rowsId = Array(parseInt(newRows, 10))
+        .fill(null)
+        .map((_, i) => rows.length + i + 1);
+      setEditByRow([...rowsId]);
+    }
   };
 
   const downloadTemplate = () => {
@@ -339,13 +394,7 @@ const DatasetTable = (props) => {
     columns.slice(-1)[0],
   ];
 
-  const CustomHeader = ({
-    onCancelAll,
-    onSaveAll,
-    onEditAll,
-    cancelMulti,
-    addMulti,
-  }) => (
+  const CustomHeader = ({ onCancelAll, onSaveAll, onEditAll }) => (
     <div>
       <Grid container alignItems="center">
         {isEditAll && (
@@ -439,7 +488,6 @@ const DatasetTable = (props) => {
         setEditedRows(initialRows);
       }
     }
-    console.log("dataOrigin", dataOrigin, formattedData, rows);
   }, [dataOrigin]);
 
   const onEditAll = () => {
@@ -458,8 +506,12 @@ const DatasetTable = (props) => {
     setIsEditAll(false);
   };
 
+  const onCancel = () => {
+    setEditByRow([]);
+  };
+
   const onRowEdit = (columnId) => {
-    console.log("rowid", columnId);
+    setEditByRow([columnId]);
   };
 
   const onDelete = (columnId) => {
@@ -467,6 +519,7 @@ const DatasetTable = (props) => {
   };
 
   const editRow = (columnId, key, value, errorTxt) => {
+    console.log(columnId, "ColumdIn");
     setEditedRows((rws) =>
       rws.map((row) =>
         row.columnId === columnId ? { ...row, [key]: value } : row
@@ -488,7 +541,7 @@ const DatasetTable = (props) => {
   //     `Protocol # ‘${}’ in file does not match protocol number ‘${dashboard.selectedCard.protocolnumber}’ for this data flow. Please make sure these match and try again`
   //   );
   // };
-
+  console.log(editByRow, "editByRow");
   const getTableData = React.useMemo(
     () => (
       <>
@@ -506,8 +559,9 @@ const DatasetTable = (props) => {
             ...row,
             onDelete,
             editRow,
-            editMode,
+            editMode: editMode || editByRow?.includes(row.columnId),
             selectedDataset,
+            onCancel,
             onRowEdit,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
@@ -518,7 +572,14 @@ const DatasetTable = (props) => {
             truncate: true,
           }}
           CustomHeader={CustomHeader}
-          headerProps={{ onSaveAll, onCancelAll, onEditAll, editMode }}
+          headerProps={{
+            onSaveAll,
+            onCancelAll,
+            onEditAll,
+            editMode,
+            cancelMulti,
+            addMulti,
+          }}
         />
       </>
     ),
@@ -556,7 +617,6 @@ const DatasetTable = (props) => {
         }
         id="overWrite"
       />
-      {console.log("selectedRow", selectedRow)}
       <Modal
         open={showOverWrite}
         variant="warning"
