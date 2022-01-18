@@ -161,7 +161,7 @@ const DataSets = () => {
         />
       )}
       <div className={classes.toolbar} />
-      <Leftbar />
+      {/* <Leftbar /> */}
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <div className="content">
