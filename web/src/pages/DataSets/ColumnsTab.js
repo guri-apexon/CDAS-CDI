@@ -116,6 +116,24 @@ const ColumnsTab = ({ locationType }) => {
     setFormattedData([...newData]);
   };
 
+  const checkHeaders = () => {
+    const header = importedData[0];
+    console.log("Header", header);
+    const validation =
+      header.includes("Protocol") &&
+      header.includes("Variable Label") &&
+      header.includes("Column Name") &&
+      header.includes("Format") &&
+      header.includes("Data Type") &&
+      header.includes("Primary(Y/N)") &&
+      header.includes("Required(Y/N)") &&
+      header.includes("Unique(Y/N)") &&
+      header.includes("Min Length") &&
+      header.includes("Max Length") &&
+      header.includes("List of Values");
+    return validation;
+  };
+
   // const handleNoHeaders = () => {
   //   messageContext.showErrorMessage(
   //     `Import is not available for files with no header row.`
@@ -123,8 +141,13 @@ const ColumnsTab = ({ locationType }) => {
   // };
 
   useEffect(() => {
-    if (importedData.length > 2) {
-      formatData();
+    if (importedData.length > 1) {
+      const correctHeader = checkHeaders();
+      if (correctHeader) {
+        formatData();
+      } else {
+        messageContext.showErrorMessage(`File is not matching with template`);
+      }
     }
   }, [importedData]);
 
