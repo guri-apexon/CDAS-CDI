@@ -5,6 +5,7 @@ import {
   SAVE_DATASET_COLUMNS,
   HIDE_ERROR_MSG,
   GET_DATASET_DETAIL,
+  GET_DATASET_COLUMNS,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -34,16 +35,24 @@ export const updateDatasetData = (values) => {
   };
 };
 
-export const createDatasetData = (values) => {
+export const createDatasetColumns = (values, datasetid) => {
   return {
     type: SAVE_DATASET_COLUMNS,
     values,
+    datasetid,
   };
 };
 
 export const getDataSetDetail = (datasetid) => {
   return {
     type: GET_DATASET_DETAIL,
+    datasetid,
+  };
+};
+
+export const getDatasetColumns = (datasetid) => {
+  return {
+    type: GET_DATASET_COLUMNS,
     datasetid,
   };
 };

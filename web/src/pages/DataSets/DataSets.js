@@ -22,6 +22,7 @@ import {
   saveDatasetData,
   updateDatasetData,
   getDataSetDetail,
+  getDatasetColumns,
 } from "../../store/actions/DataSetsAction";
 
 import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
@@ -76,6 +77,7 @@ const DataSets = () => {
     }
     if (optedDataPackages?.datasetid) {
       dispatch(getDataSetDetail(optedDataPackages?.datasetid));
+      dispatch(getDatasetColumns(optedDataPackages?.datasetid));
     }
   }, []);
 
