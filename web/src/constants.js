@@ -101,5 +101,6 @@ export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";
 export const DATASETAPI = "v1/api/dataset";
 export const DATAFLOWAPI = "v1/api/dataflow";
+export const VLCDATAAPI = "v1/api/dataset/getVLCData";
 
 export const baseURL = process.env.API_URL || "http://localhost:4001";
