@@ -1,6 +1,13 @@
 const DB = require("../config/db");
 const moment = require("moment");
 const crypto = require("crypto");
+const cron = require("node-cron");
+const { cronHardDelete } = require("./DataflowController");
+
+cron.schedule("*/30 * * * *", () => {
+  console.log("running a task every 30 minute");
+  cronHardDelete();
+});
 
 module.exports = {
   createUniqueID: () => {

@@ -1,0 +1,310 @@
+GET http://localhost:4001/v1/api/study/search-study/a0 HTTP/1.1
+
+{
+  "status": 1,
+  "message": "Operation success",
+  "data": {
+    "studies": [
+      {
+        "prot_id": "a020E000005SwQxQAK",
+        "protocolnumber": "AC-056C405",
+        "usr_id": "q837629",
+        "sponsorname": "ADURO BIOTECH  [US]",
+        "phase": "Phase 4",
+        "protocolstatus": "Closed To Enrollment",
+        "projectcode": "ZYA38645"
+      },
+      {
+        "prot_id": "a020E000005SwQwQAK",
+        "protocolnumber": "Niemann-Pick disease",
+        "usr_id": "q837629",
+        "sponsorname": "ADOLOR  [US]",
+        "phase": "Phase 4",
+        "protocolstatus": "Enrolling",
+        "projectcode": "ZYA38645"
+      }
+    ],
+    "totalSize": 2
+  }
+}
+
+###
+
+GET http://localhost:4001/v1/api/study/listbyUser/u1105372 HTTP/1.1
+
+{
+  "status": 1,
+  "message": "Operation success",
+  "data": [
+    {
+      "prot_id": "a020E000005SwQVQA0",
+      "protocolnumber": "NP-1998",
+      "usr_id": "u1105372",
+      "sponsorname": "ACUSPHERE  [US]",
+      "phase": "Phase 3",
+      "protocolstatus": "On Hold",
+      "projectcode": "CXA27260"
+    },
+    {
+      "prot_id": "a020E000005SwPtQAK",
+      "protocolnumber": "P16-836",
+      "usr_id": "u1105372",
+      "sponsorname": "ADDARIO LUNG CANCER MEDICAL INSTIT  [US]",
+      "phase": "Phase 4",
+      "protocolstatus": "Closed Follow Up / In Analysis",
+      "projectcode": "DZA68122"
+    },
+    {
+      "prot_id": "a020E000005SwfCQAS",
+      "protocolnumber": "20150104",
+      "usr_id": "u1105372",
+      "sponsorname": "Advaxis, Inc.",
+      "phase": "",
+      "protocolstatus": "In Development",
+      "projectcode": "ZWA22751"
+    },
+    {
+      "prot_id": "a020E000005SwauQAC",
+      "protocolnumber": "KER-050-01",
+      "usr_id": "u1105372",
+      "sponsorname": "AERIE  [US]",
+      "phase": "Phase 1",
+      "protocolstatus": "Closed Follow Up / In Analysis",
+      "projectcode": "DZA73062"
+    }
+  ]
+}
+
+###
+
+
+GET http://localhost:4001/v1/api/study/pinnedStudies/u1105372 HTTP/1.1
+
+{
+  "status": 1,
+  "message": "Operation success",
+  "data": [
+    "a020E000005SwauQAC"
+  ]
+}
+
+###
+
+POST http://localhost:4001/v1/api/study/pinStudy HTTP/1.1
+content-type: application/json
+
+{
+    "userId": "u1105372",
+    "protocolId": "a020E000005SwgSQAS"
+}
+
+###
+
+POST http://localhost:4001/v1/api/study/unPinStudy HTTP/1.1
+content-type: application/json
+
+{
+    "userId": "u1105372",
+    "protocolId": "a020E000005SwgSQAS"
+}
+
+###
+
+GET http://localhost:4001/v1/api/dataflow/studyDataflowList/a020E000005SwPtQAK HTTP/1.1
+
+{
+  "status": 1,
+  "message": "Operation success",
+  "data": [
+    {
+      "studyId": "a020E000005SwPtQAK",
+      "dataFlowId": "a0A0E00000322XRUAY",
+      "dataSets": "6",
+      "dataPackages": "17",
+      "studyName": "P16-836",
+      "dataFlowName": "TARGETHEALTH-000108-Ferring-1",
+      "type": 0,
+      "dateCreated": "12/21/2021",
+      "vendorSource": "IQVIA-CBEX",
+      "description": "TARGETHEALTH 000108 Ferring 1",
+      "adapter": "Tabular",
+      "status": 1,
+      "externalSourceSystem": "",
+      "locationType": "SFTP",
+      "lastModified": "12/21/2021",
+      "lastSyncDate": "12/10/2021"
+    },
+    {
+      "studyId": "a020E000005SwPtQAK",
+      "dataFlowId": "a0A0E000004k79SUAQ",
+      "dataSets": "6",
+      "dataPackages": "2",
+      "studyName": "P16-836",
+      "dataFlowName": "IQVIA-TDSE-reference_uatk3",
+      "type": 0,
+      "dateCreated": "12/21/2021",
+      "vendorSource": "IQVIA Connected Devices",
+      "description": "IQVIA TDSE reference uatk3",
+      "adapter": "Tabular",
+      "status": 1,
+      "externalSourceSystem": "",
+      "locationType": "SFTP",
+      "lastModified": "12/21/2021",
+      "lastSyncDate": "12/10/2021"
+    },
+    {
+      "studyId": "a020E000005SwPtQAK",
+      "dataFlowId": "a0A0E000004k79SUAQ",
+      "dataSets": "1",
+      "dataPackages": "2",
+      "studyName": "P16-836",
+      "dataFlowName": "IQVIA-TDSE-reference_uatk3",
+      "type": 0,
+      "dateCreated": "12/21/2021",
+      "vendorSource": "IQVIA Connected Devices",
+      "description": "IQVIA TDSE reference uatk3",
+      "adapter": "Tabular",
+      "status": 1,
+      "externalSourceSystem": "",
+      "locationType": "SFTP",
+      "lastModified": "12/21/2021",
+      "lastSyncDate": "12/10/2021"
+    },
+    {
+      "studyId": "a020E000005SwPtQAK",
+      "dataFlowId": "a0A0E000004k7m3UAA",
+      "dataSets": "1",
+      "dataPackages": "1",
+      "studyName": "P16-836",
+      "dataFlowName": "IQVIA-TDSE-milestone_attrib_uatk3",
+      "type": 0,
+      "dateCreated": "12/21/2021",
+      "vendorSource": "IQVIA Connected Devices",
+      "description": "IQVIA TDSE milestone attrib uatk3",
+      "adapter": "Tabular",
+      "status": 1,
+      "externalSourceSystem": "",
+      "locationType": "SFTP",
+      "lastModified": "12/21/2021",
+      "lastSyncDate": "12/10/2021"
+    }
+  ]
+}
+
+### Create DataKind 
+
+POST http://localhost:4001/v1/api/datakind/create HTTP/1.1
+content-type: application/json
+
+{
+    "dkId": "10",
+    "dkName": "Body_Kinetic_data",
+    "dkDesc": "test",
+    "dkExternalId": " 1447",
+    "dkESName": "GDMPM-DAS"
+}
+
+### Update DataKind 
+
+POST http://localhost:4001/v1/api/datakind/update HTTP/1.1
+content-type: application/json
+
+{
+    "dkId": "10",
+    "dkName": "Body_Kinetic_data",
+    "dkDesc": "test test",
+    "dkExternalId": " 1447",
+    "dkStatus": 1,
+    "dkESName": "GDMPM-DAS"
+}
+
+### Create Vendor 
+
+POST http://localhost:4001/v1/api/vendor/create HTTP/1.1
+content-type: application/json
+
+{
+    "verdorId": "16",
+    "vendorName": "IQVIA-CBEX",
+    "description": "IQVIA-CBEXCDR Vendor",
+    "vendorNameStd": "IQVIA-CBEX",
+    "externalSystemName": "GDMPM-DAS"
+}
+
+### Update Vendor 
+
+POST http://localhost:4001/v1/api/vendor/update HTTP/1.1
+content-type: application/json
+
+{
+    "verdorId": "16",
+    "vendorName": "IQVIA-CBEX",
+    "description": "IQVIA-CBEXCDR Vendor test",
+    "vendorStatus": 1,
+    "externalSystemName": "GDMPM-DAS"
+}
+
+### Create Dataset columns 
+
+POST http://localhost:4001/v1/api/vendor/update HTTP/1.1
+content-type: application/json
+
+{
+  "columns": [
+    {
+    "protocol": "16",
+    "variableLabel": "IQVIA-CBEX",
+    "columnName": "IQVIA-CBEXCDR Vendor test",
+    "format": 1,
+    "dataType": "GDMPM-DAS",
+    "primary": "GDMPM-DAS",
+    "unique": "",
+    "required": "",
+    "minLen": "",
+    "maxLen": "",
+    "listOfValues": ""
+    }
+  ]
+}
+
+### Activate DataFlow
+
+POST http://localhost:4001/v1/api/dataflow/activate HTTP/1.1
+content-type: application/json
+
+{
+"dataFlowId": "a0A0E000004k7m3UAA",
+"userId": "u1105372",
+"versionNo": 3
+}
+
+### InActivate DataFlow
+
+POST http://localhost:4001/v1/api/dataflow/inActivate HTTP/1.1
+content-type: application/json
+
+{
+"dataFlowId": "a0A0E000004k7m3UAA",
+"userId": "u1105372",
+"versionNo": 2
+}
+
+### SyncNow DataFlow
+
+POST http://localhost:4001/v1/api/dataflow/syncNow HTTP/1.1
+content-type: application/json
+
+{
+"version": 2,
+"dataFlowId": "a0A0E00000322XRUAY",
+"userId": "u1105372",
+"action": "SYNC"
+}
+
+### Get VLC Data
+
+POST http://localhost:4001/v1/api/dataset/getVLCData HTTP/1.1
+content-type: application/json
+
+{
+}

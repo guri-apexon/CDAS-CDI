@@ -12,7 +12,8 @@ const app = express();
 dotenv.config();
 const PORT = process.env.PORT;
 let dir = "./public/exports";
-const apiRoutes = require("./route/routes");
+const apiRoutes = require("./route/apiRoutes");
+const baseRoutes = require("./route/baseRoutes");
 
 // const Logger = require("./config/logger");
 
@@ -43,7 +44,8 @@ app.use(
 app.use(express.json({ limit: "50mb" }));
 
 //Route Prefixes
-app.use("/", apiRoutes);
+app.use("/", baseRoutes);
+app.use("/v1/api/", apiRoutes);
 
 app.use(
   express.urlencoded({

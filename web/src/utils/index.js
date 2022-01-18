@@ -1,11 +1,5 @@
 import moment from "moment";
 
-/* eslint-disable no-prototype-builtins */
-/* eslint-disable no-console */
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
-/* eslint-disable no-restricted-syntax */
-
 export const getCookie = (key) => {
   const b = document.cookie.match(`(^|;)\\s*${key}\\s*=\\s*([^;]+)`);
   return b ? b.pop() : "";
@@ -188,6 +182,7 @@ export const toast = (text = "", type = "success") => {
   const customEvent = new CustomEvent("toast", { detail: { text, type } });
   document.dispatchEvent(customEvent);
 };
+
 export const dataStruct = [
   {
     value: "tabular",
@@ -233,3 +228,7 @@ export const locationTypes = [
   "PostgreSQL",
   "SQL Server",
 ];
+
+export const fileTypes = ["SAS", "Excel", "Delimited", "Fixed Width"];
+export const delimeters = ["COMMA", "TAB", "TILDE", "PIPE"];
+export const customSQLQuery = ["Yes", "No"];

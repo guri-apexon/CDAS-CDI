@@ -7,23 +7,27 @@ import ArrowRight from "apollo-react-icons/ArrowRight";
 import Table from "apollo-react/components/Table";
 import Tag from "apollo-react/components/Tag";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
-import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Menu from "apollo-react/components/Menu";
+import Status from "apollo-react/components/Status";
+import StatusDotSolid from "apollo-react-icons/StatusDotSolid";
 import MenuItem from "apollo-react/components/MenuItem";
 import { useDispatch } from "react-redux";
+import { useHistory } from "react-router-dom";
+import { ReactComponent as RoundPlusSvg } from "../../components/Icons/roundplus.svg";
 import {
   deletePackage,
+  redirectToDataSet,
   updateStatus,
 } from "../../store/actions/DataPackageAction";
 
-const ExpandCell = ({ row: { packageName, handleToggleRow, expanded } }) => {
+const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
     <div style={{ width: 12 }}>
       <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
         <IconButton
           id="expand"
           size="small"
-          // onClick={() => handleToggleRow(packageName)}
+          onClick={() => handleToggleRow(datapackageid)}
         >
           {expanded ? <ArrowDown /> : <ArrowRight />}
         </IconButton>
@@ -60,18 +64,62 @@ const StatusCustomCell = ({ row, column: { accessor } }) => {
   );
 };
 
-const DetailRow = ({ row }) => {
-  return (
-    <div style={{ display: "flex", padding: "8px 0px 8px 8px" }}>
-      <Typography>DataSets</Typography>
-    </div>
-  );
-};
-
 const PackagesList = ({ data, userInfo }) => {
   const dispatch = useDispatch();
+  const history = useHistory();
   const [expandedRows, setExpandedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
+
+  const addDataSet = (dataflowid, datapackageid, datasetid = null) => {
+    dispatch(redirectToDataSet(dataflowid, datapackageid, datasetid));
+    history.push("/datasets-management");
+  };
+
+  const DataSetsCell = ({ row, column: { accessor } }) => {
+    const datasets = row[accessor] || row.datasets;
+    return (
+      <div className="flex flex-center dataset-count-td">
+        <Typography variant="caption" className="datasetCount">
+          {datasets.length || 0}
+        </Typography>
+        <span customtooltip="Add Dataset">
+          <RoundPlusSvg
+            className="add-dataset-btn"
+            onClick={() => addDataSet(row.dataflowid, row.datapackageid)}
+          />
+        </span>
+      </div>
+    );
+  };
+  const DetailRow = ({ row }) => {
+    return (
+      <div className="datasets-list">
+        {row.datasets?.map((dataset, i) => {
+          return (
+            <div className="dataset-row flex" key={dataset.datasetid}>
+              <Typography variant="caption" className="dataset-name">
+                {dataset.name?.toUpperCase() ||
+                  dataset.datasetid ||
+                  "DataSet Name"}
+              </Typography>
+              <Typography variant="caption">
+                {dataset.type?.toUpperCase() || "FileType"}
+              </Typography>
+              <Status
+                variant="positive"
+                label={dataset.active ? "Active" : "Inactive"}
+                size="small"
+                className={`datasetStatus ${
+                  dataset.active ? "active" : "inactive"
+                }`}
+                icon={StatusDotSolid}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
   const ActionCell = ({ row }) => {
     const { packageName, onRowEdit } = row;
     const active = row.active && Number(row.active) === 1 ? 1 : 0;
@@ -124,7 +172,7 @@ const PackagesList = ({ data, userInfo }) => {
     };
 
     return (
-      <>
+      <div className="flex">
         <EllipsisVertical fontSize="small" onClick={openAction} />
         <Menu
           id="tableMenu"
@@ -140,10 +188,7 @@ const PackagesList = ({ data, userInfo }) => {
             );
           })}
         </Menu>
-      </>
-      // <IconMenuButton menuItems={menuItems} size="small">
-      //   <EllipsisVertical />
-      // </IconMenuButton>
+      </div>
     );
   };
   const columns = [
@@ -158,6 +203,11 @@ const PackagesList = ({ data, userInfo }) => {
       customCell: NameCustomCell,
     },
     {
+      header: "Datasets",
+      accessor: "datasets",
+      customCell: DataSetsCell,
+    },
+    {
       header: "Active",
       accessor: "active",
       customCell: StatusCustomCell,
@@ -170,30 +220,35 @@ const PackagesList = ({ data, userInfo }) => {
       width: 32,
     },
   ];
-  const handleToggleRow = (packageName) => {
+  const handleToggleRow = (datapackageid) => {
     // eslint-disable-next-line no-shadow
     setExpandedRows((expandedRows) =>
-      expandedRows.includes(packageName)
-        ? expandedRows.filter((id) => id !== packageName)
-        : [...expandedRows, packageName]
+      expandedRows.includes(datapackageid)
+        ? expandedRows.filter((id) => id !== datapackageid)
+        : [...expandedRows, datapackageid]
     );
+    setTimeout(() => {
+      console.log(
+        "packageName",
+        expandedRows.filter((id) => id !== datapackageid),
+        expandedRows,
+        datapackageid
+      );
+    }, 1000);
   };
   useEffect(() => {
     const newData = data.packagesList || [];
-    console.log("Tabledata", newData);
-    const updatedData = newData;
-    // tableData.map((row) => ({
-    //   ...row,
-    //   expanded: expandedRows.includes(row.packageName),
-    //   handleToggleRow,
-    // }));
-    setTableData(updatedData);
+    setTableData(newData);
   }, [data.packagesList]);
   return (
     <Table
       columns={columns}
       rowId="packageName"
-      rows={tableData}
+      rows={tableData.map((row) => ({
+        ...row,
+        expanded: expandedRows.includes(row.datapackageid),
+        handleToggleRow,
+      }))}
       rowProps={{ hover: false }}
       hidePagination={true}
       // tablePaginationProps={{

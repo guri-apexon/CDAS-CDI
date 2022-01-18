@@ -75,12 +75,17 @@ const DateFilter = ({ accessor, filters, updateFilterValue }) => {
   );
 };
 
+const VersionCell = ({ row, column: { accessor } }) => {
+  const version = row[accessor];
+  return <span>{`${version}.0`}</span>;
+};
+
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
   const date =
     rowValue && moment(rowValue, "MM/DD/YYYY").isValid()
-      ? moment(rowValue, "MM/DD/YYYY").format("MM/DD/YYYY")
-      : moment(rowValue).format("DD-MMM-YYYY HH:mm A");
+      ? moment(rowValue).format("DD-MMM-YYYY HH:mm A")
+      : moment().format("DD-MMM-YYYY HH:mm A");
 
   return <span>{date}</span>;
 };
@@ -142,50 +147,6 @@ const createAutocompleteFilter =
     );
   };
 
-const departments = [
-  "Design",
-  "Engineering",
-  "Human Resources",
-  "Marketing",
-  "QA",
-];
-
-const departmentIcons = {
-  Design: Rocket,
-  Engineering: Cog,
-  "Human Resources": User3,
-  Marketing: Services,
-  QA: Bullseye,
-};
-
-const DepartmentCell = ({ row, column: { accessor } }) => {
-  const department = row[accessor];
-  const Icon = departmentIcons[department] || Question;
-  return (
-    <div style={{ position: "relative" }}>
-      <Icon fontSize="small" style={{ position: "relative", top: 5 }} />
-      {department || "Unknown"}
-    </div>
-  );
-};
-
-const ActionCell = ({ row }) => {
-  return (
-    <div style={{ display: "flex", justifyContent: "end" }}>
-      <IconButton
-        size="small"
-        data-id={row.employeeId}
-        style={{ marginRight: 4 }}
-      >
-        <Pencil />
-      </IconButton>
-      <IconButton size="small" data-id={row.employeeId}>
-        <OpenNew />
-      </IconButton>
-    </div>
-  );
-};
-
 export function createStringArraySearchFilter(accessor) {
   return (row, filters) =>
     !Array.isArray(filters[accessor]) ||
@@ -214,9 +175,10 @@ const columns = [
   },
   {
     header: "Audit Version",
-    accessor: "audit_vers",
+    accessor: "log_version",
     sortFunction: compareStrings,
-    filterFunction: createStringSearchFilter("audit_vers"),
+    // customCell: VersionCell,
+    filterFunction: createStringSearchFilter("log_version"),
     filterComponent: TextFieldFilter,
     width: 70,
   },
@@ -230,10 +192,10 @@ const columns = [
   },
   {
     header: "Update Date",
-    accessor: "audit_updt_dt",
+    accessor: "update_dt",
     sortFunction: compareDates,
     customCell: DateCell,
-    filterFunction: dateFilterV2("audit_updt_dt"),
+    filterFunction: dateFilterV2("update_dt"),
     filterComponent: DateFilter,
   },
   {

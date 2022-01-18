@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Typography from "apollo-react/components/Typography";
-// import { connect } from "react-redux";
-import { makeStyles, withStyles } from "@material-ui/core/styles";
-import Paper from "apollo-react/components/Paper";
+import { makeStyles } from "@material-ui/core/styles";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
+import { useDispatch, useSelector } from "react-redux";
+import { getFlowDetailsOfStudy } from "../../store/actions/DashboardAction";
 
 import DataFlowTable from "./DataFlowTable";
 
@@ -13,6 +13,7 @@ const styles = {
     flexGrow: 1,
     background: "#f6f7fb",
     minHeight: "calc(100vh - 125px)",
+    maxWidth: "calc(100vw - 425px)",
   },
   contentHeader: {
     paddingTop: 11,
@@ -30,6 +31,9 @@ const styles = {
 const RightPanel = () => {
   const [value, setValue] = React.useState(1);
   const useStyles = makeStyles(styles);
+  const dashboard = useSelector((state) => state.dashboard);
+  const [selectedStudy, setSelectedStudy] = useState(null);
+  const dispatch = useDispatch();
 
   const classes = useStyles();
 
@@ -37,6 +41,16 @@ const RightPanel = () => {
   const handleChangeTab = (event, value) => {
     setValue(value);
   };
+
+  const updateData = () => {
+    dispatch(getFlowDetailsOfStudy(dashboard.selectedCard.prot_id));
+  };
+
+  useEffect(() => {
+    setSelectedStudy(dashboard.selectedCard.prot_id);
+    updateData();
+  }, [dashboard.selectedCard]);
+
   return (
     <main className={classes.content}>
       <div className={classes.contentHeader}>
@@ -54,7 +68,7 @@ const RightPanel = () => {
         </Tabs>
       </div>
 
-      <div style={{ padding: 24 }}>
+      <div style={{ padding: 20 }}>
         {value === 0 && (
           <>
             <Typography variant="body2"> Monitor page content</Typography>
@@ -62,7 +76,10 @@ const RightPanel = () => {
         )}
         {value === 1 && (
           <>
-            <DataFlowTable />
+            <DataFlowTable
+              selectedStudy={selectedStudy}
+              updateData={updateData}
+            />
           </>
         )}
       </div>

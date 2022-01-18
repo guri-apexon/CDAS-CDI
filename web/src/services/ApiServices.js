@@ -6,6 +6,11 @@ import {
   PINNEDSTUDY,
   UNPINSTUDY,
   PINSTUDY,
+  HARDDELETE,
+  SYNCNOW,
+  ACTIVATEDF,
+  INACTIVATE,
+  VLCDATAAPI,
 } from "../constants";
 import { getCookie } from "../utils/index";
 
@@ -14,6 +19,67 @@ const userId = getCookie("user.id");
 const searchStudy = async (searchQuery = "") => {
   try {
     const res = await axios.get(`${baseURL}/${STUDYSEARCH}/${searchQuery}`);
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const hardDelete = async (dataFlowId) => {
+  try {
+    const res = await axios.post(`${baseURL}/${HARDDELETE}`, {
+      dataFlowId,
+      userId,
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const getVLCDataList = async () => {
+  try {
+    const res = await axios.post(`${baseURL}/${VLCDATAAPI}`, {});
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const syncNowDataFlow = async ({ version, dataFlowId }) => {
+  try {
+    const res = await axios.post(`${baseURL}/${SYNCNOW}`, {
+      version,
+      userId,
+      dataFlowId,
+      action: "SYNC",
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const activateDF = async (dataFlowId, versionNo) => {
+  try {
+    const res = await axios.post(`${baseURL}/${ACTIVATEDF}`, {
+      dataFlowId,
+      userId,
+      versionNo,
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const inActivateDF = async (dataFlowId, versionNo) => {
+  try {
+    const res = await axios.post(`${baseURL}/${INACTIVATE}`, {
+      dataFlowId,
+      userId,
+      versionNo,
+    });
     return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);

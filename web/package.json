@@ -38,8 +38,8 @@
     "start": "react-scripts start",
     "start:server:local": "npm run build && (cd ../server && npm run start:local)",
     "build": "react-scripts build",
-    "test": "react-scripts test --detectOpenHandles --updateSnapshot --watchAll=false",
-    "coverage": "react-scripts test --detectOpenHandles --watchAll=false --coverage",
+    "test": "react-scripts test --env=jsdom --detectOpenHandles --updateSnapshot --watchAll=false",
+    "coverage": "react-scripts test --env=jsdom --detectOpenHandles --watchAll=false --coverage",
     "eject": "react-scripts eject",
     "lint": "eslint src"
   },
@@ -78,6 +78,7 @@
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "jest-html-reporters": "^2.1.2",
-    "prettier": "2.4.1"
+    "prettier": "2.4.1",
+    "xlsx": "^0.17.5"
   }
 }

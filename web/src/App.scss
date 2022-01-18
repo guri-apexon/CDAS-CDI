@@ -13,28 +13,56 @@
 .flexWrap {
   flex-direction: column;
 }
-.justify-between{
+.justify-between {
   justify-content: space-between;
 }
-.mb-20{
+*[customtooltip] {
+  position: relative;
+}
+*[customtooltip]:hover:after{
+  content: "";
+  position:absolute;
+  left:50%;
+  top:55%;
+  transform:translateX(-50%);
+  margin-left: 5px;
+  border:10px solid #000;
+  border-color: transparent transparent black transparent;
+  display:block;
+}
+*[customtooltip]:hover:before {
+  content: attr(customtooltip);
+  background-color: #000;
+  color: #fff;
+  font-size: 12px;
+  top: 120%;
+  z-index: 99;
+  position: absolute;
+  white-space: nowrap;
+  border-radius: 4px;
+  padding: 2px 4px;
+  transform:translateX(-50%);
+  left: 50%;
+}
+.mb-20 {
   margin-bottom: 20px !important;
 }
-.b-font{
+.b-font {
   font-weight: 600 !important;
 }
-.left-align{
+.left-align {
   align-items: flex-start;
 }
-.h-v-center{
+.h-v-center {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
 }
-.flex-column{
+.flex-column {
   flex-direction: column;
 }
-.no-shadow{
+.no-shadow {
   box-shadow: none !important;
 }
 .left-align {
@@ -50,7 +78,7 @@
   position: fixed;
   width: 100%;
   z-index: 999;
-  header div.MuiToolbar-regular{
+  header div.MuiToolbar-regular {
     width: 100%;
     padding-left: 10px;
     padding-right: 10px;
@@ -140,4 +168,12 @@
 /* set button(top and bottom of the scrollbar) */
 .customScrollbar::-webkit-scrollbar-button {
   display: none;
+}
+
+.MuiSwitch > span:nth-child(1) {
+  left: 11px;
+}
+
+.MuiSnackbar-anchorOriginTopCenter {
+  top: 56px !important;
 }

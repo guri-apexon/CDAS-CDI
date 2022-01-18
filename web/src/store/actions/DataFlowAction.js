@@ -3,9 +3,11 @@ import {
   GET_LOCATIONS_DATA,
   UPDATE_FORM_FIELDS,
   GET_SERVICE_OWNERS,
+  GET_DATA_KIND,
   SAVE_LOCATION_DATA,
   HIDE_ERROR_MSG,
   UPDATE_SELECTED_LOCATION,
+  GET_DATAFLOW_DETAIL,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -56,8 +58,21 @@ export const getServiceOwnersData = () => {
   };
 };
 
+export const getDataFlowDetail = (dataflowId) => {
+  return {
+    type: GET_DATAFLOW_DETAIL,
+    dataflowId,
+  };
+};
+
 export const hideErrorMessage = () => {
   return {
     type: HIDE_ERROR_MSG,
+  };
+};
+
+export const getDataKindData = () => {
+  return {
+    type: GET_DATA_KIND,
   };
 };

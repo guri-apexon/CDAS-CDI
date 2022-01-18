@@ -1,17 +1,14 @@
 import compose from "@hypnosphi/recompose/compose";
 import withStyles from "@material-ui/core/styles/withStyles";
 import React from "react";
-import { connect, Provider } from "react-redux";
-import { combineReducers, createStore } from "redux";
-import { reducer as formReducer, getFormValues, reduxForm } from "redux-form";
+import { connect } from "react-redux";
+import { getFormValues, reduxForm } from "redux-form";
 import MenuItem from "apollo-react/components/MenuItem";
-import Paper from "apollo-react/components/Paper";
-import Typography from "apollo-react/components/Typography";
 import {
   ReduxFormPasswordInput,
   ReduxFormSelect,
   ReduxFormTextField,
-} from "../../components/Common/ReduxFormComponents";
+} from "../../components/FormComponents/FormComponents";
 import validate from "./validation";
 
 const initialValues = {};

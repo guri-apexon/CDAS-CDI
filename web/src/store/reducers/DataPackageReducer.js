@@ -8,12 +8,15 @@ import {
   ADD_PACKAGE_SUCCESS,
   UPDATE_DATA_PACKAGE,
   UPDATE_DATA_PACKAGE_SUCCESS,
+  REDIRECT_TO_DATASET,
   UPDATE_DATA_PACKAGE_FAILURE,
+  ADD_PACKAGE_BTN,
 } from "../../constants";
 
 export const initialState = {
   packagesList: [],
   selectedPackage: {},
+  optedDataPackages: {},
   loading: false,
   refreshData: false,
 };
@@ -25,10 +28,15 @@ const DataPackageReducer = (state = initialState, action) =>
         newState.loading = true;
         break;
 
+      case ADD_PACKAGE_BTN:
+        newState.openAddPackage = true;
+        break;
+
       case PACKAGES_LIST_SUCCESS:
         newState.loading = false;
         newState.packagesList = action.packagesData.data;
         newState.response = null;
+        newState.openAddPackage = false;
         break;
 
       case PACKAGES_LIST_FAILURE:
@@ -79,7 +87,13 @@ const DataPackageReducer = (state = initialState, action) =>
         newState.loading = false;
         newState.response = null;
         break;
-
+      case REDIRECT_TO_DATASET:
+        newState.optedDataPackages = {
+          dataflowid: action.dataflowid,
+          datapackageid: action.datapackageid,
+          datasetid: action.datasetid,
+        };
+        break;
       default:
         break;
     }

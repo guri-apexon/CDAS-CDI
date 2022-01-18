@@ -130,7 +130,7 @@ exports.searchStudyList = function (req, res) {
     });
     // console.log("search", searchParam, userId);
     const searchQuery = `SELECT prot_id, prot_nbr as protocolnumber, s.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM cdascdi.study s INNER JOIN cdascdi.sponsor s2 ON s2.spnsr_id = s.spnsr_id 
-              WHERE LOWER(prot_id) LIKE $1 OR LOWER(spnsr_nm) LIKE $1 OR LOWER(proj_cd) LIKE $1 LIMIT 10`;
+              WHERE LOWER(prot_nbr) LIKE $1 OR LOWER(spnsr_nm) LIKE $1 OR LOWER(proj_cd) LIKE $1 LIMIT 10`;
 
     DB.executeQuery(searchQuery, [`%${searchParam}%`]).then((response) => {
       const studies = response.rows || [];
