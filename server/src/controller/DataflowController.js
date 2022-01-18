@@ -352,13 +352,13 @@ exports.cronHardDelete = async () => {
 };
 exports.hardDelete = async (req, res) => {
   try {
-    const { dataflowId, userId } = req.body;
+    const { dataFlowId, userId } = req.body;
     DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [
       userId,
     ]).then(async (response) => {
       if (response.rows && response.rows.length) {
         const user = response.rows[0];
-        const deleted = await hardDeleteTrigger(dataflowId, user);
+        const deleted = await hardDeleteTrigger(dataFlowId, user);
         if (deleted == "deleted") {
           return apiResponse.successResponseWithData(
             res,
@@ -374,7 +374,7 @@ exports.hardDelete = async (req, res) => {
             {}
           );
         } else {
-          const inserted = await addDeleteTempLog(dataflowId, user);
+          const inserted = await addDeleteTempLog(dataFlowId, user);
           if (inserted) {
             return apiResponse.successResponseWithData(
               res,
