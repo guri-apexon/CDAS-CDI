@@ -15,6 +15,7 @@ import IconButton from "apollo-react/components/IconButton";
 import { TextField } from "apollo-react/components/TextField/TextField";
 import Progress from "../../components/Progress";
 import { MessageContext } from "../../components/MessageProvider";
+import { getVLCDataList } from "../../services/ApiServices";
 
 const createAutocompleteFilter =
   (source) =>
@@ -113,71 +114,27 @@ const createStringArraySearchFilter = (accessor) => {
 };
 
 export default function VLCTab() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const messageContext = useContext(MessageContext);
   const [totalRows, setTotalRows] = useState(0);
   const [rowData, setRowData] = useState([]);
+
   const history = useHistory();
   const dispatch = useDispatch();
 
-  const dashboardData = [
-    {
-      ruleId: 1,
-      version: 2,
-      type: "VLC",
-      action: "Report",
-      emCode: "EM1",
-      ruleSeq: 123,
-      ruleExp: "( LBORRES $EQUALS$ ”BLINDED” $…",
-      errMsg: "Expected Lab Test Codes and Units…",
-      status: "Active",
-    },
-    {
-      ruleId: 2,
-      version: 1,
-      type: "VLC",
-      action: "Report",
-      emCode: "EM2",
-      ruleSeq: 123,
-      ruleExp: "CM<>CODE",
-      errMsg: "FP1CM errorMessage",
-      status: "Active",
-    },
-    {
-      ruleId: 3,
-      version: 1,
-      type: "VLC",
-      action: "Report",
-      emCode: "EM3",
-      ruleSeq: 123,
-      ruleExp: "(LBORRES=”*BLINDED*” and LBTES…",
-      errMsg: "Gender [Single-column LOV]",
-      status: "Active",
-    },
-    {
-      ruleId: 10,
-      version: 3,
-      type: "VLC",
-      action: "Report",
-      emCode: "EM4",
-      ruleSeq: 123,
-      ruleExp: "AEC<>CODE",
-      errMsg: "FP2DS2AEC errorMessage",
-      status: "Active",
-    },
-    {
-      ruleId: 13,
-      version: 3,
-      type: "VLC",
-      action: "Report",
-      emCode: "EM5",
-      ruleSeq: 123,
-      ruleExp: "DMQ<>CODE",
-      errMsg: "FP2DS1DMQError ",
-      status: "Active",
-    },
-  ];
+  const getData = async () => {
+    const data = await getVLCDataList();
+    // console.log("data", data);
+    setRowData([...data]);
+    setLoading(false);
+    // return data;
+  };
+
+  useEffect(() => {
+    getData();
+    // console.log("data", Data);
+  }, []);
 
   const StatusCell = ({ row, column: { accessor } }) => {
     const description = row[accessor];
@@ -195,6 +152,11 @@ export default function VLCTab() {
     );
   };
 
+  const LinkCell = ({ row }) => {
+    // eslint-disable-next-line jsx-a11y/anchor-is-valid
+    return <Link onClick={() => console.log(row)}>View</Link>;
+  };
+
   const columns = [
     {
       header: "Rule ID",
@@ -203,175 +165,178 @@ export default function VLCTab() {
       filterFunction: numberSearchFilter("ruleId"),
       filterComponent: IntegerFilter,
     },
-    // {
-    //   header: "Version",
-    //   accessor: "version",
-    //   frozen: false,
-    //   sortFunction: compareNumbers,
-    //   filterFunction: numberSearchFilter("version"),
-    //   filterComponent: IntegerFilter,
-    // },
-    // {
-    //   header: "Type",
-    //   accessor: "type",
-    //   sortFunction: compareStrings,
-    //   filterFunction: createStringArraySearchFilter("type"),
-    //   filterComponent: createAutocompleteFilter(
-    //     Array.from(
-    //       new Set(
-    //         rowData.map((r) => ({ label: r.type })).map((item) => item.label)
-    //       )
-    //     )
-    //       .map((label) => {
-    //         return { label };
-    //       })
-    //       .sort((a, b) => {
-    //         if (a.label < b.label) {
-    //           return -1;
-    //         }
-    //         if (a.label > b.label) {
-    //           return 1;
-    //         }
-    //         return 0;
-    //       })
-    //   ),
-    // },
-    // {
-    //   header: "Action",
-    //   accessor: "action",
-    //   sortFunction: compareStrings,
-    //   filterFunction: createStringArraySearchFilter("action"),
-    //   filterComponent: createAutocompleteFilter(
-    //     Array.from(
-    //       new Set(
-    //         rowData.map((r) => ({ label: r.action })).map((item) => item.label)
-    //       )
-    //     )
-    //       .map((label) => {
-    //         return { label };
-    //       })
-    //       .sort((a, b) => {
-    //         if (a.label < b.label) {
-    //           return -1;
-    //         }
-    //         if (a.label > b.label) {
-    //           return 1;
-    //         }
-    //         return 0;
-    //       })
-    //   ),
-    // },
-    // {
-    //   header: "EM Code",
-    //   accessor: "emCode",
-    //   customCell: StatusCell,
-    //   sortFunction: compareStrings,
-    //   filterFunction: createStringArraySearchFilter("emCode"),
-    //   filterComponent: createAutocompleteFilter(
-    //     Array.from(
-    //       new Set(
-    //         rowData.map((r) => ({ label: r.emCode })).map((item) => item.label)
-    //       )
-    //     )
-    //       .map((label) => {
-    //         return { label };
-    //       })
-    //       .sort((a, b) => {
-    //         if (a.label < b.label) {
-    //           return -1;
-    //         }
-    //         if (a.label > b.label) {
-    //           return 1;
-    //         }
-    //         return 0;
-    //       })
-    //   ),
-    // },
-    // {
-    //   header: "Rule Sequence",
-    //   accessor: "ruleSeq",
-    //   frozen: false,
-    //   sortFunction: compareNumbers,
-    //   filterFunction: numberSearchFilter("ruleSeq"),
-    //   filterComponent: IntegerFilter,
-    // },
-    // {
-    //   header: "Rule Expression",
-    //   accessor: "ruleExp",
-    //   sortFunction: compareStrings,
-    //   filterFunction: createStringArraySearchFilter("ruleExp"),
-    //   filterComponent: createAutocompleteFilter(
-    //     Array.from(
-    //       new Set(
-    //         rowData.map((r) => ({ label: r.ruleExp })).map((item) => item.label)
-    //       )
-    //     )
-    //       .map((label) => {
-    //         return { label };
-    //       })
-    //       .sort((a, b) => {
-    //         if (a.label < b.label) {
-    //           return -1;
-    //         }
-    //         if (a.label > b.label) {
-    //           return 1;
-    //         }
-    //         return 0;
-    //       })
-    //   ),
-    // },
-    // {
-    //   header: "Error Message",
-    //   accessor: "errMsg",
-    //   frozen: false,
-    //   sortFunction: compareStrings,
-    //   filterFunction: createStringArraySearchFilter("errMsg"),
-    //   filterComponent: createAutocompleteFilter(
-    //     Array.from(
-    //       new Set(
-    //         rowData.map((r) => ({ label: r.errMsg })).map((item) => item.label)
-    //       )
-    //     )
-    //       .map((label) => {
-    //         return { label };
-    //       })
-    //       .sort((a, b) => {
-    //         if (a.label < b.label) {
-    //           return -1;
-    //         }
-    //         if (a.label > b.label) {
-    //           return 1;
-    //         }
-    //         return 0;
-    //       })
-    //   ),
-    // },
-    // {
-    //   header: "Status",
-    //   accessor: "status",
-    //   customCell: StatusCell,
-    //   sortFunction: compareStrings,
-    //   filterFunction: createStringArraySearchFilter("status"),
-    //   filterComponent: createAutocompleteFilter(
-    //     Array.from(
-    //       new Set(
-    //         rowData.map((r) => ({ label: r.status })).map((item) => item.label)
-    //       )
-    //     )
-    //       .map((label) => {
-    //         return { label };
-    //       })
-    //       .sort((a, b) => {
-    //         if (a.label < b.label) {
-    //           return -1;
-    //         }
-    //         if (a.label > b.label) {
-    //           return 1;
-    //         }
-    //         return 0;
-    //       })
-    //   ),
-    // },
+    {
+      header: "Version",
+      accessor: "versionNo",
+      frozen: false,
+      sortFunction: compareNumbers,
+      filterFunction: numberSearchFilter("versionNo"),
+      filterComponent: IntegerFilter,
+    },
+    {
+      header: "Type",
+      accessor: "type",
+      sortFunction: compareStrings,
+      filterFunction: createStringArraySearchFilter("type"),
+      filterComponent: createAutocompleteFilter(
+        Array.from(
+          new Set(
+            rowData.map((r) => ({ label: r.type })).map((item) => item.label)
+          )
+        )
+          .map((label) => {
+            return { label };
+          })
+          .sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            }
+            if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          })
+      ),
+    },
+    {
+      header: "Action",
+      accessor: "action",
+      sortFunction: compareStrings,
+      filterFunction: createStringArraySearchFilter("action"),
+      filterComponent: createAutocompleteFilter(
+        Array.from(
+          new Set(
+            rowData.map((r) => ({ label: r.action })).map((item) => item.label)
+          )
+        )
+          .map((label) => {
+            return { label };
+          })
+          .sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            }
+            if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          })
+      ),
+    },
+    {
+      header: "EM Code",
+      accessor: "emCode",
+      sortFunction: compareStrings,
+      // filterFunction: createStringArraySearchFilter("emCode"),
+      // filterComponent: createAutocompleteFilter(
+      //   Array.from(
+      //     new Set(
+      //       rowData.map((r) => ({ label: r.emCode })).map((item) => item.label)
+      //     )
+      //   )
+      //     .map((label) => {
+      //       return { label };
+      //     })
+      //     .sort((a, b) => {
+      //       if (a.label < b.label) {
+      //         return -1;
+      //       }
+      //       if (a.label > b.label) {
+      //         return 1;
+      //       }
+      //       return 0;
+      //     })
+      // ),
+    },
+    {
+      header: "Rule Sequence",
+      accessor: "ruleSeq",
+      frozen: false,
+      sortFunction: compareNumbers,
+      filterFunction: numberSearchFilter("ruleSeq"),
+      filterComponent: IntegerFilter,
+    },
+    {
+      header: "Rule Expression",
+      accessor: "ruleExp",
+      sortFunction: compareStrings,
+      // filterFunction: createStringArraySearchFilter("ruleExp"),
+      // filterComponent: createAutocompleteFilter(
+      //   Array.from(
+      //     new Set(
+      //       rowData.map((r) => ({ label: r.ruleExp })).map((item) => item.label)
+      //     )
+      //   )
+      //     .map((label) => {
+      //       return { label };
+      //     })
+      //     .sort((a, b) => {
+      //       if (a.label < b.label) {
+      //         return -1;
+      //       }
+      //       if (a.label > b.label) {
+      //         return 1;
+      //       }
+      //       return 0;
+      //     })
+      // ),
+    },
+    {
+      header: "Error Message",
+      accessor: "errMsg",
+      frozen: false,
+      sortFunction: compareStrings,
+      filterFunction: createStringArraySearchFilter("errMsg"),
+      filterComponent: createAutocompleteFilter(
+        Array.from(
+          new Set(
+            rowData.map((r) => ({ label: r.errMsg })).map((item) => item.label)
+          )
+        )
+          .map((label) => {
+            return { label };
+          })
+          .sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            }
+            if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          })
+      ),
+    },
+    {
+      header: "Status",
+      accessor: "status",
+      customCell: StatusCell,
+      sortFunction: compareStrings,
+      // filterFunction: createStringArraySearchFilter("status"),
+      // filterComponent: createAutocompleteFilter(
+      //   Array.from(
+      //     new Set(
+      //       rowData.map((r) => ({ label: r.status })).map((item) => item.label)
+      //     )
+      //   )
+      //     .map((label) => {
+      //       return { label };
+      //     })
+      //     .sort((a, b) => {
+      //       if (a.label < b.label) {
+      //         return -1;
+      //       }
+      //       if (a.label > b.label) {
+      //         return 1;
+      //       }
+      //       return 0;
+      //     })
+      // ),
+    },
+    {
+      accessor: "ruleId",
+      customCell: LinkCell,
+    },
   ];
 
   return (
@@ -383,13 +348,12 @@ export default function VLCTab() {
           <Table
             title="Value Level Conformance (VLC) Rules"
             columns={columns}
-            rows={dashboardData}
+            rows={rowData}
             rowId="ruleId"
             initialSortedColumn="ruleId"
             initialSortOrder="asc"
             rowsPerPageOptions={[10, 50, 100, "All"]}
             hasScroll={true}
-            maxWidth="calc(100vw - 465px)"
             maxHeight="calc(100vh - 293px)"
             tablePaginationProps={{
               labelDisplayedRows: ({ from, to, count }) =>

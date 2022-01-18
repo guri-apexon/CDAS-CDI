@@ -10,6 +10,7 @@ import {
   SYNCNOW,
   ACTIVATEDF,
   INACTIVATE,
+  VLCDATAAPI,
 } from "../constants";
 import { getCookie } from "../utils/index";
 
@@ -30,6 +31,15 @@ export const hardDelete = async (dataFlowId) => {
       dataFlowId,
       userId,
     });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const getVLCDataList = async () => {
+  try {
+    const res = await axios.post(`${baseURL}/${VLCDATAAPI}`, {});
     return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);

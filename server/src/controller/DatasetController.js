@@ -242,7 +242,7 @@ exports.getVLCData = async (req, res) => {
       message: "getVLCData",
     });
     const dbconnection = await oracleDB();
-    const q1 = `SELECT VERSION, EXT_RULEID, QC_TYPE, RULESEQ, RULEEXPR, ERRORCODE, ERRORMESSAGE FROM IDP.DATASET_QC_RULES`;
+    const q1 = `SELECT VERSION as "versionNo", EXT_RULEID as "ruleId", QC_TYPE as "type", RULESEQ as "ruleSeq", ACTION as "action", ERRORCODE as "emCode", ERRORMESSAGE as "errMsg" FROM IDP.DATASET_QC_RULES`;
     const { rows } = await dbconnection.execute(q1);
     return apiResponse.successResponseWithData(res, "Operation success", rows);
   } catch (error) {
