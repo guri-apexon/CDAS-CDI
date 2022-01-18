@@ -174,13 +174,14 @@ exports.updateDatasetData = async (req, res) => {
 
 exports.saveDatasetColumns = async (req, res) => {
   try {
+    const datasetid = req.params.datasetid;
     const values = req.body;
     const inserted = await values.map(async (value) => {
       const columnId = helper.generateUniqueID();
       const body = [
         columnId,
         value.variableLabel.trim() || null,
-        value.datasetId || "a070E00000Fh5bHQAR",
+        datasetid,
         value.columnName.trim() || null,
         value.dataType.trim() || null,
         value.primary == "Yes" ? 1 : 0,
@@ -190,7 +191,7 @@ exports.saveDatasetColumns = async (req, res) => {
         value.maxLength.trim() || null,
         value.position.trim() || null,
         value.format.trim() || null,
-        value.lov.trim().replace(/(^\~+|\~+$)/, "") || null,
+        value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
         new Date(),
         new Date(),
       ];
@@ -271,6 +272,31 @@ exports.getDatasetDetail = async (req, res) => {
     //throw error in json response with status 500.
     console.log(err);
     Logger.error("catch :datasetDetail");
+    Logger.error(err);
+
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.getDatasetColumns = async (req, res) => {
+  try {
+    const datasetid = req.params.datasetid;
+    const searchQuery = `SELECT "columnid", "VARIABLE", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "FORMAT", "lov", "UNIQUE" from cdascdi1d.cdascdi.columndefinition WHERE datasetid = $1`;
+    Logger.info({
+      message: "datasetColumns",
+    });
+    DB.executeQuery(searchQuery, [datasetid]).then((response) => {
+      const datasetColumns = response.rows || null;
+      return apiResponse.successResponseWithData(
+        res,
+        "Operation success",
+        datasetColumns
+      );
+    });
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error("catch :datasetColumns");
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);

@@ -8,10 +8,10 @@ exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
     let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from cdascdi1d.cdascdi.datapackage 
-            WHERE del_flg = 'N'`;
+            WHERE del_flg = 'N' order by updt_tm desc`;
     if(searchParam) { 
       searchQuery = `SELECT datapackageid, dataflowid, name, active, type from cdascdi1d.cdascdi.datapackage 
-      WHERE LOWER(name) LIKE '%${searchParam}%' AND del_flg = 'N'`;
+      WHERE LOWER(name) LIKE '%${searchParam}%' AND del_flg = 'N'  order by updt_tm desc`;
     }
     const datasetQuery = `SELECT datasetid, mnemonic, active, type from cdascdi1d.cdascdi.dataset where datapackageid = $1`;
     Logger.info({
