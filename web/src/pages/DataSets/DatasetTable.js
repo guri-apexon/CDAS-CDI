@@ -573,11 +573,6 @@ const DatasetTable = (props) => {
     console.log("handle overwrite");
   };
 
-  // const showProtocolNotMatching = () => {
-  //   messageContext.showErrorMessage(
-  //     `Protocol # ‘${}’ in file does not match protocol number ‘${dashboard.selectedCard.protocolnumber}’ for this data flow. Please make sure these match and try again`
-  //   );
-  // };
   console.log(editByRow, "editByRow");
   const getTableData = React.useMemo(
     () => (
@@ -638,8 +633,7 @@ const DatasetTable = (props) => {
               <TextField />
             </>
           ) : (
-            `testing`
-            // ${selectedRow && selectedRow.values}
+            `${selectedRow && selectedRow.values}`
           )
         }
         buttonProps={

@@ -17,10 +17,14 @@ exports.searchList = function (req, res) {
 
     DB.executeQuery(searchQuery).then((response) => {
       const logs = response.rows || [];
-      return apiResponse.successResponseWithData(res, "Logs retreived successfully", {
-        data: logs,
-        data_count: logs.length,
-      });
+      return apiResponse.successResponseWithData(
+        res,
+        "Logs retreived successfully",
+        {
+          data: logs,
+          data_count: logs.length,
+        }
+      );
     });
   } catch (err) {
     //throw error in json response with status 500.
