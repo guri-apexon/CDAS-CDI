@@ -45,7 +45,7 @@ const breadcrumpItems = [
 ];
 const DataPackages = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
+  // const history = useHistory();
   const [showForm, setShowForm] = useState(false);
   const [configShow, setConfigShow] = useState(false);
   const [compression, setCompression] = useState("not_compressed");
