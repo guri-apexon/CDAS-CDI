@@ -81,6 +81,10 @@ const DataPackages = () => {
     }
   }, [packageData.refreshData]);
   useEffect(() => {
+    if (packageData.openAddPackage) setShowForm(true);
+  }, [packageData.openAddPackage]);
+
+  useEffect(() => {
     getPackages();
   }, []);
   // eslint-disable-next-line consistent-return
