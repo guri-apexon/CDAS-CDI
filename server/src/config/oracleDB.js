@@ -16,6 +16,3 @@ module.exports = async() => {
         throw err;
       }
 }
-
-
-

@@ -84,8 +84,8 @@ const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
   const date =
     rowValue && moment(rowValue, "MM/DD/YYYY").isValid()
-      ? moment(rowValue, "MM/DD/YYYY").format("MM/DD/YYYY")
-      : moment(rowValue).format("DD-MMM-YYYY HH:mm A");
+      ? moment(rowValue).format("DD-MMM-YYYY HH:mm A")
+      : moment().format("DD-MMM-YYYY HH:mm A");
 
   return <span>{date}</span>;
 };
@@ -175,10 +175,10 @@ const columns = [
   },
   {
     header: "Audit Version",
-    accessor: "audit_vers",
+    accessor: "log_version",
     sortFunction: compareStrings,
-    customCell: VersionCell,
-    filterFunction: createStringSearchFilter("audit_vers"),
+    // customCell: VersionCell,
+    filterFunction: createStringSearchFilter("log_version"),
     filterComponent: TextFieldFilter,
     width: 70,
   },
@@ -192,10 +192,10 @@ const columns = [
   },
   {
     header: "Update Date",
-    accessor: "audit_updt_dt",
+    accessor: "update_dt",
     sortFunction: compareDates,
     customCell: DateCell,
-    filterFunction: dateFilterV2("audit_updt_dt"),
+    filterFunction: dateFilterV2("update_dt"),
     filterComponent: DateFilter,
   },
   {

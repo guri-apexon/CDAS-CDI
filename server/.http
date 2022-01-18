@@ -273,8 +273,9 @@ POST http://localhost:4001/v1/api/dataflow/activate HTTP/1.1
 content-type: application/json
 
 {
-"dataFlowId": "a0A0E00000322XRUAY",
-"user_id": "u1105372"
+"dataFlowId": "a0A0E000004k7m3UAA",
+"userId": "u1105372",
+"versionNo": 3
 }
 
 ### InActivate DataFlow
@@ -283,6 +284,27 @@ POST http://localhost:4001/v1/api/dataflow/inActivate HTTP/1.1
 content-type: application/json
 
 {
+"dataFlowId": "a0A0E000004k7m3UAA",
+"userId": "u1105372",
+"versionNo": 2
+}
+
+### SyncNow DataFlow
+
+POST http://localhost:4001/v1/api/dataflow/syncNow HTTP/1.1
+content-type: application/json
+
+{
+"version": 2,
 "dataFlowId": "a0A0E00000322XRUAY",
-"user_id": "u1105372"
+"userId": "u1105372",
+"action": "SYNC"
+}
+
+### Get VLC Data
+
+POST http://localhost:4001/v1/api/dataset/getVLCData HTTP/1.1
+content-type: application/json
+
+{
 }

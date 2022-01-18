@@ -21,7 +21,7 @@ export const checkfilterCondition = (value) => {
 
 export const checkNumbers = (value) => {
   const regexp = /^[0-9\b]+$/;
-  if (value !== "" && !regexp.test(value)) {
+  if (value && !regexp.test(value)) {
     return "Only number format values are allowed";
   }
   return false;

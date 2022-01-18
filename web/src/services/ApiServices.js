@@ -7,6 +7,7 @@ import {
   UNPINSTUDY,
   PINSTUDY,
   HARDDELETE,
+  SYNCNOW,
   ACTIVATEDF,
   INACTIVATE,
 } from "../constants";
@@ -27,7 +28,7 @@ export const hardDelete = async (dataFlowId) => {
   try {
     const res = await axios.post(`${baseURL}/${HARDDELETE}`, {
       dataFlowId,
-      user_id: userId,
+      userId,
     });
     return res.data?.data || [];
   } catch (err) {
@@ -35,11 +36,26 @@ export const hardDelete = async (dataFlowId) => {
   }
 };
 
-export const activateDF = async (dataFlowId) => {
+export const syncNowDataFlow = async ({ version, dataFlowId }) => {
+  try {
+    const res = await axios.post(`${baseURL}/${SYNCNOW}`, {
+      version,
+      userId,
+      dataFlowId,
+      action: "SYNC",
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const activateDF = async (dataFlowId, versionNo) => {
   try {
     const res = await axios.post(`${baseURL}/${ACTIVATEDF}`, {
       dataFlowId,
-      user_id: userId,
+      userId,
+      versionNo,
     });
     return res.data?.data || [];
   } catch (err) {
@@ -47,11 +63,12 @@ export const activateDF = async (dataFlowId) => {
   }
 };
 
-export const inActivateDF = async (dataFlowId) => {
+export const inActivateDF = async (dataFlowId, versionNo) => {
   try {
     const res = await axios.post(`${baseURL}/${INACTIVATE}`, {
       dataFlowId,
-      user_id: userId,
+      userId,
+      versionNo,
     });
     return res.data?.data || [];
   } catch (err) {
