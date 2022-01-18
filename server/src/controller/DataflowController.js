@@ -352,13 +352,13 @@ exports.cronHardDelete = async () => {
 };
 exports.hardDelete = async (req, res) => {
   try {
-    const { dataflowId, userId } = req.body;
+    const { dataFlowId, userId } = req.body;
     DB.executeQuery(`SELECT * FROM cdascdi1d.cdascdi.user where usr_id = $1`, [
       userId,
     ]).then(async (response) => {
       if (response.rows && response.rows.length) {
         const user = response.rows[0];
-        const deleted = await hardDeleteTrigger(dataflowId, user);
+        const deleted = await hardDeleteTrigger(dataFlowId, user);
         if (deleted == "deleted") {
           return apiResponse.successResponseWithData(
             res,
@@ -374,7 +374,7 @@ exports.hardDelete = async (req, res) => {
             {}
           );
         } else {
-          const inserted = await addDeleteTempLog(dataflowId, user);
+          const inserted = await addDeleteTempLog(dataFlowId, user);
           if (inserted) {
             return apiResponse.successResponseWithData(
               res,
@@ -408,24 +408,34 @@ exports.activateDataFlow = async (req, res) => {
     const newVersion = versionNo + 1;
     Logger.info({ message: "activateDataFlow" });
 
-    const q1 = `UPDATE cdascdi.dataflow set active=1 WHERE dataflowid=$1`;
-    const q2 = `INSERT INTO cdascdi.dataflow_audit_log
-    (dataflow_audit_log_id, dataflowid, audit_vers, audit_updt_dt, usr_id, "attribute", old_val, new_val)
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
-    const $q1 = await DB.executeQuery(q1, [dataFlowId]);
-    const $q2 = await DB.executeQuery(q2, [
-      dataflowAuditlogId,
-      dataFlowId,
-      newVersion,
-      curDate,
-      userId,
-      "active",
-      0,
-      1,
-    ]);
+    const q0 = `select d3.active from cdascdi.dataflow d
+    inner join cdascdi.datapackage d2 on d.dataflowid = d2.dataflowid  
+    inner join cdascdi.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1`;
+    const $q0 = await DB.executeQuery(q0, [dataFlowId]);
 
-    return apiResponse.successResponseWithData(res, "Operation success", {
-      success: true,
+    if ($q0.rows.map((e) => e.active).includes(1)) {
+      const q1 = `UPDATE cdascdi.dataflow set active=1 WHERE dataflowid=$1`;
+      const q2 = `INSERT INTO cdascdi.dataflow_audit_log
+      (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+      const $q1 = await DB.executeQuery(q1, [dataFlowId]);
+      const $q2 = await DB.executeQuery(q2, [
+        dataflowAuditlogId,
+        dataFlowId,
+        newVersion,
+        curDate,
+        userId,
+        "active",
+        0,
+        1,
+      ]);
+
+      return apiResponse.successResponseWithData(res, "Operation success", {
+        success: true,
+      });
+    }
+    return apiResponse.validationErrorWithData(res, "Dataflow Having Issue", {
+      success: false,
     });
   } catch (err) {
     Logger.error("catch :activateDataFlow");
@@ -443,7 +453,7 @@ exports.inActivateDataFlow = async (req, res) => {
 
     const q1 = `UPDATE cdascdi.dataflow set active=0 WHERE dataflowid=$1`;
     const q2 = `INSERT INTO cdascdi.dataflow_audit_log
-    (dataflow_audit_log_id, dataflowid, audit_vers, audit_updt_dt, usr_id, "attribute", old_val, new_val)
+    (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
     VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
 
     const $q1 = await DB.executeQuery(q1, [dataFlowId]);
