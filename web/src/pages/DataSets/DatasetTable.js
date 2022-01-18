@@ -143,6 +143,41 @@ const EditableCell = ({ row, column: { accessor: key } }) => {
   );
 };
 
+const ActionCell = ({ row }) => {
+  const {
+    columnId,
+    onRowEdit,
+    onCancel,
+    onDelete,
+    editMode: eMode,
+    onRowSave,
+  } = row;
+
+  return eMode ? (
+    <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
+      <Button size="small" style={{ marginRight: 8 }} onClick={onCancel}>
+        Cancel
+      </Button>
+      <Button
+        size="small"
+        variant="primary"
+        onClick={() => onRowSave(columnId)}
+      >
+        Save
+      </Button>
+    </div>
+  ) : (
+    <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
+      <IconButton size="small" onClick={() => onRowEdit(columnId)}>
+        <Pencil />
+      </IconButton>
+      <IconButton size="small" onClick={() => onDelete(columnId)}>
+        <Trash />
+      </IconButton>
+    </div>
+  );
+};
+
 const DatasetTable = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -193,39 +228,25 @@ const DatasetTable = (props) => {
     return <Link onClick={() => handleViewLOV(row)}>View LOVs</Link>;
   };
 
-  const ActionCell = ({ row }) => {
-    const {
-      columnId,
-      onRowEdit,
-      onRowSave,
-      onCancel,
-      onDelete,
-      editMode: eMode,
-    } = row;
-
-    return editMode || eMode ? (
-      <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
-        <Button size="small" style={{ marginRight: 8 }} onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button
-          size="small"
-          variant="primary"
-          onClick={() => onRowSave(columnId)}
-        >
-          Save
-        </Button>
-      </div>
-    ) : (
-      <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
-        <IconButton size="small" onClick={() => onRowEdit(columnId)}>
-          <Pencil />
-        </IconButton>
-        <IconButton size="small" onClick={() => onDelete(columnId)}>
-          <Trash />
-        </IconButton>
-      </div>
-    );
+  const searchRows = (e) => {
+    // eslint-disable-next-line prefer-destructuring
+    const value = e.target.value?.toLowerCase();
+    const filteredRows = rows?.filter((rw) => {
+      return (
+        rw?.variableLabel?.toLowerCase().includes(value) ||
+        rw?.columnName?.toLowerCase().includes(value) ||
+        rw?.position?.toLowerCase().includes(value) ||
+        rw?.format?.toLowerCase().includes(value) ||
+        rw?.dataType?.toLowerCase().includes(value) ||
+        rw?.primary?.toLowerCase().includes(value) ||
+        rw?.unique?.toLowerCase().includes(value) ||
+        rw?.required?.toLowerCase().includes(value) ||
+        rw?.minLength?.toString().includes(value) ||
+        rw?.maxLength?.toString().includes(value) ||
+        rw?.values?.toLowerCase().includes(value)
+      );
+    });
+    setRows([...filteredRows]);
   };
 
   const addSingleRow = () => {
@@ -466,7 +487,8 @@ const DatasetTable = (props) => {
           placeholder="Search"
           size="small"
           style={{ marginTop: "-5px", marginBottom: 0 }}
-          disabled
+          onChange={searchRows}
+          disabled={isEditAll}
         />
         <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
           <EllipsisVertical />
@@ -509,6 +531,12 @@ const DatasetTable = (props) => {
   const onCancel = () => {
     setEditByRow([]);
   };
+  const onRowSave = (columnId) => {
+    // setRows(rows.map((row) => (row.columnId === editedRow.columnId ? editedRow : row)));
+    const editedRow = rows.find((row) => row.columnId === columnId);
+    console.log(columnId, "columnId", editedRow);
+    setEditByRow([]);
+  };
 
   const onRowEdit = (columnId) => {
     setEditByRow([columnId]);
@@ -521,6 +549,11 @@ const DatasetTable = (props) => {
   const editRow = (columnId, key, value, errorTxt) => {
     console.log(columnId, "ColumdIn");
     setEditedRows((rws) =>
+      rws.map((row) =>
+        row.columnId === columnId ? { ...row, [key]: value } : row
+      )
+    );
+    setRows((rws) =>
       rws.map((row) =>
         row.columnId === columnId ? { ...row, [key]: value } : row
       )
@@ -559,6 +592,7 @@ const DatasetTable = (props) => {
             ...row,
             onDelete,
             editRow,
+            onRowSave,
             editMode: editMode || editByRow?.includes(row.columnId),
             selectedDataset,
             onCancel,
