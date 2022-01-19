@@ -159,10 +159,42 @@ const createStringArraySearchFilter = (accessor) => {
     );
 };
 
-export default function DataFlowTable({ selectedStudy, updateData }) {
+const LinkCell = ({ row, column: { accessor } }) => {
+  const rowValue = row[accessor];
+  return (
+    // eslint-disable-next-line jsx-a11y/anchor-is-valid
+    <Link onClick={() => console.log(`link clicked ${rowValue}`)}>
+      {rowValue}
+    </Link>
+  );
+};
+
+const DateCell = ({ row, column: { accessor } }) => {
+  const rowValue = row[accessor];
+  const date =
+    rowValue && moment(rowValue, "DD-MMM-YYYY").isValid()
+      ? moment(rowValue).format("DD-MMM-YYYY")
+      : moment(rowValue).format("DD-MMM-YYYY");
+
+  return <span>{date}</span>;
+};
+
+const StatusCell = ({ row, column: { accessor } }) => {
+  const description = row[accessor];
+  return (
+    <Tag
+      style={{ marginRight: 10 }}
+      label={description}
+      className={`status-cell ${
+        description === "Active" ? "active" : "inActive"
+      }`}
+    />
+  );
+};
+
+export default function DataFlowTable({ updateData }) {
   const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState(null);
-  const [topFilterData, setTopFilterData] = useState([]);
   const messageContext = useContext(MessageContext);
   const [showSyncNow, setShowSyncNow] = useState(false);
   const [showHardDelete, setShowHardDelete] = useState(false);
@@ -193,26 +225,6 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
       : dashboard.flowData;
     setRowData([...dashboardData]);
   }, [dashboard.flowData, selectedFilter]);
-
-  const LinkCell = ({ row, column: { accessor } }) => {
-    const rowValue = row[accessor];
-    return (
-      // eslint-disable-next-line jsx-a11y/anchor-is-valid
-      <Link onClick={() => console.log(`link clicked ${rowValue}`)}>
-        {rowValue}
-      </Link>
-    );
-  };
-
-  const DateCell = ({ row, column: { accessor } }) => {
-    const rowValue = row[accessor];
-    const date =
-      rowValue && moment(rowValue, "DD-MMM-YYYY").isValid()
-        ? moment(rowValue).format("DD-MMM-YYYY")
-        : moment(rowValue).format("DD-MMM-YYYY");
-
-    return <span>{date}</span>;
-  };
 
   const hardDeleteAction = async (e) => {
     setSelectedFlow(e);
@@ -379,19 +391,6 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
           </Typography>
         </div>
       </div>
-    );
-  };
-
-  const StatusCell = ({ row, column: { accessor } }) => {
-    const description = row[accessor];
-    return (
-      <Tag
-        style={{ marginRight: 10 }}
-        label={description}
-        className={`status-cell ${
-          description === "Active" ? "active" : "inActive"
-        }`}
-      />
     );
   };
 
@@ -793,7 +792,9 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
             rowId="dataFlowId"
             initialSortedColumn="dateCreated"
             initialSortOrder="asc"
-            rowsPerPageOptions={[10, 20, 50, "All"]}
+            rowsPerPageOptions={
+              totalRows >= 30 ? [10, 50, 100, "All"] : [10, 20, 50, "All"]
+            }
             hasScroll={true}
             maxWidth="calc(100vw - 465px)"
             maxHeight="calc(100vh - 293px)"
