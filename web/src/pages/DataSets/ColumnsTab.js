@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useContext, useEffect } from "react";
 import { useSelector } from "react-redux";
@@ -16,11 +17,13 @@ const ColumnsTab = ({ locationType }) => {
   const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
+  const dashboard = useSelector((state) => state.dashboard);
   const { datasetColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
   const [numberOfRows, setNumberOfRows] = useState(null);
   const [showColumns, setShowColumns] = useState(false);
+  const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
   const [formattedData, setFormattedData] = useState([]);
 
@@ -90,41 +93,91 @@ const ColumnsTab = ({ locationType }) => {
     setFormattedData([...newData]);
   };
 
+  const handleDelete = () => {
+    setSelectedFile([]);
+    setImportedData([]);
+    setFormattedData([]);
+    setIsImportReady(false);
+  };
+
+  const showProtocolNotMatching = () => {
+    messageContext.showErrorMessage(
+      `Protocol Number in file does not match protocol number ‘${dashboard?.selectedCard?.protocolnumber}’ for this data flow. Please make sure these match and try again`
+    );
+    handleDelete();
+  };
+
   const formatData = () => {
     // console.log("data", importedData, formattedData);
     const data = importedData.slice(1);
-    const newData =
-      data.length > 1
-        ? data.map((e, i) => {
-            const newObj = {
-              columnId: i + 1,
-              variableLabel: e[1] || "",
-              columnName: e[2] || "",
-              position: "",
-              format: e[3] || "",
-              dataType: e[4] || "",
-              primary: e[5] || "",
-              unique: e[6] || "",
-              required: e[7] || "",
-              minLength: e[8] || "",
-              maxLength: e[9] || "",
-              values: e[10] || "",
-            };
-            return newObj;
-          })
-        : [];
-    setFormattedData([...newData]);
+    const protocolList = data.map((e) => e[0]);
+    const isMatchSelectedProtocol = (currentValue) =>
+      currentValue === dashboard?.selectedCard?.protocolnumber;
+    const isAllDataMatch = protocolList.every(isMatchSelectedProtocol);
+    if (isAllDataMatch) {
+      const newData =
+        data.length > 1
+          ? data.map((e, i) => {
+              const newObj = {
+                columnId: i + 1,
+                variableLabel: e[1] || "",
+                columnName: e[2] || "",
+                position: "",
+                format: e[3] || "",
+                dataType: e[4] || "",
+                primary: e[5] === "N" ? "No" : e[5] === "Y" ? "No" : "",
+                unique: e[6] === "N" ? "No" : e[6] === "Y" ? "No" : "",
+                required: e[7] === "N" ? "No" : e[7] === "Y" ? "No" : "",
+                minLength: e[8] || "",
+                maxLength: e[9] || "",
+                values: e[10] || "",
+              };
+              return newObj;
+            })
+          : [];
+      setFormattedData([...newData]);
+      setIsImportReady(true);
+    } else {
+      showProtocolNotMatching();
+    }
   };
 
-  // const handleNoHeaders = () => {
-  //   messageContext.showErrorMessage(
-  //     `Import is not available for files with no header row.`
-  //   );
-  // };
+  const checkHeaders = () => {
+    const header = importedData[0];
+    // console.log("Header", header);
+    const validation =
+      header.includes("Protocol") &&
+      header.includes("Variable Label") &&
+      header.includes("Column Name") &&
+      header.includes("Format") &&
+      header.includes("Data Type") &&
+      header.includes("Primary(Y/N)") &&
+      header.includes("Required(Y/N)") &&
+      header.includes("Unique(Y/N)") &&
+      header.includes("Min Length") &&
+      header.includes("Max Length") &&
+      header.includes("List of Values");
+    return validation;
+  };
+
+  const handleNoHeaders = () => {
+    messageContext.showErrorMessage(
+      `Import is not available for files with no header row.`
+    );
+    handleDelete();
+  };
 
   useEffect(() => {
-    if (importedData.length > 2) {
-      formatData();
+    if (importedData.length > 1) {
+      const correctHeader = checkHeaders();
+      if (correctHeader) {
+        formatData();
+      } else {
+        messageContext.showErrorMessage(
+          `The Selected File Does Not Match the Template`
+        );
+        handleDelete();
+      }
     }
   }, [importedData]);
 
@@ -137,17 +190,10 @@ const ColumnsTab = ({ locationType }) => {
     }
   }, [datasetColumns]);
 
-  const handleDelete = () => {
-    setSelectedFile([]);
-    setImportedData([]);
-    setFormattedData([]);
-  };
-
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
   };
 
-  const handleSubmission = () => {};
   return (
     <div className="tab colums-tab">
       {!showColumns && (
@@ -202,10 +248,10 @@ const ColumnsTab = ({ locationType }) => {
               style={{ marginRight: 10, float: "right" }}
               onClick={() => setShowColumns(true)}
               disabled={
-                selectedMethod !== "manually" &&
-                !showColumns &&
-                selectedMethod !== "fileUpload" &&
-                !showColumns
+                !(
+                  (selectedMethod === "manually" && numberOfRows >= 1) ||
+                  (selectedMethod === "fileUpload" && isImportReady)
+                )
               }
             >
               Create
