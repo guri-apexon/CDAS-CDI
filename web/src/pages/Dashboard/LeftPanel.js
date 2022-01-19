@@ -85,12 +85,12 @@ const styles = {
   },
   pinnedCards: {
     overflow: "auto",
-    maxHeight: "calc(50vh - 260px)",
+    maxHeight: "200vh",
   },
   unPinnedCards: {
     paddingTop: 5,
     overflow: "auto",
-    maxHeight: "calc(80vh - 260px)",
+    maxHeight: "100vh",
   },
 };
 

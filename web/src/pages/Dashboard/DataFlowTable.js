@@ -793,7 +793,7 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
             rowId="dataFlowId"
             initialSortedColumn="dateCreated"
             initialSortOrder="asc"
-            rowsPerPageOptions={[10, 50, 100, "All"]}
+            rowsPerPageOptions={[10, 20, 50, "All"]}
             hasScroll={true}
             maxWidth="calc(100vw - 465px)"
             maxHeight="calc(100vh - 293px)"
