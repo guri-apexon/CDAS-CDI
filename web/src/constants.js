@@ -96,7 +96,6 @@ export const UNPINSTUDY = "v1/api/study/unPinStudy";
 export const PINSTUDY = "v1/api/study/pinStudy";
 export const AUDIT_LOGS_FETCH = "v1/api/audit-logs/get";
 
-export const FETCHDATAFLOWS = "v1/api/dataflow/studyDataflowList";
 export const LOCATIONAPI = "v1/api/location";
 export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";
@@ -104,4 +103,4 @@ export const DATASETAPI = "v1/api/dataset";
 export const DATAFLOWAPI = "v1/api/dataflow";
 export const VLCDATAAPI = "v1/api/dataset/getVLCData";
 
-export const baseURL = process.env.API_URL || "http://localhost:4001";
+export const baseURL = process.env.REACT_APP_API_URL;
