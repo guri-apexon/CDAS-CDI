@@ -1,4 +1,8 @@
 import moment from "moment";
+import React from "react";
+import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
+import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
+import { TextField } from "apollo-react/components/TextField/TextField";
 
 export const getCookie = (key) => {
   const b = document.cookie.match(`(^|;)\\s*${key}\\s*=\\s*([^;]+)`);
@@ -176,6 +180,139 @@ export const compareDates = (accessor, sortOrder) => {
     }
     return 0;
   };
+};
+
+export const createAutocompleteFilter =
+  (source) =>
+  ({ accessor, filters, updateFilterValue }) => {
+    const ref = React.useRef();
+    const [height, setHeight] = React.useState(0);
+    const [isFocused, setIsFocused] = React.useState(false);
+    const value = filters[accessor];
+
+    React.useEffect(() => {
+      const curHeight = ref?.current?.getBoundingClientRect().height;
+      if (curHeight !== height) {
+        setHeight(curHeight);
+      }
+    }, [value, isFocused, height]);
+
+    return (
+      <div
+        style={{
+          minWidth: 160,
+          maxWidth: 200,
+          position: "relative",
+          height,
+        }}
+      >
+        <AutocompleteV2
+          style={{ position: "absolute", left: 0, right: 0 }}
+          value={
+            value
+              ? value.map((label) => {
+                  if (label === "") {
+                    return { label: "blanks" };
+                  }
+                  return { label };
+                })
+              : []
+          }
+          name={accessor}
+          source={source}
+          onChange={(event, value2) => {
+            updateFilterValue({
+              target: {
+                name: accessor,
+                value: value2.map(({ label }) => {
+                  if (label === "blanks") {
+                    return "";
+                  }
+                  return label;
+                }),
+              },
+            });
+          }}
+          fullWidth
+          multiple
+          chipColor="white"
+          size="small"
+          forcePopupIcon
+          showCheckboxes
+          limitChips={1}
+          filterSelectedOptions={false}
+          blurOnSelect={false}
+          clearOnBlur={false}
+          disableCloseOnSelect
+          matchFrom="any"
+          showSelectAll
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          ref={ref}
+          noOptionsText="No matches"
+        />
+      </div>
+    );
+  };
+
+export const TextFieldFilter = ({ accessor, filters, updateFilterValue }) => {
+  return (
+    <TextField
+      value={filters[accessor]}
+      name={accessor}
+      onChange={updateFilterValue}
+      fullWidth
+      margin="none"
+      size="small"
+    />
+  );
+};
+
+export const IntegerFilter = ({ accessor, filters, updateFilterValue }) => {
+  return (
+    <TextField
+      value={filters[accessor]}
+      name={accessor}
+      onChange={updateFilterValue}
+      type="number"
+      style={{ width: 74 }}
+      margin="none"
+      size="small"
+    />
+  );
+};
+
+export const DateFilter = ({ accessor, filters, updateFilterValue }) => {
+  return (
+    <div style={{ minWidth: 230 }}>
+      <div style={{ position: "absolute", top: 0, paddingRight: 4 }}>
+        <DateRangePickerV2
+          value={filters[accessor] || [null, null]}
+          name={accessor}
+          onChange={(value) =>
+            updateFilterValue({
+              target: { name: accessor, value },
+            })
+          }
+          startLabel=""
+          endLabel=""
+          placeholder=""
+          fullWidth
+          margin="none"
+          size="small"
+        />
+      </div>
+    </div>
+  );
+};
+
+export const createStringArraySearchFilter = (accessor) => {
+  return (row, filters) =>
+    !Array.isArray(filters[accessor]) ||
+    filters[accessor].length === 0 ||
+    filters[accessor].some(
+      (value) => value.toUpperCase() === row[accessor]?.toUpperCase()
+    );
 };
 
 export const toast = (text = "", type = "success") => {
