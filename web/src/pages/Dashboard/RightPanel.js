@@ -32,7 +32,6 @@ const RightPanel = () => {
   const [value, setValue] = React.useState(1);
   const useStyles = makeStyles(styles);
   const dashboard = useSelector((state) => state.dashboard);
-  const [selectedStudy, setSelectedStudy] = useState(null);
   const dispatch = useDispatch();
 
   const classes = useStyles();
@@ -47,8 +46,9 @@ const RightPanel = () => {
   };
 
   useEffect(() => {
-    setSelectedStudy(dashboard.selectedCard.prot_id);
-    updateData();
+    if (dashboard?.selectedCard?.prot_id) {
+      updateData();
+    }
   }, [dashboard.selectedCard]);
 
   return (
@@ -76,10 +76,7 @@ const RightPanel = () => {
         )}
         {value === 1 && (
           <>
-            <DataFlowTable
-              selectedStudy={selectedStudy}
-              updateData={updateData}
-            />
+            <DataFlowTable updateData={updateData} />
           </>
         )}
       </div>

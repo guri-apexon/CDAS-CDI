@@ -12,8 +12,9 @@ export function* fetchFlowData(payload) {
   // console.log("before", payload.protocolId);
   try {
     const fetchDBData = yield call(
-      axios.get,
-      `${baseURL}/${FLOW_DATA_FETCH}/${payload.protocolId}`
+      axios.post,
+      `${baseURL}/${FLOW_DATA_FETCH}`,
+      { protocolId: payload.protocolId }
     );
 
     console.log("study", fetchDBData);

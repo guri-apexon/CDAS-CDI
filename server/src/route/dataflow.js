@@ -2,11 +2,7 @@ const express = require("express");
 const DataflowController = require("../controller/DataflowController");
 const router = express.Router();
 
-router.get(
-  "/studyDataflowList/:protocolId",
-  DataflowController.getStudyDataflows
-);
-
+router.post("/studyDataflowList", DataflowController.getStudyDataflows);
 router.get("/detail/:dataFlowId", DataflowController.getDataflowDetail);
 router.post("/createDataflow", DataflowController.createDataflow);
 router.post("/hardDelete", DataflowController.hardDelete);

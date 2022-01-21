@@ -9,8 +9,9 @@ const helper = require("../helpers/customFunctions");
 
 exports.getStudyDataflows = async (req, res) => {
   try {
-    const protocolId = req.params.protocolId;
-    const query = `select * from (select s.prot_id as "studyId", d.dataflowid as "dataFlowId", row_number () over(partition by d.dataflowid,d2.prot_id order by dh."version" desc) as rnk, dsetcount.dsCount as "dsCount", dpackagecount.dpCount as "dpCount", s.prot_nbr as "studyName", dh."version", d.data_flow_nm as "dataFlowName", d.testflag as "type", d.insrt_tm as "dateCreated", vend_nm as "vendorSource", d.description, d.type as "adapter", d.active as "status", d.extrnl_sys_nm as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified", d.refreshtimestamp as "lastSyncDate" from cdascdi.dataflow d 
+    const { protocolId } = req.body;
+    if (protocolId) {
+      const query = `select * from (select s.prot_id as "studyId", d.dataflowid as "dataFlowId", row_number () over(partition by d.dataflowid,d2.prot_id order by dh."version" desc) as rnk, dsetcount.dsCount as "dsCount", dpackagecount.dpCount as "dpCount", s.prot_nbr as "studyName", dh."version", d.data_flow_nm as "dataFlowName", d.testflag as "type", d.insrt_tm as "dateCreated", vend_nm as "vendorSource", d.description, d.type as "adapter", d.active as "status", d.extrnl_sys_nm as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified", d.refreshtimestamp as "lastSyncDate" from cdascdi.dataflow d 
     inner join cdascdi.vendor v on d.vend_id = v.vend_id 
     inner join cdascdi.source_location sl on d.src_loc_id = sl.src_loc_id 
     inner join cdascdi.datapackage d2 on d.dataflowid = d2.dataflowid 
@@ -20,48 +21,55 @@ exports.getStudyDataflows = async (req, res) => {
     inner join (select dataflowid, COUNT(DISTINCT datapackageid) as dpCount FROM cdascdi.datapackage d GROUP BY dataflowid) dpackagecount on (d.dataflowid=dpackagecount.dataflowid)
     where s.prot_id = $1) as df where df.rnk=1`;
 
-    Logger.info({ message: "getStudyDataflows" });
-    const $q1 = await DB.executeQuery(query, [protocolId]);
+      Logger.info({ message: "getStudyDataflows" });
+      const $q1 = await DB.executeQuery(query, [protocolId]);
 
-    const formatDateValues = await $q1.rows.map((e) => {
-      let editT = moment(e.lastModified).format("MM/DD/YYYY");
-      let addT = moment(e.dateCreated).format("MM/DD/YYYY");
-      let syncT = moment(e.lastSyncDate).format("MM/DD/YYYY");
-      let status = e.status === 0 ? "Inactive" : "Active";
-      let dfType = e.type === 0 ? "Production" : "Test";
-      return {
-        ...e,
-        dateCreated: addT,
-        lastModified: editT,
-        lastSyncDate: syncT,
-        status: status,
-        type: dfType,
-      };
-    });
+      const formatDateValues = await $q1.rows.map((e) => {
+        let editT = moment(e.lastModified).format("MM/DD/YYYY");
+        let addT = moment(e.dateCreated).format("MM/DD/YYYY");
+        let syncT = moment(e.lastSyncDate).format("MM/DD/YYYY");
+        let status = e.status === 0 ? "Inactive" : "Active";
+        let dfType = e.type === 0 ? "Production" : "Test";
+        return {
+          ...e,
+          dateCreated: addT,
+          lastModified: editT,
+          lastSyncDate: syncT,
+          status: status,
+          type: dfType,
+        };
+      });
 
-    const uniqueDataflows = Array.from(
-      formatDateValues
-        .reduce((acc, { dsCount, dpCount, dataFlowId, ...r }) => {
-          const current = acc.get(dataFlowId) || {
-            ...r,
-            dataSets: 0,
-            dataPackages: 0,
-          };
-          return acc.set(dataFlowId, {
-            ...current,
-            dataFlowId,
-            dataSets: parseInt(current.dataSets) + parseInt(dsCount),
-            dataPackages: parseInt(current.dataPackages) + parseInt(dpCount),
-          });
-        }, new Map())
-        .values()
-    );
+      const uniqueDataflows = Array.from(
+        formatDateValues
+          .reduce((acc, { dsCount, dpCount, dataFlowId, ...r }) => {
+            const current = acc.get(dataFlowId) || {
+              ...r,
+              dataSets: 0,
+              dataPackages: 0,
+            };
+            return acc.set(dataFlowId, {
+              ...current,
+              dataFlowId,
+              dataSets: parseInt(current.dataSets) + parseInt(dsCount),
+              dataPackages: parseInt(current.dataPackages) + parseInt(dpCount),
+            });
+          }, new Map())
+          .values()
+      );
 
-    return apiResponse.successResponseWithData(
-      res,
-      "Operation success",
-      uniqueDataflows
-    );
+      return apiResponse.successResponseWithData(
+        res,
+        "Operation success",
+        uniqueDataflows
+      );
+    } else {
+      return apiResponse.successResponseWithData(
+        res,
+        "Protocol is not Selected",
+        []
+      );
+    }
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :getStudyDataflows");
