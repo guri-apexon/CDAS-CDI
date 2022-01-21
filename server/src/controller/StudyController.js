@@ -3,13 +3,14 @@ const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const moment = require("moment");
 const _ = require("lodash");
+const config = require("../config/dbconstant.json");
 
 exports.getUserStudyList = function (req, res) {
   try {
     const userId = req.params.userId;
-    const query = `SELECT prot_id, prot_nbr as protocolnumber, s.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM cdascdi.study s INNER JOIN cdascdi.sponsor s2 ON s2.spnsr_id = s.spnsr_id WHERE s.usr_id = $1 ORDER BY sponsorname`;
-    // const q2 = `select dataflowid, COUNT(DISTINCT datapackageid) FROM cdascdi.datapackage d GROUP BY d.dataflowid`
-    // const q3 = `select datapackageid, COUNT(DISTINCT datasetid) FROM cdascdi.dataset d GROUP BY datapackageid`
+    const query = `SELECT prot_id, prot_nbr as protocolnumber, s.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${config.DB_SCHEMA_NAME}.study s INNER JOIN ${config.DB_SCHEMA_NAME}.sponsor s2 ON s2.spnsr_id = s.spnsr_id WHERE s.usr_id = $1 ORDER BY sponsorname`;
+    // const q2 = `select dataflowid, COUNT(DISTINCT datapackageid) FROM ${config.DB_SCHEMA_NAME}.datapackage d GROUP BY d.dataflowid`
+    // const q3 = `select datapackageid, COUNT(DISTINCT datasetid) FROM ${config.DB_SCHEMA_NAME}.dataset d GROUP BY datapackageid`
 
     Logger.info({
       message: "getUserStudyList",
@@ -43,7 +44,7 @@ exports.pinStudy = async (req, res) => {
   try {
     const { userId, protocolId } = req.body;
     const curDate = new Date();
-    const insertQuery = `INSERT INTO cdascdi.study_user_pin
+    const insertQuery = `INSERT INTO ${config.DB_SCHEMA_NAME}.study_user_pin
       (usr_id, prot_id, pinned_stdy, pinned_stdy_dt, insrt_tm, updt_tm)
       VALUES($1, $2, '', $3, $3, $3);
       `;
@@ -69,7 +70,7 @@ exports.pinStudy = async (req, res) => {
 exports.unPinStudy = async (req, res) => {
   try {
     const { userId, protocolId } = req.body;
-    const deleteQuery = `delete from cdascdi.study_user_pin where usr_id = $1 and prot_id = $2`;
+    const deleteQuery = `delete from ${config.DB_SCHEMA_NAME}.study_user_pin where usr_id = $1 and prot_id = $2`;
     Logger.info({
       message: "unPinStudy",
     });
@@ -88,7 +89,7 @@ exports.unPinStudy = async (req, res) => {
 exports.getUserPinnedStudies = function (req, res) {
   try {
     const userId = req.params.userId;
-    const query = `select * from cdascdi.study_user_pin sup where usr_id = $1 order by pinned_stdy_dt desc `;
+    const query = `select * from ${config.DB_SCHEMA_NAME}.study_user_pin sup where usr_id = $1 order by pinned_stdy_dt desc `;
 
     Logger.info({
       message: "getUserPinnedStudies",
@@ -129,7 +130,7 @@ exports.searchStudyList = function (req, res) {
       searchParam,
     });
     // console.log("search", searchParam, userId);
-    const searchQuery = `SELECT prot_id, prot_nbr as protocolnumber, s.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM cdascdi.study s INNER JOIN cdascdi.sponsor s2 ON s2.spnsr_id = s.spnsr_id 
+    const searchQuery = `SELECT prot_id, prot_nbr as protocolnumber, s.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${config.DB_SCHEMA_NAME}.study s INNER JOIN ${config.DB_SCHEMA_NAME}.sponsor s2 ON s2.spnsr_id = s.spnsr_id 
               WHERE LOWER(prot_nbr) LIKE $1 OR LOWER(spnsr_nm) LIKE $1 OR LOWER(proj_cd) LIKE $1 LIMIT 10`;
 
     DB.executeQuery(searchQuery, [`%${searchParam}%`]).then((response) => {
