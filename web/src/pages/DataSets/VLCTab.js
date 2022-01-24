@@ -416,7 +416,6 @@ export default function VLCTab() {
             rowsPerPageOptions={[10, 50, 100, "All"]}
             hasScroll={true}
             maxHeight="calc(100vh - 293px)"
-            maxWidth="calc(100vw - 40px)"
             tablePaginationProps={{
               labelDisplayedRows: ({ from, to, count }) =>
                 `${count === 1 ? "Item " : "Items"} ${from}-${to} of ${count}`,
