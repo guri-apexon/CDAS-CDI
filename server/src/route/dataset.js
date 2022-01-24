@@ -9,5 +9,6 @@ router.post("/update", DatasetController.updateDatasetData);
 router.post("/create", DatasetController.saveDatasetData);
 router.post("/:datasetid/create-columns", DatasetController.saveDatasetColumns);
 router.post("/getVLCData", DatasetController.getVLCData);
+router.post("/previewSql", DatasetController.previewSql);
 
 module.exports = router;
