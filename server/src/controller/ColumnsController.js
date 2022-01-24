@@ -2,7 +2,7 @@ const DB = require("../config/db");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
-const config = require("../config/dbconstant.json");
+const constants = require('../config/constants');
 
 exports.createColumnSet = async (req, res) => {
   try {
@@ -22,7 +22,7 @@ exports.createColumnSet = async (req, res) => {
       uniqueKey,
     } = req.body;
     const curDate = new Date();
-    const insertQuery = `INSERT INTO ${config.DB_SCHEMA_NAME}.columndefinition (columnid, "VARIABLE", datasetid, "name", "datatype", primarykey, required, charactermin, charactermax, "position", "FORMAT", lov, "UNIQUE", insrt_tm, updt_tm)
+    const insertQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.columndefinition (columnid, "VARIABLE", datasetid, "name", "datatype", primarykey, required, charactermin, charactermax, "position", "FORMAT", lov, "UNIQUE", insrt_tm, updt_tm)
     VALUES($2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $1, $1)`;
 
     Logger.info({
@@ -73,7 +73,7 @@ exports.updateColumnSet = async (req, res) => {
       uniqueKey,
     } = req.body;
     const curDate = new Date();
-    const query = `UPDATE ${config.DB_SCHEMA_NAME}.datakind SET "name"=$3, active=$5, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2 AND extrnl_sys_nm=$6`;
+    const query = `UPDATE ${constants.DB_SCHEMA_NAME}.datakind SET "name"=$3, active=$5, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2 AND extrnl_sys_nm=$6`;
 
     Logger.info({
       message: "updateDataKind",

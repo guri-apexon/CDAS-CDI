@@ -3,18 +3,18 @@ const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const moment = require("moment");
 const CommonController = require("./CommonController");
-const config = require("../config/dbconstant.json");
+const constants = require('../config/constants');
 
 exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
-    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${config.DB_SCHEMA_NAME}.datapackage 
+    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${constants.DB_SCHEMA_NAME}.datapackage 
             WHERE del_flg = 'N' order by updt_tm desc`;
     if(searchParam) { 
-      searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${config.DB_SCHEMA_NAME}.datapackage 
+      searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${constants.DB_SCHEMA_NAME}.datapackage 
       WHERE LOWER(name) LIKE '%${searchParam}%' AND del_flg = 'N'  order by updt_tm desc`;
     }
-    const datasetQuery = `SELECT datasetid, mnemonic, active, type from ${config.DB_SCHEMA_NAME}.dataset where datapackageid = $1`;
+    const datasetQuery = `SELECT datasetid, mnemonic, active, type from ${constants.DB_SCHEMA_NAME}.dataset where datapackageid = $1`;
     Logger.info({
       message: "packagesList",
     });
@@ -56,13 +56,13 @@ exports.addPackage = function (req, res) {
     if (study_id == null || dataflow_id == null || user_id == null) {
       return apiResponse.ErrorResponse(res, "Study not found");
     }
-    const query = `INSERT INTO ${config.DB_SCHEMA_NAME}.datapackage(datapackageid, type, name, path, password, active, insrt_tm, updt_tm, del_flg, prot_id, dataflowid) VALUES('${packageID}', '${compression_type}', '${naming_convention}', '${sftp_path}','${package_password}',  '1','${currentTime}','${currentTime}', 'N','${study_id}','${dataflow_id}')`;
+    const query = `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(datapackageid, type, name, path, password, active, insrt_tm, updt_tm, del_flg, prot_id, dataflowid) VALUES('${packageID}', '${compression_type}', '${naming_convention}', '${sftp_path}','${package_password}',  '1','${currentTime}','${currentTime}', 'N','${study_id}','${dataflow_id}')`;
     
     DB.executeQuery(query).then( (response) => {
       const packages = response.rows || [];
       const ver = "1";
       const vers_id = packageID + ver;
-      const historyQuery = `INSERT INTO ${config.DB_SCHEMA_NAME}.datapackage_history (datapackage_vers_id, datapackageid, version, dataflowid, type, name, path, password, active, insrt_tm, updt_tm, del_flg, prot_id, usr_id) VALUES('${vers_id}', '${packageID}', '${ver}', '${dataflow_id}', '${compression_type}', '${naming_convention}', '${sftp_path}','${package_password}',  '1','${currentTime}','${currentTime}', 'N','${study_id}','${user_id}')`;
+      const historyQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage_history (datapackage_vers_id, datapackageid, version, dataflowid, type, name, path, password, active, insrt_tm, updt_tm, del_flg, prot_id, usr_id) VALUES('${vers_id}', '${packageID}', '${ver}', '${dataflow_id}', '${compression_type}', '${naming_convention}', '${sftp_path}','${package_password}',  '1','${currentTime}','${currentTime}', 'N','${study_id}','${user_id}')`;
       DB.executeQuery(historyQuery).then( (response) => {
         return apiResponse.successResponseWithData(
           res,
@@ -79,7 +79,7 @@ exports.addPackage = function (req, res) {
 exports.changeStatus = function (req, res) {
   try {
     const { active, package_id, user_id } = req.body;
-    const query = `UPDATE ${config.DB_SCHEMA_NAME}.datapackage
+    const query = `UPDATE ${constants.DB_SCHEMA_NAME}.datapackage
     SET active = ${active}
     WHERE datapackageid = '${package_id}' RETURNING *`;
 
@@ -101,7 +101,7 @@ exports.changeStatus = function (req, res) {
 exports.deletePackage = function (req, res) {
   try {
     const { active, package_id, user_id } = req.body;
-    const query = `UPDATE ${config.DB_SCHEMA_NAME}.datapackage
+    const query = `UPDATE ${constants.DB_SCHEMA_NAME}.datapackage
     SET del_flg = 'Y'
     WHERE datapackageid = '${package_id}' RETURNING *`;
     DB.executeQuery(query).then( async (response) => {

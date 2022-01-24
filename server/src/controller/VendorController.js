@@ -1,12 +1,12 @@
 const DB = require("../config/db");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
-const config = require("../config/dbconstant.json");
+const constants = require('../config/constants');
 
 exports.searchVendorList = function (req, res) {
   try {
     const searchParam = req.params.query.toLowerCase();
-    const searchQuery = `SELECT vend_id,vend_nm,vend_nm_stnd,description,active,extrnl_sys_nm from ${config.DB_SCHEMA_NAME}.vendor 
+    const searchQuery = `SELECT vend_id,vend_nm,vend_nm_stnd,description,active,extrnl_sys_nm from ${constants.DB_SCHEMA_NAME}.vendor 
             WHERE (LOWER(vend_nm) LIKE $1 OR 
             LOWER(vend_nm_stnd) LIKE $2) and active = 1
             `;
@@ -35,7 +35,7 @@ exports.searchVendorList = function (req, res) {
 exports.getVendorList = function (req, res) {
   try {
     let select = `vend_id,vend_id as value, vend_nm as label, vend_nm,vend_nm_stnd,description,active,extrnl_sys_nm`;
-    let searchQuery = `SELECT ${select} from ${config.DB_SCHEMA_NAME}.vendor where active=1 order by vend_nm asc`;
+    let searchQuery = `SELECT ${select} from ${constants.DB_SCHEMA_NAME}.vendor where active=1 order by vend_nm asc`;
     let dbQuery = DB.executeQuery(searchQuery);
     Logger.info({
       message: "vendorList",
@@ -60,7 +60,7 @@ exports.getVendorList = function (req, res) {
 exports.getVendorById = function (req, res) {
   try {
     const id = req.params.vendor_id;
-    const searchQuery = `SELECT vend_id,vend_nm,vend_nm_stnd,description,active,extrnl_sys_nm from ${config.DB_SCHEMA_NAME}.vendor 
+    const searchQuery = `SELECT vend_id,vend_nm,vend_nm_stnd,description,active,extrnl_sys_nm from ${constants.DB_SCHEMA_NAME}.vendor 
             WHERE vend_id = $1`;
     Logger.info({
       message: "vendorList",
@@ -94,7 +94,7 @@ exports.createVendor = async (req, res) => {
       externalSystemName,
     } = req.body;
     const curDate = new Date();
-    const insertQuery = `INSERT INTO ${config.DB_SCHEMA_NAME}.vendor
+    const insertQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.vendor
     (vend_id, vend_nm, vend_nm_stnd, description, active, extrnl_sys_nm, insrt_tm, updt_tm)
     VALUES($2, $3, $4, $5, 0, $6, $1, $1)`;
 
@@ -129,7 +129,7 @@ exports.updateVendor = async (req, res) => {
       externalSystemName,
     } = req.body;
     const curDate = new Date();
-    const query = `UPDATE ${config.DB_SCHEMA_NAME}.vendor
+    const query = `UPDATE ${constants.DB_SCHEMA_NAME}.vendor
     SET vend_nm=$3, description=$4, active=$5, updt_tm=$1
     WHERE vend_id=$2 AND extrnl_sys_nm=$6`;
 
