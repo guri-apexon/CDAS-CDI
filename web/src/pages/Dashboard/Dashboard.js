@@ -14,6 +14,7 @@ const styles = {
     height: "100vh",
     backgroundColor: neutral1,
     boxSizing: "content-box",
+    maxWidth: "100vw",
   },
   leftPanel: {
     maxWidth: "calc(100vh - 120px)",

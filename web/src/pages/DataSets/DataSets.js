@@ -37,6 +37,7 @@ const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
   content: {
     flexGrow: 1,
+    width: "calc(100vw - 464px)",
   },
   contentIcon: {
     color: "#595959",
