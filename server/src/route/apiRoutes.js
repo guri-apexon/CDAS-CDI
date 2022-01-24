@@ -9,6 +9,7 @@ const dataFlowRoute = require("./dataflow");
 const dataKindRoute = require("./datakind");
 const columnSetRoute = require("./columnSet");
 const datasetRoute = require("./dataset");
+const dbadaptorRoute = require("./dbadaptor");
 
 const router = express.Router();
 // const alother= express.Router();
@@ -31,5 +32,6 @@ router.use("/dataflow/", dataFlowRoute);
 router.use("/columnset/", columnSetRoute);
 router.use("/datakind/", dataKindRoute);
 router.use("/dataset/", datasetRoute);
+router.use("/dbadaptor/", dbadaptorRoute);
 
 module.exports = router;
