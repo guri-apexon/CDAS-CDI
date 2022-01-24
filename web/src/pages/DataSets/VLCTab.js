@@ -157,9 +157,22 @@ export default function VLCTab() {
     );
   };
 
+  // const StatusCell = ({ row, column: { accessor } }) => {
+  //   const description = row[accessor];
+  //   return (
+  //     <Tag
+  //       style={{ marginRight: 10 }}
+  //       label={description}
+  //       className={`status-cell ${
+  //         description === "Active" ? "active" : "inActive"
+  //       }`}
+  //     />
+  //   );
+  // };
+
   const hanldeView = (row) => {
     setSelectedRow(row);
-    setIsViewData(false);
+    setIsViewData(true);
   };
 
   const hideViewData = () => {
@@ -172,16 +185,16 @@ export default function VLCTab() {
     return <Link onClick={() => hanldeView(row)}>View</Link>;
   };
 
-  const downloadTable = () => {
-    console.log("downloadTable");
-  };
+  // const downloadTable = () => {
+  //   console.log("downloadTable");
+  // };
 
-  const menuItems = [
-    {
-      text: "Download Table",
-      onClick: downloadTable,
-    },
-  ];
+  // const menuItems = [
+  //   {
+  //     text: "Download Table",
+  //     onClick: downloadTable,
+  //   },
+  // ];
 
   const CustomButtonHeader = ({ toggleFilters }) => (
     <div>
@@ -199,9 +212,9 @@ export default function VLCTab() {
       >
         Filter
       </Button>
-      <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
+      {/* <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
         <EllipsisVertical />
-      </IconMenuButton>
+      </IconMenuButton> */}
     </div>
   );
 
@@ -415,9 +428,57 @@ export default function VLCTab() {
       )}
       <Modal
         open={isViewData}
-        title="VLC Rule"
+        title={
+          // eslint-disable-next-line react/jsx-wrap-multilines
+          <>
+            VLC Rule
+            {selectedRow?.status ? <Tag label={selectedRow.status} /> : ""}
+          </>
+        }
         onClose={hideViewData}
-        message="Do you want to proceed with data deletion that cannot be undone?"
+        message={
+          // eslint-disable-next-line react/jsx-wrap-multilines
+          <>
+            <div className="vlc-modal">
+              <div className="first-row">
+                <div>
+                  <div className="vlc-title">Rule ID</div>
+                  <div className="vlc-data">{selectedRow?.ruleId || ""}</div>
+                </div>
+                <div>
+                  <div className="vlc-title">Version</div>
+                  <div className="vlc-data">{selectedRow?.versionNo || ""}</div>
+                </div>
+              </div>
+              <div className="second-row">
+                <div>
+                  <div className="vlc-title">Type</div>
+                  <div className="vlc-data">{selectedRow?.type || ""}</div>
+                </div>
+                <div>
+                  <div className="vlc-title">Action</div>
+                  <div className="vlc-data">{selectedRow?.action || ""}</div>
+                </div>
+                <div>
+                  <div className="vlc-title">EM Code</div>
+                  <div className="vlc-data">{selectedRow?.emCode || ""}</div>
+                </div>
+                <div>
+                  <div className="vlc-title">Rule Sequence</div>
+                  <div className="vlc-data">{selectedRow?.ruleSeq || ""}</div>
+                </div>
+              </div>
+              <div className="third-row">
+                <div className="vlc-title">Rule Expression</div>
+                <div className="vlc-data">{selectedRow?.ruleExp || ""}</div>
+              </div>
+              <div className="forth-row">
+                <div className="vlc-title">Error Message</div>
+                <div className="vlc-data">{selectedRow?.errMsg || ""}</div>
+              </div>
+            </div>
+          </>
+        }
         buttonProps={[{ label: "Ok", onClick: hideViewData }]}
         id="deleteDataFlow"
       />
