@@ -43,3 +43,34 @@
 .vlc-table {
   max-width: calc(100vw - 40px);
 }
+.MuiDialog-paperWidthSm {
+  max-width: 800px;
+}
+.vlc-modal {
+  width: 726px;
+  .vlc-title {
+    font-size: 14px;
+    line-height: 24px;
+    color: #444444;
+  }
+  .vlc-data {
+    font-size: 16px;
+    line-height: 24px;
+    color: #000000;
+    font-weight: 600;
+  }
+  .first-row,
+  .second-row {
+    display: flex;
+  }
+  .first-row,
+  .second-row,
+  .third-row,
+  forth-row {
+    margin-bottom: 24px;
+  }
+  .first-row > div,
+  .second-row > div {
+    margin-right: 30px;
+  }
+}
