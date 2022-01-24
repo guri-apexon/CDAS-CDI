@@ -1,5 +1,6 @@
 const DB = require("../config/db");
 const oracleDB = require("../config/oracleDB");
+const jdbc = require("../config/jdbc");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
@@ -299,6 +300,56 @@ exports.getDatasetColumns = async (req, res) => {
     Logger.error("catch :datasetColumns");
     Logger.error(err);
 
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.previewSql = async (req, res) => {
+  try {
+    let _locationType = "MySQL";
+    let responseBody = {};
+    let recordsCount = 10;
+    let {
+      locationType,
+      customQuery,
+      tableName,
+      columnCount,
+      connectionPassword,
+      connectionUserName,
+      connectionUrl,
+      customSql,
+      driverName,
+    } = req.body;
+    if (locationType === _locationType) {
+      if (customQuery === "YES") {
+        //get connection
+        let newConn = await jdbc(
+          connectionUserName,
+          connectionPassword,
+          connectionUrl,
+          driverName
+        );
+        //form query
+        let q = `{customQuery} LIMIT ${recordsCount}`;
+        let result = await newConn.query(q);
+        //execute query
+        responseBody.queryExecutionStatus = "SUCCESS";
+        responseBody.queryData = result;
+        return apiResponse.successResponseWithData(
+          res,
+          "query executed successfully.",
+          responseBody
+        );
+      } else {
+        return apiResponse.ErrorResponse(res, "Custom query is not true");
+      }
+    } else {
+      return apiResponse.ErrorResponse(res, "Dataset location type is not SQL");
+    }
+  } catch (error) {
+    console.log(err);
+    Logger.error("catch :datasetpreviewSql");
+    Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
 };
