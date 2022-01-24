@@ -3,14 +3,14 @@ const oracleDB = require("../config/oracleDB");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
-const config = require("../config/dbconstant.json");
+const constants = require('../config/constants');
 
 async function checkNameExists(name, datasetid = null) {
   const mnemonic = name.toLowerCase();
-  let searchQuery = `SELECT mnemonic from ${config.DB_SCHEMA_NAME}.dataset where LOWER(mnemonic) = $1`;
+  let searchQuery = `SELECT mnemonic from ${constants.DB_SCHEMA_NAME}.dataset where LOWER(mnemonic) = $1`;
   let dep = [mnemonic];
   if (datasetid) {
-    searchQuery = `SELECT mnemonic from ${config.DB_SCHEMA_NAME}.dataset where LOWER(mnemonic) = $1 and datasetid != $2`;
+    searchQuery = `SELECT mnemonic from ${constants.DB_SCHEMA_NAME}.dataset where LOWER(mnemonic) = $1 and datasetid != $2`;
     dep = [mnemonic, datasetid];
   }
   const res = await DB.executeQuery(searchQuery, dep);
@@ -18,7 +18,7 @@ async function checkNameExists(name, datasetid = null) {
 }
 
 async function getLastVersion(datasetid) {
-  const searchQuery = `SELECT version from ${config.DB_SCHEMA_NAME}.dataset_history where datasetid = $1 order by updt_tm desc limit 1`;
+  const searchQuery = `SELECT version from ${constants.DB_SCHEMA_NAME}.dataset_history where datasetid = $1 order by updt_tm desc limit 1`;
   const res = await DB.executeQuery(searchQuery, [datasetid]);
   return res.rows[0].version;
 }
@@ -37,13 +37,13 @@ async function saveSQLDataset(req, res, values, datasetId) {
       new Date(),
       values.datapackageid || null,
     ];
-    const searchQuery = `INSERT into ${config.DB_SCHEMA_NAME}.dataset (datasetid, mnemonic, active, datakindid, custm_sql_query, customsql, tbl_nm, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+    const searchQuery = `INSERT into ${constants.DB_SCHEMA_NAME}.dataset (datasetid, mnemonic, active, datakindid, custm_sql_query, customsql, tbl_nm, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
     Logger.info({
       message: "storeDataset",
     });
     DB.executeQuery(searchQuery, body).then(() => {
       const hisBody = [datasetId + 1, ...body, 1];
-      const hisQuery = `INSERT into ${config.DB_SCHEMA_NAME}.dataset_history (dataset_vers_id,datasetid, mnemonic, active, datakindid, custm_sql_query, customsql, tbl_nm, insrt_tm, updt_tm, datapackageid, version) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+      const hisQuery = `INSERT into ${constants.DB_SCHEMA_NAME}.dataset_history (dataset_vers_id,datasetid, mnemonic, active, datakindid, custm_sql_query, customsql, tbl_nm, insrt_tm, updt_tm, datapackageid, version) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
       DB.executeQuery(hisQuery, hisBody).then(() => {
         return apiResponse.successResponseWithData(res, "Operation success", {
           ...values,
@@ -92,13 +92,13 @@ exports.saveDatasetData = async (req, res) => {
       new Date(),
       values.datapackageid || null,
     ];
-    const searchQuery = `INSERT into ${config.DB_SCHEMA_NAME}.dataset (datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`;
+    const searchQuery = `INSERT into ${constants.DB_SCHEMA_NAME}.dataset (datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`;
     Logger.info({
       message: "storeDataset",
     });
     DB.executeQuery(searchQuery, body).then(() => {
       const hisBody = [datasetId + 1, ...body, 1];
-      const hisQuery = `INSERT into ${config.DB_SCHEMA_NAME}.dataset_history (dataset_vers_id,datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, version) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
+      const hisQuery = `INSERT into ${constants.DB_SCHEMA_NAME}.dataset_history (dataset_vers_id,datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, version) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
       DB.executeQuery(hisQuery, hisBody).then(() => {
         return apiResponse.successResponseWithData(res, "Operation success", {
           ...values,
@@ -142,7 +142,7 @@ exports.updateDatasetData = async (req, res) => {
       values.rowDecreaseAllowed || 0,
       new Date(),
     ];
-    const searchQuery = `UPDATE ${config.DB_SCHEMA_NAME}.dataset set mnemonic = $1, type = $2, charset = $3, delimitier = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16 where datasetid = $17`;
+    const searchQuery = `UPDATE ${constants.DB_SCHEMA_NAME}.dataset set mnemonic = $1, type = $2, charset = $3, delimitier = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16 where datasetid = $17`;
     Logger.info({
       message: "storeDataset",
     });
@@ -155,7 +155,7 @@ exports.updateDatasetData = async (req, res) => {
         new Date(),
         values.datapackageid,
       ];
-      const hisQuery = `INSERT into ${config.DB_SCHEMA_NAME}.dataset_history (dataset_vers_id, datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, updt_tm, version, insrt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
+      const hisQuery = `INSERT into ${constants.DB_SCHEMA_NAME}.dataset_history (dataset_vers_id, datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, updt_tm, version, insrt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
       DB.executeQuery(hisQuery, hisBody).then(() => {
         return apiResponse.successResponseWithData(
           res,
@@ -196,14 +196,14 @@ exports.saveDatasetColumns = async (req, res) => {
         new Date(),
         new Date(),
       ];
-      const searchQuery = `INSERT into ${config.DB_SCHEMA_NAME}.columndefinition (columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
+      const searchQuery = `INSERT into ${constants.DB_SCHEMA_NAME}.columndefinition (columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
       Logger.info({
         message: "storeDatasetColumns",
       });
       const inserted = await DB.executeQuery(searchQuery, body)
         .then(() => {
           const hisBody = [columnId + 1, 1, ...body];
-          const hisQuery = `INSERT into ${config.DB_SCHEMA_NAME}.columndefinition_history (col_def_version_id,version, columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;
+          const hisQuery = `INSERT into ${constants.DB_SCHEMA_NAME}.columndefinition_history (col_def_version_id,version, columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;
           return DB.executeQuery(hisQuery, hisBody)
             .then(() => {
               return "SUCCESS";
@@ -257,7 +257,7 @@ exports.getVLCData = async (req, res) => {
 exports.getDatasetDetail = async (req, res) => {
   try {
     const datasetid = req.params.datasetid;
-    const searchQuery = `SELECT datasetid, mnemonic, type, active, headerrownumber, footerrownumber, delimitier, escapecode, quote, datakindid, staledays, rowdecreaseallowed, charset, path, customsql, naming_convention, data_freq, ovrd_stale_alert from ${config.DB_SCHEMA_NAME}.dataset WHERE datasetid = $1`;
+    const searchQuery = `SELECT datasetid, mnemonic, type, active, headerrownumber, footerrownumber, delimitier, escapecode, quote, datakindid, staledays, rowdecreaseallowed, charset, path, customsql, naming_convention, data_freq, ovrd_stale_alert from ${constants.DB_SCHEMA_NAME}.dataset WHERE datasetid = $1`;
     Logger.info({
       message: "datasetDetail",
     });
@@ -282,7 +282,7 @@ exports.getDatasetDetail = async (req, res) => {
 exports.getDatasetColumns = async (req, res) => {
   try {
     const datasetid = req.params.datasetid;
-    const searchQuery = `SELECT "columnid", "VARIABLE", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "FORMAT", "lov", "UNIQUE" from ${config.DB_SCHEMA_NAME}.columndefinition WHERE datasetid = $1`;
+    const searchQuery = `SELECT "columnid", "VARIABLE", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "FORMAT", "lov", "UNIQUE" from ${constants.DB_SCHEMA_NAME}.columndefinition WHERE datasetid = $1`;
     Logger.info({
       message: "datasetColumns",
     });

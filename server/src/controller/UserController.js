@@ -1,6 +1,5 @@
 const DB =  require('../config/db');
 const apiResponse = require("../helpers/apiResponse");
-const config = require("../config/dbconstant.json");
 
 exports.getUser =  function (user_id) {
     try {
