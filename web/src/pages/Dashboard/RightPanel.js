@@ -46,7 +46,9 @@ const RightPanel = () => {
   };
 
   useEffect(() => {
-    updateData();
+    if (dashboard?.selectedCard?.prot_id) {
+      updateData();
+    }
   }, [dashboard.selectedCard]);
 
   return (

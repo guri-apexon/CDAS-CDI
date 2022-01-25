@@ -1,5 +1,4 @@
 const { Pool, Client } = require("pg");
-const confg = require("./dbconstant.json");
 
 const dotenv = require("dotenv");
 dotenv.config();

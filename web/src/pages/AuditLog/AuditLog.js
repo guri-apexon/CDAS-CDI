@@ -19,7 +19,6 @@ import ButtonGroup from "apollo-react/components/ButtonGroup";
 import PageHeader from "../../components/DataFlow/PageHeader";
 import columns from "./columns.data";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
-// import { rowsWithExtra } from "./rows.data";
 import { getAuditLogs } from "../../store/actions/AuditLogsAction";
 import { MessageContext } from "../../components/MessageProvider";
 
