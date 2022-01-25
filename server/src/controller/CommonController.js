@@ -3,6 +3,7 @@ const moment = require("moment");
 const crypto = require("crypto");
 const cron = require("node-cron");
 const { cronHardDelete } = require("./DataflowController");
+const constants = require('../config/constants');
 
 cron.schedule("*/30 * * * *", () => {
   console.log("running a task every 30 minute");
@@ -24,7 +25,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       if (!package) resolve(false);
       DB.executeQuery(
-        `SELECT version from cdascdi1d.cdascdi.datapackage_history
+        `SELECT version from ${constants.DB_SCHEMA_NAME}.datapackage_history
       WHERE datapackageid = '${package.datapackageid}' order by version DESC limit 1`
       ).then(async (response) => {
         const historyExist = response.rows[0] || null;
@@ -35,7 +36,7 @@ module.exports = {
           version = Number(historyExist.version) + 1;
         }
         const vers_id = package.datapackageid + version;
-        const addHistoryQuery = `INSERT INTO cdascdi1d.cdascdi.datapackage_history(datapackage_vers_id, datapackageid, version, dataflowid, type, name, path, password, active, insrt_tm, updt_tm, del_flg, prot_id, usr_id, sasxptmethod, nopackageconfig, file_mode, dwnld_pattern, naming_convention, days_until_data_is_stale, dp_stat, extrnl_id) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)`;
+        const addHistoryQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage_history(datapackage_vers_id, datapackageid, version, dataflowid, type, name, path, password, active, insrt_tm, updt_tm, del_flg, prot_id, usr_id, sasxptmethod, nopackageconfig, file_mode, dwnld_pattern, naming_convention, days_until_data_is_stale, dp_stat, extrnl_id) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)`;
         const values = [
           vers_id,
           package.datapackageid,
@@ -63,7 +64,7 @@ module.exports = {
         DB.executeQuery(addHistoryQuery, values).then(async (response) => {
           const auditId = this.createUniqueID();
           const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-          const addAuditLogQuery = `INSERT INTO cdascdi1d.cdascdi.dataflow_audit_log(dataflow_audit_log_id, dataflowid, datapackageid, audit_vers, audit_updt_dt, usr_id, attribute, old_val, new_val) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+          const addAuditLogQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_audit_log(dataflow_audit_log_id, dataflowid, datapackageid, audit_vers, audit_updt_dt, usr_id, attribute, old_val, new_val) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
           const auditValues = [
             auditId,
             package.dataflowid,
@@ -79,7 +80,9 @@ module.exports = {
             async (response) => {
               resolve(version);
             }
-          );
+          ).catch((err)=>{
+            resolve(version);
+          });
         });
       });
     });
