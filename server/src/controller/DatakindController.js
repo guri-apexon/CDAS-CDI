@@ -2,12 +2,13 @@ const DB = require("../config/db");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
+const constants = require('../config/constants');
 
 exports.createDataKind = async (req, res) => {
   try {
     const { dkId, dkName, dkDesc, dkExternalId, dkESName } = req.body;
     const curDate = new Date();
-    const insertQuery = `INSERT INTO cdascdi.datakind
+    const insertQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.datakind
     (datakindid, "name", extrnl_sys_nm, active, extrnl_id, insrt_tm, updt_tm, dk_desc)
     VALUES($2, $3, $6, 0, $5, $1, $1, $4)`;
 
@@ -37,7 +38,7 @@ exports.updateDataKind = async (req, res) => {
   try {
     const { dkId, dkName, dkDesc, dkStatus, dkESName } = req.body;
     const curDate = new Date();
-    const query = `UPDATE cdascdi.datakind SET "name"=$3, active=$5, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2 AND extrnl_sys_nm=$6`;
+    const query = `UPDATE ${constants.DB_SCHEMA_NAME}.datakind SET "name"=$3, active=$5, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2 AND extrnl_sys_nm=$6`;
 
     Logger.info({
       message: "updateDataKind",
@@ -63,7 +64,7 @@ exports.updateDataKind = async (req, res) => {
 
 exports.getDatakindList = function (req, res) {
   try {
-    let searchQuery = `SELECT datakindid,datakindid as value,CONCAT(name, ' - ', extrnl_sys_nm) as label, name from cdascdi1d.cdascdi.datakind where active= $1 order by label asc`;
+    let searchQuery = `SELECT datakindid,datakindid as value,CONCAT(name, ' - ', extrnl_sys_nm) as label, name from ${constants.DB_SCHEMA_NAME}.datakind where active= $1 order by label asc`;
     let dbQuery = DB.executeQuery(searchQuery, [1]);
     Logger.info({
       message: "datakindList",

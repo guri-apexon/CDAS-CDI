@@ -1,132 +1,36 @@
 import React, { useState, useContext, useEffect } from "react";
-import { useHistory } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+// import { useHistory } from "react-router-dom";
+// import { useDispatch } from "react-redux";
 import Table, {
   numberSearchFilter,
   compareNumbers,
   compareStrings,
 } from "apollo-react/components/Table";
 import Button from "apollo-react/components/Button";
-import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
-import Tooltip from "apollo-react/components/Tooltip";
 import FilterIcon from "apollo-react-icons/Filter";
 import Link from "apollo-react/components/Link";
-import IconButton from "apollo-react/components/IconButton";
-import Tag from "apollo-react/components/Tag";
 import Modal from "apollo-react/components/Modal";
 import Search from "apollo-react/components/Search";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
-import { TextField } from "apollo-react/components/TextField/TextField";
 import Progress from "../../components/Progress";
-import { MessageContext } from "../../components/MessageProvider";
+// import { MessageContext } from "../../components/MessageProvider";
 import { getVLCDataList } from "../../services/ApiServices";
-
-const createAutocompleteFilter =
-  (source) =>
-  ({ accessor, filters, updateFilterValue }) => {
-    const ref = React.useRef();
-    const [height, setHeight] = React.useState(0);
-    const [isFocused, setIsFocused] = React.useState(false);
-    const value = filters[accessor];
-
-    React.useEffect(() => {
-      const curHeight = ref?.current?.getBoundingClientRect().height;
-      if (curHeight !== height) {
-        setHeight(curHeight);
-      }
-    }, [value, isFocused, height]);
-
-    return (
-      <div
-        style={{
-          minWidth: 160,
-          maxWidth: 200,
-          position: "relative",
-          height,
-        }}
-      >
-        <AutocompleteV2
-          style={{ position: "absolute", left: 0, right: 0 }}
-          value={
-            value
-              ? value.map((label) => {
-                  if (label === "") {
-                    return { label: "blanks" };
-                  }
-                  return { label };
-                })
-              : []
-          }
-          name={accessor}
-          source={source}
-          onChange={(event, value2) => {
-            updateFilterValue({
-              target: {
-                name: accessor,
-                value: value2.map(({ label }) => {
-                  if (label === "blanks") {
-                    return "";
-                  }
-                  return label;
-                }),
-              },
-            });
-          }}
-          fullWidth
-          multiple
-          chipColor="white"
-          size="small"
-          forcePopupIcon
-          showCheckboxes
-          limitChips={1}
-          filterSelectedOptions={false}
-          blurOnSelect={false}
-          clearOnBlur={false}
-          disableCloseOnSelect
-          matchFrom="any"
-          showSelectAll
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          ref={ref}
-          noOptionsText="No matches"
-        />
-      </div>
-    );
-  };
-
-const IntegerFilter = ({ accessor, filters, updateFilterValue }) => {
-  return (
-    <TextField
-      value={filters[accessor]}
-      name={accessor}
-      onChange={updateFilterValue}
-      type="number"
-      style={{ width: 74 }}
-      margin="none"
-      size="small"
-    />
-  );
-};
-
-const createStringArraySearchFilter = (accessor) => {
-  return (row, filters) =>
-    !Array.isArray(filters[accessor]) ||
-    filters[accessor].length === 0 ||
-    filters[accessor].some(
-      (value) => value.toUpperCase() === row[accessor]?.toUpperCase()
-    );
-};
+import {
+  createAutocompleteFilter,
+  IntegerFilter,
+  createStringArraySearchFilter,
+} from "../../utils/index";
 
 export default function VLCTab() {
   const [loading, setLoading] = useState(true);
   const [selectedRow, setSelectedRow] = useState(null);
-  const messageContext = useContext(MessageContext);
+  // const messageContext = useContext(MessageContext);
   const [isViewData, setIsViewData] = useState(false);
   const [rowData, setRowData] = useState([]);
 
-  const history = useHistory();
-  const dispatch = useDispatch();
+  // const history = useHistory();
+  // const dispatch = useDispatch();
 
   const getData = async () => {
     const data = await getVLCDataList();
