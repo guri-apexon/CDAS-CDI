@@ -1,39 +1,45 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Panel from "apollo-react/components/Panel";
-import { neutral1 } from "apollo-react/colors";
 import PageHeader from "../../components/DataFlow/PageHeader";
-
 import RightPanel from "./RightPanel";
 import LeftPanel from "./LeftPanel";
 import "./Dashboard.scss";
 
-const styles = {
-  root: {
-    display: "flex",
-    height: "100vh",
-    backgroundColor: neutral1,
-    boxSizing: "content-box",
-    maxWidth: "100vw",
-  },
-  leftPanel: {
-    maxWidth: "calc(100vh - 120px)",
-  },
-};
-
 const Dashboard = () => {
+  const [isPanelOpen, setIsPanelOpen] = React.useState(true);
+
+  const styles = {
+    rightPanel: {
+      maxWidth: isPanelOpen ? "calc(100vw - 425px)" : "calc(100vw - 40px)",
+      width: isPanelOpen ? "calc(100vw - 425px)" : "calc(100vw - 40px)",
+    },
+  };
+
   const useStyles = makeStyles(styles);
   const classes = useStyles();
 
+  const handleClose = () => {
+    setIsPanelOpen(false);
+  };
+
+  const handleOpen = () => {
+    setIsPanelOpen(true);
+  };
+
   return (
     <>
-      {/* {console.log("studies", pinnedStudies, studyList)} */}
       <PageHeader height={64} />
-      <div className={classes.root}>
-        <Panel className={classes.leftPanel} width={407}>
+      <div className="pageRoot">
+        <Panel
+          onClose={handleClose}
+          onOpen={handleOpen}
+          open={isPanelOpen}
+          width={407}
+        >
           <LeftPanel />
         </Panel>
-        <Panel width="100%" hideButton>
+        <Panel className={classes.rightPanel} width="100%" hideButton>
           <RightPanel />
         </Panel>
       </div>
