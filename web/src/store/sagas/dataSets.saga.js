@@ -17,6 +17,9 @@ import {
   UPDATE_DATASET_FAILURE,
   FETCH_DATASET_COLUMNS_SUCCESS,
   FETCH_DATASET_COLUMNS_FAILURE,
+  VLCDATAAPI,
+  FETCH_VLC_RULES_SUCCESS,
+  FETCH_VLC_RULES_FAILURE,
 } from "../../constants";
 
 export function* fetchDataKindData(action = null) {
@@ -38,6 +41,19 @@ export function* fetchDataKindData(action = null) {
     });
   } catch (e) {
     yield put({ type: FETCH_DATAKIND_FAILURE, message: e.message });
+  }
+}
+
+export function* fetchVLCData() {
+  try {
+    const fetchVlcData = yield call(axios.post, `${baseURL}/${VLCDATAAPI}`, {});
+    console.log("VLC", fetchVlcData);
+    yield put({
+      type: FETCH_VLC_RULES_SUCCESS,
+      VLCData: fetchVlcData.data.data,
+    });
+  } catch (e) {
+    yield put({ type: FETCH_VLC_RULES_FAILURE, message: e.message });
   }
 }
 

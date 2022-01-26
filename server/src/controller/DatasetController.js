@@ -246,7 +246,15 @@ exports.getVLCData = async (req, res) => {
     const dbconnection = await oracleDB();
     const q1 = `SELECT VERSION as "versionNo", EXT_RULEID as "ruleId", QC_TYPE as "type", RULEEXPR AS "ruleExp", RULESEQ as "ruleSeq", ACTION as "action", ERRORCODE as "emCode", ERRORMESSAGE as "errMsg" FROM IDP.DATASET_QC_RULES`;
     const { rows } = await dbconnection.execute(q1);
-    return apiResponse.successResponseWithData(res, "Operation success", rows);
+    const uniqueIdAdded = rows.map((e, i) => {
+      e.id = `id${i + 1}`;
+      return e;
+    });
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      uniqueIdAdded
+    );
   } catch (error) {
     Logger.error("catch :getVLCData");
     Logger.error(error);

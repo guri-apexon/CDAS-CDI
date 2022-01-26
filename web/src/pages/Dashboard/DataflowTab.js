@@ -47,11 +47,9 @@ import {
 const LinkCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
   return (
-    <div style={{ textAlign: "center" }}>
-      <Link onClick={() => console.log(`link clicked ${rowValue}`)}>
-        {rowValue}
-      </Link>
-    </div>
+    <Link onClick={() => console.log(`link clicked ${rowValue}`)}>
+      {rowValue}
+    </Link>
   );
 };
 
@@ -63,11 +61,6 @@ const DateCell = ({ row, column: { accessor } }) => {
       : moment(rowValue).format("DD-MMM-YYYY");
 
   return <span>{date}</span>;
-};
-
-const rightAlignCell = ({ row, column: { accessor } }) => {
-  const rowValue = row[accessor];
-  return <div style={{ textAlign: "center" }}>{rowValue}</div>;
 };
 
 const StatusCell = ({ row, column: { accessor } }) => {
@@ -498,6 +491,7 @@ export default function DataflowTab({ updateData }) {
       header: "Datasets",
       accessor: "dataSets",
       frozen: false,
+      align: "right",
       sortFunction: compareNumbers,
       customCell: LinkCell,
       filterFunction: numberSearchFilter("dataSets"),
@@ -516,7 +510,7 @@ export default function DataflowTab({ updateData }) {
       header: "Version",
       accessor: "version",
       frozen: false,
-      customCell: rightAlignCell,
+      align: "right",
       sortFunction: compareNumbers,
       filterFunction: numberSearchFilter("version"),
       filterComponent: IntegerFilter,
@@ -570,6 +564,7 @@ export default function DataflowTab({ updateData }) {
       header: "Data Packages",
       accessor: "dataPackages",
       frozen: false,
+      align: "right",
       sortFunction: compareNumbers,
       customCell: LinkCell,
       filterFunction: numberSearchFilter("dataPackages"),

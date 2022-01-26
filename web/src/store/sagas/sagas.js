@@ -16,6 +16,7 @@ import {
   GET_DATASET_DETAIL,
   UPDATE_DATASET_DATA,
   GET_DATASET_COLUMNS,
+  GET_VLC_RULES,
 } from "../../constants";
 
 import {
@@ -32,6 +33,7 @@ import {
   fetchDatasetDetail,
   updateDataset,
   fetchDatasetColumns,
+  fetchVLCData,
 } from "./dataSets.saga";
 
 import {
@@ -61,6 +63,7 @@ function* cdasCoreSaga() {
   yield takeLatest(GET_DATASET_DETAIL, fetchDatasetDetail);
   yield takeLatest(UPDATE_DATASET_DATA, updateDataset);
   yield takeLatest(GET_DATASET_COLUMNS, fetchDatasetColumns);
+  yield takeLatest(GET_VLC_RULES, fetchVLCData);
 }
 
 export default cdasCoreSaga;

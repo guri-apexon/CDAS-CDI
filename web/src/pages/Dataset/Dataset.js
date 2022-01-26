@@ -1,21 +1,39 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React from "react";
+import React, { lazy, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import { useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Typography from "apollo-react/components/Typography";
 import Panel from "apollo-react/components/Panel/Panel";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import PageHeader from "../../components/DataFlow/PageHeader";
+import Header from "../../components/DataFlow/Header";
 import LeftPanel from "../../components/DataFlow/LeftPanel/LeftPanel";
 import "./Dataset.scss";
+import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
 import SettingsTab from "./SettingsTab";
-import ColumnsTab from "./ColumnsTab";
+import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
+// const SettingsTab = lazy(() => import("./SettingsTab"));
+// const ColumnsTab = lazy(() => import("./ColumnsTab/ColumnsTab"));
+// const VLCTab = lazy(() => import("./VLCTab"));
+
+const tabs = ["Settings", "Dataset Columns", "VLC"];
 
 const Dataset = () => {
-  const [isPanelOpen, setIsPanelOpen] = React.useState(false);
-  const [value, setValue] = React.useState(0);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [value, setValue] = useState(0);
+  const [locationType, setLocationType] = useState(null);
+
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const dataSets = useSelector((state) => state.dataSets);
+  const packageData = useSelector((state) => state.dataPackage);
+  const dataFlow = useSelector((state) => state.dataFlow);
+  const { optedDataPackages } = packageData;
+  const { loading, error, sucessMsg, createTriggered, selectedDataset } =
+    dataSets;
+  const { dataFlowdetail } = dataFlow;
 
   const styles = {
     rightPanel: {
@@ -38,6 +56,9 @@ const Dataset = () => {
       lineHeight: "22px",
       fontWeight: 500,
     },
+    contentIcon: {
+      color: "#595959",
+    },
   };
 
   const useStyles = makeStyles(styles);
@@ -55,6 +76,42 @@ const Dataset = () => {
     setValue(v);
   };
 
+  const breadcrumbItems = [
+    { href: "#" },
+    {
+      title: optedDataPackages.dataflowid ?? "Dataflow Name",
+    },
+    {
+      title: optedDataPackages.datapackageid ?? "Datapackage Name",
+    },
+    {
+      title: "Create Dataset",
+    },
+  ];
+
+  const submitForm = () => {
+    if (
+      locationType?.toLowerCase() === "sftp" ||
+      locationType?.toLowerCase() === "ftps"
+    ) {
+      // dispatch(submit("DataSetsForm"));
+    } else {
+      // dispatch(submit("DataSetsFormSQL"));
+    }
+  };
+
+  const closeForm = async () => {
+    if (
+      locationType?.toLowerCase() === "sftp" ||
+      locationType?.toLowerCase() === "ftps"
+    ) {
+      // await dispatch(reset("DataSetsForm"));
+    } else {
+      // await dispatch(reset("DataSetsFormSQL"));
+    }
+    history.push("/dashboard");
+  };
+
   return (
     <>
       <PageHeader height={64} />
@@ -70,7 +127,7 @@ const Dataset = () => {
         <Panel className={classes.rightPanel} width="100%" hideButton>
           <main className={classes.content}>
             <div className={classes.contentHeader}>
-              <Typography
+              {/* <Typography
                 className={classes.contentTitle}
                 variant="title1"
                 gutterBottom
@@ -81,8 +138,18 @@ const Dataset = () => {
                 <Tab label="Settings" />
                 <Tab label="Dataset Columns" />
                 <Tab label="VLC" />
-                {/* <Tab label="Tab Header 3" /> */}
-              </Tabs>
+              </Tabs> */}
+              <Header
+                close={() => closeForm()}
+                breadcrumbItems={breadcrumbItems || []}
+                submit={() => submitForm()}
+                tabs={tabs}
+                headerTitle="Dataset name"
+                tabValue={value}
+                selectedDataset={selectedDataset}
+                icon={<DatasetsIcon className={classes.contentIcon} />}
+                handleChangeTab={handleChangeTab}
+              />
             </div>
 
             <div style={{ padding: 20 }}>

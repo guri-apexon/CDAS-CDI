@@ -6,12 +6,19 @@ import {
   HIDE_ERROR_MSG,
   GET_DATASET_DETAIL,
   GET_DATASET_COLUMNS,
+  GET_VLC_RULES,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
 export const getDataKindData = () => {
   return {
     type: GET_DATA_KIND,
+  };
+};
+
+export const getVLCData = () => {
+  return {
+    type: GET_VLC_RULES,
   };
 };
 
