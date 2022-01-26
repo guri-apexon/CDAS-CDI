@@ -23,6 +23,8 @@ import {
   addPackageBtnAction,
 } from "../../../store/actions/DataPackageAction";
 
+import "./LeftPanel.scss";
+
 const useStyles = makeStyles(() => ({
   drawerHeader: {
     display: "flex",
@@ -162,7 +164,7 @@ const LeftPanel = () => {
       </Box>
 
       <Divider />
-      <div className="packages-list">
+      <div className="packages-list-header">
         <div className="flex flex-center justify-between">
           <Typography className="b-font">Data Packages & Datasets</Typography>
           <Button
@@ -184,6 +186,8 @@ const LeftPanel = () => {
             fullWidth
           />
         </div>
+      </div>
+      <div className="packages-list">
         {packageData ? (
           <div className="list-container">
             {loading ? (
