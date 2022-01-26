@@ -91,12 +91,31 @@ const PackagesList = ({ data, userInfo }) => {
       </div>
     );
   };
+
+  const goToDataSet = (dataflowid, datapackageid, datasetid) => {
+    dispatch(redirectToDataSet(dataflowid, datapackageid, datasetid));
+    history.push(`/dataset/${datasetid}`);
+  };
+
   const DetailRow = ({ row }) => {
     return (
       <div className="datasets-list">
         {row.datasets?.map((dataset, i) => {
           return (
-            <div className="dataset-row flex" key={dataset.datasetid}>
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+            <div
+              className="dataset-row flex"
+              key={dataset.datasetid}
+              role="button"
+              tabIndex={0}
+              onClick={() =>
+                goToDataSet(
+                  row.dataflowid,
+                  row.datapackageid,
+                  dataset.datasetid
+                )
+              }
+            >
               <Typography variant="caption" className="dataset-name">
                 {dataset.name?.toUpperCase() ||
                   dataset.datasetid ||
