@@ -13,7 +13,6 @@ const styles = {
     flexGrow: 1,
     background: "#f6f7fb",
     minHeight: "calc(100vh - 125px)",
-    maxWidth: "100vw",
   },
   contentHeader: {
     paddingTop: 11,
