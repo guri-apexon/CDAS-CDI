@@ -45,7 +45,7 @@ import {
 import { fetchAuditLogs } from "./auditLogs.saga";
 
 function* cdasCoreSaga() {
-  yield takeEvery(GET_DATA_FLOW_LIST, fetchFlowData);
+  yield takeLatest(GET_DATA_FLOW_LIST, fetchFlowData);
   yield takeLatest(PACKAGES_LIST, fetchPackagesData);
   yield takeLatest(ADD_DATA_PACKAGE, addDataPackage);
   yield takeLatest(UPDATE_DATA_PACKAGE, updateDataPackage);

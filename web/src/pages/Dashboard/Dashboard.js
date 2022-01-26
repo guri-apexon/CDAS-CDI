@@ -11,7 +11,7 @@ const Dashboard = () => {
 
   const styles = {
     rightPanel: {
-      maxWidth: isPanelOpen ? "calc(100vw - 425px)" : "calc(100vw - 40px)",
+      maxWidth: isPanelOpen ? "calc(100vw - 427px)" : "calc(100vw - 42px)",
       width: isPanelOpen ? "calc(100vw - 425px)" : "calc(100vw - 40px)",
     },
   };
