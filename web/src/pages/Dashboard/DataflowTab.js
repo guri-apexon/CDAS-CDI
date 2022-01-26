@@ -122,7 +122,7 @@ const DetailRow = ({ row }) => {
   );
 };
 
-export default function DataFlowTable({ updateData }) {
+export default function DataflowTab({ updateData }) {
   const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const messageContext = useContext(MessageContext);

@@ -116,104 +116,96 @@ const LeftPanel = () => {
   };
   return (
     <div>
-      <Box
-        style={{
-          overflow: "auto",
-          position: "relative",
-          backgroundColor: "#fff",
-        }}
-      >
-        <div className={classes.drawerHeader}>
-          <div className={classes.leftPanel}>
-            <DataFlowIcon className={classes.dataflowLeft} />
-            <Typography style={{ marginLeft: 7, color: "#595959" }}>
-              Data Flow
-            </Typography>
-          </div>
-          <div className="right-panel top-status-checkbox">
-            <FormControlLabel
-              style={{ fontSize: 14 }}
-              value="true"
-              control={<Switch color="primary" size="small" />}
-              label="Active"
-              labelPlacement="start"
-            />
-            <ContextMenu />
-          </div>
+      <div className={classes.drawerHeader}>
+        <div className={classes.leftPanel}>
+          <DataFlowIcon className={classes.dataflowLeft} />
+          <Typography style={{ marginLeft: 7, color: "#595959" }}>
+            Data Flow
+          </Typography>
         </div>
-        <Divider />
-        <Box className="sidebar-content">
-          <Tag
-            label={dataflowType}
-            variant="grey"
-            style={{ textTransform: "capitalize", marginBottom: 20 }}
+        <div className="right-panel top-status-checkbox">
+          <FormControlLabel
+            style={{ fontSize: 14 }}
+            value="true"
+            control={<Switch color="primary" size="small" />}
+            label="Active"
+            labelPlacement="start"
           />
-          <Typography className={classes.LeftTitle}>
-            Virologicclinic-IIBR12-001-Other
-          </Typography>
-          <Typography className={classes.LeftSubTitle}>
-            {selectedVendor?.label}
-          </Typography>
-          <Typography className={classes.description}>
-            {/* <ArrowRight className={classes.icon} /> */}
-            {description}
-          </Typography>
-          <Button
-            variant="primary"
-            style={{ marginTop: 17 }}
-            fullWidth
-            size="small"
-          >
-            View Settings
-          </Button>
-        </Box>
-
-        <Divider />
-        <div className="packages-list">
-          <div className="flex flex-center justify-between">
-            <Typography className="b-font">Data Packages & Datasets</Typography>
-            <Button
-              variant="secondary"
-              icon={<PlusIcon />}
-              size="small"
-              onClick={redirectDataPackage}
-            >
-              Add Data Package
-            </Button>
-          </div>
-
-          <div style={{ maxWidth: 400 }}>
-            <Search
-              placeholder="Search"
-              size="small"
-              value={searchTxt}
-              onChange={searchTrigger}
-              fullWidth
-            />
-          </div>
-          {packageData ? (
-            <div className="list-container">
-              {loading ? (
-                <Box display="flex" className="loader-container">
-                  <ApolloProgress />
-                </Box>
-              ) : (
-                <>
-                  <Typography variant="body2" style={{ marginLeft: 10 }}>
-                    {`${packageData.packagesList.length} Data Packages`}
-                  </Typography>
-                  <PackagesList userInfo={userInfo} data={packageData} />
-                </>
-              )}
-            </div>
-          ) : (
-            <div className="flex no-result">
-              <img src="assets/svg/datapackage.svg" alt="datapackage" />
-              <Typography>No Data Package or Datasets Added</Typography>
-            </div>
-          )}
+          <ContextMenu />
         </div>
+      </div>
+      <Divider />
+      <Box className="sidebar-content">
+        <Tag
+          label={dataflowType}
+          variant="grey"
+          style={{ textTransform: "capitalize", marginBottom: 20 }}
+        />
+        <Typography className={classes.LeftTitle}>
+          Virologicclinic-IIBR12-001-Other
+        </Typography>
+        <Typography className={classes.LeftSubTitle}>
+          {selectedVendor?.label}
+        </Typography>
+        <Typography className={classes.description}>
+          {/* <ArrowRight className={classes.icon} /> */}
+          {description}
+        </Typography>
+        <Button
+          variant="primary"
+          style={{ marginTop: 17 }}
+          fullWidth
+          size="small"
+        >
+          View Settings
+        </Button>
       </Box>
+
+      <Divider />
+      <div className="packages-list">
+        <div className="flex flex-center justify-between">
+          <Typography className="b-font">Data Packages & Datasets</Typography>
+          <Button
+            variant="secondary"
+            icon={<PlusIcon />}
+            size="small"
+            onClick={redirectDataPackage}
+          >
+            Add Data Package
+          </Button>
+        </div>
+
+        <div style={{ maxWidth: 400 }}>
+          <Search
+            placeholder="Search"
+            size="small"
+            value={searchTxt}
+            onChange={searchTrigger}
+            fullWidth
+          />
+        </div>
+        {packageData ? (
+          <div className="list-container">
+            {loading ? (
+              <Box display="flex" className="loader-container">
+                <ApolloProgress />
+              </Box>
+            ) : (
+              <>
+                <Typography variant="body2" style={{ marginLeft: 10 }}>
+                  {`${packageData.packagesList.length} Data Packages`}
+                </Typography>
+                <PackagesList userInfo={userInfo} data={packageData} />
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="flex no-result">
+            <img src="assets/svg/datapackage.svg" alt="datapackage" />
+            <Typography>No Data Package or Datasets Added</Typography>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
