@@ -27,6 +27,7 @@ export default function VLCTab() {
   // const messageContext = useContext(MessageContext);
   const [isViewData, setIsViewData] = useState(false);
   const [rowData, setRowData] = useState([]);
+  const [searchValue, setSearchValue] = useState(null);
 
   // const history = useHistory();
   const dispatch = useDispatch();
@@ -65,6 +66,21 @@ export default function VLCTab() {
         </div>
       </div>
     );
+  };
+
+  const searchRows = async (e) => {
+    // eslint-disable-next-line prefer-destructuring
+    setSearchValue(e.target.value);
+    const value = await e.target.value?.toLowerCase();
+    const filteredRows = rowData?.filter((rw) => {
+      return (
+        rw?.errMsg?.toLowerCase().includes(value) ||
+        rw?.ruleExp?.toLowerCase().includes(value)
+      );
+    });
+    setRowData([...filteredRows]);
+    // console.log(filteredRows, "filteredRows");
+    // setFilteredRows([...filteredRows]);
   };
 
   // const StatusCell = ({ row, column: { accessor } }) => {
@@ -111,6 +127,8 @@ export default function VLCTab() {
       <Search
         placeholder="Search"
         size="small"
+        onChange={searchRows}
+        value={searchValue}
         style={{ marginTop: "-5px", marginBottom: 0, marginRight: "15px" }}
         disabled
       />
