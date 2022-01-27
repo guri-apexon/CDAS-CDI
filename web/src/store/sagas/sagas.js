@@ -16,6 +16,7 @@ import {
   GET_DATASET_DETAIL,
   UPDATE_DATASET_DATA,
   GET_DATASET_COLUMNS,
+  ADD_DATAFLOW,
 } from "../../constants";
 
 import {
@@ -40,12 +41,14 @@ import {
   fetchServiceOwnersData,
   saveLocationData,
   fetchDataflowDetail,
+  addDataFlow,
 } from "./dataFlow.saga";
 
 import { fetchAuditLogs } from "./auditLogs.saga";
 
 function* cdasCoreSaga() {
   yield takeEvery(GET_DATA_FLOW_LIST, fetchFlowData);
+  yield takeLatest(ADD_DATAFLOW, addDataFlow);
   yield takeLatest(PACKAGES_LIST, fetchPackagesData);
   yield takeLatest(ADD_DATA_PACKAGE, addDataPackage);
   yield takeLatest(UPDATE_DATA_PACKAGE, updateDataPackage);

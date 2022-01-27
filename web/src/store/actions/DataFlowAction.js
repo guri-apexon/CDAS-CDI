@@ -8,6 +8,7 @@ import {
   HIDE_ERROR_MSG,
   UPDATE_SELECTED_LOCATION,
   GET_DATAFLOW_DETAIL,
+  ADD_DATAFLOW,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -21,6 +22,13 @@ export const updateSelectedLocation = (location) => {
   return {
     type: UPDATE_SELECTED_LOCATION,
     location,
+  };
+};
+
+export const addDataFlow = (dataflow) => {
+  return {
+    type: ADD_DATAFLOW,
+    dataflow,
   };
 };
 
