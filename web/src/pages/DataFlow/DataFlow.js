@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -25,6 +25,7 @@ import {
 } from "../../store/actions/DataFlowAction";
 import { toast } from "../../utils";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
+import { MessageContext } from "../../components/MessageProvider";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -69,6 +70,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const { selectedLocation, loading, createTriggered, error } = dataFlowData;
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
+  const messageContext = useContext(MessageContext);
 
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
@@ -137,7 +139,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
       await dispatch(addDataFlow(payload));
       history.push("/dashboard");
     } else {
-      toast("Please fill all fields to proceed", "error");
+      messageContext.showErrorMessage("Please fill all fields to proceed");
     }
   };
 

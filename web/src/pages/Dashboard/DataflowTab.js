@@ -126,7 +126,6 @@ export default function DataflowTab({ updateData }) {
   const [totalRows, setTotalRows] = useState(0);
   const [rowData, setRowData] = useState([]);
   const history = useHistory();
-
   const dashboard = useSelector((state) => state.dashboard);
 
   const [expandedRows, setExpandedRows] = useState([]);
@@ -305,7 +304,9 @@ export default function DataflowTab({ updateData }) {
             if (dashboard.selectedCard.prot_id !== "") {
               history.push("/dataflow-management");
             } else {
-              toast("Please select a study to Add Data flow", "error");
+              messageContext.showErrorMessage(
+                `Please select a study to Add Data flow`
+              );
             }
           }}
           style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
