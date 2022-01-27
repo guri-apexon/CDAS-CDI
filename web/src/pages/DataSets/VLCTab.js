@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 // import { useHistory } from "react-router-dom";
-// import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Table, {
   numberSearchFilter,
   compareNumbers,
@@ -14,7 +14,8 @@ import Search from "apollo-react/components/Search";
 import Tag from "apollo-react/components/Tag";
 import Progress from "../../components/Progress";
 // import { MessageContext } from "../../components/MessageProvider";
-import { getVLCDataList } from "../../services/ApiServices";
+// import { getVLCDataList } from "../../services/ApiServices";
+import { getVLCData } from "../../store/actions/DataSetsAction";
 import {
   createAutocompleteFilter,
   IntegerFilter,
@@ -22,56 +23,60 @@ import {
 } from "../../utils/index";
 
 export default function VLCTab() {
-  const [loading, setLoading] = useState(true);
   const [selectedRow, setSelectedRow] = useState(null);
   // const messageContext = useContext(MessageContext);
   const [isViewData, setIsViewData] = useState(false);
   const [rowData, setRowData] = useState([]);
+  const [searchValue, setSearchValue] = useState(null);
 
   // const history = useHistory();
-  // const dispatch = useDispatch();
-
-  const getData = async () => {
-    const data = await getVLCDataList();
-    // console.log("data", data);
-    setRowData([...data]);
-    setLoading(false);
-    // return data;
-  };
+  const dispatch = useDispatch();
+  const dataSets = useSelector((state) => state.dataSets);
+  const { loading, VLCData } = dataSets;
+  // const getData = async () => {
+  //   // const data = await getVLCDataList();
+  //   // console.log("data", data);
+  //   dispatch(getVLCData());
+  //   // setRowData([...data]);
+  //   // setLoading(false);
+  //   // return data;
+  // };
 
   useEffect(() => {
-    getData();
+    dispatch(getVLCData());
     // console.log("data", Data);
   }, []);
+
+  useEffect(() => {
+    setRowData([...VLCData]);
+    // console.log(VLCData);
+  }, [loading]);
+
+  const searchRows = async (e) => {
+    // eslint-disable-next-line prefer-destructuring
+    setSearchValue(e.target.value);
+    const value = await e.target.value?.toLowerCase();
+    const filteredRows = rowData?.filter((rw) => {
+      return (
+        rw?.errMsg?.toLowerCase().includes(value) ||
+        rw?.ruleExp?.toLowerCase().includes(value)
+      );
+    });
+    setRowData([...filteredRows]);
+    // console.log(filteredRows, "filteredRows");
+    // setFilteredRows([...filteredRows]);
+  };
 
   const StatusCell = ({ row, column: { accessor } }) => {
     const description = row[accessor];
     return (
-      <div style={{ position: "relative" }}>
-        <div
-          style={{ marginRight: 10 }}
-          className={`status-cell ${
-            description === "Active" ? "active" : "inActive"
-          }`}
-        >
-          {description}
-        </div>
-      </div>
+      <Tag
+        style={{ marginRight: 10 }}
+        label={description}
+        color={description === "Active" ? "#00c221" : "#999999"}
+      />
     );
   };
-
-  // const StatusCell = ({ row, column: { accessor } }) => {
-  //   const description = row[accessor];
-  //   return (
-  //     <Tag
-  //       style={{ marginRight: 10 }}
-  //       label={description}
-  //       className={`status-cell ${
-  //         description === "Active" ? "active" : "inActive"
-  //       }`}
-  //     />
-  //   );
-  // };
 
   const hanldeView = (row) => {
     setSelectedRow(row);
@@ -104,6 +109,8 @@ export default function VLCTab() {
       <Search
         placeholder="Search"
         size="small"
+        onChange={searchRows}
+        value={searchValue}
         style={{ marginTop: "-5px", marginBottom: 0, marginRight: "15px" }}
         disabled
       />
@@ -128,6 +135,7 @@ export default function VLCTab() {
       sortFunction: compareStrings,
       filterFunction: numberSearchFilter("ruleId"),
       filterComponent: IntegerFilter,
+      width: "5%",
     },
     {
       header: "Version",
@@ -224,26 +232,27 @@ export default function VLCTab() {
       header: "Rule Expression",
       accessor: "ruleExp",
       sortFunction: compareStrings,
-      // filterFunction: createStringArraySearchFilter("ruleExp"),
-      // filterComponent: createAutocompleteFilter(
-      //   Array.from(
-      //     new Set(
-      //       rowData.map((r) => ({ label: r.ruleExp })).map((item) => item.label)
-      //     )
-      //   )
-      //     .map((label) => {
-      //       return { label };
-      //     })
-      //     .sort((a, b) => {
-      //       if (a.label < b.label) {
-      //         return -1;
-      //       }
-      //       if (a.label > b.label) {
-      //         return 1;
-      //       }
-      //       return 0;
-      //     })
-      // ),
+      filterFunction: createStringArraySearchFilter("ruleExp"),
+      filterComponent: createAutocompleteFilter(
+        Array.from(
+          new Set(
+            rowData.map((r) => ({ label: r.ruleExp })).map((item) => item.label)
+          )
+        )
+          .map((label) => {
+            return { label };
+          })
+          .sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            }
+            if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          })
+      ),
+      width: "25%",
     },
     {
       header: "Error Message",
@@ -298,7 +307,7 @@ export default function VLCTab() {
       // ),
     },
     {
-      accessor: "ruleId",
+      accessor: "id",
       customCell: LinkCell,
     },
   ];
@@ -313,7 +322,8 @@ export default function VLCTab() {
             title="Value Level Conformance (VLC) Rules"
             columns={columns}
             rows={rowData}
-            rowId="ruleId"
+            isLoading={loading}
+            rowId="id"
             initialSortedColumn="ruleId"
             initialSortOrder="asc"
             rowsPerPageOptions={[10, 50, 100, "All"]}
@@ -334,7 +344,15 @@ export default function VLCTab() {
           // eslint-disable-next-line react/jsx-wrap-multilines
           <>
             VLC Rule
-            {selectedRow?.status ? <Tag label={selectedRow.status} /> : ""}
+            {selectedRow?.status ? (
+              <Tag
+                style={{ marginLeft: 10 }}
+                color={selectedRow.status === "Active" ? "#00c221" : "#999999"}
+                label={selectedRow.status}
+              />
+            ) : (
+              ""
+            )}
           </>
         }
         onClose={hideViewData}
