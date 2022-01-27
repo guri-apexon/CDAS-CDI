@@ -52,22 +52,6 @@ export default function VLCTab() {
     // console.log(VLCData);
   }, [loading]);
 
-  const StatusCell = ({ row, column: { accessor } }) => {
-    const description = row[accessor];
-    return (
-      <div style={{ position: "relative" }}>
-        <div
-          style={{ marginRight: 10 }}
-          className={`status-cell ${
-            description === "Active" ? "active" : "inActive"
-          }`}
-        >
-          {description}
-        </div>
-      </div>
-    );
-  };
-
   const searchRows = async (e) => {
     // eslint-disable-next-line prefer-destructuring
     setSearchValue(e.target.value);
@@ -83,18 +67,16 @@ export default function VLCTab() {
     // setFilteredRows([...filteredRows]);
   };
 
-  // const StatusCell = ({ row, column: { accessor } }) => {
-  //   const description = row[accessor];
-  //   return (
-  //     <Tag
-  //       style={{ marginRight: 10 }}
-  //       label={description}
-  //       className={`status-cell ${
-  //         description === "Active" ? "active" : "inActive"
-  //       }`}
-  //     />
-  //   );
-  // };
+  const StatusCell = ({ row, column: { accessor } }) => {
+    const description = row[accessor];
+    return (
+      <Tag
+        style={{ marginRight: 10 }}
+        label={description}
+        color={description === "Active" ? "#00c221" : "#999999"}
+      />
+    );
+  };
 
   const hanldeView = (row) => {
     setSelectedRow(row);
@@ -362,7 +344,15 @@ export default function VLCTab() {
           // eslint-disable-next-line react/jsx-wrap-multilines
           <>
             VLC Rule
-            {selectedRow?.status ? <Tag label={selectedRow.status} /> : ""}
+            {selectedRow?.status ? (
+              <Tag
+                style={{ marginLeft: 10 }}
+                color={selectedRow.status === "Active" ? "#00c221" : "#999999"}
+                label={selectedRow.status}
+              />
+            ) : (
+              ""
+            )}
           </>
         }
         onClose={hideViewData}

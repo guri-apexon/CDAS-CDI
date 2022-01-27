@@ -2,10 +2,10 @@ import React, { lazy, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import Typography from "apollo-react/components/Typography";
+// import Typography from "apollo-react/components/Typography";
+// import Tab from "apollo-react/components/Tab";
+// import Tabs from "apollo-react/components/Tabs";
 import Panel from "apollo-react/components/Panel/Panel";
-import Tab from "apollo-react/components/Tab";
-import Tabs from "apollo-react/components/Tabs";
 import PageHeader from "../../components/DataFlow/PageHeader";
 import Header from "../../components/DataFlow/Header";
 import LeftPanel from "../../components/DataFlow/LeftPanel/LeftPanel";
@@ -153,8 +153,8 @@ const Dataset = () => {
             </div>
 
             <div style={{ padding: 20 }}>
-              {value === 0 && <SettingsTab />}
-              {value === 1 && <ColumnsTab />}
+              {value === 0 && <SettingsTab locationType={locationType} />}
+              {value === 1 && <ColumnsTab locationType={locationType} />}
               {value === 2 && <VLCTab />}
             </div>
           </main>
