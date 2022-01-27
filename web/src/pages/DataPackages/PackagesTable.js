@@ -14,6 +14,7 @@ import MenuItem from "apollo-react/components/MenuItem";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { ReactComponent as RoundPlusSvg } from "../../components/Icons/roundplus.svg";
+import { ReactComponent as PackageIcon } from "../../components/Icons/datapackage.svg";
 import {
   deletePackage,
   redirectToDataSet,
@@ -46,7 +47,7 @@ const NameCustomCell = ({ row, column: { accessor } }) => {
   const title = row[accessor] || row.datapackageid;
   return (
     <div className="flex package-name-td">
-      {PackageImg}
+      <PackageIcon style={{ width: 15, margin: "0px 8px" }} />
       <span className="b-font">{title}</span>
     </div>
   );

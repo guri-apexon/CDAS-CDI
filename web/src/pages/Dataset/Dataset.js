@@ -1,7 +1,8 @@
-import React, { lazy, useState } from "react";
+import React, { lazy, useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { submit, reset } from "redux-form";
 // import Typography from "apollo-react/components/Typography";
 // import Tab from "apollo-react/components/Tab";
 // import Tabs from "apollo-react/components/Tabs";
@@ -11,7 +12,17 @@ import Header from "../../components/DataFlow/Header";
 import LeftPanel from "../../components/DataFlow/LeftPanel/LeftPanel";
 import "./Dataset.scss";
 import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
-import SettingsTab from "./SettingsTab";
+import {
+  getDataKindData,
+  saveDatasetData,
+  updateDatasetData,
+  getDataSetDetail,
+  getDatasetColumns,
+} from "../../store/actions/DataSetsAction";
+import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
+// import SettingsTab from "./SettingsTab";
+import DataSetsForm from "./DataSetsForm";
+import DataSetsFormSQL from "./DataSetsFormSQL";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
 // const SettingsTab = lazy(() => import("./SettingsTab"));
@@ -76,6 +87,20 @@ const Dataset = () => {
     setValue(v);
   };
 
+  useEffect(() => {
+    if (Object.keys(optedDataPackages).length === 0) {
+      history.push("/dataflow-management");
+    }
+    dispatch(getDataKindData());
+    if (optedDataPackages?.dataflowid) {
+      dispatch(getDataFlowDetail(optedDataPackages?.dataflowid));
+    }
+    if (optedDataPackages?.datasetid) {
+      dispatch(getDataSetDetail(optedDataPackages?.datasetid));
+      dispatch(getDatasetColumns(optedDataPackages?.datasetid));
+    }
+  }, []);
+
   const breadcrumbItems = [
     { href: "#" },
     {
@@ -94,10 +119,24 @@ const Dataset = () => {
       locationType?.toLowerCase() === "sftp" ||
       locationType?.toLowerCase() === "ftps"
     ) {
-      // dispatch(submit("DataSetsForm"));
+      dispatch(submit("DataSetsForm"));
     } else {
-      // dispatch(submit("DataSetsFormSQL"));
+      dispatch(submit("DataSetsFormSQL"));
     }
+  };
+
+  const onSubmit = (formValue) => {
+    setTimeout(() => {
+      const data = {
+        ...formValue,
+        datapackageid: optedDataPackages?.datapackageid,
+      };
+      if (data.datasetid) {
+        dispatch(updateDatasetData(data));
+      } else {
+        dispatch(saveDatasetData(data));
+      }
+    }, 400);
   };
 
   const closeForm = async () => {
@@ -105,9 +144,9 @@ const Dataset = () => {
       locationType?.toLowerCase() === "sftp" ||
       locationType?.toLowerCase() === "ftps"
     ) {
-      // await dispatch(reset("DataSetsForm"));
+      await dispatch(reset("DataSetsForm"));
     } else {
-      // await dispatch(reset("DataSetsFormSQL"));
+      await dispatch(reset("DataSetsFormSQL"));
     }
     history.push("/dashboard");
   };
@@ -152,8 +191,17 @@ const Dataset = () => {
               />
             </div>
 
-            <div style={{ padding: 20 }}>
-              {value === 0 && <SettingsTab locationType={locationType} />}
+            <div style={{ padding: 20, marginTop: 20 }}>
+              {value === 0 &&
+                (locationType?.toLowerCase() === "sftp" ||
+                  locationType?.toLowerCase() === "ftps") && (
+                  <DataSetsForm onSubmit={onSubmit} />
+                )}
+              {value === 0 &&
+                locationType?.toLowerCase() !== "sftp" &&
+                locationType?.toLowerCase() !== "ftps" && (
+                  <DataSetsFormSQL onSubmit={onSubmit} />
+                )}
               {value === 1 && <ColumnsTab locationType={locationType} />}
               {value === 2 && <VLCTab />}
             </div>

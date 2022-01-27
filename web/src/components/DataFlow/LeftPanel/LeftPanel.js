@@ -30,7 +30,7 @@ const useStyles = makeStyles(() => ({
     display: "flex",
     alignItems: "center",
     padding: 25,
-    height: 70,
+    maxHeight: "70px",
     justifyContent: "space-between",
   },
   leftPanel: {
@@ -187,7 +187,7 @@ const LeftPanel = () => {
           />
         </div>
       </div>
-      <div className="packages-list">
+      <div className="packages-list customScrollbartab">
         {packageData ? (
           <div className="list-container">
             {loading ? (
