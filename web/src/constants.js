@@ -81,6 +81,11 @@ export const UPDATE_DATASET_FAILURE = "UPDATE_DATASET_FAILURE";
 export const GET_DATASET_COLUMNS = "GET_DATASET_COLUMNS";
 export const FETCH_DATASET_COLUMNS_SUCCESS = "FETCH_DATASET_COLUMNS_SUCCESS";
 export const FETCH_DATASET_COLUMNS_FAILURE = "FETCH_DATASET_COLUMNS_FAILURE";
+
+export const GET_VLC_RULES = "GET_VLC_RULES";
+export const FETCH_VLC_RULES_SUCCESS = "FETCH_VLC_RULES_SUCCESS";
+export const FETCH_VLC_RULES_FAILURE = "FETCH_VLC_RULES_FAILURE";
+
 // API URLS
 
 export const FLOW_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
@@ -109,3 +114,10 @@ export const DATAFLOWAPI = "v1/api/dataflow";
 export const VLCDATAAPI = "v1/api/dataset/getVLCData";
 
 export const baseURL = process.env.REACT_APP_API_URL;
+
+export const allowedTypes = [
+  "xlsx",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "csv",
+];

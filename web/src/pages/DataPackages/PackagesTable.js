@@ -14,6 +14,7 @@ import MenuItem from "apollo-react/components/MenuItem";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { ReactComponent as RoundPlusSvg } from "../../components/Icons/roundplus.svg";
+import { ReactComponent as PackageIcon } from "../../components/Icons/datapackage.svg";
 import {
   deletePackage,
   redirectToDataSet,
@@ -46,7 +47,7 @@ const NameCustomCell = ({ row, column: { accessor } }) => {
   const title = row[accessor] || row.datapackageid;
   return (
     <div className="flex package-name-td">
-      {PackageImg}
+      <PackageIcon style={{ width: 15, margin: "0px 8px" }} />
       <span className="b-font">{title}</span>
     </div>
   );
@@ -91,12 +92,31 @@ const PackagesList = ({ data, userInfo }) => {
       </div>
     );
   };
+
+  const goToDataSet = (dataflowid, datapackageid, datasetid) => {
+    dispatch(redirectToDataSet(dataflowid, datapackageid, datasetid));
+    history.push(`/dataset/${datasetid}`);
+  };
+
   const DetailRow = ({ row }) => {
     return (
       <div className="datasets-list">
         {row.datasets?.map((dataset, i) => {
           return (
-            <div className="dataset-row flex" key={dataset.datasetid}>
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+            <div
+              className="dataset-row flex"
+              key={dataset.datasetid}
+              role="button"
+              tabIndex={0}
+              onClick={() =>
+                goToDataSet(
+                  row.dataflowid,
+                  row.datapackageid,
+                  dataset.datasetid
+                )
+              }
+            >
               <Typography variant="caption" className="dataset-name">
                 {dataset.name?.toUpperCase() ||
                   dataset.datasetid ||
