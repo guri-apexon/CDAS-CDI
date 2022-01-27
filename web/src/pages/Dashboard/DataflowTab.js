@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 import { useHistory } from "react-router-dom";
@@ -46,7 +47,6 @@ import {
 const LinkCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
   return (
-    // eslint-disable-next-line jsx-a11y/anchor-is-valid
     <Link onClick={() => console.log(`link clicked ${rowValue}`)}>
       {rowValue}
     </Link>
@@ -76,7 +76,46 @@ const StatusCell = ({ row, column: { accessor } }) => {
   );
 };
 
-export default function DataFlowTable({ updateData }) {
+const DetailRow = ({ row }) => {
+  return (
+    <div style={{ display: "flex", padding: "8px 0px 8px 8px" }}>
+      <div style={{ width: 280 }}>
+        <Typography style={{ color: neutral7 }} variant="body2">
+          Data Flow Name
+        </Typography>
+        <Typography style={{ fontWeight: 500, color: neutral8 }}>
+          {row.dataFlowName}
+        </Typography>
+      </div>
+      <div style={{ marginLeft: 32 }}>
+        <Typography style={{ color: neutral7 }} variant="body2">
+          # Data Packages
+        </Typography>
+        <Typography style={{ fontWeight: 500, color: neutral8 }}>
+          {row.dataPackages}
+        </Typography>
+      </div>
+      <div style={{ marginLeft: 32 }}>
+        <Typography style={{ color: neutral7 }} variant="body2">
+          Adapter
+        </Typography>
+        <Typography style={{ fontWeight: 500, color: neutral8 }}>
+          {row.adapter}
+        </Typography>
+      </div>
+      <div style={{ marginLeft: 32 }}>
+        <Typography style={{ color: neutral7 }} variant="body2">
+          Date Created
+        </Typography>
+        <Typography style={{ fontWeight: 500, color: neutral8 }}>
+          {row.dateCreated}
+        </Typography>
+      </div>
+    </div>
+  );
+};
+
+export default function DataflowTab({ updateData }) {
   const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const messageContext = useContext(MessageContext);
@@ -235,45 +274,6 @@ export default function DataFlowTable({ updateData }) {
         <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
           {iconButton}
         </Tooltip>
-      </div>
-    );
-  };
-
-  const DetailRow = ({ row }) => {
-    return (
-      <div style={{ display: "flex", padding: "8px 0px 8px 8px" }}>
-        <div style={{ width: 280 }}>
-          <Typography style={{ color: neutral7 }} variant="body2">
-            Data Flow Name
-          </Typography>
-          <Typography style={{ fontWeight: 500, color: neutral8 }}>
-            {row.dataFlowName}
-          </Typography>
-        </div>
-        <div style={{ marginLeft: 32 }}>
-          <Typography style={{ color: neutral7 }} variant="body2">
-            # Data Packages
-          </Typography>
-          <Typography style={{ fontWeight: 500, color: neutral8 }}>
-            {row.dataPackages}
-          </Typography>
-        </div>
-        <div style={{ marginLeft: 32 }}>
-          <Typography style={{ color: neutral7 }} variant="body2">
-            Adapter
-          </Typography>
-          <Typography style={{ fontWeight: 500, color: neutral8 }}>
-            {row.adapter}
-          </Typography>
-        </div>
-        <div style={{ marginLeft: 32 }}>
-          <Typography style={{ color: neutral7 }} variant="body2">
-            Date Created
-          </Typography>
-          <Typography style={{ fontWeight: 500, color: neutral8 }}>
-            {row.dateCreated}
-          </Typography>
-        </div>
       </div>
     );
   };
@@ -491,6 +491,7 @@ export default function DataFlowTable({ updateData }) {
       header: "Datasets",
       accessor: "dataSets",
       frozen: false,
+      align: "right",
       sortFunction: compareNumbers,
       customCell: LinkCell,
       filterFunction: numberSearchFilter("dataSets"),
@@ -509,6 +510,7 @@ export default function DataFlowTable({ updateData }) {
       header: "Version",
       accessor: "version",
       frozen: false,
+      align: "right",
       sortFunction: compareNumbers,
       filterFunction: numberSearchFilter("version"),
       filterComponent: IntegerFilter,
@@ -562,6 +564,7 @@ export default function DataFlowTable({ updateData }) {
       header: "Data Packages",
       accessor: "dataPackages",
       frozen: false,
+      align: "right",
       sortFunction: compareNumbers,
       customCell: LinkCell,
       filterFunction: numberSearchFilter("dataPackages"),

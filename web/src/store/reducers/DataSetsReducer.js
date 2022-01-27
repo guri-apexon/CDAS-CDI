@@ -21,6 +21,9 @@ import {
   GET_DATASET_COLUMNS,
   FETCH_DATASET_COLUMNS_SUCCESS,
   FETCH_DATASET_COLUMNS_FAILURE,
+  GET_VLC_RULES,
+  FETCH_VLC_RULES_SUCCESS,
+  FETCH_VLC_RULES_FAILURE,
 } from "../../constants";
 
 export const initialState = {
@@ -56,6 +59,7 @@ export const initialState = {
   error: null,
   sucessMsg: null,
   datakind: [],
+  VLCData: [],
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -110,6 +114,17 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = false;
         newState.sucessMsg = null;
         newState.error = action.message;
+        break;
+      case GET_VLC_RULES:
+        newState.loading = true;
+        break;
+      case FETCH_VLC_RULES_FAILURE:
+        newState.loading = false;
+        newState.error = action.message;
+        break;
+      case FETCH_VLC_RULES_SUCCESS:
+        newState.loading = false;
+        newState.VLCData = action.VLCData;
         break;
       case GET_DATASET_DETAIL:
         newState.loading = true;

@@ -1,0 +1,76 @@
+.colums-tab {
+  p {
+    margin: 0;
+  }
+  .title {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    margin-top: 26px;
+  }
+  .sub-title {
+    font-size: 14px;
+    line-height: 24px;
+    color: #595959;
+    margin-bottom: 12px;
+  }
+  .cards-box {
+    display: flex;
+    .active {
+      border: 1px solid #0768fd;
+    }
+    .card {
+      margin-right: 48px;
+      text-align: center;
+      padding: 24px;
+      .upload-box {
+        margin-top: 24px;
+        text-align: center;
+        div {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+.tab {
+  border: 1px solid #e9e9e9;
+  background-color: #ffffff;
+  padding: 16px;
+}
+
+.vlc-table {
+  max-width: calc(100vw - 40px);
+}
+.MuiDialog-paperWidthSm {
+  max-width: 800px;
+}
+.vlc-modal {
+  width: 726px;
+  .vlc-title {
+    font-size: 14px;
+    line-height: 24px;
+    color: #444444;
+  }
+  .vlc-data {
+    font-size: 16px;
+    line-height: 24px;
+    color: #000000;
+    font-weight: 600;
+  }
+  .first-row,
+  .second-row {
+    display: flex;
+  }
+  .first-row,
+  .second-row,
+  .third-row,
+  forth-row {
+    margin-bottom: 24px;
+  }
+  .first-row > div,
+  .second-row > div {
+    margin-right: 30px;
+  }
+}
