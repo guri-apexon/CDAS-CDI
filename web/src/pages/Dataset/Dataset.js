@@ -110,7 +110,7 @@ const Dataset = () => {
       title: optedDataPackages.datapackageid ?? "Datapackage Name",
     },
     {
-      title: "Create Dataset",
+      title: optedDataPackages.datasetid ?? "Create Dataset",
     },
   ];
 

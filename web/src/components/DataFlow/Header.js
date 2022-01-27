@@ -87,10 +87,10 @@ const Header = (props) => {
           {props.tabs.map((tab) => (
             <Tab
               label={tab}
-              // disabled={
-              //   Object.keys(props.selectedDataset).length <= 0 &&
-              // tab === "Dataset Columns"
-              // }
+              disabled={
+                Object.keys(props.selectedDataset).length <= 0 &&
+                tab === "Dataset Columns"
+              }
             />
           ))}
         </Tabs>
