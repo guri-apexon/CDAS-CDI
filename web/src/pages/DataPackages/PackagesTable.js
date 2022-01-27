@@ -247,14 +247,14 @@ const PackagesList = ({ data, userInfo }) => {
         ? expandedRows.filter((id) => id !== datapackageid)
         : [...expandedRows, datapackageid]
     );
-    setTimeout(() => {
-      console.log(
-        "packageName",
-        expandedRows.filter((id) => id !== datapackageid),
-        expandedRows,
-        datapackageid
-      );
-    }, 1000);
+    // setTimeout(() => {
+    //   console.log(
+    //     "packageName",
+    //     expandedRows.filter((id) => id !== datapackageid),
+    //     expandedRows,
+    //     datapackageid
+    //   );
+    // }, 1000);
   };
   useEffect(() => {
     const newData = data.packagesList || [];

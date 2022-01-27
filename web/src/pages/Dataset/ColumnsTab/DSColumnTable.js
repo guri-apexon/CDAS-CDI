@@ -63,7 +63,7 @@ const makeEditableSelectCell =
         error={errorText ? true : false}
         helperText={errorText}
         onChange={(e) =>
-          row.editRow(row.columnId, key, e.target.value, errorText)
+          row.editRow(row.uniqueId, key, e.target.value, errorText)
         }
         {...fieldStyles}
       >
@@ -95,7 +95,7 @@ const NumericEditableCell = ({ row, column: { accessor: key } }) => {
       fullWidth
       value={row[key]}
       onChange={(e) =>
-        row.editRow(row.columnId, key, e.target.value, errorText)
+        row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
       error={errorText ? true : false}
       helperText={errorText}
@@ -122,7 +122,7 @@ const EditableCell = ({ row, column: { accessor: key } }) => {
             : null,
       }}
       onChange={(e) =>
-        row.editRow(row.columnId, key, e.target.value, errorText)
+        row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
       error={errorText ? true : false}
       helperText={errorText}
@@ -135,7 +135,7 @@ const EditableCell = ({ row, column: { accessor: key } }) => {
 
 const ActionCell = ({ row }) => {
   const {
-    columnId,
+    uniqueId,
     onRowEdit,
     onCancel,
     onDelete,
@@ -148,24 +148,24 @@ const ActionCell = ({ row }) => {
       <Button
         size="small"
         style={{ marginRight: 8 }}
-        onClick={() => onCancel(columnId)}
+        onClick={() => onCancel(uniqueId)}
       >
         Cancel
       </Button>
       <Button
         size="small"
         variant="primary"
-        onClick={() => onRowSave(columnId)}
+        onClick={() => onRowSave(uniqueId)}
       >
         Save
       </Button>
     </div>
   ) : (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
-      <IconButton size="small" onClick={() => onRowEdit(columnId)}>
+      <IconButton size="small" onClick={() => onRowEdit(uniqueId)}>
         <Pencil />
       </IconButton>
-      <IconButton size="small" onClick={() => onDelete(columnId)}>
+      <IconButton size="small" onClick={() => onDelete(uniqueId)}>
         <Trash />
       </IconButton>
     </div>
@@ -411,7 +411,7 @@ export default function DSColumnTable({
     },
     {
       header: "",
-      accessor: "columnId",
+      accessor: "uniqueId",
       customCell: LinkCell,
     },
   ];
@@ -515,7 +515,7 @@ export default function DSColumnTable({
         setRows([...formattedData]);
       } else {
         setIsEditAll(true);
-        const initRows = initialRows.map((e) => e.columnId);
+        const initRows = initialRows.map((e) => e.uniqueId);
         setSelectedRows([...initRows]);
         // setEditedRows(initialRows);
       }
@@ -523,7 +523,7 @@ export default function DSColumnTable({
   }, [dataOrigin]);
 
   const onEditAll = () => {
-    const allRows = rows.map((e) => e.columnId);
+    const allRows = rows.map((e) => e.uniqueId);
     // setEditedRows(rows);
     setSelectedRows([...allRows]);
     setIsEditAll(true);
@@ -551,13 +551,13 @@ export default function DSColumnTable({
     setIsEditAll(false);
   };
 
-  const onCancel = (columnId) => {
-    const removeRow = selectedRows.filter((e) => e !== columnId);
+  const onCancel = (uniqueId) => {
+    const removeRow = selectedRows.filter((e) => e !== uniqueId);
     setSelectedRows([...removeRow]);
   };
 
-  const onRowSave = (columnId) => {
-    const removeRow = selectedRows.filter((e) => e !== columnId);
+  const onRowSave = (uniqueId) => {
+    const removeRow = selectedRows.filter((e) => e !== uniqueId);
     // const editedRowData = editedRows.find((e) => e.columnId === columnId);
     // const removeRowData = rows.filter((e) => e.columnId !== columnId);
     // console.log(removeRowData, editedRowData, removeRow);
@@ -565,26 +565,26 @@ export default function DSColumnTable({
     setSelectedRows([...removeRow]);
   };
 
-  const onRowEdit = (columnId) => {
+  const onRowEdit = (uniqueId) => {
     // const editingdRow = rows.find((row) => row.columnId === columnId);
-    setSelectedRows([...selectedRows, columnId]);
+    setSelectedRows([...selectedRows, uniqueId]);
     // setEditedRows([...editedRows, editingdRow]);
   };
 
-  const onDelete = (columnId) => {
-    setRows(rows.filter((row) => row.columnId !== columnId));
+  const onDelete = (uniqueId) => {
+    setRows(rows.filter((row) => row.uniqueId !== uniqueId));
   };
 
-  const editRow = (columnId, key, value, errorTxt) => {
-    console.log(columnId, "ColumdId");
+  const editRow = (uniqueId, key, value, errorTxt) => {
+    // console.log(uniqueId, "ColumdId");
     // setEditedRows((rws) =>
     //   rws.map((row) =>
-    //     row.columnId === columnId ? { ...row, [key]: value } : row
+    //     row.uniqueId === uniqueId ? { ...row, [key]: value } : row
     //   )
     // );
     setRows((rws) =>
       rws.map((row) =>
-        row.columnId === columnId ? { ...row, [key]: value } : row
+        row.uniqueId === uniqueId ? { ...row, [key]: value } : row
       )
     );
     // setRowErr((err) => ({ ...err, [key]: errorTxt }));
@@ -616,7 +616,7 @@ export default function DSColumnTable({
             onDelete,
             editRow,
             onRowSave,
-            editMode: selectedRows?.includes(row.columnId),
+            editMode: selectedRows?.includes(row.uniqueId),
             selectedDataset,
             onCancel,
             onRowEdit,
