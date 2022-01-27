@@ -41,6 +41,7 @@ import {
   IntegerFilter,
   createStringArraySearchFilter,
   DateFilter,
+  toast,
 } from "../../utils/index";
 
 const LinkCell = ({ row, column: { accessor } }) => {
@@ -300,7 +301,13 @@ export default function DataFlowTable({ updateData }) {
           size="small"
           variant="secondary"
           icon={PlusIcon}
-          onClick={() => history.push("/dataflow-management")}
+          onClick={() => {
+            if (dashboard.selectedCard.prot_id !== "") {
+              history.push("/dataflow-management");
+            } else {
+              toast("Please select a study to Add Data flow", "error");
+            }
+          }}
           style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
         >
           Add data flow
