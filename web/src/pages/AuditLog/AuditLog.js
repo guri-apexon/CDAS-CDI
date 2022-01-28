@@ -1,8 +1,9 @@
+/* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/no-array-index-key */
 import React, { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import "./AuditLog.scss";
 import { pick } from "lodash";
 import moment from "moment";
@@ -22,16 +23,6 @@ import { getAuditLogs } from "../../store/actions/AuditLogsAction";
 import { MessageContext } from "../../components/MessageProvider";
 import { exportToCSV } from "../../utils/downloadData";
 
-const breadcrumpItems = [
-  { href: "/dashboard" },
-  {
-    title: "Data Flow Settings",
-    href: "/dataflow-management",
-  },
-  {
-    title: "Audit Log",
-  },
-];
 const AuditLog = () => {
   const [rowsPerPageRecord, setRowPerPageRecord] = useState(10);
   const [pageNo, setPageNo] = useState(0);
@@ -45,11 +36,24 @@ const AuditLog = () => {
   const [exportTableRows, setExportTableRows] = useState([...auditData]);
   const [tableColumns, setTableColumns] = useState([...columns]);
   const dispatch = useDispatch();
+  const history = useHistory();
   const { dataflowId } = useParams();
   const messageContext = useContext(MessageContext);
   const fetchLogs = () => {
     dispatch(getAuditLogs(dataflowId));
   };
+
+  const breadcrumpItems = [
+    { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
+    {
+      href: "javascript:void(0)",
+      title: "Data Flow Settings",
+      onClick: () => history.push("/dataflow-management"),
+    },
+    {
+      title: "Audit Log",
+    },
+  ];
 
   const applyFilter = (cols, rows, filts) => {
     let filteredRows = rows;
