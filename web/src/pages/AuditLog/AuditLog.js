@@ -4,7 +4,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import "./AuditLog.scss";
-import * as XLSX from "xlsx";
 import { pick } from "lodash";
 import moment from "moment";
 import Paper from "apollo-react/components/Paper";
@@ -21,6 +20,7 @@ import columns from "./columns.data";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import { getAuditLogs } from "../../store/actions/AuditLogsAction";
 import { MessageContext } from "../../components/MessageProvider";
+import { exportToCSV } from "../../utils/downloadData";
 
 const breadcrumpItems = [
   { href: "/dashboard" },
@@ -51,21 +51,6 @@ const AuditLog = () => {
     dispatch(getAuditLogs(dataflowId));
   };
 
-  const exportToCSV = (exportData, headers, fileName) => {
-    // console.log("data for export", exportData, headers, fileName);
-    const wb = XLSX.utils.book_new();
-    let ws = XLSX.worksheet;
-    const rowPerPage =
-      rowsPerPageRecord === "All" ? exportData.length : rowsPerPageRecord;
-    const from = pageNo * rowPerPage;
-    const to = from + rowPerPage;
-    const newData = exportData.slice(from, to);
-    newData.unshift(headers);
-    ws = XLSX.utils.json_to_sheet(newData, { skipHeader: true });
-    XLSX.utils.book_append_sheet(wb, ws, "studylist");
-    XLSX.writeFile(wb, fileName);
-    exportData.shift();
-  };
   const applyFilter = (cols, rows, filts) => {
     let filteredRows = rows;
     Object.values(cols).forEach((column) => {
@@ -110,7 +95,14 @@ const AuditLog = () => {
       const newObj = pick(obj, Object.keys(tempObj));
       return newObj;
     });
-    exportToCSV(newData, tempObj, fileName + fileExtension);
+    exportToCSV(
+      newData,
+      tempObj,
+      fileName + fileExtension,
+      "data",
+      pageNo,
+      rowsPerPageRecord
+    );
     const exportRows = exportDataRows();
     if (exportRows.length <= 0) {
       e.preventDefault();
