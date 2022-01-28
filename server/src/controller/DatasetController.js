@@ -4,6 +4,9 @@ const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
+const columnsMock = require("../../public/mock/listColumnsAPI.json");
+const tablesMock = require("../../public/mock/listTablesAPIResponse.json");
+const previewSQLMock = require("../../public/mock/responseBodyPreviewSQL.json");
 
 async function checkNameExists(name, datasetid = null) {
   const mnemonic = name.toLowerCase();
@@ -308,6 +311,64 @@ exports.getDatasetColumns = async (req, res) => {
     //throw error in json response with status 500.
     console.log(err);
     Logger.error("catch :datasetColumns");
+    Logger.error(err);
+
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.previewSQL = async (req, res) => {
+  try {
+    Logger.info({ message: "previewSQL" });
+
+    const queryData = previewSQLMock.queryData;
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      queryData
+    );
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error("catch :previewSQL");
+    Logger.error(err);
+
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.getTables = async (req, res) => {
+  try {
+    Logger.info({ message: "getTables" });
+    const tableMetadataList = tablesMock.tableMetadataList;
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      tableMetadataList
+    );
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error("catch :getTables");
+    Logger.error(err);
+
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.getColumns = async (req, res) => {
+  try {
+    Logger.info({ message: "getColumns" });
+    const columnInfo = columnsMock.columnInfo;
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      columnInfo
+    );
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error("catch :getColumns");
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
