@@ -36,13 +36,13 @@ const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
     </div>
   );
 };
-const PackageImg = (
-  <img
-    src="assets/svg/datapackage.svg"
-    alt="datapackage"
-    style={{ width: 15, marginRight: 8 }}
-  />
-);
+// const PackageImg = (
+//   <img
+//     src="assets/svg/datapackage.svg"
+//     alt="datapackage"
+//     style={{ width: 15, marginRight: 8 }}
+//   />
+// );
 const NameCustomCell = ({ row, column: { accessor } }) => {
   const title = row[accessor] || row.datapackageid;
   return (
@@ -117,14 +117,16 @@ const PackagesList = ({ data, userInfo }) => {
                 )
               }
             >
-              <Typography variant="caption" className="dataset-name">
-                {dataset.name?.toUpperCase() ||
-                  dataset.datasetid ||
-                  "DataSet Name"}
-              </Typography>
-              <Typography variant="caption">
-                {dataset.type?.toUpperCase() || "FileType"}
-              </Typography>
+              <div className="dataset-details">
+                <Typography variant="caption" className="dataset-name">
+                  {dataset.name?.toUpperCase() ||
+                    dataset.mnemonic ||
+                    "DataSet Name"}
+                </Typography>
+                <Typography variant="caption" className="dataset-filetype">
+                  {dataset.type?.toUpperCase() || "FileType"}
+                </Typography>
+              </div>
               <Status
                 variant="positive"
                 label={dataset.active ? "Active" : "Inactive"}
@@ -259,6 +261,7 @@ const PackagesList = ({ data, userInfo }) => {
   useEffect(() => {
     const newData = data.packagesList || [];
     setTableData(newData);
+    console.log("newData", newData);
   }, [data.packagesList]);
   return (
     <Table
