@@ -36,7 +36,7 @@ const tabs = ["Settings", "Dataset Columns", "VLC"];
 const Dataset = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(0);
-  const [locationType, setLocationType] = useState(null);
+  const [locationType, setLocationType] = useState("sftp");
 
   const dispatch = useDispatch();
   const history = useHistory();
