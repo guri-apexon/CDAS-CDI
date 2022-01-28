@@ -1,6 +1,5 @@
 /* eslint-disable react/button-has-type */
 import React, { useState, useContext, useEffect } from "react";
-import * as XLSX from "xlsx";
 import { makeStyles } from "@material-ui/core/styles";
 import { useDispatch, useSelector } from "react-redux";
 import Table, { createStringSearchFilter } from "apollo-react/components/Table";
@@ -19,9 +18,9 @@ import Search from "apollo-react/components/Search";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Select from "apollo-react/components/Select";
-import Plus from "apollo-react-icons/Plus";
 import Tooltip from "apollo-react/components/Tooltip";
 
+import { ReactComponent as Plus } from "../../../components/Icons/roundplus.svg";
 import { MessageContext } from "../../../components/MessageProvider";
 import {
   checkNumeric,
@@ -228,7 +227,7 @@ export default function DSColumnTable({
     values: "",
   }));
   const [rows, setRows] = useState(initialRows);
-  // const [editedRows, setEditedRows] = useState([]);
+  const [editedRows, setEditedRows] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState(null);
   const [rowErr, setRowErr] = useState({});

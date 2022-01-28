@@ -261,7 +261,7 @@ const PackagesList = ({ data, userInfo }) => {
   useEffect(() => {
     const newData = data.packagesList || [];
     setTableData(newData);
-    console.log("newData", newData);
+    // console.log("newData", newData);
   }, [data.packagesList]);
   return (
     <Table
