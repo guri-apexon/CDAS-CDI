@@ -27,7 +27,7 @@ export default function VLCTab() {
   // const messageContext = useContext(MessageContext);
   const [isViewData, setIsViewData] = useState(false);
   const [rowData, setRowData] = useState([]);
-  const [searchValue, setSearchValue] = useState(null);
+  const [searchValue, setSearchValue] = useState("");
 
   // const history = useHistory();
   const dispatch = useDispatch();

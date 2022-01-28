@@ -3,6 +3,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
+import Banner from "apollo-react/components/Banner";
 // import Typography from "apollo-react/components/Typography";
 // import Tab from "apollo-react/components/Tab";
 // import Tabs from "apollo-react/components/Tabs";
@@ -13,6 +14,7 @@ import LeftPanel from "../../components/DataFlow/LeftPanel/LeftPanel";
 import "./Dataset.scss";
 import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
 import {
+  hideErrorMessage,
   getDataKindData,
   saveDatasetData,
   updateDatasetData,
@@ -32,7 +34,7 @@ import VLCTab from "./VLCTab";
 const tabs = ["Settings", "Dataset Columns", "VLC"];
 
 const Dataset = () => {
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState(null);
 
@@ -88,6 +90,13 @@ const Dataset = () => {
   };
 
   useEffect(() => {
+    console.log(selectedDataset, "selectedDataset");
+    if (createTriggered) {
+      setValue(1);
+    }
+  }, [createTriggered]);
+
+  useEffect(() => {
     if (Object.keys(optedDataPackages).length === 0) {
       history.push("/dataflow-management");
     }
@@ -100,6 +109,22 @@ const Dataset = () => {
       dispatch(getDatasetColumns(optedDataPackages?.datasetid));
     }
   }, []);
+
+  useEffect(() => {
+    if (optedDataPackages?.dataflowid) {
+      dispatch(getDataFlowDetail(optedDataPackages?.dataflowid));
+    }
+    if (optedDataPackages?.datasetid) {
+      dispatch(getDataSetDetail(optedDataPackages?.datasetid));
+      dispatch(getDatasetColumns(optedDataPackages?.datasetid));
+    }
+  }, [optedDataPackages]);
+
+  useEffect(() => {
+    if (dataFlowdetail?.loc_typ) {
+      setLocationType(dataFlowdetail?.loc_typ);
+    }
+  }, [dataFlowdetail]);
 
   const breadcrumbItems = [
     { href: "#" },
@@ -151,9 +176,27 @@ const Dataset = () => {
     history.push("/dashboard");
   };
 
+  const getLeftPanel = React.useMemo(
+    () => (
+      <>
+        <LeftPanel />
+      </>
+    ),
+    []
+  );
+
   return (
     <>
       <PageHeader height={64} />
+      {(error || sucessMsg) && (
+        <Banner
+          variant={sucessMsg ? "success" : "error"}
+          open={true}
+          onClose={() => dispatch(hideErrorMessage())}
+          style={{ zIndex: 9999, top: "5%" }}
+          message={error || sucessMsg}
+        />
+      )}
       <div className="pageRoot">
         <Panel
           onClose={handleClose}
@@ -161,23 +204,11 @@ const Dataset = () => {
           open={isPanelOpen}
           width={446}
         >
-          <LeftPanel />
+          {getLeftPanel}
         </Panel>
         <Panel className={classes.rightPanel} width="100%" hideButton>
           <main className={classes.content}>
             <div className={classes.contentHeader}>
-              {/* <Typography
-                className={classes.contentTitle}
-                variant="title1"
-                gutterBottom
-              >
-                Ingestion Dashboard
-              </Typography>
-              <Tabs value={value} onChange={handleChangeTab} truncate>
-                <Tab label="Settings" />
-                <Tab label="Dataset Columns" />
-                <Tab label="VLC" />
-              </Tabs> */}
               <Header
                 close={() => closeForm()}
                 breadcrumbItems={breadcrumbItems || []}
