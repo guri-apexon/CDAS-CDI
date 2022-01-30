@@ -80,7 +80,7 @@ const PackagesList = ({ data, userInfo }) => {
     const datasets = row[accessor] || row.datasets;
     return (
       <div className="flex flex-center dataset-count-td">
-        {console.log("row", row)}
+        {/* {console.log("row", row)} */}
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
