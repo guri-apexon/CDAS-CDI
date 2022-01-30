@@ -71,8 +71,8 @@ const PackagesList = ({ data, userInfo }) => {
   const [expandedRows, setExpandedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
 
-  const addDataSet = (dataflowid, datapackageid, datasetid = null) => {
-    dispatch(redirectToDataSet(dataflowid, datapackageid, datasetid));
+  const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
+    dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
     history.push("/datasets-management");
   };
 
@@ -80,22 +80,25 @@ const PackagesList = ({ data, userInfo }) => {
     const datasets = row[accessor] || row.datasets;
     return (
       <div className="flex flex-center dataset-count-td">
+        {console.log("row", row)}
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
         <span customtooltip="Add Dataset">
           <RoundPlusSvg
             className="add-dataset-btn"
-            onClick={() => addDataSet(row.dataflowid, row.datapackageid)}
+            onClick={() =>
+              addDataSet(row.dataflowid, "", row.datapackageid, row.name)
+            }
           />
         </span>
       </div>
     );
   };
 
-  const goToDataSet = (dataflowid, datapackageid, datasetid) => {
-    dispatch(redirectToDataSet(dataflowid, datapackageid, datasetid));
-    history.push(`/dataset/${datasetid}`);
+  const goToDataSet = (dfId, dfName, dpId, dpName, dsId, dsName) => {
+    dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
+    history.push(`/dataset/${dsId}`);
   };
 
   const DetailRow = ({ row }) => {
@@ -112,8 +115,11 @@ const PackagesList = ({ data, userInfo }) => {
               onClick={() =>
                 goToDataSet(
                   row.dataflowid,
+                  "",
                   row.datapackageid,
-                  dataset.datasetid
+                  row.name,
+                  dataset.datasetid,
+                  dataset.mnemonic
                 )
               }
             >

@@ -60,7 +60,7 @@ const DataSets = () => {
   const dataSets = useSelector((state) => state.dataSets);
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
-  const { optedDataPackages } = packageData;
+  const { selectedDSDetails } = packageData;
   const { loading, error, sucessMsg, createTriggered, selectedDataset } =
     dataSets;
   const { dataFlowdetail } = dataFlow;
@@ -69,16 +69,16 @@ const DataSets = () => {
   const tabs = ["Settings", "Dataset Columns", "VLC"];
 
   useEffect(() => {
-    if (Object.keys(optedDataPackages).length === 0) {
+    if (Object.keys(selectedDSDetails).length === 0) {
       history.push("/dataflow-management");
     }
     dispatch(getDataKindData());
-    if (optedDataPackages?.dataflowid) {
-      dispatch(getDataFlowDetail(optedDataPackages?.dataflowid));
+    if (selectedDSDetails?.dataflowid) {
+      dispatch(getDataFlowDetail(selectedDSDetails?.dataflowid));
     }
-    if (optedDataPackages?.datasetid) {
-      dispatch(getDataSetDetail(optedDataPackages?.datasetid));
-      dispatch(getDatasetColumns(optedDataPackages?.datasetid));
+    if (selectedDSDetails?.datasetid) {
+      dispatch(getDataSetDetail(selectedDSDetails?.datasetid));
+      dispatch(getDatasetColumns(selectedDSDetails?.datasetid));
     }
   }, []);
 
@@ -125,7 +125,7 @@ const DataSets = () => {
     setTimeout(() => {
       const data = {
         ...formValue,
-        datapackageid: optedDataPackages?.datapackageid,
+        datapackageid: selectedDSDetails?.datapackageid,
       };
       if (data.datasetid) {
         dispatch(updateDatasetData(data));
@@ -138,10 +138,10 @@ const DataSets = () => {
   const breadcrumbItems = [
     { href: "#" },
     {
-      title: optedDataPackages.dataflowid ?? "Dataflow Name",
+      title: selectedDSDetails.dataflowid ?? "Dataflow Name",
     },
     {
-      title: optedDataPackages.datapackageid ?? "Datapackage Name",
+      title: selectedDSDetails.datapackageid ?? "Datapackage Name",
     },
     {
       title: "Create Dataset",
