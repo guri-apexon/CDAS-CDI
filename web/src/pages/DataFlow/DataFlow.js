@@ -1,3 +1,4 @@
+/* eslint-disable no-script-url */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
@@ -10,6 +11,7 @@ import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
 import PageHeader from "../../components/DataFlow/PageHeader";
 import Leftbar from "../../components/DataFlow/LeftBar";
+// import LeftPanel from "../../components/DataFlow/LeftPanel/LeftPanel";
 import Header from "../../components/DataFlow/Header";
 import "./DataFlow.scss";
 import DataFlowForm from "./DataFlowForm";
@@ -51,14 +53,6 @@ const onSubmit = (values) => {
   }, 400);
 };
 
-const breadcrumbItems = [
-  { href: "/dashboard" },
-  {
-    title: "Data Flow Settings",
-    href: "#",
-  },
-];
-
 const DataFlow = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -75,6 +69,15 @@ const DataFlow = () => {
   useEffect(() => {
     pullVendorandLocation();
   }, []);
+
+  const breadcrumbItems = [
+    { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
+    {
+      href: "javascript:void(0)",
+      title: "Data Flow Settings",
+      onClick: () => history.push("/dataflow-management"),
+    },
+  ];
 
   useEffect(() => {
     if (modalLocType === locType) {
@@ -125,6 +128,7 @@ const DataFlow = () => {
       )}
       <div className={classes.toolbar} />
       <Leftbar />
+      {/* <LeftPanel /> */}
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <div className="content">
