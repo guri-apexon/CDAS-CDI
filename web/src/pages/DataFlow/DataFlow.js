@@ -31,8 +31,8 @@ const useStyles = makeStyles(() => ({
     display: "flex",
   },
   rightPanel: {
-    maxWidth: "calc(100vw - 425px)",
-    width: "calc(100vw - 425px)",
+    maxWidth: "calc(100vw - 466px)",
+    width: "calc(100vw - 464px)",
   },
   rightPanelExtended: {
     maxWidth: "calc(100vw - 42px)",
@@ -147,7 +147,7 @@ const DataFlow = () => {
         onClose={handleClose}
         onOpen={handleOpen}
         open={isPanelOpen}
-        width={407}
+        width={446}
       >
         <LeftPanel />
       </Panel>
