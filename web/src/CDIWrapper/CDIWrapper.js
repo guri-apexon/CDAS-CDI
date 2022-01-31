@@ -14,7 +14,7 @@ import PageHeader from "../components/DataFlow/PageHeader";
 
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("../pages/DataFlow/DataFlow"));
-const DataSets = lazy(() => import("../pages/DataSets/DataSets"));
+// const DataSets = lazy(() => import("../pages/DataSets/DataSets"));
 const Dataset = lazy(() => import("../pages/Dataset/Dataset"));
 
 const Empty = () => <></>;

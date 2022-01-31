@@ -30,6 +30,9 @@
           width: 100%;
         }
       }
+      .center {
+        margin-top: 100px;
+      }
     }
   }
 }
@@ -46,6 +49,7 @@
 .MuiDialog-paperWidthSm {
   max-width: 800px;
 }
+
 .vlc-modal {
   width: 726px;
   .vlc-title {
@@ -73,4 +77,37 @@
   .second-row > div {
     margin-right: 30px;
   }
+}
+.lov-modal {
+  width: 340px;
+  max-height: 600px;
+  overflow: auto;
+  .lov-quote {
+    color: "#595959";
+    font-size: 13px;
+    line-height: 14px;
+  }
+  .lov-edit-mode {
+  }
+  .lov-view-mode {
+    height: 272px;
+    textarea {
+      max-width: 320px;
+      max-height: 400px;
+      overflow: auto;
+    }
+  }
+}
+.lov-title {
+  color: #444444;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  padding-bottom: 24px;
+}
+.lov-count {
+  color: #595959;
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 400;
 }

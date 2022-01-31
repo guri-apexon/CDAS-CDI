@@ -98,16 +98,12 @@ export const checkRequiredValue = (value, key = "", primary = "") => {
   );
 };
 
-export const checkCharacterLength = (
-  value,
-  key = "",
-  minLength = "",
-  maxLength
-) => {
+export const checkCharacterLength = (value, key, minLength, maxLength) => {
   return (
     (key === "minLength" || key === "maxLength") &&
-    minLength >= maxLength &&
-    "Max length should be less than the min length"
+    // eslint-disable-next-line no-undef
+    parseInt(minLength, 10) >= parseInt(maxLength, 10) &&
+    "Max length should be greater than the min length"
   );
 };
 

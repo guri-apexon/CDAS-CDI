@@ -82,6 +82,18 @@ export const GET_VLC_RULES = "GET_VLC_RULES";
 export const FETCH_VLC_RULES_SUCCESS = "FETCH_VLC_RULES_SUCCESS";
 export const FETCH_VLC_RULES_FAILURE = "FETCH_VLC_RULES_FAILURE";
 
+export const GET_SQL_TABLES = "GET_SQL_TABLES";
+export const FETCH_SQL_TABLES_SUCCESS = "FETCH_SQL_TABLES_SUCCESS";
+export const FETCH_SQL_TABLES_FAILURE = "FETCH_SQL_TABLES_FAILURE";
+
+export const GET_SQL_COLUMNS = "GET_SQL_COLUMNS";
+export const FETCH_SQL_COLUMNS_SUCCESS = "FETCH_SQL_COLUMNS_SUCCESS";
+export const FETCH_SQL_COLUMNS_FAILURE = "FETCH_SQL_COLUMNS_FAILURE";
+
+export const GET_PREVIEW_SQL = "GET_PREVIEW_SQL";
+export const FETCH_PREVIEW_SQL_SUCCESS = "FETCH_PREVIEW_SQL_SUCCESS";
+export const FETCH_PREVIEW_SQL_FAILURE = "FETCH_PREVIEW_SQL_FAILURE";
+
 // API URLS
 
 export const FLOW_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
@@ -107,6 +119,9 @@ export const DATAKINDAPI = "v1/api/datakind";
 export const DATASETAPI = "v1/api/dataset";
 export const DATAFLOWAPI = "v1/api/dataflow";
 export const VLCDATAAPI = "v1/api/dataset/getVLCData";
+export const SQLTABLESAPI = "v1/api/dataset/getTables";
+export const SQLCOLUMNSAPI = "v1/api/dataset/getColumns";
+export const PREVIEWSQLAPI = "v1/api/dataset/previewSQL";
 
 export const baseURL = process.env.REACT_APP_API_URL;
 

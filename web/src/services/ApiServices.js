@@ -18,7 +18,9 @@ const userId = getCookie("user.id");
 
 const searchStudy = async (searchQuery = "") => {
   try {
-    const res = await axios.get(`${baseURL}/${STUDYSEARCH}/${searchQuery}`);
+    const res = await axios.post(`${baseURL}/${STUDYSEARCH}/${searchQuery}`, {
+      userId,
+    });
     return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);

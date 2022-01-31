@@ -12,7 +12,7 @@ import Banner from "apollo-react/components/Banner";
 import Panel from "apollo-react/components/Panel/Panel";
 // import PageHeader from "../../components/DataFlow/PageHeader";
 import Header from "./Header";
-import LeftPanel from "../../components/DataFlow/LeftPanel/LeftPanel";
+import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import "./Dataset.scss";
 import {
   hideErrorMessage,

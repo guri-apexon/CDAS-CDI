@@ -8,11 +8,13 @@ import Card from "apollo-react/components/Card";
 import Radio from "apollo-react/components/Radio";
 import Link from "apollo-react/components/Link";
 import { useHistory } from "react-router-dom";
-import TextField from "apollo-react/components/TextField";
+import Pencil from "apollo-react-icons/Pencil";
+// import TextField from "apollo-react/components/TextField";
 import Button from "apollo-react/components/Button";
 import { MessageContext } from "../../../components/MessageProvider";
 import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
+
 import { exportToCSV } from "../../../utils/downloadData";
 import { checkHeaders, formatData } from "../../../utils/index";
 
@@ -26,7 +28,7 @@ const ColumnsTab = ({ locationType }) => {
   const { datasetColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
-  const [numberOfRows, setNumberOfRows] = useState(null);
+  const [numberOfRows, setNumberOfRows] = useState(1);
   const [showColumns, setShowColumns] = useState(false);
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
@@ -143,6 +145,19 @@ const ColumnsTab = ({ locationType }) => {
     setSelectedMethod(e.target.value);
   };
 
+  const showTable = React.useMemo(() => {
+    return (
+      <>
+        <DSColumnTable
+          numberOfRows={numberOfRows}
+          formattedData={formattedData}
+          dataOrigin={selectedMethod}
+          locationType={locationType}
+        />
+      </>
+    );
+  }, [showColumns]);
+
   return (
     <>
       {!showColumns && (
@@ -175,7 +190,7 @@ const ColumnsTab = ({ locationType }) => {
               </div>
             </Card>
             <Card
-              style={{ maxWidth: 320, height: 300 }}
+              style={{ maxWidth: 320, height: 300, width: 320 }}
               className={selectedMethod === "manually" ? "active card" : "card"}
             >
               <Radio
@@ -184,11 +199,15 @@ const ColumnsTab = ({ locationType }) => {
                 onClick={handleChange}
                 checked={selectedMethod === "manually"}
               />
-              <TextField
+
+              <div className="center">
+                <Pencil />
+              </div>
+              {/* <TextField
                 label="Number of rows"
                 onChange={(e) => setNumberOfRows(e.target.value)}
                 defaultValue={numberOfRows}
-              />
+              /> */}
             </Card>
           </div>
           <div style={{ display: "flex", justifyContent: "end" }}>
@@ -208,14 +227,7 @@ const ColumnsTab = ({ locationType }) => {
           </div>
         </div>
       )}
-      {showColumns && (
-        <DSColumnTable
-          numberOfRows={numberOfRows || 1}
-          formattedData={formattedData}
-          dataOrigin={selectedMethod}
-          locationType={locationType}
-        />
-      )}
+      {showColumns && <>{showTable}</>}
     </>
   );
 };

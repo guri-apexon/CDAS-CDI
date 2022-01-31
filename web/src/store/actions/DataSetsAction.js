@@ -7,6 +7,9 @@ import {
   GET_DATASET_DETAIL,
   GET_DATASET_COLUMNS,
   GET_VLC_RULES,
+  GET_SQL_TABLES,
+  GET_SQL_COLUMNS,
+  GET_PREVIEW_SQL,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -61,5 +64,25 @@ export const getDatasetColumns = (datasetid) => {
   return {
     type: GET_DATASET_COLUMNS,
     datasetid,
+  };
+};
+
+export const getSQLTables = () => {
+  return {
+    type: GET_SQL_TABLES,
+  };
+};
+
+export const getSQLColumns = (table) => {
+  return {
+    type: GET_SQL_COLUMNS,
+    table,
+  };
+};
+
+export const getPreviewSQL = (query) => {
+  return {
+    type: GET_PREVIEW_SQL,
+    query,
   };
 };
