@@ -68,16 +68,17 @@ const Dataset = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("sftp");
-
   const dispatch = useDispatch();
   const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
+  const { dataflowid, datasetid } = selectedDSDetails;
   const { loading, error, sucessMsg, createTriggered, selectedDataset } =
     dataSets;
   const { dataFlowdetail } = dataFlow;
+  const { datasetId } = useParams();
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -106,20 +107,20 @@ const Dataset = () => {
       history.push("/dataflow-management");
     }
     dispatch(getDataKindData());
-    if (selectedDSDetails?.dataflowid) {
-      dispatch(getDataFlowDetail(selectedDSDetails?.dataflowid));
-    }
   }, []);
 
   useEffect(() => {
-    if (selectedDSDetails?.dataflowid) {
-      dispatch(getDataFlowDetail(selectedDSDetails?.dataflowid));
+    if (dataflowid) {
+      dispatch(getDataFlowDetail(dataflowid));
     }
-    if (selectedDSDetails?.datasetid) {
-      dispatch(getDataSetDetail(selectedDSDetails?.datasetid));
-      dispatch(getDatasetColumns(selectedDSDetails?.datasetid));
+  }, [dataflowid]);
+
+  useEffect(() => {
+    if (datasetid) {
+      dispatch(getDataSetDetail(datasetid));
+      dispatch(getDatasetColumns(datasetid));
     }
-  }, [selectedDSDetails]);
+  }, [datasetid]);
 
   useEffect(() => {
     if (dataFlowdetail?.loc_typ) {
