@@ -19,7 +19,7 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import "./DataPackages.scss";
-import PageHeader from "../../components/DataFlow/PageHeader";
+// import PageHeader from "../../components/DataFlow/PageHeader";
 import Leftbar from "../../components/DataFlow/LeftBar";
 // import LeftPanel from "../../components/DataFlow/LeftPanel/LeftPanel";
 import { getUserInfo, toast } from "../../utils";
@@ -125,7 +125,7 @@ const DataPackages = () => {
   return (
     <div className="data-packages-wrapper ">
       <Grid container>
-        <PageHeader />
+        {/* <PageHeader /> */}
         <CssBaseline />
         <Leftbar />
         {/* <LeftPanel /> */}

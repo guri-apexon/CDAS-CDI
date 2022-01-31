@@ -8,7 +8,7 @@ import { submit, reset } from "redux-form";
 import Loader from "apollo-react/components/Loader";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
-import PageHeader from "../../components/DataFlow/PageHeader";
+// import PageHeader from "../../components/DataFlow/PageHeader";
 import Leftbar from "../../components/DataFlow/LeftBar";
 import Header from "../../components/DataFlow/Header";
 import DataSetsForm from "./DataSetsForm";
@@ -149,7 +149,7 @@ const DataSets = () => {
   ];
   return (
     <div className={classes.root}>
-      <PageHeader />
+      {/* <PageHeader /> */}
       <CssBaseline />
       {loading && <Loader />}
       {(error || sucessMsg) && (

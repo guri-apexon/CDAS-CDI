@@ -1,3 +1,4 @@
+/* eslint-disable no-script-url */
 import React, { lazy, useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory } from "react-router-dom";
@@ -8,11 +9,10 @@ import Banner from "apollo-react/components/Banner";
 // import Tab from "apollo-react/components/Tab";
 // import Tabs from "apollo-react/components/Tabs";
 import Panel from "apollo-react/components/Panel/Panel";
-import PageHeader from "../../components/DataFlow/PageHeader";
-import Header from "../../components/DataFlow/Header";
+// import PageHeader from "../../components/DataFlow/PageHeader";
+import Header from "./Header";
 import LeftPanel from "../../components/DataFlow/LeftPanel/LeftPanel";
 import "./Dataset.scss";
-import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
 import {
   hideErrorMessage,
   getDataKindData,
@@ -22,11 +22,11 @@ import {
   getDatasetColumns,
 } from "../../store/actions/DataSetsAction";
 import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
-// import SettingsTab from "./SettingsTab";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
+// import SettingsTab from "./SettingsTab";
 // const SettingsTab = lazy(() => import("./SettingsTab"));
 // const ColumnsTab = lazy(() => import("./ColumnsTab/ColumnsTab"));
 // const VLCTab = lazy(() => import("./VLCTab"));
@@ -43,7 +43,7 @@ const Dataset = () => {
   const dataSets = useSelector((state) => state.dataSets);
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
-  const { optedDataPackages } = packageData;
+  const { selectedDSDetails } = packageData;
   const { loading, error, sucessMsg, createTriggered, selectedDataset } =
     dataSets;
   const { dataFlowdetail } = dataFlow;
@@ -97,28 +97,24 @@ const Dataset = () => {
   }, [createTriggered]);
 
   useEffect(() => {
-    if (Object.keys(optedDataPackages).length === 0) {
+    if (Object.keys(selectedDSDetails).length === 0) {
       history.push("/dataflow-management");
     }
     dispatch(getDataKindData());
-    if (optedDataPackages?.dataflowid) {
-      dispatch(getDataFlowDetail(optedDataPackages?.dataflowid));
-    }
-    if (optedDataPackages?.datasetid) {
-      dispatch(getDataSetDetail(optedDataPackages?.datasetid));
-      dispatch(getDatasetColumns(optedDataPackages?.datasetid));
+    if (selectedDSDetails?.dataflowid) {
+      dispatch(getDataFlowDetail(selectedDSDetails?.dataflowid));
     }
   }, []);
 
   useEffect(() => {
-    if (optedDataPackages?.dataflowid) {
-      dispatch(getDataFlowDetail(optedDataPackages?.dataflowid));
+    if (selectedDSDetails?.dataflowid) {
+      dispatch(getDataFlowDetail(selectedDSDetails?.dataflowid));
     }
-    if (optedDataPackages?.datasetid) {
-      dispatch(getDataSetDetail(optedDataPackages?.datasetid));
-      dispatch(getDatasetColumns(optedDataPackages?.datasetid));
+    if (selectedDSDetails?.datasetid) {
+      dispatch(getDataSetDetail(selectedDSDetails?.datasetid));
+      dispatch(getDatasetColumns(selectedDSDetails?.datasetid));
     }
-  }, [optedDataPackages]);
+  }, [selectedDSDetails]);
 
   useEffect(() => {
     if (dataFlowdetail?.loc_typ) {
@@ -126,16 +122,42 @@ const Dataset = () => {
     }
   }, [dataFlowdetail]);
 
+  const goToDataflow = () => {
+    if (selectedDSDetails.dataflowid) {
+      history.push("/dataflow-management");
+    }
+    history.push("/dataflow-management");
+  };
+
+  const goToPackage = () => {
+    if (selectedDSDetails.dataflowid) {
+      history.push("/dataflow-management");
+    }
+    history.push("/dataflow-management");
+  };
+
+  const gotoDataflow = () => {
+    if (selectedDSDetails.dataflowid) {
+      history.push("/data-packages");
+    }
+    history.push("/data-packages");
+  };
+
   const breadcrumbItems = [
-    { href: "#" },
+    { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
-      title: optedDataPackages.dataflowid ?? "Dataflow Name",
+      href: "javascript:void(0)",
+      title: selectedDSDetails.dataflowid ?? "Dataflow Name",
+      onClick: goToDataflow,
     },
     {
-      title: optedDataPackages.datapackageid ?? "Datapackage Name",
+      href: "javascript:void(0)",
+      title: selectedDSDetails.datapackageName ?? "Datapackage Name",
+      onClick: gotoDataflow,
     },
     {
-      title: optedDataPackages.datasetid ?? "Create Dataset",
+      href: "#",
+      title: selectedDSDetails.datasetName ?? "Create Dataset",
     },
   ];
 
@@ -154,7 +176,7 @@ const Dataset = () => {
     setTimeout(() => {
       const data = {
         ...formValue,
-        datapackageid: optedDataPackages?.datapackageid,
+        datapackageid: selectedDSDetails?.datapackageid,
       };
       if (data.datasetid) {
         dispatch(updateDatasetData(data));
@@ -187,7 +209,7 @@ const Dataset = () => {
 
   return (
     <>
-      <PageHeader height={64} />
+      {/* <PageHeader height={64} /> */}
       {(error || sucessMsg) && (
         <Banner
           variant={sucessMsg ? "success" : "error"}
@@ -214,10 +236,9 @@ const Dataset = () => {
                 breadcrumbItems={breadcrumbItems || []}
                 submit={() => submitForm()}
                 tabs={tabs}
-                headerTitle="Dataset name"
+                headerTitle={selectedDSDetails.datasetName ?? "Dataset name"}
                 tabValue={value}
                 selectedDataset={selectedDataset}
-                icon={<DatasetsIcon className={classes.contentIcon} />}
                 handleChangeTab={handleChangeTab}
               />
             </div>
