@@ -30,7 +30,7 @@ export default function exportToCSVWithoutFilter(
   // console.log("data for export", exportData, sheetName, fileName);
   const wb = XLSX.utils.book_new();
   let ws = XLSX.worksheet;
-  ws = XLSX.utils.json_to_sheet(exportData, { skipHeader: true });
+  ws = XLSX.utils.json_to_sheet(exportData);
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
   XLSX.writeFile(wb, fileName);
 }
