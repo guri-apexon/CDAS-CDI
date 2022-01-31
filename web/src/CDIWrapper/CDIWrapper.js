@@ -76,7 +76,7 @@ const CDIWrapper = () => {
             <Route
               path="/datasets-management"
               exact
-              render={() => <DataSets />}
+              render={() => <Dataset />}
             />
             <Route
               path="/dataset/:datasetId"
