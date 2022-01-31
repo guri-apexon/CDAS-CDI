@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-nested-ternary */
-import React, { lazy, useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useSelector } from "react-redux";
 import * as XLSX from "xlsx";
 import FileUpload from "apollo-react/components/FileUpload";
@@ -13,6 +13,8 @@ import Button from "apollo-react/components/Button";
 import { MessageContext } from "../../../components/MessageProvider";
 import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
+import { exportToCSV } from "../../../utils/downloadData";
+import { checkHeaders, formatData } from "../../../utils/index";
 
 // const DSColumnTable = lazy(() => import("./DSColumnTable"));
 
@@ -97,78 +99,28 @@ const ColumnsTab = ({ locationType }) => {
     setIsImportReady(false);
   };
 
-  const showProtocolNotMatching = () => {
-    messageContext.showErrorMessage(
-      `Protocol Number in file does not match protocol number ‘${dashboard?.selectedCard?.protocolnumber}’ for this data flow. Please make sure these match and try again`
-    );
-    handleDelete();
-  };
-
-  const formatData = () => {
-    // console.log("data", importedData, formattedData);
-    const data = importedData.slice(1);
-    const protocolList = data.map((e) => e[0]);
-    const isMatchSelectedProtocol = (currentValue) =>
-      currentValue === dashboard?.selectedCard?.protocolnumber;
-    const isAllDataMatch = protocolList.every(isMatchSelectedProtocol);
-    if (isAllDataMatch) {
-      const newData =
-        data.length > 1
-          ? data.map((e, i) => {
-              const newObj = {
-                columnId: i + 1,
-                variableLabel: e[1] || "",
-                columnName: e[2] || "",
-                position: "",
-                format: e[3] || "",
-                dataType: e[4] || "",
-                primary: e[5] === "N" ? "No" : e[5] === "Y" ? "No" : "",
-                unique: e[6] === "N" ? "No" : e[6] === "Y" ? "No" : "",
-                required: e[7] === "N" ? "No" : e[7] === "Y" ? "No" : "",
-                minLength: e[8] || "",
-                maxLength: e[9] || "",
-                values: e[10] || "",
-              };
-              return newObj;
-            })
-          : [];
-      setFormattedData([...newData]);
-      setIsImportReady(true);
-    } else {
-      showProtocolNotMatching();
-    }
-  };
-
-  const checkHeaders = () => {
-    const header = importedData[0];
-    // console.log("Header", header);
-    const validation =
-      header.includes("Protocol") &&
-      header.includes("Variable Label") &&
-      header.includes("Column Name") &&
-      header.includes("Format") &&
-      header.includes("Data Type") &&
-      header.includes("Primary(Y/N)") &&
-      header.includes("Required(Y/N)") &&
-      header.includes("Unique(Y/N)") &&
-      header.includes("Min Length") &&
-      header.includes("Max Length") &&
-      header.includes("List of Values");
-    return validation;
-  };
-
-  const handleNoHeaders = () => {
-    messageContext.showErrorMessage(
-      `Import is not available for files with no header row.`
-    );
-    handleDelete();
-  };
+  // const handleNoHeaders = () => {
+  //   messageContext.showErrorMessage(
+  //     `Import is not available for files with no header row.`
+  //   );
+  //   handleDelete();
+  // };
 
   useEffect(() => {
     if (importedData.length > 1) {
-      const correctHeader = checkHeaders();
+      const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        formatData();
+        const newData = formatData(
+          importedData,
+          dashboard?.selectedCard?.protocolnumber
+        );
+        // eslint-disable-next-line no-unused-expressions
+        newData.length > 1
+          ? (setFormattedData(newData), setIsImportReady(true))
+          : (messageContext.showErrorMessage(
+              `Protocol Number in file does not match protocol number ‘${dashboard?.selectedCard?.protocolnumber}’ for this data flow. Please make sure these match and try again`
+            ),
+            handleDelete());
       } else {
         messageContext.showErrorMessage(
           `The Selected File Does Not Match the Template`

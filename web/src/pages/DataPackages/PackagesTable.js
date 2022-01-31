@@ -36,13 +36,13 @@ const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
     </div>
   );
 };
-const PackageImg = (
-  <img
-    src="assets/svg/datapackage.svg"
-    alt="datapackage"
-    style={{ width: 15, marginRight: 8 }}
-  />
-);
+// const PackageImg = (
+//   <img
+//     src="assets/svg/datapackage.svg"
+//     alt="datapackage"
+//     style={{ width: 15, marginRight: 8 }}
+//   />
+// );
 const NameCustomCell = ({ row, column: { accessor } }) => {
   const title = row[accessor] || row.datapackageid;
   return (
@@ -71,8 +71,8 @@ const PackagesList = ({ data, userInfo }) => {
   const [expandedRows, setExpandedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
 
-  const addDataSet = (dataflowid, datapackageid, datasetid = null) => {
-    dispatch(redirectToDataSet(dataflowid, datapackageid, datasetid));
+  const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
+    dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
     history.push("/datasets-management");
   };
 
@@ -80,22 +80,25 @@ const PackagesList = ({ data, userInfo }) => {
     const datasets = row[accessor] || row.datasets;
     return (
       <div className="flex flex-center dataset-count-td">
+        {/* {console.log("row", row)} */}
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
         <span customtooltip="Add Dataset">
           <RoundPlusSvg
             className="add-dataset-btn"
-            onClick={() => addDataSet(row.dataflowid, row.datapackageid)}
+            onClick={() =>
+              addDataSet(row.dataflowid, "", row.datapackageid, row.name)
+            }
           />
         </span>
       </div>
     );
   };
 
-  const goToDataSet = (dataflowid, datapackageid, datasetid) => {
-    dispatch(redirectToDataSet(dataflowid, datapackageid, datasetid));
-    history.push(`/dataset/${datasetid}`);
+  const goToDataSet = (dfId, dfName, dpId, dpName, dsId, dsName) => {
+    dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
+    history.push(`/dataset/${dsId}`);
   };
 
   const DetailRow = ({ row }) => {
@@ -112,19 +115,24 @@ const PackagesList = ({ data, userInfo }) => {
               onClick={() =>
                 goToDataSet(
                   row.dataflowid,
+                  "",
                   row.datapackageid,
-                  dataset.datasetid
+                  row.name,
+                  dataset.datasetid,
+                  dataset.mnemonic
                 )
               }
             >
-              <Typography variant="caption" className="dataset-name">
-                {dataset.name?.toUpperCase() ||
-                  dataset.datasetid ||
-                  "DataSet Name"}
-              </Typography>
-              <Typography variant="caption">
-                {dataset.type?.toUpperCase() || "FileType"}
-              </Typography>
+              <div className="dataset-details">
+                <Typography variant="caption" className="dataset-name">
+                  {dataset.name?.toUpperCase() ||
+                    dataset.mnemonic ||
+                    "DataSet Name"}
+                </Typography>
+                <Typography variant="caption" className="dataset-filetype">
+                  {dataset.type?.toUpperCase() || "FileType"}
+                </Typography>
+              </div>
               <Status
                 variant="positive"
                 label={dataset.active ? "Active" : "Inactive"}
@@ -247,18 +255,19 @@ const PackagesList = ({ data, userInfo }) => {
         ? expandedRows.filter((id) => id !== datapackageid)
         : [...expandedRows, datapackageid]
     );
-    setTimeout(() => {
-      console.log(
-        "packageName",
-        expandedRows.filter((id) => id !== datapackageid),
-        expandedRows,
-        datapackageid
-      );
-    }, 1000);
+    // setTimeout(() => {
+    //   console.log(
+    //     "packageName",
+    //     expandedRows.filter((id) => id !== datapackageid),
+    //     expandedRows,
+    //     datapackageid
+    //   );
+    // }, 1000);
   };
   useEffect(() => {
     const newData = data.packagesList || [];
     setTableData(newData);
+    // console.log("newData", newData);
   }, [data.packagesList]);
   return (
     <Table

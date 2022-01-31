@@ -187,7 +187,7 @@ const LeftPanel = () => {
           />
         </div>
       </div>
-      <div className="packages-list customScrollbartab">
+      <div className="packages-list customScrollbar">
         {packageData ? (
           <div className="list-container">
             {loading ? (

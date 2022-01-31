@@ -5,6 +5,7 @@ import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
+import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
 
 const useStyles = makeStyles(() => ({
   breadcrumbs: {
@@ -51,7 +52,7 @@ const Header = (props) => {
         breadcrumbItems={props.breadcrumbItems}
       />
       <div style={{ display: "flex", paddingLeft: 11 }}>
-        {props.icon}
+        <DatasetsIcon />
         <Typography className={classes.contentTitle}>
           {props.headerTitle}
         </Typography>
