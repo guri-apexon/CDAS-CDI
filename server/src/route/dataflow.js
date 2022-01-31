@@ -9,5 +9,6 @@ router.post("/hardDelete", DataflowController.hardDelete);
 router.post("/activate", DataflowController.activateDataFlow);
 router.post("/inActivate", DataflowController.inActivateDataFlow);
 router.post("/syncNow", DataflowController.syncDataFlow);
+router.post("/update", DataflowController.updateDataFlow);
 
 module.exports = router;
