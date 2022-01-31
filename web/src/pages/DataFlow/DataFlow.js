@@ -41,6 +41,7 @@ const useStyles = makeStyles(() => ({
   // necessary for content to be below app bar
   content: {
     flexGrow: 1,
+    backgroundColor: "#f6f7fb",
   },
   contentHeader: {
     paddingTop: 11,
