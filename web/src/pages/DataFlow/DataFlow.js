@@ -26,7 +26,7 @@ import {
 
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   root: {
     display: "flex",
   },
@@ -140,7 +140,7 @@ const DataFlow = () => {
           message={error}
         />
       )}
-      <div className={classes.toolbar} />
+      {/* <div className={classes.toolbar} /> */}
       {/* <Leftbar /> */}
       <Panel
         onClose={handleClose}
