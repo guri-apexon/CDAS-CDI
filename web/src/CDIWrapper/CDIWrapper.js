@@ -10,6 +10,7 @@ import Logout from "../pages/Logout/Logout";
 import DataPackages from "../pages/DataPackages/DataPackages";
 import Toast from "../components/Common/Toast";
 import AuditLog from "../pages/AuditLog/AuditLog";
+import PageHeader from "../components/DataFlow/PageHeader";
 
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("../pages/DataFlow/DataFlow"));
@@ -54,6 +55,7 @@ const CDIWrapper = () => {
         <div className="page-wrapper">
           <Toast />
           <TopNavbar setLoggedIn={setLoggedIn} />
+          <PageHeader height={64} />
           <Switch>
             <Route path="/dashboard" exact render={() => <Dashboard />} />
             <Route
@@ -74,7 +76,7 @@ const CDIWrapper = () => {
             <Route
               path="/datasets-management"
               exact
-              render={() => <Dataset />}
+              render={() => <DataSets />}
             />
             <Route
               path="/dataset/:datasetId"
