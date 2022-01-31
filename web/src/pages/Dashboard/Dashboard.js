@@ -6,7 +6,7 @@ import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import { useDispatch, useSelector } from "react-redux";
 import { getFlowDetailsOfStudy } from "../../store/actions/DashboardAction";
-import PageHeader from "../../components/DataFlow/PageHeader";
+// import PageHeader from "../../components/DataFlow/PageHeader";
 import LeftPanel from "./LeftPanel";
 import "./Dashboard.scss";
 
@@ -69,7 +69,7 @@ const Dashboard = () => {
 
   return (
     <>
-      <PageHeader height={64} />
+      {/* <PageHeader height={64} /> */}
       <div className="pageRoot">
         <Panel
           onClose={handleClose}
