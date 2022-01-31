@@ -687,9 +687,7 @@ export default function DataflowTab({ updateData }) {
             maxHeight="calc(100vh - 293px)"
             tablePaginationProps={{
               labelDisplayedRows: ({ from, to, count }) =>
-                `${
-                  count === 1 ? "Data Flow " : "Data Flows"
-                } ${from}-${to} of ${count}`,
+                `${count === 1 ? "Item " : "Items "} ${from}-${to} of ${count}`,
               truncate: true,
             }}
             columnSettings={{
