@@ -56,14 +56,6 @@ const onSubmit = () => {
   }, 400);
 };
 
-const breadcrumbItems = [
-  { href: "/dashboard" },
-  {
-    title: "Data Flow Settings",
-    href: "#",
-  },
-];
-
 const DataFlow = ({ FormValues, dashboard }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
