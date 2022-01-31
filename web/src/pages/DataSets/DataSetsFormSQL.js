@@ -22,7 +22,7 @@ import {
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
 
-import { customSQLQuery } from "../../utils";
+import { YesNo } from "../../utils";
 
 const styles = {
   paper: {
@@ -141,7 +141,7 @@ const DataSetsFormBase = (props) => {
             size="small"
             label="Custom SQL Query"
           >
-            {customSQLQuery?.map((type) => (
+            {YesNo?.map((type) => (
               <MenuItem value={type}>{type}</MenuItem>
             ))}
           </ReduxFormSelect>

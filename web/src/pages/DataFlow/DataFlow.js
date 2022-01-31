@@ -1,15 +1,18 @@
+/* eslint-disable no-script-url */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import { useDispatch, useSelector } from "react-redux";
-import { submit, reset } from "redux-form";
+import { useDispatch, useSelector, connect } from "react-redux";
+import { submit, reset, getFormValues } from "redux-form";
 import Loader from "apollo-react/components/Loader";
+import { values } from "lodash";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
 import PageHeader from "../../components/DataFlow/PageHeader";
 import Leftbar from "../../components/DataFlow/LeftBar";
+// import LeftPanel from "../../components/DataFlow/LeftPanel/LeftPanel";
 import Header from "../../components/DataFlow/Header";
 import "./DataFlow.scss";
 import DataFlowForm from "./DataFlowForm";
@@ -20,9 +23,11 @@ import {
   changeFormFieldData,
   hideErrorMessage,
   getLocationByType,
+  addDataFlow,
 } from "../../store/actions/DataFlowAction";
-
+import { toast } from "../../utils";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
+import { MessageContext } from "../../components/MessageProvider";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -44,22 +49,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const onSubmit = (values) => {
+const onSubmit = () => {
   setTimeout(() => {
     // eslint-disable-next-line no-console
     console.log(JSON.stringify(values, null, 2));
   }, 400);
 };
 
-const breadcrumbItems = [
-  { href: "/dashboard" },
-  {
-    title: "Data Flow Settings",
-    href: "#",
-  },
-];
-
-const DataFlow = () => {
+const DataFlow = ({ FormValues, dashboard }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
@@ -67,6 +64,8 @@ const DataFlow = () => {
   const { selectedLocation, loading, createTriggered, error } = dataFlowData;
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
+  const messageContext = useContext(MessageContext);
+
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
     dispatch(getLocationByType(locType));
@@ -75,6 +74,15 @@ const DataFlow = () => {
   useEffect(() => {
     pullVendorandLocation();
   }, []);
+
+  const breadcrumbItems = [
+    { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
+    {
+      href: "javascript:void(0)",
+      title: "Data Flow Settings",
+      onClick: () => history.push("/dataflow-management"),
+    },
+  ];
 
   useEffect(() => {
     if (modalLocType === locType) {
@@ -105,8 +113,37 @@ const DataFlow = () => {
     history.push("/dashboard");
   };
 
-  const submitForm = () => {
-    dispatch(submit("DataFlowForm"));
+  const submitForm = async () => {
+    const protId = dashboard.selectedCard.prot_id;
+    console.log("FormValues?", FormValues);
+    console.log("protId", protId);
+    if (
+      FormValues.vendor &&
+      FormValues.locationName &&
+      FormValues.firstFileDate &&
+      FormValues.serviceOwnerValue &&
+      FormValues.description !== "" &&
+      protId !== ""
+    ) {
+      const payload = {
+        vendorID: FormValues.vendor[0],
+        locationName: FormValues.locationName[0],
+        dataStructure: FormValues.dataStructure,
+        connectionType: FormValues.dataflowType,
+        testFlag: FormValues.dataflowType === "test" ? "true" : "false",
+        prodFlag: FormValues.dataflowType === "production" ? "true" : "false",
+        description: FormValues.description,
+        firstFileDate: FormValues.firstFileDate,
+        locationType: FormValues.locationType,
+        serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
+        protocolNumberStandard: protId,
+        externalSystemName: "CDI",
+      };
+      await dispatch(addDataFlow(payload));
+      history.push("/dashboard");
+    } else {
+      messageContext.showErrorMessage("Please fill all fields to proceed");
+    }
   };
 
   return (
@@ -125,13 +162,14 @@ const DataFlow = () => {
       )}
       <div className={classes.toolbar} />
       <Leftbar />
+      {/* <LeftPanel /> */}
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <div className="content">
           <div className={classes.contentHeader}>
             <Header
               close={closeForm}
-              submit={submitForm()}
+              submit={submitForm}
               breadcrumbItems={breadcrumbItems}
               headerTitle="Virologicclinic-IIBR12-001-Other"
               icon={<DataPackageIcon className={classes.contentIcon} />}
@@ -157,4 +195,9 @@ const DataFlow = () => {
   );
 };
 
-export default DataFlow;
+// export default DataFlow;
+
+export default connect((state) => ({
+  FormValues: getFormValues("DataFlowForm")(state),
+  dashboard: state.dashboard,
+}))(DataFlow);

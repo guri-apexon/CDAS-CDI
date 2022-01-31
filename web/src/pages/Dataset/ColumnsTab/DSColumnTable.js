@@ -1,6 +1,5 @@
 /* eslint-disable react/button-has-type */
 import React, { useState, useContext, useEffect } from "react";
-import * as XLSX from "xlsx";
 import { makeStyles } from "@material-ui/core/styles";
 import { useDispatch, useSelector } from "react-redux";
 import Table, { createStringSearchFilter } from "apollo-react/components/Table";
@@ -19,9 +18,9 @@ import Search from "apollo-react/components/Search";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Select from "apollo-react/components/Select";
-import Plus from "apollo-react-icons/Plus";
 import Tooltip from "apollo-react/components/Tooltip";
 
+import { ReactComponent as Plus } from "../../../components/Icons/roundplus.svg";
 import { MessageContext } from "../../../components/MessageProvider";
 import {
   checkNumeric,
@@ -35,9 +34,9 @@ import { createDatasetColumns } from "../../../store/actions/DataSetsAction";
 import { TextFieldFilter } from "../../../utils/index";
 
 const useStyles = makeStyles(() => ({
-  paper: {
-    padding: "25px 16px",
-  },
+  // paper: {
+  //   padding: "25px 16px",
+  // },
   section: {
     marginBottom: 32,
   },
@@ -116,10 +115,7 @@ const EditableCell = ({ row, column: { accessor: key } }) => {
       fullWidth
       value={row[key]}
       inputProps={{
-        maxLength:
-          row.selectedDataset?.fileType === "SAS" && key === "columnName"
-            ? 32
-            : null,
+        maxLength: row.fileType === "SAS" && key === "columnName" ? 32 : null,
       }}
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
@@ -137,8 +133,8 @@ const ActionCell = ({ row }) => {
   const {
     uniqueId,
     onRowEdit,
-    onCancel,
-    onDelete,
+    onRowCancel,
+    onRowDelete,
     editMode: eMode,
     onRowSave,
   } = row;
@@ -148,7 +144,7 @@ const ActionCell = ({ row }) => {
       <Button
         size="small"
         style={{ marginRight: 8 }}
-        onClick={() => onCancel(uniqueId)}
+        onClick={() => onRowCancel(uniqueId)}
       >
         Cancel
       </Button>
@@ -165,7 +161,7 @@ const ActionCell = ({ row }) => {
       <IconButton size="small" onClick={() => onRowEdit(uniqueId)}>
         <Pencil />
       </IconButton>
-      <IconButton size="small" onClick={() => onDelete(uniqueId)}>
+      <IconButton size="small" onClick={() => onRowDelete(uniqueId)}>
         <Trash />
       </IconButton>
     </div>
@@ -201,6 +197,105 @@ const columns = [
   },
 ];
 
+const CustomHeader = ({
+  onCancelAll,
+  onSaveAll,
+  onEditAll,
+  isEditAll,
+  editMode,
+  addMenuItems,
+  menuItems,
+  searchValue,
+  searchRows,
+  locationType,
+  isMultiAdd,
+  setNewRows,
+  addMulti,
+  cancelMulti,
+  newRows,
+}) => (
+  <div>
+    <Grid container alignItems="center">
+      {(isEditAll || editMode) && (
+        <>
+          <Button size="small" style={{ marginRight: 8 }} onClick={onCancelAll}>
+            Cancel All
+          </Button>
+          <Button size="small" variant="primary" onClick={onSaveAll}>
+            Save All
+          </Button>
+        </>
+      )}
+      {(!isEditAll || !editMode) && (
+        <>
+          <Tooltip title="Add rows" disableFocusListener>
+            <IconMenuButton
+              id="actions-1"
+              menuItems={addMenuItems}
+              size="small"
+            >
+              <Plus />
+            </IconMenuButton>
+          </Tooltip>
+        </>
+      )}
+      {!isEditAll && !isMultiAdd && (
+        <>
+          <Tooltip title="Edit all" disableFocusListener>
+            <IconButton color="primary" size="small">
+              <Pencil onClick={onEditAll} />
+            </IconButton>
+          </Tooltip>
+        </>
+      )}
+      {isMultiAdd && (
+        <>
+          <TextField
+            placeholder="# of rows"
+            onChange={(e) => setNewRows(e.target.value)}
+            defaultValue={newRows}
+            size="small"
+          />
+          <Button
+            size="small"
+            style={{ marginRight: 8, width: 50 }}
+            onClick={cancelMulti}
+          >
+            Cancel
+          </Button>
+          <Button size="small" variant="primary" onClick={addMulti}>
+            Add
+          </Button>
+        </>
+      )}
+      {(locationType?.toLowerCase() === "sftp" ||
+        locationType?.toLowerCase() === "ftps") && (
+        <Tooltip title="Import dataset column settings" disableFocusListener>
+          <IconButton color="primary" size="small">
+            <Upload />
+          </IconButton>
+        </Tooltip>
+      )}
+      <Divider
+        orientation="vertical"
+        flexItem
+        style={{ marginLeft: 15, marginRight: 15 }}
+      />
+      <Search
+        placeholder="Search"
+        size="small"
+        style={{ marginTop: "-5px", marginBottom: 0 }}
+        onChange={searchRows}
+        value={searchValue}
+        disabled={isEditAll}
+      />
+      <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
+        <EllipsisVertical />
+      </IconMenuButton>
+    </Grid>
+  </div>
+);
+
 export default function DSColumnTable({
   numberOfRows,
   dataOrigin,
@@ -212,6 +307,7 @@ export default function DSColumnTable({
   // const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const { selectedDataset } = dataSets;
+  const { fileType, datasetid } = selectedDataset;
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     uniqueId: `u${index}`,
     columnId: index + 1,
@@ -228,7 +324,7 @@ export default function DSColumnTable({
     values: "",
   }));
   const [rows, setRows] = useState(initialRows);
-  // const [editedRows, setEditedRows] = useState([]);
+  const [editedRows, setEditedRows] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState(null);
   const [rowErr, setRowErr] = useState({});
@@ -298,7 +394,7 @@ export default function DSColumnTable({
         values: "",
       },
     ]);
-    setSelectedRows([rows.length + 1]);
+    setSelectedRows([selectedRows, rows.length + 1]);
   };
 
   const addMultipleRows = () => {
@@ -334,7 +430,7 @@ export default function DSColumnTable({
       const rowsId = Array(parseInt(newRows, 10))
         .fill(null)
         .map((_, i) => rows.length + i + 1);
-      setSelectedRows([...rowsId]);
+      setSelectedRows([selectedRows, ...rowsId]);
     }
   };
 
@@ -422,89 +518,6 @@ export default function DSColumnTable({
     columns.slice(-1)[0],
   ];
 
-  const CustomHeader = ({ onCancelAll, onSaveAll, onEditAll }) => (
-    <div>
-      <Grid container alignItems="center">
-        {isEditAll && (
-          <>
-            <Button
-              size="small"
-              style={{ marginRight: 8 }}
-              onClick={onCancelAll}
-            >
-              Cancel All
-            </Button>
-            <Button size="small" variant="primary" onClick={onSaveAll}>
-              Save All
-            </Button>
-          </>
-        )}
-        {!isEditAll && !isMultiAdd && (
-          <>
-            <Tooltip title="Add rows" disableFocusListener>
-              <IconMenuButton
-                id="actions-1"
-                menuItems={addMenuItems}
-                size="small"
-              >
-                <Plus />
-              </IconMenuButton>
-            </Tooltip>
-            <Tooltip title="Edit all" disableFocusListener>
-              <IconButton color="primary" size="small">
-                <Pencil onClick={onEditAll} />
-              </IconButton>
-            </Tooltip>
-          </>
-        )}
-        {isMultiAdd && (
-          <>
-            <TextField
-              placeholder="# of rows"
-              onChange={(e) => setNewRows(e.target.value)}
-              defaultValue={newRows}
-              size="small"
-            />
-            <Button
-              size="small"
-              style={{ marginRight: 8, width: 50 }}
-              onClick={cancelMulti}
-            >
-              Cancel
-            </Button>
-            <Button size="small" variant="primary" onClick={addMulti}>
-              Add
-            </Button>
-          </>
-        )}
-        {(locationType?.toLowerCase() === "sftp" ||
-          locationType?.toLowerCase() === "ftps") && (
-          <Tooltip title="Import dataset column settings" disableFocusListener>
-            <IconButton color="primary" size="small">
-              <Upload />
-            </IconButton>
-          </Tooltip>
-        )}
-        <Divider
-          orientation="vertical"
-          flexItem
-          style={{ marginLeft: 15, marginRight: 15 }}
-        />
-        <Search
-          placeholder="Search"
-          size="small"
-          style={{ marginTop: "-5px", marginBottom: 0 }}
-          onChange={searchRows}
-          value={searchValue}
-          disabled={isEditAll}
-        />
-        <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
-          <EllipsisVertical />
-        </IconMenuButton>
-      </Grid>
-    </div>
-  );
-
   useEffect(() => {
     if (dataOrigin === "fileUpload") {
       setRows([...formattedData]);
@@ -522,66 +535,74 @@ export default function DSColumnTable({
     }
   }, [dataOrigin]);
 
+  // useEffect(() => {
+  //   if (selectedRows.length === rows.length) {
+  //     setIsEditAll(true);
+  //   } else {
+  //     setIsEditAll(false);
+  //   }
+  // }, [selectedRows]);
+
   const onEditAll = () => {
     const allRows = rows.map((e) => e.uniqueId);
-    // setEditedRows(rows);
+    setEditedRows(rows);
     setSelectedRows([...allRows]);
     setIsEditAll(true);
   };
 
-  useEffect(() => {
-    if (selectedRows.length > 1) {
-      setIsEditAll(true);
-    } else {
-      setIsEditAll(false);
-    }
-  }, [selectedRows]);
-
   const onSaveAll = () => {
-    // setRows(editedRows);
+    setRows([...editedRows]);
     setSelectedRows([]);
-    console.log("rows", rows);
+    setEditedRows([]);
+    setIsEditAll(false);
+    // console.log("rows", rows);
     // setEditedRows(rows);
-    // dispatch(createDatasetColumns(editedRows, selectedDataset?.datasetid));
+    dispatch(createDatasetColumns(rows, datasetid));
   };
 
   const onCancelAll = () => {
-    // setEditedRows([]);
+    setEditedRows([]);
     setSelectedRows([]);
     setIsEditAll(false);
   };
 
-  const onCancel = (uniqueId) => {
+  const onRowCancel = (uniqueId) => {
+    setIsEditAll(false);
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
+    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     setSelectedRows([...removeRow]);
+    setEditedRows([...removeEdited]);
   };
 
   const onRowSave = (uniqueId) => {
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    // const editedRowData = editedRows.find((e) => e.columnId === columnId);
-    // const removeRowData = rows.filter((e) => e.columnId !== columnId);
+    const removeEdited = editedRows.filter((e) => e !== uniqueId);
+    const editedRowData = editedRows.find((e) => e.uniqueId === uniqueId);
+    const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
     // console.log(removeRowData, editedRowData, removeRow);
-    // setRows([...removeRowData, editedRowData]);
+    setIsEditAll(false);
+    setRows([...removeExistingRowData, editedRowData]);
+    setEditedRows([...removeEdited]);
     setSelectedRows([...removeRow]);
   };
 
   const onRowEdit = (uniqueId) => {
-    // const editingdRow = rows.find((row) => row.columnId === columnId);
+    const editingRow = rows.find((row) => row.uniqueId === uniqueId);
     setSelectedRows([...selectedRows, uniqueId]);
-    // setEditedRows([...editedRows, editingdRow]);
+    setEditedRows([...editedRows, editingRow]);
   };
 
-  const onDelete = (uniqueId) => {
+  const onRowDelete = (uniqueId) => {
     setRows(rows.filter((row) => row.uniqueId !== uniqueId));
   };
 
   const editRow = (uniqueId, key, value, errorTxt) => {
     // console.log(uniqueId, "ColumdId");
-    // setEditedRows((rws) =>
-    //   rws.map((row) =>
-    //     row.uniqueId === uniqueId ? { ...row, [key]: value } : row
-    //   )
-    // );
+    setEditedRows((rws) =>
+      rws.map((row) =>
+        row.uniqueId === uniqueId ? { ...row, [key]: value } : row
+      )
+    );
     setRows((rws) =>
       rws.map((row) =>
         row.uniqueId === uniqueId ? { ...row, [key]: value } : row
@@ -598,9 +619,56 @@ export default function DSColumnTable({
     console.log("handle overwrite");
   };
 
-  const getTableData = React.useMemo(
-    () => (
-      <>
+  const editMode = editedRows.length > 0;
+
+  // const getTableData = React.useMemo(
+  //   () => (
+  //     <>
+  //       <Table
+  //         title="Dataset Column Settings"
+  //         subtitle={`${
+  //           rows.length > 1
+  //             ? `${rows.length} dataset columns`
+  //             : `${rows.length} dataset columns`
+  //         }`}
+  //         columns={moreColumns}
+  //         rowId="uniqueId"
+  //         hasScroll={true}
+  //         rows={rows.map((row) => ({
+  //           ...row,
+  //           onRowDelete,
+  //           editRow,
+  //           onRowSave,
+  //           editMode: selectedRows?.includes(row.uniqueId),
+  //           fileType,
+  //           onRowCancel,
+  //           onRowEdit,
+  //         }))}
+  //         rowsPerPageOptions={[10, 50, 100, "All"]}
+  //         rowProps={{ hover: false }}
+  //         tablePaginationProps={{
+  //           labelDisplayedRows: ({ from, to, count }) =>
+  //             `${count === 1 ? "Item" : "Items"} ${from}-${to} of ${count}`,
+  //           truncate: true,
+  //         }}
+  //         CustomHeader={CustomHeader}
+  //         headerProps={{
+  //           onSaveAll,
+  //           onCancelAll,
+  //           onEditAll,
+  //           // editMode,
+  //           cancelMulti,
+  //           addMulti,
+  //         }}
+  //       />
+  //     </>
+  //   ),
+  //   [moreColumns, rows, selectedRows]
+  // );
+
+  return (
+    <div>
+      <div className={classes.section}>
         <Table
           title="Dataset Column Settings"
           subtitle={`${
@@ -611,14 +679,14 @@ export default function DSColumnTable({
           columns={moreColumns}
           rowId="uniqueId"
           hasScroll={true}
-          rows={rows.map((row) => ({
+          rows={(editMode ? editedRows : rows).map((row) => ({
             ...row,
-            onDelete,
+            onRowDelete,
             editRow,
             onRowSave,
             editMode: selectedRows?.includes(row.uniqueId),
-            selectedDataset,
-            onCancel,
+            fileType,
+            onRowCancel,
             onRowEdit,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
@@ -630,22 +698,24 @@ export default function DSColumnTable({
           }}
           CustomHeader={CustomHeader}
           headerProps={{
-            onSaveAll,
             onCancelAll,
+            onSaveAll,
             onEditAll,
-            // editMode,
-            cancelMulti,
+            isEditAll,
+            editMode,
+            addMenuItems,
+            menuItems,
+            searchValue,
+            searchRows,
+            locationType,
+            isMultiAdd,
+            setNewRows,
             addMulti,
+            cancelMulti,
+            newRows,
           }}
         />
-      </>
-    ),
-    [moreColumns, rows, selectedRows]
-  );
-
-  return (
-    <div>
-      <div className={classes.section}>{getTableData}</div>
+      </div>
       <Modal
         open={showViewLOVs}
         scroll="paper"

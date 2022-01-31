@@ -320,6 +320,54 @@ export const toast = (text = "", type = "success") => {
   document.dispatchEvent(customEvent);
 };
 
+export const checkHeaders = (data) => {
+  const header = data[0];
+  const validation =
+    header.includes("Protocol") &&
+    header.includes("Variable Label") &&
+    header.includes("Column Name") &&
+    header.includes("Format") &&
+    header.includes("Data Type") &&
+    header.includes("Primary(Y/N)") &&
+    header.includes("Required(Y/N)") &&
+    header.includes("Unique(Y/N)") &&
+    header.includes("Min Length") &&
+    header.includes("Max Length") &&
+    header.includes("List of Values");
+  return validation;
+};
+
+export const formatData = (incomingData, protNo) => {
+  const data = incomingData.slice(1); // removing header
+  const isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
+  const setYN = (d) => (d === "Y" ? "Yes" : "No");
+  if (isAllDataMatch) {
+    const newData =
+      data.length > 1
+        ? data.map((e, i) => {
+            const newObj = {
+              uniqueId: `u${i}`,
+              columnId: i + 1,
+              variableLabel: e[1] || "",
+              columnName: e[2] || "",
+              position: "",
+              format: e[3] || "",
+              dataType: e[4] || "",
+              primary: setYN(e[5]),
+              unique: setYN(e[6]),
+              required: setYN(e[7]),
+              minLength: e[8] || "",
+              maxLength: e[9] || "",
+              values: e[10] || "",
+            };
+            return newObj;
+          })
+        : [];
+    return newData;
+  }
+  return [];
+};
+
 export const dataStruct = [
   {
     value: "tabular",
@@ -368,4 +416,4 @@ export const locationTypes = [
 
 export const fileTypes = ["SAS", "Excel", "Delimited", "Fixed Width"];
 export const delimeters = ["COMMA", "TAB", "TILDE", "PIPE"];
-export const customSQLQuery = ["Yes", "No"];
+export const YesNo = ["Yes", "No"];

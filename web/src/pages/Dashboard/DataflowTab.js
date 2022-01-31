@@ -42,6 +42,7 @@ import {
   IntegerFilter,
   createStringArraySearchFilter,
   DateFilter,
+  toast,
 } from "../../utils/index";
 
 const LinkCell = ({ row, column: { accessor } }) => {
@@ -125,7 +126,6 @@ export default function DataflowTab({ updateData }) {
   const [totalRows, setTotalRows] = useState(0);
   const [rowData, setRowData] = useState([]);
   const history = useHistory();
-
   const dashboard = useSelector((state) => state.dashboard);
 
   const [expandedRows, setExpandedRows] = useState([]);
@@ -300,7 +300,15 @@ export default function DataflowTab({ updateData }) {
           size="small"
           variant="secondary"
           icon={PlusIcon}
-          onClick={() => history.push("/dataflow-management")}
+          onClick={() => {
+            if (dashboard.selectedCard.prot_id !== "") {
+              history.push("/dataflow-management");
+            } else {
+              messageContext.showErrorMessage(
+                `Please select a study to Add Data flow`
+              );
+            }
+          }}
           style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
         >
           Add data flow
@@ -687,9 +695,7 @@ export default function DataflowTab({ updateData }) {
             maxHeight="calc(100vh - 293px)"
             tablePaginationProps={{
               labelDisplayedRows: ({ from, to, count }) =>
-                `${
-                  count === 1 ? "Data Flow " : "Data Flows"
-                } ${from}-${to} of ${count}`,
+                `${count === 1 ? "Item " : "Items "} ${from}-${to} of ${count}`,
               truncate: true,
             }}
             columnSettings={{
