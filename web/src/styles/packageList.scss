@@ -1,0 +1,101 @@
+@import './customscroll.scss';
+#leftSidebar{
+    div[class^=Blade-body]{
+        padding: 0;
+    }
+    .MuiDrawer-paperAnchorDockedLeft>div{
+        @extend .customscroll;
+    }
+    .top-status-checkbox{
+        label>span{
+            margin-right: 10px;
+        }
+    }
+    .header-sidebar{
+        height: 70px;
+        padding: 0 25px;
+        img{
+            width: 16px;
+            margin-right: 8px;
+        }
+        label{
+            flex-direction: row-reverse;
+            >span+span{
+                margin-right: 20px;
+            }
+        }
+    }
+    .sidebar-content{
+        padding: 15px 25px 20px;
+    }
+    .packages-list{
+        .add-dataset-btn{
+            width: 20px;
+            margin-left: 6px;
+            cursor: pointer;
+        }
+        .dataset-count-td{
+            width: 41px;
+            display: flex;
+            justify-content: space-between;
+            span{
+                display: flex;
+                align-items: center;
+            }
+        }
+        .datasets-list{
+            .dataset-row {
+                padding: 5px;
+                padding-left: 45px;
+            }
+            .dataset-name{
+                width: 54%;
+                max-width: 170px;
+            }
+            .datasetStatus{
+                margin-left: 6px;
+            }
+        }
+        padding: 20px 25px;
+        .no-result{
+            margin-top: 24px;
+            justify-content: center;
+            img{
+                margin-right: 10px;
+            }
+        }
+        .list-container{
+            margin: 0 -22px 0 0;
+            padding-bottom: 50px;
+            padding-right: 5px;
+            div[class^='Table-tableWrapper-']{
+                overflow: hidden;
+            }
+            .loader-container{
+                min-height: 100%;
+                align-items: center;
+                justify-content: center;    
+            }
+            tr:nth-child(odd){
+                height: 32px !important;
+                background-color: #ECF3FF;
+            }
+            td:first-child{
+                padding-left: 5px;
+            }
+            td:last-child{
+                padding-right: 4px;
+            }
+            thead{
+                display: none;
+            }
+            .package-name-td{
+                span{
+                    max-width: 180px;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                }
+            }
+        }
+    }
+}

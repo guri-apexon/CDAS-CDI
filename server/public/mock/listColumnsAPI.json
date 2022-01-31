@@ -1,0 +1,111 @@
+{
+  "message": "Successful Execution",
+  "columnCount": 15,
+  "columnInfo": [
+    {
+      "columnName": "_fileid",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "_rowno",
+      "dataType": "int",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "_rowhash",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "_pkhash",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "_createts",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "_updatets",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "_active",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "_uuid",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "_valid",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "_error",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "pk1",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "pk2",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "pk3",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "rec1",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    },
+    {
+      "columnName": "rec2",
+      "dataType": "string",
+      "required": false,
+      "primaryKey": false,
+      "unique": false
+    }
+  ]
+}

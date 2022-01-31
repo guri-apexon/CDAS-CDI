@@ -33,6 +33,8 @@ import {
 } from "../../components/FormComponents/validators";
 import { createDatasetColumns } from "../../store/actions/DataSetsAction";
 
+import { TextFieldFilter } from "../../utils/index";
+
 const useStyles = makeStyles(() => ({
   paper: {
     padding: "25px 16px",
@@ -46,19 +48,6 @@ const fieldStyles = {
     marginTop: 3,
     marginLeft: -8,
   },
-};
-
-const TextFieldFilter = ({ accessor, filters, updateFilterValue }) => {
-  return (
-    <TextField
-      value={filters[accessor]}
-      name={accessor}
-      onChange={updateFilterValue}
-      fullWidth
-      margin="none"
-      size="small"
-    />
-  );
 };
 
 const makeEditableSelectCell =
@@ -181,7 +170,7 @@ const ActionCell = ({ row }) => {
 const DatasetTable = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const messageContext = useContext(MessageContext);
+  // const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const { selectedDataset } = dataSets;
   const { numberOfRows, dataOrigin, formattedData, locationType } = props;
@@ -573,11 +562,6 @@ const DatasetTable = (props) => {
     console.log("handle overwrite");
   };
 
-  // const showProtocolNotMatching = () => {
-  //   messageContext.showErrorMessage(
-  //     `Protocol # ‘${}’ in file does not match protocol number ‘${dashboard.selectedCard.protocolnumber}’ for this data flow. Please make sure these match and try again`
-  //   );
-  // };
   console.log(editByRow, "editByRow");
   const getTableData = React.useMemo(
     () => (
@@ -638,8 +622,7 @@ const DatasetTable = (props) => {
               <TextField />
             </>
           ) : (
-            `testing`
-            // ${selectedRow && selectedRow.values}
+            `${selectedRow && selectedRow.values}`
           )
         }
         buttonProps={

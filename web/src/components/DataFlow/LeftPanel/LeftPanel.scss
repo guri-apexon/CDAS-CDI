@@ -1,0 +1,99 @@
+.sidebar-content {
+  padding: 15px 25px 20px;
+}
+.packages-list-header {
+  padding: 20px 25px;
+}
+.packages-list {
+  height: calc(100vh - 500px);
+  padding: 20px 25px;
+  overflow: auto;
+  .add-dataset-btn {
+    width: 20px;
+    margin-left: 6px;
+    cursor: pointer;
+  }
+  .dataset-count-td {
+    width: 41px;
+    display: flex;
+    justify-content: space-between;
+    span {
+      display: flex;
+      align-items: center;
+    }
+  }
+  .datasets-list {
+    background-color: #ffffff;
+    .dataset-row {
+      padding: 5px;
+      padding-left: 52px;
+      .dataset-details {
+        display: flex;
+        justify-content: space-between;
+        width: 228px;
+        .dataset-name {
+          color: #444444;
+          font-size: 14px;
+          line-height: 24px;
+          cursor: pointer;
+        }
+        .dataset-filetype {
+          color: #999999;
+          font-size: 13px;
+          line-height: 24px;
+        }
+      }
+      .datasetStatus {
+        margin-left: 6px;
+        p {
+          color: #595959;
+        }
+      }
+    }
+  }
+  .no-result {
+    margin-top: 24px;
+    justify-content: center;
+    img {
+      margin-right: 10px;
+    }
+  }
+  .list-container {
+    margin: 0 -22px 0 0;
+    padding-bottom: 50px;
+    padding-right: 5px;
+    div[class^="Table-tableWrapper-"] {
+      overflow: hidden;
+    }
+    tr:nth-child(odd)[class^="MuiTableRow-root makeStyles-hideBorderBottom"] {
+      background-color: #ecf3ff;
+    }
+    .loader-container {
+      min-height: 100%;
+      align-items: center;
+      justify-content: center;
+    }
+    tr:nth-child(odd) {
+      height: 32px !important;
+      background-color: #ffffff;
+    }
+    td:first-child {
+      padding-left: 5px;
+    }
+    td:last-child {
+      padding-right: 4px;
+    }
+    thead {
+      display: none;
+    }
+    .package-name-td {
+      span {
+        max-width: 180px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+    }
+  }
+
+  // > *
+}

@@ -1,8 +1,9 @@
+/* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/no-array-index-key */
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import "./DataPackages.scss";
+import { useHistory } from "react-router-dom";
 import Paper from "apollo-react/components/Paper";
 import Typography from "apollo-react/components/Typography";
 import Box from "apollo-react/components/Box";
@@ -17,8 +18,10 @@ import Grid from "apollo-react/components/Grid";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
-import PageHeader from "../../components/DataFlow/PageHeader";
+import "./DataPackages.scss";
+// import PageHeader from "../../components/DataFlow/PageHeader";
 import Leftbar from "../../components/DataFlow/LeftBar";
+// import LeftPanel from "../../components/DataFlow/LeftPanel/LeftPanel";
 import { getUserInfo, toast } from "../../utils";
 import {
   addDataPackage,
@@ -33,18 +36,10 @@ const compressionTypes = [
   { text: "SAS XPT", value: "xpt" },
   { text: "RAR", value: "rar" },
 ];
-const breadcrumpItems = [
-  { href: "/dashboard" },
-  {
-    title: "Data Flow Settings",
-    href: "/dataflow-management",
-  },
-  {
-    title: "Data Package Settings",
-  },
-];
+
 const DataPackages = () => {
   const dispatch = useDispatch();
+  const history = useHistory();
   const [showForm, setShowForm] = useState(false);
   const [configShow, setConfigShow] = useState(false);
   const [compression, setCompression] = useState("not_compressed");
@@ -54,6 +49,20 @@ const DataPackages = () => {
   const [notMatchedType, setNotMatchedType] = useState(false);
   const packageData = useSelector((state) => state.dataPackage);
   const userInfo = getUserInfo();
+
+  const breadcrumpItems = [
+    { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
+    {
+      href: "javascript:void(0)",
+      title: "Data Flow Settings",
+      onClick: () => history.push("/dataflow-management"),
+    },
+    {
+      href: "javascript:void(0)",
+      title: "Data Package Settings",
+      onClick: () => history.push("/data-packages"),
+    },
+  ];
 
   const showConfig = (e, checked) => {
     setConfigShow(checked);
@@ -80,6 +89,10 @@ const DataPackages = () => {
       resetForm();
     }
   }, [packageData.refreshData]);
+  useEffect(() => {
+    if (packageData.openAddPackage) setShowForm(true);
+  }, [packageData.openAddPackage]);
+
   useEffect(() => {
     getPackages();
   }, []);
@@ -112,9 +125,10 @@ const DataPackages = () => {
   return (
     <div className="data-packages-wrapper ">
       <Grid container>
-        <PageHeader />
+        {/* <PageHeader /> */}
         <CssBaseline />
         <Leftbar />
+        {/* <LeftPanel /> */}
         <main className="right-content">
           <Paper className="no-shadow">
             <Box className="top-content">

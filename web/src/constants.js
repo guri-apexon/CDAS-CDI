@@ -21,6 +21,7 @@ export const GET_DATA_FLOW_LIST_SUCCESS = "GET_DATA_FLOW_LIST_SUCCESS";
 export const GET_DATA_FLOW_LIST_FAILURE = "GET_DATA_FLOW_LIST_FAILURE";
 
 export const PACKAGES_LIST = "PACKAGES_LIST";
+export const ADD_PACKAGE_BTN = "ADD_PACKAGE_BTN";
 export const PACKAGES_LIST_SUCCESS = "PACKAGES_LIST_SUCCESS";
 export const PACKAGES_LIST_FAILURE = "PACKAGES_LIST_FAILURE";
 export const ADD_DATA_PACKAGE = "ADD_DATA_PACKAGE";
@@ -76,6 +77,11 @@ export const UPDATE_DATASET_FAILURE = "UPDATE_DATASET_FAILURE";
 export const GET_DATASET_COLUMNS = "GET_DATASET_COLUMNS";
 export const FETCH_DATASET_COLUMNS_SUCCESS = "FETCH_DATASET_COLUMNS_SUCCESS";
 export const FETCH_DATASET_COLUMNS_FAILURE = "FETCH_DATASET_COLUMNS_FAILURE";
+
+export const GET_VLC_RULES = "GET_VLC_RULES";
+export const FETCH_VLC_RULES_SUCCESS = "FETCH_VLC_RULES_SUCCESS";
+export const FETCH_VLC_RULES_FAILURE = "FETCH_VLC_RULES_FAILURE";
+
 // API URLS
 
 export const FLOW_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
@@ -95,7 +101,6 @@ export const UNPINSTUDY = "v1/api/study/unPinStudy";
 export const PINSTUDY = "v1/api/study/pinStudy";
 export const AUDIT_LOGS_FETCH = "v1/api/audit-logs/get";
 
-export const FETCHDATAFLOWS = "v1/api/dataflow/studyDataflowList";
 export const LOCATIONAPI = "v1/api/location";
 export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";
@@ -103,4 +108,11 @@ export const DATASETAPI = "v1/api/dataset";
 export const DATAFLOWAPI = "v1/api/dataflow";
 export const VLCDATAAPI = "v1/api/dataset/getVLCData";
 
-export const baseURL = process.env.API_URL || "http://localhost:4001";
+export const baseURL = process.env.REACT_APP_API_URL;
+
+export const allowedTypes = [
+  "xlsx",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "csv",
+];

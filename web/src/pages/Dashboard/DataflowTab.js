@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 import { useHistory } from "react-router-dom";
@@ -17,8 +18,6 @@ import Button from "apollo-react/components/Button";
 import Tag from "apollo-react/components/Tag";
 import SegmentedControl from "apollo-react/components/SegmentedControl";
 import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup";
-import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
-import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import Tooltip from "apollo-react/components/Tooltip";
 import FilterIcon from "apollo-react-icons/Filter";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
@@ -27,7 +26,6 @@ import IconButton from "apollo-react/components/IconButton";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import ChevronDown from "apollo-react-icons/ChevronDown";
 import ChevronRight from "apollo-react-icons/ChevronRight";
-import { TextField } from "apollo-react/components/TextField/TextField";
 import PlusIcon from "apollo-react-icons/Plus";
 import Progress from "../../components/Progress";
 import { MessageContext } from "../../components/MessageProvider";
@@ -39,130 +37,87 @@ import {
   syncNowDataFlow,
 } from "../../services/ApiServices";
 
-const createAutocompleteFilter =
-  (source) =>
-  ({ accessor, filters, updateFilterValue }) => {
-    const ref = React.useRef();
-    const [height, setHeight] = React.useState(0);
-    const [isFocused, setIsFocused] = React.useState(false);
-    const value = filters[accessor];
+import {
+  createAutocompleteFilter,
+  IntegerFilter,
+  createStringArraySearchFilter,
+  DateFilter,
+} from "../../utils/index";
 
-    React.useEffect(() => {
-      const curHeight = ref?.current?.getBoundingClientRect().height;
-      if (curHeight !== height) {
-        setHeight(curHeight);
-      }
-    }, [value, isFocused, height]);
-
-    return (
-      <div
-        style={{
-          minWidth: 160,
-          maxWidth: 200,
-          position: "relative",
-          height,
-        }}
-      >
-        <AutocompleteV2
-          style={{ position: "absolute", left: 0, right: 0 }}
-          value={
-            value
-              ? value.map((label) => {
-                  if (label === "") {
-                    return { label: "blanks" };
-                  }
-                  return { label };
-                })
-              : []
-          }
-          name={accessor}
-          source={source}
-          onChange={(event, value2) => {
-            updateFilterValue({
-              target: {
-                name: accessor,
-                value: value2.map(({ label }) => {
-                  if (label === "blanks") {
-                    return "";
-                  }
-                  return label;
-                }),
-              },
-            });
-          }}
-          fullWidth
-          multiple
-          chipColor="white"
-          size="small"
-          forcePopupIcon
-          showCheckboxes
-          limitChips={1}
-          filterSelectedOptions={false}
-          blurOnSelect={false}
-          clearOnBlur={false}
-          disableCloseOnSelect
-          matchFrom="any"
-          showSelectAll
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          ref={ref}
-          noOptionsText="No matches"
-        />
-      </div>
-    );
-  };
-
-const IntegerFilter = ({ accessor, filters, updateFilterValue }) => {
+const LinkCell = ({ row, column: { accessor } }) => {
+  const rowValue = row[accessor];
   return (
-    <TextField
-      value={filters[accessor]}
-      name={accessor}
-      onChange={updateFilterValue}
-      type="number"
-      style={{ width: 74 }}
-      margin="none"
-      size="small"
+    <Link onClick={() => console.log(`link clicked ${rowValue}`)}>
+      {rowValue}
+    </Link>
+  );
+};
+
+const DateCell = ({ row, column: { accessor } }) => {
+  const rowValue = row[accessor];
+  const date =
+    rowValue && moment(rowValue, "DD-MMM-YYYY").isValid()
+      ? moment(rowValue).format("DD-MMM-YYYY")
+      : moment(rowValue).format("DD-MMM-YYYY");
+
+  return <span>{date}</span>;
+};
+
+const StatusCell = ({ row, column: { accessor } }) => {
+  const description = row[accessor];
+  return (
+    <Tag
+      style={{ marginRight: 10 }}
+      label={description}
+      className={`status-cell ${
+        description === "Active" ? "active" : "inActive"
+      }`}
     />
   );
 };
 
-const DateFilter = ({ accessor, filters, updateFilterValue }) => {
+const DetailRow = ({ row }) => {
   return (
-    <div style={{ minWidth: 230 }}>
-      <div style={{ position: "absolute", top: 0, paddingRight: 4 }}>
-        <DateRangePickerV2
-          value={filters[accessor] || [null, null]}
-          name={accessor}
-          onChange={(value) =>
-            updateFilterValue({
-              target: { name: accessor, value },
-            })
-          }
-          startLabel=""
-          endLabel=""
-          placeholder=""
-          fullWidth
-          margin="none"
-          size="small"
-        />
+    <div style={{ display: "flex", padding: "8px 0px 8px 8px" }}>
+      <div style={{ width: 280 }}>
+        <Typography style={{ color: neutral7 }} variant="body2">
+          Data Flow Name
+        </Typography>
+        <Typography style={{ fontWeight: 500, color: neutral8 }}>
+          {row.dataFlowName}
+        </Typography>
+      </div>
+      <div style={{ marginLeft: 32 }}>
+        <Typography style={{ color: neutral7 }} variant="body2">
+          # Data Packages
+        </Typography>
+        <Typography style={{ fontWeight: 500, color: neutral8 }}>
+          {row.dataPackages}
+        </Typography>
+      </div>
+      <div style={{ marginLeft: 32 }}>
+        <Typography style={{ color: neutral7 }} variant="body2">
+          Adapter
+        </Typography>
+        <Typography style={{ fontWeight: 500, color: neutral8 }}>
+          {row.adapter}
+        </Typography>
+      </div>
+      <div style={{ marginLeft: 32 }}>
+        <Typography style={{ color: neutral7 }} variant="body2">
+          Date Created
+        </Typography>
+        <Typography style={{ fontWeight: 500, color: neutral8 }}>
+          {row.dateCreated}
+        </Typography>
       </div>
     </div>
   );
 };
 
-const createStringArraySearchFilter = (accessor) => {
-  return (row, filters) =>
-    !Array.isArray(filters[accessor]) ||
-    filters[accessor].length === 0 ||
-    filters[accessor].some(
-      (value) => value.toUpperCase() === row[accessor]?.toUpperCase()
-    );
-};
-
-export default function DataFlowTable({ selectedStudy, updateData }) {
+export default function DataflowTab({ updateData }) {
   const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState(null);
-  const [topFilterData, setTopFilterData] = useState([]);
   const messageContext = useContext(MessageContext);
   const [showSyncNow, setShowSyncNow] = useState(false);
   const [showHardDelete, setShowHardDelete] = useState(false);
@@ -193,26 +148,6 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
       : dashboard.flowData;
     setRowData([...dashboardData]);
   }, [dashboard.flowData, selectedFilter]);
-
-  const LinkCell = ({ row, column: { accessor } }) => {
-    const rowValue = row[accessor];
-    return (
-      // eslint-disable-next-line jsx-a11y/anchor-is-valid
-      <Link onClick={() => console.log(`link clicked ${rowValue}`)}>
-        {rowValue}
-      </Link>
-    );
-  };
-
-  const DateCell = ({ row, column: { accessor } }) => {
-    const rowValue = row[accessor];
-    const date =
-      rowValue && moment(rowValue, "DD-MMM-YYYY").isValid()
-        ? moment(rowValue).format("DD-MMM-YYYY")
-        : moment(rowValue).format("DD-MMM-YYYY");
-
-    return <span>{date}</span>;
-  };
 
   const hardDeleteAction = async (e) => {
     setSelectedFlow(e);
@@ -340,58 +275,6 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
           {iconButton}
         </Tooltip>
       </div>
-    );
-  };
-
-  const DetailRow = ({ row }) => {
-    return (
-      <div style={{ display: "flex", padding: "8px 0px 8px 8px" }}>
-        <div style={{ width: 280 }}>
-          <Typography style={{ color: neutral7 }} variant="body2">
-            Data Flow Name
-          </Typography>
-          <Typography style={{ fontWeight: 500, color: neutral8 }}>
-            {row.dataFlowName}
-          </Typography>
-        </div>
-        <div style={{ marginLeft: 32 }}>
-          <Typography style={{ color: neutral7 }} variant="body2">
-            # Data Packages
-          </Typography>
-          <Typography style={{ fontWeight: 500, color: neutral8 }}>
-            {row.dataPackages}
-          </Typography>
-        </div>
-        <div style={{ marginLeft: 32 }}>
-          <Typography style={{ color: neutral7 }} variant="body2">
-            Adapter
-          </Typography>
-          <Typography style={{ fontWeight: 500, color: neutral8 }}>
-            {row.adapter}
-          </Typography>
-        </div>
-        <div style={{ marginLeft: 32 }}>
-          <Typography style={{ color: neutral7 }} variant="body2">
-            Date Created
-          </Typography>
-          <Typography style={{ fontWeight: 500, color: neutral8 }}>
-            {row.dateCreated}
-          </Typography>
-        </div>
-      </div>
-    );
-  };
-
-  const StatusCell = ({ row, column: { accessor } }) => {
-    const description = row[accessor];
-    return (
-      <Tag
-        style={{ marginRight: 10 }}
-        label={description}
-        className={`status-cell ${
-          description === "Active" ? "active" : "inActive"
-        }`}
-      />
     );
   };
 
@@ -608,6 +491,7 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
       header: "Datasets",
       accessor: "dataSets",
       frozen: false,
+      align: "right",
       sortFunction: compareNumbers,
       customCell: LinkCell,
       filterFunction: numberSearchFilter("dataSets"),
@@ -626,6 +510,7 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
       header: "Version",
       accessor: "version",
       frozen: false,
+      align: "right",
       sortFunction: compareNumbers,
       filterFunction: numberSearchFilter("version"),
       filterComponent: IntegerFilter,
@@ -679,6 +564,7 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
       header: "Data Packages",
       accessor: "dataPackages",
       frozen: false,
+      align: "right",
       sortFunction: compareNumbers,
       customCell: LinkCell,
       filterFunction: numberSearchFilter("dataPackages"),
@@ -793,7 +679,9 @@ export default function DataFlowTable({ selectedStudy, updateData }) {
             rowId="dataFlowId"
             initialSortedColumn="dateCreated"
             initialSortOrder="asc"
-            rowsPerPageOptions={[10, 50, 100, "All"]}
+            rowsPerPageOptions={
+              totalRows >= 30 ? [10, 50, 100, "All"] : [10, 20, 50, "All"]
+            }
             hasScroll={true}
             maxWidth="calc(100vw - 465px)"
             maxHeight="calc(100vh - 293px)"

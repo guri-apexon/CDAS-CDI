@@ -1,4 +1,5 @@
 import React, { createContext, useState } from "react";
+import { Success, Warning, Info, Error } from "../constants";
 
 export const MessageContext = createContext();
 
@@ -16,17 +17,17 @@ const MessageProvider = ({ children }) => {
   const showErrorMessage = (error) => {
     if (error && error.data) {
       const { message } = error.data;
-      setErrorMessage({ variant: "error", messages: message, show: true });
+      setErrorMessage({ variant: Error, messages: message, show: true });
     } else {
-      setErrorMessage({ variant: "error", messages: error, show: true });
+      setErrorMessage({ variant: Error, messages: error, show: true });
     }
     setTimeout(() => {
       setErrorMessage({ show: false });
-    }, 5000);
+    }, 7500);
   };
 
   const showSuccessMessage = (message) => {
-    setErrorMessage({ variant: "success", messages: message, show: true });
+    setErrorMessage({ variant: Success, messages: message, show: true });
     setTimeout(() => {
       setErrorMessage({ show: false });
     }, 5000);
