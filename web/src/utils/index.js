@@ -416,4 +416,4 @@ export const locationTypes = [
 
 export const fileTypes = ["SAS", "Excel", "Delimited", "Fixed Width"];
 export const delimeters = ["COMMA", "TAB", "TILDE", "PIPE"];
-export const customSQLQuery = ["Yes", "No"];
+export const YesNo = ["Yes", "No"];

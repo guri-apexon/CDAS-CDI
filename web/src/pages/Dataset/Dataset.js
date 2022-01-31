@@ -1,7 +1,8 @@
 /* eslint-disable no-script-url */
 import React, { lazy, useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { useHistory } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router";
+import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
 import Banner from "apollo-react/components/Banner";
@@ -33,46 +34,51 @@ import VLCTab from "./VLCTab";
 
 const tabs = ["Settings", "Dataset Columns", "VLC"];
 
+const styles = {
+  rightPanel: {
+    maxWidth: "calc(100vw - 466px)",
+    width: "calc(100vw - 464px)",
+  },
+  rightPanelExtended: {
+    maxWidth: "calc(100vw - 42px)",
+    width: "calc(100vw - 40px)",
+  },
+  content: {
+    flexGrow: 1,
+    background: "#f6f7fb",
+    minHeight: "calc(100vh - 125px)",
+  },
+  contentHeader: {
+    paddingTop: 11,
+    padding: "16px 25px 0px 25px",
+    backgroundColor: "#ffffff",
+  },
+  contentTitle: {
+    padding: "20px 0px",
+    fontSize: 20,
+    lineHeight: "22px",
+    fontWeight: 500,
+  },
+  contentIcon: {
+    color: "#595959",
+  },
+};
+
 const Dataset = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("sftp");
-
   const dispatch = useDispatch();
   const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
+  const { dataflowid, datasetid } = selectedDSDetails;
   const { loading, error, sucessMsg, createTriggered, selectedDataset } =
     dataSets;
   const { dataFlowdetail } = dataFlow;
-
-  const styles = {
-    rightPanel: {
-      maxWidth: isPanelOpen ? "calc(100vw - 466px)" : "calc(100vw - 42px)",
-      width: isPanelOpen ? "calc(100vw - 464px)" : "calc(100vw - 40px)",
-    },
-    content: {
-      flexGrow: 1,
-      background: "#f6f7fb",
-      minHeight: "calc(100vh - 125px)",
-    },
-    contentHeader: {
-      paddingTop: 11,
-      padding: "16px 25px 0px 25px",
-      backgroundColor: "#ffffff",
-    },
-    contentTitle: {
-      padding: "20px 0px",
-      fontSize: 20,
-      lineHeight: "22px",
-      fontWeight: 500,
-    },
-    contentIcon: {
-      color: "#595959",
-    },
-  };
+  const { datasetId } = useParams();
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -101,20 +107,20 @@ const Dataset = () => {
       history.push("/dataflow-management");
     }
     dispatch(getDataKindData());
-    if (selectedDSDetails?.dataflowid) {
-      dispatch(getDataFlowDetail(selectedDSDetails?.dataflowid));
-    }
   }, []);
 
   useEffect(() => {
-    if (selectedDSDetails?.dataflowid) {
-      dispatch(getDataFlowDetail(selectedDSDetails?.dataflowid));
+    if (dataflowid) {
+      dispatch(getDataFlowDetail(dataflowid));
     }
-    if (selectedDSDetails?.datasetid) {
-      dispatch(getDataSetDetail(selectedDSDetails?.datasetid));
-      dispatch(getDatasetColumns(selectedDSDetails?.datasetid));
+  }, [dataflowid]);
+
+  useEffect(() => {
+    if (datasetid) {
+      dispatch(getDataSetDetail(datasetid));
+      dispatch(getDatasetColumns(datasetid));
     }
-  }, [selectedDSDetails]);
+  }, [datasetid]);
 
   useEffect(() => {
     if (dataFlowdetail?.loc_typ) {
@@ -228,7 +234,13 @@ const Dataset = () => {
         >
           {getLeftPanel}
         </Panel>
-        <Panel className={classes.rightPanel} width="100%" hideButton>
+        <Panel
+          className={
+            isPanelOpen ? classes.rightPanel : classes.rightPanelExtended
+          }
+          width="100%"
+          hideButton
+        >
           <main className={classes.content}>
             <div className={classes.contentHeader}>
               <Header
