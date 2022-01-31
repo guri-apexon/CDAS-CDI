@@ -16,7 +16,28 @@ import {
   DATAFLOWAPI,
   FETCH_DATAFLOW_DETAIL_FAILURE,
   FETCH_DATAFLOW_DETAIL_SUCCESS,
+  DATAFLOW_SAVE,
+  ADD_DATAFLOW_SUCCESS,
+  DATAFLOWS_LIST_FAILURE,
+  ADD_DATAFLOW_FAILURE,
 } from "../../constants";
+
+export function* addDataFlow(params) {
+  try {
+    const fetchData = yield call(
+      axios.post,
+      `${baseURL}/${DATAFLOW_SAVE}`,
+      params.dataflow
+    );
+
+    yield put({
+      type: ADD_DATAFLOW_SUCCESS,
+      refreshData: true,
+    });
+  } catch (e) {
+    yield put({ type: ADD_DATAFLOW_FAILURE, message: e.message });
+  }
+}
 
 export function* fetchVendorsData() {
   try {
