@@ -28,7 +28,7 @@ const ColumnsTab = ({ locationType }) => {
   const { datasetColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
-  const [numberOfRows, setNumberOfRows] = useState("");
+  const [numberOfRows, setNumberOfRows] = useState(1);
   const [showColumns, setShowColumns] = useState(false);
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
@@ -205,14 +205,14 @@ const ColumnsTab = ({ locationType }) => {
               {/* <div className="center">
                 <Pencil />
               </div> */}
-              <TextField
+              {/* <TextField
                 label="Number of rows"
                 type="number"
                 max="500"
                 min="1"
                 onChange={(e) => setNumberOfRows(e.target.value)}
                 defaultValue={numberOfRows}
-              />
+              /> */}
             </Card>
           </div>
           <div style={{ display: "flex", justifyContent: "end" }}>
