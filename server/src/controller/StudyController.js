@@ -131,8 +131,9 @@ exports.searchStudyList = function (req, res) {
       searchParam,
     });
     // console.log("search", searchParam, userId);
-    const searchQuery = `SELECT prot_id, prot_nbr as protocolnumber, s.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${constants.DB_SCHEMA_NAME}.study s INNER JOIN ${constants.DB_SCHEMA_NAME}.sponsor s2 ON s2.spnsr_id = s.spnsr_id 
-              WHERE (s.usr_id = $2) AND (LOWER(prot_nbr) LIKE $1 OR LOWER(spnsr_nm) LIKE $1 OR LOWER(proj_cd) LIKE $1) LIMIT 10`;
+    const searchQuery = `SELECT s.prot_id, s.prot_nbr as protocolnumber, s3.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${constants.DB_SCHEMA_NAME}.study s INNER JOIN ${constants.DB_SCHEMA_NAME}.sponsor s2 ON s2.spnsr_id = s.spnsr_id 
+    INNER JOIN ${constants.DB_SCHEMA_NAME}.study_user s3 ON s.prot_id=s3.prot_id
+              WHERE (s3.usr_id = $2) AND (LOWER(prot_nbr) LIKE $1 OR LOWER(spnsr_nm) LIKE $1 OR LOWER(proj_cd) LIKE $1) LIMIT 10`;
 
     DB.executeQuery(searchQuery, [`%${searchParam}%`, userId]).then(
       (response) => {
