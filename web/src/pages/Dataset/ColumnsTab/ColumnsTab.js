@@ -9,7 +9,7 @@ import Radio from "apollo-react/components/Radio";
 import Link from "apollo-react/components/Link";
 import { useHistory } from "react-router-dom";
 import Pencil from "apollo-react-icons/Pencil";
-// import TextField from "apollo-react/components/TextField";
+import TextField from "apollo-react/components/TextField";
 import Button from "apollo-react/components/Button";
 import { MessageContext } from "../../../components/MessageProvider";
 import { allowedTypes } from "../../../constants";
@@ -28,7 +28,7 @@ const ColumnsTab = ({ locationType }) => {
   const { datasetColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
-  const [numberOfRows, setNumberOfRows] = useState(1);
+  const [numberOfRows, setNumberOfRows] = useState("");
   const [showColumns, setShowColumns] = useState(false);
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
@@ -152,7 +152,7 @@ const ColumnsTab = ({ locationType }) => {
     return (
       <>
         <DSColumnTable
-          numberOfRows={numberOfRows}
+          numberOfRows={numberOfRows || 1}
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}
@@ -202,15 +202,17 @@ const ColumnsTab = ({ locationType }) => {
                 onClick={handleChange}
                 checked={selectedMethod === "manually"}
               />
-
-              <div className="center">
+              {/* <div className="center">
                 <Pencil />
-              </div>
-              {/* <TextField
+              </div> */}
+              <TextField
                 label="Number of rows"
+                type="number"
+                max="500"
+                min="1"
                 onChange={(e) => setNumberOfRows(e.target.value)}
                 defaultValue={numberOfRows}
-              /> */}
+              />
             </Card>
           </div>
           <div style={{ display: "flex", justifyContent: "end" }}>
