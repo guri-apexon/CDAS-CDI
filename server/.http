@@ -324,6 +324,7 @@ POST http://localhost:4001/v1/api/dataset/getTables HTTP/1.1
 content-type: application/json
 
 {
+  "query": "string"
 }
 
 ### getColumns
@@ -332,4 +333,5 @@ POST http://localhost:4001/v1/api/dataset/getColumns HTTP/1.1
 content-type: application/json
 
 {
+  "query": "string"
 }
