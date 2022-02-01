@@ -1,13 +1,12 @@
 const { Pool, Client } = require("pg");
+const config = require("./constants");
 
-const dotenv = require("dotenv");
-dotenv.config();
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_DATABASE,
-  password: process.env.DB_PASS,
-  port: process.env.DB_PORT,
+  user: config.DB_USER,
+  host: config.DB_HOST,
+  database: config.DB_DATABASE,
+  password: config.DB_PASS,
+  port: config.DB_PORT,
   connectionLimit: 100,
   queueLimit: 0,
   waitForConnections: true,
