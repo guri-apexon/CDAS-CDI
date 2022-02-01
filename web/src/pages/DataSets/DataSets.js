@@ -61,7 +61,7 @@ const DataSets = () => {
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
-  const { loading, error, sucessMsg, createTriggered, selectedDataset } =
+  const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
     dataSets;
   const { dataFlowdetail } = dataFlow;
   const [tabValue, setTabValue] = useState(0);
@@ -89,10 +89,10 @@ const DataSets = () => {
 
   useEffect(() => {
     console.log(selectedDataset, "selectedDataset");
-    if (createTriggered) {
+    if (isDatasetCreated) {
       setTabValue(1);
     }
-  }, [createTriggered]);
+  }, [isDatasetCreated]);
 
   const closeForm = async () => {
     if (

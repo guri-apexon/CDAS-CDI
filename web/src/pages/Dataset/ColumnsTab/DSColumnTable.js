@@ -341,11 +341,23 @@ export default function DSColumnTable({
   const editRow = (uniqueId, key, value, errorTxt) => {
     // console.log(uniqueId, "ColumdId");
     setEditedRows((rws) =>
-      rws.map((row) =>
-        row.uniqueId === uniqueId
-          ? { ...row, [key]: value, isInitLoad: false, isHavingError: true }
-          : row
-      )
+      rws.map((row) => {
+        if (row.uniqueId === uniqueId) {
+          if (row.isInitLoad) {
+            return {
+              ...row,
+              [key]: value,
+              isInitLoad: false,
+              isHavingError: true,
+            };
+          }
+          return {
+            ...row,
+            [key]: value,
+          };
+        }
+        return row;
+      })
     );
     // setRows((rws) =>
     //   rws.map((row) =>
