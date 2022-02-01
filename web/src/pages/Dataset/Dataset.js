@@ -89,6 +89,13 @@ const Dataset = () => {
   };
 
   useEffect(() => {
+    if (!datasetId) {
+      dispatch(reset("DataSetsForm"));
+      dispatch(reset("DataSetsFormSQL"));
+    }
+  }, [datasetId]);
+
+  useEffect(() => {
     console.log(selectedDataset, "selectedDataset");
     if (createTriggered) {
       setValue(1);
