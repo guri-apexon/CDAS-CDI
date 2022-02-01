@@ -634,3 +634,157 @@ exports.getDataflowDetail = async (req, res) => {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+
+exports.updateDataFlow = async (req, res) => {
+  try {
+    let {
+      sponsorNameStandard,
+      active,
+      connectionType,
+      sponsorName,
+      externalVersion,
+      protocolNumberStandard,
+      exptDtOfFirstProdFile,
+      vendorName,
+      protocolNumber,
+      type,
+      name,
+      externalID,
+      location,
+      testFlag,
+      prodFlag,
+      description,
+      dataPackage,
+    } = req.body;
+    if (vendorName !== "") {
+      var ResponseBody = {};
+      let q = `select vend_id from ${constants.DB_SCHEMA_NAME}.vendor where vend_nm='${vendorName}'`;
+      let { rows } = await DB.executeQuery(q);
+      let q1 = `select src_loc_id from ${constants.DB_SCHEMA_NAME}.source_location where cnn_url='${location}'`;
+      let { rows: data } = await DB.executeQuery(q1);
+      if (rows.length > 0 && data.length > 0) {
+        //validation for dataflow metadata
+        if (
+          vendorName !== null &&
+          protocolNumberStandard !== null &&
+          description !== ""
+        ) {
+          const query = `update ${
+            constants.DB_SCHEMA_NAME
+          }.dataflow set vend_id='${rows[0].vend_id}',
+          type='${type}',description='${description}',src_loc_id=${
+            data[0].src_loc_id
+          },active=1,expt_fst_prd_dt='${exptDtOfFirstProdFile}',
+          testflag=${
+            testFlag === "false" ? 0 : 1
+          },connectiontype='${connectionType}',connectiondriver='${location}',
+          updt_tm=CURRENT_TIMESTAMP where extrnl_id='${externalID}'`;
+          let ts = new Date().toLocaleString();
+          // update dataflow schema into db
+          let createDF = await DB.executeQuery(query);
+          ResponseBody.action = "Data flow updated successfully.";
+          ResponseBody.timestamp = ts;
+          if (dataPackage && dataPackage.length > 0) {
+            ResponseBody.data_packages = [];
+            // if datapackage exists
+            for (let each of dataPackage) {
+              let newObj = {};
+              const dpUid = createUniqueID();
+              if (each.name !== "" && each.path !== "" && each.type !== "") {
+                let DPQuery = `UPDATE ${
+                  constants.DB_SCHEMA_NAME
+                }.datapackage set type='${each.type}', name='${
+                  each.name
+                }', path='${each.path}',
+                   password='${each.password}',active='${
+                  each.active === false ? 0 : 1
+                }',nopackageconfig='${each.noPackageConfig === false ? 0 : 1}',
+                   updt_tm=CURRENT_TIMESTAMP where extrnl_id='${
+                     each.externalID
+                   }'`;
+                let createDP = await DB.executeQuery(DPQuery);
+                newObj.timestamp = ts;
+                newObj.externalId = each.externalID;
+                newObj.action = "Data package update successfully.";
+                ResponseBody.data_packages.push(newObj);
+                if (each.dataSet && each.dataSet.length > 0) {
+                  ResponseBody.data_sets = [];
+                  // if datasets exists
+                  for (let obj of each.dataSet) {
+                    let newobj = {};
+                    if (
+                      obj.name !== "" &&
+                      obj.path !== "" &&
+                      obj.mnemonic !== "" &&
+                      obj.customQuery !== "" &&
+                      obj.columncount !== null
+                    ) {
+                      let dataKindQ = `select datakindid from ${constants.DB_SCHEMA_NAME}.datakind where name='${obj.dataKind}'`;
+                      let checkDataKind = await DB.executeQuery(dataKindQ);
+                      if (checkDataKind.rows.length > 0) {
+                        let datakindid = checkDataKind.rows[0].datakindid;
+                        const dsUid = createUniqueID();
+                        let DSQuery = `UPDATE ${constants.DB_SCHEMA_NAME}.dataset set datakind='${obj.dataKind}',mnemonic='${obj.mnemonic}',columncount=${obj.columncount},incremental=${obj.incremental},
+                        offsetcolumn='${obj.offsetColumn}',type='${obj.type}',path='${obj.path}',ovrd_stale_alert=${obj.OverrideStaleAlert} ,
+                        headerrownumber=${obj.headerRowNumber},footerrownumber=${obj.footerRowNumber},customsql='${obj.customSql}',custm_sql_query='${obj.customQuery}',
+                        tbl_nm='${obj.tableName}',updt_tm=CURRENT_TIMESTAMP where extrnl_id=${obj.externalID}`;
+                        let createDS = await DB.executeQuery(DSQuery);
+                        newobj.timestamp = ts;
+                        newobj.externalId = obj.externalID;
+                        newobj.action = "Data set update successfully.";
+                        ResponseBody.data_sets.push(newobj);
+                      } else {
+                        return apiResponse.ErrorResponse(
+                          res,
+                          "Data set Datakind is required"
+                        );
+                      }
+                    } else {
+                      return apiResponse.ErrorResponse(
+                        res,
+                        "Data set name and path is required"
+                      );
+                    }
+                  }
+                } else {
+                  return apiResponse.successResponseWithData(
+                    res,
+                    "Data flow update successfully",
+                    ResponseBody
+                  );
+                }
+              } else {
+                return apiResponse.ErrorResponse(
+                  res,
+                  "Data package name, type and path is required"
+                );
+              }
+            }
+          } else {
+            return apiResponse.successResponseWithData(
+              res,
+              "Data flow update successfully",
+              ResponseBody
+            );
+          }
+        } else {
+          return apiResponse.ErrorResponse(
+            res,
+            "Vendor name , protocol number standard and description is required"
+          );
+        }
+      }
+    }
+    return apiResponse.successResponseWithData(
+      res,
+      "Data flow update successfully.",
+      ResponseBody
+    );
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error("catch :update dataflow");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
