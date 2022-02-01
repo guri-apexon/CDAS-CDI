@@ -35,6 +35,14 @@ const fieldStyles = {
   },
 };
 
+const fieldStylesNo = {
+  style: {
+    marginTop: 3,
+    marginLeft: -8,
+    maxWidth: 85,
+  },
+};
+
 export const makeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
@@ -79,7 +87,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
       }
       error={!row.isInitLoad && errorText ? true : false}
       helperText={!row.isInitLoad ? errorText : ""}
-      {...fieldStyles}
+      {...fieldStylesNo}
     />
   ) : (
     row[key]
@@ -124,13 +132,14 @@ export const ActionCell = ({ row }) => {
     onRowCancel,
     onRowDelete,
     editMode: eMode,
-    isEditAll,
+    isHavingError,
+    // isEditAll,
     onRowSave,
   } = row;
 
-  if (isEditAll) {
-    return <></>;
-  }
+  // if (isEditAll) {
+  //   return <></>;
+  // }
 
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
@@ -145,6 +154,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
+        disabled={isHavingError}
       >
         Save
       </Button>

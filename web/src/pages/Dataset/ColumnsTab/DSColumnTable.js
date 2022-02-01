@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react/button-has-type */
 import React, { useState, useContext, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -72,10 +73,9 @@ export default function DSColumnTable({
   };
 
   const LinkCell = ({ row }) => {
-    if (isEditAll) {
+    if (row.editMode) {
       return <></>;
     }
-    // eslint-disable-next-line jsx-a11y/anchor-is-valid
     return <Link onClick={() => handleViewLOV(row)}>View LOVs</Link>;
   };
 
@@ -342,7 +342,9 @@ export default function DSColumnTable({
     // console.log(uniqueId, "ColumdId");
     setEditedRows((rws) =>
       rws.map((row) =>
-        row.uniqueId === uniqueId ? { ...row, [key]: value } : row
+        row.uniqueId === uniqueId
+          ? { ...row, [key]: value, isInitLoad: false, isHavingError: true }
+          : row
       )
     );
     // setRows((rws) =>
