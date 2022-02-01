@@ -13,10 +13,10 @@ const PageHeader = ({ height = 120 }) => {
   useEffect(() => {
     const { selectedCard, vendors, dataFlows, dataSets } = dashboard;
     const updateData = [
-      { label: "Protocol Number", value: selectedCard.protocolnumber },
-      { label: "Sponsor", value: selectedCard.sponsorname },
-      { label: "Project Code", value: selectedCard.projectcode },
-      { label: "Study Status", value: selectedCard.protocolstatus },
+      { label: "Protocol Number", value: selectedCard?.protocolnumber },
+      { label: "Sponsor", value: selectedCard?.sponsorname },
+      { label: "Project Code", value: selectedCard?.projectcode },
+      { label: "Study Status", value: selectedCard?.protocolstatus },
       { label: "Vendors", value: vendors },
       { label: "Data Flows", value: dataFlows },
       { label: "Datasets", value: dataSets },
