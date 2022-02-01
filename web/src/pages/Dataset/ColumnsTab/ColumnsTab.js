@@ -87,6 +87,8 @@ const ColumnsTab = ({ locationType }) => {
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
               values: column.lov || "",
+              isInitLoad: true,
+              isHavingError: false,
             };
             return newObj;
           })
@@ -136,6 +138,7 @@ const ColumnsTab = ({ locationType }) => {
     if (datasetColumns.length > 0) {
       setShowColumns(true);
       formatDBColumns(datasetColumns);
+      setSelectedMethod("fromDB");
     } else {
       setShowColumns(false);
     }
