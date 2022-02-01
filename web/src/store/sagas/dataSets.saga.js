@@ -20,6 +20,15 @@ import {
   VLCDATAAPI,
   FETCH_VLC_RULES_SUCCESS,
   FETCH_VLC_RULES_FAILURE,
+  SQLTABLESAPI,
+  FETCH_SQL_TABLES_SUCCESS,
+  FETCH_SQL_TABLES_FAILURE,
+  SQLCOLUMNSAPI,
+  FETCH_SQL_COLUMNS_FAILURE,
+  FETCH_SQL_COLUMNS_SUCCESS,
+  PREVIEWSQLAPI,
+  FETCH_PREVIEW_SQL_FAILURE,
+  FETCH_PREVIEW_SQL_SUCCESS,
 } from "../../constants";
 
 export function* fetchDataKindData(action = null) {
@@ -47,13 +56,64 @@ export function* fetchDataKindData(action = null) {
 export function* fetchVLCData() {
   try {
     const fetchVlcData = yield call(axios.post, `${baseURL}/${VLCDATAAPI}`, {});
-    console.log("VLC", fetchVlcData);
+    // console.log("VLC", fetchVlcData);
     yield put({
       type: FETCH_VLC_RULES_SUCCESS,
       VLCData: fetchVlcData.data.data,
     });
   } catch (e) {
     yield put({ type: FETCH_VLC_RULES_FAILURE, message: e.message });
+  }
+}
+
+export function* fetchSQLTables() {
+  try {
+    const fetchSQLTable = yield call(
+      axios.post,
+      `${baseURL}/${SQLTABLESAPI}`,
+      {}
+    );
+    console.log("fetchSQLTables", fetchSQLTables);
+    yield put({
+      type: FETCH_SQL_TABLES_SUCCESS,
+      sqlTables: fetchSQLTable.data.data,
+    });
+  } catch (e) {
+    yield put({ type: FETCH_SQL_TABLES_FAILURE, message: e.message });
+  }
+}
+
+export function* fetchSQLColumns(action) {
+  try {
+    const fetchSQLColumn = yield call(
+      axios.post,
+      `${baseURL}/${SQLCOLUMNSAPI}`,
+      { tableName: action.tableName }
+    );
+    console.log("fetchSQLColumns", fetchSQLColumns);
+    yield put({
+      type: FETCH_SQL_COLUMNS_SUCCESS,
+      sqlColumns: fetchSQLColumn.data.data,
+    });
+  } catch (e) {
+    yield put({ type: FETCH_SQL_COLUMNS_FAILURE, message: e.message });
+  }
+}
+
+export function* fetchPreviewSQL(action) {
+  try {
+    const fetchPreviewSQLData = yield call(
+      axios.post,
+      `${baseURL}/${PREVIEWSQLAPI}`,
+      { query: action.query }
+    );
+    console.log("fetchPreviewSQLData", fetchPreviewSQLData);
+    yield put({
+      type: FETCH_PREVIEW_SQL_SUCCESS,
+      previewSQL: fetchPreviewSQLData.data.data,
+    });
+  } catch (e) {
+    yield put({ type: FETCH_PREVIEW_SQL_FAILURE, message: e.message });
   }
 }
 

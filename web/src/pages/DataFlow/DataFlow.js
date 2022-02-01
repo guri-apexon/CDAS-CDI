@@ -3,16 +3,17 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
-import CssBaseline from "@material-ui/core/CssBaseline";
+// import CssBaseline from "@material-ui/core/CssBaseline";
+import Panel from "apollo-react/components/Panel";
 import { useDispatch, useSelector, connect } from "react-redux";
 import { submit, reset, getFormValues } from "redux-form";
 import Loader from "apollo-react/components/Loader";
 import { values } from "lodash";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
-import PageHeader from "../../components/DataFlow/PageHeader";
-import Leftbar from "../../components/DataFlow/LeftBar";
-// import LeftPanel from "../../components/DataFlow/LeftPanel/LeftPanel";
+// import PageHeader from "../../components/DataFlow/PageHeader";
+// import Leftbar from "../../components/DataFlow/LeftBar";
+import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import Header from "../../components/DataFlow/Header";
 import "./DataFlow.scss";
 import DataFlowForm from "./DataFlowForm";
@@ -29,14 +30,22 @@ import { toast } from "../../utils";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../components/MessageProvider";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   root: {
     display: "flex",
   },
+  rightPanel: {
+    maxWidth: "calc(100vw - 466px)",
+    width: "calc(100vw - 464px)",
+  },
+  rightPanelExtended: {
+    maxWidth: "calc(100vw - 42px)",
+    width: "calc(100vw - 40px)",
+  },
   // necessary for content to be below app bar
-  toolbar: theme.mixins.toolbar,
   content: {
     flexGrow: 1,
+    backgroundColor: "#f6f7fb",
   },
   contentHeader: {
     paddingTop: 11,
@@ -60,6 +69,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
   const dataFlowData = useSelector((state) => state.dataFlow);
   const { selectedLocation, loading, createTriggered, error } = dataFlowData;
   const [locType, setLocType] = useState("SFTP");
@@ -146,10 +156,16 @@ const DataFlow = ({ FormValues, dashboard }) => {
     }
   };
 
+  const handleClose = () => {
+    setIsPanelOpen(false);
+  };
+
+  const handleOpen = () => {
+    setIsPanelOpen(true);
+  };
+
   return (
     <div className={classes.root}>
-      <PageHeader />
-      <CssBaseline />
       {loading && <Loader />}
       {error && (
         <Banner
@@ -160,37 +176,50 @@ const DataFlow = ({ FormValues, dashboard }) => {
           message={error}
         />
       )}
-      <div className={classes.toolbar} />
-      <Leftbar />
-      {/* <LeftPanel /> */}
-      <main className={classes.content}>
-        <div className={classes.toolbar} />
-        <div className="content">
-          <div className={classes.contentHeader}>
-            <Header
-              close={closeForm}
-              submit={submitForm}
-              breadcrumbItems={breadcrumbItems}
-              headerTitle="Virologicclinic-IIBR12-001-Other"
-              icon={<DataPackageIcon className={classes.contentIcon} />}
-              datasetsCount={6}
-            />
+      {/* <Leftbar /> */}
+      <Panel
+        onClose={handleClose}
+        onOpen={handleOpen}
+        open={isPanelOpen}
+        width={446}
+      >
+        <LeftPanel />
+      </Panel>
+      <Panel
+        className={
+          isPanelOpen ? classes.rightPanel : classes.rightPanelExtended
+        }
+        width="100%"
+        hideButton
+      >
+        <main className={classes.content}>
+          <div className="content">
+            <div className={classes.contentHeader}>
+              <Header
+                close={closeForm}
+                submit={submitForm}
+                breadcrumbItems={breadcrumbItems}
+                headerTitle="Virologicclinic-IIBR12-001-Other"
+                icon={<DataPackageIcon className={classes.contentIcon} />}
+                datasetsCount={6}
+              />
+            </div>
+            <Divider />
+            <div className={classes.formSection}>
+              <DataFlowForm
+                onSubmit={onSubmit}
+                changeLocationData={changeLocationData}
+                changeFormField={changeFormField}
+                changeLocationType={changeLocationType}
+                modalLocationType={modalLocationType}
+                userName={selectedLocation?.usr_nm}
+                password={selectedLocation?.pswd}
+                connLink={selectedLocation?.cnn_url}
+              />
+            </div>
           </div>
-          <Divider />
-          <div className={classes.formSection}>
-            <DataFlowForm
-              onSubmit={onSubmit}
-              changeLocationData={changeLocationData}
-              changeFormField={changeFormField}
-              changeLocationType={changeLocationType}
-              modalLocationType={modalLocationType}
-              userName={selectedLocation?.usr_nm}
-              password={selectedLocation?.pswd}
-              connLink={selectedLocation?.cnn_url}
-            />
-          </div>
-        </div>
-      </main>
+        </main>
+      </Panel>
     </div>
   );
 };

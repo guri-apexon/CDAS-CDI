@@ -36,6 +36,9 @@
           font-size: 14px;
           line-height: 24px;
           cursor: pointer;
+          max-width: 175px;
+          text-overflow: ellipsis;
+          overflow: hidden;
         }
         .dataset-filetype {
           color: #999999;
@@ -96,4 +99,7 @@
   }
 
   // > *
+}
+.leftPanel {
+  background-color: #ffffff;
 }

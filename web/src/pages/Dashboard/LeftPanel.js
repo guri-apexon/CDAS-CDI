@@ -131,7 +131,7 @@ const LeftPanel = () => {
     debounceFunction(async () => {
       setLoading(true);
       const newStudies = await searchStudy(newValue);
-      console.log("event", newValue, newStudies);
+      // console.log("event", newValue, newStudies);
       // eslint-disable-next-line no-unused-expressions
       newStudies && newStudies.studies
         ? setUnPinnedStudies([...newStudies.studies])
@@ -247,69 +247,71 @@ const LeftPanel = () => {
 
   return (
     <>
-      <div className="searchBox">
-        <Typography
-          variant="title1"
-          className={classes.panelTitle}
-          gutterBottom
-        >
-          My Assignments
-        </Typography>
-        <Typography className={classes.panelSubtitle} variant="caption">
-          {studyList.length > 1
-            ? `${studyList.length} Studies`
-            : `${studyList.length} Study`}
-        </Typography>
-        <Search
-          className={classes.searchBar}
-          placeholder="Search for protocol, project code or sponsor"
-          value={searchTxt}
-          onChange={searchTrigger}
-        />
-        <Divider />
-      </div>
-      {pinnedStudies.length > 0 && (
-        <div className="pinned-studies">
-          <Typography className={classes.pinTitle} variant="caption">
-            Pinned Studies
+      <div className="leftPanel">
+        <div className="searchBox">
+          <Typography
+            variant="title1"
+            className={classes.panelTitle}
+            gutterBottom
+          >
+            My Assignments
           </Typography>
-          <div className={classNames("customScrollbar", classes.pinnedCards)}>
-            {pinnedStudies.map((e, index) => (
-              <CustomCard
-                // eslint-disable-next-line react/no-array-index-key
-                key={index}
-                data={e}
-                index={`p${index}`}
-                isPinned={true}
-              />
-            ))}
-          </div>
+          <Typography className={classes.panelSubtitle} variant="caption">
+            {studyList.length > 1
+              ? `${studyList.length} Studies`
+              : `${studyList.length} Study`}
+          </Typography>
+          <Search
+            className={classes.searchBar}
+            placeholder="Search for protocol, project code or sponsor"
+            value={searchTxt}
+            onChange={searchTrigger}
+          />
           <Divider />
         </div>
-      )}
-      {unPinnedStudies.length > 0 && (
-        <div
-          className={classNames(
-            "customScrollbar unpinned-studies",
-            classes.unPinnedCards
-          )}
-        >
-          {loading ? (
-            <Progress />
-          ) : (
-            unPinnedStudies.map((e, index) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <CustomCard
-                // eslint-disable-next-line react/no-array-index-key
-                key={index}
-                data={e}
-                index={`up${index}`}
-                isPinned={false}
-              />
-            ))
-          )}
-        </div>
-      )}
+        {pinnedStudies.length > 0 && (
+          <div className="pinned-studies">
+            <Typography className={classes.pinTitle} variant="caption">
+              Pinned Studies
+            </Typography>
+            <div className={classNames("customScrollbar", classes.pinnedCards)}>
+              {pinnedStudies.map((e, index) => (
+                <CustomCard
+                  key={e.prot_id}
+                  data={e}
+                  index={`p${index}`}
+                  isPinned={true}
+                />
+              ))}
+            </div>
+            <Divider />
+          </div>
+        )}
+        {unPinnedStudies.length > 0 && (
+          <div
+            className={classNames(
+              "customScrollbar unpinned-studies",
+              classes.unPinnedCards
+            )}
+          >
+            {loading ? (
+              <Progress />
+            ) : (
+              unPinnedStudies.map((e, index) => (
+                <CustomCard
+                  key={e.prot_id}
+                  data={e}
+                  index={`up${index}`}
+                  isPinned={false}
+                />
+              ))
+            )}
+          </div>
+        )}
+        {unPinnedStudies.length === 0 && (
+          <div className="no-data-found"> No Studies Found </div>
+        )}
+      </div>
     </>
   );
 };

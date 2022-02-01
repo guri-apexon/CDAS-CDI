@@ -359,6 +359,8 @@ export const formatData = (incomingData, protNo) => {
               minLength: e[8] || "",
               maxLength: e[9] || "",
               values: e[10] || "",
+              isInitLoad: true,
+              isHavingError: false,
             };
             return newObj;
           })

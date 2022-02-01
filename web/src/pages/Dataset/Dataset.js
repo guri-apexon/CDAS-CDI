@@ -1,18 +1,14 @@
 /* eslint-disable no-script-url */
-import React, { lazy, useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Route, Switch, Redirect } from "react-router";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
 import Banner from "apollo-react/components/Banner";
-// import Typography from "apollo-react/components/Typography";
-// import Tab from "apollo-react/components/Tab";
-// import Tabs from "apollo-react/components/Tabs";
 import Panel from "apollo-react/components/Panel/Panel";
-// import PageHeader from "../../components/DataFlow/PageHeader";
 import Header from "./Header";
-import LeftPanel from "../../components/DataFlow/LeftPanel/LeftPanel";
+import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
+import { MessageContext } from "../../components/MessageProvider";
 import "./Dataset.scss";
 import {
   hideErrorMessage,
@@ -27,12 +23,8 @@ import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
-// import SettingsTab from "./SettingsTab";
-// const SettingsTab = lazy(() => import("./SettingsTab"));
-// const ColumnsTab = lazy(() => import("./ColumnsTab/ColumnsTab"));
-// const VLCTab = lazy(() => import("./VLCTab"));
 
-const tabs = ["Settings", "Dataset Columns", "VLC"];
+const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
 
 const styles = {
   rightPanel: {
@@ -69,6 +61,7 @@ const Dataset = () => {
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("sftp");
   const dispatch = useDispatch();
+  const messageContext = useContext(MessageContext);
   const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
   const packageData = useSelector((state) => state.dataPackage);
@@ -213,6 +206,22 @@ const Dataset = () => {
     []
   );
 
+  const locationChange = () => {
+    messageContext.showErrorMessage(
+      `No Tables Returned. Pls reach out to admins`
+    );
+  };
+
+  const queryCompilationError = () => {
+    messageContext.showErrorMessage(
+      `Query Compilation Error, check query syntax.`
+    );
+  };
+
+  const noRecordsFound = () => {
+    messageContext.showErrorMessage(`No records found.`);
+  };
+
   return (
     <>
       {/* <PageHeader height={64} /> */}
@@ -247,7 +256,7 @@ const Dataset = () => {
                 close={() => closeForm()}
                 breadcrumbItems={breadcrumbItems || []}
                 submit={() => submitForm()}
-                tabs={tabs}
+                tabs={dataSettabs}
                 headerTitle={selectedDSDetails.datasetName ?? "Dataset name"}
                 tabValue={value}
                 selectedDataset={selectedDataset}

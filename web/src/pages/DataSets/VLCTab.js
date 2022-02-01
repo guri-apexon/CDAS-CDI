@@ -3,6 +3,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Table, {
   numberSearchFilter,
+  createStringSearchFilter,
   compareNumbers,
   compareStrings,
 } from "apollo-react/components/Table";
@@ -19,6 +20,7 @@ import { getVLCData } from "../../store/actions/DataSetsAction";
 import {
   createAutocompleteFilter,
   IntegerFilter,
+  TextFieldFilter,
   createStringArraySearchFilter,
 } from "../../utils/index";
 
@@ -199,26 +201,8 @@ export default function VLCTab() {
       header: "EM Code",
       accessor: "emCode",
       sortFunction: compareStrings,
-      // filterFunction: createStringArraySearchFilter("emCode"),
-      // filterComponent: createAutocompleteFilter(
-      //   Array.from(
-      //     new Set(
-      //       rowData.map((r) => ({ label: r.emCode })).map((item) => item.label)
-      //     )
-      //   )
-      //     .map((label) => {
-      //       return { label };
-      //     })
-      //     .sort((a, b) => {
-      //       if (a.label < b.label) {
-      //         return -1;
-      //       }
-      //       if (a.label > b.label) {
-      //         return 1;
-      //       }
-      //       return 0;
-      //     })
-      // ),
+      filterFunction: createStringSearchFilter("emCode"),
+      filterComponent: TextFieldFilter,
     },
     {
       header: "Rule Sequence",
