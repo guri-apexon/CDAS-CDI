@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter, useHistory } from "react-router-dom";
 
 import "./App.scss";
-import CDIWrapper from "./CDIWrapper/CDIWrapper";
+import RoutesWrapper from "./RoutesWrapper";
 import AppProvider from "./components/AppProvider";
 import MessageProvider from "./components/MessageProvider";
 
@@ -13,7 +13,7 @@ const App = () => {
       <AppProvider>
         <MessageProvider>
           <BrowserRouter basename="/" history={history}>
-            <CDIWrapper />
+            <RoutesWrapper />
           </BrowserRouter>
         </MessageProvider>
       </AppProvider>
