@@ -21,6 +21,18 @@ import {
   GET_DATASET_COLUMNS,
   FETCH_DATASET_COLUMNS_SUCCESS,
   FETCH_DATASET_COLUMNS_FAILURE,
+  GET_VLC_RULES,
+  FETCH_VLC_RULES_SUCCESS,
+  FETCH_VLC_RULES_FAILURE,
+  GET_SQL_TABLES,
+  FETCH_SQL_TABLES_SUCCESS,
+  FETCH_SQL_TABLES_FAILURE,
+  GET_SQL_COLUMNS,
+  FETCH_SQL_COLUMNS_SUCCESS,
+  FETCH_SQL_COLUMNS_FAILURE,
+  GET_PREVIEW_SQL,
+  FETCH_PREVIEW_SQL_SUCCESS,
+  FETCH_PREVIEW_SQL_FAILURE,
 } from "../../constants";
 
 export const initialState = {
@@ -56,6 +68,10 @@ export const initialState = {
   error: null,
   sucessMsg: null,
   datakind: [],
+  VLCData: [],
+  sqlColumns: [],
+  sqlTables: [],
+  previewSQL: [],
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -110,6 +126,50 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = false;
         newState.sucessMsg = null;
         newState.error = action.message;
+        break;
+      case GET_VLC_RULES:
+        newState.loading = true;
+        break;
+      case FETCH_VLC_RULES_FAILURE:
+        newState.loading = false;
+        newState.error = action.message;
+        break;
+      case FETCH_VLC_RULES_SUCCESS:
+        newState.loading = false;
+        newState.VLCData = action.VLCData;
+        break;
+      case GET_SQL_TABLES:
+        newState.loading = true;
+        break;
+      case FETCH_SQL_TABLES_FAILURE:
+        newState.loading = false;
+        newState.error = action.message;
+        break;
+      case FETCH_SQL_TABLES_SUCCESS:
+        newState.loading = false;
+        newState.sqlTables = action.sqlTables;
+        break;
+      case GET_PREVIEW_SQL:
+        newState.loading = true;
+        break;
+      case FETCH_PREVIEW_SQL_FAILURE:
+        newState.loading = false;
+        newState.error = action.message;
+        break;
+      case FETCH_PREVIEW_SQL_SUCCESS:
+        newState.loading = false;
+        newState.previewSQL = action.previewSQL;
+        break;
+      case GET_SQL_COLUMNS:
+        newState.loading = true;
+        break;
+      case FETCH_SQL_COLUMNS_FAILURE:
+        newState.loading = false;
+        newState.error = action.message;
+        break;
+      case FETCH_SQL_COLUMNS_SUCCESS:
+        newState.loading = false;
+        newState.sqlTables = action.sqlTables;
         break;
       case GET_DATASET_DETAIL:
         newState.loading = true;

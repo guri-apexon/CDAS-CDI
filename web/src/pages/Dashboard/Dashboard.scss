@@ -50,16 +50,18 @@
   }
 }
 
-.status-cell {
-  color: #ffffff;
-  padding: 2px 6px;
-  width: fit-content;
-}
 .dataflow-table {
   .active {
     background: #00c221;
   }
   .inActive {
     background: #999999;
+  }
+}
+
+.leftPanel {
+  .no-data-found {
+    padding: 20px;
+    text-align: center;
   }
 }
