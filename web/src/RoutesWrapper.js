@@ -3,19 +3,19 @@ import { useHistory } from "react-router-dom";
 import { lazy, Suspense, useState, useEffect } from "react";
 import Loader from "apollo-react/components/Loader";
 
-import { getCookie } from "../utils";
-import TopNavbar from "../components/TopNavbar/TopNavbar";
+import { getCookie } from "./utils";
+import TopNavbar from "./components/TopNavbar/TopNavbar";
 // import AppFooter from "../AppFooter/AppFooter";
-import Logout from "../pages/Logout/Logout";
-import DataPackages from "../pages/DataPackages/DataPackages";
-import Toast from "../components/Common/Toast";
-import AuditLog from "../pages/AuditLog/AuditLog";
-import PageHeader from "../components/DataFlow/PageHeader";
+import Logout from "./pages/Logout/Logout";
+import DataPackages from "./pages/DataPackages/DataPackages";
+import Toast from "./components/Common/Toast";
+import AuditLog from "./pages/AuditLog/AuditLog";
+import PageHeader from "./components/DataFlow/PageHeader";
 
-const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
-const DataFlow = lazy(() => import("../pages/DataFlow/DataFlow"));
-// const DataSets = lazy(() => import("../pages/DataSets/DataSets"));
-const Dataset = lazy(() => import("../pages/Dataset/Dataset"));
+const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
+const DataFlow = lazy(() => import("./pages/DataFlow/DataFlow"));
+// const DataSets = lazy(() => import("./pages/DataSets/DataSets"));
+const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
 
 const Empty = () => <></>;
 
