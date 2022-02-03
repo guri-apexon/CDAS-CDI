@@ -4,6 +4,7 @@ const Logger = require("../config/logger");
 const moment = require("moment");
 const CommonController = require("./CommonController");
 const constants = require("../config/constants");
+const helper = require("../helpers/customFunctions");
 
 exports.searchList = async (req, res) => {
   try {
@@ -47,7 +48,7 @@ exports.searchList = async (req, res) => {
 
 exports.addPackage = function (req, res) {
   try {
-    const packageID = CommonController.createUniqueID();
+    const packageID = helper.createUniqueID();
     const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
     const {
       compression_type,
@@ -61,20 +62,33 @@ exports.addPackage = function (req, res) {
     if (study_id == null || dataflow_id == null || user_id == null) {
       return apiResponse.ErrorResponse(res, "Study not found");
     }
-    const query = `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(datapackageid, type, name, path, password, active, insrt_tm, updt_tm, del_flg, prot_id, dataflowid) VALUES('${packageID}', '${compression_type}', '${naming_convention}', '${sftp_path}','${package_password}',  '1','${currentTime}','${currentTime}', 'N','${study_id}','${dataflow_id}')`;
+    const insertValues = [
+      packageID,
+      dataflow_id,
+      compression_type,
+      naming_convention,
+      sftp_path,
+      package_password,
+      '1',
+      currentTime,
+      currentTime,
+      "N",
+    ];
+    const query = `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(datapackageid, dataflowid, type, name, path, password, active, insrt_tm, updt_tm, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`;
 
-    DB.executeQuery(query).then((response) => {
-      const packages = response.rows || [];
-      const ver = "1";
-      const vers_id = packageID + ver;
-      const historyQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage_history (datapackage_vers_id, datapackageid, version, dataflowid, type, name, path, password, active, insrt_tm, updt_tm, del_flg, prot_id, usr_id) VALUES('${vers_id}', '${packageID}', '${ver}', '${dataflow_id}', '${compression_type}', '${naming_convention}', '${sftp_path}','${package_password}',  '1','${currentTime}','${currentTime}', 'N','${study_id}','${user_id}')`;
-      DB.executeQuery(historyQuery).then((response) => {
-        return apiResponse.successResponseWithData(
-          res,
-          "Operation success",
-          {}
-        );
-      });
+    DB.executeQuery(query, insertValues).then( async(response) => {
+      const package = response.rows[0] || [];
+      const historyVersion = await CommonController.addHistory(
+        package,
+        user_id,
+        "New Package",
+      );
+      if (!historyVersion) throw new Error("History not updated");
+      return apiResponse.successResponseWithData(
+        res,
+        "Created Successfully",
+        {}
+      );
     });
   } catch (err) {
     return apiResponse.ErrorResponse(res, err);
@@ -91,7 +105,7 @@ exports.changeStatus = function (req, res) {
     DB.executeQuery(query).then(async (response) => {
       const package = response.rows[0] || [];
       const oldActive = Number(active) == 1 ? "0" : "1";
-      const historyVersion = await CommonController.addPackageHistory(
+      const historyVersion = await CommonController.addHistory(
         package,
         user_id,
         "active",
@@ -118,7 +132,7 @@ exports.deletePackage = function (req, res) {
     WHERE datapackageid = '${package_id}' RETURNING *`;
     DB.executeQuery(query).then(async (response) => {
       const package = response.rows[0] || [];
-      const historyVersion = await CommonController.addPackageHistory(
+      const historyVersion = await CommonController.addHistory(
         package,
         user_id,
         "del_flg",
