@@ -1,10 +1,20 @@
 import { checkRequired, removeUndefined, checkMaxLength } from "./validators";
 
-const validate = ({ vendor, description, dataflowType }) =>
+const validate = ({
+  vendor,
+  description,
+  dataflowType,
+  firstFileDate,
+  dataStructure,
+  locationName,
+}) =>
   removeUndefined({
     vendor: checkRequired(vendor),
     description: checkRequired(description) || checkMaxLength(description),
     dataflowType: checkRequired(dataflowType),
+    firstFileDate: checkRequired(firstFileDate),
+    dataStructure: checkRequired(dataStructure),
+    locationName: checkRequired(locationName),
   });
 
 export const locationModalValidate = ({

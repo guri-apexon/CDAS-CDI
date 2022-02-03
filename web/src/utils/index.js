@@ -359,6 +359,8 @@ export const formatData = (incomingData, protNo) => {
               minLength: e[8] || "",
               maxLength: e[9] || "",
               values: e[10] || "",
+              isInitLoad: true,
+              isHavingError: false,
             };
             return newObj;
           })
@@ -416,4 +418,4 @@ export const locationTypes = [
 
 export const fileTypes = ["SAS", "Excel", "Delimited", "Fixed Width"];
 export const delimeters = ["COMMA", "TAB", "TILDE", "PIPE"];
-export const customSQLQuery = ["Yes", "No"];
+export const YesNo = ["Yes", "No"];

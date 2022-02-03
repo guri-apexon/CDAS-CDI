@@ -180,8 +180,12 @@ exports.saveDatasetColumns = async (req, res) => {
   try {
     const datasetid = req.params.datasetid;
     const values = req.body;
+    const insertQuery = `INSERT into ${constants.DB_SCHEMA_NAME}.columndefinition (columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
     const inserted = await values.map(async (value) => {
       const columnId = helper.generateUniqueID();
+      Logger.info({
+        message: "storeDatasetColumns",
+      });
       const body = [
         columnId,
         value.variableLabel.trim() || null,
@@ -199,11 +203,7 @@ exports.saveDatasetColumns = async (req, res) => {
         new Date(),
         new Date(),
       ];
-      const searchQuery = `INSERT into ${constants.DB_SCHEMA_NAME}.columndefinition (columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
-      Logger.info({
-        message: "storeDatasetColumns",
-      });
-      const inserted = await DB.executeQuery(searchQuery, body)
+      const inserted = await DB.executeQuery(insertQuery, body)
         .then(() => {
           const hisBody = [columnId + 1, 1, ...body];
           const hisQuery = `INSERT into ${constants.DB_SCHEMA_NAME}.columndefinition_history (col_def_version_id,version, columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;

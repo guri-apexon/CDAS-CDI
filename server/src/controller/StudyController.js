@@ -3,7 +3,7 @@ const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const moment = require("moment");
 const _ = require("lodash");
-const constants = require('../config/constants');
+const constants = require("../config/constants");
 
 exports.getUserStudyList = function (req, res) {
   try {
@@ -124,22 +124,26 @@ exports.searchStudyList = function (req, res) {
   try {
     // const { search, userId } = req.body();
     const searchParam = req.params.searchQuery.toLowerCase();
-    console.log("req", searchParam);
+    const { userId } = req.body;
+    // console.log("req", searchParam);
     Logger.info({
       message: "searchUserStudyList",
       searchParam,
     });
     // console.log("search", searchParam, userId);
-    const searchQuery = `SELECT prot_id, prot_nbr as protocolnumber, s.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${constants.DB_SCHEMA_NAME}.study s INNER JOIN ${constants.DB_SCHEMA_NAME}.sponsor s2 ON s2.spnsr_id = s.spnsr_id 
-              WHERE LOWER(prot_nbr) LIKE $1 OR LOWER(spnsr_nm) LIKE $1 OR LOWER(proj_cd) LIKE $1 LIMIT 10`;
+    const searchQuery = `SELECT s.prot_id, s.prot_nbr as protocolnumber, s3.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${constants.DB_SCHEMA_NAME}.study s INNER JOIN ${constants.DB_SCHEMA_NAME}.sponsor s2 ON s2.spnsr_id = s.spnsr_id 
+    INNER JOIN ${constants.DB_SCHEMA_NAME}.study_user s3 ON s.prot_id=s3.prot_id
+              WHERE (s3.usr_id = $2) AND (LOWER(prot_nbr) LIKE $1 OR LOWER(spnsr_nm) LIKE $1 OR LOWER(proj_cd) LIKE $1) LIMIT 10`;
 
-    DB.executeQuery(searchQuery, [`%${searchParam}%`]).then((response) => {
-      const studies = response.rows || [];
-      return apiResponse.successResponseWithData(res, "Operation success", {
-        studies: studies,
-        totalSize: response.rowCount,
-      });
-    });
+    DB.executeQuery(searchQuery, [`%${searchParam}%`, userId]).then(
+      (response) => {
+        const studies = response.rows || [];
+        return apiResponse.successResponseWithData(res, "Operation success", {
+          studies: studies,
+          totalSize: response.rowCount,
+        });
+      }
+    );
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :searchUserStudyList");

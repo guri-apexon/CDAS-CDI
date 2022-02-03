@@ -3,6 +3,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Table, {
   numberSearchFilter,
+  createStringSearchFilter,
   compareNumbers,
   compareStrings,
 } from "apollo-react/components/Table";
@@ -12,15 +13,19 @@ import Link from "apollo-react/components/Link";
 import Modal from "apollo-react/components/Modal";
 import Search from "apollo-react/components/Search";
 import Tag from "apollo-react/components/Tag";
+import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
+import IconMenuButton from "apollo-react/components/IconMenuButton";
+
 import Progress from "../../components/Progress";
 // import { MessageContext } from "../../components/MessageProvider";
-// import { getVLCDataList } from "../../services/ApiServices";
 import { getVLCData } from "../../store/actions/DataSetsAction";
 import {
   createAutocompleteFilter,
   IntegerFilter,
+  TextFieldFilter,
   createStringArraySearchFilter,
 } from "../../utils/index";
+import exportToCSVWithoutFilter from "../../utils/downloadData";
 
 export default function VLCTab() {
   const [selectedRow, setSelectedRow] = useState(null);
@@ -93,16 +98,16 @@ export default function VLCTab() {
     return <Link onClick={() => hanldeView(row)}>View</Link>;
   };
 
-  // const downloadTable = () => {
-  //   console.log("downloadTable");
-  // };
+  const downloadTable = () => {
+    // exportToCSVWithoutFilter(rowData, "VLCData.xlsx", "data");
+  };
 
-  // const menuItems = [
-  //   {
-  //     text: "Download Table",
-  //     onClick: downloadTable,
-  //   },
-  // ];
+  const menuItems = [
+    {
+      text: "Download Table",
+      onClick: downloadTable,
+    },
+  ];
 
   const CustomButtonHeader = ({ toggleFilters }) => (
     <div>
@@ -122,9 +127,9 @@ export default function VLCTab() {
       >
         Filter
       </Button>
-      {/* <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
+      <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
         <EllipsisVertical />
-      </IconMenuButton> */}
+      </IconMenuButton>
     </div>
   );
 
@@ -199,26 +204,8 @@ export default function VLCTab() {
       header: "EM Code",
       accessor: "emCode",
       sortFunction: compareStrings,
-      // filterFunction: createStringArraySearchFilter("emCode"),
-      // filterComponent: createAutocompleteFilter(
-      //   Array.from(
-      //     new Set(
-      //       rowData.map((r) => ({ label: r.emCode })).map((item) => item.label)
-      //     )
-      //   )
-      //     .map((label) => {
-      //       return { label };
-      //     })
-      //     .sort((a, b) => {
-      //       if (a.label < b.label) {
-      //         return -1;
-      //       }
-      //       if (a.label > b.label) {
-      //         return 1;
-      //       }
-      //       return 0;
-      //     })
-      // ),
+      filterFunction: createStringSearchFilter("emCode"),
+      filterComponent: TextFieldFilter,
     },
     {
       header: "Rule Sequence",
@@ -285,26 +272,26 @@ export default function VLCTab() {
       accessor: "status",
       customCell: StatusCell,
       sortFunction: compareStrings,
-      // filterFunction: createStringArraySearchFilter("status"),
-      // filterComponent: createAutocompleteFilter(
-      //   Array.from(
-      //     new Set(
-      //       rowData.map((r) => ({ label: r.status })).map((item) => item.label)
-      //     )
-      //   )
-      //     .map((label) => {
-      //       return { label };
-      //     })
-      //     .sort((a, b) => {
-      //       if (a.label < b.label) {
-      //         return -1;
-      //       }
-      //       if (a.label > b.label) {
-      //         return 1;
-      //       }
-      //       return 0;
-      //     })
-      // ),
+      filterFunction: createStringArraySearchFilter("status"),
+      filterComponent: createAutocompleteFilter(
+        Array.from(
+          new Set(
+            rowData.map((r) => ({ label: r.status })).map((item) => item.label)
+          )
+        )
+          .map((label) => {
+            return { label };
+          })
+          .sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            }
+            if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          })
+      ),
     },
     {
       accessor: "id",

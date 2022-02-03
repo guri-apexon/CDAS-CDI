@@ -8,11 +8,13 @@ import Card from "apollo-react/components/Card";
 import Radio from "apollo-react/components/Radio";
 import Link from "apollo-react/components/Link";
 import { useHistory } from "react-router-dom";
+import Pencil from "apollo-react-icons/Pencil";
 import TextField from "apollo-react/components/TextField";
 import Button from "apollo-react/components/Button";
 import { MessageContext } from "../../../components/MessageProvider";
 import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
+
 import { exportToCSV } from "../../../utils/downloadData";
 import { checkHeaders, formatData } from "../../../utils/index";
 
@@ -26,7 +28,7 @@ const ColumnsTab = ({ locationType }) => {
   const { datasetColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
-  const [numberOfRows, setNumberOfRows] = useState(null);
+  const [numberOfRows, setNumberOfRows] = useState(1);
   const [showColumns, setShowColumns] = useState(false);
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
@@ -85,6 +87,8 @@ const ColumnsTab = ({ locationType }) => {
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
               values: column.lov || "",
+              isInitLoad: true,
+              isHavingError: false,
             };
             return newObj;
           })
@@ -134,6 +138,7 @@ const ColumnsTab = ({ locationType }) => {
     if (datasetColumns.length > 0) {
       setShowColumns(true);
       formatDBColumns(datasetColumns);
+      setSelectedMethod("fromDB");
     } else {
       setShowColumns(false);
     }
@@ -142,6 +147,19 @@ const ColumnsTab = ({ locationType }) => {
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
   };
+
+  const showTable = React.useMemo(() => {
+    return (
+      <>
+        <DSColumnTable
+          numberOfRows={numberOfRows || 1}
+          formattedData={formattedData}
+          dataOrigin={selectedMethod}
+          locationType={locationType}
+        />
+      </>
+    );
+  }, [showColumns]);
 
   return (
     <>
@@ -175,7 +193,7 @@ const ColumnsTab = ({ locationType }) => {
               </div>
             </Card>
             <Card
-              style={{ maxWidth: 320, height: 300 }}
+              style={{ maxWidth: 320, height: 300, width: 320 }}
               className={selectedMethod === "manually" ? "active card" : "card"}
             >
               <Radio
@@ -184,11 +202,17 @@ const ColumnsTab = ({ locationType }) => {
                 onClick={handleChange}
                 checked={selectedMethod === "manually"}
               />
-              <TextField
+              {/* <div className="center">
+                <Pencil />
+              </div> */}
+              {/* <TextField
                 label="Number of rows"
+                type="number"
+                max="500"
+                min="1"
                 onChange={(e) => setNumberOfRows(e.target.value)}
                 defaultValue={numberOfRows}
-              />
+              /> */}
             </Card>
           </div>
           <div style={{ display: "flex", justifyContent: "end" }}>
@@ -208,14 +232,7 @@ const ColumnsTab = ({ locationType }) => {
           </div>
         </div>
       )}
-      {showColumns && (
-        <DSColumnTable
-          numberOfRows={numberOfRows || 1}
-          formattedData={formattedData}
-          dataOrigin={selectedMethod}
-          locationType={locationType}
-        />
-      )}
+      {showColumns && <>{showTable}</>}
     </>
   );
 };

@@ -18,6 +18,7 @@ import {
   UPDATE_SELECTED_LOCATION,
   FETCH_DATAFLOW_DETAIL_FAILURE,
   FETCH_DATAFLOW_DETAIL_SUCCESS,
+  ADD_DATAFLOW_SUCCESS,
 } from "../../constants";
 
 export const initialState = {
@@ -52,6 +53,10 @@ const DataFlowReducer = (state = initialState, action) =>
       case FETCH_LOCATION_SUCCESS:
         newState.loading = false;
         newState.locations = action.locations;
+        break;
+
+      case ADD_DATAFLOW_SUCCESS:
+        newState.selectedDataFlow = action.dataflow;
         break;
 
       case FETCH_LOCATION_FAILURE:

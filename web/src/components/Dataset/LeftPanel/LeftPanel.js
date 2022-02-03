@@ -117,7 +117,7 @@ const LeftPanel = () => {
     );
   };
   return (
-    <div>
+    <div className="leftPanel">
       <div className={classes.drawerHeader}>
         <div className={classes.leftPanel}>
           <DataFlowIcon className={classes.dataflowLeft} />
