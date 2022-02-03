@@ -21,8 +21,6 @@ import { makeStyles } from "@material-ui/core/styles";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import "./DataPackages.scss";
-// import PageHeader from "../../components/DataFlow/PageHeader";
-// import Leftbar from "../../components/DataFlow/LeftBar";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, toast } from "../../utils";
 import {
@@ -148,10 +146,6 @@ const DataPackages = () => {
 
   return (
     <div className="data-packages-wrapper">
-      {/* <Grid container> */}
-      {/* <PageHeader /> */}
-      {/* <CssBaseline /> */}
-      {/* <Leftbar /> */}
       <Panel
         onClose={handleClose}
         onOpen={handleOpen}

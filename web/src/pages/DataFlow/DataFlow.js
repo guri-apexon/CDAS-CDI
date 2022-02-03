@@ -11,8 +11,6 @@ import Loader from "apollo-react/components/Loader";
 import { values } from "lodash";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
-// import PageHeader from "../../components/DataFlow/PageHeader";
-// import Leftbar from "../../components/DataFlow/LeftBar";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import Header from "../../components/DataFlow/Header";
 import "./DataFlow.scss";
@@ -182,7 +180,6 @@ const DataFlow = ({ FormValues, dashboard }) => {
           message={error}
         />
       )}
-      {/* <Leftbar /> */}
       <Panel
         onClose={handleClose}
         onOpen={handleOpen}
