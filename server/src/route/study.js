@@ -7,5 +7,6 @@ router.post("/pinStudy", StudyController.pinStudy);
 router.post("/search-study/:searchQuery", StudyController.searchStudyList);
 router.get("/pinnedStudies/:userId", StudyController.getUserPinnedStudies);
 router.post("/unPinStudy", StudyController.unPinStudy);
+router.get("/datasetIngestionDetail/:protocolNumber", StudyController.getDatasetIngestionDashboardDetail)
 
 module.exports = router;
