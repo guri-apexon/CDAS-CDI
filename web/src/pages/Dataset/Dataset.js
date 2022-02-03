@@ -1,5 +1,6 @@
 /* eslint-disable no-script-url */
 import React, { useState, useContext, useEffect } from "react";
+import { Route, Switch, Redirect } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,7 +9,7 @@ import Banner from "apollo-react/components/Banner";
 import Panel from "apollo-react/components/Panel/Panel";
 import Header from "./Header";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
-import { MessageContext } from "../../components/MessageProvider";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 import "./Dataset.scss";
 import {
   hideErrorMessage,

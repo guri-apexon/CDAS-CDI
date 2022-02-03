@@ -27,8 +27,8 @@ import IconMenuButton from "apollo-react/components/IconMenuButton";
 import ChevronDown from "apollo-react-icons/ChevronDown";
 import ChevronRight from "apollo-react-icons/ChevronRight";
 import PlusIcon from "apollo-react-icons/Plus";
-import Progress from "../../components/Progress";
-import { MessageContext } from "../../components/MessageProvider";
+import Progress from "../../components/Common/Progress/Progress";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 import { ReactComponent as DataFlowIcon } from "../../components/Icons/dataflow.svg";
 import {
   hardDelete,
@@ -42,7 +42,6 @@ import {
   IntegerFilter,
   createStringArraySearchFilter,
   DateFilter,
-  toast,
 } from "../../utils/index";
 
 const LinkCell = ({ row, column: { accessor } }) => {

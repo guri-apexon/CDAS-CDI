@@ -4,13 +4,12 @@ import { lazy, Suspense, useState, useEffect } from "react";
 import Loader from "apollo-react/components/Loader";
 
 import { getCookie } from "./utils";
-import TopNavbar from "./components/TopNavbar/TopNavbar";
+import TopNavbar from "./components/AppHeader/TopNavbar/TopNavbar";
 // import AppFooter from "../AppFooter/AppFooter";
 import Logout from "./pages/Logout/Logout";
 import DataPackages from "./pages/DataPackages/DataPackages";
-import Toast from "./components/Common/Toast";
 import AuditLog from "./pages/AuditLog/AuditLog";
-import PageHeader from "./components/DataFlow/PageHeader";
+import PageHeader from "./components/Common/PageHeader";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("./pages/DataFlow/DataFlow"));
@@ -53,7 +52,6 @@ const CDIWrapper = () => {
     <Suspense fallback={<Loader isInner />}>
       {loggedIn ? (
         <div className="page-wrapper">
-          <Toast />
           <TopNavbar setLoggedIn={setLoggedIn} />
           <PageHeader height={64} />
           <Switch>

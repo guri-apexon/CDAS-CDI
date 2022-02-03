@@ -8,7 +8,7 @@ import TextField from "apollo-react/components/TextField";
 import Link from "apollo-react/components/Link";
 import Modal from "apollo-react/components/Modal";
 
-import { MessageContext } from "../../../components/MessageProvider";
+import { MessageContext } from "../../../components/Providers/MessageProvider";
 import {
   makeEditableSelectCell,
   NumericEditableCell,

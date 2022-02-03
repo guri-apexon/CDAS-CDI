@@ -26,9 +26,9 @@ import {
   getLocationByType,
   addDataFlow,
 } from "../../store/actions/DataFlowAction";
-import { toast } from "../../utils";
+
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
-import { MessageContext } from "../../components/MessageProvider";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 
 const useStyles = makeStyles(() => ({
   root: {
