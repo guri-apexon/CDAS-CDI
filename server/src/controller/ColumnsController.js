@@ -2,97 +2,94 @@ const DB = require("../config/db");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
-const constants = require('../config/constants');
+const constants = require("../config/constants");
+const { DB_SCHEMA_NAME: schemaName } = constants;
 
-exports.createColumnSet = async (req, res) => {
+exports.getColumnsSet = async (req, res) => {
   try {
-    const {
-      columnId,
-      variableLabel,
-      datasetId,
-      columnName,
-      dataType,
-      primaryKey,
-      requiredKey,
-      minChar,
-      maxChar,
-      position,
-      format,
-      lovs,
-      uniqueKey,
-    } = req.body;
-    const curDate = new Date();
-    const insertQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.columndefinition (columnid, "VARIABLE", datasetid, "name", "datatype", primarykey, required, charactermin, charactermax, "position", "FORMAT", lov, "UNIQUE", insrt_tm, updt_tm)
-    VALUES($2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $1, $1)`;
-
+    const datasetid = req.params.datasetid;
+    const searchQuery = `SELECT "columnid", "VARIABLE", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "FORMAT", "lov", "UNIQUE" from ${schemaName}.columndefinition WHERE datasetid = $1`;
     Logger.info({
-      message: "createColumnSet",
+      message: "getColumnsSet",
     });
-
-    const inset = await DB.executeQuery(insertQuery, [
-      curDate,
-      columnId,
-      variableLabel,
-      datasetId,
-      columnName,
-      dataType,
-      primaryKey,
-      requiredKey,
-      minChar,
-      maxChar,
-      position,
-      format,
-      lovs,
-      uniqueKey,
-    ]);
-    return apiResponse.successResponseWithData(res, "Operation success", inset);
+    DB.executeQuery(searchQuery, [datasetid]).then((response) => {
+      const datasetColumns = response.rows || null;
+      return apiResponse.successResponseWithData(
+        res,
+        "Operation success",
+        datasetColumns
+      );
+    });
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :createColumnSet");
+    console.log(err);
+    Logger.error("catch :getColumnsSet");
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
   }
 };
 
-exports.updateColumnSet = async (req, res) => {
+exports.saveDatasetColumns = async (req, res) => {
   try {
-    const {
-      columnId,
-      variableLabel,
-      datasetId,
-      columnName,
-      dataType,
-      primaryKey,
-      requiredKey,
-      minChar,
-      maxChar,
-      position,
-      format,
-      lovs,
-      uniqueKey,
-    } = req.body;
-    const curDate = new Date();
-    const query = `UPDATE ${constants.DB_SCHEMA_NAME}.datakind SET "name"=$3, active=$5, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2 AND extrnl_sys_nm=$6`;
-
-    Logger.info({
-      message: "updateDataKind",
+    const datasetid = req.params.datasetid;
+    const values = req.body;
+    const insertQuery = `INSERT into ${schemaName}.columndefinition (columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
+    const inserted = await values.map(async (value) => {
+      const columnId = helper.generateUniqueID();
+      Logger.info({
+        message: "storeDatasetColumns",
+      });
+      const body = [
+        columnId,
+        value.variableLabel.trim() || null,
+        datasetid,
+        value.columnName.trim() || null,
+        value.dataType.trim() || null,
+        value.primary == "Yes" ? 1 : 0,
+        value.required == "Yes" ? 1 : 0,
+        value.unique == "Yes" ? 1 : 0,
+        value.minLength.trim() || null,
+        value.maxLength.trim() || null,
+        value.position.trim() || null,
+        value.format.trim() || null,
+        value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
+        new Date(),
+        new Date(),
+      ];
+      const inserted = await DB.executeQuery(insertQuery, body)
+        .then(() => {
+          const hisBody = [columnId + 1, 1, ...body];
+          const hisQuery = `INSERT into ${schemaName}.columndefinition_history (col_def_version_id,version, columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;
+          return DB.executeQuery(hisQuery, hisBody)
+            .then(() => {
+              return "SUCCESS";
+            })
+            .catch((err) => {
+              console.log("innser err", err);
+              return err.message;
+            });
+        })
+        .catch((err) => {
+          console.log("outer err", err);
+          return err.message;
+        });
+      return inserted;
     });
-
-    const up = await DB.executeQuery(query, [
-      curDate,
-      dkId,
-      dkName,
-      dkDesc,
-      dkStatus,
-      dkESName,
-    ]);
-    return apiResponse.successResponseWithData(res, "Operation success", up);
+    Promise.all(inserted).then((response) => {
+      if (response[0] == "SUCCESS") {
+        return apiResponse.successResponseWithData(
+          res,
+          "Operation success",
+          values
+        );
+      } else {
+        return apiResponse.ErrorResponse(res, response[0]);
+      }
+    });
   } catch (err) {
-    //throw error in json response with status 500.
-    Logger.error("catch :updateDataKind");
+    Logger.error("catch :storeDatasetColumns");
     Logger.error(err);
-
     return apiResponse.ErrorResponse(res, err);
   }
 };

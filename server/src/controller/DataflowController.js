@@ -7,19 +7,20 @@ const _ = require("lodash");
 const { createUniqueID } = require("../helpers/customFunctions");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
+const { DB_SCHEMA_NAME: schemaName } = constants;
 
 exports.getStudyDataflows = async (req, res) => {
   try {
     const { protocolId } = req.body;
     if (protocolId) {
-      const query = `select * from (select s.prot_id as "studyId", d.dataflowid as "dataFlowId", row_number () over(partition by d.dataflowid,d2.prot_id order by dh."version" desc) as rnk, dsetcount.dsCount as "dsCount", dpackagecount.dpCount as "dpCount", s.prot_nbr as "studyName", dh."version", d.data_flow_nm as "dataFlowName", d.testflag as "type", d.insrt_tm as "dateCreated", vend_nm as "vendorSource", d.description, d.type as "adapter", d.active as "status", d.extrnl_sys_nm as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified", d.refreshtimestamp as "lastSyncDate" from ${constants.DB_SCHEMA_NAME}.dataflow d 
-    inner join ${constants.DB_SCHEMA_NAME}.vendor v on d.vend_id = v.vend_id 
-    inner join ${constants.DB_SCHEMA_NAME}.source_location sl on d.src_loc_id = sl.src_loc_id 
-    inner join ${constants.DB_SCHEMA_NAME}.datapackage d2 on d.dataflowid = d2.dataflowid 
-    inner join ${constants.DB_SCHEMA_NAME}.dataflow_history dh on d.dataflowid = dh.dataflowid
-    inner join ${constants.DB_SCHEMA_NAME}.study s on d2.prot_id = s.prot_id
-    inner join (select datapackageid, COUNT(DISTINCT datasetid) as dsCount FROM ${constants.DB_SCHEMA_NAME}.dataset d GROUP BY datapackageid) dsetcount on (d2.datapackageid=dsetcount.datapackageid)
-    inner join (select dataflowid, COUNT(DISTINCT datapackageid) as dpCount FROM ${constants.DB_SCHEMA_NAME}.datapackage d GROUP BY dataflowid) dpackagecount on (d.dataflowid=dpackagecount.dataflowid)
+      const query = `select * from (select s.prot_id as "studyId", d.dataflowid as "dataFlowId", row_number () over(partition by d.dataflowid,d2.prot_id order by dh."version" desc) as rnk, dsetcount.dsCount as "dsCount", dpackagecount.dpCount as "dpCount", s.prot_nbr as "studyName", dh."version", d.data_flow_nm as "dataFlowName", d.testflag as "type", d.insrt_tm as "dateCreated", vend_nm as "vendorSource", d.description, d.type as "adapter", d.active as "status", d.extrnl_sys_nm as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified", d.refreshtimestamp as "lastSyncDate" from ${schemaName}.dataflow d 
+    inner join ${schemaName}.vendor v on d.vend_id = v.vend_id 
+    inner join ${schemaName}.source_location sl on d.src_loc_id = sl.src_loc_id 
+    inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid 
+    inner join ${schemaName}.dataflow_history dh on d.dataflowid = dh.dataflowid
+    inner join ${schemaName}.study s on d2.prot_id = s.prot_id
+    inner join (select datapackageid, COUNT(DISTINCT datasetid) as dsCount FROM ${schemaName}.dataset d GROUP BY datapackageid) dsetcount on (d2.datapackageid=dsetcount.datapackageid)
+    inner join (select dataflowid, COUNT(DISTINCT datapackageid) as dpCount FROM ${schemaName}.datapackage d GROUP BY dataflowid) dpackagecount on (d.dataflowid=dpackagecount.dataflowid)
     where s.prot_id = $1) as df where df.rnk=1`;
 
       Logger.info({ message: "getStudyDataflows" });
@@ -504,14 +505,14 @@ exports.activateDataFlow = async (req, res) => {
     const newVersion = versionNo + 1;
     Logger.info({ message: "activateDataFlow" });
 
-    const q0 = `select d3.active from ${constants.DB_SCHEMA_NAME}.dataflow d
-    inner join ${constants.DB_SCHEMA_NAME}.datapackage d2 on d.dataflowid = d2.dataflowid  
-    inner join ${constants.DB_SCHEMA_NAME}.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1`;
+    const q0 = `select d3.active from ${schemaName}.dataflow d
+    inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid  
+    inner join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1`;
     const $q0 = await DB.executeQuery(q0, [dataFlowId]);
 
     if ($q0.rows.map((e) => e.active).includes(1)) {
-      const q1 = `UPDATE ${constants.DB_SCHEMA_NAME}.dataflow set active=1 WHERE dataflowid=$1`;
-      const q2 = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_audit_log
+      const q1 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1`;
+      const q2 = `INSERT INTO ${schemaName}.dataflow_audit_log
       (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
       VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
       const $q1 = await DB.executeQuery(q1, [dataFlowId]);
@@ -547,8 +548,8 @@ exports.inActivateDataFlow = async (req, res) => {
     const newVersion = versionNo + 1;
     Logger.info({ message: "inActivateDataFlow" });
 
-    const q1 = `UPDATE ${constants.DB_SCHEMA_NAME}.dataflow set active=0 WHERE dataflowid=$1`;
-    const q2 = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_audit_log
+    const q1 = `UPDATE ${schemaName}.dataflow set active=0 WHERE dataflowid=$1`;
+    const q2 = `INSERT INTO ${schemaName}.dataflow_audit_log
     (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
     VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
 
