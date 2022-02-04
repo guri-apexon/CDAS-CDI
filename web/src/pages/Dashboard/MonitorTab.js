@@ -7,6 +7,7 @@ import Typography from "apollo-react/components/Typography";
 import SegmentedControl from "apollo-react/components/SegmentedControl";
 import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup";
 import StatusExclamationIcon from "apollo-react-icons/StatusExclamation";
+import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
 import InfoIcon from "apollo-react-icons/Info";
 import Peek from "apollo-react/components/Peek";
 
@@ -55,14 +56,28 @@ export default function MonitorTab() {
           </div>
           <div className="dashInfo">
             <div className="dashCounter">
-              <StatusExclamationIcon className="conter-icon" />
+              <StatusNegativeIcon className="conter-icon" />
               <Typography variant="h1" darkMode>
                 2
               </Typography>
             </div>
             <div className="dashInfoLabel">
               <Typography darkMode style={{ marginRight: 8 }}>
-                Failed Loads
+                Quarantined Files
+              </Typography>
+              <InfoIcon />
+            </div>
+          </div>
+          <div className="dashInfo">
+            <div className="dashCounter">
+              <StatusNegativeIcon className="conter-icon" />
+              <Typography variant="h1" darkMode>
+                2
+              </Typography>
+            </div>
+            <div className="dashInfoLabel">
+              <Typography darkMode style={{ marginRight: 8 }}>
+                Files exceeding % change
               </Typography>
               <InfoIcon />
             </div>
@@ -76,7 +91,7 @@ export default function MonitorTab() {
             </div>
             <div className="dashInfoLabel">
               <Typography darkMode style={{ marginRight: 8 }}>
-                Failed Loads
+                Files with Ingestion Issues
               </Typography>
               <InfoIcon />
             </div>
@@ -90,21 +105,7 @@ export default function MonitorTab() {
             </div>
             <div className="dashInfoLabel">
               <Typography darkMode style={{ marginRight: 8 }}>
-                Failed Loads
-              </Typography>
-              <InfoIcon />
-            </div>
-          </div>
-          <div className="dashInfo">
-            <div className="dashCounter">
-              <StatusExclamationIcon className="conter-icon" />
-              <Typography variant="h1" darkMode>
-                2
-              </Typography>
-            </div>
-            <div className="dashInfoLabel">
-              <Typography darkMode style={{ marginRight: 8 }}>
-                Failed Loads
+                Stale Datasets
               </Typography>
               <InfoIcon />
             </div>

@@ -159,10 +159,10 @@ exports.getDatasetIngestionDashboardDetail = function (req, res) {
     let where = "";
     const testFlag = req.query.testFlag || null;
     const active = req.query.active || null;
-    if(testFlag == 1 || testFlag == 0) {
+    if (testFlag == 1 || testFlag == 0) {
       where += ` and ds.testflag in (${testFlag}) `;
     }
-    if(active == 1 || active == 0) {
+    if (active == 1 || active == 0) {
       where += ` and ds.active in (${active}) `;
     }
     Logger.info({
@@ -202,7 +202,9 @@ ON ts.externalid = cps.externalid )  ts1_latest
 where latest<=2 
 ) x WHERE latest = 1 
 ) 
---select the data for a selected study	
+,checkSum as ( select case when current_timestamp > to_timestamp(cast(lastmodifiedtime as numeric)/1000) then date_part('day',current_timestamp - to_timestamp(cast(lastmodifiedtime as numeric)/1000)) else -1
+					end as no_of_staledays, lastmodifiedtime as file_timestamp, dc2.executionid from cdascfg.datapackage_checksum dc2 inner join cteTrnx on cteTrnx.dataflowid = dc2.dataflowid and cteTrnx.datapackageid = dc2.datapackageid and cteTrnx.executionid = dc2.executionid limit 1)
+--select the data for a selected study		
 select 
 cteTrnx.externalid ,
 cteTrnx.executionid,
@@ -251,7 +253,9 @@ WHEN ts.downloadstatus  = 'ABORTED' OR ts.processstatus  = 'ABORTED' THEN 'FAILE
 END AS datastatus,    -- NEEDS COMPLETE CASE STATEMENT
 cteTrnx.pct_cng,
 case when cteTrnx.pct_cng > ds.rowdecreaseallowed then cteTrnx.pct_cng end as EXCEEDS_PCT_CNG, -- needs comparison logic to replace 'Y' for KPI
-'Y' as IS_STALE --needs comparison logic to replace 'Y' for KPI
+case when dc.no_of_staledays > ds.staledays then 'yes' else 'no' end  as IS_STALE, --needs comparison logic to replace 'Y' for KPI,
+dc.file_timestamp,
+dc.no_of_staledays
 FROM protocol p
 INNER JOIN
 ${constants.DB_SCHEMA_NAME}.dataflow df
@@ -272,37 +276,52 @@ AND cteTrnx.externalid = ts.externalid
 AND cteTrnx.dataflowid = ts.dataflowid
 AND cteTrnx.datapackageid = ts.datapackageid
 AND ctetrnx.datasetid = ts.datasetid
+left join checkSum dc 
+on cteTrnx.executionid = dc.executionid
 where p.prot_id = $1 ${where}`;
-    DB.executeQuery(searchQuery, [prot_id]).then(
-      (response) => {
-        const datasets = response.rows || [];
-        const failedStatus = ['FAILED','ABORTED'];
-        let failed_loads = 0;
-        let quarantined_files = 0;
-        let files_exceeding = 0;
-        let fileswith_issues = 0;
-        let stale_datasets = 0;
-        datasets.forEach(dataset => {
-          if(failedStatus.indexOf(dataset.processstatus) !== -1  || failedStatus.indexOf(dataset.downloadstatus) !== -1  ) {
-            failed_loads += 1;
-          }
-          if( dataset.pct_cng > dataset.rowdecreaseallowed ) {
-            files_exceeding += 1;
-          }
-          if(dataset.downloadstatus == 'SUCCESSFUL' && dataset.processstatus == 'PROCESSED WITH ERRORS') {
-            fileswith_issues += 1;
-          }
-        })
-        return apiResponse.successResponseWithData(res, "Operation success", {
-          summary: {failed_loads, quarantined_files, files_exceeding, fileswith_issues, stale_datasets},
-          datasets: datasets,
-          totalSize: response.rowCount,
-        });
-      }
-    );
+    DB.executeQuery(searchQuery, [prot_id]).then((response) => {
+      const datasets = response.rows || [];
+      const failedStatus = ["FAILED", "ABORTED"];
+      let failed_loads = 0;
+      let quarantined_files = 0;
+      let files_exceeding = 0;
+      let fileswith_issues = 0;
+      let stale_datasets = 0;
+      datasets.forEach((dataset) => {
+        if (
+          failedStatus.indexOf(dataset.processstatus) !== -1 ||
+          failedStatus.indexOf(dataset.downloadstatus) !== -1
+        ) {
+          failed_loads += 1;
+        }
+        if (dataset.pct_cng > dataset.rowdecreaseallowed) {
+          files_exceeding += 1;
+        }
+        if (
+          dataset.downloadstatus == "SUCCESSFUL" &&
+          dataset.processstatus == "PROCESSED WITH ERRORS"
+        ) {
+          fileswith_issues += 1;
+        }
+        if (dataset.is_stale == 'yes') {
+          stale_datasets += 1;
+        }
+      });
+      return apiResponse.successResponseWithData(res, "Operation success", {
+        summary: {
+          failed_loads,
+          quarantined_files,
+          files_exceeding,
+          fileswith_issues,
+          stale_datasets,
+        },
+        datasets: datasets,
+        totalSize: response.rowCount,
+      });
+    });
   } catch (err) {
     //throw error in json response with status 500.
-    console.log(err, "eerre")
+    console.log(err, "eerre");
     Logger.error("catch :getDatasetIngestionDashboardDetail");
     Logger.error(err);
 
