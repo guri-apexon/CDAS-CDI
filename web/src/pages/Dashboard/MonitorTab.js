@@ -1,5 +1,7 @@
+/* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
+import React, { useState } from "react";
+import { neutral8 } from "apollo-react/colors";
 import Hero from "apollo-react/components/Hero";
 import DataVizCard from "apollo-react/components/DataVizCard";
 import Grid from "apollo-react/components/Grid";
@@ -8,12 +10,33 @@ import SegmentedControl from "apollo-react/components/SegmentedControl";
 import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup";
 import StatusExclamationIcon from "apollo-react-icons/StatusExclamation";
 import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
+import SwapVertIcon from "@material-ui/icons/SwapVert";
 import InfoIcon from "apollo-react-icons/Info";
 import Peek from "apollo-react/components/Peek";
+
+import { ReactComponent as StaleIcon } from "../../components/Icons/Stale.svg";
+import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
 
 import "./Dashboard.scss";
 
 export default function MonitorTab() {
+  const [open, setOpen] = useState(false);
+  const [curRow, setCurRow] = useState({});
+  const [control, setSegmentControl] = useState("all");
+  const [summary] = useState({
+    failed_loads: 0,
+    quarantined_files: 0,
+    files_exceeding: 0,
+    fileswith_issues: 0,
+    stale_datasets: 0,
+  });
+  const handlePeekOpen = (name, description) => {
+    setOpen(true);
+    setCurRow({ name, description });
+  };
+  const onSegmentChange = (value) => {
+    setSegmentControl(value);
+  };
   return (
     <div>
       <Hero>
@@ -30,9 +53,10 @@ export default function MonitorTab() {
             Study Monitor Summary
           </Typography>
           <SegmentedControlGroup
-            value="all"
+            value={control}
             exclusive
             style={{ margin: "auto 20%" }}
+            onChange={(event, value) => onSegmentChange(value)}
           >
             <SegmentedControl value="all">All</SegmentedControl>
             <SegmentedControl value="0">Production</SegmentedControl>
@@ -44,84 +68,131 @@ export default function MonitorTab() {
             <div className="dashCounter">
               <StatusExclamationIcon className="conter-icon" />
               <Typography variant="h1" darkMode>
-                2
+                {summary.failed_loads}
               </Typography>
             </div>
             <div className="dashInfoLabel">
-              <Typography darkMode style={{ marginRight: 8 }}>
+              <Typography darkMode style={{ marginRight: 5 }}>
                 Failed Loads
               </Typography>
-              <InfoIcon />
+              <InfoIcon
+                onMouseOver={() =>
+                  handlePeekOpen(
+                    "Failed Loads",
+                    "Files that did not load due to file/table issues"
+                  )
+                }
+                onMouseOut={() => setOpen(false)}
+              />
             </div>
           </div>
           <div className="dashInfo">
             <div className="dashCounter">
               <StatusNegativeIcon className="conter-icon" />
               <Typography variant="h1" darkMode>
-                2
+                {summary.quarantined_files}
               </Typography>
             </div>
             <div className="dashInfoLabel">
-              <Typography darkMode style={{ marginRight: 8 }}>
+              <Typography darkMode style={{ marginRight: 5 }}>
                 Quarantined Files
               </Typography>
-              <InfoIcon />
+              <InfoIcon
+                onMouseOver={() =>
+                  handlePeekOpen(
+                    "Quarantined Files",
+                    "Files being processed for value level conformance rules assigned the action of 'reject'."
+                  )
+                }
+                onMouseOut={() => setOpen(false)}
+              />
             </div>
           </div>
           <div className="dashInfo">
             <div className="dashCounter">
-              <StatusNegativeIcon className="conter-icon" />
+              <SwapVertIcon className="conter-icon" />
               <Typography variant="h1" darkMode>
-                2
+                {summary.files_exceeding}
               </Typography>
             </div>
             <div className="dashInfoLabel">
-              <Typography darkMode style={{ marginRight: 8 }}>
+              <Typography darkMode style={{ marginRight: 5 }}>
                 Files exceeding % change
               </Typography>
-              <InfoIcon />
+              <InfoIcon
+                onMouseOver={() =>
+                  handlePeekOpen(
+                    "Files exceeding % change",
+                    "Files in which the change in the number of records received exceeded the configured % row count decrease allowed"
+                  )
+                }
+                onMouseOut={() => setOpen(false)}
+              />
             </div>
           </div>
           <div className="dashInfo">
             <div className="dashCounter">
-              <StatusExclamationIcon className="conter-icon" />
+              <IssueIcon className="conter-icon" style={{ fill: "#000000" }} />
               <Typography variant="h1" darkMode>
-                2
+                {summary.fileswith_issues}
               </Typography>
             </div>
             <div className="dashInfoLabel">
-              <Typography darkMode style={{ marginRight: 8 }}>
+              <Typography darkMode style={{ marginRight: 5 }}>
                 Files with Ingestion Issues
               </Typography>
-              <InfoIcon />
+              <InfoIcon
+                onMouseOver={() =>
+                  handlePeekOpen(
+                    "Files with Ingestion Issues",
+                    "Files that were successfully loaded, but validation issues were found"
+                  )
+                }
+                onMouseOut={() => setOpen(false)}
+              />
             </div>
           </div>
           <div className="dashInfo">
             <div className="dashCounter">
-              <StatusExclamationIcon className="conter-icon" />
+              <StaleIcon className="conter-icon" />
               <Typography variant="h1" darkMode>
-                2
+                {summary.stale_datasets}
               </Typography>
             </div>
             <div className="dashInfoLabel">
-              <Typography darkMode style={{ marginRight: 8 }}>
+              <Typography darkMode style={{ marginRight: 5 }}>
                 Stale Datasets
               </Typography>
-              <InfoIcon />
+              <InfoIcon
+                onMouseOver={() =>
+                  handlePeekOpen(
+                    "Stale Datasets",
+                    "Datasets for which a file has not been received within the specified number of days"
+                  )
+                }
+                onMouseOut={() => setOpen(false)}
+              />
             </div>
           </div>
-          {/* <Peek
-            variant="dark"
+          <Peek
+            open={open}
+            followCursor
             placement="bottom"
-            open
-            style={{ marginRight: 48 }}
             content={
-              // eslint-disable-next-line react/jsx-wrap-multilines
-              <Typography variant="caption" darkMode>
-                asdfasdfsadf asdfsadkfljsakjflsakjlfksldfk
-              </Typography>
+              <div style={{ maxWidth: 400 }}>
+                <Typography
+                  variant="title2"
+                  gutterBottom
+                  style={{ fontWeight: 600 }}
+                >
+                  {curRow.name}
+                </Typography>
+                <Typography variant="body2" style={{ color: neutral8 }}>
+                  {curRow.description}
+                </Typography>
+              </div>
             }
-          /> */}
+          />
         </div>
       </Hero>
       <Grid
