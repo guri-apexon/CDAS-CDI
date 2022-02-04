@@ -65,3 +65,28 @@
     text-align: center;
   }
 }
+.topContainer {
+  padding-bottom: 20px;
+}
+.dashboardSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 50px 0;
+  .conter-icon {
+    height: 56px;
+    width: 56px;
+  }
+  .dashInfoLabel {
+    display: flex;
+    align-items: center;
+    margin-top: 15px;
+  }
+  .dashCounter {
+    display: flex;
+    align-items: center;
+    h1 {
+      margin-left: 12px;
+    }
+  }
+}

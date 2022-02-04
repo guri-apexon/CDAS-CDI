@@ -11,6 +11,7 @@ import LeftPanel from "./LeftPanel";
 import "./Dashboard.scss";
 
 import DataflowTab from "./DataflowTab";
+import MonitorTab from "./MonitorTab";
 
 const styles = {
   rightPanel: {
@@ -107,11 +108,7 @@ const Dashboard = () => {
             </div>
 
             <div style={{ padding: 20 }}>
-              {value === 0 && (
-                <>
-                  <Typography variant="body2"> Monitor page content</Typography>
-                </>
-              )}
+              {value === 0 && <MonitorTab />}
               {value === 1 && <DataflowTab updateData={updateData} />}
             </div>
           </main>
