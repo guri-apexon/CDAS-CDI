@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const cron = require("node-cron");
 const { cronHardDelete } = require("./DataflowController");
 const constants = require('../config/constants');
+const helper = require("../helpers/customFunctions");
 
 cron.schedule("*/30 * * * *", () => {
   console.log("running a task every 30 minute");
@@ -18,6 +19,50 @@ module.exports = {
     return new Promise((resolve, reject) => {
       DB.executeQuery(query).then((response) => {
         resolve(true);
+      });
+    });
+  },
+  addHistory: function (package, user_id, column, old_val="", new_val="") {
+    return new Promise((resolve, reject) => {
+      if (!package) resolve(false);
+      const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+      DB.executeQuery(
+        `SELECT version from ${constants.DB_SCHEMA_NAME}.dataflow_version
+      WHERE dataflowid = '${package.datapackageid}' order by version DESC limit 1`
+      ).then(async (response) => {
+        const historyVersion = response.rows[0]?.version || 0;
+        const version = Number(historyVersion) + 1;
+        const uniqueId = helper.createUniqueID();
+        const addHistoryQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_version(df_vers_id, dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5, $6)`;
+        const values = [
+          uniqueId,
+          package.dataflowid,
+          version,
+          null,
+          user_id,
+          currentTime,
+        ];
+        DB.executeQuery(addHistoryQuery, values).then(async (response) => {
+          const addAuditLogQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_audit_log(df_audit_log_id, dataflowid, datapackageid, audit_vers, attribute, old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+          const auditValues = [
+            uniqueId,
+            package.dataflowid,
+            package.datapackageid,
+            version,
+            column,
+            old_val,
+            new_val,
+            user_id,
+            currentTime,
+          ];
+          DB.executeQuery(addAuditLogQuery, auditValues).then(
+            async (response) => {
+              resolve(version);
+            }
+          ).catch((err)=>{
+            resolve(version);
+          });
+        });
       });
     });
   },
@@ -62,7 +107,7 @@ module.exports = {
           package.extrnl_id,
         ];
         DB.executeQuery(addHistoryQuery, values).then(async (response) => {
-          const auditId = this.createUniqueID();
+          const auditId = helper.createUniqueID();
           const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
           const addAuditLogQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_audit_log(dataflow_audit_log_id, dataflowid, datapackageid, audit_vers, audit_updt_dt, usr_id, attribute, old_val, new_val) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
           const auditValues = [
