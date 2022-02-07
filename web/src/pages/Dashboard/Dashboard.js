@@ -5,7 +5,10 @@ import Typography from "apollo-react/components/Typography";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import { useDispatch, useSelector } from "react-redux";
-import { getFlowDetailsOfStudy } from "../../store/actions/DashboardAction";
+import {
+  getFlowDetailsOfStudy,
+  getDatasetIngestionOfStudy,
+} from "../../store/actions/DashboardAction";
 // import PageHeader from "../../components/DataFlow/PageHeader";
 import LeftPanel from "./LeftPanel";
 import "./Dashboard.scss";
@@ -64,6 +67,7 @@ const Dashboard = () => {
 
   const updateData = () => {
     dispatch(getFlowDetailsOfStudy(dashboard.selectedCard.prot_id));
+    dispatch(getDatasetIngestionOfStudy(dashboard.selectedCard.prot_id));
   };
 
   useEffect(() => {
@@ -71,6 +75,10 @@ const Dashboard = () => {
       updateData();
     }
   }, [dashboard.selectedCard]);
+
+  useEffect(() => {
+    dispatch(getDatasetIngestionOfStudy("a020E000005Szl0QAC"));
+  }, []);
 
   return (
     <>

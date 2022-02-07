@@ -1,10 +1,11 @@
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { neutral8 } from "apollo-react/colors";
 import Hero from "apollo-react/components/Hero";
-import DataVizCard from "apollo-react/components/DataVizCard";
 import Grid from "apollo-react/components/Grid";
+import Table from "apollo-react/components/Table";
 import Typography from "apollo-react/components/Typography";
 import SegmentedControl from "apollo-react/components/SegmentedControl";
 import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup";
@@ -14,8 +15,11 @@ import SwapVertIcon from "@material-ui/icons/SwapVert";
 import InfoIcon from "apollo-react-icons/Info";
 import Peek from "apollo-react/components/Peek";
 
+import { moreColumnsWithFrozen } from "./columns.data";
+
 import { ReactComponent as StaleIcon } from "../../components/Icons/Stale.svg";
 import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
+import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
 
 import "./Dashboard.scss";
 
@@ -23,13 +27,30 @@ export default function MonitorTab() {
   const [open, setOpen] = useState(false);
   const [curRow, setCurRow] = useState({});
   const [control, setSegmentControl] = useState("all");
-  const [summary] = useState({
+  const [rows, setRowData] = useState([]);
+  const [summary, setSummary] = useState({
     failed_loads: 0,
     quarantined_files: 0,
     files_exceeding: 0,
     fileswith_issues: 0,
     stale_datasets: 0,
   });
+  const dashboard = useSelector((state) => state.dashboard);
+
+  useEffect(() => {
+    const summaryData = dashboard.ingestionData?.summary;
+    const rowData = dashboard.ingestionData?.datasets;
+    // const dashboardData = selectedFilter
+    //   ? selectedFilter === "all"
+    //     ? dashboard.flowData
+    //     : dashboard?.flowData.filter((data) => data.type === selectedFilter)
+    //   : dashboard.flowData;
+    console.log(rowData, "roww");
+    setSummary({ ...summaryData });
+    setRowData([...rowData]);
+    console.log(dashboard.ingestionData, "ingetData");
+  }, [dashboard.ingestionData]);
+
   const handlePeekOpen = (name, description) => {
     setOpen(true);
     setCurRow({ name, description });
@@ -200,8 +221,22 @@ export default function MonitorTab() {
         spacing={1}
         style={{ padding: "12px 5px 24px 5px", backgroundColor: "#f8f9fb" }}
       >
-        <Grid item xs={12}>
-          <DataVizCard title="Card Title" subtitle="Optional subtitle" />
+        <Grid item sm={12}>
+          <Table
+            key="studyDatasets"
+            title="Study Datasets"
+            subtitle="0 datasets"
+            columns={moreColumnsWithFrozen}
+            rows={rows}
+            initialSortedColumn="datasetname"
+            rowsPerPageOptions={[10, 50, 100, "All"]}
+            tablePaginationProps={{
+              labelDisplayedRows: ({ from, to, count }) =>
+                `${count === 1 ? "Item " : "Items"} ${from}-${to} of ${count}`,
+              truncate: true,
+            }}
+            columnSettings={{ enabled: true }}
+          />
         </Grid>
       </Grid>
     </div>
