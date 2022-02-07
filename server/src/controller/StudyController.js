@@ -182,7 +182,7 @@ when downloadtrnx = 0 and previous_downloadtrnx = 0 then 0
 end as pct_cng  FROM
 (
 select prot_id, dataflowid, datapackageid, datasetid, executionid, externalid, downloadtrnx, latest, LEAD(downloadtrnx,1) OVER (
-ORDER BY latest ) previous_downloadtrnx from
+ORDER BY latest ) previous_downloadtrnx, childstatus, errmsg from
 (SELECT
 prot.prot_id,
 prot.dataflowid,
@@ -192,6 +192,7 @@ ts.executionid,
 ts.externalid,
 COALESCE(ts.downloadtrnx,0) as downloadtrnx,
 cps.STATUS AS childstatus,
+cps.ERRMSG as errmsg,
 ROW_NUMBER () OVER (PARTITION BY ts.dataflowid,	ts.datapackageid,ts.datasetid
 ORDER BY ts.executionid DESC) AS latest
 FROM protocol prot
@@ -203,7 +204,33 @@ where latest<=2
 ) x WHERE latest = 1 
 ) 
 ,checkSum as ( select case when current_timestamp > to_timestamp(cast(lastmodifiedtime as numeric)/1000) then date_part('day',current_timestamp - to_timestamp(cast(lastmodifiedtime as numeric)/1000)) else -1
-					end as no_of_staledays, lastmodifiedtime as file_timestamp, dc2.executionid from cdascfg.datapackage_checksum dc2 inner join cteTrnx on cteTrnx.dataflowid = dc2.dataflowid and cteTrnx.datapackageid = dc2.datapackageid and cteTrnx.executionid = dc2.executionid limit 1)
+					end as no_of_staledays, lastmodifiedtime as file_timestamp, dc2.executionid from ${constants.DB_SCHEMA_NAME}.datapackage_checksum dc2 inner join cteTrnx on cteTrnx.dataflowid = dc2.dataflowid and cteTrnx.datapackageid = dc2.datapackageid and cteTrnx.executionid = dc2.executionid limit 1)
+,cteFile AS -- get the latest file name
+(
+SELECT * FROM
+  (
+  SELECT
+    dp.dataflowid,
+    dp.md5,
+    dp.executionid,
+    dp.datapackageid,
+    dp.packagename,
+    dpds.datasetid,
+    dpds.datasetname,
+    ds.datasetname ,
+    COALESCE (dpds.datasetname, ds.datasetname) as filename,
+    dp.stagetime filestagedate ,
+    ROW_NUMBER () OVER (PARTITION BY dp.dataflowid, dp.executionid, dp.datapackageid, dpds.datasetid 
+    ORDER BY dp.stagetime DESC) AS latest
+  FROM
+    ${constants.DB_SCHEMA_NAME}.datapackage_checksum dp
+  LEFT OUTER JOIN ${constants.DB_SCHEMA_NAME}.datapackage_dataset_mapping DPDS ON
+    dp.md5 = dpds."MD5" 
+  LEFT OUTER JOIN ${constants.DB_SCHEMA_NAME}.dataset_checksum ds ON
+    dp.md5 = ds.md5  
+  ) x 
+WHERE latest = 1 
+)
 --select the data for a selected study		
 select 
 cteTrnx.externalid ,
@@ -222,6 +249,8 @@ dp.path packagepath,
 dp.name AS packagenamingconvention ,
 ds.datakindid AS ClinicalDataTypeId ,
 vn.vend_nm_stnd as clinicalDataTypeName,
+df.vend_id as vendorsourceid,
+vn1.vend_nm_stnd as vendorsource,
 ds.TYPE FileType,
 ds.PATH FilePath,
 ds.name AS filenamingconvention ,
@@ -245,6 +274,8 @@ ts.failurecat,
 ts.refreshtimestamp,
 ds.offsetcolumn,
 ds.offset_val, 
+cteTrnx.childstatus,
+cteTrnx.ERRMSG,
 CASE WHEN ts.downloadstatus = 'SUCCESSFUL' AND ts.processstatus = 'SUCCESSFUL' THEN 'LOADED WITHOUT ISSUES'
 WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'PROCESSED WITH ERRORS' THEN 'LOADED WITH INGESTION ISSUES'
 WHEN ts.downloadstatus  = 'FAILED' OR ts.processstatus   = 'FAILED' THEN 'FAILED'
@@ -255,7 +286,12 @@ cteTrnx.pct_cng,
 case when cteTrnx.pct_cng > ds.rowdecreaseallowed then cteTrnx.pct_cng end as EXCEEDS_PCT_CNG, -- needs comparison logic to replace 'Y' for KPI
 case when dc.no_of_staledays > ds.staledays then 'yes' else 'no' end  as IS_STALE, --needs comparison logic to replace 'Y' for KPI,
 dc.file_timestamp,
-dc.no_of_staledays
+dc.no_of_staledays,
+cteTrnx.childstatus,
+cteTrnx.errmsg ,
+ctefile.filestagedate AS lastFileTransferred ,
+CASE WHEN dp.NOPACKAGECONFIG = 0 THEN cteFile.packagename END AS packagename ,
+CASE WHEN df.connectiontype NOT IN ('SFTP','FTPS') THEN ds.name ELSE cteFile.filename END AS filename
 FROM protocol p
 INNER JOIN
 ${constants.DB_SCHEMA_NAME}.dataflow df
@@ -266,6 +302,8 @@ INNER JOIN ${constants.DB_SCHEMA_NAME}.dataset ds
 ON dp.datapackageid = ds.datapackageid 
 INNER JOIN ${constants.DB_SCHEMA_NAME}.vendor vn
 ON vn.vend_id = ds.datakindid 
+INNER JOIN ${constants.DB_SCHEMA_NAME}.vendor vn1
+ON vn1.vend_id = df.vend_id 
 INNER JOIN cteTrnx 
 ON 	cteTrnx.dataflowid = df.dataflowid
 AND cteTrnx.datapackageid = dp.datapackageid
@@ -278,6 +316,11 @@ AND cteTrnx.datapackageid = ts.datapackageid
 AND ctetrnx.datasetid = ts.datasetid
 left join checkSum dc 
 on cteTrnx.executionid = dc.executionid
+LEFT JOIN cteFile 
+	ON cteTrnx.dataflowid = cteFile.dataflowid
+	AND cteTrnx.executionid = cteFile.executionid
+	AND cteTrnx.datapackageid = cteFile.datapackageid
+	AND cteTrnx.datasetid = cteFile.datasetid
 where p.prot_id = $1 ${where}`;
     DB.executeQuery(searchQuery, [prot_id]).then((response) => {
       const datasets = response.rows || [];

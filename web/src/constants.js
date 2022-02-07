@@ -98,10 +98,17 @@ export const GET_PREVIEW_SQL = "GET_PREVIEW_SQL";
 export const FETCH_PREVIEW_SQL_SUCCESS = "FETCH_PREVIEW_SQL_SUCCESS";
 export const FETCH_PREVIEW_SQL_FAILURE = "FETCH_PREVIEW_SQL_FAILURE";
 
+export const GET_DATASET_INGESTION_SUMMARY = "GET_DATASET_INGESTION_SUMMARY";
+export const GET_DATASET_INGESTION_SUMMARY_SUCCESS =
+  "GET_DATASET_INGESTION_SUMMARY_SUCCESS";
+export const GET_DATASET_INGESTION_SUMMARY_FAILURE =
+  "GET_DATASET_INGESTION_SUMMARY_FAILURE";
+
 // API URLS
 
 export const FLOW_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
 export const STUDYSEARCH = "v1/api/study/search-study";
+export const STUDYAPI = "v1/api/study";
 export const HARDDELETE = "v1/api/dataflow/hardDelete";
 export const SYNCNOW = "v1/api/dataflow/syncNow";
 export const ACTIVATEDF = "v1/api/dataflow/activate";

@@ -73,9 +73,15 @@
   align-items: center;
   justify-content: space-around;
   padding: 50px 0;
+  .dashInfo{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
   .conter-icon {
-    height: 56px;
-    width: 56px;
+    height: 36px;
+    width: 36px;
   }
   .dashInfoLabel {
     display: flex;
@@ -85,8 +91,14 @@
   .dashCounter {
     display: flex;
     align-items: center;
+    svg #issues {
+      fill: #ffffff;
+    }
+    svg#stale path {
+      fill: #ffffff;
+    }
     h1 {
-      margin-left: 12px;
+      margin-left: 5px;
     }
   }
 }
