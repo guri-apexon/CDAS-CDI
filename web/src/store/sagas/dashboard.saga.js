@@ -33,9 +33,17 @@ export function* fetchFlowData(payload) {
 export function* fetchDatasetIngestionSummaryData(payload) {
   // console.log("before", payload.protocolId);
   try {
+    let active = 0;
+    let testFlag = "";
+    if (payload.active) {
+      active = 1;
+    }
+    if (payload.testFlag === "1" || payload.testFlag === "0") {
+      testFlag = payload.testFlag;
+    }
     const fetchDBData = yield call(
       axios.get,
-      `${baseURL}/${STUDYAPI}/datasetIngestionDetail/${payload.protocolId}`,
+      `${baseURL}/${STUDYAPI}/datasetIngestionDetail/${payload.protocolId}?active=${active}&testFlag=${testFlag}`,
       {}
     );
 

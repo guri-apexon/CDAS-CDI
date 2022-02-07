@@ -45,7 +45,7 @@ const styles = {
 
 const Dashboard = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
-  const [value, setValue] = useState(1);
+  const [value, setValue] = useState(0);
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -67,7 +67,18 @@ const Dashboard = () => {
 
   const updateData = () => {
     dispatch(getFlowDetailsOfStudy(dashboard.selectedCard.prot_id));
-    dispatch(getDatasetIngestionOfStudy(dashboard.selectedCard.prot_id));
+  };
+
+  const fetchLatestData = (control = "", activeOnly = "") => {
+    if (dashboard?.selectedCard?.prot_id) {
+      dispatch(
+        getDatasetIngestionOfStudy(
+          dashboard.selectedCard.prot_id,
+          control,
+          activeOnly
+        )
+      );
+    }
   };
 
   useEffect(() => {
@@ -116,7 +127,7 @@ const Dashboard = () => {
             </div>
 
             <div style={{ padding: 20 }}>
-              {value === 0 && <MonitorTab />}
+              {value === 0 && <MonitorTab fetchLatestData={fetchLatestData} />}
               {value === 1 && <DataflowTab updateData={updateData} />}
             </div>
           </main>

@@ -228,15 +228,15 @@ const columns = [
 const columnsToAdd = [
   {
     header: "Package name",
-    accessor: "packageName",
+    accessor: "packagename",
   },
   {
     header: "File Name",
-    accessor: "fileName",
+    accessor: "filename",
   },
   {
     header: "Clinical Data Type",
-    accessor: "clinicalDataType",
+    accessor: "clinicaldatatypename",
   },
   {
     header: "Load Type",
@@ -244,19 +244,19 @@ const columnsToAdd = [
   },
   {
     header: "Last Download Transactions",
-    accessor: "downloadTransactions",
+    accessor: "downloadtrnx",
   },
   {
     header: "Last Process Transactions",
-    accessor: "processTransactions",
+    accessor: "processtrnx",
   },
   {
     header: "Download Ending Offset Value",
-    accessor: "endingOffsetValue",
+    accessor: "offset_val",
   },
   {
     header: "Error message",
-    accessor: "errMsg",
+    accessor: "errmsg",
   },
 ];
 
