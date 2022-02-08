@@ -97,8 +97,33 @@
     svg#stale path {
       fill: #ffffff;
     }
+    svg.failureIcon path {
+      fill: #ffffff;
+    }
     h1 {
       margin-left: 5px;
     }
+  }
+}
+.staleAlertStatus svg {
+  width: 14px;
+  height: 17px;
+}
+.failedStatus svg {
+  width: 14px;
+  height: 17px;
+  path {
+    fill: #ffffff;
+  }
+}
+.queueStatus {
+  background-color: transparent;
+  border: 1px solid #9E54B0;
+  color: #9E54B0;
+  height: auto;
+}
+.MuiSwitch {
+  span[class^="MuiButtonBase-"] {
+   top: -8px;
   }
 }
