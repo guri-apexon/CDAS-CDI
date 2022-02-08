@@ -413,9 +413,9 @@ const columnsToAdd = [
   },
   {
     header: "Load Type",
-    accessor: "loadType",
-    filterFunction: createStringArraySearchFilter("loadType"),
-    filterComponent: createAutocompleteFilter("loadType"),
+    accessor: "loadtype",
+    filterFunction: createStringArraySearchFilter("loadtype"),
+    filterComponent: createAutocompleteFilter("loadtype"),
   },
   {
     header: "Last Download Transactions",
