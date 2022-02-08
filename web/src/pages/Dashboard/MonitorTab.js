@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useEffect } from "react";
@@ -10,7 +11,6 @@ import Loader from "apollo-react/components/Loader";
 import Typography from "apollo-react/components/Typography";
 import SegmentedControl from "apollo-react/components/SegmentedControl";
 import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup";
-import StatusExclamationIcon from "apollo-react-icons/StatusExclamation";
 import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
 import SwapVertIcon from "@material-ui/icons/SwapVert";
 import InfoIcon from "apollo-react-icons/Info";
@@ -25,6 +25,7 @@ import { moreColumnsWithFrozen } from "./columns.data";
 import { ReactComponent as StaleIcon } from "../../components/Icons/Stale.svg";
 import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
 import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
+import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
 
 import "./Dashboard.scss";
 
@@ -121,7 +122,10 @@ export default function MonitorTab({ fetchLatestData }) {
         <div className="dashboardSummary">
           <div className="dashInfo">
             <div className="dashCounter">
-              <StatusExclamationIcon className="conter-icon" />
+              <FailureIcon
+                className="conter-icon failureIcon"
+                style={{ fill: "#000000" }}
+              />
               <Typography variant="h1" darkMode>
                 {summary.failed_loads}
               </Typography>
@@ -259,7 +263,21 @@ export default function MonitorTab({ fetchLatestData }) {
           <Table
             key="studyDatasets"
             title="Study Datasets"
-            subtitle={`${totalCount} datasets`}
+            // subtitle={`${totalCount} datasets`}
+            subtitle={
+              <div style={{ position: "relative" }}>
+                <DatasetsIcon
+                  style={{
+                    position: "relative",
+                    top: 2,
+                    marginRight: 5,
+                    width: "14px",
+                    height: "14px",
+                  }}
+                />
+                {`${totalCount} datasets`}
+              </div>
+            }
             columns={moreColumnsWithFrozen}
             rows={rows}
             initialSortedColumn="datasetname"
