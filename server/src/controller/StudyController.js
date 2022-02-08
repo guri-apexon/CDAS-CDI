@@ -231,7 +231,7 @@ SELECT * FROM
   ) x 
 WHERE latest = 1 
 )
-,columnDef as ( select count(c.columnid) as columncount, c.datasetid from cdascfg.columndefinition c inner join cteTrnx on cteTrnx.datasetid = c.datasetid group by c.datasetid)
+,columnDef as ( select count(c.columnid) as columncount, c.datasetid from ${constants.DB_SCHEMA_NAME}.columndefinition c inner join cteTrnx on cteTrnx.datasetid = c.datasetid group by c.datasetid)
 --select the data for a selected study		
 select 
 cteTrnx.externalid ,
