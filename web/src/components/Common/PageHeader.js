@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ProjectHeader from "apollo-react/components/ProjectHeader";
 import { useSelector } from "react-redux";
 import Banner from "apollo-react/components/Banner";
-import { MessageContext } from "../MessageProvider";
+import { MessageContext } from "../Providers/MessageProvider";
 
 const PageHeader = ({ height = 120 }) => {
   const [stateMenuItems, setStateMenuItems] = useState([]);

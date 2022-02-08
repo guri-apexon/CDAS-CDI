@@ -8,7 +8,7 @@ import TextField from "apollo-react/components/TextField";
 import Link from "apollo-react/components/Link";
 import Modal from "apollo-react/components/Modal";
 
-import { MessageContext } from "../../../components/MessageProvider";
+import { MessageContext } from "../../../components/Providers/MessageProvider";
 import {
   makeEditableSelectCell,
   NumericEditableCell,
@@ -341,11 +341,23 @@ export default function DSColumnTable({
   const editRow = (uniqueId, key, value, errorTxt) => {
     // console.log(uniqueId, "ColumdId");
     setEditedRows((rws) =>
-      rws.map((row) =>
-        row.uniqueId === uniqueId
-          ? { ...row, [key]: value, isInitLoad: false, isHavingError: true }
-          : row
-      )
+      rws.map((row) => {
+        if (row.uniqueId === uniqueId) {
+          if (row.isInitLoad) {
+            return {
+              ...row,
+              [key]: value,
+              isInitLoad: false,
+              isHavingError: true,
+            };
+          }
+          return {
+            ...row,
+            [key]: value,
+          };
+        }
+        return row;
+      })
     );
     // setRows((rws) =>
     //   rws.map((row) =>

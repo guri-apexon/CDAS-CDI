@@ -5,15 +5,17 @@ const moment = require("moment");
 const _ = require("lodash");
 const constants = require("../config/constants");
 
+const { DB_SCHEMA_NAME: schemaName } = constants;
+
 exports.getUserStudyList = function (req, res) {
   try {
     const userId = req.params.userId;
-    const query = `SELECT prot_id, prot_nbr as protocolnumber, s.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${constants.DB_SCHEMA_NAME}.study s INNER JOIN ${constants.DB_SCHEMA_NAME}.sponsor s2 ON s2.spnsr_id = s.spnsr_id WHERE s.usr_id = $1 ORDER BY sponsorname`;
-    // const q2 = `select dataflowid, COUNT(DISTINCT datapackageid) FROM ${constants.DB_SCHEMA_NAME}.datapackage d GROUP BY d.dataflowid`
-    // const q3 = `select datapackageid, COUNT(DISTINCT datasetid) FROM ${constants.DB_SCHEMA_NAME}.dataset d GROUP BY datapackageid`
+    const query = `SELECT distinct s.prot_id, prot_nbr as protocolnumber, s2.spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${schemaName}.study s INNER JOIN ${schemaName}.study_sponsor ss on s.prot_id = ss.prot_id INNER JOIN ${schemaName}.sponsor s2 ON s2.spnsr_id = ss.spnsr_id INNER JOIN ${schemaName}.study_user s3 ON s.prot_id = s3.prot_id  WHERE s3.usr_id = $1 ORDER BY sponsorname Limit 10`;
+    // const q2 = `select dataflowid, COUNT(DISTINCT datapackageid) FROM ${schemaName}.datapackage d GROUP BY d.dataflowid`
+    // const q3 = `select datapackageid, COUNT(DISTINCT datasetid) FROM ${schemaName}.dataset d GROUP BY datapackageid`
 
     Logger.info({
-      message: "getUserStudyList",
+      message: `getUserStudyList`,
     });
 
     DB.executeQuery(query, [userId]).then((resp) => {
@@ -44,7 +46,7 @@ exports.pinStudy = async (req, res) => {
   try {
     const { userId, protocolId } = req.body;
     const curDate = new Date();
-    const insertQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.study_user_pin
+    const insertQuery = `INSERT INTO ${schemaName}.study_user_pin
       (usr_id, prot_id, pinned_stdy, pinned_stdy_dt, insrt_tm, updt_tm)
       VALUES($1, $2, '', $3, $3, $3);
       `;
@@ -70,7 +72,7 @@ exports.pinStudy = async (req, res) => {
 exports.unPinStudy = async (req, res) => {
   try {
     const { userId, protocolId } = req.body;
-    const deleteQuery = `delete from ${constants.DB_SCHEMA_NAME}.study_user_pin where usr_id = $1 and prot_id = $2`;
+    const deleteQuery = `delete from ${schemaName}.study_user_pin where usr_id = $1 and prot_id = $2`;
     Logger.info({
       message: "unPinStudy",
     });
@@ -89,7 +91,7 @@ exports.unPinStudy = async (req, res) => {
 exports.getUserPinnedStudies = function (req, res) {
   try {
     const userId = req.params.userId;
-    const query = `select * from ${constants.DB_SCHEMA_NAME}.study_user_pin sup where usr_id = $1 order by pinned_stdy_dt desc `;
+    const query = `select * from ${schemaName}.study_user_pin sup where usr_id = $1 order by pinned_stdy_dt desc `;
 
     Logger.info({
       message: "getUserPinnedStudies",
@@ -131,9 +133,8 @@ exports.searchStudyList = function (req, res) {
       searchParam,
     });
     // console.log("search", searchParam, userId);
-    const searchQuery = `SELECT s.prot_id, s.prot_nbr as protocolnumber, s3.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${constants.DB_SCHEMA_NAME}.study s INNER JOIN ${constants.DB_SCHEMA_NAME}.sponsor s2 ON s2.spnsr_id = s.spnsr_id 
-    INNER JOIN ${constants.DB_SCHEMA_NAME}.study_user s3 ON s.prot_id=s3.prot_id
-              WHERE (s3.usr_id = $2) AND (LOWER(prot_nbr) LIKE $1 OR LOWER(spnsr_nm) LIKE $1 OR LOWER(proj_cd) LIKE $1) LIMIT 10`;
+    const searchQuery = `SELECT s.prot_id, s.prot_nbr as protocolnumber, s3.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${schemaName}.study s INNER JOIN ${schemaName}.sponsor s2 ON s2.spnsr_id = s.spnsr_id 
+    INNER JOIN ${schemaName}.study_user s3 ON s.prot_id=s3.prot_id WHERE (s3.usr_id = $2) AND (LOWER(prot_nbr) LIKE $1 OR LOWER(spnsr_nm) LIKE $1 OR LOWER(proj_cd) LIKE $1) LIMIT 10`;
 
     DB.executeQuery(searchQuery, [`%${searchParam}%`, userId]).then(
       (response) => {
@@ -350,7 +351,7 @@ where p.prot_id = $1 ${where}`;
         ) {
           fileswith_issues += 1;
         }
-        if (dataset.is_stale == 'yes') {
+        if (dataset.is_stale == "yes") {
           stale_datasets += 1;
         }
       });

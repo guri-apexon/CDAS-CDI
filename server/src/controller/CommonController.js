@@ -3,7 +3,7 @@ const moment = require("moment");
 const crypto = require("crypto");
 const cron = require("node-cron");
 const { cronHardDelete } = require("./DataflowController");
-const constants = require('../config/constants');
+const constants = require("../config/constants");
 const helper = require("../helpers/customFunctions");
 
 cron.schedule("*/30 * * * *", () => {
@@ -22,7 +22,7 @@ module.exports = {
       });
     });
   },
-  addHistory: function (package, user_id, column, old_val="", new_val="") {
+  addHistory: function (package, user_id, column, old_val = "", new_val = "") {
     return new Promise((resolve, reject) => {
       if (!package) resolve(false);
       const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -55,13 +55,13 @@ module.exports = {
             user_id,
             currentTime,
           ];
-          DB.executeQuery(addAuditLogQuery, auditValues).then(
-            async (response) => {
+          DB.executeQuery(addAuditLogQuery, auditValues)
+            .then(async (response) => {
               resolve(version);
-            }
-          ).catch((err)=>{
-            resolve(version);
-          });
+            })
+            .catch((err) => {
+              resolve(version);
+            });
         });
       });
     });
@@ -121,13 +121,13 @@ module.exports = {
             old_val,
             new_val,
           ];
-          DB.executeQuery(addAuditLogQuery, auditValues).then(
-            async (response) => {
+          DB.executeQuery(addAuditLogQuery, auditValues)
+            .then(async (response) => {
               resolve(version);
-            }
-          ).catch((err)=>{
-            resolve(version);
-          });
+            })
+            .catch((err) => {
+              resolve(version);
+            });
         });
       });
     });

@@ -20,7 +20,7 @@ import ButtonGroup from "apollo-react/components/ButtonGroup";
 import columns from "./columns.data";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import { getAuditLogs } from "../../store/actions/AuditLogsAction";
-import { MessageContext } from "../../components/MessageProvider";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 import { exportToCSV } from "../../utils/downloadData";
 
 const AuditLog = () => {

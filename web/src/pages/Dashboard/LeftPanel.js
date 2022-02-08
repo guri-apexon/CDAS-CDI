@@ -13,7 +13,7 @@ import { ReactComponent as IngestionIcon } from "../../components/Icons/Issue.sv
 import { ReactComponent as StaleFilesIcon } from "../../components/Icons/Stale.svg";
 import { ReactComponent as PinnedIcon } from "../../components/Icons/Pin.svg";
 import { ReactComponent as UnPinnedIcon } from "../../components/Icons/UnPin.svg";
-import Progress from "../../components/Progress";
+import Progress from "../../components/Common/Progress/Progress";
 import { debounceFunction } from "../../utils";
 import searchStudy, {
   getPinnedStudies,

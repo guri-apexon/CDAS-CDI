@@ -11,8 +11,6 @@ import Loader from "apollo-react/components/Loader";
 import { values } from "lodash";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
-// import PageHeader from "../../components/DataFlow/PageHeader";
-// import Leftbar from "../../components/DataFlow/LeftBar";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import Header from "../../components/DataFlow/Header";
 import "./DataFlow.scss";
@@ -26,9 +24,9 @@ import {
   getLocationByType,
   addDataFlow,
 } from "../../store/actions/DataFlowAction";
-import { toast } from "../../utils";
+
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
-import { MessageContext } from "../../components/MessageProvider";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -123,6 +121,12 @@ const DataFlow = ({ FormValues, dashboard }) => {
     history.push("/dashboard");
   };
 
+  useEffect(() => {
+    if (!dashboard?.selectedCard?.prot_id) {
+      history.push("/dashboard");
+    }
+  }, [dashboard?.selectedCard]);
+
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
     console.log("FormValues?", FormValues);
@@ -176,7 +180,6 @@ const DataFlow = ({ FormValues, dashboard }) => {
           message={error}
         />
       )}
-      {/* <Leftbar /> */}
       <Panel
         onClose={handleClose}
         onOpen={handleOpen}

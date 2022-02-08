@@ -1,5 +1,6 @@
 /* eslint-disable no-script-url */
 import React, { useState, useContext, useEffect } from "react";
+import { Route, Switch, Redirect } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,7 +9,7 @@ import Banner from "apollo-react/components/Banner";
 import Panel from "apollo-react/components/Panel/Panel";
 import Header from "./Header";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
-import { MessageContext } from "../../components/MessageProvider";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 import "./Dataset.scss";
 import {
   hideErrorMessage,
@@ -68,7 +69,7 @@ const Dataset = () => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
   const { dataflowid, datasetid } = selectedDSDetails;
-  const { loading, error, sucessMsg, createTriggered, selectedDataset } =
+  const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
     dataSets;
   const { dataFlowdetail } = dataFlow;
   const { datasetId } = useParams();
@@ -97,10 +98,10 @@ const Dataset = () => {
 
   useEffect(() => {
     console.log(selectedDataset, "selectedDataset");
-    if (createTriggered) {
+    if (isDatasetCreated) {
       setValue(1);
     }
-  }, [createTriggered]);
+  }, [isDatasetCreated]);
 
   useEffect(() => {
     if (Object.keys(selectedDSDetails).length === 0) {
@@ -275,12 +276,12 @@ const Dataset = () => {
               {value === 0 &&
                 (locationType?.toLowerCase() === "sftp" ||
                   locationType?.toLowerCase() === "ftps") && (
-                  <DataSetsForm onSubmit={onSubmit} />
+                  <DataSetsForm loading={loading} onSubmit={onSubmit} />
                 )}
               {value === 0 &&
                 locationType?.toLowerCase() !== "sftp" &&
                 locationType?.toLowerCase() !== "ftps" && (
-                  <DataSetsFormSQL onSubmit={onSubmit} />
+                  <DataSetsFormSQL loading={loading} onSubmit={onSubmit} />
                 )}
               {value === 1 && <ColumnsTab locationType={locationType} />}
               {value === 2 && <VLCTab />}

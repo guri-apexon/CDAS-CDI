@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import { Success, Warning, Info, Error } from "../constants";
+import { Success, Warning, Info, Error } from "../../constants";
 
 export const MessageContext = createContext();
 
@@ -33,12 +33,28 @@ const MessageProvider = ({ children }) => {
     }, 5000);
   };
 
+  const showInfoMessage = (message) => {
+    setErrorMessage({ variant: Info, messages: message, show: true });
+    setTimeout(() => {
+      setErrorMessage({ show: false });
+    }, 5000);
+  };
+
+  const showWarningMessage = (message) => {
+    setErrorMessage({ variant: Warning, messages: message, show: true });
+    setTimeout(() => {
+      setErrorMessage({ show: false });
+    }, 5000);
+  };
+
   return (
     <MessageContext.Provider
       value={{
         errorMessage,
-        showErrorMessage,
         bannerCloseHandle,
+        showErrorMessage,
+        showInfoMessage,
+        showWarningMessage,
         showSuccessMessage,
       }}
     >

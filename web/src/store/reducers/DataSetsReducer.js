@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 /* eslint-disable camelcase */
 /* eslint-disable eqeqeq */
 import produce from "immer";
@@ -9,6 +10,9 @@ import {
   STORE_DATASET_SUCCESS,
   STORE_DATASET_FAILURE,
   FETCH_DATAKIND_FAILURE,
+  GET_DATASET_COLUMNS,
+  FETCH_DATASET_COLUMNS_SUCCESS,
+  FETCH_DATASET_COLUMNS_FAILURE,
   SAVE_DATASET_COLUMNS,
   STORE_DATASET_COLUMNS_SUCCESS,
   STORE_DATASET_COLUMNS_FAILURE,
@@ -18,9 +22,6 @@ import {
   UPDATE_DATASET_SUCCESS,
   UPDATE_DATASET_FAILURE,
   UPDATE_DATASET_DATA,
-  GET_DATASET_COLUMNS,
-  FETCH_DATASET_COLUMNS_SUCCESS,
-  FETCH_DATASET_COLUMNS_FAILURE,
   GET_VLC_RULES,
   FETCH_VLC_RULES_SUCCESS,
   FETCH_VLC_RULES_FAILURE,
@@ -37,7 +38,8 @@ import {
 
 export const initialState = {
   loading: false,
-  createTriggered: false,
+  isDatasetCreated: false,
+  isColumnsConfigured: false,
   datasetColumns: [],
   datasetDetail: {},
   formDataSQL: {
@@ -92,7 +94,7 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case STORE_DATASET_SUCCESS:
         newState.loading = false;
-        newState.createTriggered = !state.createTriggered;
+        newState.isDatasetCreated = !state.isDatasetCreated;
         newState.selectedDataset = action.dataset;
         break;
       case STORE_DATASET_FAILURE:
@@ -109,12 +111,14 @@ const DataFlowReducer = (state = initialState, action) =>
       case STORE_DATASET_COLUMNS_SUCCESS:
         newState.loading = false;
         newState.datasetColumns = action.datasetColumns;
+        newState.isColumnsConfigured =
+          action.datasetColumns.length > 0 ? true : false;
         newState.error = null;
-        newState.sucessMsg = "Dataset Columns created succesfully";
         break;
       case STORE_DATASET_COLUMNS_FAILURE:
         newState.loading = false;
         newState.sucessMsg = null;
+        newState.isColumnsConfigured = false;
         newState.error = action.message;
         break;
       case UPDATE_DATASET_SUCCESS:
@@ -183,9 +187,7 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case FETCH_DATASET_DETAIL_SUCCESS:
         newState.loading = false;
-        // eslint-disable-next-line no-case-declarations
         const { datasetDetail } = action;
-        // eslint-disable-next-line no-case-declarations
         const {
           type,
           mnemonic,
