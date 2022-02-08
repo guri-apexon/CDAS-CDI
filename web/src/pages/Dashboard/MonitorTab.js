@@ -79,11 +79,17 @@ export default function MonitorTab({ fetchLatestData }) {
         onChange={handleChange}
         style={{ marginRight: 21 }}
       />
-      <Button icon={<DownloadIcon />} size="small" style={{ marginRight: 16 }}>
+      <Button
+        id="downloadBtn"
+        icon={<DownloadIcon />}
+        size="small"
+        style={{ marginRight: 16 }}
+      >
         Download
       </Button>
       <Button
         size="small"
+        id="filterBtn"
         variant="secondary"
         icon={FilterIcon}
         onClick={toggleFilters}
@@ -126,7 +132,7 @@ export default function MonitorTab({ fetchLatestData }) {
                 className="conter-icon failureIcon"
                 style={{ fill: "#000000" }}
               />
-              <Typography variant="h1" darkMode>
+              <Typography variant="h1" darkMode id="failed_loads_count">
                 {summary.failed_loads}
               </Typography>
             </div>
@@ -148,7 +154,7 @@ export default function MonitorTab({ fetchLatestData }) {
           <div className="dashInfo">
             <div className="dashCounter">
               <StatusNegativeIcon className="conter-icon" />
-              <Typography variant="h1" darkMode>
+              <Typography variant="h1" darkMode id="quarantined_files_count">
                 {summary.quarantined_files}
               </Typography>
             </div>
@@ -170,7 +176,7 @@ export default function MonitorTab({ fetchLatestData }) {
           <div className="dashInfo">
             <div className="dashCounter">
               <SwapVertIcon className="conter-icon" />
-              <Typography variant="h1" darkMode>
+              <Typography variant="h1" darkMode id="files_exceeding_count">
                 {summary.files_exceeding}
               </Typography>
             </div>
@@ -192,7 +198,7 @@ export default function MonitorTab({ fetchLatestData }) {
           <div className="dashInfo">
             <div className="dashCounter">
               <IssueIcon className="conter-icon" style={{ fill: "#000000" }} />
-              <Typography variant="h1" darkMode>
+              <Typography variant="h1" darkMode id="fileswith_issues_count">
                 {summary.fileswith_issues}
               </Typography>
             </div>
@@ -214,7 +220,7 @@ export default function MonitorTab({ fetchLatestData }) {
           <div className="dashInfo">
             <div className="dashCounter">
               <StaleIcon className="conter-icon" />
-              <Typography variant="h1" darkMode>
+              <Typography variant="h1" darkMode id="stale_datasets_count">
                 {summary.stale_datasets}
               </Typography>
             </div>
