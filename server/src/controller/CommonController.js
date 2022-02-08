@@ -3,7 +3,8 @@ const moment = require("moment");
 const crypto = require("crypto");
 const cron = require("node-cron");
 const { cronHardDelete } = require("./DataflowController");
-const constants = require('../config/constants');
+const constants = require("../config/constants");
+const { DB_SCHEMA_NAME: schemaName } = constants;
 
 cron.schedule("*/30 * * * *", () => {
   console.log("running a task every 30 minute");
@@ -76,13 +77,13 @@ module.exports = {
             old_val,
             new_val,
           ];
-          DB.executeQuery(addAuditLogQuery, auditValues).then(
-            async (response) => {
+          DB.executeQuery(addAuditLogQuery, auditValues)
+            .then(async (response) => {
               resolve(version);
-            }
-          ).catch((err)=>{
-            resolve(version);
-          });
+            })
+            .catch((err) => {
+              resolve(version);
+            });
         });
       });
     });
