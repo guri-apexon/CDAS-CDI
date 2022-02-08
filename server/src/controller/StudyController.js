@@ -231,6 +231,7 @@ SELECT * FROM
   ) x 
 WHERE latest = 1 
 )
+,columnDef as ( select count(c.columnid) as columncount, c.datasetid from cdascfg.columndefinition c inner join cteTrnx on cteTrnx.datasetid = c.datasetid group by c.datasetid)
 --select the data for a selected study		
 select 
 cteTrnx.externalid ,
@@ -291,7 +292,8 @@ cteTrnx.childstatus,
 cteTrnx.errmsg ,
 ctefile.filestagedate AS lastFileTransferred ,
 CASE WHEN dp.NOPACKAGECONFIG = 0 THEN cteFile.packagename END AS packagename ,
-CASE WHEN df.connectiontype NOT IN ('SFTP','FTPS') THEN ds.name ELSE cteFile.filename END AS filename
+CASE WHEN df.connectiontype NOT IN ('SFTP','FTPS') THEN ds.name ELSE cteFile.filename END AS filename,
+case when (ds.incremental = 'true' or ds.incremental = 'Y') or columnDef.columncount > 0 then 'Incremental' else 'Full' end as loadType
 FROM protocol p
 INNER JOIN
 ${constants.DB_SCHEMA_NAME}.dataflow df
@@ -321,6 +323,8 @@ LEFT JOIN cteFile
 	AND cteTrnx.executionid = cteFile.executionid
 	AND cteTrnx.datapackageid = cteFile.datapackageid
 	AND cteTrnx.datasetid = cteFile.datasetid
+LEFT JOIN columnDef 
+	ON cteTrnx.datasetid = columnDef.datasetid
 where p.prot_id = $1 ${where}`;
     DB.executeQuery(searchQuery, [prot_id]).then((response) => {
       const datasets = response.rows || [];
