@@ -5,12 +5,16 @@ import Typography from "apollo-react/components/Typography";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import { useDispatch, useSelector } from "react-redux";
-import { getFlowDetailsOfStudy } from "../../store/actions/DashboardAction";
+import {
+  getFlowDetailsOfStudy,
+  getDatasetIngestionOfStudy,
+} from "../../store/actions/DashboardAction";
 // import PageHeader from "../../components/DataFlow/PageHeader";
 import LeftPanel from "./LeftPanel";
 import "./Dashboard.scss";
 
 import DataflowTab from "./DataflowTab";
+import MonitorTab from "./MonitorTab";
 
 const styles = {
   rightPanel: {
@@ -41,7 +45,7 @@ const styles = {
 
 const Dashboard = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
-  const [value, setValue] = useState(1);
+  const [value, setValue] = useState(0);
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -65,11 +69,27 @@ const Dashboard = () => {
     dispatch(getFlowDetailsOfStudy(dashboard.selectedCard.prot_id));
   };
 
+  const fetchLatestData = (control = "", activeOnly = "") => {
+    if (dashboard?.selectedCard?.prot_id) {
+      dispatch(
+        getDatasetIngestionOfStudy(
+          dashboard.selectedCard.prot_id,
+          control,
+          activeOnly
+        )
+      );
+    }
+  };
+
   useEffect(() => {
     if (dashboard?.selectedCard?.prot_id) {
       updateData();
     }
   }, [dashboard.selectedCard]);
+
+  useEffect(() => {
+    dispatch(getDatasetIngestionOfStudy("a020E000005Szl0QAC"));
+  }, []);
 
   return (
     <>
@@ -107,11 +127,7 @@ const Dashboard = () => {
             </div>
 
             <div style={{ padding: 20 }}>
-              {value === 0 && (
-                <>
-                  <Typography variant="body2"> Monitor page content</Typography>
-                </>
-              )}
+              {value === 0 && <MonitorTab fetchLatestData={fetchLatestData} />}
               {value === 1 && <DataflowTab updateData={updateData} />}
             </div>
           </main>
