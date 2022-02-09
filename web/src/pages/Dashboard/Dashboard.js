@@ -87,9 +87,9 @@ const Dashboard = () => {
     }
   }, [dashboard.selectedCard]);
 
-  useEffect(() => {
-    dispatch(getDatasetIngestionOfStudy("a020E000005Szl0QAC"));
-  }, []);
+  // useEffect(() => {
+  //   dispatch(getDatasetIngestionOfStudy("a020E000005Szl0QAC"));
+  // }, []);
 
   return (
     <>
