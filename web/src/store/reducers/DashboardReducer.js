@@ -24,9 +24,9 @@ export const initialState = {
     protocolnumber: "",
     protocolstatus: "",
     sponsorname: "",
-    vendors: "",
-    dataFlows: "",
-    dataSets: "",
+    vCount: "",
+    dfCount: "",
+    dsCount: "",
   },
 };
 
