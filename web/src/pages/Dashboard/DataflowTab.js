@@ -2,7 +2,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 import { useHistory } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import Table, {
   dateFilterV2,
@@ -118,6 +118,7 @@ export default function DataflowTab({ updateData }) {
   const [totalRows, setTotalRows] = useState(0);
   const [rowData, setRowData] = useState([]);
   const history = useHistory();
+  const dispatch = useDispatch();
   const dashboard = useSelector((state) => state.dashboard);
 
   const [expandedRows, setExpandedRows] = useState([]);
@@ -204,7 +205,7 @@ export default function DataflowTab({ updateData }) {
   };
 
   const handleLink = (dataFlowId) => {
-    updateSelectedDataflow(dataFlowId);
+    dispatch(updateSelectedDataflow(dataFlowId));
     history.push("/dataflow-management");
   };
 
