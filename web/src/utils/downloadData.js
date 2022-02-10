@@ -34,3 +34,33 @@ export default function exportToCSVWithoutFilter(
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
   XLSX.writeFile(wb, fileName);
 }
+
+export const downloadTemplate = () => {
+  const headers = {
+    protocol: "Protocol",
+    vName: "Variable Label",
+    cName: "Column Name/Designator",
+    format: "Format",
+    dType: "Data Type",
+    primay: "Primary?",
+    unique: "Unique?",
+    required: "Required?",
+    minLen: "Min length",
+    maxLen: "Max length",
+    lov: "List of values",
+  };
+
+  const exportData = [];
+  const fileName = "dataset_columns_import_template.csv";
+  const sheetName = "sheet 1";
+  const pageNo = 1;
+  const rowsPerPageRecord = 5;
+  exportToCSV(
+    exportData,
+    headers,
+    fileName,
+    sheetName,
+    pageNo,
+    rowsPerPageRecord
+  );
+};
