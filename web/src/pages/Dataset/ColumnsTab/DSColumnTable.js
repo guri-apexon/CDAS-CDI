@@ -16,7 +16,7 @@ import {
   CustomHeader,
   columns,
 } from "./DSCTableHelper";
-
+import { downloadTemplate } from "../../../utils/downloadData";
 import { createDatasetColumns } from "../../../store/actions/DataSetsAction";
 
 export default function DSColumnTable({
@@ -171,9 +171,9 @@ export default function DSColumnTable({
     }
   };
 
-  const downloadTemplate = () => {
-    console.log("Download Template");
-  };
+  // const downloadTemp = () => {
+  //   console.log("Download Template");
+  // };
 
   const downloadTable = () => {
     console.log("Download Table");

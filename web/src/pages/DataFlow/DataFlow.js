@@ -121,11 +121,11 @@ const DataFlow = ({ FormValues, dashboard }) => {
     history.push("/dashboard");
   };
 
-  useEffect(() => {
-    if (!dashboard?.selectedCard?.prot_id) {
-      history.push("/dashboard");
-    }
-  }, [dashboard?.selectedCard]);
+  // useEffect(() => {
+  //   if (!dashboard?.selectedCard?.prot_id) {
+  //     history.push("/dashboard");
+  //   }
+  // }, [dashboard?.selectedCard]);
 
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;

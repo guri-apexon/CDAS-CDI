@@ -1,9 +1,11 @@
+/* eslint-disable react/button-has-type */
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Panel from "apollo-react/components/Panel";
 import Typography from "apollo-react/components/Typography";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
+import { Link } from "apollo-react/components/Link";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getFlowDetailsOfStudy,
@@ -12,6 +14,8 @@ import {
 // import PageHeader from "../../components/DataFlow/PageHeader";
 import LeftPanel from "./LeftPanel";
 import "./Dashboard.scss";
+
+// import { downloadTemplate } from "../../utils/downloadData";
 
 import DataflowTab from "./DataflowTab";
 import MonitorTab from "./MonitorTab";
@@ -45,7 +49,7 @@ const styles = {
 
 const Dashboard = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(1);
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -119,6 +123,11 @@ const Dashboard = () => {
               >
                 Ingestion Dashboard
               </Typography>
+
+              {/* <div>
+                <button onClick={downloadTemplate}>export template</button>
+              </div> */}
+
               <Tabs value={value} onChange={handleChangeTab} truncate>
                 <Tab label="Monitor" />
                 <Tab label="Data Flows" />
