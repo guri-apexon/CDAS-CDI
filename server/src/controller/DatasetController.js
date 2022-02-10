@@ -1,6 +1,6 @@
 const DB = require("../config/db");
 const oracleDB = require("../config/oracleDB");
-const jdbc = require("../config/jdbc");
+const jdbc = require("../config/JDBC");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
@@ -287,22 +287,14 @@ exports.previewSql = async (req, res) => {
     if (locationType === _locationType) {
       if (customQuery === "YES") {
         //get connection
-        let newConn = await jdbc(
+        let q = `${customSql} LIMIT ${recordsCount}`;
+        await jdbc(
           connectionUserName,
           connectionPassword,
           connectionUrl,
-          driverName
-        );
-        //form query
-        let q = `{customQuery} LIMIT ${recordsCount}`;
-        let result = await newConn.query(q);
-        //execute query
-        responseBody.queryExecutionStatus = "SUCCESS";
-        responseBody.queryData = result;
-        return apiResponse.successResponseWithData(
-          res,
-          "query executed successfully.",
-          responseBody
+          driverName,
+          q,
+          res
         );
       } else {
         return apiResponse.ErrorResponse(res, "Custom query is not true");
