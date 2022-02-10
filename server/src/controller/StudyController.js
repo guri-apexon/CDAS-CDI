@@ -10,7 +10,8 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 exports.getUserStudyList = function (req, res) {
   try {
     const userId = req.params.userId;
-    const query = `SELECT distinct s.prot_id, prot_nbr as protocolnumber, s2.spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${schemaName}.study s INNER JOIN ${schemaName}.study_sponsor ss on s.prot_id = ss.prot_id INNER JOIN ${schemaName}.sponsor s2 ON s2.spnsr_id = ss.spnsr_id INNER JOIN ${schemaName}.study_user s3 ON s.prot_id = s3.prot_id  WHERE s3.usr_id = $1 ORDER BY sponsorname Limit 10`;
+    const query = `SELECT distinct s.prot_id, prot_nbr as protocolnumber, s2.spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${schemaName}.study s INNER JOIN ${schemaName}.study_sponsor ss on s.prot_id = ss.prot_id INNER JOIN ${schemaName}.sponsor s2 ON s2.spnsr_id = ss.spnsr_id INNER JOIN ${schemaName}.study_user s3 ON s.prot_id = s3.prot_id WHERE s3.usr_id = $1 AND s3.act_flg = 1 ORDER BY sponsorname Limit 10`;
+
     // const q2 = `select dataflowid, COUNT(DISTINCT datapackageid) FROM ${schemaName}.datapackage d GROUP BY d.dataflowid`
     // const q3 = `select datapackageid, COUNT(DISTINCT datasetid) FROM ${schemaName}.dataset d GROUP BY datapackageid`
 
