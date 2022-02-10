@@ -14,7 +14,6 @@ import TextField from "apollo-react/components/TextField";
 import PasswordInput from "apollo-react/components/PasswordInput";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
-import Grid from "apollo-react/components/Grid";
 import Panel from "apollo-react/components/Panel";
 import { makeStyles } from "@material-ui/core/styles";
 // import CssBaseline from "@material-ui/core/CssBaseline";
@@ -61,7 +60,10 @@ const DataPackages = () => {
   const [notMatchedType, setNotMatchedType] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const packageData = useSelector((state) => state.dataPackage);
+  const dashboard = useSelector((state) => state.dashboard);
   const userInfo = getUserInfo();
+
+  const { selectedDFId, selectedCard } = dashboard;
 
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -128,8 +130,8 @@ const DataPackages = () => {
       naming_convention: namingConvention,
       package_password: packagePassword,
       sftp_path: sftpPath,
-      study_id: "a020E000005SwfCQAS",
-      dataflow_id: "a0A0E000002o5kwUAA",
+      study_id: selectedCard.prot_id,
+      dataflow_id: selectedDFId,
       user_id: userInfo.user_id,
     };
     console.log("submitPackage", reqBody);

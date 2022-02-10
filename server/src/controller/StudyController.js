@@ -206,7 +206,7 @@ ts.externalid,
 COALESCE(ts.downloadtrnx,0) as downloadtrnx,
 cps.STATUS AS childstatus,
 cps.ERRMSG as errmsg,
-ROW_NUMBER () OVER (PARTITION BY ts.dataflowid,	ts.datapackageid,ts.datasetid
+ROW_NUMBER () OVER (PARTITION BY ts.dataflowid, ts.datapackageid,ts.datasetid
 ORDER BY ts.executionid DESC) AS latest
 FROM protocol prot
 LEFT JOIN ${schemaName}.transaction_summary ts
@@ -217,7 +217,7 @@ where latest<=2
 ) x WHERE latest = 1 
 ) 
 ,checkSum as ( select case when current_timestamp > to_timestamp(cast(lastmodifiedtime as numeric)/1000) then date_part('day',current_timestamp - to_timestamp(cast(lastmodifiedtime as numeric)/1000)) else -1
-					end as no_of_staledays, lastmodifiedtime as file_timestamp, dc2.executionid from ${schemaName}.datapackage_checksum dc2 inner join cteTrnx on cteTrnx.dataflowid = dc2.dataflowid and cteTrnx.datapackageid = dc2.datapackageid and cteTrnx.executionid = dc2.executionid limit 1)
+          end as no_of_staledays, lastmodifiedtime as file_timestamp, dc2.executionid from ${schemaName}.datapackage_checksum dc2 inner join cteTrnx on cteTrnx.dataflowid = dc2.dataflowid and cteTrnx.datapackageid = dc2.datapackageid and cteTrnx.executionid = dc2.executionid limit 1)
 ,cteFile AS -- get the latest file name
 (
 SELECT * FROM
@@ -245,7 +245,7 @@ SELECT * FROM
 WHERE latest = 1 
 )
 ,columnDef as ( select count(c.columnid) as columncount, c.datasetid from ${schemaName}.columndefinition c inner join cteTrnx on cteTrnx.datasetid = c.datasetid group by c.datasetid)
---select the data for a selected study		
+--select the data for a selected study  
 select 
 cteTrnx.externalid ,
 cteTrnx.executionid,
@@ -262,7 +262,7 @@ dp.type pacakagetype,
 dp.path packagepath,
 dp.name AS packagenamingconvention ,
 ds.datakindid AS ClinicalDataTypeId ,
-vn.vend_nm_stnd as clinicalDataTypeName,
+vn.name as clinicalDataTypeName,
 df.vend_id as vendorsourceid,
 vn1.vend_nm_stnd as vendorsource,
 ds.TYPE FileType,
@@ -272,7 +272,7 @@ ds.rowdecreaseallowed ,
 ds.testflag AS testdataflow ,
 ds.staledays AS overridestalealert ,
 df.connectiontype ,
-df.connectiondriver,	
+df.connectiondriver,      
 ts.mnemonicfile,
 ts.processtype,
 ts.downloadstatus,
@@ -315,12 +315,12 @@ INNER JOIN ${schemaName}.datapackage dp
 ON df.dataflowid = dp.dataflowid
 INNER JOIN ${schemaName}.dataset ds
 ON dp.datapackageid = ds.datapackageid 
-INNER JOIN ${schemaName}.vendor vn
-ON vn.vend_id = ds.datakindid 
+INNER JOIN ${schemaName}.datakind vn
+ON vn.datakindid = ds.datakindid 
 INNER JOIN ${schemaName}.vendor vn1
 ON vn1.vend_id = df.vend_id 
 INNER JOIN cteTrnx 
-ON 	cteTrnx.dataflowid = df.dataflowid
+ON cteTrnx.dataflowid = df.dataflowid
 AND cteTrnx.datapackageid = dp.datapackageid
 AND cteTrnx.datasetid = ds.datasetid
 INNER JOIN ${schemaName}.transaction_summary ts 
@@ -332,12 +332,12 @@ AND ctetrnx.datasetid = ts.datasetid
 left join checkSum dc 
 on cteTrnx.executionid = dc.executionid
 LEFT JOIN cteFile 
-	ON cteTrnx.dataflowid = cteFile.dataflowid
-	AND cteTrnx.executionid = cteFile.executionid
-	AND cteTrnx.datapackageid = cteFile.datapackageid
-	AND cteTrnx.datasetid = cteFile.datasetid
+  ON cteTrnx.dataflowid = cteFile.dataflowid
+  AND cteTrnx.executionid = cteFile.executionid
+  AND cteTrnx.datapackageid = cteFile.datapackageid
+  AND cteTrnx.datasetid = cteFile.datasetid
 LEFT JOIN columnDef 
-	ON cteTrnx.datasetid = columnDef.datasetid
+  ON cteTrnx.datasetid = columnDef.datasetid
 where p.prot_id = $1 ${where}`;
     DB.executeQuery(searchQuery, [prot_id]).then((response) => {
       const datasets = response.rows || [];
