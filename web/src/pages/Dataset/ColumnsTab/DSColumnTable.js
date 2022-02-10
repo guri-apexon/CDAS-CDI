@@ -3,19 +3,12 @@
 import React, { useState, useContext, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Table from "apollo-react/components/Table";
-import { Typography } from "@material-ui/core";
 import TextField from "apollo-react/components/TextField";
 import Link from "apollo-react/components/Link";
 import Modal from "apollo-react/components/Modal";
 
 import { MessageContext } from "../../../components/Providers/MessageProvider";
-import {
-  makeEditableSelectCell,
-  NumericEditableCell,
-  EditableCell,
-  CustomHeader,
-  columns,
-} from "./DSCTableHelper";
+import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../utils/downloadData";
 import { createDatasetColumns } from "../../../store/actions/DataSetsAction";
 
@@ -51,7 +44,7 @@ export default function DSColumnTable({
   const [rows, setRows] = useState(initialRows);
   const [editedRows, setEditedRows] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
-  const [searchValue, setSearchValue] = useState(null);
+  const [searchValue, setSearchValue] = useState("");
   const [rowErr, setRowErr] = useState({});
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
@@ -125,6 +118,7 @@ export default function DSColumnTable({
         },
       ]);
       setSelectedRows([...selectedRows, `u${rows.length}`]);
+      setEditedRows([...rows]);
     } else {
       messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
     }
@@ -163,7 +157,10 @@ export default function DSColumnTable({
         })
       );
       setRows((rw) => [...rw, ...multiRows]);
-      setEditedRows([...rows]);
+      const moreRows = multiRows.map((e) => e.uniqueId);
+      setSelectedRows([...moreRows]);
+      setEditedRows(multiRows);
+      // setEditedRows([...rows]);
       setNewRows("");
       // const selected = multiRows.map((d) => d.uniqueId);
       // setSelectedRows([...selectedRows, selected]);
@@ -211,46 +208,6 @@ export default function DSColumnTable({
   ];
 
   const columnsToAdd = [
-    {
-      header: "Format",
-      accessor: "format",
-      customCell: EditableCell,
-    },
-    {
-      header: "Data Type",
-      accessor: "dataType",
-      customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
-    },
-    {
-      header: "Primary?",
-      accessor: "primary",
-      customCell: makeEditableSelectCell(["Yes", "No"]),
-    },
-    {
-      header: "Unique?",
-      accessor: "unique",
-      customCell: makeEditableSelectCell(["Yes", "No"]),
-    },
-    {
-      header: "Required?",
-      accessor: "required",
-      customCell: makeEditableSelectCell(["Yes", "No"]),
-    },
-    {
-      header: "Min length",
-      accessor: "minLength",
-      customCell: NumericEditableCell,
-    },
-    {
-      header: "Max length",
-      accessor: "maxLength",
-      customCell: NumericEditableCell,
-    },
-    {
-      header: "List of values",
-      accessor: "values",
-      customCell: EditableCell,
-    },
     {
       header: "",
       accessor: "uniqueId",
@@ -382,6 +339,7 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
+        {console.log(editMode, selectedRow, editedRows, rows)}
         <Table
           title="Dataset Column Settings"
           subtitle={`${

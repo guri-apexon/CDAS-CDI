@@ -194,6 +194,46 @@ export const columns = [
     customCell: EditableCell,
   },
   {
+    header: "Format",
+    accessor: "format",
+    customCell: EditableCell,
+  },
+  {
+    header: "Data Type",
+    accessor: "dataType",
+    customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
+  },
+  {
+    header: "Primary?",
+    accessor: "primary",
+    customCell: makeEditableSelectCell(["Yes", "No"]),
+  },
+  {
+    header: "Unique?",
+    accessor: "unique",
+    customCell: makeEditableSelectCell(["Yes", "No"]),
+  },
+  {
+    header: "Required?",
+    accessor: "required",
+    customCell: makeEditableSelectCell(["Yes", "No"]),
+  },
+  {
+    header: "Min length",
+    accessor: "minLength",
+    customCell: NumericEditableCell,
+  },
+  {
+    header: "Max length",
+    accessor: "maxLength",
+    customCell: NumericEditableCell,
+  },
+  {
+    header: "List of values",
+    accessor: "values",
+    customCell: EditableCell,
+  },
+  {
     accessor: "action",
     customCell: ActionCell,
     align: "right",
@@ -276,13 +316,14 @@ export const CustomHeader = ({
         </>
       )}
       {(locationType?.toLowerCase() === "sftp" ||
-        locationType?.toLowerCase() === "ftps") && (
-        <Tooltip title="Import dataset column settings" disableFocusListener>
-          <IconButton color="primary" size="small" disabled={isEditAll}>
-            <Upload />
-          </IconButton>
-        </Tooltip>
-      )}
+        locationType?.toLowerCase() === "ftps") &&
+        isEditAll && (
+          <Tooltip title="Import dataset column settings" disableFocusListener>
+            <IconButton color="primary" size="small">
+              <Upload />
+            </IconButton>
+          </Tooltip>
+        )}
       <Divider
         orientation="vertical"
         flexItem
