@@ -5,17 +5,18 @@ const moment = require("moment");
 const CommonController = require("./CommonController");
 const constants = require("../config/constants");
 const helper = require("../helpers/customFunctions");
+const { DB_SCHEMA_NAME: schemaName } = constants;
 
 exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
-    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${constants.DB_SCHEMA_NAME}.datapackage 
+    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage 
             WHERE del_flg = 'N' order by updt_tm desc`;
     if (searchParam) {
-      searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${constants.DB_SCHEMA_NAME}.datapackage 
+      searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage 
       WHERE LOWER(name) LIKE '%${searchParam}%' AND del_flg = 'N' order by updt_tm desc`;
     }
-    const datasetQuery = `SELECT datasetid, mnemonic, active, type from ${constants.DB_SCHEMA_NAME}.dataset where datapackageid = $1`;
+    const datasetQuery = `SELECT datasetid, mnemonic, active, type from ${schemaName}.dataset where datapackageid = $1`;
     Logger.info({
       message: "packagesList",
     });
@@ -69,19 +70,19 @@ exports.addPackage = function (req, res) {
       naming_convention,
       sftp_path,
       package_password,
-      '1',
+      "1",
       currentTime,
       currentTime,
       "N",
     ];
-    const query = `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(datapackageid, dataflowid, type, name, path, password, active, insrt_tm, updt_tm, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`;
+    const query = `INSERT INTO ${schemaName}.datapackage(datapackageid, dataflowid, type, name, path, password, active, insrt_tm, updt_tm, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`;
 
-    DB.executeQuery(query, insertValues).then( async(response) => {
+    DB.executeQuery(query, insertValues).then(async (response) => {
       const package = response.rows[0] || [];
       const historyVersion = await CommonController.addHistory(
         package,
         user_id,
-        "New Package",
+        "New Package"
       );
       if (!historyVersion) throw new Error("History not updated");
       return apiResponse.successResponseWithData(
@@ -98,7 +99,7 @@ exports.addPackage = function (req, res) {
 exports.changeStatus = function (req, res) {
   try {
     const { active, package_id, user_id } = req.body;
-    const query = `UPDATE ${constants.DB_SCHEMA_NAME}.datapackage
+    const query = `UPDATE ${schemaName}.datapackage
     SET active = ${active}
     WHERE datapackageid = '${package_id}' RETURNING *`;
 
@@ -127,7 +128,7 @@ exports.changeStatus = function (req, res) {
 exports.deletePackage = function (req, res) {
   try {
     const { active, package_id, user_id } = req.body;
-    const query = `UPDATE ${constants.DB_SCHEMA_NAME}.datapackage
+    const query = `UPDATE ${schemaName}.datapackage
     SET del_flg = 'Y'
     WHERE datapackageid = '${package_id}' RETURNING *`;
     DB.executeQuery(query).then(async (response) => {

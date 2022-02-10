@@ -37,21 +37,14 @@ import {
   syncNowDataFlow,
 } from "../../services/ApiServices";
 
+import { updateSelectedDataflow } from "../../store/actions/DashboardAction";
+
 import {
   createAutocompleteFilter,
   IntegerFilter,
   createStringArraySearchFilter,
   DateFilter,
 } from "../../utils/index";
-
-const LinkCell = ({ row, column: { accessor } }) => {
-  const rowValue = row[accessor];
-  return (
-    <Link onClick={() => console.log(`link clicked ${rowValue}`)}>
-      {rowValue}
-    </Link>
-  );
-};
 
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
@@ -208,6 +201,17 @@ export default function DataflowTab({ updateData }) {
       await inActivateDF(e.dataFlowId, e.version);
       await updateData();
     }
+  };
+
+  const handleLink = (dataFlowId) => {
+    updateSelectedDataflow(dataFlowId);
+    history.push("/dataflow-management");
+  };
+
+  const LinkCell = ({ row, column: { accessor } }) => {
+    const rowValue = row[accessor];
+    const { dataFlowId } = row;
+    return <Link onClick={() => handleLink(dataFlowId)}>{rowValue}</Link>;
   };
 
   const ActionCell = ({ row }) => {
