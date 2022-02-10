@@ -74,14 +74,21 @@ const LeftPanel = () => {
   const [searchTxt, setSearchTxt] = useState("");
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlowData = useSelector((state) => state.dataFlow);
+  const dashboard = useSelector((state) => state.dashboard);
   const { description, selectedVendor, dataflowType, loading } = dataFlowData;
   const userInfo = getUserInfo();
   const location = useLocation();
+  // const { selectedDFId, selectedCard } = dashboard;
   const viewAuditLog = () => {
     history.push("/audit-logs");
   };
   const getPackages = (query = "") => {
-    dispatch(getPackagesList(query));
+    console.log("selectedDFId", dataFlowData, dashboard);
+    // if (selectedDFId) {
+    //   dispatch(getPackagesList(selectedDFId, query));
+    // } else {
+    //   // history.push("dashboard");
+    // }
   };
   useEffect(() => {
     getPackages();

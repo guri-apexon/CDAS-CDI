@@ -7,9 +7,10 @@ import {
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
-export const getPackagesList = (searchQuery = "") => {
+export const getPackagesList = (dfId, searchQuery = "") => {
   return {
     type: PACKAGES_LIST,
+    dfId,
     searchQuery,
   };
 };

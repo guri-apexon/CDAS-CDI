@@ -10,11 +10,11 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
-    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage 
-            WHERE del_flg = 'N' order by updt_tm desc`;
+    const {dataflowId} = req.params;
+    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage WHERE dataflowid=${dataflowId};`;
     if (searchParam) {
       searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage 
-      WHERE LOWER(name) LIKE '%${searchParam}%' AND del_flg = 'N' order by updt_tm desc`;
+      WHERE LOWER(name) LIKE '%${searchParam}%' and dataflowid=${dataflowId};`;
     }
     const datasetQuery = `SELECT datasetid, mnemonic, active, type from ${schemaName}.dataset where datapackageid = $1`;
     Logger.info({
@@ -71,11 +71,9 @@ exports.addPackage = function (req, res) {
       sftp_path,
       package_password,
       "1",
-      currentTime,
-      currentTime,
       "N",
     ];
-    const query = `INSERT INTO ${schemaName}.datapackage(datapackageid, dataflowid, type, name, path, password, active, insrt_tm, updt_tm, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`;
+    const query = `INSERT INTO ${schemaName}.datapackage(datapackageid, dataflowid, type, name, path, password, active, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
 
     DB.executeQuery(query, insertValues).then(async (response) => {
       const package = response.rows[0] || [];

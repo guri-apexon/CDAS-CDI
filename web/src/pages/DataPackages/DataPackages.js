@@ -134,7 +134,6 @@ const DataPackages = () => {
       dataflow_id: selectedDFId,
       user_id: userInfo.user_id,
     };
-    console.log("submitPackage", reqBody);
     dispatch(addDataPackage(reqBody));
   };
 
