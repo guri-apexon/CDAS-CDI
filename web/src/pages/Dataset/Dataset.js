@@ -65,6 +65,7 @@ const Dataset = () => {
   const messageContext = useContext(MessageContext);
   const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
+  const dashboard = useSelector((state) => state.dashboard);
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
@@ -104,8 +105,8 @@ const Dataset = () => {
   }, [isDatasetCreated]);
 
   useEffect(() => {
-    if (Object.keys(selectedDSDetails).length === 0) {
-      history.push("/dataflow-management");
+    if (dashboard.selectedDFId === "") {
+      history.push("/dashboard");
     }
     dispatch(getDataKindData());
   }, []);
