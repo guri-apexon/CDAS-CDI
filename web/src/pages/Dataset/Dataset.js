@@ -69,6 +69,7 @@ const Dataset = () => {
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
+  const { selectedDFId } = dashboard;
   const { dataflowid, datasetid } = selectedDSDetails;
   const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
     dataSets;
@@ -105,17 +106,17 @@ const Dataset = () => {
   }, [isDatasetCreated]);
 
   useEffect(() => {
-    if (dashboard.selectedDFId === "") {
+    if (selectedDFId === "") {
       history.push("/dashboard");
     }
     dispatch(getDataKindData());
   }, []);
 
   useEffect(() => {
-    if (dataflowid) {
-      dispatch(getDataFlowDetail(dataflowid));
+    if (selectedDFId) {
+      dispatch(getDataFlowDetail(selectedDFId));
     }
-  }, [dataflowid]);
+  }, [selectedDFId]);
 
   useEffect(() => {
     if (datasetid) {

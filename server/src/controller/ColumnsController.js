@@ -57,23 +57,7 @@ exports.saveDatasetColumns = async (req, res) => {
         new Date(),
         new Date(),
       ];
-      const inserted = await DB.executeQuery(insertQuery, body)
-        .then(() => {
-          const hisBody = [columnId + 1, 1, ...body];
-          const hisQuery = `INSERT into ${schemaName}.columndefinition_history (col_def_version_id,version, columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;
-          return DB.executeQuery(hisQuery, hisBody)
-            .then(() => {
-              return "SUCCESS";
-            })
-            .catch((err) => {
-              console.log("innser err", err);
-              return err.message;
-            });
-        })
-        .catch((err) => {
-          console.log("outer err", err);
-          return err.message;
-        });
+      const inserted = await DB.executeQuery(insertQuery, body);
       return inserted;
     });
     Promise.all(inserted).then((response) => {
