@@ -1,6 +1,5 @@
 /* eslint-disable no-script-url */
 import React, { useState, useContext, useEffect } from "react";
-import { Route, Switch, Redirect } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -207,14 +206,14 @@ const Dataset = () => {
     history.push("/dashboard");
   };
 
-  const getLeftPanel = React.useMemo(
-    () => (
-      <>
-        <LeftPanel />
-      </>
-    ),
-    []
-  );
+  // const getLeftPanel = React.useMemo(
+  //   () => (
+  //     <>
+  //       <LeftPanel />
+  //     </>
+  //   ),
+  //   []
+  // );
 
   const locationChange = () => {
     messageContext.showErrorMessage(
@@ -251,7 +250,7 @@ const Dataset = () => {
           open={isPanelOpen}
           width={446}
         >
-          {getLeftPanel}
+          {/* {getLeftPanel} */}
         </Panel>
         <Panel
           className={

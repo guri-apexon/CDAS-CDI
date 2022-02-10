@@ -329,6 +329,7 @@ export default function DSColumnTable({
 
   const onRowEdit = (uniqueId) => {
     const editingRow = rows.find((row) => row.uniqueId === uniqueId);
+    setIsEditAll(true);
     setSelectedRows([...selectedRows, uniqueId]);
     setEditedRows([...editedRows, editingRow]);
   };
@@ -452,7 +453,12 @@ export default function DSColumnTable({
 
               {isEditLOVs ? (
                 <div className="lov-edit-mode">
-                  <TextField sizeAdjustable minWidth={300} minHeight={278} />
+                  <TextField
+                    value={selectedRow.values}
+                    sizeAdjustable
+                    minWidth={300}
+                    minHeight={278}
+                  />
                 </div>
               ) : (
                 <div className="lov-view-mode">

@@ -154,7 +154,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={isHavingError}
+        // disabled={isHavingError}
       >
         Save
       </Button>

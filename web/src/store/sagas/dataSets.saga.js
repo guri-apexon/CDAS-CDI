@@ -29,6 +29,7 @@ import {
   PREVIEWSQLAPI,
   FETCH_PREVIEW_SQL_FAILURE,
   FETCH_PREVIEW_SQL_SUCCESS,
+  COLUMNSAPI,
 } from "../../constants";
 
 export function* fetchDataKindData(action = null) {
@@ -141,7 +142,7 @@ export function* saveDatasetColumns(action) {
   try {
     const fetchSBData = yield call(
       axios.post,
-      `${baseURL}/${DATASETAPI}/${action.datasetid}/create-columns`,
+      `${baseURL}/${COLUMNSAPI}/create/${action.datasetid}`,
       action.values
     );
     // console.log("study", fetchSBData);
@@ -198,8 +199,11 @@ export function* updateDataset(action) {
 export function* fetchDatasetColumns(action) {
   try {
     const fetchSBData = yield call(
-      axios.get,
-      `${baseURL}/${DATASETAPI}/${action.datasetid}/dataset-columns`
+      axios.post,
+      `${baseURL}/${COLUMNSAPI}/list`,
+      {
+        datasetid: action.datasetid,
+      }
     );
     yield put({
       type: FETCH_DATASET_COLUMNS_SUCCESS,
