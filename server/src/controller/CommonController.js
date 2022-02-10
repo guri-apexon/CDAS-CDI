@@ -33,9 +33,8 @@ module.exports = {
         const historyVersion = response.rows[0]?.version || 0;
         const version = Number(historyVersion) + 1;
         const uniqueId = helper.createUniqueID();
-        const addHistoryQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_version(df_vers_id, dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5, $6)`;
+        const addHistoryQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
         const values = [
-          uniqueId,
           package.dataflowid,
           version,
           null,
@@ -43,9 +42,8 @@ module.exports = {
           currentTime,
         ];
         DB.executeQuery(addHistoryQuery, values).then(async (response) => {
-          const addAuditLogQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_audit_log(df_audit_log_id, dataflowid, datapackageid, audit_vers, attribute, old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+          const addAuditLogQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_audit_log(dataflowid, datapackageid, audit_vers, attribute, old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
           const auditValues = [
-            uniqueId,
             package.dataflowid,
             package.datapackageid,
             version,

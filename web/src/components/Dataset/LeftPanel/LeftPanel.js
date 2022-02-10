@@ -78,17 +78,16 @@ const LeftPanel = () => {
   const { description, selectedVendor, dataflowType, loading } = dataFlowData;
   const userInfo = getUserInfo();
   const location = useLocation();
-  // const { selectedDFId, selectedCard } = dashboard;
+  const { selectedDFId, selectedCard } = dashboard;
   const viewAuditLog = () => {
     history.push("/audit-logs");
   };
   const getPackages = (query = "") => {
-    console.log("selectedDFId", dataFlowData, dashboard);
-    // if (selectedDFId) {
-    //   dispatch(getPackagesList(selectedDFId, query));
-    // } else {
-    //   // history.push("dashboard");
-    // }
+    if (selectedDFId) {
+      dispatch(getPackagesList(selectedDFId, query));
+    } else {
+      // history.push("dashboard");
+    }
   };
   useEffect(() => {
     getPackages();
