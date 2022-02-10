@@ -294,6 +294,7 @@ exports.previewSql = async (req, res) => {
           connectionUrl,
           driverName,
           q,
+          "query executed successfully.",
           res
         );
       } else {

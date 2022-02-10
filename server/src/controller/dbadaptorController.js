@@ -1,9 +1,9 @@
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
+const jdbc = require("../config/JDBC");
 
-exports.listtables = async () => {
+exports.listtables = async (res, req) => {
   try {
-    let responseBody = {};
     let {
       locationType,
       connectionPassword,
@@ -13,20 +13,16 @@ exports.listtables = async () => {
       externalSystem,
     } = req.body;
     //get connection
-    let newConn = await sqlConnection(
+    let dbname = connectionUrl.split("/")[3];
+    let q = `select table_name as tableName from information_schema.tables where table_schema = '${dbname}'`;
+    let newConn = await jdbc(
       connectionUserName,
       connectionPassword,
       connectionUrl,
-      driverName
-    );
-
-    let q = `select tableName from information_schema.tables`;
-    let result = await newConn.query(q);
-    responseBody.tableMetadataList = result;
-    return apiResponse.successResponseWithData(
-      res,
+      driverName,
+      q,
       "Connectivity Successful",
-      responseBody
+      res
     );
   } catch (error) {
     console.log(err);
@@ -36,7 +32,7 @@ exports.listtables = async () => {
   }
 };
 
-exports.tablecolumns = async () => {
+exports.tablecolumns = async (res, req) => {
   try {
     let responseBody = {};
     let {
@@ -48,24 +44,22 @@ exports.tablecolumns = async () => {
       driverName,
       externalSystem,
     } = req.body;
-    //get connection
-    let newConn = await sqlConnection(
-      connectionUserName,
-      connectionPassword,
-      connectionUrl,
-      driverName
-    );
-    let q = `select * from information_schema.tablesSELECT *
+    let q = `SELECT COLUMN_NAME as columnName , 
+    DATA_TYPE as dataType, 
+    IS_NULLABLE as required, 
+    COLUMN_KEY as primaryKey,
+    COLUMN_KEY as unique
       FROM INFORMATION_SCHEMA.COLUMNS
       WHERE TABLE_NAME = '${tableName}'
       ORDER BY ORDINAL_POSITION`;
-    let result = await newConn.query(q);
-    responseBody.columnCount = result.length;
-    responseBody.columnInfo = result;
-    return apiResponse.successResponseWithData(
-      res,
+    let newConn = await jdbc(
+      connectionUserName,
+      connectionPassword,
+      connectionUrl,
+      driverName,
+      q,
       "Successful Execution",
-      responseBody
+      res
     );
   } catch (error) {
     console.log(err);
