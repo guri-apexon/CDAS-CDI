@@ -15,7 +15,7 @@ import {
 import LeftPanel from "./LeftPanel";
 import "./Dashboard.scss";
 
-import { downloadTemplate } from "../../utils/downloadData";
+// import { downloadTemplate } from "../../utils/downloadData";
 
 import DataflowTab from "./DataflowTab";
 import MonitorTab from "./MonitorTab";
