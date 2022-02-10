@@ -15,7 +15,7 @@ import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
 
-import { exportToCSV } from "../../../utils/downloadData";
+import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatData } from "../../../utils/index";
 
 // const DSColumnTable = lazy(() => import("./DSColumnTable"));
@@ -180,9 +180,7 @@ const ColumnsTab = ({ locationType }) => {
                 onClick={handleChange}
                 checked={selectedMethod === "fileUpload"}
               />
-              <Link onClick={() => console.log("link clicked")}>
-                Download Excel Template
-              </Link>
+              <Link onClick={downloadTemplate}>Download Excel Template</Link>
               <div className="upload-box">
                 <FileUpload
                   value={selectedFile}
