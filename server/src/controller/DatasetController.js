@@ -4,13 +4,18 @@ const jdbc = require("../config/jdbc");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
+const constants = require("../config/constants");
+const { DB_SCHEMA_NAME: schemaName } = constants;
+const columnsMock = require("../../public/mock/listColumnsAPI.json");
+const tablesMock = require("../../public/mock/listTablesAPIResponse.json");
+const previewSQLMock = require("../../public/mock/responseBodyPreviewSQL.json");
 
 async function checkNameExists(name, datasetid = null) {
   const mnemonic = name.toLowerCase();
-  let searchQuery = `SELECT mnemonic from cdascdi1d.cdascdi.dataset where LOWER(mnemonic) = $1`;
+  let searchQuery = `SELECT mnemonic from ${schemaName}.dataset where LOWER(mnemonic) = $1`;
   let dep = [mnemonic];
   if (datasetid) {
-    searchQuery = `SELECT mnemonic from cdascdi1d.cdascdi.dataset where LOWER(mnemonic) = $1 and datasetid != $2`;
+    searchQuery = `SELECT mnemonic from ${schemaName}.dataset where LOWER(mnemonic) = $1 and datasetid != $2`;
     dep = [mnemonic, datasetid];
   }
   const res = await DB.executeQuery(searchQuery, dep);
@@ -18,7 +23,7 @@ async function checkNameExists(name, datasetid = null) {
 }
 
 async function getLastVersion(datasetid) {
-  const searchQuery = `SELECT version from cdascdi1d.cdascdi.dataset_history where datasetid = $1 order by updt_tm desc limit 1`;
+  const searchQuery = `SELECT version from ${schemaName}.dataset_history where datasetid = $1 order by updt_tm desc limit 1`;
   const res = await DB.executeQuery(searchQuery, [datasetid]);
   return res.rows[0].version;
 }
@@ -37,13 +42,13 @@ async function saveSQLDataset(req, res, values, datasetId) {
       new Date(),
       values.datapackageid || null,
     ];
-    const searchQuery = `INSERT into cdascdi1d.cdascdi.dataset (datasetid, mnemonic, active, datakindid, custm_sql_query, customsql, tbl_nm, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+    const searchQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, custm_sql_query, customsql, tbl_nm, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
     Logger.info({
       message: "storeDataset",
     });
     DB.executeQuery(searchQuery, body).then(() => {
       const hisBody = [datasetId + 1, ...body, 1];
-      const hisQuery = `INSERT into cdascdi1d.cdascdi.dataset_history (dataset_vers_id,datasetid, mnemonic, active, datakindid, custm_sql_query, customsql, tbl_nm, insrt_tm, updt_tm, datapackageid, version) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+      const hisQuery = `INSERT into ${schemaName}.dataset_history (dataset_vers_id,datasetid, mnemonic, active, datakindid, custm_sql_query, customsql, tbl_nm, insrt_tm, updt_tm, datapackageid, version) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
       DB.executeQuery(hisQuery, hisBody).then(() => {
         return apiResponse.successResponseWithData(res, "Operation success", {
           ...values,
@@ -92,13 +97,13 @@ exports.saveDatasetData = async (req, res) => {
       new Date(),
       values.datapackageid || null,
     ];
-    const searchQuery = `INSERT into cdascdi1d.cdascdi.dataset (datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`;
+    const searchQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`;
     Logger.info({
       message: "storeDataset",
     });
     DB.executeQuery(searchQuery, body).then(() => {
       const hisBody = [datasetId + 1, ...body, 1];
-      const hisQuery = `INSERT into cdascdi1d.cdascdi.dataset_history (dataset_vers_id,datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, version) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
+      const hisQuery = `INSERT into ${schemaName}.dataset_history (dataset_vers_id,datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, version) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
       DB.executeQuery(hisQuery, hisBody).then(() => {
         return apiResponse.successResponseWithData(res, "Operation success", {
           ...values,
@@ -142,7 +147,7 @@ exports.updateDatasetData = async (req, res) => {
       values.rowDecreaseAllowed || 0,
       new Date(),
     ];
-    const searchQuery = `UPDATE cdascdi1d.cdascdi.dataset set mnemonic = $1, type = $2, charset = $3, delimitier = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16 where datasetid = $17`;
+    const searchQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimitier = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16 where datasetid = $17`;
     Logger.info({
       message: "storeDataset",
     });
@@ -155,7 +160,7 @@ exports.updateDatasetData = async (req, res) => {
         new Date(),
         values.datapackageid,
       ];
-      const hisQuery = `INSERT into cdascdi1d.cdascdi.dataset_history (dataset_vers_id, datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, updt_tm, version, insrt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
+      const hisQuery = `INSERT into ${schemaName}.dataset_history (dataset_vers_id, datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, updt_tm, version, insrt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
       DB.executeQuery(hisQuery, hisBody).then(() => {
         return apiResponse.successResponseWithData(
           res,
@@ -173,80 +178,25 @@ exports.updateDatasetData = async (req, res) => {
   }
 };
 
-exports.saveDatasetColumns = async (req, res) => {
-  try {
-    const datasetid = req.params.datasetid;
-    const values = req.body;
-    const inserted = await values.map(async (value) => {
-      const columnId = helper.generateUniqueID();
-      const body = [
-        columnId,
-        value.variableLabel.trim() || null,
-        datasetid,
-        value.columnName.trim() || null,
-        value.dataType.trim() || null,
-        value.primary == "Yes" ? 1 : 0,
-        value.required == "Yes" ? 1 : 0,
-        value.unique == "Yes" ? 1 : 0,
-        value.minLength.trim() || null,
-        value.maxLength.trim() || null,
-        value.position.trim() || null,
-        value.format.trim() || null,
-        value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
-        new Date(),
-        new Date(),
-      ];
-      const searchQuery = `INSERT into cdascdi1d.cdascdi.columndefinition (columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
-      Logger.info({
-        message: "storeDatasetColumns",
-      });
-      const inserted = await DB.executeQuery(searchQuery, body)
-        .then(() => {
-          const hisBody = [columnId + 1, 1, ...body];
-          const hisQuery = `INSERT into cdascdi1d.cdascdi.columndefinition_history (col_def_version_id,version, columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;
-          return DB.executeQuery(hisQuery, hisBody)
-            .then(() => {
-              return "SUCCESS";
-            })
-            .catch((err) => {
-              console.log("innser err", err);
-              return err.message;
-            });
-        })
-        .catch((err) => {
-          console.log("outer err", err);
-          return err.message;
-        });
-      return inserted;
-    });
-    Promise.all(inserted).then((response) => {
-      if (response[0] == "SUCCESS") {
-        return apiResponse.successResponseWithData(
-          res,
-          "Operation success",
-          values
-        );
-      } else {
-        return apiResponse.ErrorResponse(res, response[0]);
-      }
-    });
-  } catch (err) {
-    //throw error in json response with status 500.
-    Logger.error("catch :storeDatasetColumns");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
-  }
-};
-
 exports.getVLCData = async (req, res) => {
   try {
     Logger.info({
       message: "getVLCData",
     });
     const dbconnection = await oracleDB();
-    const q1 = `SELECT VERSION as "versionNo", EXT_RULEID as "ruleId", QC_TYPE as "type", RULESEQ as "ruleSeq", ACTION as "action", ERRORCODE as "emCode", ERRORMESSAGE as "errMsg" FROM IDP.DATASET_QC_RULES`;
+    const q1 = `SELECT VERSION as "versionNo", EXT_RULEID as "ruleId", QC_TYPE as "type", RULEEXPR AS "ruleExp", RULESEQ as "ruleSeq", 
+    "ACTION" as "action", ERRORCODE as "emCode", ERRORMESSAGE as "errMsg",
+    CASE WHEN active_yn='Y' AND curr_rec_yn ='Y' THEN 'Active' ELSE 'Inactive' END as "status" FROM IDP.DATASET_QC_RULES`;
     const { rows } = await dbconnection.execute(q1);
-    return apiResponse.successResponseWithData(res, "Operation success", rows);
+    const uniqueIdAdded = rows.map((e, i) => {
+      e.id = `id${i + 1}`;
+      return e;
+    });
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      uniqueIdAdded
+    );
   } catch (error) {
     Logger.error("catch :getVLCData");
     Logger.error(error);
@@ -257,7 +207,7 @@ exports.getVLCData = async (req, res) => {
 exports.getDatasetDetail = async (req, res) => {
   try {
     const datasetid = req.params.datasetid;
-    const searchQuery = `SELECT datasetid, mnemonic, type, active, headerrownumber, footerrownumber, delimitier, escapecode, quote, datakindid, staledays, rowdecreaseallowed, charset, path, customsql, naming_convention, data_freq, ovrd_stale_alert from cdascdi1d.cdascdi.dataset WHERE datasetid = $1`;
+    const searchQuery = `SELECT datasetid, mnemonic, type, active, headerrownumber, footerrownumber, delimitier, escapecode, quote, datakindid, staledays, rowdecreaseallowed, charset, path, customsql, naming_convention, data_freq, ovrd_stale_alert from ${schemaName}.dataset WHERE datasetid = $1`;
     Logger.info({
       message: "datasetDetail",
     });
@@ -279,25 +229,39 @@ exports.getDatasetDetail = async (req, res) => {
   }
 };
 
-exports.getDatasetColumns = async (req, res) => {
+// exports.previewSQL = async (req, res) => {
+//   try {
+//     Logger.info({ message: "previewSQL" });
+
+//     const queryData = previewSQLMock.queryData;
+//     return apiResponse.successResponseWithData(
+//       res,
+//       "Operation success",
+//       queryData
+//     );
+//   } catch (err) {
+//     //throw error in json response with status 500.
+//     console.log(err);
+//     Logger.error("catch :previewSQL");
+//     Logger.error(err);
+
+//     return apiResponse.ErrorResponse(res, err);
+//   }
+// };
+
+exports.getTables = async (req, res) => {
   try {
-    const datasetid = req.params.datasetid;
-    const searchQuery = `SELECT "columnid", "VARIABLE", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "FORMAT", "lov", "UNIQUE" from cdascdi1d.cdascdi.columndefinition WHERE datasetid = $1`;
-    Logger.info({
-      message: "datasetColumns",
-    });
-    DB.executeQuery(searchQuery, [datasetid]).then((response) => {
-      const datasetColumns = response.rows || null;
-      return apiResponse.successResponseWithData(
-        res,
-        "Operation success",
-        datasetColumns
-      );
-    });
+    Logger.info({ message: "getTables" });
+    const tableMetadataList = tablesMock.tableMetadataList;
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      tableMetadataList
+    );
   } catch (err) {
     //throw error in json response with status 500.
     console.log(err);
-    Logger.error("catch :datasetColumns");
+    Logger.error("catch :getTables");
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
@@ -350,6 +314,24 @@ exports.previewSql = async (req, res) => {
     console.log(err);
     Logger.error("catch :datasetpreviewSql");
     Logger.error(err);
+  }
+};
+
+exports.getColumns = async (req, res) => {
+  try {
+    Logger.info({ message: "getColumns" });
+    const columnInfo = columnsMock.columnInfo;
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      columnInfo
+    );
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error("catch :getColumns");
+    Logger.error(err);
+
     return apiResponse.ErrorResponse(res, err);
   }
 };

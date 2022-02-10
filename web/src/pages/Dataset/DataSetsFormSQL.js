@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
 import compose from "@hypnosphi/recompose/compose";
-import { connect } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import { reduxForm, getFormValues, formValueSelector } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
@@ -21,8 +21,13 @@ import {
   ReduxFormTextField,
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
+import {
+  getSQLTables,
+  getSQLColumns,
+  getPreviewSQL,
+} from "../../store/actions/DataSetsAction";
 
-import { customSQLQuery } from "../../utils";
+import { YesNo } from "../../utils";
 
 const styles = {
   paper: {
@@ -80,6 +85,12 @@ const styles = {
 
 const DataSetsFormBase = (props) => {
   const { handleSubmit, classes, datakind, formValues } = props;
+  const dispatch = useDispatch();
+  const dataSets = useSelector((state) => state.dataSets);
+
+  const handlePreview = () => {
+    console.log("data", dataSets);
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -141,7 +152,7 @@ const DataSetsFormBase = (props) => {
             size="small"
             label="Custom SQL Query"
           >
-            {customSQLQuery?.map((type) => (
+            {YesNo?.map((type) => (
               <MenuItem value={type}>{type}</MenuItem>
             ))}
           </ReduxFormSelect>
@@ -161,6 +172,7 @@ const DataSetsFormBase = (props) => {
               <Button
                 variant="secondary"
                 size="small"
+                onClick={handlePreview}
                 style={{ marginRight: 10, top: "-9px", marginLeft: 24 }}
               >
                 Preview SQL

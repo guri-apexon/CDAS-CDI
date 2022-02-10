@@ -1,8 +1,9 @@
+/* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/no-array-index-key */
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import "./DataPackages.scss";
+import { useHistory } from "react-router-dom";
 import Paper from "apollo-react/components/Paper";
 import Typography from "apollo-react/components/Typography";
 import Box from "apollo-react/components/Box";
@@ -14,11 +15,13 @@ import PasswordInput from "apollo-react/components/PasswordInput";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import Grid from "apollo-react/components/Grid";
-import CssBaseline from "@material-ui/core/CssBaseline";
+import Panel from "apollo-react/components/Panel";
+import { makeStyles } from "@material-ui/core/styles";
+// import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
-import PageHeader from "../../components/DataFlow/PageHeader";
-import Leftbar from "../../components/DataFlow/LeftBar";
+import "./DataPackages.scss";
+import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, toast } from "../../utils";
 import {
   addDataPackage,
@@ -33,19 +36,22 @@ const compressionTypes = [
   { text: "SAS XPT", value: "xpt" },
   { text: "RAR", value: "rar" },
 ];
-const breadcrumpItems = [
-  { href: "/dashboard" },
-  {
-    title: "Data Flow Settings",
-    href: "/dataflow-management",
+
+const useStyles = makeStyles(() => ({
+  rightPanel: {
+    maxWidth: "calc(100vw - 466px)",
+    width: "calc(100vw - 464px)",
   },
-  {
-    title: "Data Package Settings",
+  rightPanelExtended: {
+    maxWidth: "calc(100vw - 42px)",
+    width: "calc(100vw - 40px)",
   },
-];
+}));
+
 const DataPackages = () => {
+  const classes = useStyles();
   const dispatch = useDispatch();
-  // const history = useHistory();
+  const history = useHistory();
   const [showForm, setShowForm] = useState(false);
   const [configShow, setConfigShow] = useState(false);
   const [compression, setCompression] = useState("not_compressed");
@@ -53,8 +59,23 @@ const DataPackages = () => {
   const [packagePassword, setPackagePassword] = useState("");
   const [sftpPath, setSftpPath] = useState("");
   const [notMatchedType, setNotMatchedType] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
   const packageData = useSelector((state) => state.dataPackage);
   const userInfo = getUserInfo();
+
+  const breadcrumpItems = [
+    { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
+    {
+      href: "javascript:void(0)",
+      title: "Data Flow Settings",
+      onClick: () => history.push("/dataflow-management"),
+    },
+    {
+      href: "javascript:void(0)",
+      title: "Data Package Settings",
+      onClick: () => history.push("/data-packages"),
+    },
+  ];
 
   const showConfig = (e, checked) => {
     setConfigShow(checked);
@@ -108,18 +129,38 @@ const DataPackages = () => {
       package_password: packagePassword,
       sftp_path: sftpPath,
       study_id: "a020E000005SwfCQAS",
-      dataflow_id: "a0A0E00000322XRUAY",
+      dataflow_id: "a0A0E000002o5kwUAA",
       user_id: userInfo.user_id,
     };
     console.log("submitPackage", reqBody);
     dispatch(addDataPackage(reqBody));
   };
+
+  const handleClose = () => {
+    setIsPanelOpen(false);
+  };
+
+  const handleOpen = () => {
+    setIsPanelOpen(true);
+  };
+
   return (
-    <div className="data-packages-wrapper ">
-      <Grid container>
-        <PageHeader />
-        <CssBaseline />
-        <Leftbar />
+    <div className="data-packages-wrapper">
+      <Panel
+        onClose={handleClose}
+        onOpen={handleOpen}
+        open={isPanelOpen}
+        width={446}
+      >
+        <LeftPanel />
+      </Panel>
+      <Panel
+        className={
+          isPanelOpen ? classes.rightPanel : classes.rightPanelExtended
+        }
+        width="100%"
+        hideButton
+      >
         <main className="right-content">
           <Paper className="no-shadow">
             <Box className="top-content">
@@ -154,7 +195,7 @@ const DataPackages = () => {
               )}
             </Box>
           </Paper>
-          <Box padding={4}>
+          <Box style={{ padding: 24, backgroundColor: "#f6f7fb" }}>
             <Paper className="add-package-box">
               {showForm ? (
                 <>
@@ -244,7 +285,8 @@ const DataPackages = () => {
             </Paper>
           </Box>
         </main>
-      </Grid>
+      </Panel>
+      {/* </Grid> */}
     </div>
   );
 };

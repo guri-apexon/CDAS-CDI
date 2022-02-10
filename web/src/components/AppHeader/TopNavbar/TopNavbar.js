@@ -15,9 +15,9 @@ import Button from "apollo-react/components/Button";
 
 import NavigationPanel from "../NavigationPanel/NavigationPanel";
 // eslint-disable-next-line import/named
-import { deleteAllCookies, getUserInfo } from "../../utils/index";
+import { deleteAllCookies, getUserInfo } from "../../../utils/index";
 // eslint-disable-next-line import/named
-import { userLogOut } from "../../services/ApiServices";
+import { userLogOut } from "../../../services/ApiServices";
 
 const styles = {
   root: {

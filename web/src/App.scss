@@ -19,16 +19,16 @@
 *[customtooltip] {
   position: relative;
 }
-*[customtooltip]:hover:after{
+*[customtooltip]:hover:after {
   content: "";
-  position:absolute;
-  left:50%;
-  top:55%;
-  transform:translateX(-50%);
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  transform: translateX(-50%);
   margin-left: 5px;
-  border:10px solid #000;
+  border: 10px solid #000;
   border-color: transparent transparent black transparent;
-  display:block;
+  display: block;
 }
 *[customtooltip]:hover:before {
   content: attr(customtooltip);
@@ -41,7 +41,7 @@
   white-space: nowrap;
   border-radius: 4px;
   padding: 2px 4px;
-  transform:translateX(-50%);
+  transform: translateX(-50%);
   left: 50%;
 }
 .mb-20 {
@@ -176,4 +176,26 @@
 
 .MuiSnackbar-anchorOriginTopCenter {
   top: 56px !important;
+}
+
+.pageRoot {
+  display: flex;
+  height: 100vh;
+  box-sizing: content-box;
+  max-width: 100vw;
+}
+.status-cell {
+  color: #ffffff;
+  padding: 2px 6px;
+  width: fit-content;
+}
+
+.Message-Banner {
+  z-index: 1100 !important;
+}
+.Message-Banner.top-56 {
+  top: 56px !important;
+}
+.Message-Banner.top-0 {
+  top: 0 !important;
 }

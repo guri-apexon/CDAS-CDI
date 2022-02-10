@@ -15,10 +15,18 @@ export const DASHBOARD_DATA = "DASHBOARD_DATA";
 export const DASHBOARD_FETCH_SUCCESS = "DASHBOARD_FETCH_SUCCESS";
 export const DASHBOARD_FETCH_FAILUR = "DASHBOARD_FETCH_FAILUR";
 
+export const DASHBOARD_STUDIES = "DASHBOARD_STUDIES";
+export const FETCH_DASHBOARD_STUDY_SUCCESS = "FETCH_DASHBOARD_STUDY_SUCCESS";
+export const FETCH_DASHBOARD_STUDY_FAILUR = "FETCH_DASHBOARD_STUDY_FAILUR";
+
 export const PAGEHEADER_UPDATE = "PAGEHEADER_UPDATE";
 export const GET_DATA_FLOW_LIST = "GET_DATA_FLOW_LIST";
 export const GET_DATA_FLOW_LIST_SUCCESS = "GET_DATA_FLOW_LIST_SUCCESS";
 export const GET_DATA_FLOW_LIST_FAILURE = "GET_DATA_FLOW_LIST_FAILURE";
+export const ADD_DATAFLOW_SUCCESS = "ADD_DATAFLOW_SUCCESS";
+export const ADD_DATAFLOW_FAILURE = "ADD_DATAFLOW_FAILURE";
+export const ADD_DATAFLOW = "ADD_DATAFLOW";
+export const DATAFLOWS_LIST_FAILURE = "DATAFLOWS_LIST_FAILURE";
 
 export const PACKAGES_LIST = "PACKAGES_LIST";
 export const ADD_PACKAGE_BTN = "ADD_PACKAGE_BTN";
@@ -77,14 +85,39 @@ export const UPDATE_DATASET_FAILURE = "UPDATE_DATASET_FAILURE";
 export const GET_DATASET_COLUMNS = "GET_DATASET_COLUMNS";
 export const FETCH_DATASET_COLUMNS_SUCCESS = "FETCH_DATASET_COLUMNS_SUCCESS";
 export const FETCH_DATASET_COLUMNS_FAILURE = "FETCH_DATASET_COLUMNS_FAILURE";
+
+export const GET_VLC_RULES = "GET_VLC_RULES";
+export const FETCH_VLC_RULES_SUCCESS = "FETCH_VLC_RULES_SUCCESS";
+export const FETCH_VLC_RULES_FAILURE = "FETCH_VLC_RULES_FAILURE";
+
+export const GET_SQL_TABLES = "GET_SQL_TABLES";
+export const FETCH_SQL_TABLES_SUCCESS = "FETCH_SQL_TABLES_SUCCESS";
+export const FETCH_SQL_TABLES_FAILURE = "FETCH_SQL_TABLES_FAILURE";
+
+export const GET_SQL_COLUMNS = "GET_SQL_COLUMNS";
+export const FETCH_SQL_COLUMNS_SUCCESS = "FETCH_SQL_COLUMNS_SUCCESS";
+export const FETCH_SQL_COLUMNS_FAILURE = "FETCH_SQL_COLUMNS_FAILURE";
+
+export const GET_PREVIEW_SQL = "GET_PREVIEW_SQL";
+export const FETCH_PREVIEW_SQL_SUCCESS = "FETCH_PREVIEW_SQL_SUCCESS";
+export const FETCH_PREVIEW_SQL_FAILURE = "FETCH_PREVIEW_SQL_FAILURE";
+
+export const GET_DATASET_INGESTION_SUMMARY = "GET_DATASET_INGESTION_SUMMARY";
+export const GET_DATASET_INGESTION_SUMMARY_SUCCESS =
+  "GET_DATASET_INGESTION_SUMMARY_SUCCESS";
+export const GET_DATASET_INGESTION_SUMMARY_FAILURE =
+  "GET_DATASET_INGESTION_SUMMARY_FAILURE";
+
 // API URLS
 
 export const FLOW_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
 export const STUDYSEARCH = "v1/api/study/search-study";
+export const STUDYAPI = "v1/api/study";
 export const HARDDELETE = "v1/api/dataflow/hardDelete";
 export const SYNCNOW = "v1/api/dataflow/syncNow";
 export const ACTIVATEDF = "v1/api/dataflow/activate";
 export const INACTIVATE = "v1/api/dataflow/inActivate";
+export const DATAFLOW_SAVE = "v1/api/dataflow/createDataflow";
 export const PACKAGES_SEARCH = "v1/api/data-package/search";
 export const ADD_PACKAGE = "v1/api/data-package/add";
 export const DELETE_PACKAGE = "v1/api/data-package/delete";
@@ -96,12 +129,21 @@ export const UNPINSTUDY = "v1/api/study/unPinStudy";
 export const PINSTUDY = "v1/api/study/pinStudy";
 export const AUDIT_LOGS_FETCH = "v1/api/audit-logs/get";
 
-export const FETCHDATAFLOWS = "v1/api/dataflow/studyDataflowList";
 export const LOCATIONAPI = "v1/api/location";
 export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";
 export const DATASETAPI = "v1/api/dataset";
 export const DATAFLOWAPI = "v1/api/dataflow";
 export const VLCDATAAPI = "v1/api/dataset/getVLCData";
+export const SQLTABLESAPI = "v1/api/dataset/getTables";
+export const SQLCOLUMNSAPI = "v1/api/dataset/getColumns";
+export const PREVIEWSQLAPI = "v1/api/dataset/previewSQL";
 
-export const baseURL = process.env.API_URL || "http://localhost:4001";
+export const baseURL = process.env.REACT_APP_API_URL;
+
+export const allowedTypes = [
+  "xlsx",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "csv",
+];

@@ -4,8 +4,9 @@ const router = express.Router();
 
 router.get("/listbyUser/:userId", StudyController.getUserStudyList);
 router.post("/pinStudy", StudyController.pinStudy);
-router.get("/search-study/:searchQuery", StudyController.searchStudyList);
+router.post("/search-study/:searchQuery", StudyController.searchStudyList);
 router.get("/pinnedStudies/:userId", StudyController.getUserPinnedStudies);
 router.post("/unPinStudy", StudyController.unPinStudy);
+router.get("/datasetIngestionDetail/:protocolNumber", StudyController.getDatasetIngestionDashboardDetail)
 
 module.exports = router;

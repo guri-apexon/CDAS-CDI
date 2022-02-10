@@ -1,5 +1,5 @@
-/* eslint-disable no-nested-ternary */
 /* eslint-disable jsx-a11y/anchor-is-valid */
+/* eslint-disable no-nested-ternary */
 import React, { useState, useContext, useEffect } from "react";
 import { useSelector } from "react-redux";
 import * as XLSX from "xlsx";
@@ -7,32 +7,33 @@ import FileUpload from "apollo-react/components/FileUpload";
 import Card from "apollo-react/components/Card";
 import Radio from "apollo-react/components/Radio";
 import Link from "apollo-react/components/Link";
-import { useHistory } from "react-router-dom";
-import TextField from "apollo-react/components/TextField";
+// import { useHistory } from "react-router-dom";
+// import Pencil from "apollo-react-icons/Pencil";
+// import TextField from "apollo-react/components/TextField";
 import Button from "apollo-react/components/Button";
-import { MessageContext } from "../../components/MessageProvider";
-import DatasetTable from "./DatasetTable";
+import { MessageContext } from "../../../components/Providers/MessageProvider";
+import { allowedTypes } from "../../../constants";
+import DSColumnTable from "./DSColumnTable";
+
+import { downloadTemplate } from "../../../utils/downloadData";
+import { checkHeaders, formatData } from "../../../utils/index";
+
+// const DSColumnTable = lazy(() => import("./DSColumnTable"));
 
 const ColumnsTab = ({ locationType }) => {
-  const history = useHistory();
+  // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
   const { datasetColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
-  const [numberOfRows, setNumberOfRows] = useState(null);
+  const [numberOfRows, setNumberOfRows] = useState(1);
   const [showColumns, setShowColumns] = useState(false);
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
   const [formattedData, setFormattedData] = useState([]);
 
-  const allowedTypes = [
-    "xlsx",
-    "application/vnd.ms-excel",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "csv",
-  ];
   const maxSize = 150000;
 
   const handleUpload = (selected) => {
@@ -86,6 +87,8 @@ const ColumnsTab = ({ locationType }) => {
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
               values: column.lov || "",
+              isInitLoad: true,
+              isHavingError: false,
             };
             return newObj;
           })
@@ -100,78 +103,28 @@ const ColumnsTab = ({ locationType }) => {
     setIsImportReady(false);
   };
 
-  const showProtocolNotMatching = () => {
-    messageContext.showErrorMessage(
-      `Protocol Number in file does not match protocol number ‘${dashboard?.selectedCard?.protocolnumber}’ for this data flow. Please make sure these match and try again`
-    );
-    handleDelete();
-  };
-
-  const formatData = () => {
-    // console.log("data", importedData, formattedData);
-    const data = importedData.slice(1);
-    const protocolList = data.map((e) => e[0]);
-    const isMatchSelectedProtocol = (currentValue) =>
-      currentValue === dashboard?.selectedCard?.protocolnumber;
-    const isAllDataMatch = protocolList.every(isMatchSelectedProtocol);
-    if (isAllDataMatch) {
-      const newData =
-        data.length > 1
-          ? data.map((e, i) => {
-              const newObj = {
-                columnId: i + 1,
-                variableLabel: e[1] || "",
-                columnName: e[2] || "",
-                position: "",
-                format: e[3] || "",
-                dataType: e[4] || "",
-                primary: e[5] === "N" ? "No" : e[5] === "Y" ? "No" : "",
-                unique: e[6] === "N" ? "No" : e[6] === "Y" ? "No" : "",
-                required: e[7] === "N" ? "No" : e[7] === "Y" ? "No" : "",
-                minLength: e[8] || "",
-                maxLength: e[9] || "",
-                values: e[10] || "",
-              };
-              return newObj;
-            })
-          : [];
-      setFormattedData([...newData]);
-      setIsImportReady(true);
-    } else {
-      showProtocolNotMatching();
-    }
-  };
-
-  const checkHeaders = () => {
-    const header = importedData[0];
-    // console.log("Header", header);
-    const validation =
-      header.includes("Protocol") &&
-      header.includes("Variable Label") &&
-      header.includes("Column Name") &&
-      header.includes("Format") &&
-      header.includes("Data Type") &&
-      header.includes("Primary(Y/N)") &&
-      header.includes("Required(Y/N)") &&
-      header.includes("Unique(Y/N)") &&
-      header.includes("Min Length") &&
-      header.includes("Max Length") &&
-      header.includes("List of Values");
-    return validation;
-  };
-
-  const handleNoHeaders = () => {
-    messageContext.showErrorMessage(
-      `Import is not available for files with no header row.`
-    );
-    handleDelete();
-  };
+  // const handleNoHeaders = () => {
+  //   messageContext.showErrorMessage(
+  //     `Import is not available for files with no header row.`
+  //   );
+  //   handleDelete();
+  // };
 
   useEffect(() => {
     if (importedData.length > 1) {
-      const correctHeader = checkHeaders();
+      const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        formatData();
+        const newData = formatData(
+          importedData,
+          dashboard?.selectedCard?.protocolnumber
+        );
+        // eslint-disable-next-line no-unused-expressions
+        newData.length > 1
+          ? (setFormattedData(newData), setIsImportReady(true))
+          : (messageContext.showErrorMessage(
+              `Protocol Number in file does not match protocol number ‘${dashboard?.selectedCard?.protocolnumber}’ for this data flow. Please make sure these match and try again`
+            ),
+            handleDelete());
       } else {
         messageContext.showErrorMessage(
           `The Selected File Does Not Match the Template`
@@ -185,6 +138,7 @@ const ColumnsTab = ({ locationType }) => {
     if (datasetColumns.length > 0) {
       setShowColumns(true);
       formatDBColumns(datasetColumns);
+      setSelectedMethod("fromDB");
     } else {
       setShowColumns(false);
     }
@@ -194,10 +148,23 @@ const ColumnsTab = ({ locationType }) => {
     setSelectedMethod(e.target.value);
   };
 
+  const showTable = React.useMemo(() => {
+    return (
+      <>
+        <DSColumnTable
+          numberOfRows={numberOfRows || 1}
+          formattedData={formattedData}
+          dataOrigin={selectedMethod}
+          locationType={locationType}
+        />
+      </>
+    );
+  }, [showColumns]);
+
   return (
-    <div className="tab colums-tab">
+    <>
       {!showColumns && (
-        <>
+        <div className="tab colums-tab">
           <p className="title">Configure Dataset Column Settings</p>
           <p className="sub-title">Select an option</p>
           <div className="cards-box">
@@ -213,9 +180,7 @@ const ColumnsTab = ({ locationType }) => {
                 onClick={handleChange}
                 checked={selectedMethod === "fileUpload"}
               />
-              <Link onClick={() => console.log("link clicked")}>
-                Download Excel Template
-              </Link>
+              <Link onClick={downloadTemplate}>Download Excel Template</Link>
               <div className="upload-box">
                 <FileUpload
                   value={selectedFile}
@@ -226,7 +191,7 @@ const ColumnsTab = ({ locationType }) => {
               </div>
             </Card>
             <Card
-              style={{ maxWidth: 320, height: 300 }}
+              style={{ maxWidth: 320, height: 300, width: 320 }}
               className={selectedMethod === "manually" ? "active card" : "card"}
             >
               <Radio
@@ -235,11 +200,17 @@ const ColumnsTab = ({ locationType }) => {
                 onClick={handleChange}
                 checked={selectedMethod === "manually"}
               />
-              <TextField
+              {/* <div className="center">
+                <Pencil />
+              </div> */}
+              {/* <TextField
                 label="Number of rows"
+                type="number"
+                max="500"
+                min="1"
                 onChange={(e) => setNumberOfRows(e.target.value)}
                 defaultValue={numberOfRows}
-              />
+              /> */}
             </Card>
           </div>
           <div style={{ display: "flex", justifyContent: "end" }}>
@@ -257,17 +228,10 @@ const ColumnsTab = ({ locationType }) => {
               Create
             </Button>
           </div>
-        </>
+        </div>
       )}
-      {showColumns && (
-        <DatasetTable
-          numberOfRows={numberOfRows || 1}
-          formattedData={formattedData}
-          dataOrigin={selectedMethod}
-          locationType={locationType}
-        />
-      )}
-    </div>
+      {showColumns && <>{showTable}</>}
+    </>
   );
 };
 
