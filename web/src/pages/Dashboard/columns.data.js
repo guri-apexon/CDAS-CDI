@@ -198,7 +198,8 @@ const JobstatusCell = ({ row, column: { accessor } }) => {
         </div>
       )}
       {(status?.toLowerCase() === "processing" ||
-        status?.toLowerCase() === "queued") && (
+        status?.toLowerCase() === "queued" ||
+        status?.toLowerCase() === "skipped") && (
         <div>
           <Tag label={status} className="queueStatus" />
         </div>
@@ -209,9 +210,13 @@ const JobstatusCell = ({ row, column: { accessor } }) => {
 
 const StatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
-  return (
-    <div>
-      {status?.toLowerCase() === "successful" && (
+  if (
+    status?.toLowerCase() === "loaded without issues" ||
+    status?.toLowerCase() === "successful" ||
+    status?.toLowerCase() === "in progress"
+  ) {
+    return (
+      <div>
         <div style={{ position: "relative" }}>
           <Check
             style={{
@@ -224,8 +229,16 @@ const StatusCell = ({ row, column: { accessor } }) => {
           />
           {status}
         </div>
-      )}
-      {status?.toLowerCase() === "quarantined" && (
+      </div>
+    );
+  }
+  if (
+    status?.toLowerCase() === "quarantined" ||
+    status?.toLowerCase() === "queued for new file check" ||
+    status?.toLowerCase() === "skipped"
+  ) {
+    return (
+      <div>
         <div style={{ position: "relative" }}>
           <StatusNegativeIcon
             style={{
@@ -238,22 +251,12 @@ const StatusCell = ({ row, column: { accessor } }) => {
           />
           {status}
         </div>
-      )}
-      {status?.toLowerCase() === "failed" && (
-        <div style={{ position: "relative" }}>
-          <FailureIcon
-            style={{
-              position: "relative",
-              top: 4,
-              marginRight: 8,
-              width: "14px",
-              height: "17px",
-            }}
-          />
-          {status}
-        </div>
-      )}
-      {status?.toLowerCase() === "ingestion issues" && (
+      </div>
+    );
+  }
+  if (status?.toLowerCase() === "loaded with ingestion issues") {
+    return (
+      <div>
         <div style={{ position: "relative" }}>
           <IssueIcon
             style={{
@@ -272,7 +275,23 @@ const StatusCell = ({ row, column: { accessor } }) => {
             View
           </Link>
         </div>
-      )}
+      </div>
+    );
+  }
+  return (
+    <div>
+      <div style={{ position: "relative" }}>
+        <FailureIcon
+          style={{
+            position: "relative",
+            top: 4,
+            marginRight: 8,
+            width: "14px",
+            height: "17px",
+          }}
+        />
+        {status}
+      </div>
     </div>
   );
 };
@@ -353,10 +372,10 @@ const columns = [
   },
   {
     header: "Current Job Status",
-    accessor: "datastatus",
+    accessor: "jobstatus",
     sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("datastatus"),
-    filterComponent: createAutocompleteFilter("datastatus"),
+    filterFunction: createStringArraySearchFilter("jobstatus"),
+    filterComponent: createAutocompleteFilter("jobstatus"),
     customCell: JobstatusCell,
   },
   {
@@ -368,10 +387,10 @@ const columns = [
   },
   {
     header: "Last Transfer Status",
-    accessor: "childstatus",
+    accessor: "datasetstatus",
     sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("childstatus"),
-    filterComponent: createAutocompleteFilter("childstatus"),
+    filterFunction: createStringArraySearchFilter("datasetstatus"),
+    filterComponent: createAutocompleteFilter("datasetstatus"),
     customCell: StatusCell,
   },
   {
