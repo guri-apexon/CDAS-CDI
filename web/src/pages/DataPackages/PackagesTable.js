@@ -210,7 +210,7 @@ const PackagesList = ({ data, userInfo }) => {
         >
           {menuItems.map((menu) => {
             return (
-              <MenuItem size="small" onClick={menu.onClick}>
+              <MenuItem key={menu.text} size="small" onClick={menu.onClick}>
                 {menu.text}
               </MenuItem>
             );

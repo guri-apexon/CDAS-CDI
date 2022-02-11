@@ -14,7 +14,12 @@ import Search from "apollo-react/components/Search";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Tooltip from "apollo-react/components/Tooltip";
-import { createStringSearchFilter } from "apollo-react/components/Table";
+import {
+  createStringSearchFilter,
+  compareDates,
+  compareNumbers,
+  compareStrings,
+} from "apollo-react/components/Table";
 
 import { ReactComponent as Plus } from "../../../components/Icons/roundPlusBlue.svg";
 import { TextFieldFilter } from "../../../utils/index";
@@ -154,7 +159,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={isHavingError}
+        // disabled={isHavingError}
       >
         Save
       </Button>
@@ -180,6 +185,7 @@ export const columns = [
   {
     accessor: "uniqueId",
     hidden: true,
+    sortFunction: compareStrings,
   },
   {
     header: "Variable Label",
@@ -191,6 +197,46 @@ export const columns = [
   {
     header: "Column Name/Designator",
     accessor: "columnName",
+    customCell: EditableCell,
+  },
+  {
+    header: "Format",
+    accessor: "format",
+    customCell: EditableCell,
+  },
+  {
+    header: "Data Type",
+    accessor: "dataType",
+    customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
+  },
+  {
+    header: "Primary?",
+    accessor: "primary",
+    customCell: makeEditableSelectCell(["Yes", "No"]),
+  },
+  {
+    header: "Unique?",
+    accessor: "unique",
+    customCell: makeEditableSelectCell(["Yes", "No"]),
+  },
+  {
+    header: "Required?",
+    accessor: "required",
+    customCell: makeEditableSelectCell(["Yes", "No"]),
+  },
+  {
+    header: "Min length",
+    accessor: "minLength",
+    customCell: NumericEditableCell,
+  },
+  {
+    header: "Max length",
+    accessor: "maxLength",
+    customCell: NumericEditableCell,
+  },
+  {
+    header: "List of values",
+    accessor: "values",
     customCell: EditableCell,
   },
   {
@@ -276,13 +322,14 @@ export const CustomHeader = ({
         </>
       )}
       {(locationType?.toLowerCase() === "sftp" ||
-        locationType?.toLowerCase() === "ftps") && (
-        <Tooltip title="Import dataset column settings" disableFocusListener>
-          <IconButton color="primary" size="small" disabled={isEditAll}>
-            <Upload />
-          </IconButton>
-        </Tooltip>
-      )}
+        locationType?.toLowerCase() === "ftps") &&
+        isEditAll && (
+          <Tooltip title="Import dataset column settings" disableFocusListener>
+            <IconButton color="primary" size="small">
+              <Upload />
+            </IconButton>
+          </Tooltip>
+        )}
       <Divider
         orientation="vertical"
         flexItem
