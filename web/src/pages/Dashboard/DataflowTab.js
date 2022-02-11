@@ -27,6 +27,7 @@ import IconMenuButton from "apollo-react/components/IconMenuButton";
 import ChevronDown from "apollo-react-icons/ChevronDown";
 import ChevronRight from "apollo-react-icons/ChevronRight";
 import PlusIcon from "apollo-react-icons/Plus";
+import MenuButton from "apollo-react/components/MenuButton";
 import Progress from "../../components/Common/Progress/Progress";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 import { ReactComponent as DataFlowIcon } from "../../components/Icons/dataflow.svg";
@@ -45,6 +46,7 @@ import {
   createStringArraySearchFilter,
   DateFilter,
 } from "../../utils/index";
+import Clone from "../DataFlow/CloneDataFlow";
 
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
@@ -117,6 +119,10 @@ export default function DataflowTab({ updateData }) {
   const [selectedFlow, setSelectedFlow] = useState(null);
   const [totalRows, setTotalRows] = useState(0);
   const [rowData, setRowData] = useState([]);
+  const [openClone, setOpenClone] = useState(false);
+  const [selectedStudy, selectStudy] = useState({});
+  const [studyList, setStudyList] = useState([]);
+  const [dataflowList, setdataflowList] = useState([]);
   const history = useHistory();
   const dispatch = useDispatch();
   const dashboard = useSelector((state) => state.dashboard);
@@ -282,52 +288,55 @@ export default function DataflowTab({ updateData }) {
     );
   };
 
-  const CustomButtonHeader = ({ toggleFilters }) => (
-    <>
-      <div>
-        <SegmentedControlGroup
-          value={selectedFilter}
-          exclusive
-          onChange={(event, value) => setSelectedFilter(value)}
-        >
-          <SegmentedControl value="all">All</SegmentedControl>
-          <SegmentedControl disabled={!(totalRows >= 1)} value="Production">
-            Production
-          </SegmentedControl>
-          <SegmentedControl disabled={!(totalRows >= 1)} value="Test">
-            Test
-          </SegmentedControl>
-        </SegmentedControlGroup>
-      </div>
-      <div>
-        <Button
-          size="small"
-          variant="secondary"
-          icon={PlusIcon}
-          onClick={() => {
-            if (dashboard.selectedCard.prot_id !== "") {
-              history.push("/dataflow-management");
-            } else {
-              messageContext.showErrorMessage(
-                `Please select a study to Add Data flow`
-              );
-            }
-          }}
-          style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
-        >
-          Add data flow
-        </Button>
-        <Button
-          size="small"
-          variant="secondary"
-          icon={FilterIcon}
-          onClick={toggleFilters}
-        >
-          Filter
-        </Button>
-      </div>
-    </>
-  );
+  const CustomButtonHeader = ({ toggleFilters }) => {
+    const menuItems = [
+      {
+        text: "Create data flow",
+        onClick: () => history.push("/dataflow-management"),
+      },
+      {
+        text: "Clone data flow",
+        onClick: async () => {
+          setOpenClone(true);
+          // await getStudies();
+        },
+      },
+    ];
+    return (
+      <>
+        <div>
+          <SegmentedControlGroup
+            value={selectedFilter}
+            exclusive
+            onChange={(event, value) => setSelectedFilter(value)}
+          >
+            <SegmentedControl value="all">All</SegmentedControl>
+            <SegmentedControl disabled={!(totalRows >= 1)} value="Production">
+              Production
+            </SegmentedControl>
+            <SegmentedControl disabled={!(totalRows >= 1)} value="Test">
+              Test
+            </SegmentedControl>
+          </SegmentedControlGroup>
+        </div>
+        <div>
+          <MenuButton
+            buttonText="Add data flow"
+            menuItems={menuItems}
+            size="small"
+          />
+          <Button
+            size="small"
+            variant="secondary"
+            icon={FilterIcon}
+            onClick={toggleFilters}
+          >
+            Filter
+          </Button>
+        </div>
+      </>
+    );
+  };
 
   const columns = [
     {
@@ -667,6 +676,30 @@ export default function DataflowTab({ updateData }) {
     </>
   );
 
+  const handleSelect = async (val, name) => {
+    if (Object.keys(selectedStudy).length === 0) {
+      await selectStudy({ [name]: val });
+    } else {
+      await selectStudy({ ...selectedStudy, [name]: val });
+    }
+  };
+
+  const handleBack = () => {
+    const newStudy = { ...selectedStudy };
+    if (newStudy.dataflow) {
+      delete newStudy.dataflow;
+      selectStudy(newStudy);
+    } else if (newStudy.study) {
+      delete newStudy.study;
+      selectStudy(newStudy);
+    }
+  };
+
+  const handleModalClose = () => {
+    setOpenClone(false);
+    selectStudy({});
+  };
+
   return (
     <div className="dataflow-table">
       {loading ? (
@@ -739,6 +772,15 @@ export default function DataflowTab({ updateData }) {
           { label: "Ok", onClick: handleSync },
         ]}
         id="syncDataFlow"
+      />
+      <Clone
+        open={openClone}
+        handleModalClose={handleModalClose}
+        handleBack={handleBack}
+        handleSelect={handleSelect}
+        selectedStudy={selectedStudy}
+        studyList={studyList}
+        dataflowList={dataflowList}
       />
     </div>
   );
