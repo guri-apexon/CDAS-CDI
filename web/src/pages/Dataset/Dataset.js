@@ -1,13 +1,18 @@
 /* eslint-disable no-script-url */
 import React, { useState, useContext, useEffect } from "react";
-import { Route, Switch, Redirect } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
 import Banner from "apollo-react/components/Banner";
 import Panel from "apollo-react/components/Panel/Panel";
-import Header from "./Header";
+// import Header from "./Header";
+import Tab from "apollo-react/components/Tab";
+import Tabs from "apollo-react/components/Tabs";
+import Typography from "apollo-react/components/Typography";
+import ButtonGroup from "apollo-react/components/ButtonGroup";
+import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
+import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 import "./Dataset.scss";
@@ -22,6 +27,7 @@ import {
 import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
+// import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
 
@@ -52,8 +58,28 @@ const styles = {
     lineHeight: "22px",
     fontWeight: 500,
   },
-  contentIcon: {
+  breadcrumbs: {
+    marginBottom: 16,
+    paddingLeft: 0,
+  },
+  contentSubTitle: {
+    color: "#000000",
+    fontSize: "14px",
+    paddingLeft: 11,
+    letterSpacing: 0,
+    lineHeight: "24px",
+  },
+  cIcon: {
     color: "#595959",
+  },
+  cTitle: {
+    color: "#000000",
+    fontSize: "16px",
+    fontWeight: 600,
+    letterSpacing: 0,
+    lineHeight: "24px",
+    marginLeft: "8px",
+    marginBottom: "8px",
   },
 };
 
@@ -70,7 +96,7 @@ const Dataset = () => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
   const { selectedDFId } = dashboard;
-  const { dataflowid, datasetid } = selectedDSDetails;
+  const { datasetid } = selectedDSDetails;
   const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
     dataSets;
   const { dataFlowdetail } = dataFlow;
@@ -207,14 +233,14 @@ const Dataset = () => {
     history.push("/dashboard");
   };
 
-  const getLeftPanel = React.useMemo(
-    () => (
-      <>
-        <LeftPanel />
-      </>
-    ),
-    []
-  );
+  // const getLeftPanel = React.useMemo(
+  //   () => (
+  //     <>
+  //       <LeftPanel />
+  //     </>
+  //   ),
+  //   []
+  // );
 
   const locationChange = () => {
     messageContext.showErrorMessage(
@@ -251,7 +277,7 @@ const Dataset = () => {
           open={isPanelOpen}
           width={446}
         >
-          {getLeftPanel}
+          {/* {getLeftPanel} */}
         </Panel>
         <Panel
           className={
@@ -262,16 +288,56 @@ const Dataset = () => {
         >
           <main className={classes.content}>
             <div className={classes.contentHeader}>
-              <Header
-                close={() => closeForm()}
-                breadcrumbItems={breadcrumbItems || []}
-                submit={() => submitForm()}
-                tabs={dataSettabs}
-                headerTitle={selectedDSDetails.datasetName ?? "Dataset name"}
-                tabValue={value}
-                selectedDataset={selectedDataset}
-                handleChangeTab={handleChangeTab}
+              <BreadcrumbsUI
+                className={classes.breadcrumbs}
+                id="dataaset-breadcrumb"
+                items={breadcrumbItems}
               />
+              <div style={{ display: "flex", paddingLeft: 11 }}>
+                <DatasetsIcon />
+                <Typography className={classes.cTitle}>
+                  {selectedDSDetails.datasetName ?? "Dataset name"}
+                </Typography>
+              </div>
+              {/* {datasetsCount && (
+                <Typography className={classes.contentSubTitle}>
+                  {`${props.datasetsCount} datasets`}
+                </Typography>
+              )} */}
+              {(!value || value === 0) && (
+                <ButtonGroup
+                  alignItems="right"
+                  buttonProps={[
+                    {
+                      label: "Cancel",
+                      onClick: () => closeForm(),
+                    },
+                    {
+                      label: "Save",
+                      onClick: () => submitForm(),
+                    },
+                  ]}
+                />
+              )}
+              {dataSettabs && (
+                <Tabs
+                  value={value}
+                  onChange={handleChangeTab}
+                  size="small"
+                  style={{ marginBottom: "-19px" }}
+                  truncate
+                >
+                  {dataSettabs.map((tab) => (
+                    <Tab
+                      label={tab}
+                      disabled={
+                        Object.keys(selectedDataset).length <= 0 &&
+                        tab === "Dataset Columns"
+                      }
+                    />
+                  ))}
+                </Tabs>
+              )}
             </div>
 
             <div style={{ padding: 20, marginTop: 20 }}>
@@ -284,6 +350,7 @@ const Dataset = () => {
                 locationType?.toLowerCase() !== "sftp" &&
                 locationType?.toLowerCase() !== "ftps" && (
                   <DataSetsFormSQL loading={loading} onSubmit={onSubmit} />
+                  // <JDBCForm />
                 )}
               {value === 1 && <ColumnsTab locationType={locationType} />}
               {value === 2 && <VLCTab />}
