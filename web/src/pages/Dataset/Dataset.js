@@ -233,14 +233,14 @@ const Dataset = () => {
     history.push("/dashboard");
   };
 
-  // const getLeftPanel = React.useMemo(
-  //   () => (
-  //     <>
-  //       <LeftPanel />
-  //     </>
-  //   ),
-  //   []
-  // );
+  const getLeftPanel = React.useMemo(
+    () => (
+      <>
+        <LeftPanel />
+      </>
+    ),
+    []
+  );
 
   const locationChange = () => {
     messageContext.showErrorMessage(
@@ -277,7 +277,7 @@ const Dataset = () => {
           open={isPanelOpen}
           width={446}
         >
-          {/* {getLeftPanel} */}
+          {getLeftPanel}
         </Panel>
         <Panel
           className={
