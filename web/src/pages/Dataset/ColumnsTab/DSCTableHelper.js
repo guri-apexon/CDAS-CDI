@@ -14,7 +14,12 @@ import Search from "apollo-react/components/Search";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Tooltip from "apollo-react/components/Tooltip";
-import { createStringSearchFilter } from "apollo-react/components/Table";
+import {
+  createStringSearchFilter,
+  compareDates,
+  compareNumbers,
+  compareStrings,
+} from "apollo-react/components/Table";
 
 import { ReactComponent as Plus } from "../../../components/Icons/roundPlusBlue.svg";
 import { TextFieldFilter } from "../../../utils/index";
@@ -180,6 +185,7 @@ export const columns = [
   {
     accessor: "uniqueId",
     hidden: true,
+    sortFunction: compareStrings,
   },
   {
     header: "Variable Label",
