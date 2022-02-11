@@ -75,3 +75,47 @@ exports.saveDatasetColumns = async (req, res) => {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+
+exports.updateColumns = async (req, res) => {
+  try {
+    const datasetid = req.params.datasetid;
+    const values = req.body;
+    Logger.info({ message: "update set columns" });
+    const updateQuery = `UPDATE ${schemaName}.columndefinition "VARIABLE"=$2, datasetid=$3, name=$4, datatype=$5, primarykey=$6, required=$7, "UNIQUE"=$8, charactermin=$9, charactermax=$10, position=$11, "FORMAT"=$12, lov=$13, updt_tm=$14 WHERE columnid=$1`;
+    const inserted = await values.map(async (value) => {
+      const body = [
+        value.columnId.trim(),
+        value.variableLabel.trim() || null,
+        datasetid,
+        value.columnName.trim() || null,
+        value.dataType.trim() || null,
+        value.primary == "Yes" ? 1 : 0,
+        value.required == "Yes" ? 1 : 0,
+        value.unique == "Yes" ? 1 : 0,
+        value.minLength.trim() || null,
+        value.maxLength.trim() || null,
+        value.position.trim() || null,
+        value.format.trim() || null,
+        value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
+        new Date(),
+      ];
+      const inserted = await DB.executeQuery(updateQuery, body);
+      return inserted;
+    });
+    Promise.all(inserted).then((response) => {
+      if (response[0] == "SUCCESS") {
+        return apiResponse.successResponseWithData(
+          res,
+          "Operation success",
+          values
+        );
+      } else {
+        return apiResponse.ErrorResponse(res, response[0]);
+      }
+    });
+  } catch (err) {
+    Logger.error("catch :update set columns");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
