@@ -42,9 +42,10 @@ export default function DSColumnTable({
   }));
 
   const [rows, setRows] = useState(initialRows);
-  const [editedRows, setEditedRows] = useState([]);
+  const [editedRows, setEditedRows] = useState(initialRows);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState("");
+  const [editMode, setEditMode] = useState(false);
   const [rowErr, setRowErr] = useState({});
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
@@ -97,11 +98,10 @@ export default function DSColumnTable({
 
   const addSingleRow = () => {
     if (rows.length < 500) {
-      setRows((rw) => [
-        ...rw,
+      const singleRow = [
         {
-          uniqueId: `u${rw.length}`,
-          columnId: rw.length + 1,
+          uniqueId: `u${rows.length}`,
+          columnId: rows.length + 1,
           variableLabel: "",
           columnName: "",
           position: "",
@@ -116,9 +116,11 @@ export default function DSColumnTable({
           isInitLoad: true,
           isHavingError: false,
         },
-      ]);
+      ];
+      setRows([...rows, ...singleRow]);
       setSelectedRows([...selectedRows, `u${rows.length}`]);
-      setEditedRows([...rows]);
+      setEditedRows([...rows, ...singleRow]);
+      setEditMode(true);
     } else {
       messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
     }
@@ -159,7 +161,7 @@ export default function DSColumnTable({
       setRows((rw) => [...rw, ...multiRows]);
       const moreRows = multiRows.map((e) => e.uniqueId);
       setSelectedRows([...moreRows]);
-      setEditedRows(multiRows);
+      setEditedRows([...editedRows, ...multiRows]);
       // setEditedRows([...rows]);
       setNewRows("");
       // const selected = multiRows.map((d) => d.uniqueId);
@@ -268,9 +270,9 @@ export default function DSColumnTable({
   const onRowCancel = (uniqueId) => {
     setIsEditAll(false);
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+    // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     setSelectedRows([...removeRow]);
-    setEditedRows([...removeEdited]);
+    // setEditedRows([...removeEdited]);
   };
 
   const onRowSave = (uniqueId) => {
@@ -285,10 +287,10 @@ export default function DSColumnTable({
   };
 
   const onRowEdit = (uniqueId) => {
-    const editingRow = rows.find((row) => row.uniqueId === uniqueId);
-    setIsEditAll(true);
+    // const editingRow = rows.find((row) => row.uniqueId === uniqueId);
+    // setIsEditAll(true);
     setSelectedRows([...selectedRows, uniqueId]);
-    setEditedRows([...editedRows, editingRow]);
+    // setEditedRows([...editedRows, editingRow]);
   };
 
   const onRowDelete = (uniqueId) => {
@@ -333,7 +335,16 @@ export default function DSColumnTable({
     console.log("handle overwrite");
   };
 
-  const editMode = selectedRows.length > 0;
+  useEffect(() => {
+    if (selectedRows.length > 0) {
+      setIsEditAll(true);
+      setEditMode(true);
+    } else {
+      setIsEditAll(false);
+      setEditMode(false);
+    }
+  }, [selectedRows]);
+
   // const editMode = selectedRows.length > 0;
 
   return (
@@ -348,6 +359,8 @@ export default function DSColumnTable({
               : `${rows.length} dataset columns`
           }`}
           columns={moreColumns}
+          initialSortedColumn="uniqueId"
+          initialSortOrder="asc"
           rowId="uniqueId"
           hasScroll={true}
           rows={(editMode ? editedRows : rows).map((row, i) => ({
