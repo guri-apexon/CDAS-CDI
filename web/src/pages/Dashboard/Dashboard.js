@@ -73,7 +73,7 @@ const Dashboard = () => {
     dispatch(getFlowDetailsOfStudy(dashboard.selectedCard.prot_id));
   };
 
-  const fetchLatestData = (control = "", activeOnly = "") => {
+  const fetchLatestData = (control = "", activeOnly = 1) => {
     if (dashboard?.selectedCard?.prot_id) {
       dispatch(
         getDatasetIngestionOfStudy(
@@ -88,12 +88,9 @@ const Dashboard = () => {
   useEffect(() => {
     if (dashboard?.selectedCard?.prot_id) {
       updateData();
+      fetchLatestData();
     }
   }, [dashboard.selectedCard]);
-
-  // useEffect(() => {
-  //   dispatch(getDatasetIngestionOfStudy("a020E000005Szl0QAC"));
-  // }, []);
 
   return (
     <>
