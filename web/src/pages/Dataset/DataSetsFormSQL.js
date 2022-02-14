@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
+import React, { useEffect } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch, useSelector } from "react-redux";
 import { reduxForm, getFormValues, formValueSelector } from "redux-form";
@@ -84,13 +84,18 @@ const styles = {
 };
 
 const DataSetsFormBase = (props) => {
-  const { handleSubmit, classes, datakind, formValues } = props;
+  const { handleSubmit, classes, datakind, formValues, onChange } = props;
   const dispatch = useDispatch();
   const dataSets = useSelector((state) => state.dataSets);
 
   const handlePreview = () => {
     console.log("data", dataSets);
   };
+  useEffect(() => {
+    if (formValues && ["Yes", "No"].includes(formValues)) {
+      onChange(formValues.toLowerCase());
+    }
+  }, [formValues]);
 
   return (
     <form onSubmit={handleSubmit}>
