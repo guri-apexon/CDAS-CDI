@@ -21,12 +21,6 @@ async function checkNameExists(name, datasetid = null) {
   return res.rowCount;
 }
 
-async function getLastVersion(datasetid) {
-  const searchQuery = `SELECT version from ${schemaName}.dataset_history where datasetid = $1 order by updt_tm desc limit 1`;
-  const res = await DB.executeQuery(searchQuery, [datasetid]);
-  return res.rows[0].version;
-}
-
 async function saveSQLDataset(req, res, values, datasetId) {
   try {
     Logger.info({ message: "create Dataset" });

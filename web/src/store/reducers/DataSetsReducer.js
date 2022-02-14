@@ -60,6 +60,7 @@ export const initialState = {
     footerRowNumber: "",
     overrideStaleAlert: 3,
     rowDecreaseAllowed: 0,
+    loadType: "Cumulative",
   },
   selectedDataset: {},
   defaultDelimiter: "COMMA",
@@ -67,6 +68,7 @@ export const initialState = {
   defaultQuote: `""`,
   defaultHeaderRowNumber: 1,
   defaultFooterRowNumber: "",
+  defaultLoadType: "Cumulative",
   error: null,
   sucessMsg: null,
   datakind: [],
@@ -214,6 +216,7 @@ const DataFlowReducer = (state = initialState, action) =>
           data_freq,
           ovrd_stale_alert,
           rowdecreaseallowed,
+          incremental,
           datasetid,
         } = datasetDetail;
         if (type) {
@@ -232,6 +235,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.transferFrequency = data_freq;
           newState.formData.overrideStaleAlert = ovrd_stale_alert;
           newState.formData.rowDecreaseAllowed = rowdecreaseallowed || 0;
+          newState.formData.loadType = incremental;
           newState.formData.datasetid = datasetid;
         }
         newState.dataFlowdetail = action.datasetDetail;
