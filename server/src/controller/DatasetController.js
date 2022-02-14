@@ -73,8 +73,8 @@ exports.saveDatasetData = async (req, res) => {
       values.delimiter || null,
       values.escapeCharacter || null,
       values.quote || null,
-      values.headerRowNumber || null,
-      values.footerRowNumber || null,
+      values.headerRowNumber || 0,
+      values.footerRowNumber || 0,
       values.active == true ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
@@ -86,9 +86,10 @@ exports.saveDatasetData = async (req, res) => {
       new Date(),
       values.datapackageid,
     ];
-    const searchQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimitier, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`;
+    const searchQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`;
 
-    await DB.executeQuery(searchQuery, body);
+    const inset = await DB.executeQuery(searchQuery, body);
+    return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
     //throw error in json response with status 500.
     console.log(err, "err");
@@ -113,8 +114,8 @@ exports.updateDatasetData = async (req, res) => {
       values.delimiter || null,
       values.escapeCharacter || null,
       values.quote || null,
-      values.headerRowNumber || null,
-      values.footerRowNumber || null,
+      values.headerRowNumber || 0,
+      values.footerRowNumber || 0,
       values.active == true ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
@@ -124,9 +125,9 @@ exports.updateDatasetData = async (req, res) => {
       values.rowDecreaseAllowed || 0,
       new Date(),
     ];
-    const searchQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimitier = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16 where datasetid = $17`;
+    const searchQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16 where datasetid = $17`;
 
-    DB.executeQuery(searchQuery, [...body, values.datasetid]).then(() => {
+    const inset = await DB.executeQuery(searchQuery, [...body, values.datasetid]).then(() => {
       const hisBody = [
         values.datasetid + (version_no + 1),
         values.datasetid,
@@ -136,6 +137,7 @@ exports.updateDatasetData = async (req, res) => {
         values.datapackageid,
       ];
     });
+    return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
     //throw error in json response with status 500.
     console.log(err, "err");

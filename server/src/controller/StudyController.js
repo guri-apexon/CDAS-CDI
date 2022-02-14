@@ -173,7 +173,7 @@ exports.getDatasetIngestionDashboardDetail = function (req, res) {
     const testFlag = req.query.testFlag || null;
     const active = req.query.active || null;
     if (testFlag == 1 || testFlag == 0) {
-      where += ` and ds.testflag in (${testFlag}) `;
+      where += ` and df.testflag in (${testFlag}) `;
     }
     if (active == 1 || active == 0) {
       where += ` and ds.active in (${active}) `;
@@ -255,21 +255,21 @@ cteTrnx.datapackageid ,
 cteTrnx.datasetid ,
 cteTrnx.downloadtrnx,
 cteTrnx.previous_downloadtrnx,
-ds.type AS dataset_type ,
+ts.datasettype AS dataset_type ,
 ds.mnemonic datasetname,
 df.type datastructure ,
 dp.type pacakagetype,
 dp.path packagepath,
-dp.name AS packagenamingconvention ,
+ts.datapackagename AS packagenamingconvention ,
 ds.datakindid AS ClinicalDataTypeId ,
 vn.name as clinicalDataTypeName,
 df.vend_id as vendorsourceid,
 vn1.vend_nm_stnd as vendorsource,
 ds.TYPE FileType,
 ds.PATH FilePath,
-ds.name AS filenamingconvention ,
+ts.datasetname AS filenamingconvention ,
 ds.rowdecreaseallowed ,
-ds.testflag AS testdataflow ,
+df.testflag AS testdataflow ,
 ds.staledays AS overridestalealert ,
 df.connectiontype ,
 df.connectiondriver,      
