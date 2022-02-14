@@ -96,10 +96,20 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = false;
         newState.isDatasetCreated = !state.isDatasetCreated;
         newState.selectedDataset = action.dataset;
+        if (action.values.fileType) {
+          newState.formData = action.values;
+        } else {
+          newState.formDataSQL = action.values;
+        }
         break;
       case STORE_DATASET_FAILURE:
         newState.loading = false;
         newState.error = action.message;
+        if (action.values.fileType) {
+          newState.formData = action.values;
+        } else {
+          newState.formDataSQL = action.values;
+        }
         break;
       case HIDE_ERROR_MSG:
         newState.error = null;
@@ -193,7 +203,7 @@ const DataFlowReducer = (state = initialState, action) =>
           mnemonic,
           active,
           charset,
-          delimitier,
+          delimiter,
           escapecode,
           quote,
           headerrownumber,
@@ -211,7 +221,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.datasetName = mnemonic;
           newState.formData.active = active === 1 ? true : false;
           newState.formData.encoding = charset;
-          newState.formData.delimiter = delimitier;
+          newState.formData.delimiter = delimiter;
           newState.formData.escapeCharacter = escapecode;
           newState.formData.quote = quote;
           newState.formData.headerRowNumber = headerrownumber;
