@@ -173,7 +173,7 @@ exports.getDatasetIngestionDashboardDetail = function (req, res) {
     const testFlag = req.query.testFlag || null;
     const active = req.query.active || null;
     if (testFlag == 1 || testFlag == 0) {
-      where += ` and ds.testflag in (${testFlag}) `;
+      where += ` and df.testflag in (${testFlag}) `;
     }
     if (active == 1 || active == 0) {
       where += ` and ds.active in (${active}) `;
@@ -255,21 +255,21 @@ cteTrnx.datapackageid ,
 cteTrnx.datasetid ,
 cteTrnx.downloadtrnx,
 cteTrnx.previous_downloadtrnx,
-ds.type AS dataset_type ,
+ts.datasettype AS dataset_type ,
 ds.mnemonic datasetname,
 df.type datastructure ,
 dp.type pacakagetype,
 dp.path packagepath,
-dp.name AS packagenamingconvention ,
+ts.datapackagename AS packagenamingconvention ,
 ds.datakindid AS ClinicalDataTypeId ,
 vn.name as clinicalDataTypeName,
 df.vend_id as vendorsourceid,
 vn1.vend_nm_stnd as vendorsource,
 ds.TYPE FileType,
 ds.PATH FilePath,
-ds.name AS filenamingconvention ,
+ts.datasetname AS filenamingconvention ,
 ds.rowdecreaseallowed ,
-ds.testflag AS testdataflow ,
+df.testflag AS testdataflow ,
 ds.staledays AS overridestalealert ,
 df.connectiontype ,
 df.connectiondriver,      
@@ -292,10 +292,31 @@ cteTrnx.childstatus,
 cteTrnx.ERRMSG,
 CASE WHEN ts.downloadstatus = 'SUCCESSFUL' AND ts.processstatus = 'SUCCESSFUL' THEN 'LOADED WITHOUT ISSUES'
 WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'PROCESSED WITH ERRORS' THEN 'LOADED WITH INGESTION ISSUES'
-WHEN ts.downloadstatus  = 'FAILED' OR ts.processstatus   = 'FAILED' THEN 'FAILED'
+WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'IN PROGRESS' THEN 'IN PROGRESS'
+WHEN ts.downloadstatus  = 'IN PROGRESS' AND ts.processstatus  = '' THEN 'IN PROGRESS'
+WHEN ts.downloadstatus  = 'QUEUED' AND ts.processstatus  = '' THEN 'QUEUED FOR NEW FILE CHECK'
+WHEN ts.downloadstatus  = 'QUEUED' AND ts.processstatus  = 'SUCCESSFUL' THEN 'SUCCESSFUL'
 WHEN ts.downloadstatus  = 'IN PROGRESS' OR ts.processstatus  = 'IN PROGRESS' THEN 'IN PROGRESS'
 WHEN ts.downloadstatus  = 'ABORTED' OR ts.processstatus  = 'ABORTED' THEN 'FAILED'
-END AS datastatus,    -- NEEDS COMPLETE CASE STATEMENT
+WHEN ts.downloadstatus  = 'SKIPPED' OR ts.processstatus  = 'SKIPPED' THEN 'SKIPPED'
+WHEN ts.downloadstatus  = 'FAILED' OR ts.processstatus = 'FAILED' AND ts.failurecat NOT IN ('INTERNAL ERROR', 'GENERAL ERROR','EDIT CHECK ERRORS','TO-DO','TO_DO','T0-DO') THEN ts.failurecat
+WHEN ts.downloadstatus  = 'FAILED' OR ts.processstatus   = 'FAILED' THEN 'FAILED'
+WHEN cteTrnx.ERRMSG = 'DUPLICATE FILE' THEN 'DUPLICATE FILE'
+WHEN cteTrnx.ERRMSG = 'NO RECORDS DOWNLOADED' THEN 'NO RECORDS DOWNLOADED'
+WHEN cteTrnx.ERRMSG = 'NO FILES IN SOURCE' THEN 'NO FILES IN SOURCE'
+ELSE 'FAILED' END AS datasetstatus,    -- NEEDS COMPLETE CASE STATEMENT
+CASE WHEN (dc.no_of_staledays > ds.staledays) THEN 'STALE'
+WHEN ds.active = 0 THEN 'INACTIVE'
+WHEN ts.downloadstatus = 'SUCCESSFUL' AND ts.processstatus = 'SUCCESSFUL' THEN 'UP-TO-DATE'
+WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'PROCESSED WITH ERRORS' THEN 'UP-TO-DATE'
+WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'IN PROGRESS' THEN 'PROCESSING'
+WHEN ts.downloadstatus  = 'IN PROGRESS' AND ts.processstatus  = '' THEN 'PROCESSING'
+WHEN ts.downloadstatus  = 'QUEUED' AND ts.processstatus  = '' THEN 'QUEUED'
+WHEN ts.downloadstatus  = 'QUEUED' AND ts.processstatus  = 'SUCCESSFUL' THEN 'UP-TO-DATE'
+WHEN ts.downloadstatus  = 'IN PROGRESS' OR ts.processstatus  = 'IN PROGRESS' THEN 'PROCESSING'
+WHEN ts.downloadstatus  = 'SKIPPED' OR ts.processstatus  = 'SKIPPED' THEN 'SKIPPED'
+WHEN ts.downloadstatus  = 'FAILED' OR ts.processstatus = 'FAILED' THEN 'FAILED'
+ELSE 'FAILED' END AS jobstatus,    -- NEEDS COMPLETE CASE STATEMENT
 cteTrnx.pct_cng,
 case when cteTrnx.pct_cng > ds.rowdecreaseallowed then cteTrnx.pct_cng end as EXCEEDS_PCT_CNG, -- needs comparison logic to replace 'Y' for KPI
 case when dc.no_of_staledays > ds.staledays then 'yes' else 'no' end  as IS_STALE, --needs comparison logic to replace 'Y' for KPI,

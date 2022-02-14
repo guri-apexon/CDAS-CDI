@@ -95,6 +95,7 @@ const DataSetsFormBase = (props) => {
     defaultQuote,
     defaultHeaderRowNumber,
     defaultFooterRowNumber,
+    values,
   } = props;
 
   const setDefaultValues = (e) => {
@@ -113,6 +114,8 @@ const DataSetsFormBase = (props) => {
       );
     }
   };
+
+  console.log(values, "values12");
 
   return (
     <form onSubmit={handleSubmit}>
@@ -250,6 +253,7 @@ const DataSetsFormBase = (props) => {
             <Grid item md={6}>
               <ReduxFormAutocomplete
                 name="clinicalDataType"
+                autoSelect
                 id="clinicalDataType"
                 label="Clinical Data Type"
                 source={datakind}
@@ -295,14 +299,14 @@ const ReduxForm = compose(
   reduxForm({
     form: "DataSetsForm",
     validate: dataSetsValidation,
-  })
+  }),
+  connect((state) => ({ values: getFormValues("DataSetsForm")(state) }))
 )(DataSetsFormBase);
 
 const selector = formValueSelector("DataSetsForm");
 const DataSetsForm = connect((state) => ({
   initialValues: state.dataSets.formData, // pull initial values from account reducer
   enableReinitialize: true,
-  values: getFormValues("DataSetsForm")(state),
   formValues: selector(state, "fileType"),
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
