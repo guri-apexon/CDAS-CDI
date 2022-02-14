@@ -67,7 +67,7 @@ exports.saveDatasetData = async (req, res) => {
     }
     const body = [
       datasetId,
-      values.datasetName || null,
+      values.datasetName,
       values.fileType || null,
       values.encoding || null,
       values.delimiter || null,
