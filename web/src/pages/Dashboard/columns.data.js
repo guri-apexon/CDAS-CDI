@@ -371,7 +371,7 @@ const columns = [
     filterComponent: createAutocompleteFilter("vendorsource"),
   },
   {
-    header: "Current Job Status",
+    header: "Dataset Status",
     accessor: "jobstatus",
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("jobstatus"),
@@ -386,7 +386,7 @@ const columns = [
     filterComponent: createAutocompleteFilter("filename"),
   },
   {
-    header: "Last Transfer Status",
+    header: "Last File Transfer Status",
     accessor: "datasetstatus",
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("datasetstatus"),
@@ -394,7 +394,7 @@ const columns = [
     customCell: StatusCell,
   },
   {
-    header: "Exceed % Change",
+    header: "Exceeds % change indicator",
     accessor: "exceeds_pct_cng",
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("exceeds_pct_cng"),
@@ -402,7 +402,7 @@ const columns = [
     customCell: exceedPerCell,
   },
   {
-    header: "Last Transfer Date",
+    header: "Last File Transfer Date",
     accessor: "lastfiletransferred",
     sortFunction: compareDates,
     customCell: DateCell,
