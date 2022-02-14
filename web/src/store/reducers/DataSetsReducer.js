@@ -235,7 +235,8 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.transferFrequency = data_freq;
           newState.formData.overrideStaleAlert = ovrd_stale_alert;
           newState.formData.rowDecreaseAllowed = rowdecreaseallowed || 0;
-          newState.formData.loadType = incremental;
+          newState.formData.loadType =
+            incremental === "Y" ? "Incremental" : "Cumulative";
           newState.formData.datasetid = datasetid;
         }
         newState.dataFlowdetail = action.datasetDetail;

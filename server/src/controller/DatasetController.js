@@ -26,7 +26,7 @@ async function saveSQLDataset(req, res, values, datasetId) {
     Logger.info({ message: "create Dataset" });
     const body = [
       datasetId,
-      values.datasetName || null,
+      values.datasetName,
       values.active == true ? 1 : 0,
       values.clinicalDataType ? values.clinicalDataType[0] : null,
       values.customSQLQuery || null,
@@ -36,9 +36,9 @@ async function saveSQLDataset(req, res, values, datasetId) {
       new Date(),
       values.datapackageid || null,
     ];
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, custm_sql_query, customsql, tbl_nm, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-    await DB.executeQuery(insertQuery, body);
-    return apiResponse.successResponse(res, "Operation success");
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_query, customsql, tbl_nm, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+    const data = await DB.executeQuery(insertQuery, body);
+    return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {
     //throw error in json response with status 500.
     console.log(err, "err");
@@ -83,10 +83,10 @@ exports.saveDatasetData = async (req, res) => {
       new Date(),
       new Date(),
       values.datapackageid,
-      values.incremental || null,
+      values.loadType == "Incremental" ? "Y" : "N",
     ];
-    await DB.executeQuery(insertQuery, body);
-    return apiResponse.successResponse(res, "Operation success");
+    const inset = await DB.executeQuery(insertQuery, body);
+    return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
     //throw error in json response with status 500.
     console.log(err, "err");
@@ -122,10 +122,13 @@ exports.updateDatasetData = async (req, res) => {
       values.overrideStaleAlert || null,
       values.rowDecreaseAllowed || 0,
       new Date(),
-      values.incremental || null,
+      values.loadType == "Incremental" ? "Y" : "N",
     ];
-    await DB.executeQuery(updateQuery, [...body, values.datasetid]);
-    return apiResponse.successResponse(res, "Operation success");
+    const inset = await DB.executeQuery(updateQuery, [
+      ...body,
+      values.datasetid,
+    ]);
+    return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
     //throw error in json response with status 500.
     console.log(err, "err");
