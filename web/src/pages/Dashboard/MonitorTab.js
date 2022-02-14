@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { neutral8 } from "apollo-react/colors";
 import Hero from "apollo-react/components/Hero";
 import Grid from "apollo-react/components/Grid";
+import Box from "apollo-react/components/Box";
 import Table from "apollo-react/components/Table";
 import Loader from "apollo-react/components/Loader";
 import Typography from "apollo-react/components/Typography";
@@ -36,6 +37,8 @@ export default function MonitorTab({ fetchLatestData }) {
   const [rows, setRowData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [activeOnly, setActiveOnly] = useState(true);
+  const [columnsState, setColumns] = React.useState(moreColumnsWithFrozen);
+  const [hasUpdated, setHasUpdated] = React.useState(false);
   const [summary, setSummary] = useState({
     failed_loads: 0,
     quarantined_files: 0,
@@ -98,6 +101,37 @@ export default function MonitorTab({ fetchLatestData }) {
       </Button>
     </div>
   );
+  if (rows.length === 0) {
+    return (
+      <div>
+        <Box
+          className="h-v-center flex-column add-btn-container"
+          style={{ height: "100vh" }}
+        >
+          <DatasetsIcon
+            style={{
+              position: "relative",
+              margin: "0 auto",
+              width: "60px",
+              height: "60px",
+            }}
+          />
+          <Typography
+            variant="title1"
+            style={{ fontSize: 24, lineHeight: "48px" }}
+          >
+            Nothing to See Here
+          </Typography>
+          <Typography
+            variant="title1"
+            style={{ fontSize: 20, lineHeight: "24px" }}
+          >
+            Please select a study.
+          </Typography>
+        </Box>
+      </div>
+    );
+  }
   return (
     <div>
       {dashboard.summaryLoading && <Loader />}
@@ -284,7 +318,7 @@ export default function MonitorTab({ fetchLatestData }) {
                 {`${totalCount} datasets`}
               </div>
             }
-            columns={moreColumnsWithFrozen}
+            columns={columnsState}
             rows={rows}
             initialSortedColumn="datasetname"
             rowsPerPageOptions={[10, 50, 100, "All"]}
@@ -294,7 +328,15 @@ export default function MonitorTab({ fetchLatestData }) {
               truncate: true,
             }}
             CustomHeader={(props) => <CustomHeader {...props} />}
-            columnSettings={{ enabled: true }}
+            columnSettings={{
+              enabled: true,
+              onChange: (columns) => {
+                setHasUpdated(true);
+                setColumns(columns);
+              },
+              defaultColumns: moreColumnsWithFrozen,
+              frozenColumnsEnabled: true,
+            }}
           />
         </Grid>
       </Grid>

@@ -379,7 +379,7 @@ const columns = [
     customCell: JobstatusCell,
   },
   {
-    header: "Last File Transfered",
+    header: "Last File Transferred",
     accessor: "filename",
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("filename"),
@@ -462,20 +462,15 @@ const columnsToAdd = [
   },
 ];
 
-const moreColumnsWithFrozenWithoutActions = [
-  ...columns.map((column) => ({ ...column })).slice(0, -1),
-  ...columnsToAdd.map((column) => ({ ...column, hidden: true })),
-];
-
 const moreColumnsWithFrozen = [
-  ...moreColumnsWithFrozenWithoutActions,
-  columns.slice(-1)[0],
+  ...columns.map((column) => ({ ...column })),
+  ...columnsToAdd.map((column) => ({ ...column, hidden: true })),
 ];
 
 moreColumnsWithFrozen[0].frozen = true;
 moreColumnsWithFrozen[1].frozen = true;
 moreColumnsWithFrozen[2].frozen = true;
 
-export { moreColumnsWithFrozen, moreColumnsWithFrozenWithoutActions };
+export { moreColumnsWithFrozen };
 
 export default columns;
