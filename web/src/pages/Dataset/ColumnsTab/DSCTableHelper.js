@@ -97,12 +97,9 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   );
 };
 
-export const EditableCell = ({ row, column: { accessor: key } }) => {
+export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
   const { editMode } = row;
-  const errorText =
-    checkRequired(row[key]) ||
-    checkAlphaNumeric(row[key], key) ||
-    checkFormat(row[key], key, row.dataType);
+  const errorText = checkRequired(row[key]);
   return editMode ? (
     <TextField
       size="small"
@@ -114,10 +111,48 @@ export const EditableCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={
-        !row.isInitLoad && key === "columnName" && errorText ? true : false
+      error={!row.isInitLoad && errorText ? true : false}
+      helperText={!row.isInitLoad ? errorText : ""}
+      {...fieldStyles}
+    />
+  ) : (
+    row[key]
+  );
+};
+
+export const FormatCell = ({ row, column: { accessor: key } }) => {
+  const { editMode } = row;
+  const errorText = checkFormat(row[key], key, row.dataType);
+  return editMode ? (
+    <TextField
+      size="small"
+      fullWidth
+      value={row[key]}
+      onChange={(e) =>
+        row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      helperText={!row.isInitLoad && key === "columnName" ? errorText : ""}
+      error={!row.isInitLoad && errorText ? true : false}
+      helperText={!row.isInitLoad ? errorText : ""}
+      {...fieldStyles}
+    />
+  ) : (
+    row[key]
+  );
+};
+
+export const EditableCell = ({ row, column: { accessor: key } }) => {
+  const { editMode } = row;
+  const errorText = checkAlphaNumeric(row[key], key);
+  return editMode ? (
+    <TextField
+      size="small"
+      fullWidth
+      value={row[key]}
+      onChange={(e) =>
+        row.editRow(row.uniqueId, key, e.target.value, errorText)
+      }
+      error={!row.isInitLoad && errorText ? true : false}
+      helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
     />
   ) : (
@@ -198,7 +233,7 @@ export const columns = [
   {
     header: "Column Name/Designator",
     accessor: "columnName",
-    customCell: EditableCell,
+    customCell: ColumnNameCell,
     sortFunction: compareStrings,
   },
   // {
@@ -209,7 +244,7 @@ export const columns = [
   {
     header: "Format",
     accessor: "format",
-    customCell: EditableCell,
+    customCell: FormatCell,
   },
   {
     header: "Data Type",
