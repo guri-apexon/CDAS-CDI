@@ -88,6 +88,8 @@ const Dataset = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("sftp");
+  const [columnsActive, setColumnsActive] = useState(false);
+  const [customSql, setCustomSql] = useState("no");
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
@@ -116,6 +118,17 @@ const Dataset = () => {
 
   const handleChangeTab = (event, v) => {
     setValue(v);
+  };
+  const getDataSetType = (type) => {
+    if (type?.toLowerCase() === "sftp" || type?.toLowerCase() === "ftps") {
+      return "sftp";
+    }
+    return "jdbc";
+  };
+
+  const onChangeSql = (val) => {
+    setColumnsActive(val === "No");
+    setCustomSql(val);
   };
 
   useEffect(() => {
@@ -155,6 +168,9 @@ const Dataset = () => {
   useEffect(() => {
     if (dataFlowdetail?.loc_typ) {
       setLocationType(dataFlowdetail?.loc_typ);
+      if (getDataSetType(dataFlowdetail?.loc_typ) === "sftp") {
+        setColumnsActive(true);
+      }
     }
   }, [dataFlowdetail]);
 
@@ -335,10 +351,7 @@ const Dataset = () => {
                   {dataSettabs.map((tab) => (
                     <Tab
                       label={tab}
-                      disabled={
-                        Object.keys(selectedDataset).length <= 0 &&
-                        tab === "Dataset Columns"
-                      }
+                      disabled={!columnsActive && tab === "Dataset Columns"}
                     />
                   ))}
                 </Tabs>
@@ -354,7 +367,14 @@ const Dataset = () => {
               {value === 0 &&
                 locationType?.toLowerCase() !== "sftp" &&
                 locationType?.toLowerCase() !== "ftps" && (
-                  <DataSetsFormSQL loading={loading} onSubmit={onSubmit} />
+                  <DataSetsFormSQL
+                    onChange={onChangeSql}
+                    defaultFields={{
+                      sql: customSql,
+                    }}
+                    loading={loading}
+                    onSubmit={onSubmit}
+                  />
                   // <JDBCForm />
                 )}
               {value === 1 && <ColumnsTab locationType={locationType} />}

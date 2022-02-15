@@ -39,6 +39,7 @@ export default function DSColumnTable({
     values: "",
     isInitLoad: true,
     isHavingError: false,
+    isHavingColumnName: false,
   }));
 
   const [rows, setRows] = useState(initialRows);
@@ -115,6 +116,7 @@ export default function DSColumnTable({
           values: "",
           isInitLoad: true,
           isHavingError: false,
+          isHavingColumnName: false,
         },
       ];
       setRows([...rows, ...singleRow]);
@@ -156,6 +158,7 @@ export default function DSColumnTable({
           values: "",
           isInitLoad: true,
           isHavingError: false,
+          isHavingColumnName: false,
         })
       );
       setRows((rw) => [...rw, ...multiRows]);
@@ -262,9 +265,9 @@ export default function DSColumnTable({
   };
 
   const onCancelAll = () => {
-    setEditedRows([]);
     setSelectedRows([]);
     setIsEditAll(false);
+    setEditedRows([...rows]);
   };
 
   const onRowCancel = (uniqueId) => {
@@ -298,11 +301,36 @@ export default function DSColumnTable({
     setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
   };
 
+  const showColumnNameRequried = () => {
+    messageContext.showErrorMessage("Column Name Should be there");
+  };
+
   const editRow = (uniqueId, key, value, errorTxt) => {
     // console.log(uniqueId, "ColumdId");
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
+          if (key === "columnName") {
+            if (value.length >= 1) {
+              return {
+                ...row,
+                [key]: value.trim(),
+                isHavingColumnName: true,
+              };
+            }
+            showColumnNameRequried();
+            return {
+              ...row,
+              [key]: value,
+              isHavingColumnName: false,
+            };
+          }
+          if (key === "values") {
+            return {
+              ...row,
+              [key]: value.trim(),
+            };
+          }
           if (row.isInitLoad) {
             return {
               ...row,

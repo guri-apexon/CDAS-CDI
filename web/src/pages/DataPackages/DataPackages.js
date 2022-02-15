@@ -29,7 +29,7 @@ import {
 // import CreatepackageForm from "./CreatePackageForm";
 
 const compressionTypes = [
-  { text: "Not Comporessed", value: "not_compressed" },
+  { text: "Not Compressed", value: "not_compressed" },
   { text: "Zip", value: "zip" },
   { text: "7Z", value: "7z" },
   { text: "SAS XPT", value: "xpt" },
