@@ -39,6 +39,7 @@ export default function DSColumnTable({
     values: "",
     isInitLoad: true,
     isHavingError: false,
+    isHavingColumnName: false,
   }));
 
   const [rows, setRows] = useState(initialRows);
@@ -115,6 +116,7 @@ export default function DSColumnTable({
           values: "",
           isInitLoad: true,
           isHavingError: false,
+          isHavingColumnName: false,
         },
       ];
       setRows([...rows, ...singleRow]);
@@ -156,6 +158,7 @@ export default function DSColumnTable({
           values: "",
           isInitLoad: true,
           isHavingError: false,
+          isHavingColumnName: false,
         })
       );
       setRows((rw) => [...rw, ...multiRows]);
@@ -262,9 +265,9 @@ export default function DSColumnTable({
   };
 
   const onCancelAll = () => {
-    setEditedRows([]);
     setSelectedRows([]);
     setIsEditAll(false);
+    setEditedRows([...rows]);
   };
 
   const onRowCancel = (uniqueId) => {
