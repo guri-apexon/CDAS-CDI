@@ -314,7 +314,7 @@ export default function DSColumnTable({
             if (value.length >= 1) {
               return {
                 ...row,
-                [key]: value,
+                [key]: value.trim(),
                 isHavingColumnName: true,
               };
             }
@@ -323,6 +323,12 @@ export default function DSColumnTable({
               ...row,
               [key]: value,
               isHavingColumnName: false,
+            };
+          }
+          if (key === "values") {
+            return {
+              ...row,
+              [key]: value.trim(),
             };
           }
           if (row.isInitLoad) {
