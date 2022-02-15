@@ -645,7 +645,7 @@ exports.syncDataFlow = async (req, res) => {
 exports.getDataflowDetail = async (req, res) => {
   try {
     const dataFlowId = req.params.dataFlowId;
-    const searchQuery = `SELECT data_flow_nm, type, description, loc_typ from ${schemaName}.dataflow as dataflowTbl JOIN ${schemaName}.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id WHERE dataflowid = $1`;
+    const searchQuery = `SELECT name, type, description, loc_typ from ${schemaName}.dataflow as dataflowTbl JOIN ${schemaName}.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id WHERE dataflowid = $1`;
     Logger.info({
       message: "datafloDetail",
     });

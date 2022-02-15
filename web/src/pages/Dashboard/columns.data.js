@@ -17,12 +17,15 @@ import {
   compareDates,
   compareStrings,
   createStringSearchFilter,
+  numberSearchFilter,
   dateFilterV2,
+  compareNumbers,
 } from "apollo-react/components/Table";
 import { ReactComponent as StaleIcon } from "../../components/Icons/Stale.svg";
 import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
 import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
 import "./Dashboard.scss";
+import { IntegerFilter } from "../../utils/index";
 
 const DateFilter = ({ accessor, filters, updateFilterValue }) => {
   return (
@@ -95,8 +98,8 @@ const createAutocompleteFilter =
     return (
       <div
         style={{
-          minWidth: 144,
-          maxWidth: 200,
+          minWidth: 150,
+          maxWidth: 300,
           position: "relative",
         }}
       >
@@ -198,7 +201,8 @@ const JobstatusCell = ({ row, column: { accessor } }) => {
         </div>
       )}
       {(status?.toLowerCase() === "processing" ||
-        status?.toLowerCase() === "queued") && (
+        status?.toLowerCase() === "queued" ||
+        status?.toLowerCase() === "skipped") && (
         <div>
           <Tag label={status} className="queueStatus" />
         </div>
@@ -209,9 +213,13 @@ const JobstatusCell = ({ row, column: { accessor } }) => {
 
 const StatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
-  return (
-    <div>
-      {status?.toLowerCase() === "successful" && (
+  if (
+    status?.toLowerCase() === "loaded without issues" ||
+    status?.toLowerCase() === "successful" ||
+    status?.toLowerCase() === "in progress"
+  ) {
+    return (
+      <div>
         <div style={{ position: "relative" }}>
           <Check
             style={{
@@ -224,8 +232,16 @@ const StatusCell = ({ row, column: { accessor } }) => {
           />
           {status}
         </div>
-      )}
-      {status?.toLowerCase() === "quarantined" && (
+      </div>
+    );
+  }
+  if (
+    status?.toLowerCase() === "quarantined" ||
+    status?.toLowerCase() === "queued for new file check" ||
+    status?.toLowerCase() === "skipped"
+  ) {
+    return (
+      <div>
         <div style={{ position: "relative" }}>
           <StatusNegativeIcon
             style={{
@@ -238,22 +254,12 @@ const StatusCell = ({ row, column: { accessor } }) => {
           />
           {status}
         </div>
-      )}
-      {status?.toLowerCase() === "failed" && (
-        <div style={{ position: "relative" }}>
-          <FailureIcon
-            style={{
-              position: "relative",
-              top: 4,
-              marginRight: 8,
-              width: "14px",
-              height: "17px",
-            }}
-          />
-          {status}
-        </div>
-      )}
-      {status?.toLowerCase() === "ingestion issues" && (
+      </div>
+    );
+  }
+  if (status?.toLowerCase() === "loaded with ingestion issues") {
+    return (
+      <div>
         <div style={{ position: "relative" }}>
           <IssueIcon
             style={{
@@ -272,7 +278,23 @@ const StatusCell = ({ row, column: { accessor } }) => {
             View
           </Link>
         </div>
-      )}
+      </div>
+    );
+  }
+  return (
+    <div>
+      <div style={{ position: "relative" }}>
+        <FailureIcon
+          style={{
+            position: "relative",
+            top: 4,
+            marginRight: 8,
+            width: "14px",
+            height: "17px",
+          }}
+        />
+        {status}
+      </div>
     </div>
   );
 };
@@ -352,38 +374,38 @@ const columns = [
     filterComponent: createAutocompleteFilter("vendorsource"),
   },
   {
-    header: "Current Job Status",
-    accessor: "datastatus",
+    header: "Dataset Status",
+    accessor: "jobstatus",
     sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("datastatus"),
-    filterComponent: createAutocompleteFilter("datastatus"),
+    filterFunction: createStringArraySearchFilter("jobstatus"),
+    filterComponent: createAutocompleteFilter("jobstatus"),
     customCell: JobstatusCell,
   },
   {
-    header: "Last File Transfered",
+    header: "Last File Transferred",
     accessor: "filename",
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("filename"),
     filterComponent: createAutocompleteFilter("filename"),
   },
   {
-    header: "Last Transfer Status",
-    accessor: "childstatus",
+    header: "Last File Transfer Status",
+    accessor: "datasetstatus",
     sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("childstatus"),
-    filterComponent: createAutocompleteFilter("childstatus"),
+    filterFunction: createStringArraySearchFilter("datasetstatus"),
+    filterComponent: createAutocompleteFilter("datasetstatus"),
     customCell: StatusCell,
   },
   {
-    header: "Exceed % Change",
+    header: "Exceeds % change indicator",
     accessor: "exceeds_pct_cng",
-    sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("exceeds_pct_cng"),
-    filterComponent: createAutocompleteFilter("exceeds_pct_cng"),
+    sortFunction: compareNumbers,
+    filterFunction: numberSearchFilter("exceeds_pct_cng"),
+    filterComponent: IntegerFilter,
     customCell: exceedPerCell,
   },
   {
-    header: "Last Transfer Date",
+    header: "Last File Transfer Date",
     accessor: "lastfiletransferred",
     sortFunction: compareDates,
     customCell: DateCell,
@@ -443,20 +465,15 @@ const columnsToAdd = [
   },
 ];
 
-const moreColumnsWithFrozenWithoutActions = [
-  ...columns.map((column) => ({ ...column })).slice(0, -1),
-  ...columnsToAdd.map((column) => ({ ...column, hidden: true })),
-];
-
 const moreColumnsWithFrozen = [
-  ...moreColumnsWithFrozenWithoutActions,
-  columns.slice(-1)[0],
+  ...columns.map((column) => ({ ...column })),
+  ...columnsToAdd.map((column) => ({ ...column, hidden: true })),
 ];
 
 moreColumnsWithFrozen[0].frozen = true;
 moreColumnsWithFrozen[1].frozen = true;
 moreColumnsWithFrozen[2].frozen = true;
 
-export { moreColumnsWithFrozen, moreColumnsWithFrozenWithoutActions };
+export { moreColumnsWithFrozen };
 
 export default columns;

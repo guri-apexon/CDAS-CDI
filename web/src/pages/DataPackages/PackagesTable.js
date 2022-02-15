@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { reset } from "redux-form";
 import Typography from "apollo-react/components/Typography";
 import Tooltip from "apollo-react/components/Tooltip";
 import IconButton from "apollo-react/components/IconButton";
@@ -73,6 +74,8 @@ const PackagesList = ({ data, userInfo }) => {
 
   const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
+    dispatch(reset("DataSetsForm"));
+    dispatch(reset("DataSetsFormSQL"));
     history.push("/datasets-management");
   };
 
@@ -210,7 +213,7 @@ const PackagesList = ({ data, userInfo }) => {
         >
           {menuItems.map((menu) => {
             return (
-              <MenuItem size="small" onClick={menu.onClick}>
+              <MenuItem key={menu.text} size="small" onClick={menu.onClick}>
                 {menu.text}
               </MenuItem>
             );

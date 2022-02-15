@@ -156,7 +156,9 @@ const DataFlowFormBase = (props) => {
                 fullWidth
               >
                 {dataStruct?.map((type) => (
-                  <MenuItem value={type.value}>{type.label}</MenuItem>
+                  <MenuItem key={type.value} value={type.value}>
+                    {type.label}
+                  </MenuItem>
                 ))}
               </ReduxFormSelect>
               <ReduxFormSelect
@@ -166,7 +168,9 @@ const DataFlowFormBase = (props) => {
                 fullWidth
               >
                 {locationTypes?.map((type) => (
-                  <MenuItem value={type}>{type}</MenuItem>
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
                 ))}
               </ReduxFormSelect>
               <ReduxFormAutocomplete
