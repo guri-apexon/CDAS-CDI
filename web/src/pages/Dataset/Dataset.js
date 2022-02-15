@@ -7,7 +7,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
 import Banner from "apollo-react/components/Banner";
 import Panel from "apollo-react/components/Panel/Panel";
-// import Header from "./Header";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
@@ -277,7 +276,6 @@ const Dataset = () => {
 
   return (
     <>
-      {/* <PageHeader height={64} /> */}
       {(error || sucessMsg) && (
         <Banner
           variant={sucessMsg ? "success" : "error"}
