@@ -27,7 +27,7 @@ import {
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
 
-import { fileTypes, delimeters } from "../../utils";
+import { fileTypes, delimeters, loadTypes } from "../../utils";
 
 const styles = {
   paper: {
@@ -95,6 +95,7 @@ const DataSetsFormBase = (props) => {
     defaultQuote,
     defaultHeaderRowNumber,
     defaultFooterRowNumber,
+    defaultLoadType,
     values,
   } = props;
 
@@ -112,6 +113,7 @@ const DataSetsFormBase = (props) => {
       dispatch(
         change("DataSetsForm", "footerRowNumber", defaultFooterRowNumber)
       );
+      dispatch(change("DataSetsForm", "loadType", defaultLoadType));
     }
   };
 
@@ -286,6 +288,17 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Row Decrease % Allowed"
               />
+              <ReduxFormSelect
+                fullWidth
+                name="loadType"
+                id="loadType"
+                size="small"
+                label="Load Type"
+              >
+                {loadTypes?.map((type) => (
+                  <MenuItem value={type}>{type}</MenuItem>
+                ))}
+              </ReduxFormSelect>
             </Grid>
           </Grid>
         </div>
@@ -313,6 +326,7 @@ const DataSetsForm = connect((state) => ({
   defaultQuote: state.dataSets.defaultQuote,
   defaultHeaderRowNumber: state.dataSets.defaultHeaderRowNumber,
   defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
+  defaultLoadType: state.dataSets.defaultLoadType,
   datakind: state.dataSets.datakind?.records,
 }))(ReduxForm);
 
