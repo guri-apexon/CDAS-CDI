@@ -55,6 +55,7 @@ export default function DSColumnTable({
   const [isEditLOVs, setIsEditLOVs] = useState(false);
   const [isMultiAdd, setIsMultiAdd] = useState(false);
   const [newRows, setNewRows] = useState("");
+  const [isAdding, setIsAdding] = useState(true);
 
   const handleViewLOV = (row) => {
     setShowViewLOVs(true);
@@ -123,6 +124,7 @@ export default function DSColumnTable({
       setSelectedRows([...selectedRows, `u${rows.length}`]);
       setEditedRows([...rows, ...singleRow]);
       setEditMode(true);
+      setIsAdding(true);
     } else {
       messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
     }
@@ -165,17 +167,10 @@ export default function DSColumnTable({
       const moreRows = multiRows.map((e) => e.uniqueId);
       setSelectedRows([...moreRows]);
       setEditedRows([...editedRows, ...multiRows]);
-      // setEditedRows([...rows]);
+      setIsAdding(true);
       setNewRows("");
-      // const selected = multiRows.map((d) => d.uniqueId);
-      // setSelectedRows([...selectedRows, selected]);
-      // setEditedRows([...editedRows, ...multiRows]);
     }
   };
-
-  // const downloadTemp = () => {
-  //   console.log("Download Template");
-  // };
 
   const downloadTable = () => {
     console.log("Download Table");
@@ -232,13 +227,16 @@ export default function DSColumnTable({
       const initRows = formattedData.map((e) => e.uniqueId);
       setSelectedRows([...initRows]);
       setEditedRows(formattedData);
+      setIsAdding(false);
     } else if (dataOrigin === "fromDB") {
       setRows([...formattedData]);
+      setIsAdding(false);
     } else {
       setIsEditAll(true);
       const initRows = initialRows.map((e) => e.uniqueId);
       setSelectedRows([...initRows]);
       setEditedRows(initialRows);
+      setIsAdding(true);
     }
   }, [dataOrigin]);
 
@@ -256,11 +254,23 @@ export default function DSColumnTable({
   };
 
   const onSaveAll = () => {
-    const removeSpaces = editedRows.map((e) => {
-      e.values = e.values.trim();
-      e.columnName = e.columnName.trim();
-      return e;
-    });
+    const removeSpaces = editedRows
+      .map((e) => {
+        e.values = e.values.trim();
+        e.columnName = e.columnName.trim();
+        return e;
+      })
+      .map((e) => {
+        const isFirst = e.values.charAt(0) === "~";
+        const isLast = e.values.charAt(e.values.length - 1) === "~";
+        if (isFirst) {
+          e.values = e.values.substring(1);
+        }
+        if (isLast) {
+          e.values = e.values.slice(0, -1);
+        }
+        return e;
+      });
     setRows([...removeSpaces]);
     setSelectedRows([]);
     setIsEditAll(false);
@@ -292,9 +302,19 @@ export default function DSColumnTable({
         e.columnName = e.columnName.trim();
         return e;
       })
+      .map((e) => {
+        const isFirst = e.values.charAt(0) === "~";
+        const isLast = e.values.charAt(e.values.length - 1) === "~";
+        if (isFirst) {
+          e.values = e.values.substring(1);
+        }
+        if (isLast) {
+          e.values = e.values.slice(0, -1);
+        }
+        return e;
+      })
       .find((e) => e.uniqueId === uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
-    // const removeSpace = editedRowData[0].values.trim()
     setIsEditAll(false);
     setRows([...removeExistingRowData, editedRowData]);
     setEditedRows([...removeEdited]);
@@ -302,10 +322,8 @@ export default function DSColumnTable({
   };
 
   const onRowEdit = (uniqueId) => {
-    const editingRow = rows.find((row) => row.uniqueId === uniqueId);
-    const removeforExisting = editedRows.filter((e) => e !== uniqueId);
     setSelectedRows([...selectedRows, uniqueId]);
-    setEditedRows([...removeforExisting, editingRow]);
+    setEditedRows(rows);
   };
 
   const onRowDelete = (uniqueId) => {

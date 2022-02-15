@@ -51,8 +51,7 @@ const fieldStylesNo = {
 export const makeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText =
-      checkRequired(row[key]) || checkRequiredValue(row[key], key, row.primary);
+    const errorText = checkRequiredValue(row[key], key, row.primary);
     return row.editMode ? (
       <Select
         size="small"
@@ -79,7 +78,6 @@ export const makeEditableSelectCell =
 
 export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   const errorText =
-    checkRequired(row[key]) ||
     checkNumeric(row[key]) ||
     checkCharacterLength(row[key], key, row.minLength, row.maxLength);
   return row.editMode ? (
@@ -100,11 +98,12 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const EditableCell = ({ row, column: { accessor: key } }) => {
+  const { editMode } = row;
   const errorText =
     checkRequired(row[key]) ||
     checkAlphaNumeric(row[key], key) ||
     checkFormat(row[key], key, row.dataType);
-  return row.editMode ? (
+  return editMode ? (
     <TextField
       size="small"
       fullWidth
@@ -115,8 +114,10 @@ export const EditableCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
-      helperText={!row.isInitLoad ? errorText : ""}
+      error={
+        !row.isInitLoad && key === "columnName" && errorText ? true : false
+      }
+      helperText={!row.isInitLoad && key === "columnName" ? errorText : ""}
       {...fieldStyles}
     />
   ) : (
@@ -198,7 +199,13 @@ export const columns = [
     header: "Column Name/Designator",
     accessor: "columnName",
     customCell: EditableCell,
+    sortFunction: compareStrings,
   },
+  // {
+  //   header: "Position",
+  //   accessor: "position",
+  //   customCell: EditableCell,
+  // },
   {
     header: "Format",
     accessor: "format",
@@ -208,36 +215,43 @@ export const columns = [
     header: "Data Type",
     accessor: "dataType",
     customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
+    sortFunction: compareStrings,
   },
   {
     header: "Primary?",
     accessor: "primary",
     customCell: makeEditableSelectCell(["Yes", "No"]),
+    sortFunction: compareStrings,
   },
   {
     header: "Unique?",
     accessor: "unique",
     customCell: makeEditableSelectCell(["Yes", "No"]),
+    sortFunction: compareStrings,
   },
   {
     header: "Required?",
     accessor: "required",
     customCell: makeEditableSelectCell(["Yes", "No"]),
+    sortFunction: compareStrings,
   },
   {
     header: "Min length",
     accessor: "minLength",
     customCell: NumericEditableCell,
+    sortFunction: compareNumbers,
   },
   {
     header: "Max length",
     accessor: "maxLength",
     customCell: NumericEditableCell,
+    sortFunction: compareNumbers,
   },
   {
     header: "List of values",
     accessor: "values",
     customCell: EditableCell,
+    sortFunction: compareStrings,
   },
   {
     accessor: "action",
