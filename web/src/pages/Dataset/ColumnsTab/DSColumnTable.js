@@ -31,9 +31,9 @@ export default function DSColumnTable({
     position: "",
     format: "",
     dataType: "",
-    primary: "",
-    unique: "",
-    required: "",
+    primary: "No",
+    unique: "No",
+    required: "No",
     minLength: "",
     maxLength: "",
     values: "",
@@ -108,9 +108,9 @@ export default function DSColumnTable({
           position: "",
           format: "",
           dataType: "",
-          primary: "",
-          unique: "",
-          required: "",
+          primary: "No",
+          unique: "No",
+          required: "No",
           minLength: "",
           maxLength: "",
           values: "",
@@ -150,9 +150,9 @@ export default function DSColumnTable({
           position: "",
           format: "",
           dataType: "",
-          primary: "",
-          unique: "",
-          required: "",
+          primary: "No",
+          unique: "No",
+          required: "No",
           minLength: "",
           maxLength: "",
           values: "",
@@ -256,11 +256,16 @@ export default function DSColumnTable({
   };
 
   const onSaveAll = () => {
-    setRows([...editedRows]);
+    const removeSpaces = editedRows.map((e) => {
+      e.values = e.values.trim();
+      e.columnName = e.columnName.trim();
+      return e;
+    });
+    setRows([...removeSpaces]);
     setSelectedRows([]);
     setIsEditAll(false);
     setEditedRows(rows);
-    console.log("save all edited, rows", editedRows, rows);
+    // console.log("save all edited, rows", editedRows, rows);
     dispatch(createDatasetColumns(rows, datasetid));
   };
 
@@ -281,8 +286,15 @@ export default function DSColumnTable({
   const onRowSave = (uniqueId) => {
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     const removeEdited = editedRows.filter((e) => e !== uniqueId);
-    const editedRowData = editedRows.find((e) => e.uniqueId === uniqueId);
+    const editedRowData = editedRows
+      .map((e) => {
+        e.values = e.values.trim();
+        e.columnName = e.columnName.trim();
+        return e;
+      })
+      .find((e) => e.uniqueId === uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
+    // const removeSpace = editedRowData[0].values.trim()
     setIsEditAll(false);
     setRows([...removeExistingRowData, editedRowData]);
     setEditedRows([...removeEdited]);
@@ -314,7 +326,7 @@ export default function DSColumnTable({
             if (value.length >= 1) {
               return {
                 ...row,
-                [key]: value.trim(),
+                [key]: value,
                 isHavingColumnName: true,
               };
             }
@@ -323,12 +335,6 @@ export default function DSColumnTable({
               ...row,
               [key]: value,
               isHavingColumnName: false,
-            };
-          }
-          if (key === "values") {
-            return {
-              ...row,
-              [key]: value.trim(),
             };
           }
           if (row.isInitLoad) {
