@@ -50,6 +50,7 @@ export const initialState = {
     offsetColumn: "Disabled",
   },
   formData: {
+    active: true,
     locationType: "SFTP",
     delimiter: "COMMA",
     fileType: "SAS",
@@ -97,7 +98,7 @@ const DataFlowReducer = (state = initialState, action) =>
       case STORE_DATASET_SUCCESS:
         newState.loading = false;
         newState.isDatasetCreated = !state.isDatasetCreated;
-        newState.selectedDataset = action.dataset;
+        newState.selectedDataset = action.values;
         if (action.values.fileType) {
           newState.formData = action.values;
         } else {

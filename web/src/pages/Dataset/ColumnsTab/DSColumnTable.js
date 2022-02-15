@@ -31,14 +31,15 @@ export default function DSColumnTable({
     position: "",
     format: "",
     dataType: "",
-    primary: "",
-    unique: "",
-    required: "",
+    primary: "No",
+    unique: "No",
+    required: "No",
     minLength: "",
     maxLength: "",
     values: "",
     isInitLoad: true,
     isHavingError: false,
+    isHavingColumnName: false,
   }));
 
   const [rows, setRows] = useState(initialRows);
@@ -54,6 +55,7 @@ export default function DSColumnTable({
   const [isEditLOVs, setIsEditLOVs] = useState(false);
   const [isMultiAdd, setIsMultiAdd] = useState(false);
   const [newRows, setNewRows] = useState("");
+  const [isAdding, setIsAdding] = useState(true);
 
   const handleViewLOV = (row) => {
     setShowViewLOVs(true);
@@ -107,20 +109,22 @@ export default function DSColumnTable({
           position: "",
           format: "",
           dataType: "",
-          primary: "",
-          unique: "",
-          required: "",
+          primary: "No",
+          unique: "No",
+          required: "No",
           minLength: "",
           maxLength: "",
           values: "",
           isInitLoad: true,
           isHavingError: false,
+          isHavingColumnName: false,
         },
       ];
       setRows([...rows, ...singleRow]);
       setSelectedRows([...selectedRows, `u${rows.length}`]);
       setEditedRows([...rows, ...singleRow]);
       setEditMode(true);
+      setIsAdding(true);
     } else {
       messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
     }
@@ -148,31 +152,25 @@ export default function DSColumnTable({
           position: "",
           format: "",
           dataType: "",
-          primary: "",
-          unique: "",
-          required: "",
+          primary: "No",
+          unique: "No",
+          required: "No",
           minLength: "",
           maxLength: "",
           values: "",
           isInitLoad: true,
           isHavingError: false,
+          isHavingColumnName: false,
         })
       );
       setRows((rw) => [...rw, ...multiRows]);
       const moreRows = multiRows.map((e) => e.uniqueId);
       setSelectedRows([...moreRows]);
       setEditedRows([...editedRows, ...multiRows]);
-      // setEditedRows([...rows]);
+      setIsAdding(true);
       setNewRows("");
-      // const selected = multiRows.map((d) => d.uniqueId);
-      // setSelectedRows([...selectedRows, selected]);
-      // setEditedRows([...editedRows, ...multiRows]);
     }
   };
-
-  // const downloadTemp = () => {
-  //   console.log("Download Template");
-  // };
 
   const downloadTable = () => {
     console.log("Download Table");
@@ -229,13 +227,16 @@ export default function DSColumnTable({
       const initRows = formattedData.map((e) => e.uniqueId);
       setSelectedRows([...initRows]);
       setEditedRows(formattedData);
+      setIsAdding(false);
     } else if (dataOrigin === "fromDB") {
       setRows([...formattedData]);
+      setIsAdding(false);
     } else {
       setIsEditAll(true);
       const initRows = initialRows.map((e) => e.uniqueId);
       setSelectedRows([...initRows]);
       setEditedRows(initialRows);
+      setIsAdding(true);
     }
   }, [dataOrigin]);
 
@@ -253,18 +254,35 @@ export default function DSColumnTable({
   };
 
   const onSaveAll = () => {
-    setRows([...editedRows]);
+    const removeSpaces = editedRows
+      .map((e) => {
+        e.values = e.values.trim();
+        e.columnName = e.columnName.trim();
+        return e;
+      })
+      .map((e) => {
+        const isFirst = e.values.charAt(0) === "~";
+        const isLast = e.values.charAt(e.values.length - 1) === "~";
+        if (isFirst) {
+          e.values = e.values.substring(1);
+        }
+        if (isLast) {
+          e.values = e.values.slice(0, -1);
+        }
+        return e;
+      });
+    setRows([...removeSpaces]);
     setSelectedRows([]);
     setIsEditAll(false);
     setEditedRows(rows);
-    console.log("save all edited, rows", editedRows, rows);
+    // console.log("save all edited, rows", editedRows, rows);
     dispatch(createDatasetColumns(rows, datasetid));
   };
 
   const onCancelAll = () => {
-    setEditedRows([]);
     setSelectedRows([]);
     setIsEditAll(false);
+    setEditedRows([...rows]);
   };
 
   const onRowCancel = (uniqueId) => {
@@ -278,7 +296,24 @@ export default function DSColumnTable({
   const onRowSave = (uniqueId) => {
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     const removeEdited = editedRows.filter((e) => e !== uniqueId);
-    const editedRowData = editedRows.find((e) => e.uniqueId === uniqueId);
+    const editedRowData = editedRows
+      .map((e) => {
+        e.values = e.values.trim();
+        e.columnName = e.columnName.trim();
+        return e;
+      })
+      .map((e) => {
+        const isFirst = e.values.charAt(0) === "~";
+        const isLast = e.values.charAt(e.values.length - 1) === "~";
+        if (isFirst) {
+          e.values = e.values.substring(1);
+        }
+        if (isLast) {
+          e.values = e.values.slice(0, -1);
+        }
+        return e;
+      })
+      .find((e) => e.uniqueId === uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
     setIsEditAll(false);
     setRows([...removeExistingRowData, editedRowData]);
@@ -287,10 +322,8 @@ export default function DSColumnTable({
   };
 
   const onRowEdit = (uniqueId) => {
-    // const editingRow = rows.find((row) => row.uniqueId === uniqueId);
-    // setIsEditAll(true);
     setSelectedRows([...selectedRows, uniqueId]);
-    // setEditedRows([...editedRows, editingRow]);
+    setEditedRows(rows);
   };
 
   const onRowDelete = (uniqueId) => {
@@ -298,11 +331,30 @@ export default function DSColumnTable({
     setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
   };
 
+  const showColumnNameRequried = () => {
+    messageContext.showErrorMessage("Column Name Should be there");
+  };
+
   const editRow = (uniqueId, key, value, errorTxt) => {
     // console.log(uniqueId, "ColumdId");
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
+          if (key === "columnName") {
+            if (value.length >= 1) {
+              return {
+                ...row,
+                [key]: value,
+                isHavingColumnName: true,
+              };
+            }
+            showColumnNameRequried();
+            return {
+              ...row,
+              [key]: value,
+              isHavingColumnName: false,
+            };
+          }
           if (row.isInitLoad) {
             return {
               ...row,
@@ -350,7 +402,7 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {console.log(editMode, selectedRow, editedRows, rows)}
+        {/* {console.log(editMode, selectedRow, editedRows, rows)} */}
         <Table
           title="Dataset Column Settings"
           subtitle={`${

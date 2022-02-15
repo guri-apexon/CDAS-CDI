@@ -19,6 +19,7 @@ import {
   createStringSearchFilter,
   numberSearchFilter,
   dateFilterV2,
+  compareNumbers,
 } from "apollo-react/components/Table";
 import { ReactComponent as StaleIcon } from "../../components/Icons/Stale.svg";
 import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
@@ -398,7 +399,7 @@ const columns = [
   {
     header: "Exceeds % change indicator",
     accessor: "exceeds_pct_cng",
-    sortFunction: compareStrings,
+    sortFunction: compareNumbers,
     filterFunction: numberSearchFilter("exceeds_pct_cng"),
     filterComponent: IntegerFilter,
     customCell: exceedPerCell,
