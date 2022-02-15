@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch, useSelector } from "react-redux";
 import { reduxForm, getFormValues, formValueSelector } from "redux-form";
@@ -84,7 +84,15 @@ const styles = {
 };
 
 const DataSetsFormBase = (props) => {
-  const { handleSubmit, classes, datakind, formValues, sqlTables } = props;
+  const {
+    handleSubmit,
+    classes,
+    datakind,
+    formValues,
+    sqlTables,
+    onChange,
+    defaultFields,
+  } = props;
   const dispatch = useDispatch();
   const dataSets = useSelector((state) => state.dataSets);
   const [showPreview, setShowPreview] = useState(false);
@@ -100,6 +108,12 @@ const DataSetsFormBase = (props) => {
   const handleOnChange = () => {
     dispatch(getSQLTables(tableName));
   };
+
+  useEffect(() => {
+    if (formValues && ["Yes", "No"].includes(formValues)) {
+      onChange(formValues);
+    }
+  }, [formValues]);
 
   return (
     <form onSubmit={handleSubmit}>
