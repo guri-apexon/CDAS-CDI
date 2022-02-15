@@ -11,6 +11,7 @@ import {
   ACTIVATEDF,
   INACTIVATE,
   VLCDATAAPI,
+  DATAFLOWSEARCH,
 } from "../constants";
 import { getCookie } from "../utils/index";
 
@@ -21,6 +22,21 @@ const searchStudy = async (searchQuery = "") => {
     const res = await axios.post(`${baseURL}/${STUDYSEARCH}/${searchQuery}`, {
       userId,
     });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const searchDataflows = async (searchQuery = "", studyId) => {
+  try {
+    const res = await axios.post(
+      `${baseURL}/${DATAFLOWSEARCH}/${searchQuery}`,
+      {
+        userId,
+        studyId,
+      }
+    );
     return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);

@@ -820,3 +820,26 @@ exports.updateDataFlow = async (req, res) => {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+
+exports.searchDataflow = async (req, res) => {
+  try {
+    const searchParam = req.params.id.toLowerCase();
+    const { studyId } = req.body;
+    Logger.info({
+      message: "searchDataflow",
+      searchParam,
+    });
+    const searchQuery = `SELECT d.dataflowid,d."name" ,d.description, d.externalsystemname , v.vend_nm FROM ${schemaName}.dataflow d inner join cdas1d.cdascfg.vendor v on d.vend_id  = v.vend_id where d.prot_id = '${studyId}' and (LOWER(d.name)) LIKE '${searchParam}%' LIMIT 10`;
+    console.log(searchQuery);
+    let { rows } = await DB.executeQuery(searchQuery);
+    return apiResponse.successResponseWithData(res, "Operation success", {
+      dataflows: rows,
+      totalSize: rows.rowCount,
+    });
+  } catch (error) {
+    console.log(error);
+    Logger.error("catch :searchDataflow");
+    Logger.error(error);
+    return apiResponse.ErrorResponse(res, error);
+  }
+};

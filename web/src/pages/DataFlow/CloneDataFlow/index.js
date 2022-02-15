@@ -6,7 +6,7 @@ import compose from "@hypnosphi/recompose/compose";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Grid from "apollo-react/components/Grid";
 import Modal from "apollo-react/components/Modal";
-import MenuItem from "apollo-react/components/MenuItem";
+import Tooltip from "apollo-react/components/Tooltip";
 import Button from "apollo-react/components/Button";
 import Typography from "apollo-react/components/Typography";
 import Search from "apollo-react/components/Search";
@@ -18,6 +18,11 @@ import OpenNew from "apollo-react-icons/OpenNew";
 import Pencil from "apollo-react-icons/Pencil";
 import IconButton from "apollo-react/components/IconButton";
 import Table from "apollo-react/components/Table";
+import ApolloProgress from "apollo-react/components/ApolloProgress";
+import Box from "apollo-react/components/Box";
+import { debounceFunction } from "../../../utils";
+import Highlighted from "../../../components/Common/Highlighted";
+import searchStudy, { searchDataflows } from "../../../services/ApiServices";
 
 const styles = {
   paper: {
@@ -50,6 +55,9 @@ const styles = {
   backbtn: {
     fontWeight: "bold",
   },
+  selectedStudyTable: {
+    maxHeight: "100px",
+  },
 };
 const useStyles = makeStyles(styles);
 
@@ -65,6 +73,10 @@ const CloneDataFlow = ({
   const classes = useStyles();
   const dispatch = useDispatch();
   const [isActive, setIsActive] = useState(false);
+  const [searchTxt, setSearchTxt] = useState("");
+  const [studies, setStudies] = useState([]);
+  const [datflows, setDatflows] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   //   const studies = useSelector((state) => state.dashboard);
   const onSubmit = (values) => {
@@ -81,20 +93,111 @@ const CloneDataFlow = ({
   //     fetchStudies();
   //   }, []);
 
+  const searchTrigger = (e, el) => {
+    const newValue = e.target.value;
+    setSearchTxt(newValue);
+    if (el === "study") {
+      debounceFunction(async () => {
+        setLoading(true);
+        const newStudies = await searchStudy(newValue);
+        console.log("event", newValue, newStudies);
+        setStudies(newStudies.studies);
+        setLoading(false);
+      }, 1000);
+    } else {
+      debounceFunction(async () => {
+        setLoading(true);
+        const newDataflows = await searchDataflows(
+          newValue,
+          selectedStudy.study.prot_id
+        );
+        console.log("event", newValue, newDataflows);
+        setDatflows(newDataflows.dataflows);
+        setLoading(false);
+      }, 1000);
+    }
+  };
+
+  const setDetail = async (study) => {
+    console.log(study);
+    await handleSelect(study);
+    await setSearchTxt("");
+  };
+
+  const FormatCell = ({ row, column: { accessor } }) => {
+    const greyedOut = ["In Progress", "Success"].includes(row.ob_stat);
+    console.log("row[accessor]", accessor);
+    const innerEl = <Highlighted text={row[accessor]} highlight={searchTxt} />;
+    return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+      <div
+        className={`result-row ${greyedOut ? "greyedout" : ""}`}
+        onClick={() => !greyedOut && setDetail(row)}
+        role="menu"
+        tabIndex={0}
+      >
+        {accessor === "prot_nbr" && greyedOut ? (
+          <Tooltip
+            variant="dark"
+            title="This study has been imported into CDAS"
+            placement="top"
+          >
+            <span>{innerEl}</span>
+          </Tooltip>
+        ) : (
+          innerEl
+        )}
+      </div>
+    );
+  };
+
+  const columns = [
+    {
+      header: "Protocol Number",
+      accessor: "protocolnumber",
+      customCell: FormatCell,
+      width: "34%",
+    },
+    {
+      header: "Sponsor",
+      accessor: "sponsorname",
+      customCell: FormatCell,
+      width: "41%",
+    },
+    {
+      header: "Project Code",
+      accessor: "projectcode",
+      customCell: FormatCell,
+      width: "25%",
+    },
+  ];
+
   const ModalComponent = () => {
+    console.log(searchTxt, studies, loading, "studiesstudiesstudies");
+
     return (
       <div>
-        <Autocomplete
-          name="study"
-          label="Search for a study"
-          source={studyList}
-          id="study"
-          className="autocomplete_field"
-          onChange={(v) => handleSelect(v, "study")}
-          singleSelect
-          variant="search"
-          fullWidth
-        />
+        <>
+          <Typography variant="caption">Search for a study</Typography>
+          <Search
+            // onKeyDown={searchTrigger}
+            placeholder="Search"
+            value={searchTxt}
+            onChange={(e) => searchTrigger(e, "study")}
+            fullWidth
+          />
+
+          <Table
+            columns={columns}
+            rows={studies}
+            rowId="prot_id"
+            hidePagination
+            maxHeight="40vh"
+            emptyProps={{
+              text: searchTxt === "" && !loading ? "" : "No data to display",
+            }}
+          />
+        </>
         {/* <Button variant="secondary" size="small">
           Cancel
         </Button>
@@ -121,17 +224,6 @@ const CloneDataFlow = ({
       </div>
     );
   };
-
-  const columns = [
-    {
-      header: "Data Package Name",
-      accessor: "name",
-    },
-    {
-      header: "Dataset Name",
-      accessor: "dept",
-    },
-  ];
 
   const rows = [
     {
@@ -192,17 +284,6 @@ const CloneDataFlow = ({
     },
   ];
 
-  const rows2 = [
-    {
-      employeeId: 7455,
-      name: "Dennis Reynolds",
-      dept: "Design",
-      email: "dreynolds@abc-corp.com",
-      employmentStatus: "Full-time",
-      //   hireDate: "02/05/2015",
-    },
-  ];
-
   const RenderDataFlowDetails = () => {
     const backLabel = `< back to search`;
     return (
@@ -229,9 +310,7 @@ const CloneDataFlow = ({
                   <div>
                     <Typography variant="caption">Data Flow Name</Typography>
                     <div>
-                      <Typography variant="caption">
-                        {selectedStudy.dataflow[0]}
-                      </Typography>
+                      <Typography variant="caption">yolo2</Typography>
                     </div>
                   </div>
                 </Grid>
@@ -306,32 +385,106 @@ const CloneDataFlow = ({
     );
   };
 
+  const DfFormatCell = ({ row, column: { accessor } }) => {
+    console.log("row[accessor]", row[accessor], accessor);
+    if (row[accessor]) {
+      const innerEl = (
+        <Highlighted text={row[accessor]} highlight={searchTxt} />
+      );
+      return (
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+        <div
+          className="result-row"
+          onClick={() => setDetail(row)}
+          role="menu"
+          tabIndex={0}
+        >
+          {innerEl}
+        </div>
+      );
+    }
+    return null;
+  };
+
   const RenderSelectDataFlowModal = () => {
+    console.log(selectedStudy.study);
+    const Columns = [
+      {
+        header: "Protocol Number",
+        accessor: "protocolnumber",
+        width: "34%",
+      },
+      {
+        header: "Sponsor",
+        accessor: "sponsorname",
+        width: "41%",
+      },
+      {
+        header: "Project Code",
+        accessor: "projectcode",
+        width: "25%",
+      },
+    ];
+
+    const dfcolumns = [
+      {
+        header: "Data Flow Name",
+        accessor: "name",
+        width: "34%",
+        customCell: DfFormatCell,
+      },
+      {
+        header: "Vendor Source",
+        accessor: "vend_nm",
+        width: "41%",
+        customCell: DfFormatCell,
+      },
+      {
+        header: "Description",
+        accessor: "description",
+        width: "25%",
+        customCell: DfFormatCell,
+      },
+      {
+        header: "External Source System",
+        accessor: "externalsystemname",
+        width: "25%",
+        customCell: DfFormatCell,
+      },
+    ];
     return (
       <>
         {selectedStudy.dataflow ? (
           <RenderDataFlowDetails />
         ) : (
           <>
-            <Typography variant="caption">{selectedStudy.study[0]}</Typography>
             <Grid item xs={12}>
               <Table
-                columns={columns}
-                rows={rows2}
-                rowId="employeeId"
+                className={classes.selectedStudyTable}
+                columns={Columns}
+                rows={[selectedStudy.study]}
+                rowId="prot_id"
                 hidePagination
               />
             </Grid>
-            <Autocomplete
-              name="dataflow"
-              label="data flow"
-              source={dataflowList}
-              id="dataflow"
-              className="autocomplete_field"
-              onChange={(v) => handleSelect(v, "dataflow")}
-              singleSelect
-              variant="search"
+            <Typography variant="caption">Search for a Data Flow</Typography>
+
+            <Search
+              placeholder="Search"
+              value={searchTxt}
+              onChange={(e) => searchTrigger(e, "dataflow")}
               fullWidth
+            />
+
+            <Table
+              columns={dfcolumns}
+              rows={datflows}
+              rowId="dataflowid"
+              hidePagination
+              maxHeight="40vh"
+              emptyProps={{
+                text: searchTxt === "" && !loading ? "" : "No data to display",
+              }}
             />
           </>
         )}
