@@ -302,10 +302,10 @@ export default function DSColumnTable({
   };
 
   const onRowEdit = (uniqueId) => {
-    // const editingRow = rows.find((row) => row.uniqueId === uniqueId);
-    // setIsEditAll(true);
+    const editingRow = rows.find((row) => row.uniqueId === uniqueId);
+    const removeforExisting = editedRows.filter((e) => e !== uniqueId);
     setSelectedRows([...selectedRows, uniqueId]);
-    // setEditedRows([...editedRows, editingRow]);
+    setEditedRows([...removeforExisting, editingRow]);
   };
 
   const onRowDelete = (uniqueId) => {
