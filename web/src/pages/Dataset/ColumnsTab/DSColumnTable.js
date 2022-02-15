@@ -301,11 +301,30 @@ export default function DSColumnTable({
     setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
   };
 
+  const showColumnNameRequried = () => {
+    messageContext.showErrorMessage("Column Name Should be there");
+  };
+
   const editRow = (uniqueId, key, value, errorTxt) => {
     // console.log(uniqueId, "ColumdId");
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
+          if (key === "columnName") {
+            if (value.length >= 1) {
+              return {
+                ...row,
+                [key]: value,
+                isHavingColumnName: true,
+              };
+            }
+            showColumnNameRequried();
+            return {
+              ...row,
+              [key]: value,
+              isHavingColumnName: false,
+            };
+          }
           if (row.isInitLoad) {
             return {
               ...row,
