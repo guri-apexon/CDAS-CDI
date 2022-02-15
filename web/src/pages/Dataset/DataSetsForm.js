@@ -131,6 +131,9 @@ const DataSetsFormBase = (props) => {
         // change("DataSetsForm", "clinicalDataType");
       }
     }
+    if (!values) {
+      SetSelectedClinicalData(["1"]);
+    }
   }, [values]);
 
   console.log(values, "values12");
