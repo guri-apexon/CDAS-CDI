@@ -88,7 +88,7 @@ const Dataset = () => {
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("sftp");
   const [columnsActive, setColumnsActive] = useState(false);
-  // const [customSql, setCustomSql] = useState(false);
+  const [customSql, setCustomSql] = useState("no");
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
@@ -126,7 +126,8 @@ const Dataset = () => {
   };
 
   const onChangeSql = (val) => {
-    setColumnsActive(val === "no");
+    setColumnsActive(val === "No");
+    setCustomSql(val);
   };
 
   useEffect(() => {
@@ -363,6 +364,9 @@ const Dataset = () => {
                 locationType?.toLowerCase() !== "ftps" && (
                   <DataSetsFormSQL
                     onChange={onChangeSql}
+                    defaultFields={{
+                      sql: customSql,
+                    }}
                     loading={loading}
                     onSubmit={onSubmit}
                   />

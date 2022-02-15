@@ -84,7 +84,14 @@ const styles = {
 };
 
 const DataSetsFormBase = (props) => {
-  const { handleSubmit, classes, datakind, formValues, onChange } = props;
+  const {
+    handleSubmit,
+    classes,
+    datakind,
+    formValues,
+    onChange,
+    defaultFields,
+  } = props;
   const dispatch = useDispatch();
   const dataSets = useSelector((state) => state.dataSets);
 
@@ -93,7 +100,7 @@ const DataSetsFormBase = (props) => {
   };
   useEffect(() => {
     if (formValues && ["Yes", "No"].includes(formValues)) {
-      onChange(formValues.toLowerCase());
+      onChange(formValues);
     }
   }, [formValues]);
 
