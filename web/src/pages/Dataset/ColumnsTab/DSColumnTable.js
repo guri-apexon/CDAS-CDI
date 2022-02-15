@@ -402,7 +402,7 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {console.log(editMode, selectedRow, editedRows, rows)}
+        {/* {console.log(editMode, selectedRow, editedRows, rows)} */}
         <Table
           title="Dataset Column Settings"
           subtitle={`${
