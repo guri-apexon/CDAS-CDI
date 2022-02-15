@@ -30,7 +30,7 @@ import { ReactComponent as FailureIcon } from "../../components/Icons/failure.sv
 
 import "./Dashboard.scss";
 
-export default function MonitorTab({ fetchLatestData }) {
+export default function MonitorTab({ fetchLatestData, protId }) {
   const [open, setOpen] = useState(false);
   const [curRow, setCurRow] = useState({});
   const [control, setSegmentControl] = useState("all");
@@ -101,7 +101,7 @@ export default function MonitorTab({ fetchLatestData }) {
       </Button>
     </div>
   );
-  if (rows.length === 0) {
+  if (!protId) {
     return (
       <div>
         <Box
