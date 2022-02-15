@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
+import React, { useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch, useSelector } from "react-redux";
 import { reduxForm, getFormValues, formValueSelector } from "redux-form";
@@ -84,12 +84,21 @@ const styles = {
 };
 
 const DataSetsFormBase = (props) => {
-  const { handleSubmit, classes, datakind, formValues } = props;
+  const { handleSubmit, classes, datakind, formValues, sqlTables } = props;
   const dispatch = useDispatch();
   const dataSets = useSelector((state) => state.dataSets);
+  const [showPreview, setShowPreview] = useState(false);
+  const { formDataSQL } = dataSets;
+  const { sQLQuery, tableName } = formDataSQL;
 
   const handlePreview = () => {
-    console.log("data", dataSets);
+    console.log("data", formDataSQL);
+    setShowPreview(true);
+    dispatch(getPreviewSQL(sQLQuery));
+  };
+
+  const handleOnChange = () => {
+    dispatch(getSQLTables(tableName));
   };
 
   return (
@@ -181,12 +190,15 @@ const DataSetsFormBase = (props) => {
           )}
           {formValues !== "Yes" && (
             <>
-              <ReduxFormTextField
+              <ReduxFormAutocomplete
                 name="tableName"
                 id="tableName"
                 size="small"
                 style={{ width: 272, display: "flex" }}
-                inputProps={{ maxLength: 255 }}
+                source={sqlTables}
+                onChange={handleOnChange}
+                variant="search"
+                singleSelect
                 label="Table Name"
               />
               <ReduxFormTextField
@@ -216,7 +228,7 @@ const DataSetsFormBase = (props) => {
                 label="Offset Column"
                 style={{ width: 272 }}
                 size="small"
-                disabled
+                // disabled
               >
                 <MenuItem value="Enabled">Enabled</MenuItem>
                 <MenuItem value="Disabled">Disabled</MenuItem>
@@ -224,6 +236,13 @@ const DataSetsFormBase = (props) => {
             </>
           )}
         </div>
+        {/* {showPreview && (
+          <div>
+            <table>
+              <tr>data</tr>
+            </table>
+          </div>
+        )} */}
       </Paper>
     </form>
   );
@@ -248,6 +267,7 @@ const DataSetsFormSQL = connect((state) => ({
   defaultHeaderRowNumber: state.dataSets.defaultHeaderRowNumber,
   defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
   datakind: state.dataSets.datakind?.records,
+  sqlTables: state.dataSets.sqlTables,
 }))(ReduxForm);
 
 export default DataSetsFormSQL;
