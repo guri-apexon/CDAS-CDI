@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-script-url */
 import React, { useState, useContext, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
@@ -312,7 +313,11 @@ const Dataset = () => {
               <div style={{ display: "flex", paddingLeft: 11 }}>
                 <DatasetsIcon />
                 <Typography className={classes.cTitle}>
-                  {selectedDSDetails.datasetName ?? "Dataset name"}
+                  {selectedDSDetails.datasetName
+                    ? selectedDSDetails.datasetName
+                    : selectedDataset.datasetName
+                    ? selectedDataset.datasetName
+                    : "Dataset name"}
                 </Typography>
               </div>
               {/* {datasetsCount && (
