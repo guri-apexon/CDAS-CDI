@@ -118,7 +118,7 @@ export const checkFormat = (value, key = "", dataType = "") => {
     }
   }
   if (dataType === "Numeric") {
-    const regexp = /^[0-9.<>%]+$/;
+    const regexp = /^[nN0-9.<>%]+$/;
     if (value !== "" && !regexp.test(value)) {
       return (
         key === "format" &&
@@ -131,7 +131,7 @@ export const checkFormat = (value, key = "", dataType = "") => {
     if (value !== "" && !regexp.test(value)) {
       return (
         key === "format" &&
-        "Only Date format values are allowed for Date Data Type"
+        "Only Date format (YYYYMMDD) values are allowed for Date Data Type "
       );
     }
   }

@@ -17,12 +17,14 @@ import {
   compareDates,
   compareStrings,
   createStringSearchFilter,
+  numberSearchFilter,
   dateFilterV2,
 } from "apollo-react/components/Table";
 import { ReactComponent as StaleIcon } from "../../components/Icons/Stale.svg";
 import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
 import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
 import "./Dashboard.scss";
+import { IntegerFilter } from "../../utils/index";
 
 const DateFilter = ({ accessor, filters, updateFilterValue }) => {
   return (
@@ -95,8 +97,8 @@ const createAutocompleteFilter =
     return (
       <div
         style={{
-          minWidth: 144,
-          maxWidth: 200,
+          minWidth: 150,
+          maxWidth: 300,
           position: "relative",
         }}
       >
@@ -371,7 +373,7 @@ const columns = [
     filterComponent: createAutocompleteFilter("vendorsource"),
   },
   {
-    header: "Current Job Status",
+    header: "Dataset Status",
     accessor: "jobstatus",
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("jobstatus"),
@@ -379,14 +381,14 @@ const columns = [
     customCell: JobstatusCell,
   },
   {
-    header: "Last File Transfered",
+    header: "Last File Transferred",
     accessor: "filename",
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("filename"),
     filterComponent: createAutocompleteFilter("filename"),
   },
   {
-    header: "Last Transfer Status",
+    header: "Last File Transfer Status",
     accessor: "datasetstatus",
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("datasetstatus"),
@@ -394,15 +396,15 @@ const columns = [
     customCell: StatusCell,
   },
   {
-    header: "Exceed % Change",
+    header: "Exceeds % change indicator",
     accessor: "exceeds_pct_cng",
     sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("exceeds_pct_cng"),
-    filterComponent: createAutocompleteFilter("exceeds_pct_cng"),
+    filterFunction: numberSearchFilter("exceeds_pct_cng"),
+    filterComponent: IntegerFilter,
     customCell: exceedPerCell,
   },
   {
-    header: "Last Transfer Date",
+    header: "Last File Transfer Date",
     accessor: "lastfiletransferred",
     sortFunction: compareDates,
     customCell: DateCell,
@@ -462,20 +464,15 @@ const columnsToAdd = [
   },
 ];
 
-const moreColumnsWithFrozenWithoutActions = [
-  ...columns.map((column) => ({ ...column })).slice(0, -1),
-  ...columnsToAdd.map((column) => ({ ...column, hidden: true })),
-];
-
 const moreColumnsWithFrozen = [
-  ...moreColumnsWithFrozenWithoutActions,
-  columns.slice(-1)[0],
+  ...columns.map((column) => ({ ...column })),
+  ...columnsToAdd.map((column) => ({ ...column, hidden: true })),
 ];
 
 moreColumnsWithFrozen[0].frozen = true;
 moreColumnsWithFrozen[1].frozen = true;
 moreColumnsWithFrozen[2].frozen = true;
 
-export { moreColumnsWithFrozen, moreColumnsWithFrozenWithoutActions };
+export { moreColumnsWithFrozen };
 
 export default columns;

@@ -128,13 +128,18 @@ export function* saveDataset(action) {
     yield put({
       type: STORE_DATASET_SUCCESS,
       dataset: fetchSBData.data.data,
+      values: action.values,
     });
   } catch (e) {
     const errText = e.response?.data?.message
       ? e.response.data.message
       : e.message;
     console.log(e.response, "erroRes");
-    yield put({ type: STORE_DATASET_FAILURE, message: errText });
+    yield put({
+      type: STORE_DATASET_FAILURE,
+      message: errText,
+      values: action.values,
+    });
   }
 }
 
@@ -187,12 +192,17 @@ export function* updateDataset(action) {
     yield put({
       type: UPDATE_DATASET_SUCCESS,
       update: fetchSBData.data.data,
+      values: action.values,
     });
   } catch (e) {
     const errText = e.response?.data?.message
       ? e.response.data.message
       : e.message;
-    yield put({ type: UPDATE_DATASET_FAILURE, message: errText });
+    yield put({
+      type: UPDATE_DATASET_FAILURE,
+      message: errText,
+      values: action.values,
+    });
   }
 }
 

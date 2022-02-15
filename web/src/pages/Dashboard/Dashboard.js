@@ -133,7 +133,12 @@ const Dashboard = () => {
             </div>
 
             <div style={{ padding: 20 }}>
-              {value === 0 && <MonitorTab fetchLatestData={fetchLatestData} />}
+              {value === 0 && (
+                <MonitorTab
+                  fetchLatestData={fetchLatestData}
+                  protId={dashboard?.selectedCard?.prot_id}
+                />
+              )}
               {value === 1 && <DataflowTab updateData={updateData} />}
             </div>
           </main>

@@ -246,13 +246,13 @@ const ReduxForm = compose(
   reduxForm({
     form: "DataSetsFormSQL",
     validate: dataSetsValidation,
-  })
+  }),
+  connect((state) => ({ values: getFormValues("DataSetsFormSQL")(state) }))
 )(DataSetsFormBase);
 
 const selector = formValueSelector("DataSetsFormSQL");
 const DataSetsFormSQL = connect((state) => ({
   initialValues: state.dataSets.formDataSQL, // pull initial values from account reducer
-  values: getFormValues("DataSetsFormSQL")(state),
   formValues: selector(state, "customSQLQuery"),
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
