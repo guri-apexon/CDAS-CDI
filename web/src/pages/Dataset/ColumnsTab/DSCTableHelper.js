@@ -137,7 +137,7 @@ export const ActionCell = ({ row }) => {
     onRowCancel,
     onRowDelete,
     editMode: eMode,
-    isHavingError,
+    isHavingColumnName,
     // isEditAll,
     onRowSave,
   } = row;
@@ -159,7 +159,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        // disabled={isHavingError}
+        disabled={!isHavingColumnName}
       >
         Save
       </Button>
