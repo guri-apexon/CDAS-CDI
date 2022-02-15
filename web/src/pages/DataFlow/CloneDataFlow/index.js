@@ -18,11 +18,16 @@ import OpenNew from "apollo-react-icons/OpenNew";
 import Pencil from "apollo-react-icons/Pencil";
 import IconButton from "apollo-react/components/IconButton";
 import Table from "apollo-react/components/Table";
+import ChevronLeft from "apollo-react-icons/ChevronLeft";
 import ApolloProgress from "apollo-react/components/ApolloProgress";
 import Box from "apollo-react/components/Box";
 import { debounceFunction } from "../../../utils";
 import Highlighted from "../../../components/Common/Highlighted";
-import searchStudy, { searchDataflows } from "../../../services/ApiServices";
+import searchStudy, {
+  searchDataflows,
+  fetchDataFlowSource,
+} from "../../../services/ApiServices";
+import "./index.scss";
 
 const styles = {
   paper: {
@@ -52,9 +57,6 @@ const styles = {
   cloneDFdetailscontainer: {
     display: "flex",
   },
-  backbtn: {
-    fontWeight: "bold",
-  },
   selectedStudyTable: {
     maxHeight: "100px",
   },
@@ -77,7 +79,7 @@ const CloneDataFlow = ({
   const [studies, setStudies] = useState([]);
   const [datflows, setDatflows] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const [dataFlowSource, setDataFlowSource] = useState([]);
   //   const studies = useSelector((state) => state.dashboard);
   const onSubmit = (values) => {
     // setTimeout(() => {
@@ -122,6 +124,8 @@ const CloneDataFlow = ({
     console.log(study);
     await handleSelect(study);
     await setSearchTxt("");
+    await setStudies([]);
+    await setDatflows([]);
   };
 
   const FormatCell = ({ row, column: { accessor } }) => {
@@ -173,8 +177,6 @@ const CloneDataFlow = ({
   ];
 
   const ModalComponent = () => {
-    console.log(searchTxt, studies, loading, "studiesstudiesstudies");
-
     return (
       <div>
         <>
@@ -285,108 +287,155 @@ const CloneDataFlow = ({
   ];
 
   const RenderDataFlowDetails = () => {
-    const backLabel = `< back to search`;
-    return (
-      <>
-        <Button className={classes.backbtn} onClick={() => handleBack()}>
-          {backLabel}
-        </Button>
-        <div>
-          <Typography variant="caption">Verify data flow to clone</Typography>
-          <Accordion defaultExpanded>
-            <AccordionSummary>
-              <Typography>Data Flow Detials</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid
-                container
-                spacing={1}
-                style={{
-                  padding: "12px 5px 24px 5px",
-                  backgroundColor: "#f8f9fb",
-                }}
-              >
-                <Grid item xs={12}>
-                  <div>
-                    <Typography variant="caption">Data Flow Name</Typography>
+    if (dataFlowSource.length > 0) {
+      const {
+        name,
+        type,
+        externalsystemname,
+        testflag,
+        description,
+        locationType,
+        vendorName,
+      } = dataFlowSource[0];
+      const DfDetailsColumns = [
+        {
+          header: "Datapackage Name",
+          accessor: "datapackagename",
+          width: "34%",
+        },
+        {
+          header: "Dataset Name",
+          accessor: "datasetname",
+          width: "41%",
+        },
+      ];
+      return (
+        <>
+          <Button
+            className="back-btn"
+            variant="text"
+            size="small"
+            onClick={handleBack}
+          >
+            <ChevronLeft style={{ width: 12, marginRight: 5 }} width={10} />
+            Back to search
+          </Button>
+          <div>
+            <Typography variant="caption">Verify data flow to clone</Typography>
+            <Accordion defaultExpanded>
+              <AccordionSummary>
+                <Typography>Data Flow Detials</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid
+                  container
+                  spacing={1}
+                  style={{
+                    padding: "12px 5px 24px 5px",
+                    backgroundColor: "#f8f9fb",
+                  }}
+                >
+                  <Grid item xs={12}>
                     <div>
-                      <Typography variant="caption">yolo2</Typography>
+                      <Typography variant="caption">Data Flow Name</Typography>
+                      <div>
+                        <Typography variant="body2" className="value">
+                          {name}
+                        </Typography>
+                      </div>
                     </div>
-                  </div>
-                </Grid>
-                <Grid item xs={12}>
-                  <div>
-                    <Typography variant="caption">Vendor Source</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
                     <div>
-                      <Typography variant="caption">Corante</Typography>
+                      <Typography variant="caption">Vendor Source</Typography>
+                      <div>
+                        <Typography variant="body2" className="value">
+                          {vendorName}
+                        </Typography>
+                      </div>
                     </div>
-                  </div>
-                </Grid>
-                <Grid item xs={12}>
-                  <div>
-                    <Typography variant="caption">Description</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
                     <div>
-                      <Typography variant="caption">
-                        Clinical_laboratory
-                      </Typography>
+                      <Typography variant="caption">Description</Typography>
+                      <div>
+                        <Typography variant="body2" className="value">
+                          {description}
+                        </Typography>
+                      </div>
                     </div>
-                  </div>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <div className={classes.cloneDFdetailscontainer}>
+                      <Grid item xs={3}>
+                        <Typography variant="caption">Type</Typography>
+                        <div>
+                          <Typography variant="body2" className="value">
+                            {testflag === 0 ? "Production" : "Test"}
+                          </Typography>
+                        </div>
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Typography variant="caption">
+                          External Source System
+                        </Typography>
+                        <div>
+                          <Typography variant="body2" className="value">
+                            {externalsystemname}
+                          </Typography>
+                        </div>
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Typography variant="caption">Location Type</Typography>
+                        <div>
+                          <Typography variant="body2" className="value">
+                            {locationType}
+                          </Typography>
+                        </div>
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Typography variant="caption">Adapter</Typography>
+                        <div>
+                          <Typography variant="body2" className="value">
+                            {type}
+                          </Typography>
+                        </div>
+                      </Grid>
+                    </div>
+                  </Grid>
                 </Grid>
+              </AccordionDetails>
+            </Accordion>
+            <Accordion defaultExpanded>
+              <AccordionSummary>
+                <Typography>Data Packages & Datasets</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
                 <Grid item xs={12}>
-                  <div className={classes.cloneDFdetailscontainer}>
-                    <Grid item xs={3}>
-                      <Typography variant="caption">Type</Typography>
-                      <div>
-                        <Typography variant="caption">Corante</Typography>
-                      </div>
-                    </Grid>
-                    <Grid item xs={3}>
-                      <Typography variant="caption">
-                        External Source System
-                      </Typography>
-                      <div>
-                        <Typography variant="caption">Corante</Typography>
-                      </div>
-                    </Grid>
-                    <Grid item xs={3}>
-                      <Typography variant="caption">Location Type</Typography>
-                      <div>
-                        <Typography variant="caption">Corante</Typography>
-                      </div>
-                    </Grid>
-                    <Grid item xs={3}>
-                      <Typography variant="caption">Adapter</Typography>
-                      <div>
-                        <Typography variant="caption">Corante</Typography>
-                      </div>
-                    </Grid>
-                  </div>
+                  <Table
+                    columns={DfDetailsColumns}
+                    rows={dataFlowSource}
+                    rowId="employeeId"
+                    hidePagination
+                  />
                 </Grid>
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-          <Accordion defaultExpanded>
-            <AccordionSummary>
-              <Typography>Data Packages & Datasets</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid item xs={12}>
-                <Table
-                  columns={columns}
-                  rows={rows}
-                  rowId="employeeId"
-                  hidePagination
-                />
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-        </div>
-      </>
-    );
+              </AccordionDetails>
+            </Accordion>
+          </div>
+        </>
+      );
+    }
+    return null;
+  };
+
+  const handleDataFlowSelect = async (row) => {
+    const data = await fetchDataFlowSource(row.dataflowid);
+    await setDataFlowSource(data);
+    await setDetail(row);
   };
 
   const DfFormatCell = ({ row, column: { accessor } }) => {
-    console.log("row[accessor]", row[accessor], accessor);
+    console.log("row[accessor]", row, accessor);
     if (row[accessor]) {
       const innerEl = (
         <Highlighted text={row[accessor]} highlight={searchTxt} />
@@ -395,7 +444,9 @@ const CloneDataFlow = ({
         // eslint-disable-next-line jsx-a11y/click-events-have-key-events
         <div
           className="result-row"
-          onClick={() => setDetail(row)}
+          onClick={() => {
+            handleDataFlowSelect(row);
+          }}
           role="menu"
           tabIndex={0}
         >
@@ -493,6 +544,8 @@ const CloneDataFlow = ({
   };
 
   const handleClone = () => {};
+
+  console.log(selectedStudy, "selectedStudyselectedStudy");
 
   return (
     <>

@@ -829,7 +829,7 @@ exports.searchDataflow = async (req, res) => {
       message: "searchDataflow",
       searchParam,
     });
-    const searchQuery = `SELECT d.dataflowid,d."name" ,d.description, d.externalsystemname , v.vend_nm FROM ${schemaName}.dataflow d inner join cdas1d.cdascfg.vendor v on d.vend_id  = v.vend_id where d.prot_id = '${studyId}' and (LOWER(d.name)) LIKE '${searchParam}%' LIMIT 10`;
+    const searchQuery = `SELECT d.dataflowid,d."name" ,d.description, d.externalsystemname , v.vend_nm FROM ${schemaName}.dataflow d inner join ${schemaName}.vendor v on d.vend_id  = v.vend_id where d.prot_id = '${studyId}' and (LOWER(d.name)) LIKE '${searchParam}%' LIMIT 10`;
     console.log(searchQuery);
     let { rows } = await DB.executeQuery(searchQuery);
     return apiResponse.successResponseWithData(res, "Operation success", {
@@ -839,6 +839,34 @@ exports.searchDataflow = async (req, res) => {
   } catch (error) {
     console.log(error);
     Logger.error("catch :searchDataflow");
+    Logger.error(error);
+    return apiResponse.ErrorResponse(res, error);
+  }
+};
+
+exports.fetchdataflowSource = async (req, res) => {
+  try {
+    let dataflow_id = req.params.id;
+    let q = `select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."name" as datasetname from ${schemaName}.dataflow d
+    inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
+    inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
+    inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
+      inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+      where d.dataflowid ='${dataflow_id}'`;
+    Logger.info({
+      message: "fetchdataflowSource",
+      dataflow_id,
+    });
+    console.log(q);
+    let { rows } = await DB.executeQuery(q);
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation successfully.",
+      rows
+    );
+  } catch (error) {
+    console.log(error);
+    Logger.error("catch :fetchdataflowSource");
     Logger.error(error);
     return apiResponse.ErrorResponse(res, error);
   }

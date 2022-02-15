@@ -11,5 +11,6 @@ router.post("/inActivate", DataflowController.inActivateDataFlow);
 router.post("/syncNow", DataflowController.syncDataFlow);
 router.post("/update", DataflowController.updateDataFlow);
 router.post("/search-dataflow/:id", DataflowController.searchDataflow);
+router.get("/:id", DataflowController.fetchdataflowSource);
 
 module.exports = router;
