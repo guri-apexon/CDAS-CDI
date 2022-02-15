@@ -2,7 +2,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 import { useHistory } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import Table, {
   dateFilterV2,
@@ -37,21 +37,14 @@ import {
   syncNowDataFlow,
 } from "../../services/ApiServices";
 
+import { updateSelectedDataflow } from "../../store/actions/DashboardAction";
+
 import {
   createAutocompleteFilter,
   IntegerFilter,
   createStringArraySearchFilter,
   DateFilter,
 } from "../../utils/index";
-
-const LinkCell = ({ row, column: { accessor } }) => {
-  const rowValue = row[accessor];
-  return (
-    <Link onClick={() => console.log(`link clicked ${rowValue}`)}>
-      {rowValue}
-    </Link>
-  );
-};
 
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
@@ -125,6 +118,7 @@ export default function DataflowTab({ updateData }) {
   const [totalRows, setTotalRows] = useState(0);
   const [rowData, setRowData] = useState([]);
   const history = useHistory();
+  const dispatch = useDispatch();
   const dashboard = useSelector((state) => state.dashboard);
 
   const [expandedRows, setExpandedRows] = useState([]);
@@ -208,6 +202,17 @@ export default function DataflowTab({ updateData }) {
       await inActivateDF(e.dataFlowId, e.version);
       await updateData();
     }
+  };
+
+  const handleLink = (dataFlowId) => {
+    dispatch(updateSelectedDataflow(dataFlowId));
+    history.push("/dataflow-management");
+  };
+
+  const LinkCell = ({ row, column: { accessor } }) => {
+    const rowValue = row[accessor];
+    const { dataFlowId } = row;
+    return <Link onClick={() => handleLink(dataFlowId)}>{rowValue}</Link>;
   };
 
   const ActionCell = ({ row }) => {

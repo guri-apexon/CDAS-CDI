@@ -27,7 +27,7 @@ import {
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
 
-import { fileTypes, delimeters } from "../../utils";
+import { fileTypes, delimeters, loadTypes } from "../../utils";
 
 const styles = {
   paper: {
@@ -95,6 +95,8 @@ const DataSetsFormBase = (props) => {
     defaultQuote,
     defaultHeaderRowNumber,
     defaultFooterRowNumber,
+    defaultLoadType,
+    values,
   } = props;
 
   const setDefaultValues = (e) => {
@@ -111,8 +113,11 @@ const DataSetsFormBase = (props) => {
       dispatch(
         change("DataSetsForm", "footerRowNumber", defaultFooterRowNumber)
       );
+      dispatch(change("DataSetsForm", "loadType", defaultLoadType));
     }
   };
+
+  console.log(values, "values12");
 
   return (
     <form onSubmit={handleSubmit}>
@@ -250,6 +255,7 @@ const DataSetsFormBase = (props) => {
             <Grid item md={6}>
               <ReduxFormAutocomplete
                 name="clinicalDataType"
+                autoSelect
                 id="clinicalDataType"
                 label="Clinical Data Type"
                 source={datakind}
@@ -282,6 +288,17 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Row Decrease % Allowed"
               />
+              <ReduxFormSelect
+                fullWidth
+                name="loadType"
+                id="loadType"
+                size="small"
+                label="Load Type"
+              >
+                {loadTypes?.map((type) => (
+                  <MenuItem value={type}>{type}</MenuItem>
+                ))}
+              </ReduxFormSelect>
             </Grid>
           </Grid>
         </div>
@@ -295,20 +312,21 @@ const ReduxForm = compose(
   reduxForm({
     form: "DataSetsForm",
     validate: dataSetsValidation,
-  })
+  }),
+  connect((state) => ({ values: getFormValues("DataSetsForm")(state) }))
 )(DataSetsFormBase);
 
 const selector = formValueSelector("DataSetsForm");
 const DataSetsForm = connect((state) => ({
   initialValues: state.dataSets.formData, // pull initial values from account reducer
   enableReinitialize: true,
-  values: getFormValues("DataSetsForm")(state),
   formValues: selector(state, "fileType"),
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
   defaultQuote: state.dataSets.defaultQuote,
   defaultHeaderRowNumber: state.dataSets.defaultHeaderRowNumber,
   defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
+  defaultLoadType: state.dataSets.defaultLoadType,
   datakind: state.dataSets.datakind?.records,
 }))(ReduxForm);
 

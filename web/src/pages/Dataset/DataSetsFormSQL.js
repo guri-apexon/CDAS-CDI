@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
+import React, { useEffect } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch, useSelector } from "react-redux";
 import { reduxForm, getFormValues, formValueSelector } from "redux-form";
@@ -84,13 +84,25 @@ const styles = {
 };
 
 const DataSetsFormBase = (props) => {
-  const { handleSubmit, classes, datakind, formValues } = props;
+  const {
+    handleSubmit,
+    classes,
+    datakind,
+    formValues,
+    onChange,
+    defaultFields,
+  } = props;
   const dispatch = useDispatch();
   const dataSets = useSelector((state) => state.dataSets);
 
   const handlePreview = () => {
     console.log("data", dataSets);
   };
+  useEffect(() => {
+    if (formValues && ["Yes", "No"].includes(formValues)) {
+      onChange(formValues);
+    }
+  }, [formValues]);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -234,13 +246,13 @@ const ReduxForm = compose(
   reduxForm({
     form: "DataSetsFormSQL",
     validate: dataSetsValidation,
-  })
+  }),
+  connect((state) => ({ values: getFormValues("DataSetsFormSQL")(state) }))
 )(DataSetsFormBase);
 
 const selector = formValueSelector("DataSetsFormSQL");
 const DataSetsFormSQL = connect((state) => ({
   initialValues: state.dataSets.formDataSQL, // pull initial values from account reducer
-  values: getFormValues("DataSetsFormSQL")(state),
   formValues: selector(state, "customSQLQuery"),
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,

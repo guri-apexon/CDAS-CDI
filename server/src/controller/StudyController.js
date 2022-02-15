@@ -4,7 +4,6 @@ const Logger = require("../config/logger");
 const moment = require("moment");
 const _ = require("lodash");
 const constants = require("../config/constants");
-
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 exports.getUserStudyList = function (req, res) {
@@ -144,7 +143,9 @@ exports.searchStudyList = function (req, res) {
       searchParam,
     });
     // console.log("search", searchParam, userId);
-    const searchQuery = `SELECT s.prot_id, s.prot_nbr as protocolnumber, s3.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${schemaName}.study s INNER JOIN ${schemaName}.sponsor s2 ON s2.spnsr_id = s.spnsr_id 
+    const searchQuery = `SELECT s.prot_id, s.prot_nbr as protocolnumber, s3.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${schemaName}.study s 
+    INNER JOIN ${schemaName}.study_sponsor ss ON ss.prot_id = s.prot_id 
+    INNER JOIN ${schemaName}.sponsor s2 ON s2.spnsr_id = ss.spnsr_id 
     INNER JOIN ${schemaName}.study_user s3 ON s.prot_id=s3.prot_id WHERE (s3.usr_id = $2) AND (LOWER(prot_nbr) LIKE $1 OR LOWER(spnsr_nm) LIKE $1 OR LOWER(proj_cd) LIKE $1) LIMIT 10`;
 
     DB.executeQuery(searchQuery, [`%${searchParam}%`, userId]).then(
@@ -172,7 +173,7 @@ exports.getDatasetIngestionDashboardDetail = function (req, res) {
     const testFlag = req.query.testFlag || null;
     const active = req.query.active || null;
     if (testFlag == 1 || testFlag == 0) {
-      where += ` and ds.testflag in (${testFlag}) `;
+      where += ` and df.testflag in (${testFlag}) `;
     }
     if (active == 1 || active == 0) {
       where += ` and ds.active in (${active}) `;
@@ -182,7 +183,7 @@ exports.getDatasetIngestionDashboardDetail = function (req, res) {
       prot_id,
     });
     const searchQuery = `with protocol as (SELECT prot_id, dataflowid
-      FROM ${constants.DB_SCHEMA_NAME}.dataflow 
+      FROM ${schemaName}.dataflow 
      WHERE active = 1 --ONLY active dataflows
   GROUP BY prot_id, dataflowid
   ) 
@@ -205,18 +206,18 @@ ts.externalid,
 COALESCE(ts.downloadtrnx,0) as downloadtrnx,
 cps.STATUS AS childstatus,
 cps.ERRMSG as errmsg,
-ROW_NUMBER () OVER (PARTITION BY ts.dataflowid,	ts.datapackageid,ts.datasetid
+ROW_NUMBER () OVER (PARTITION BY ts.dataflowid, ts.datapackageid,ts.datasetid
 ORDER BY ts.executionid DESC) AS latest
 FROM protocol prot
-LEFT JOIN ${constants.DB_SCHEMA_NAME}.transaction_summary ts
+LEFT JOIN ${schemaName}.transaction_summary ts
 ON prot.dataflowid = TS.dataflowid
-LEFT JOIN ${constants.DB_SCHEMA_NAME}.child_processes_summary cps
+LEFT JOIN ${schemaName}.child_processes_summary cps
 ON ts.externalid = cps.externalid )  ts1_latest
 where latest<=2 
 ) x WHERE latest = 1 
 ) 
 ,checkSum as ( select case when current_timestamp > to_timestamp(cast(lastmodifiedtime as numeric)/1000) then date_part('day',current_timestamp - to_timestamp(cast(lastmodifiedtime as numeric)/1000)) else -1
-					end as no_of_staledays, lastmodifiedtime as file_timestamp, dc2.executionid from ${constants.DB_SCHEMA_NAME}.datapackage_checksum dc2 inner join cteTrnx on cteTrnx.dataflowid = dc2.dataflowid and cteTrnx.datapackageid = dc2.datapackageid and cteTrnx.executionid = dc2.executionid limit 1)
+          end as no_of_staledays, lastmodifiedtime as file_timestamp, dc2.executionid from ${schemaName}.datapackage_checksum dc2 inner join cteTrnx on cteTrnx.dataflowid = dc2.dataflowid and cteTrnx.datapackageid = dc2.datapackageid and cteTrnx.executionid = dc2.executionid limit 1)
 ,cteFile AS -- get the latest file name
 (
 SELECT * FROM
@@ -235,16 +236,16 @@ SELECT * FROM
     ROW_NUMBER () OVER (PARTITION BY dp.dataflowid, dp.executionid, dp.datapackageid, dpds.datasetid 
     ORDER BY dp.stagetime DESC) AS latest
   FROM
-    ${constants.DB_SCHEMA_NAME}.datapackage_checksum dp
-  LEFT OUTER JOIN ${constants.DB_SCHEMA_NAME}.datapackage_dataset_mapping DPDS ON
+    ${schemaName}.datapackage_checksum dp
+  LEFT OUTER JOIN ${schemaName}.datapackage_dataset_mapping DPDS ON
     dp.md5 = dpds."MD5" 
-  LEFT OUTER JOIN ${constants.DB_SCHEMA_NAME}.dataset_checksum ds ON
+  LEFT OUTER JOIN ${schemaName}.dataset_checksum ds ON
     dp.md5 = ds.md5  
   ) x 
 WHERE latest = 1 
 )
-,columnDef as ( select count(c.columnid) as columncount, c.datasetid from ${constants.DB_SCHEMA_NAME}.columndefinition c inner join cteTrnx on cteTrnx.datasetid = c.datasetid group by c.datasetid)
---select the data for a selected study		
+,columnDef as ( select count(c.columnid) as columncount, c.datasetid from ${schemaName}.columndefinition c inner join cteTrnx on cteTrnx.datasetid = c.datasetid group by c.datasetid)
+--select the data for a selected study  
 select 
 cteTrnx.externalid ,
 cteTrnx.executionid,
@@ -254,24 +255,24 @@ cteTrnx.datapackageid ,
 cteTrnx.datasetid ,
 cteTrnx.downloadtrnx,
 cteTrnx.previous_downloadtrnx,
-ds.type AS dataset_type ,
+ts.datasettype AS dataset_type ,
 ds.mnemonic datasetname,
 df.type datastructure ,
 dp.type pacakagetype,
 dp.path packagepath,
-dp.name AS packagenamingconvention ,
+ts.datapackagename AS packagenamingconvention ,
 ds.datakindid AS ClinicalDataTypeId ,
-vn.vend_nm_stnd as clinicalDataTypeName,
+vn.name as clinicalDataTypeName,
 df.vend_id as vendorsourceid,
 vn1.vend_nm_stnd as vendorsource,
 ds.TYPE FileType,
 ds.PATH FilePath,
-ds.name AS filenamingconvention ,
+ts.datasetname AS filenamingconvention ,
 ds.rowdecreaseallowed ,
-ds.testflag AS testdataflow ,
+df.testflag AS testdataflow ,
 ds.staledays AS overridestalealert ,
 df.connectiontype ,
-df.connectiondriver,	
+df.connectiondriver,      
 ts.mnemonicfile,
 ts.processtype,
 ts.downloadstatus,
@@ -291,10 +292,31 @@ cteTrnx.childstatus,
 cteTrnx.ERRMSG,
 CASE WHEN ts.downloadstatus = 'SUCCESSFUL' AND ts.processstatus = 'SUCCESSFUL' THEN 'LOADED WITHOUT ISSUES'
 WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'PROCESSED WITH ERRORS' THEN 'LOADED WITH INGESTION ISSUES'
-WHEN ts.downloadstatus  = 'FAILED' OR ts.processstatus   = 'FAILED' THEN 'FAILED'
+WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'IN PROGRESS' THEN 'IN PROGRESS'
+WHEN ts.downloadstatus  = 'IN PROGRESS' AND ts.processstatus  = '' THEN 'IN PROGRESS'
+WHEN ts.downloadstatus  = 'QUEUED' AND ts.processstatus  = '' THEN 'QUEUED FOR NEW FILE CHECK'
+WHEN ts.downloadstatus  = 'QUEUED' AND ts.processstatus  = 'SUCCESSFUL' THEN 'SUCCESSFUL'
 WHEN ts.downloadstatus  = 'IN PROGRESS' OR ts.processstatus  = 'IN PROGRESS' THEN 'IN PROGRESS'
 WHEN ts.downloadstatus  = 'ABORTED' OR ts.processstatus  = 'ABORTED' THEN 'FAILED'
-END AS datastatus,    -- NEEDS COMPLETE CASE STATEMENT
+WHEN ts.downloadstatus  = 'SKIPPED' OR ts.processstatus  = 'SKIPPED' THEN 'SKIPPED'
+WHEN ts.downloadstatus  = 'FAILED' OR ts.processstatus = 'FAILED' AND ts.failurecat NOT IN ('INTERNAL ERROR', 'GENERAL ERROR','EDIT CHECK ERRORS','TO-DO','TO_DO','T0-DO') THEN ts.failurecat
+WHEN ts.downloadstatus  = 'FAILED' OR ts.processstatus   = 'FAILED' THEN 'FAILED'
+WHEN cteTrnx.ERRMSG = 'DUPLICATE FILE' THEN 'DUPLICATE FILE'
+WHEN cteTrnx.ERRMSG = 'NO RECORDS DOWNLOADED' THEN 'NO RECORDS DOWNLOADED'
+WHEN cteTrnx.ERRMSG = 'NO FILES IN SOURCE' THEN 'NO FILES IN SOURCE'
+ELSE 'FAILED' END AS datasetstatus,    -- NEEDS COMPLETE CASE STATEMENT
+CASE WHEN (dc.no_of_staledays > ds.staledays) THEN 'STALE'
+WHEN ds.active = 0 THEN 'INACTIVE'
+WHEN ts.downloadstatus = 'SUCCESSFUL' AND ts.processstatus = 'SUCCESSFUL' THEN 'UP-TO-DATE'
+WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'PROCESSED WITH ERRORS' THEN 'UP-TO-DATE'
+WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'IN PROGRESS' THEN 'PROCESSING'
+WHEN ts.downloadstatus  = 'IN PROGRESS' AND ts.processstatus  = '' THEN 'PROCESSING'
+WHEN ts.downloadstatus  = 'QUEUED' AND ts.processstatus  = '' THEN 'QUEUED'
+WHEN ts.downloadstatus  = 'QUEUED' AND ts.processstatus  = 'SUCCESSFUL' THEN 'UP-TO-DATE'
+WHEN ts.downloadstatus  = 'IN PROGRESS' OR ts.processstatus  = 'IN PROGRESS' THEN 'PROCESSING'
+WHEN ts.downloadstatus  = 'SKIPPED' OR ts.processstatus  = 'SKIPPED' THEN 'SKIPPED'
+WHEN ts.downloadstatus  = 'FAILED' OR ts.processstatus = 'FAILED' THEN 'FAILED'
+ELSE 'FAILED' END AS jobstatus,    -- NEEDS COMPLETE CASE STATEMENT
 cteTrnx.pct_cng,
 case when cteTrnx.pct_cng > ds.rowdecreaseallowed then cteTrnx.pct_cng end as EXCEEDS_PCT_CNG, -- needs comparison logic to replace 'Y' for KPI
 case when dc.no_of_staledays > ds.staledays then 'yes' else 'no' end  as IS_STALE, --needs comparison logic to replace 'Y' for KPI,
@@ -308,21 +330,21 @@ CASE WHEN df.connectiontype NOT IN ('SFTP','FTPS') THEN ds.name ELSE cteFile.fil
 case when (ds.incremental = 'true' or ds.incremental = 'Y') or columnDef.columncount > 0 then 'Incremental' else 'Full' end as loadType
 FROM protocol p
 INNER JOIN
-${constants.DB_SCHEMA_NAME}.dataflow df
+${schemaName}.dataflow df
 ON  df.dataflowid = p.dataflowid
-INNER JOIN ${constants.DB_SCHEMA_NAME}.datapackage dp
+INNER JOIN ${schemaName}.datapackage dp
 ON df.dataflowid = dp.dataflowid
-INNER JOIN ${constants.DB_SCHEMA_NAME}.dataset ds
+INNER JOIN ${schemaName}.dataset ds
 ON dp.datapackageid = ds.datapackageid 
-INNER JOIN ${constants.DB_SCHEMA_NAME}.vendor vn
-ON vn.vend_id = ds.datakindid 
-INNER JOIN ${constants.DB_SCHEMA_NAME}.vendor vn1
+INNER JOIN ${schemaName}.datakind vn
+ON vn.datakindid = ds.datakindid 
+INNER JOIN ${schemaName}.vendor vn1
 ON vn1.vend_id = df.vend_id 
 INNER JOIN cteTrnx 
-ON 	cteTrnx.dataflowid = df.dataflowid
+ON cteTrnx.dataflowid = df.dataflowid
 AND cteTrnx.datapackageid = dp.datapackageid
 AND cteTrnx.datasetid = ds.datasetid
-INNER JOIN ${constants.DB_SCHEMA_NAME}.transaction_summary ts 
+INNER JOIN ${schemaName}.transaction_summary ts 
 ON cteTrnx.executionid = ts.executionid
 AND cteTrnx.externalid = ts.externalid
 AND cteTrnx.dataflowid = ts.dataflowid
@@ -331,12 +353,12 @@ AND ctetrnx.datasetid = ts.datasetid
 left join checkSum dc 
 on cteTrnx.executionid = dc.executionid
 LEFT JOIN cteFile 
-	ON cteTrnx.dataflowid = cteFile.dataflowid
-	AND cteTrnx.executionid = cteFile.executionid
-	AND cteTrnx.datapackageid = cteFile.datapackageid
-	AND cteTrnx.datasetid = cteFile.datasetid
+  ON cteTrnx.dataflowid = cteFile.dataflowid
+  AND cteTrnx.executionid = cteFile.executionid
+  AND cteTrnx.datapackageid = cteFile.datapackageid
+  AND cteTrnx.datasetid = cteFile.datasetid
 LEFT JOIN columnDef 
-	ON cteTrnx.datasetid = columnDef.datasetid
+  ON cteTrnx.datasetid = columnDef.datasetid
 where p.prot_id = $1 ${where}`;
     DB.executeQuery(searchQuery, [prot_id]).then((response) => {
       const datasets = response.rows || [];

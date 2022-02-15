@@ -3,19 +3,12 @@
 import React, { useState, useContext, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Table from "apollo-react/components/Table";
-import { Typography } from "@material-ui/core";
 import TextField from "apollo-react/components/TextField";
 import Link from "apollo-react/components/Link";
 import Modal from "apollo-react/components/Modal";
 
 import { MessageContext } from "../../../components/Providers/MessageProvider";
-import {
-  makeEditableSelectCell,
-  NumericEditableCell,
-  EditableCell,
-  CustomHeader,
-  columns,
-} from "./DSCTableHelper";
+import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../utils/downloadData";
 import { createDatasetColumns } from "../../../store/actions/DataSetsAction";
 
@@ -49,9 +42,10 @@ export default function DSColumnTable({
   }));
 
   const [rows, setRows] = useState(initialRows);
-  const [editedRows, setEditedRows] = useState([]);
+  const [editedRows, setEditedRows] = useState(initialRows);
   const [selectedRows, setSelectedRows] = useState([]);
-  const [searchValue, setSearchValue] = useState(null);
+  const [searchValue, setSearchValue] = useState("");
+  const [editMode, setEditMode] = useState(false);
   const [rowErr, setRowErr] = useState({});
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
@@ -104,11 +98,10 @@ export default function DSColumnTable({
 
   const addSingleRow = () => {
     if (rows.length < 500) {
-      setRows((rw) => [
-        ...rw,
+      const singleRow = [
         {
-          uniqueId: `u${rw.length}`,
-          columnId: rw.length + 1,
+          uniqueId: `u${rows.length}`,
+          columnId: rows.length + 1,
           variableLabel: "",
           columnName: "",
           position: "",
@@ -123,8 +116,11 @@ export default function DSColumnTable({
           isInitLoad: true,
           isHavingError: false,
         },
-      ]);
+      ];
+      setRows([...rows, ...singleRow]);
       setSelectedRows([...selectedRows, `u${rows.length}`]);
+      setEditedRows([...rows, ...singleRow]);
+      setEditMode(true);
     } else {
       messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
     }
@@ -163,7 +159,10 @@ export default function DSColumnTable({
         })
       );
       setRows((rw) => [...rw, ...multiRows]);
-      setEditedRows([...rows]);
+      const moreRows = multiRows.map((e) => e.uniqueId);
+      setSelectedRows([...moreRows]);
+      setEditedRows([...editedRows, ...multiRows]);
+      // setEditedRows([...rows]);
       setNewRows("");
       // const selected = multiRows.map((d) => d.uniqueId);
       // setSelectedRows([...selectedRows, selected]);
@@ -211,46 +210,6 @@ export default function DSColumnTable({
   ];
 
   const columnsToAdd = [
-    {
-      header: "Format",
-      accessor: "format",
-      customCell: EditableCell,
-    },
-    {
-      header: "Data Type",
-      accessor: "dataType",
-      customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
-    },
-    {
-      header: "Primary?",
-      accessor: "primary",
-      customCell: makeEditableSelectCell(["Yes", "No"]),
-    },
-    {
-      header: "Unique?",
-      accessor: "unique",
-      customCell: makeEditableSelectCell(["Yes", "No"]),
-    },
-    {
-      header: "Required?",
-      accessor: "required",
-      customCell: makeEditableSelectCell(["Yes", "No"]),
-    },
-    {
-      header: "Min length",
-      accessor: "minLength",
-      customCell: NumericEditableCell,
-    },
-    {
-      header: "Max length",
-      accessor: "maxLength",
-      customCell: NumericEditableCell,
-    },
-    {
-      header: "List of values",
-      accessor: "values",
-      customCell: EditableCell,
-    },
     {
       header: "",
       accessor: "uniqueId",
@@ -311,9 +270,9 @@ export default function DSColumnTable({
   const onRowCancel = (uniqueId) => {
     setIsEditAll(false);
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+    // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     setSelectedRows([...removeRow]);
-    setEditedRows([...removeEdited]);
+    // setEditedRows([...removeEdited]);
   };
 
   const onRowSave = (uniqueId) => {
@@ -328,9 +287,10 @@ export default function DSColumnTable({
   };
 
   const onRowEdit = (uniqueId) => {
-    const editingRow = rows.find((row) => row.uniqueId === uniqueId);
+    // const editingRow = rows.find((row) => row.uniqueId === uniqueId);
+    // setIsEditAll(true);
     setSelectedRows([...selectedRows, uniqueId]);
-    setEditedRows([...editedRows, editingRow]);
+    // setEditedRows([...editedRows, editingRow]);
   };
 
   const onRowDelete = (uniqueId) => {
@@ -375,12 +335,22 @@ export default function DSColumnTable({
     console.log("handle overwrite");
   };
 
-  const editMode = selectedRows.length > 0;
+  useEffect(() => {
+    if (selectedRows.length > 0) {
+      setIsEditAll(true);
+      setEditMode(true);
+    } else {
+      setIsEditAll(false);
+      setEditMode(false);
+    }
+  }, [selectedRows]);
+
   // const editMode = selectedRows.length > 0;
 
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
+        {console.log(editMode, selectedRow, editedRows, rows)}
         <Table
           title="Dataset Column Settings"
           subtitle={`${
@@ -389,6 +359,8 @@ export default function DSColumnTable({
               : `${rows.length} dataset columns`
           }`}
           columns={moreColumns}
+          initialSortedColumn="uniqueId"
+          initialSortOrder="asc"
           rowId="uniqueId"
           hasScroll={true}
           rows={(editMode ? editedRows : rows).map((row, i) => ({
@@ -452,7 +424,12 @@ export default function DSColumnTable({
 
               {isEditLOVs ? (
                 <div className="lov-edit-mode">
-                  <TextField sizeAdjustable minWidth={300} minHeight={278} />
+                  <TextField
+                    value={selectedRow.values}
+                    sizeAdjustable
+                    minWidth={300}
+                    minHeight={278}
+                  />
                 </div>
               ) : (
                 <div className="lov-view-mode">

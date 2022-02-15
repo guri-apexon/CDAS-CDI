@@ -13,15 +13,22 @@ exports.getStudyDataflows = async (req, res) => {
   try {
     const { protocolId } = req.body;
     if (protocolId) {
-      const query = `select * from (select s.prot_id as "studyId", d.dataflowid as "dataFlowId", row_number () over(partition by d.dataflowid,d2.prot_id order by dh."version" desc) as rnk, dsetcount.dsCount as "dsCount", dpackagecount.dpCount as "dpCount", s.prot_nbr as "studyName", dh."version", d.data_flow_nm as "dataFlowName", d.testflag as "type", d.insrt_tm as "dateCreated", vend_nm as "vendorSource", d.description, d.type as "adapter", d.active as "status", d.extrnl_sys_nm as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified", d.refreshtimestamp as "lastSyncDate" from ${schemaName}.dataflow d 
-    inner join ${schemaName}.vendor v on d.vend_id = v.vend_id 
-    inner join ${schemaName}.source_location sl on d.src_loc_id = sl.src_loc_id 
-    inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid 
-    inner join ${schemaName}.dataflow_history dh on d.dataflowid = dh.dataflowid
-    inner join ${schemaName}.study s on d2.prot_id = s.prot_id
-    inner join (select datapackageid, COUNT(DISTINCT datasetid) as dsCount FROM ${schemaName}.dataset d GROUP BY datapackageid) dsetcount on (d2.datapackageid=dsetcount.datapackageid)
-    inner join (select dataflowid, COUNT(DISTINCT datapackageid) as dpCount FROM ${schemaName}.datapackage d GROUP BY dataflowid) dpackagecount on (d.dataflowid=dpackagecount.dataflowid)
-    where s.prot_id = $1) as df where df.rnk=1`;
+      const query = `select "studyId","dataFlowId","dsCount","dpCount","studyName","version","dataFlowName","type","dateCreated","vendorSource",description,adapter,status,"externalSourceSystem","locationType","lastModified","lastSyncDate"
+      from (select s.prot_id as "studyId", d.dataflowid as "dataFlowId",
+      row_number () over(partition by d.dataflowid,d.prot_id order by dh."version" desc) as rnk,
+      dsetcount.dsCount as "dsCount", dpackagecount.dpCount as "dpCount", s.prot_nbr as "studyName",
+      dh."version", d.name as "dataFlowName", d.testflag as "type", d.insrt_tm as "dateCreated",
+      vend_nm as "vendorSource", d.description, d.type as "adapter", d.active as "status",
+      d.externalsystemname as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified",
+      d.refreshtimestamp as "lastSyncDate" from ${schemaName}.dataflow d
+      inner join ${schemaName}.vendor v on d.vend_id = v.vend_id
+      inner join ${schemaName}.source_location sl on d.src_loc_id = sl.src_loc_id
+      inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
+      inner join ${schemaName}.study s on d.prot_id = s.prot_id
+      inner join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid =d.dataflowid
+      left join (select datapackageid, COUNT(DISTINCT datasetid) as dsCount FROM ${schemaName}.dataset d GROUP BY datapackageid) dsetcount on (d2.datapackageid=dsetcount.datapackageid)
+      left join (select dataflowid, COUNT(DISTINCT datapackageid) as dpCount FROM ${schemaName}.datapackage d GROUP BY dataflowid) dpackagecount on (d.dataflowid=dpackagecount.dataflowid)
+      where s.prot_id = $1) as df where df.rnk=1`;
 
       Logger.info({ message: "getStudyDataflows" });
       const $q1 = await DB.executeQuery(query, [protocolId]);
@@ -112,9 +119,9 @@ exports.createDataflow = async (req, res) => {
     if (externalSystemName !== "CDI") {
       // request from external system
       if (vendorName !== "") {
-        let q = `select vend_id from ${constants.DB_SCHEMA_NAME}.vendor where vend_nm='${vendorName}'`;
+        let q = `select vend_id from ${schemaName}.vendor where vend_nm='${vendorName}'`;
         let { rows } = await DB.executeQuery(q);
-        let q1 = `select src_loc_id from ${constants.DB_SCHEMA_NAME}.source_location where cnn_url='${location}'`;
+        let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${location}'`;
         let { rows: data } = await DB.executeQuery(q1);
         if (rows.length > 0 && data.length > 0) {
           //validation for dataflow metadata
@@ -128,7 +135,7 @@ exports.createDataflow = async (req, res) => {
               DFTestname = "TST-" + DFTestname;
             }
             //check for dataflowname && sequence logic
-            const checkDFQuery = `select data_flow_nm from ${constants.DB_SCHEMA_NAME}.dataflow where data_flow_nm LIKE '${DFTestname}%'`;
+            const checkDFQuery = `select data_flow_nm from ${schemaName}.dataflow where data_flow_nm LIKE '${DFTestname}%'`;
             const executeCheckDf = await DB.executeQuery(checkDFQuery);
             if (executeCheckDf.rows.length > 0) {
               let splittedVal =
@@ -144,7 +151,7 @@ exports.createDataflow = async (req, res) => {
               }
             }
 
-            const query = `insert into ${constants.DB_SCHEMA_NAME}.dataflow 
+            const query = `insert into ${schemaName}.dataflow 
             (dataflowid,data_flow_nm,vend_id,type,description,src_loc_id,active,refreshtimestamp,configured,expt_fst_prd_dt,
               config_json,testflag,data_in_cdr,connectiontype,connectiondriver,data_strc,last_study_sync,
               last_study_re_proc,last_time_view_was_refer,serv_ownr,src_sys_nm,extrnl_sys_nm,extrnl_id,
@@ -197,12 +204,12 @@ exports.createDataflow = async (req, res) => {
                         obj.customQuery !== "" &&
                         obj.columncount !== null
                       ) {
-                        let dataKindQ = `select datakindid from ${constants.DB_SCHEMA_NAME}.datakind where name='${obj.dataKind}'`;
+                        let dataKindQ = `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}'`;
                         let checkDataKind = await DB.executeQuery(dataKindQ);
                         if (checkDataKind.rows.length > 0) {
                           let datakindid = checkDataKind.rows[0].datakindid;
                           const dsUid = createUniqueID();
-                          let DSQuery = `insert into ${constants.DB_SCHEMA_NAME}.dataset(datasetid,datapackageid,datakindid,datakind,mnemonic,columncount,incremental,
+                          let DSQuery = `insert into ${schemaName}.dataset(datasetid,datapackageid,datakindid,datakind,mnemonic,columncount,incremental,
                               offsetcolumn,type,path,ovrd_stale_alert,headerrownumber,footerrownumber,customsql,
                               custm_sql_query,tbl_nm,extrnl_id,insrt_tm) values('${dsUid}','${dpUid}','${datakindid}','${obj.dataKind}','${obj.mnemonic}',${obj.columncount},${obj.incremental},'${obj.offsetColumn}','${obj.type}',
                                 '${obj.path}',${obj.OverrideStaleAlert},${obj.headerRowNumber},${obj.footerRowNumber},'${obj.customSql}',
@@ -257,9 +264,9 @@ exports.createDataflow = async (req, res) => {
     } else {
       //request from CDI
       if (vendorID !== "") {
-        let q = `select vend_nm from ${constants.DB_SCHEMA_NAME}.vendor where vend_id='${vendorID}'`;
+        let q = `select vend_nm from ${schemaName}.vendor where vend_id='${vendorID}'`;
         let { rows } = await DB.executeQuery(q);
-        let q1 = `select cnn_url from ${constants.DB_SCHEMA_NAME}.source_location where src_loc_id='${locationName}'`;
+        let q1 = `select cnn_url from ${schemaName}.source_location where src_loc_id='${locationName}'`;
         let { rows: data } = await DB.executeQuery(q1);
         if (rows.length > 0 && data.length > 0) {
           var DFTestname = `${rows[0].vend_nm}-${protocolNumberStandard}-${description}`;
@@ -267,7 +274,7 @@ exports.createDataflow = async (req, res) => {
             DFTestname = "TST-" + DFTestname;
           }
           //check for dataflowname
-          const checkDFQuery = `select data_flow_nm from ${constants.DB_SCHEMA_NAME}.dataflow where data_flow_nm LIKE '${DFTestname}%'`;
+          const checkDFQuery = `select data_flow_nm from ${schemaName}.dataflow where data_flow_nm LIKE '${DFTestname}%'`;
           const executeCheckDf = await DB.executeQuery(checkDFQuery);
           if (executeCheckDf.rows.length > 0) {
             let splittedVal =
@@ -282,7 +289,7 @@ exports.createDataflow = async (req, res) => {
               DFTestname = DFTestname + "-1";
             }
           }
-          const query = `insert into ${constants.DB_SCHEMA_NAME}.dataflow 
+          const query = `insert into ${schemaName}.dataflow 
             (dataflowid,data_flow_nm,vend_id,type,description,src_loc_id,active,refreshtimestamp,configured,expt_fst_prd_dt,
               config_json,testflag,data_in_cdr,connectiontype,connectiondriver,data_strc,last_study_sync,
               last_study_re_proc,last_time_view_was_refer,serv_ownr,src_sys_nm,extrnl_sys_nm,extrnl_id,
@@ -326,7 +333,7 @@ const hardDeleteTrigger = async (dataflowId, user) => {
   const values = [dataflowId];
   let result, dataFlow;
   await DB.executeQuery(
-    `SELECT * from ${constants.DB_SCHEMA_NAME}.dataflow WHERE dataflowid=$1`,
+    `SELECT * from ${schemaName}.dataflow WHERE dataflowid=$1`,
     values
   ).then(async (response) => {
     dataFlow = response.rows ? response.rows[0] : null;
@@ -334,31 +341,31 @@ const hardDeleteTrigger = async (dataflowId, user) => {
   if (!dataFlow) {
     return "not_found";
   }
-  const deleteQuery = `DELETE FROM ${constants.DB_SCHEMA_NAME}.dataflow_audit_log da
+  const deleteQuery = `DELETE FROM ${schemaName}.dataflow_audit_log da
       WHERE da.dataflowid = $1`;
   await DB.executeQuery(deleteQuery, values)
     .then(async (response) => {
-      const deleteQuery2 = `DELETE FROM ${constants.DB_SCHEMA_NAME}.temp_json_log da
+      const deleteQuery2 = `DELETE FROM ${schemaName}.temp_json_log da
       WHERE da.dataflowid = '${dataflowId}';
-      DELETE FROM ${constants.DB_SCHEMA_NAME}.columndefinition cd WHERE cd.datasetid in (select datasetid FROM ${constants.DB_SCHEMA_NAME}.dataset ds
-      WHERE ds.datapackageid in (select datapackageid from ${constants.DB_SCHEMA_NAME}.datapackage dp where dp.dataflowid='${dataflowId}'));
-      DELETE FROM ${constants.DB_SCHEMA_NAME}.columndefinition_history cd WHERE cd.datasetid in (select datasetid FROM ${constants.DB_SCHEMA_NAME}.dataset ds
-      WHERE ds.datapackageid in (select datapackageid from ${constants.DB_SCHEMA_NAME}.datapackage dp where dp.dataflowid='${dataflowId}'));
-      DELETE FROM ${constants.DB_SCHEMA_NAME}.dataset ds
-      WHERE ds.datapackageid in (select datapackageid from ${constants.DB_SCHEMA_NAME}.datapackage dp where dp.dataflowid='${dataflowId}');
-      DELETE FROM ${constants.DB_SCHEMA_NAME}.dataset_history ds
-      WHERE ds.datapackageid in (select datapackageid from ${constants.DB_SCHEMA_NAME}.datapackage dp where dp.dataflowid='${dataflowId}');
-      DELETE FROM ${constants.DB_SCHEMA_NAME}.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
-      DELETE FROM ${constants.DB_SCHEMA_NAME}.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
+      DELETE FROM ${schemaName}.columndefinition cd WHERE cd.datasetid in (select datasetid FROM ${schemaName}.dataset ds
+      WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}'));
+      DELETE FROM ${schemaName}.columndefinition_history cd WHERE cd.datasetid in (select datasetid FROM ${schemaName}.dataset ds
+      WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}'));
+      DELETE FROM ${schemaName}.dataset ds
+      WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}');
+      DELETE FROM ${schemaName}.dataset_history ds
+      WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}');
+      DELETE FROM ${schemaName}.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
+      DELETE FROM ${schemaName}.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
 
       await DB.executeQuery(deleteQuery2)
         .then(async (response2) => {
-          const deleteQuery3 = `DELETE FROM ${constants.DB_SCHEMA_NAME}.dataflow
+          const deleteQuery3 = `DELETE FROM ${schemaName}.dataflow
       WHERE dataflowid = $1`;
           await DB.executeQuery(deleteQuery3, values)
             .then(async (response3) => {
               if (response3.rowCount && response3.rowCount > 0) {
-                const insertDeletedQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.deleted_dataflow(df_del_id, dataflow_nm, del_by, del_dt, del_req_dt, prot_id) VALUES($1, $2, $3, $4, $5, $6)`;
+                const insertDeletedQuery = `INSERT INTO ${schemaName}.deleted_dataflow(df_del_id, dataflow_nm, del_by, del_dt, del_req_dt, prot_id) VALUES($1, $2, $3, $4, $5, $6)`;
                 const deleteDfId = helper.createUniqueID();
                 const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
                 const deletedValues = [
@@ -396,7 +403,7 @@ const hardDeleteTrigger = async (dataflowId, user) => {
 };
 
 const addDeleteTempLog = async (dataflowId, user) => {
-  const insertTempQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.temp_json_log(temp_json_log_id, dataflowid, trans_typ, trans_stat, no_of_retry_attempted, del_flg, created_by, created_on, updated_by, updated_on) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+  const insertTempQuery = `INSERT INTO ${schemaName}.temp_json_log(temp_json_log_id, dataflowid, trans_typ, trans_stat, no_of_retry_attempted, del_flg, created_by, created_on, updated_by, updated_on) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
   const tempId = helper.createUniqueID();
   let result;
   const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -422,37 +429,36 @@ const addDeleteTempLog = async (dataflowId, user) => {
   return result;
 };
 exports.cronHardDelete = async () => {
-  DB.executeQuery(
-    `SELECT * FROM ${constants.DB_SCHEMA_NAME}.temp_json_log`
-  ).then(async (response) => {
-    const logs = response.rows || [];
-    if (logs.length) {
-      logs.forEach((log) => {
-        const { dataflowid: dataflowId, created_by: user_id } = log;
-        DB.executeQuery(
-          `SELECT * FROM ${constants.DB_SCHEMA_NAME}.user where usr_id = $1`,
-          [user_id]
-        ).then(async (response) => {
-          if (response.rows && response.rows.length) {
-            const user = response.rows[0];
-            const deleted = await hardDeleteTrigger(dataflowId, user);
-            if (deleted) {
-              return true;
+  DB.executeQuery(`SELECT * FROM ${schemaName}.temp_json_log`).then(
+    async (response) => {
+      const logs = response.rows || [];
+      if (logs.length) {
+        logs.forEach((log) => {
+          const { dataflowid: dataflowId, created_by: user_id } = log;
+          DB.executeQuery(
+            `SELECT * FROM ${schemaName}.user where usr_id = $1`,
+            [user_id]
+          ).then(async (response) => {
+            if (response.rows && response.rows.length) {
+              const user = response.rows[0];
+              const deleted = await hardDeleteTrigger(dataflowId, user);
+              if (deleted) {
+                return true;
+              }
+              return false;
             }
-            return false;
-          }
+          });
         });
-      });
+      }
     }
-  });
+  );
 };
 exports.hardDelete = async (req, res) => {
   try {
     const { dataFlowId, userId } = req.body;
-    DB.executeQuery(
-      `SELECT * FROM ${constants.DB_SCHEMA_NAME}.user where usr_id = $1`,
-      [userId]
-    ).then(async (response) => {
+    DB.executeQuery(`SELECT * FROM ${schemaName}.user where usr_id = $1`, [
+      userId,
+    ]).then(async (response) => {
       if (response.rows && response.rows.length) {
         const user = response.rows[0];
         const deleted = await hardDeleteTrigger(dataFlowId, user);
@@ -511,12 +517,18 @@ exports.activateDataFlow = async (req, res) => {
     const $q0 = await DB.executeQuery(q0, [dataFlowId]);
 
     if ($q0.rows.map((e) => e.active).includes(1)) {
-      const q1 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1`;
-      const q2 = `INSERT INTO ${schemaName}.dataflow_audit_log
+      // const q1 = `SELECT "version" FROM ${schemaName}.dataflow_version WHERE dataflowid=$1 ORDER BY created_on DESC LIMIT 1`;
+      const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1`;
+      const q3 = `INSERT INTO ${schemaName}.dataflow_audit_log
       (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
       VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
-      const $q1 = await DB.executeQuery(q1, [dataFlowId]);
-      const $q2 = await DB.executeQuery(q2, [
+      const q4 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
+      VALUES($1, $2, $3, $4)`;
+      // const $q1 = await DB.executeQuery(q1, [dataFlowId]);
+      // const currVersion = $q1.rows[0].version;
+      // const newVersion = currVersion + 1;
+      const $q2 = await DB.executeQuery(q2, [dataFlowId]);
+      const $q3 = await DB.executeQuery(q3, [
         dataflowAuditlogId,
         dataFlowId,
         newVersion,
@@ -525,6 +537,13 @@ exports.activateDataFlow = async (req, res) => {
         "active",
         0,
         1,
+      ]);
+
+      const $q4 = await DB.executeQuery(q4, [
+        dataFlowId,
+        newVersion,
+        userId,
+        curDate,
       ]);
 
       return apiResponse.successResponseWithData(res, "Operation success", {
@@ -547,12 +566,17 @@ exports.inActivateDataFlow = async (req, res) => {
     const curDate = new Date();
     const newVersion = versionNo + 1;
     Logger.info({ message: "inActivateDataFlow" });
-
+    // const q0 = `SELECT "version" FROM ${schemaName}.dataflow_version WHERE dataflowid=$1 ORDER BY created_on DESC LIMIT 1`;
     const q1 = `UPDATE ${schemaName}.dataflow set active=0 WHERE dataflowid=$1`;
     const q2 = `INSERT INTO ${schemaName}.dataflow_audit_log
     (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
     VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+    const q3 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
+    VALUES($1, $2, $3, $4)`;
 
+    // const $q0 = await DB.executeQuery(q0, [dataFlowId]);
+    // const currVersion = $q0.rows[0].version;
+    // const newVersion = currVersion + 1;
     const $q1 = await DB.executeQuery(q1, [dataFlowId]);
     const $q2 = await DB.executeQuery(q2, [
       dataflowAuditlogId,
@@ -563,6 +587,13 @@ exports.inActivateDataFlow = async (req, res) => {
       "active",
       1,
       0,
+    ]);
+
+    const $q3 = await DB.executeQuery(q3, [
+      dataFlowId,
+      newVersion,
+      userId,
+      curDate,
     ]);
 
     return apiResponse.successResponseWithData(res, "Operation success", {
@@ -614,7 +645,7 @@ exports.syncDataFlow = async (req, res) => {
 exports.getDataflowDetail = async (req, res) => {
   try {
     const dataFlowId = req.params.dataFlowId;
-    const searchQuery = `SELECT data_flow_nm, type, description, loc_typ from ${constants.DB_SCHEMA_NAME}.dataflow as dataflowTbl JOIN ${constants.DB_SCHEMA_NAME}.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id WHERE dataflowid = $1`;
+    const searchQuery = `SELECT name, type, description, loc_typ from ${schemaName}.dataflow as dataflowTbl JOIN ${schemaName}.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id WHERE dataflowid = $1`;
     Logger.info({
       message: "datafloDetail",
     });
@@ -659,9 +690,9 @@ exports.updateDataFlow = async (req, res) => {
     } = req.body;
     if (vendorName !== "") {
       var ResponseBody = {};
-      let q = `select vend_id from ${constants.DB_SCHEMA_NAME}.vendor where vend_nm='${vendorName}'`;
+      let q = `select vend_id from ${schemaName}.vendor where vend_nm='${vendorName}'`;
       let { rows } = await DB.executeQuery(q);
-      let q1 = `select src_loc_id from ${constants.DB_SCHEMA_NAME}.source_location where cnn_url='${location}'`;
+      let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${location}'`;
       let { rows: data } = await DB.executeQuery(q1);
       if (rows.length > 0 && data.length > 0) {
         //validation for dataflow metadata
@@ -720,12 +751,12 @@ exports.updateDataFlow = async (req, res) => {
                       obj.customQuery !== "" &&
                       obj.columncount !== null
                     ) {
-                      let dataKindQ = `select datakindid from ${constants.DB_SCHEMA_NAME}.datakind where name='${obj.dataKind}'`;
+                      let dataKindQ = `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}'`;
                       let checkDataKind = await DB.executeQuery(dataKindQ);
                       if (checkDataKind.rows.length > 0) {
                         let datakindid = checkDataKind.rows[0].datakindid;
                         const dsUid = createUniqueID();
-                        let DSQuery = `UPDATE ${constants.DB_SCHEMA_NAME}.dataset set datakind='${obj.dataKind}',mnemonic='${obj.mnemonic}',columncount=${obj.columncount},incremental=${obj.incremental},
+                        let DSQuery = `UPDATE ${schemaName}.dataset set datakind='${obj.dataKind}',mnemonic='${obj.mnemonic}',columncount=${obj.columncount},incremental=${obj.incremental},
                         offsetcolumn='${obj.offsetColumn}',type='${obj.type}',path='${obj.path}',ovrd_stale_alert=${obj.OverrideStaleAlert} ,
                         headerrownumber=${obj.headerRowNumber},footerrownumber=${obj.footerRowNumber},customsql='${obj.customSql}',custm_sql_query='${obj.customQuery}',
                         tbl_nm='${obj.tableName}',updt_tm=CURRENT_TIMESTAMP where extrnl_id=${obj.externalID}`;

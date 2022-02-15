@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { neutral8 } from "apollo-react/colors";
 import Hero from "apollo-react/components/Hero";
 import Grid from "apollo-react/components/Grid";
+import Box from "apollo-react/components/Box";
 import Table from "apollo-react/components/Table";
 import Loader from "apollo-react/components/Loader";
 import Typography from "apollo-react/components/Typography";
@@ -29,13 +30,15 @@ import { ReactComponent as FailureIcon } from "../../components/Icons/failure.sv
 
 import "./Dashboard.scss";
 
-export default function MonitorTab({ fetchLatestData }) {
+export default function MonitorTab({ fetchLatestData, protId }) {
   const [open, setOpen] = useState(false);
   const [curRow, setCurRow] = useState({});
   const [control, setSegmentControl] = useState("all");
   const [rows, setRowData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [activeOnly, setActiveOnly] = useState(true);
+  const [columnsState, setColumns] = React.useState(moreColumnsWithFrozen);
+  const [hasUpdated, setHasUpdated] = React.useState(false);
   const [summary, setSummary] = useState({
     failed_loads: 0,
     quarantined_files: 0,
@@ -98,6 +101,37 @@ export default function MonitorTab({ fetchLatestData }) {
       </Button>
     </div>
   );
+  if (!protId) {
+    return (
+      <div>
+        <Box
+          className="h-v-center flex-column add-btn-container"
+          style={{ height: "100vh" }}
+        >
+          <DatasetsIcon
+            style={{
+              position: "relative",
+              margin: "0 auto",
+              width: "60px",
+              height: "60px",
+            }}
+          />
+          <Typography
+            variant="title1"
+            style={{ fontSize: 24, lineHeight: "48px" }}
+          >
+            Nothing to See Here
+          </Typography>
+          <Typography
+            variant="title1"
+            style={{ fontSize: 20, lineHeight: "24px" }}
+          >
+            Please select a study.
+          </Typography>
+        </Box>
+      </div>
+    );
+  }
   return (
     <div>
       {dashboard.summaryLoading && <Loader />}
@@ -133,7 +167,7 @@ export default function MonitorTab({ fetchLatestData }) {
                 style={{ fill: "#000000" }}
               />
               <Typography variant="h1" darkMode id="failed_loads_count">
-                {summary.failed_loads}
+                {summary.failed_loads || 0}
               </Typography>
             </div>
             <div className="dashInfoLabel">
@@ -155,7 +189,7 @@ export default function MonitorTab({ fetchLatestData }) {
             <div className="dashCounter">
               <StatusNegativeIcon className="conter-icon" />
               <Typography variant="h1" darkMode id="quarantined_files_count">
-                {summary.quarantined_files}
+                {summary.quarantined_files || 0}
               </Typography>
             </div>
             <div className="dashInfoLabel">
@@ -177,7 +211,7 @@ export default function MonitorTab({ fetchLatestData }) {
             <div className="dashCounter">
               <SwapVertIcon className="conter-icon" />
               <Typography variant="h1" darkMode id="files_exceeding_count">
-                {summary.files_exceeding}
+                {summary.files_exceeding || 0}
               </Typography>
             </div>
             <div className="dashInfoLabel">
@@ -199,7 +233,7 @@ export default function MonitorTab({ fetchLatestData }) {
             <div className="dashCounter">
               <IssueIcon className="conter-icon" style={{ fill: "#000000" }} />
               <Typography variant="h1" darkMode id="fileswith_issues_count">
-                {summary.fileswith_issues}
+                {summary.fileswith_issues || 0}
               </Typography>
             </div>
             <div className="dashInfoLabel">
@@ -221,7 +255,7 @@ export default function MonitorTab({ fetchLatestData }) {
             <div className="dashCounter">
               <StaleIcon className="conter-icon" />
               <Typography variant="h1" darkMode id="stale_datasets_count">
-                {summary.stale_datasets}
+                {summary.stale_datasets || 0}
               </Typography>
             </div>
             <div className="dashInfoLabel">
@@ -284,7 +318,7 @@ export default function MonitorTab({ fetchLatestData }) {
                 {`${totalCount} datasets`}
               </div>
             }
-            columns={moreColumnsWithFrozen}
+            columns={columnsState}
             rows={rows}
             initialSortedColumn="datasetname"
             rowsPerPageOptions={[10, 50, 100, "All"]}
@@ -294,7 +328,15 @@ export default function MonitorTab({ fetchLatestData }) {
               truncate: true,
             }}
             CustomHeader={(props) => <CustomHeader {...props} />}
-            columnSettings={{ enabled: true }}
+            columnSettings={{
+              enabled: true,
+              onChange: (columns) => {
+                setHasUpdated(true);
+                setColumns(columns);
+              },
+              defaultColumns: moreColumnsWithFrozen,
+              frozenColumnsEnabled: true,
+            }}
           />
         </Grid>
       </Grid>

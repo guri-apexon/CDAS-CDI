@@ -20,6 +20,7 @@ export const FETCH_DASHBOARD_STUDY_SUCCESS = "FETCH_DASHBOARD_STUDY_SUCCESS";
 export const FETCH_DASHBOARD_STUDY_FAILUR = "FETCH_DASHBOARD_STUDY_FAILUR";
 
 export const PAGEHEADER_UPDATE = "PAGEHEADER_UPDATE";
+export const SELECT_DATAFLOW = "SELECT_DATAFLOW";
 export const GET_DATA_FLOW_LIST = "GET_DATA_FLOW_LIST";
 export const GET_DATA_FLOW_LIST_SUCCESS = "GET_DATA_FLOW_LIST_SUCCESS";
 export const GET_DATA_FLOW_LIST_FAILURE = "GET_DATA_FLOW_LIST_FAILURE";
@@ -133,6 +134,7 @@ export const LOCATIONAPI = "v1/api/location";
 export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";
 export const DATASETAPI = "v1/api/dataset";
+export const COLUMNSAPI = "v1/api/columnset";
 export const DATAFLOWAPI = "v1/api/dataflow";
 export const VLCDATAAPI = "v1/api/dataset/getVLCData";
 export const SQLTABLESAPI = "v1/api/dataset/getTables";

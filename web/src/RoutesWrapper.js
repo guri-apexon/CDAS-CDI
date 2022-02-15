@@ -1,5 +1,5 @@
 import { Route, Switch, Redirect } from "react-router";
-import { useHistory } from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
 import { lazy, Suspense, useState, useEffect } from "react";
 import Loader from "apollo-react/components/Loader";
 
@@ -22,6 +22,7 @@ const CDIWrapper = () => {
   const [loggedIn, setLoggedIn] = useState(true);
   const [checkedOnce, setCheckedOnce] = useState(false);
   const history = useHistory();
+  const location = useLocation();
 
   useEffect(() => {
     const userId = getCookie("user.id");
@@ -35,9 +36,12 @@ const CDIWrapper = () => {
 
   useEffect(() => {
     const userId = getCookie("user.id");
-    console.log(userId);
+    // console.log(userId);
     if (userId) {
-      // history.push("/dashboard");
+      history.push(location.pathname);
+      if (location.pathname === "/") {
+        history.push("/dashboard");
+      }
     } else {
       // eslint-disable-next-line no-lonely-if
       if (!checkedOnce) {

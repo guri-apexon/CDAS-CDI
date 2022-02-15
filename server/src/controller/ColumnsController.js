@@ -7,11 +7,9 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 
 exports.getColumnsSet = async (req, res) => {
   try {
-    const datasetid = req.params.datasetid;
-    const searchQuery = `SELECT "columnid", "VARIABLE", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "FORMAT", "lov", "UNIQUE" from ${schemaName}.columndefinition WHERE datasetid = $1`;
-    Logger.info({
-      message: "getColumnsSet",
-    });
+    const { datasetid } = req.body;
+    Logger.info({ message: "getColumnsSet" });
+    const searchQuery = `SELECT "columnid", variable, "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", format, "lov", "unique" from ${schemaName}.columndefinition WHERE datasetid = $1`;
     DB.executeQuery(searchQuery, [datasetid]).then((response) => {
       const datasetColumns = response.rows || null;
       return apiResponse.successResponseWithData(
@@ -57,23 +55,7 @@ exports.saveDatasetColumns = async (req, res) => {
         new Date(),
         new Date(),
       ];
-      const inserted = await DB.executeQuery(insertQuery, body)
-        .then(() => {
-          const hisBody = [columnId + 1, 1, ...body];
-          const hisQuery = `INSERT into ${schemaName}.columndefinition_history (col_def_version_id,version, columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;
-          return DB.executeQuery(hisQuery, hisBody)
-            .then(() => {
-              return "SUCCESS";
-            })
-            .catch((err) => {
-              console.log("innser err", err);
-              return err.message;
-            });
-        })
-        .catch((err) => {
-          console.log("outer err", err);
-          return err.message;
-        });
+      const inserted = await DB.executeQuery(insertQuery, body);
       return inserted;
     });
     Promise.all(inserted).then((response) => {
@@ -89,6 +71,50 @@ exports.saveDatasetColumns = async (req, res) => {
     });
   } catch (err) {
     Logger.error("catch :storeDatasetColumns");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.updateColumns = async (req, res) => {
+  try {
+    const datasetid = req.params.datasetid;
+    const values = req.body;
+    Logger.info({ message: "update set columns" });
+    const updateQuery = `UPDATE ${schemaName}.columndefinition "VARIABLE"=$2, datasetid=$3, name=$4, datatype=$5, primarykey=$6, required=$7, "UNIQUE"=$8, charactermin=$9, charactermax=$10, position=$11, "FORMAT"=$12, lov=$13, updt_tm=$14 WHERE columnid=$1`;
+    const inserted = await values.map(async (value) => {
+      const body = [
+        value.columnId.trim(),
+        value.variableLabel.trim() || null,
+        datasetid,
+        value.columnName.trim() || null,
+        value.dataType.trim() || null,
+        value.primary == "Yes" ? 1 : 0,
+        value.required == "Yes" ? 1 : 0,
+        value.unique == "Yes" ? 1 : 0,
+        value.minLength.trim() || null,
+        value.maxLength.trim() || null,
+        value.position.trim() || null,
+        value.format.trim() || null,
+        value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
+        new Date(),
+      ];
+      const inserted = await DB.executeQuery(updateQuery, body);
+      return inserted;
+    });
+    Promise.all(inserted).then((response) => {
+      if (response[0] == "SUCCESS") {
+        return apiResponse.successResponseWithData(
+          res,
+          "Operation success",
+          values
+        );
+      } else {
+        return apiResponse.ErrorResponse(res, response[0]);
+      }
+    });
+  } catch (err) {
+    Logger.error("catch :update set columns");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
