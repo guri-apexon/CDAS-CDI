@@ -23,12 +23,12 @@ import FilterIcon from "apollo-react-icons/Filter";
 
 import { moreColumnsWithFrozen } from "./columns.data";
 
-import { ReactComponent as StaleIcon } from "../../components/Icons/Stale.svg";
-import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
-import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
-import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
+import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg";
+import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
+import { ReactComponent as DatasetsIcon } from "../../../components/Icons/dataset.svg";
+import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
 
-import "./Dashboard.scss";
+import "../Dashboard.scss";
 
 export default function MonitorTab({ fetchLatestData, protId }) {
   const [open, setOpen] = useState(false);

@@ -27,24 +27,24 @@ import IconMenuButton from "apollo-react/components/IconMenuButton";
 import ChevronDown from "apollo-react-icons/ChevronDown";
 import ChevronRight from "apollo-react-icons/ChevronRight";
 import PlusIcon from "apollo-react-icons/Plus";
-import Progress from "../../components/Common/Progress/Progress";
-import { MessageContext } from "../../components/Providers/MessageProvider";
-import { ReactComponent as DataFlowIcon } from "../../components/Icons/dataflow.svg";
+import Progress from "../../../components/Common/Progress/Progress";
+import { MessageContext } from "../../../components/Providers/MessageProvider";
+import { ReactComponent as DataFlowIcon } from "../../../components/Icons/dataflow.svg";
 import {
   hardDelete,
   activateDF,
   inActivateDF,
   syncNowDataFlow,
-} from "../../services/ApiServices";
+} from "../../../services/ApiServices";
 
-import { updateSelectedDataflow } from "../../store/actions/DashboardAction";
+import { updateSelectedDataflow } from "../../../store/actions/DashboardAction";
 
 import {
   createAutocompleteFilter,
   IntegerFilter,
   createStringArraySearchFilter,
   DateFilter,
-} from "../../utils/index";
+} from "../../../utils/index";
 
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
