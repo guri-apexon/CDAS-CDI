@@ -120,7 +120,7 @@ export default function DSColumnTable({
           isHavingColumnName: false,
         },
       ];
-      setRows([...rows, ...singleRow]);
+      // setRows([...rows, ...singleRow]);
       setSelectedRows([...selectedRows, `u${rows.length}`]);
       setEditedRows([...rows, ...singleRow]);
       setEditMode(true);
@@ -163,7 +163,7 @@ export default function DSColumnTable({
           isHavingColumnName: false,
         })
       );
-      setRows((rw) => [...rw, ...multiRows]);
+      // setRows((rw) => [...rw, ...multiRows]);
       const moreRows = multiRows.map((e) => e.uniqueId);
       setSelectedRows([...moreRows]);
       setEditedRows([...editedRows, ...multiRows]);
@@ -286,11 +286,8 @@ export default function DSColumnTable({
   };
 
   const onRowCancel = (uniqueId) => {
-    setIsEditAll(false);
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     setSelectedRows([...removeRow]);
-    // setEditedRows([...removeEdited]);
   };
 
   const onRowSave = (uniqueId) => {
@@ -331,9 +328,9 @@ export default function DSColumnTable({
     setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
   };
 
-  const showColumnNameRequried = () => {
-    messageContext.showErrorMessage("Column Name Should be there");
-  };
+  // const showColumnNameRequried = () => {
+  //   messageContext.showErrorMessage("Column Name Should be there");
+  // };
 
   const editRow = (uniqueId, key, value, errorTxt) => {
     // console.log(uniqueId, "ColumdId");
@@ -348,7 +345,7 @@ export default function DSColumnTable({
                 isHavingColumnName: true,
               };
             }
-            showColumnNameRequried();
+            // showColumnNameRequried();
             return {
               ...row,
               [key]: value,
@@ -394,6 +391,7 @@ export default function DSColumnTable({
     } else {
       setIsEditAll(false);
       setEditMode(false);
+      setEditedRows(rows);
     }
   }, [selectedRows]);
 

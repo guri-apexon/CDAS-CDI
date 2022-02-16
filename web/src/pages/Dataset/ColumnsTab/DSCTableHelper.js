@@ -221,7 +221,7 @@ export const columns = [
   {
     accessor: "uniqueId",
     hidden: true,
-    sortFunction: compareStrings,
+    sortFunction: compareNumbers,
   },
   {
     header: "Variable Label",
