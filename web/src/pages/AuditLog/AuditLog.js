@@ -28,7 +28,7 @@ const AuditLog = () => {
   const [pageNo, setPageNo] = useState(0);
   const auditLogs = useSelector((state) => state.auditLogs);
   const auditData = auditLogs.data;
-  const [sortedColumnValue, setSortedColumnValue] = useState("dateadded");
+  const [sortedColumnValue, setSortedColumnValue] = useState("user_name");
   const [sortOrderValue, setSortOrderValue] = useState("asc");
   const [inlineFilters, setInlineFilters] = useState([]);
 
@@ -154,7 +154,7 @@ const AuditLog = () => {
         title="Data Flow Audit Log"
         columns={tableColumns}
         rows={tableRows}
-        initialSortedColumn="name"
+        initialSortedColumn="user_name"
         sortedColumn={sortedColumnValue}
         sortOrder={sortOrderValue}
         rowsPerPageOptions={[10, 50, 100, "All"]}
