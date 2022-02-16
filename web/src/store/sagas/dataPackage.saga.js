@@ -17,7 +17,7 @@ export function* fetchPackagesData(params) {
   try {
     const fetchData = yield call(
       axios.get,
-      `${baseURL}/${PACKAGES_SEARCH}/${params.searchQuery}`,
+      `${baseURL}/${PACKAGES_SEARCH}/${params.dfId}/${params.searchQuery}`,
       {}
     );
     yield put({

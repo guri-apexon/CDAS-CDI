@@ -14,7 +14,7 @@ import validate from "./validation";
 const initialValues = {};
 
 const compressionTypes = [
-  { text: "Not Comporessed", value: "not_compressed" },
+  { text: "Not Compressed", value: "not_compressed" },
   { text: "Zip", value: "zip" },
   { text: "7Z", value: "7z" },
   { text: "SAS XPT", value: "sas_xpt" },

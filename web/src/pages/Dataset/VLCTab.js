@@ -16,8 +16,8 @@ import Tag from "apollo-react/components/Tag";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 
-import Progress from "../../components/Progress";
-// import { MessageContext } from "../../components/MessageProvider";
+import Progress from "../../components/Common/Progress/Progress";
+// import { MessageContext } from "../../components/Providers/MessageProvider";
 import { getVLCData } from "../../store/actions/DataSetsAction";
 import {
   createAutocompleteFilter,

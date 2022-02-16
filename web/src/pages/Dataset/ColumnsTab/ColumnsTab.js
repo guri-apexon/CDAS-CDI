@@ -7,21 +7,21 @@ import FileUpload from "apollo-react/components/FileUpload";
 import Card from "apollo-react/components/Card";
 import Radio from "apollo-react/components/Radio";
 import Link from "apollo-react/components/Link";
-import { useHistory } from "react-router-dom";
-import Pencil from "apollo-react-icons/Pencil";
-import TextField from "apollo-react/components/TextField";
+// import { useHistory } from "react-router-dom";
+// import Pencil from "apollo-react-icons/Pencil";
+// import TextField from "apollo-react/components/TextField";
 import Button from "apollo-react/components/Button";
-import { MessageContext } from "../../../components/MessageProvider";
+import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
 
-import { exportToCSV } from "../../../utils/downloadData";
+import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatData } from "../../../utils/index";
 
 // const DSColumnTable = lazy(() => import("./DSColumnTable"));
 
 const ColumnsTab = ({ locationType }) => {
-  const history = useHistory();
+  // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
@@ -180,9 +180,7 @@ const ColumnsTab = ({ locationType }) => {
                 onClick={handleChange}
                 checked={selectedMethod === "fileUpload"}
               />
-              <Link onClick={() => console.log("link clicked")}>
-                Download Excel Template
-              </Link>
+              <Link onClick={downloadTemplate}>Download Excel Template</Link>
               <div className="upload-box">
                 <FileUpload
                   value={selectedFile}

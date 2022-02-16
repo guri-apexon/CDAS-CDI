@@ -1,21 +1,20 @@
 import { Route, Switch, Redirect } from "react-router";
-import { useHistory } from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
 import { lazy, Suspense, useState, useEffect } from "react";
 import Loader from "apollo-react/components/Loader";
 
-import { getCookie } from "../utils";
-import TopNavbar from "../components/TopNavbar/TopNavbar";
+import { getCookie } from "./utils";
+import TopNavbar from "./components/AppHeader/TopNavbar/TopNavbar";
 // import AppFooter from "../AppFooter/AppFooter";
-import Logout from "../pages/Logout/Logout";
-import DataPackages from "../pages/DataPackages/DataPackages";
-import Toast from "../components/Common/Toast";
-import AuditLog from "../pages/AuditLog/AuditLog";
-import PageHeader from "../components/DataFlow/PageHeader";
+import Logout from "./pages/Logout/Logout";
+import DataPackages from "./pages/DataPackages/DataPackages";
+import AuditLog from "./pages/AuditLog/AuditLog";
+import PageHeader from "./components/Common/PageHeader";
 
-const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
-const DataFlow = lazy(() => import("../pages/DataFlow/DataFlow"));
-// const DataSets = lazy(() => import("../pages/DataSets/DataSets"));
-const Dataset = lazy(() => import("../pages/Dataset/Dataset"));
+const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
+const DataFlow = lazy(() => import("./pages/DataFlow/DataFlow"));
+// const DataSets = lazy(() => import("./pages/DataSets/DataSets"));
+const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
 
 const Empty = () => <></>;
 
@@ -23,6 +22,7 @@ const CDIWrapper = () => {
   const [loggedIn, setLoggedIn] = useState(true);
   const [checkedOnce, setCheckedOnce] = useState(false);
   const history = useHistory();
+  const location = useLocation();
 
   useEffect(() => {
     const userId = getCookie("user.id");
@@ -36,9 +36,12 @@ const CDIWrapper = () => {
 
   useEffect(() => {
     const userId = getCookie("user.id");
-    console.log(userId);
+    // console.log(userId);
     if (userId) {
-      // history.push("/dashboard");
+      history.push(location.pathname);
+      if (location.pathname === "/") {
+        history.push("/dashboard");
+      }
     } else {
       // eslint-disable-next-line no-lonely-if
       if (!checkedOnce) {
@@ -53,7 +56,6 @@ const CDIWrapper = () => {
     <Suspense fallback={<Loader isInner />}>
       {loggedIn ? (
         <div className="page-wrapper">
-          <Toast />
           <TopNavbar setLoggedIn={setLoggedIn} />
           <PageHeader height={64} />
           <Switch>

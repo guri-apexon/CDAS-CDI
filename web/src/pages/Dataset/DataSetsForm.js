@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch } from "react-redux";
 import {
@@ -27,7 +27,7 @@ import {
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
 
-import { fileTypes, delimeters } from "../../utils";
+import { fileTypes, delimeters, loadTypes } from "../../utils";
 
 const styles = {
   paper: {
@@ -95,7 +95,10 @@ const DataSetsFormBase = (props) => {
     defaultQuote,
     defaultHeaderRowNumber,
     defaultFooterRowNumber,
+    defaultLoadType,
+    values,
   } = props;
+  const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
 
   const setDefaultValues = (e) => {
     const fileValue = e.target.value;
@@ -111,8 +114,29 @@ const DataSetsFormBase = (props) => {
       dispatch(
         change("DataSetsForm", "footerRowNumber", defaultFooterRowNumber)
       );
+      dispatch(change("DataSetsForm", "loadType", defaultLoadType));
     }
   };
+
+  useEffect(() => {
+    if (values?.clinicalDataType) {
+      const filteredDK = datakind?.filter(
+        (e) => e.value === values.clinicalDataType[0]
+      );
+      if (filteredDK?.length) {
+        SetSelectedClinicalData([]);
+        setTimeout(() => {
+          SetSelectedClinicalData([filteredDK[0].value]);
+        });
+        // change("DataSetsForm", "clinicalDataType");
+      }
+    }
+    if (!values) {
+      SetSelectedClinicalData(["1"]);
+    }
+  }, [values]);
+
+  console.log(values, "values12");
 
   return (
     <form onSubmit={handleSubmit}>
@@ -248,16 +272,19 @@ const DataSetsFormBase = (props) => {
               <Divider orientation="vertical" variant="middle" />
             </Grid>
             <Grid item md={6}>
-              <ReduxFormAutocomplete
-                name="clinicalDataType"
-                id="clinicalDataType"
-                label="Clinical Data Type"
-                source={datakind}
-                className="smallSize_autocomplete"
-                variant="search"
-                singleSelect
-                fullWidth
-              />
+              {selectedClinicalData.length ? (
+                <ReduxFormAutocomplete
+                  name="clinicalDataType"
+                  autoSelect
+                  id="clinicalDataType"
+                  label="Clinical Data Type"
+                  source={datakind}
+                  className="smallSize_autocomplete"
+                  variant="search"
+                  singleSelect
+                  fullWidth
+                />
+              ) : null}
               <ReduxFormTextField
                 fullWidth
                 name="transferFrequency"
@@ -282,6 +309,17 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Row Decrease % Allowed"
               />
+              <ReduxFormSelect
+                fullWidth
+                name="loadType"
+                id="loadType"
+                size="small"
+                label="Load Type"
+              >
+                {loadTypes?.map((type) => (
+                  <MenuItem value={type}>{type}</MenuItem>
+                ))}
+              </ReduxFormSelect>
             </Grid>
           </Grid>
         </div>
@@ -295,20 +333,21 @@ const ReduxForm = compose(
   reduxForm({
     form: "DataSetsForm",
     validate: dataSetsValidation,
-  })
+  }),
+  connect((state) => ({ values: getFormValues("DataSetsForm")(state) }))
 )(DataSetsFormBase);
 
 const selector = formValueSelector("DataSetsForm");
 const DataSetsForm = connect((state) => ({
   initialValues: state.dataSets.formData, // pull initial values from account reducer
   enableReinitialize: true,
-  values: getFormValues("DataSetsForm")(state),
   formValues: selector(state, "fileType"),
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
   defaultQuote: state.dataSets.defaultQuote,
   defaultHeaderRowNumber: state.dataSets.defaultHeaderRowNumber,
   defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
+  defaultLoadType: state.dataSets.defaultLoadType,
   datakind: state.dataSets.datakind?.records,
 }))(ReduxForm);
 

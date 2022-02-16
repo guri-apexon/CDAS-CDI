@@ -65,3 +65,65 @@
     text-align: center;
   }
 }
+.topContainer {
+  padding-bottom: 20px;
+}
+.dashboardSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 50px 0;
+  .dashInfo{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .conter-icon {
+    height: 36px;
+    width: 36px;
+  }
+  .dashInfoLabel {
+    display: flex;
+    align-items: center;
+    margin-top: 15px;
+  }
+  .dashCounter {
+    display: flex;
+    align-items: center;
+    svg #issues {
+      fill: #ffffff;
+    }
+    svg#stale path {
+      fill: #ffffff;
+    }
+    svg.failureIcon path {
+      fill: #ffffff;
+    }
+    h1 {
+      margin-left: 5px;
+    }
+  }
+}
+.staleAlertStatus svg {
+  width: 14px;
+  height: 17px;
+}
+.failedStatus svg {
+  width: 14px;
+  height: 17px;
+  path {
+    fill: #ffffff;
+  }
+}
+.queueStatus {
+  background-color: transparent;
+  border: 1px solid #9E54B0;
+  color: #9E54B0;
+  height: auto;
+}
+.MuiSwitch {
+  span[class^="MuiButtonBase-"] {
+   top: -8px;
+  }
+}

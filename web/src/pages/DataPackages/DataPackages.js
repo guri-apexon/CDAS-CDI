@@ -14,15 +14,12 @@ import TextField from "apollo-react/components/TextField";
 import PasswordInput from "apollo-react/components/PasswordInput";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
-import Grid from "apollo-react/components/Grid";
 import Panel from "apollo-react/components/Panel";
 import { makeStyles } from "@material-ui/core/styles";
 // import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import "./DataPackages.scss";
-// import PageHeader from "../../components/DataFlow/PageHeader";
-// import Leftbar from "../../components/DataFlow/LeftBar";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, toast } from "../../utils";
 import {
@@ -32,7 +29,7 @@ import {
 // import CreatepackageForm from "./CreatePackageForm";
 
 const compressionTypes = [
-  { text: "Not Comporessed", value: "not_compressed" },
+  { text: "Not Compressed", value: "not_compressed" },
   { text: "Zip", value: "zip" },
   { text: "7Z", value: "7z" },
   { text: "SAS XPT", value: "xpt" },
@@ -63,7 +60,10 @@ const DataPackages = () => {
   const [notMatchedType, setNotMatchedType] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const packageData = useSelector((state) => state.dataPackage);
+  const dashboard = useSelector((state) => state.dashboard);
   const userInfo = getUserInfo();
+
+  const { selectedDFId, selectedCard } = dashboard;
 
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -130,11 +130,10 @@ const DataPackages = () => {
       naming_convention: namingConvention,
       package_password: packagePassword,
       sftp_path: sftpPath,
-      study_id: "a020E000005SwfCQAS",
-      dataflow_id: "a0A0E00000322XRUAY",
+      study_id: selectedCard.prot_id,
+      dataflow_id: selectedDFId,
       user_id: userInfo.user_id,
     };
-    console.log("submitPackage", reqBody);
     dispatch(addDataPackage(reqBody));
   };
 
@@ -148,10 +147,6 @@ const DataPackages = () => {
 
   return (
     <div className="data-packages-wrapper">
-      {/* <Grid container> */}
-      {/* <PageHeader /> */}
-      {/* <CssBaseline /> */}
-      {/* <Leftbar /> */}
       <Panel
         onClose={handleClose}
         onOpen={handleOpen}

@@ -15,7 +15,12 @@ export const DASHBOARD_DATA = "DASHBOARD_DATA";
 export const DASHBOARD_FETCH_SUCCESS = "DASHBOARD_FETCH_SUCCESS";
 export const DASHBOARD_FETCH_FAILUR = "DASHBOARD_FETCH_FAILUR";
 
+export const DASHBOARD_STUDIES = "DASHBOARD_STUDIES";
+export const FETCH_DASHBOARD_STUDY_SUCCESS = "FETCH_DASHBOARD_STUDY_SUCCESS";
+export const FETCH_DASHBOARD_STUDY_FAILUR = "FETCH_DASHBOARD_STUDY_FAILUR";
+
 export const PAGEHEADER_UPDATE = "PAGEHEADER_UPDATE";
+export const SELECT_DATAFLOW = "SELECT_DATAFLOW";
 export const GET_DATA_FLOW_LIST = "GET_DATA_FLOW_LIST";
 export const GET_DATA_FLOW_LIST_SUCCESS = "GET_DATA_FLOW_LIST_SUCCESS";
 export const GET_DATA_FLOW_LIST_FAILURE = "GET_DATA_FLOW_LIST_FAILURE";
@@ -98,10 +103,17 @@ export const GET_PREVIEW_SQL = "GET_PREVIEW_SQL";
 export const FETCH_PREVIEW_SQL_SUCCESS = "FETCH_PREVIEW_SQL_SUCCESS";
 export const FETCH_PREVIEW_SQL_FAILURE = "FETCH_PREVIEW_SQL_FAILURE";
 
+export const GET_DATASET_INGESTION_SUMMARY = "GET_DATASET_INGESTION_SUMMARY";
+export const GET_DATASET_INGESTION_SUMMARY_SUCCESS =
+  "GET_DATASET_INGESTION_SUMMARY_SUCCESS";
+export const GET_DATASET_INGESTION_SUMMARY_FAILURE =
+  "GET_DATASET_INGESTION_SUMMARY_FAILURE";
+
 // API URLS
 
 export const FLOW_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
 export const STUDYSEARCH = "v1/api/study/search-study";
+export const STUDYAPI = "v1/api/study";
 export const HARDDELETE = "v1/api/dataflow/hardDelete";
 export const SYNCNOW = "v1/api/dataflow/syncNow";
 export const ACTIVATEDF = "v1/api/dataflow/activate";
@@ -122,6 +134,7 @@ export const LOCATIONAPI = "v1/api/location";
 export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";
 export const DATASETAPI = "v1/api/dataset";
+export const COLUMNSAPI = "v1/api/columnset";
 export const DATAFLOWAPI = "v1/api/dataflow";
 export const VLCDATAAPI = "v1/api/dataset/getVLCData";
 export const SQLTABLESAPI = "v1/api/dataset/getTables";

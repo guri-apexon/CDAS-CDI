@@ -29,6 +29,7 @@ import {
   PREVIEWSQLAPI,
   FETCH_PREVIEW_SQL_FAILURE,
   FETCH_PREVIEW_SQL_SUCCESS,
+  COLUMNSAPI,
 } from "../../constants";
 
 export function* fetchDataKindData(action = null) {
@@ -127,13 +128,18 @@ export function* saveDataset(action) {
     yield put({
       type: STORE_DATASET_SUCCESS,
       dataset: fetchSBData.data.data,
+      values: action.values,
     });
   } catch (e) {
     const errText = e.response?.data?.message
       ? e.response.data.message
       : e.message;
     console.log(e.response, "erroRes");
-    yield put({ type: STORE_DATASET_FAILURE, message: errText });
+    yield put({
+      type: STORE_DATASET_FAILURE,
+      message: errText,
+      values: action.values,
+    });
   }
 }
 
@@ -141,7 +147,7 @@ export function* saveDatasetColumns(action) {
   try {
     const fetchSBData = yield call(
       axios.post,
-      `${baseURL}/${DATASETAPI}/${action.datasetid}/create-columns`,
+      `${baseURL}/${COLUMNSAPI}/create/${action.datasetid}`,
       action.values
     );
     // console.log("study", fetchSBData);
@@ -186,20 +192,28 @@ export function* updateDataset(action) {
     yield put({
       type: UPDATE_DATASET_SUCCESS,
       update: fetchSBData.data.data,
+      values: action.values,
     });
   } catch (e) {
     const errText = e.response?.data?.message
       ? e.response.data.message
       : e.message;
-    yield put({ type: UPDATE_DATASET_FAILURE, message: errText });
+    yield put({
+      type: UPDATE_DATASET_FAILURE,
+      message: errText,
+      values: action.values,
+    });
   }
 }
 
 export function* fetchDatasetColumns(action) {
   try {
     const fetchSBData = yield call(
-      axios.get,
-      `${baseURL}/${DATASETAPI}/${action.datasetid}/dataset-columns`
+      axios.post,
+      `${baseURL}/${COLUMNSAPI}/list`,
+      {
+        datasetid: action.datasetid,
+      }
     );
     yield put({
       type: FETCH_DATASET_COLUMNS_SUCCESS,
