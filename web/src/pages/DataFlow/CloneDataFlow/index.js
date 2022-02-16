@@ -58,7 +58,7 @@ const styles = {
     display: "flex",
   },
   selectedStudyTable: {
-    maxHeight: "100px",
+    height: "100px !important",
   },
 };
 const useStyles = makeStyles(styles);
@@ -510,13 +510,14 @@ const CloneDataFlow = ({
         ) : (
           <>
             <Grid item xs={12}>
-              <Table
-                className={classes.selectedStudyTable}
-                columns={Columns}
-                rows={[selectedStudy.study]}
-                rowId="prot_id"
-                hidePagination
-              />
+              <span className="selected-study-table">
+                <Table
+                  columns={Columns}
+                  rows={[selectedStudy.study]}
+                  rowId="prot_id"
+                  hidePagination
+                />
+              </span>
             </Grid>
             <Typography variant="caption">Search for a Data Flow</Typography>
 
