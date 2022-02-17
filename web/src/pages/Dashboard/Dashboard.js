@@ -17,8 +17,8 @@ import "./Dashboard.scss";
 
 // import { downloadTemplate } from "../../utils/downloadData";
 
-import DataflowTab from "./DataflowTab";
-import MonitorTab from "./MonitorTab";
+import DataflowTab from "./DataflowTab/DataflowTab";
+import MonitorTab from "./MonitorTab/MonitorTab";
 
 const styles = {
   rightPanel: {
