@@ -55,6 +55,7 @@ export default function DSColumnTable({
   const [isEditLOVs, setIsEditLOVs] = useState(false);
   const [isMultiAdd, setIsMultiAdd] = useState(false);
   const [newRows, setNewRows] = useState("");
+  const [disableSaveAll, setDisableSaveAll] = useState(true);
   // const [isAdding, setIsAdding] = useState(true);
 
   useEffect(() => {
@@ -73,6 +74,15 @@ export default function DSColumnTable({
       // setIsAdding(true);
     }
   }, [dataOrigin]);
+
+  useEffect(() => {
+    const allColumns = editedRows.map((e) => e.isHavingColumnName);
+    if (allColumns.every((e) => e === true)) {
+      setDisableSaveAll(false);
+    } else {
+      setDisableSaveAll(true);
+    }
+  }, [editedRows]);
 
   useEffect(() => {
     if (selectedRows.length > 0) {
@@ -444,6 +454,7 @@ export default function DSColumnTable({
             addMulti,
             cancelMulti,
             newRows,
+            disableSaveAll,
           }}
         />
       </div>

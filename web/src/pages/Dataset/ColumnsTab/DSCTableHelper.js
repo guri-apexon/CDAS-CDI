@@ -304,6 +304,7 @@ export const CustomHeader = ({
   addMulti,
   cancelMulti,
   newRows,
+  disableSaveAll,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -312,7 +313,12 @@ export const CustomHeader = ({
           <Button size="small" style={{ marginRight: 8 }} onClick={onCancelAll}>
             Cancel All
           </Button>
-          <Button size="small" variant="primary" onClick={onSaveAll}>
+          <Button
+            size="small"
+            variant="primary"
+            onClick={onSaveAll}
+            disabled={disableSaveAll}
+          >
             Save All
           </Button>
         </>
