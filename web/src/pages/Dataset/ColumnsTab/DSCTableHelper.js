@@ -16,7 +16,6 @@ import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Tooltip from "apollo-react/components/Tooltip";
 import {
   createStringSearchFilter,
-  compareDates,
   compareNumbers,
   compareStrings,
 } from "apollo-react/components/Table";
@@ -174,13 +173,8 @@ export const ActionCell = ({ row }) => {
     onRowDelete,
     editMode: eMode,
     isHavingColumnName,
-    // isEditAll,
     onRowSave,
   } = row;
-
-  // if (isEditAll) {
-  //   return <></>;
-  // }
 
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
@@ -236,11 +230,11 @@ export const columns = [
     customCell: ColumnNameCell,
     sortFunction: compareStrings,
   },
-  // {
-  //   header: "Position",
-  //   accessor: "position",
-  //   customCell: EditableCell,
-  // },
+  {
+    header: "Position",
+    accessor: "position",
+    customCell: EditableCell,
+  },
   {
     header: "Format",
     accessor: "format",
@@ -323,29 +317,25 @@ export const CustomHeader = ({
           </Button>
         </>
       )}
-      {!isEditAll && !isMultiAdd && (
+      {!isMultiAdd && (
         <>
           <Tooltip title="Add rows" disableFocusListener>
             <IconMenuButton
               id="actions-1"
               menuItems={addMenuItems}
               size="small"
+              disabled={isEditAll}
             >
               <Plus />
             </IconMenuButton>
           </Tooltip>
           <Tooltip title="Edit all" disableFocusListener>
-            <IconButton color="primary" size="small">
+            <IconButton color="primary" size="small" disabled={isEditAll}>
               <Pencil onClick={onEditAll} />
             </IconButton>
           </Tooltip>
         </>
       )}
-      {/* {!isEditAll && !isMultiAdd && (
-        <>
-
-        </>
-      )} */}
       {isMultiAdd && (
         <>
           <TextField
@@ -371,14 +361,13 @@ export const CustomHeader = ({
         </>
       )}
       {(locationType?.toLowerCase() === "sftp" ||
-        locationType?.toLowerCase() === "ftps") &&
-        isEditAll && (
-          <Tooltip title="Import dataset column settings" disableFocusListener>
-            <IconButton color="primary" size="small">
-              <Upload />
-            </IconButton>
-          </Tooltip>
-        )}
+        locationType?.toLowerCase() === "ftps") && (
+        <Tooltip title="Import dataset column settings" disableFocusListener>
+          <IconButton color="primary" size="small" disabled={isEditAll}>
+            <Upload />
+          </IconButton>
+        </Tooltip>
+      )}
       <Divider
         orientation="vertical"
         flexItem
