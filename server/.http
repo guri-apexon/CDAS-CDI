@@ -335,3 +335,84 @@ content-type: application/json
 {
   "query": "string"
 }
+
+### create dataset
+
+POST http://localhost:4001/v1/api/dataset/create HTTP/1.1
+content-type: application/json
+
+{
+  "datapackageid": "",
+  "datasetId": "string",
+  "datasetName": "",
+  "active": 1,
+  "fileType": "",
+  "encoding": "",
+  "delimiter": "",
+  "escapeCharacter": "",
+  "quote": "",
+  "headerRowNumber": "",
+  "footerRowNumber": "",
+  "fileNamingConvention": "",
+  "folderPath": "",
+  "clinicalDataType": "",
+  "transferFrequency": "",
+  "overrideStaleAlert": "",
+  "rowDecreaseAllowed": "",
+  "insrt_tm": "",
+  "updt_tm": "",
+}
+
+### dataset details
+
+GET http://localhost:4001/v1/api/dataset/detail/a070E00000FhoKXQAZ HTTP/1.1
+content-type: application/json
+
+# "data": {
+#     "datapackageid": "a0C0E00000Bx60JUAR",
+#     "datasetid": "a070E00000FhoKXQAZ",
+#     "mnemonic": "DRM_XLS_AE",
+#     "type": "Excel",
+#     "active": 1,
+#     "columncount": 51,
+#     "name": "000108_Ferring_XLS_AE_<MMDDYYYY>.xls",
+#     "path": "",
+#     "headerrow": 1,
+#     "footerrow": 0,
+#     "headerrownumber": 1,
+#     "footerrownumber": 0,
+#     "delimiter": "COMMA",
+#     "escapecode": "\\",
+#     "quote": "\"",
+#     "datakindid": "1",
+#     "staledays": 3,
+#     "rowdecreaseallowed": 0,
+#     "testflag": 0,
+#     "charset": "UTF-8",
+#     "validate_data": "F",
+#     "file_pwd": null,
+#     "customsql": null,
+#     "offsetcolumn": null,
+#     "incremental": "N",
+#     "offset_val": null,
+#     "skipvalidation": null,
+#     "externalid": null,
+#     "del_flg": null,
+#     "err_typ": null,
+#     "tbl_nm": null,
+#     "data_freq": null,
+#     "ovrd_stale_alert": null,
+#     "naming_convention": null,
+#     "days_until_data_is_stale": null,
+#     "updt_tm": null,
+#     "insrt_tm": null
+#   }
+
+### update dataset
+
+POST http://localhost:4001/v1/api/dataset/update HTTP/1.1
+content-type: application/json
+
+{
+  "query": "string"
+}
