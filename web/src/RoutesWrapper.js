@@ -15,7 +15,9 @@ const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("./pages/DataFlow/DataFlow"));
 // const DataSets = lazy(() => import("./pages/DataSets/DataSets"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
-
+const DatasetIngestionReport = lazy(() =>
+  import("./pages/DatasetIngestionReport")
+);
 const Empty = () => <></>;
 
 const CDIWrapper = () => {
@@ -84,6 +86,11 @@ const CDIWrapper = () => {
               path="/dataset/:datasetId"
               exact
               render={() => <Dataset />}
+            />
+            <Route
+              path="/ingestion-report/:datasetId"
+              exact
+              render={() => <DatasetIngestionReport />}
             />
             <Redirect from="/" to="/dashboard" />
           </Switch>
