@@ -136,8 +136,6 @@ const DataSetsFormBase = (props) => {
     }
   }, [values]);
 
-  console.log(values, "values12");
-
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
