@@ -11,10 +11,35 @@ import {
   ACTIVATEDF,
   INACTIVATE,
   VLCDATAAPI,
+  LOCATIONAPI,
 } from "../constants";
 import { getCookie } from "../utils/index";
 
 const userId = getCookie("user.id");
+
+export const statusUpdate = async (id, status) => {
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${baseURL}/${LOCATIONAPI}/statusUpdate`, {
+          id,
+          status,
+          userId,
+        })
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          console.log("Err", err);
+          if (err.response) {
+            resolve(err.response.data);
+          }
+        });
+    });
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
 
 const searchStudy = async (searchQuery = "") => {
   try {

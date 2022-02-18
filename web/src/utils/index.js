@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 import moment from "moment";
 import React from "react";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
@@ -315,6 +316,23 @@ export const createStringArraySearchFilter = (accessor) => {
     );
 };
 
+export const createStatusArraySearchFilter = (accessor) => {
+  return (row, filters) => {
+    return (
+      !Array.isArray(filters[accessor]) ||
+      filters[accessor].length === 0 ||
+      filters[accessor].some((value) => {
+        if (value == "Inactive" || value == 0) {
+          return row[accessor] == 0 || row[accessor] == "inactive";
+        }
+        if (value == "Active" || value == 1) {
+          return row[accessor] == 1 || row[accessor] == "active";
+        }
+        return false;
+      })
+    );
+  };
+};
 export const toast = (text = "", type = "success") => {
   const customEvent = new CustomEvent("toast", { detail: { text, type } });
   document.dispatchEvent(customEvent);
@@ -368,6 +386,26 @@ export const formatData = (incomingData, protNo) => {
     return newData;
   }
   return [];
+};
+
+export const createSourceFromKey = (tableRows, key) => {
+  return Array.from(
+    new Set(
+      tableRows?.map((r) => ({ label: r[key] })).map((item) => item.label)
+    )
+  )
+    .map((label) => {
+      return { label };
+    })
+    .sort((a, b) => {
+      if (a.label < b.label) {
+        return -1;
+      }
+      if (a.label > b.label) {
+        return 1;
+      }
+      return 0;
+    });
 };
 
 export const dataStruct = [

@@ -8,5 +8,5 @@ router.get("/list/:location_id", LocationController.getLocationById);
 router.get("/search-location/:query", LocationController.searchLocationList);
 router.post("/create", LocationController.saveLocationData);
 router.get("/service_owners", LocationController.getServiceOwnersList);
-
+router.post("/statusUpdate", LocationController.statusUpdate);
 module.exports = router;

@@ -16,7 +16,7 @@ const DataFlow = lazy(() => import("./pages/DataFlow/DataFlow"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
 // const ColumnsTab = lazy(() => import("./pages/Dataset/ColumnsTab/ColumnsTab"));
 // const JDBCForm = lazy(() => import("./pages/Dataset/JDBCForm"));
-const CDIAdmin = lazy(() => import("./pages/Admin/CDI/CDIAdmin"));
+const CDIAdmin = lazy(() => import("./pages/Admin/CDIAdmin"));
 const DatasetIngestionReport = lazy(() =>
   import("./pages/DatasetIngestionReport")
 );

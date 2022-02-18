@@ -37,8 +37,8 @@ export default function MonitorTab({ fetchLatestData, protId }) {
   const [rows, setRowData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [activeOnly, setActiveOnly] = useState(true);
-  const [columnsState, setColumns] = React.useState(moreColumnsWithFrozen);
-  const [hasUpdated, setHasUpdated] = React.useState(false);
+  const [columnsState, setColumns] = useState(moreColumnsWithFrozen);
+  const [hasUpdated, setHasUpdated] = useState(false);
   const [summary, setSummary] = useState({
     failed_loads: 0,
     quarantined_files: 0,

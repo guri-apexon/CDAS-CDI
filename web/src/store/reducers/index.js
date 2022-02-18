@@ -5,6 +5,7 @@ import DashboardReaducer from "./DashboardReducer";
 import DataFlowReducer from "./DataFlowReducer";
 import DataSetsReducer from "./DataSetsReducer";
 import AuditLogsReducer from "./AuditLogsReducer";
+import LocationReducer from "./LocationReducer";
 
 // eslint-disable-next-line import/prefer-default-export
 export const appReducer = combineReducers({
@@ -15,4 +16,5 @@ export const appReducer = combineReducers({
   dataFlow: DataFlowReducer,
   auditLogs: AuditLogsReducer,
   dataSets: DataSetsReducer,
+  locations: LocationReducer,
 });

@@ -19,6 +19,7 @@ import {
   ADD_DATAFLOW,
   GET_VLC_RULES,
   GET_DATASET_INGESTION_SUMMARY,
+  GET_LOCATIONS_ADMIN,
 } from "../../constants";
 
 import {
@@ -75,6 +76,7 @@ function* cdasCoreSaga() {
   yield takeLatest(UPDATE_DATASET_DATA, updateDataset);
   yield takeLatest(GET_DATASET_COLUMNS, fetchDatasetColumns);
   yield takeLatest(GET_VLC_RULES, fetchVLCData);
+  yield takeLatest(GET_LOCATIONS_ADMIN, fetchLocationsData);
 }
 
 export default cdasCoreSaga;
