@@ -830,7 +830,7 @@ exports.searchDataflow = async (req, res) => {
       searchParam,
     });
     const searchQuery = `SELECT d.dataflowid,d."name" ,d.description, d.externalsystemname , v.vend_nm FROM ${schemaName}.dataflow d inner join ${schemaName}.vendor v on d.vend_id  = v.vend_id where d.prot_id = '${studyId}' and (LOWER(d.name)) LIKE '${searchParam}%' LIMIT 10`;
-    console.log(searchQuery);
+    // console.log(searchQuery);
     let { rows } = await DB.executeQuery(searchQuery);
     return apiResponse.successResponseWithData(res, "Operation success", {
       dataflows: rows,
@@ -857,7 +857,6 @@ exports.fetchdataflowSource = async (req, res) => {
       message: "fetchdataflowSource",
       dataflow_id,
     });
-    console.log(q);
     let { rows } = await DB.executeQuery(q);
     return apiResponse.successResponseWithData(
       res,
@@ -867,6 +866,119 @@ exports.fetchdataflowSource = async (req, res) => {
   } catch (error) {
     console.log(error);
     Logger.error("catch :fetchdataflowSource");
+    Logger.error(error);
+    return apiResponse.ErrorResponse(res, error);
+  }
+};
+
+exports.fetchdataflowDetails = async (req, res) => {
+  try {
+    let dataflow_id = req.params.id;
+    let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
+    d2.* ,d3."name" as datasetname ,d3.*,c.*
+    from ${schemaName}.dataflow d
+    inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
+    inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
+    inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
+      inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+      inner join cdas1d.cdascfg.columndefinition c on (c.datasetid =d3.datasetid)
+      where d.dataflowid ='${dataflow_id}'`;
+    Logger.info({
+      message: "fetchdataflowDetails",
+      dataflow_id,
+    });
+    let { rows } = await DB.executeQuery(q);
+    let tempDP = _.uniqBy(rows, "datapackageid");
+    let tempDS = _.uniqBy(rows, "datasetid");
+    let newArr = [];
+    for (const each of tempDP) {
+      for (const el of tempDS) {
+        if (el.datapackageid === each.datapackageid) {
+          let datapackageObj = {
+            externalID: each.externalid,
+            type: each.type,
+            sasXptMethod: each.sasxptmethod,
+            path: each.path,
+            password: each.password,
+            noPackageConfig: each.nopackageconfig,
+            name: each.datapackagename,
+            dataSet: [],
+          };
+          if (el.datasetid === each.datasetid) {
+            let datasetObj = {
+              columncount: el.columncount,
+              externalID: el.externalid,
+              customQuery: el.customsql,
+              customSql: el.customsql_query,
+              tableName: el.tbl_nm,
+              incremental: el.incremental,
+              offsetColumn: el.offsetcolumn,
+              type: el.type,
+              dataTransferFrequency: el.data_freq,
+              OverrideStaleAlert: el.ovrd_stale_alert,
+              rowDecreaseAllowed: el.rowdecreaseallowed,
+              quote: el.quote,
+              path: el.path,
+              name: el.datasetname,
+              mnemonic: el.mnemonic,
+              headerRowNumber: el.headerrownumber,
+              footerRowNumber: el.footerrownumber,
+              escapeCode: el.escapecode,
+              delimiter: el.delimiter,
+              dataKind: el.datakindid,
+              naming_convention: el.naming_convention,
+              columnDefinition: [],
+            };
+            for (let obj of rows) {
+              if (obj.datasetid === el.datasetid) {
+                let columnObj = {
+                  name: obj.name,
+                  dataType: obj.datatype,
+                  primaryKey: obj.primarykey,
+                  required: obj.required,
+                  characterMin: obj.charactermin,
+                  characterMax: obj.charactermax,
+                  position: obj.position,
+                  format: obj.format,
+                  lov: obj.lov,
+                  requiredfield: obj.requiredfield?.requiredfield || null,
+                  unique: obj.unique,
+                  variable: obj.variable?.variable || null,
+                };
+                datasetObj.columnDefinition.push(columnObj);
+              }
+            }
+            datapackageObj.dataSet.push(datasetObj);
+          }
+          newArr.push(datapackageObj);
+        }
+      }
+    }
+    let myobj = {
+      vendorName: rows[0].vend_nm,
+      protocolNumber: rows[0].prot_id,
+      type: rows[0].type,
+      name: rows[0].dataflowname,
+      externalID: rows[0].externalid,
+      externalSystemName: rows[0].externalsystemname,
+      connectionType: rows[0].connectiontype,
+      location: rows[0].src_loc_id,
+      exptDtOfFirstProdFile: rows[0].expt_fst_prd_dt,
+      testFlag: rows[0].testflag,
+      prodFlag: rows[0].testflag === 1 ? 1 : 0,
+      description: rows[0].description,
+      connectiondriver: rows[0].connectiondriver,
+      fsrstatus: rows[0].fsrstatus,
+      dataPackage: newArr,
+    };
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation successfully.",
+      myobj
+    );
+  } catch (error) {
+    console.log(error);
+    Logger.error("catch :fetchdataflowDetails");
     Logger.error(error);
     return apiResponse.ErrorResponse(res, error);
   }

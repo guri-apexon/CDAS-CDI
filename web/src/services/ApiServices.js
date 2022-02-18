@@ -13,6 +13,8 @@ import {
   VLCDATAAPI,
   DATAFLOWSEARCH,
   DATAFLOW_SOURCE,
+  DATAFLOW_DETAILS,
+  DATAFLOW_SAVE,
 } from "../constants";
 import { getCookie } from "../utils/index";
 
@@ -44,9 +46,29 @@ export const searchDataflows = async (searchQuery = "", studyId) => {
   }
 };
 
+export const getDataFlowDetails = async (dataflowId) => {
+  try {
+    const res = await axios.get(`${baseURL}/${DATAFLOW_DETAILS}/${dataflowId}`);
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
 export const fetchDataFlowSource = async (dataflowId) => {
   try {
     const res = await axios.get(`${baseURL}/${DATAFLOW_SOURCE}/${dataflowId}`);
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const dataflowSave = async (payload) => {
+  try {
+    const res = await axios.post(`${baseURL}/${DATAFLOW_SAVE}`, {
+      ...payload,
+    });
     return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);

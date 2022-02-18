@@ -1,8 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import { reduxForm, submit, getFormValues } from "redux-form";
+// import { reduxForm, submit, getFormValues } from "redux-form";
 import { useDispatch, connect, useSelector } from "react-redux";
-import compose from "@hypnosphi/recompose/compose";
+import { useHistory } from "react-router-dom";
+// import compose from "@hypnosphi/recompose/compose";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Grid from "apollo-react/components/Grid";
 import Modal from "apollo-react/components/Modal";
@@ -10,7 +11,7 @@ import Tooltip from "apollo-react/components/Tooltip";
 import Button from "apollo-react/components/Button";
 import Typography from "apollo-react/components/Typography";
 import Search from "apollo-react/components/Search";
-import Autocomplete from "apollo-react/components/Autocomplete";
+// import Autocomplete from "apollo-react/components/Autocomplete";
 import Accordion from "apollo-react/components/Accordion";
 import AccordionDetails from "apollo-react/components/AccordionDetails";
 import AccordionSummary from "apollo-react/components/AccordionSummary";
@@ -26,6 +27,8 @@ import Highlighted from "../../../components/Common/Highlighted";
 import searchStudy, {
   searchDataflows,
   fetchDataFlowSource,
+  getDataFlowDetails,
+  dataflowSave,
 } from "../../../services/ApiServices";
 import "./index.scss";
 
@@ -57,9 +60,6 @@ const styles = {
   cloneDFdetailscontainer: {
     display: "flex",
   },
-  selectedStudyTable: {
-    height: "100px !important",
-  },
 };
 const useStyles = makeStyles(styles);
 
@@ -74,6 +74,7 @@ const CloneDataFlow = ({
 }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const history = useHistory();
   const [isActive, setIsActive] = useState(false);
   const [searchTxt, setSearchTxt] = useState("");
   const [studies, setStudies] = useState([]);
@@ -98,25 +99,27 @@ const CloneDataFlow = ({
   const searchTrigger = (e, el) => {
     const newValue = e.target.value;
     setSearchTxt(newValue);
-    if (el === "study") {
-      debounceFunction(async () => {
-        setLoading(true);
-        const newStudies = await searchStudy(newValue);
-        console.log("event", newValue, newStudies);
-        setStudies(newStudies.studies);
-        setLoading(false);
-      }, 1000);
-    } else {
-      debounceFunction(async () => {
-        setLoading(true);
-        const newDataflows = await searchDataflows(
-          newValue,
-          selectedStudy.study.prot_id
-        );
-        console.log("event", newValue, newDataflows);
-        setDatflows(newDataflows.dataflows);
-        setLoading(false);
-      }, 1000);
+    if (newValue !== "") {
+      if (el === "study") {
+        debounceFunction(async () => {
+          setLoading(true);
+          const newStudies = await searchStudy(newValue);
+          console.log("event", newValue, newStudies);
+          setStudies(newStudies.studies);
+          setLoading(false);
+        }, 1000);
+      } else {
+        debounceFunction(async () => {
+          setLoading(true);
+          const newDataflows = await searchDataflows(
+            newValue,
+            selectedStudy.study.prot_id
+          );
+          console.log("event", newValue, newDataflows);
+          setDatflows(newDataflows.dataflows);
+          setLoading(false);
+        }, 1000);
+      }
     }
   };
 
@@ -177,6 +180,7 @@ const CloneDataFlow = ({
   ];
 
   const ModalComponent = () => {
+    console.log(loading, "loading");
     return (
       <div>
         <>
@@ -188,18 +192,24 @@ const CloneDataFlow = ({
             onChange={(e) => searchTrigger(e, "study")}
             fullWidth
           />
-
-          <Table
-            columns={columns}
-            rows={studies}
-            rowId="prot_id"
-            hidePagination
-            maxHeight="40vh"
-            emptyProps={{
-              text: searchTxt === "" && !loading ? "" : "No data to display",
-            }}
-          />
+          {loading ? (
+            <Box display="flex" className="loader-container">
+              <ApolloProgress />
+            </Box>
+          ) : (
+            <Table
+              columns={columns}
+              rows={studies}
+              rowId="prot_id"
+              hidePagination
+              maxHeight="40vh"
+              emptyProps={{
+                text: searchTxt === "" && !loading ? "" : "No data to display",
+              }}
+            />
+          )}
         </>
+
         {/* <Button variant="secondary" size="small">
           Cancel
         </Button>
@@ -503,6 +513,7 @@ const CloneDataFlow = ({
         customCell: DfFormatCell,
       },
     ];
+    console.log(loading, "loading");
     return (
       <>
         {selectedStudy.dataflow ? (
@@ -527,24 +538,35 @@ const CloneDataFlow = ({
               onChange={(e) => searchTrigger(e, "dataflow")}
               fullWidth
             />
-
-            <Table
-              columns={dfcolumns}
-              rows={datflows}
-              rowId="dataflowid"
-              hidePagination
-              maxHeight="40vh"
-              emptyProps={{
-                text: searchTxt === "" && !loading ? "" : "No data to display",
-              }}
-            />
+            {loading ? (
+              <Box display="flex" className="loader-container">
+                <ApolloProgress />
+              </Box>
+            ) : (
+              <Table
+                columns={dfcolumns}
+                rows={datflows}
+                rowId="dataflowid"
+                hidePagination
+                maxHeight="40vh"
+                emptyProps={{
+                  text:
+                    searchTxt === "" && !loading ? "" : "No data to display",
+                }}
+              />
+            )}
           </>
         )}
       </>
     );
   };
 
-  const handleClone = () => {};
+  const handleClone = async () => {
+    const data = await getDataFlowDetails(selectedStudy.dataflow.dataflowid);
+    console.log(data, "data");
+    await dataflowSave(data);
+    // history.push("/dataflow-management");
+  };
 
   console.log(selectedStudy, "selectedStudyselectedStudy");
 
