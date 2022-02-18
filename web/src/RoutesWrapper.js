@@ -14,9 +14,12 @@ import PageHeader from "./components/Common/PageHeader";
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("./pages/DataFlow/DataFlow"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
-const ColumnsTab = lazy(() => import("./pages/Dataset/ColumnsTab/ColumnsTab"));
-const JDBCForm = lazy(() => import("./pages/Dataset/JDBCForm"));
+// const ColumnsTab = lazy(() => import("./pages/Dataset/ColumnsTab/ColumnsTab"));
+// const JDBCForm = lazy(() => import("./pages/Dataset/JDBCForm"));
 const CDIAdmin = lazy(() => import("./pages/Admin/CDI/CDIAdmin"));
+const DatasetIngestionReport = lazy(() =>
+  import("./pages/DatasetIngestionReport")
+);
 
 const Empty = () => <></>;
 
@@ -51,6 +54,11 @@ const WithPageHeader = () => {
           path={`${match.path}/dataset/:datasetId`}
           exact
           render={() => <Dataset />}
+        />
+        <Route
+          path="/ingestion-report/:datasetId"
+          exact
+          render={() => <DatasetIngestionReport />}
         />
       </Switch>
     </>
