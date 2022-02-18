@@ -1,11 +1,10 @@
 import Footer from "apollo-react/components/Footer";
 
-const footerStyle = {
-  maxWidth: "100%",
-  padding: 0,
-};
-
-const AppFooter = () => {
+const AppFooter = ({ width }) => {
+  const footerStyle = {
+    maxWidth: { width },
+    padding: 0,
+  };
   return (
     <div style={{ background: "#F6F7FB" }}>
       <Footer

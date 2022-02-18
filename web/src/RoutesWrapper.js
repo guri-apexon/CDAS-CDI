@@ -78,7 +78,7 @@ const WithOutPageHeader = () => {
           render={() => <ColumnsTab />}
         /> */}
       </Switch>
-      <AppFooter />
+      <AppFooter width="100%" />
     </>
   );
 };
