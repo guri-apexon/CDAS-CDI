@@ -13,6 +13,7 @@ import Table, {
 } from "apollo-react/components/Table";
 import Tooltip from "apollo-react/components/Tooltip";
 import Switch from "apollo-react/components/Switch";
+import LocationModal from "../../components/Common/LocationModal";
 import { getLocationsData } from "../../store/actions/LocationAction";
 import {
   TextFieldFilter,
@@ -134,6 +135,7 @@ const TransferLog = () => {
   const [, setHasUpdated] = useState(false);
   const columns = generateColumns(tableRows);
   const [columnsState, setColumns] = useState([...columns]);
+  const [locationOpen, setLocationOpen] = useState(false);
 
   const getData = () => {
     dispatch(getLocationsData("all"));
@@ -167,6 +169,7 @@ const TransferLog = () => {
       <Button
         id="addLocationBtn"
         icon={<PlusIcon />}
+        onClick={() => setLocationOpen(true)}
         size="small"
         style={{ marginRight: 16 }}
       >
@@ -185,32 +188,38 @@ const TransferLog = () => {
   );
 
   return (
-    <Table
-      title="Locations"
-      isLoading={loading || statusUpdating}
-      subtitle={`${totalLocations} locations`}
-      columns={columnsState}
-      rows={tableRows}
-      rowId="src_loc_id"
-      initialSortedColumn="loc_alias_nm"
-      initialSortOrder="asc"
-      rowsPerPageOptions={[10, 50, 100, "All"]}
-      tablePaginationProps={{
-        labelDisplayedRows: ({ from, to, count }) =>
-          `${count === 1 ? "Item" : "Items"} ${from}-${to} of ${count}`,
-        truncate: true,
-      }}
-      CustomHeader={(props) => <CustomHeader {...props} />}
-      columnSettings={{
-        enabled: true,
-        onChange: (clumns) => {
-          setHasUpdated(true);
-          setColumns(clumns);
-        },
-        defaultColumns: columns,
-        frozenColumnsEnabled: true,
-      }}
-    />
+    <>
+      <LocationModal
+        locationModalOpen={locationOpen}
+        handleModalClose={() => setLocationOpen(false)}
+      />
+      <Table
+        title="Locations"
+        isLoading={loading || statusUpdating}
+        subtitle={`${totalLocations} locations`}
+        columns={columnsState}
+        rows={tableRows}
+        rowId="src_loc_id"
+        initialSortedColumn="loc_alias_nm"
+        initialSortOrder="asc"
+        rowsPerPageOptions={[10, 50, 100, "All"]}
+        tablePaginationProps={{
+          labelDisplayedRows: ({ from, to, count }) =>
+            `${count === 1 ? "Item" : "Items"} ${from}-${to} of ${count}`,
+          truncate: true,
+        }}
+        CustomHeader={(props) => <CustomHeader {...props} />}
+        columnSettings={{
+          enabled: true,
+          onChange: (clumns) => {
+            setHasUpdated(true);
+            setColumns(clumns);
+          },
+          defaultColumns: columns,
+          frozenColumnsEnabled: true,
+        }}
+      />
+    </>
   );
 };
 

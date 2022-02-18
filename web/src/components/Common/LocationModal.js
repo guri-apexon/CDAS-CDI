@@ -15,9 +15,9 @@ import {
   ReduxFormSelect,
   ReduxFormSwitch,
   ReduxFormTextField,
-} from "../../components/FormComponents/FormComponents";
+} from "../FormComponents/FormComponents";
 
-import { locationModalValidate } from "../../components/FormComponents/validation";
+import { locationModalValidate } from "../FormComponents/validation";
 import { saveLocationData } from "../../store/actions/DataFlowAction";
 
 const styles = {
@@ -55,7 +55,7 @@ const LocationForm = (props) => {
             <ReduxFormSwitch
               label="Active"
               name="active"
-              className="activeField"
+              className="activeField MuiSwitch"
               size="small"
               labelPlacement="start"
               value={isActive}
@@ -150,7 +150,9 @@ const LocationModal = (props) => {
     setTimeout(() => {
       console.log(props);
       // eslint-disable-next-line no-console
-      props.modalLocationType(values?.locationType);
+      if (props.modalLocationType) {
+        props.modalLocationType(values?.locationType);
+      }
       dispatch(saveLocationData(values));
     }, 400);
   };
