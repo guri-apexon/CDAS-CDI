@@ -21,29 +21,33 @@ import {
   createSourceFromKey,
   createStatusArraySearchFilter,
 } from "../../utils/index";
+import { statusUpdate } from "../../services/ApiServices";
 
 const LinkCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
   return <Link onClick={() => console.log("clicked")}>{value}</Link>;
 };
 
-const StatusCell = ({ row, column: { accessor } }) => {
-  const value = row[accessor];
-  return (
-    <Tooltip
-      title={`${value === 1 ? "Active" : "Inactive"}`}
-      disableFocusListener
-    >
-      <Switch
-        className="MuiSwitch"
-        checked={value === 1 ? true : false}
-        size="small"
-      />
-    </Tooltip>
-  );
-};
+const StatusCell =
+  (handleStatusChange) =>
+  ({ row, column: { accessor } }) => {
+    const value = row[accessor];
+    return (
+      <Tooltip
+        title={`${value === 1 ? "Active" : "Inactive"}`}
+        disableFocusListener
+      >
+        <Switch
+          className="MuiSwitch"
+          checked={value === 1 ? true : false}
+          onChange={(e) => handleStatusChange(e, row.src_loc_id)}
+          size="small"
+        />
+      </Tooltip>
+    );
+  };
 
-const generateColumns = (tableRows = []) => {
+const generateColumns = (tableRows = [], handleStatusChange = null) => {
   return [
     {
       header: "Location Name (Alias)",
@@ -100,7 +104,7 @@ const generateColumns = (tableRows = []) => {
     {
       header: "Status",
       accessor: "active",
-      customCell: StatusCell,
+      customCell: StatusCell(handleStatusChange),
       sortFunction: compareNumbers,
       filterFunction: createStatusArraySearchFilter("active"),
       filterComponent: createAutocompleteFilter(
@@ -124,13 +128,26 @@ const generateColumns = (tableRows = []) => {
 const TransferLog = () => {
   const dispatch = useDispatch();
   const { locations, loading } = useSelector((state) => state.locations);
+  const [statusUpdating, setStatusUpdating] = useState(false);
   const [totalLocations, setTotalLocations] = useState(0);
   const [tableRows, setTableRows] = useState([]);
   const [, setHasUpdated] = useState(false);
   const columns = generateColumns(tableRows);
   const [columnsState, setColumns] = useState([...columns]);
+
   const getData = () => {
     dispatch(getLocationsData("all"));
+  };
+
+  const handleStatusChange = async (e, id) => {
+    e.preventDefault();
+    const value = e.target.checked;
+    setStatusUpdating(true);
+    const update = await statusUpdate(id, value);
+    if (update) {
+      getData();
+    }
+    setStatusUpdating(false);
   };
 
   useEffect(() => {
@@ -141,7 +158,7 @@ const TransferLog = () => {
   useEffect(() => {
     setTableRows(locations?.records ?? []);
     setTotalLocations(locations.totalSize ?? 0);
-    const col = generateColumns(locations?.records);
+    const col = generateColumns(locations?.records, handleStatusChange);
     setColumns([...col]);
   }, [loading, locations]);
 
@@ -170,6 +187,7 @@ const TransferLog = () => {
   return (
     <Table
       title="Locations"
+      isLoading={loading || statusUpdating}
       subtitle={`${totalLocations} locations`}
       columns={columnsState}
       rows={tableRows}

@@ -184,3 +184,30 @@ exports.getServiceOwnersList = function (req, res) {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+exports.statusUpdate = async (req, res) => {
+  try {
+    const { id, status } = req.body;
+    const curDate = new Date();
+    Logger.info({
+      message: "statusUpdate",
+    });
+    const $query = `UPDATE ${schemaName}.source_location SET active=$1, updt_tm=$2 WHERE src_loc_id=$3`;
+    const details = await DB.executeQuery($query, [
+      status == true ? 1 : 0,
+      curDate,
+      id,
+    ]);
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      details.row || null
+    );
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error("catch :statusUpdate");
+    Logger.error(err);
+
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
