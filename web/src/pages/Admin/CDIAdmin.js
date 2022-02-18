@@ -9,7 +9,7 @@ import Location from "./Location/Location";
 import "./CDIAdmin.scss";
 
 const CDIAdmin = () => {
-  const [value, setValue] = useState(1);
+  const [value, setValue] = useState(0);
 
   const handleChangeTab = (event, v) => {
     setValue(v);
