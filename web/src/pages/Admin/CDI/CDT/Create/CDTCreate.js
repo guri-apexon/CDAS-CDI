@@ -1,5 +1,5 @@
 import React from "react";
 
 export default function CDTCreate() {
-  return <div>CDTCreate</div>;
+  return <div className="cdt-create-wrapper">CDTCreate</div>;
 }

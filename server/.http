@@ -191,6 +191,10 @@ GET http://localhost:4001/v1/api/dataflow/studyDataflowList/a020E000005SwPtQAK H
   ]
 }
 
+### DataKind list
+
+GET http://localhost:4001/v1/api/datakind/table/list HTTP/1.1
+
 ### Create DataKind 
 
 POST http://localhost:4001/v1/api/datakind/create HTTP/1.1
