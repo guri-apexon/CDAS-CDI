@@ -15,26 +15,29 @@ const CDIAdmin = () => {
   };
 
   return (
-    <main>
-      <div>
-        <Typography className="contentTitle" variant="title1" gutterBottom>
-          Ingestion Dashboard
+    <main className="cdi-page-wrapper">
+      <div className="page-header">
+        <Typography variant="h2" gutterBottom>
+          CDI Admin
         </Typography>
-        {/* <div>
-                <button onClick={downloadTemplate}>export template</button>
-              </div> */}
-        <Tabs value={value} onChange={handleChangeTab} truncate>
+        <Tabs
+          value={value}
+          onChange={handleChangeTab}
+          style={{ padding: "0px 24px" }}
+          truncate
+        >
           <Tab label="Locations" />
           <Tab label="Clinical Data Types" />
           <Tab label="Callback URL" />
           <Tab label="System Settings" />
         </Tabs>
-        <div style={{ padding: 20 }}>
-          {value === 0 && <CDTList />}
-          {value === 1 && <CDTList />}
-          {value === 2 && <CDTList />}
-          {value === 3 && <CDTList />}
-        </div>
+      </div>
+
+      <div style={{ padding: 20 }}>
+        {value === 0 && <CDTList />}
+        {value === 1 && <CDTList />}
+        {value === 2 && <CDTList />}
+        {value === 3 && <CDTList />}
       </div>
     </main>
   );

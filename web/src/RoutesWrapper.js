@@ -69,8 +69,8 @@ const WithOutPageHeader = () => {
           exact
           render={() => <ColumnsTab />}
         /> */}
-        <AppFooter />
       </Switch>
+      <AppFooter />
     </>
   );
 };
