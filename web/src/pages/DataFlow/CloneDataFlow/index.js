@@ -564,6 +564,7 @@ const CloneDataFlow = ({
   const handleClone = async () => {
     const data = await getDataFlowDetails(selectedStudy.dataflow.dataflowid);
     console.log(data, "data");
+    data.externalSystemName = "CDI";
     await dataflowSave(data);
     // history.push("/dataflow-management");
   };
