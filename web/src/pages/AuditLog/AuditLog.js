@@ -47,7 +47,7 @@ const AuditLog = () => {
     {
       href: "javascript:void(0)",
       title: "Data Flow Settings",
-      onClick: () => history.push("/dataflow-management"),
+      onClick: () => history.push("/dashboard/dataflow-management"),
     },
     {
       title: "Audit Log",
