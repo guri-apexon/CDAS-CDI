@@ -15,44 +15,43 @@ import { useHistory } from "react-router-dom";
 import Switch from "apollo-react/components/Switch";
 import Typography from "apollo-react/components/Typography";
 
+import { MessageContext } from "../../../../components/Providers/MessageProvider";
+
 import {
   TextFieldFilter,
+  createSourceFromKey,
+  createAutocompleteFilter,
   createStringArraySearchFilter,
 } from "../../../../utils/index";
+import { getCDTList } from "../../../../store/actions/CDIAdminAction";
 
 export default function CDTList() {
   const history = useHistory();
-  // const messageContext = useContext(MessageContext);
+  const messageContext = useContext(MessageContext);
   const [tableRows, setTableRows] = useState([]);
   const [open, setOpen] = useState(false);
   const [curRow, setCurRow] = useState({});
   const dispatch = useDispatch();
-  const cdt = useSelector((state) => state.cdt);
-  // const { cdtList, loading, ensList } = cdt;
-  const cdtList = [];
-  const loading = false;
+  const { cdtList, loading } = useSelector((state) => state.cdiadmin);
   const ensList = [];
 
-  // const getData = () => {
-  //   dispatch(getCDTList());
-  // };
-
-  // useEffect(() => {
-  //   if (ensList.length <= 1) {
-  //     dispatch(getENSList());
-  //   }
-  //   getData();
-  // }, []);
-
-  // useEffect(() => {
-  //   setTableRows(cdtList);
-  // }, [loading, cdtList]);
-
-  const goToCDT = (e, id) => {
-    e.preventDefault();
-    // selectCDT(id);
-    history.push(`/cdt/edit/${id}`);
+  const getData = () => {
+    dispatch(getCDTList());
   };
+
+  useEffect(() => {
+    setTableRows(cdtList);
+  }, [loading, cdtList]);
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+  // const goToCDT = (e, id) => {
+  //   e.preventDefault();
+  //   // selectCDT(id);
+  //   history.push(`/cdt/edit/${id}`);
+  // };
 
   // const handleInActivate = async (e, id) => {
   //   e.preventDefault();
@@ -149,7 +148,7 @@ export default function CDTList() {
 
   const handleAddCDT = () => {
     // dispatch(createCDT());
-    history.push("/cdt/create");
+    // history.push("/cdt/create");
   };
 
   const CustomButtonHeader = ({ toggleFilters, addCDT }) => (
@@ -203,10 +202,9 @@ export default function CDTList() {
       accessor: "dkESName",
       sortFunction: compareStrings,
       filterFunction: createStringSearchFilter("dkESName"),
-      filterComponent: createSelectFilterComponent(ensList, {
-        size: "small",
-        multiple: true,
-      }),
+      filterComponent: createAutocompleteFilter(
+        createSourceFromKey(tableRows, "dkESName")
+      ),
       width: "25%",
     },
     {
@@ -215,10 +213,20 @@ export default function CDTList() {
       customCell: StatusCell,
       sortFunction: compareStrings,
       filterFunction: createStringArraySearchFilter("dkStatus"),
-      // filterComponent: createSelectFilterComponent(statusList, {
-      //   size: "small",
-      //   multiple: true,
-      // }),
+      filterComponent: createAutocompleteFilter(
+        [
+          {
+            label: "Active",
+          },
+          {
+            label: "Inactive",
+          },
+        ],
+        {
+          size: "small",
+          multiple: true,
+        }
+      ),
       width: "10%",
     },
   ];

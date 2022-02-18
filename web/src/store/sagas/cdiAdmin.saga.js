@@ -14,12 +14,11 @@ export function* fetchCDTList() {
       axios.get,
       `${baseURL}/${DATAKINDAPI}/table/list`
     );
-    const logs = fetchData.data?.data?.data || [];
     yield put({
-      type: FETCH_CDT_LIST_FAILURE,
-      auditLogs: logs,
+      type: FETCH_CDT_LIST_SUCCESS,
+      cdtList: fetchData.data?.data?.datakind || [],
     });
   } catch (e) {
-    yield put({ type: FETCH_CDT_LIST_SUCCESS, message: e.message });
+    yield put({ type: FETCH_CDT_LIST_FAILURE, message: e.message });
   }
 }
