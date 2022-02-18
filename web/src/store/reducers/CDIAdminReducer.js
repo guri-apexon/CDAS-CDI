@@ -7,7 +7,7 @@ export const initialState = {
   locations: [],
 };
 
-const LocationReducer = (state = initialState, action) =>
+const CDIAdminReducer = (state = initialState, action) =>
   produce(state, (newState) => {
     switch (action.type) {
       case GET_LOCATIONS_ADMIN:
@@ -23,4 +23,4 @@ const LocationReducer = (state = initialState, action) =>
     }
   });
 
-export default LocationReducer;
+export default CDIAdminReducer;

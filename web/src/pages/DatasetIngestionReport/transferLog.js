@@ -15,7 +15,7 @@ import Table, {
 import Tooltip from "apollo-react/components/Tooltip";
 import Switch from "apollo-react/components/Switch";
 import LocationModal from "../../components/Common/LocationModal";
-import { getLocationsData } from "../../store/actions/LocationAction";
+import { getLocationsData } from "../../store/actions/CDIAdminAction";
 import {
   TextFieldFilter,
   createAutocompleteFilter,

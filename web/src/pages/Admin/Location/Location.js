@@ -15,7 +15,7 @@ import Table, {
 import Tooltip from "apollo-react/components/Tooltip";
 import Switch from "apollo-react/components/Switch";
 import LocationModal from "../../../components/Common/LocationModal";
-import { getLocationsData } from "../../../store/actions/LocationAction";
+import { getLocationsData } from "../../../store/actions/CDIAdminAction";
 import {
   TextFieldFilter,
   createAutocompleteFilter,
@@ -129,7 +129,7 @@ const generateColumns = (tableRows = [], handleStatusChange = null) => {
 
 const Location = () => {
   const dispatch = useDispatch();
-  const { locations, loading } = useSelector((state) => state.locations);
+  const { locations, loading } = useSelector((state) => state.cdiadmin);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [totalLocations, setTotalLocations] = useState(0);
   const [tableRows, setTableRows] = useState([]);
