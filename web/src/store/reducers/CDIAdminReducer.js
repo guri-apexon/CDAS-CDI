@@ -6,6 +6,7 @@ import {
   GET_CDT_LIST,
   FETCH_CDT_LIST_FAILURE,
   FETCH_CDT_LIST_SUCCESS,
+  FETCH_LOCATION_FAILURE,
 } from "../../constants";
 
 export const initialState = {
@@ -23,6 +24,9 @@ const CDIAdminReducer = (state = initialState, action) =>
       case FETCH_LOCATION_SUCCESS:
         newState.loading = false;
         newState.locations = action.locations;
+        break;
+      case FETCH_LOCATION_FAILURE:
+        newState.loading = false;
         break;
       case GET_CDT_LIST:
         newState.loading = true;

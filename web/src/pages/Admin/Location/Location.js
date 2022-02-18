@@ -22,12 +22,18 @@ import {
   createStringArraySearchFilter,
   createSourceFromKey,
   createStatusArraySearchFilter,
+  Capitalize,
 } from "../../../utils/index";
 import { statusUpdate } from "../../../services/ApiServices";
 
 const LinkCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
   return <Link onClick={() => console.log("clicked")}>{value}</Link>;
+};
+
+const DataStructCell = ({ row, column: { accessor } }) => {
+  const value = row[accessor];
+  return Capitalize(value);
 };
 
 const StatusCell =
@@ -84,6 +90,7 @@ const generateColumns = (tableRows = [], handleStatusChange = null) => {
       header: "Data Structure",
       accessor: "data_strc",
       sortFunction: compareStrings,
+      customCell: DataStructCell,
       filterFunction: createStringArraySearchFilter("data_strc"),
       filterComponent: createAutocompleteFilter(
         createSourceFromKey(tableRows, "data_strc")

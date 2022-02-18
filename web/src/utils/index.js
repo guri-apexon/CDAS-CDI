@@ -388,10 +388,16 @@ export const formatData = (incomingData, protNo) => {
   return [];
 };
 
+export const Capitalize = (str) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
 export const createSourceFromKey = (tableRows, key) => {
   return Array.from(
     new Set(
-      tableRows?.map((r) => ({ label: r[key] })).map((item) => item.label)
+      tableRows
+        ?.map((r) => ({ label: Capitalize(r[key]) }))
+        .map((item) => item.label)
     )
   )
     .map((label) => {
