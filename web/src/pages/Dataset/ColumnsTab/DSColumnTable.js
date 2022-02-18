@@ -234,11 +234,11 @@ export default function DSColumnTable({
 
   const addMenuItems = [
     {
-      text: "Add 1 row",
+      text: "Add 1 column definition",
       onClick: addSingleRow,
     },
     {
-      text: "Add multiple rows",
+      text: "Add multiple column definitions",
       onClick: addMultipleRows,
     },
   ];

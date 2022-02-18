@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import { put, call } from "redux-saga/effects";
 import axios from "axios";
 import {
@@ -7,13 +8,11 @@ import {
   AUDIT_LOGS_FAILURE,
 } from "../../constants";
 
-// eslint-disable-next-line import/prefer-default-export
 export function* fetchAuditLogs(params) {
   try {
     const fetchData = yield call(
       axios.get,
-      `${baseURL}/${AUDIT_LOGS_FETCH}/${params.dataflowId}`,
-      {}
+      `${baseURL}/${AUDIT_LOGS_FETCH}/${params.dataflowId}`
     );
     const logs = fetchData.data?.data?.data || [];
     yield put({

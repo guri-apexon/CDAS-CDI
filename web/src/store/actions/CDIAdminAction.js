@@ -1,9 +1,12 @@
-import { GET_LOCATIONS_ADMIN } from "../../constants";
+import { GET_LOCATIONS_ADMIN, GET_CDT_LIST } from "../../constants";
 
-// eslint-disable-next-line import/prefer-default-export
 export const getLocationsData = (value) => {
   return {
     type: GET_LOCATIONS_ADMIN,
     value,
   };
+};
+
+export const getCDTList = () => {
+  return { type: GET_CDT_LIST };
 };

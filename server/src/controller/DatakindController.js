@@ -93,7 +93,7 @@ exports.getDatakindList = function (req, res) {
 
 exports.getDKList = function (req, res) {
   try {
-    let selectQuery = `SELECT datakindid as dkId, name as dkName, extrnl_sys_nm as dkESName, dk_desc as dkDesc, active as dkStatus from ${schemaName}.datakind where by datakindid asc`;
+    let selectQuery = `SELECT datakindid as "dkId", name as "dkName", extrnl_sys_nm as "dkESName", dk_desc as "dkDesc", active as "dkStatus" from ${schemaName}.datakind order by name`;
     let dbQuery = DB.executeQuery(selectQuery);
     Logger.info({ message: "getDKList" });
     dbQuery
