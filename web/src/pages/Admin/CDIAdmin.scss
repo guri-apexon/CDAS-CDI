@@ -9,3 +9,8 @@
     }
   }
 }
+.MuiSwitch {
+  span[class^="MuiButtonBase-"] {
+    top: -8px;
+  }
+}

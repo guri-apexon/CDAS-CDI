@@ -14,16 +14,16 @@ import Table, {
 } from "apollo-react/components/Table";
 import Tooltip from "apollo-react/components/Tooltip";
 import Switch from "apollo-react/components/Switch";
-import LocationModal from "../../components/Common/LocationModal";
-import { getLocationsData } from "../../store/actions/LocationAction";
+import LocationModal from "../../../components/Common/LocationModal";
+import { getLocationsData } from "../../../store/actions/LocationAction";
 import {
   TextFieldFilter,
   createAutocompleteFilter,
   createStringArraySearchFilter,
   createSourceFromKey,
   createStatusArraySearchFilter,
-} from "../../utils/index";
-import { statusUpdate } from "../../services/ApiServices";
+} from "../../../utils/index";
+import { statusUpdate } from "../../../services/ApiServices";
 
 const LinkCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
@@ -127,7 +127,7 @@ const generateColumns = (tableRows = [], handleStatusChange = null) => {
   ];
 };
 
-const TransferLog = () => {
+const Location = () => {
   const dispatch = useDispatch();
   const { locations, loading } = useSelector((state) => state.locations);
   const [statusUpdating, setStatusUpdating] = useState(false);
@@ -224,4 +224,4 @@ const TransferLog = () => {
   );
 };
 
-export default TransferLog;
+export default Location;
