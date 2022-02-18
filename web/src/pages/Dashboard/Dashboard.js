@@ -11,7 +11,7 @@ import {
   getFlowDetailsOfStudy,
   getDatasetIngestionOfStudy,
 } from "../../store/actions/DashboardAction";
-// import PageHeader from "../../components/DataFlow/PageHeader";
+
 import LeftPanel from "./LeftPanel";
 import "./Dashboard.scss";
 
@@ -94,7 +94,6 @@ const Dashboard = () => {
 
   return (
     <>
-      {/* <PageHeader height={64} /> */}
       <div className="pageRoot">
         <Panel
           onClose={handleClose}

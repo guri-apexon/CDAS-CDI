@@ -90,3 +90,27 @@ exports.getDatakindList = function (req, res) {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+
+exports.getDKList = function (req, res) {
+  try {
+    let selectQuery = `SELECT datakindid as dkId, name as dkName, extrnl_sys_nm as dkESName, dk_desc as dkDesc, active as dkStatus from ${schemaName}.datakind where by datakindid asc`;
+    let dbQuery = DB.executeQuery(selectQuery);
+    Logger.info({ message: "getDKList" });
+    dbQuery
+      .then((response) => {
+        const datakind = response.rows || [];
+        return apiResponse.successResponseWithData(res, "Operation success", {
+          datakind,
+        });
+      })
+      .catch((err) => {
+        return apiResponse.ErrorResponse(res, err.message);
+      });
+  } catch (err) {
+    //throw error in json response with status 500.
+    Logger.error("catch :getDKList");
+    Logger.error(err);
+
+    return apiResponse.ErrorResponse(res, err);
+  }
+};

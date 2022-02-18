@@ -16,7 +16,6 @@ import Button from "apollo-react/components/Button";
 import DownloadIcon from "apollo-react-icons/Download";
 import FilterIcon from "apollo-react-icons/Filter";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
-// import PageHeader from "../../components/DataFlow/PageHeader";
 import columns from "./columns.data";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import { getAuditLogs } from "../../store/actions/AuditLogsAction";
@@ -189,7 +188,6 @@ const AuditLog = () => {
 
   return (
     <main className="audit-logs-wrapper">
-      {/* <PageHeader height={60} /> */}
       <Paper className="no-shadow">
         <Box className="top-content">
           <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />

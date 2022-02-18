@@ -1,5 +1,5 @@
 import { withRouter } from "react-router";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import NavigationBar from "apollo-react/components/NavigationBar";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import { neutral7 } from "apollo-react/colors";
@@ -14,6 +14,7 @@ import moment from "moment";
 import Button from "apollo-react/components/Button";
 
 import NavigationPanel from "../NavigationPanel/NavigationPanel";
+import { MessageContext } from "../../Providers/MessageProvider";
 // eslint-disable-next-line import/named
 import { deleteAllCookies, getUserInfo } from "../../../utils/index";
 // eslint-disable-next-line import/named
@@ -87,7 +88,12 @@ const menuItems = [
   },
   {
     text: "Admin",
-    menuItems: [],
+    menuItems: [
+      {
+        text: "CDI Admin",
+        pathname: "/admin/cdi",
+      },
+    ],
   },
 ];
 
@@ -98,6 +104,7 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
   const [panelOpen, setpanelOpen] = useState(true);
   const [notLoggedOutErr, setNotLoggedOutErr] = useState(false);
   const [open, setOpen] = useState(false);
+  const messageContext = useContext(MessageContext);
   const userInfo = getUserInfo();
   const profileMenuProps = {
     name: userInfo.fullName,
@@ -200,6 +207,14 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
         open={notLoggedOutErr}
         onClose={() => setNotLoggedOutErr(false)}
         message="Error: There is some error in logging out!"
+      />
+      <Banner
+        variant={messageContext.errorMessage.variant}
+        open={messageContext.errorMessage.show}
+        onClose={messageContext.bannerCloseHandle}
+        message={messageContext.errorMessage.messages}
+        id={`Message-Banner--${messageContext.errorMessage.variant}`}
+        className="Message-Banner"
       />
     </div>
   );

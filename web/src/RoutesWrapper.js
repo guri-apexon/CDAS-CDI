@@ -1,11 +1,11 @@
-import { Route, Switch, Redirect } from "react-router";
+import { Route, Switch, Redirect, useRouteMatch } from "react-router";
 import { useLocation, useHistory } from "react-router-dom";
 import { lazy, Suspense, useState, useEffect } from "react";
 import Loader from "apollo-react/components/Loader";
 
 import { getCookie } from "./utils";
 import TopNavbar from "./components/AppHeader/TopNavbar/TopNavbar";
-// import AppFooter from "../AppFooter/AppFooter";
+import AppFooter from "./components/AppFooter/AppFooter";
 import Logout from "./pages/Logout/Logout";
 import DataPackages from "./pages/DataPackages/DataPackages";
 import AuditLog from "./pages/AuditLog/AuditLog";
@@ -13,10 +13,67 @@ import PageHeader from "./components/Common/PageHeader";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("./pages/DataFlow/DataFlow"));
-// const DataSets = lazy(() => import("./pages/DataSets/DataSets"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
+const ColumnsTab = lazy(() => import("./pages/Dataset/ColumnsTab/ColumnsTab"));
+const JDBCForm = lazy(() => import("./pages/Dataset/JDBCForm"));
+const CDIAdmin = lazy(() => import("./pages/Admin/CDI/CDIAdmin"));
 
 const Empty = () => <></>;
+
+const WithPageHeader = () => {
+  const match = useRouteMatch();
+  return (
+    <>
+      <PageHeader height={64} />
+      <Switch>
+        <Route path={`${match.path}`} exact render={() => <Dashboard />} />
+        <Route
+          path={`${match.path}/audit-logs/:dataflowId`}
+          exact
+          render={() => <AuditLog />}
+        />
+        <Route
+          path={`${match.path}/data-packages`}
+          exact
+          render={() => <DataPackages />}
+        />
+        <Route
+          path={`${match.path}/dataflow-management`}
+          exact
+          render={() => <DataFlow />}
+        />
+        <Route
+          path={`${match.path}/datasets-management`}
+          exact
+          render={() => <Dataset />}
+        />
+        <Route
+          path={`${match.path}/dataset/:datasetId`}
+          exact
+          render={() => <Dataset />}
+        />
+      </Switch>
+    </>
+  );
+};
+
+const WithOutPageHeader = () => {
+  const match = useRouteMatch();
+  return (
+    <>
+      <Switch>
+        <Route path={`${match.path}/cdi`} exact render={() => <CDIAdmin />} />
+        <Route path={`${match.path}/jdbc`} exact render={() => <JDBCForm />} />
+        <Route
+          path={`${match.path}/columns`}
+          exact
+          render={() => <ColumnsTab />}
+        />
+        {/* <AppFooter /> */}
+      </Switch>
+    </>
+  );
+};
 
 const CDIWrapper = () => {
   const [loggedIn, setLoggedIn] = useState(true);
@@ -57,36 +114,11 @@ const CDIWrapper = () => {
       {loggedIn ? (
         <div className="page-wrapper">
           <TopNavbar setLoggedIn={setLoggedIn} />
-          <PageHeader height={64} />
           <Switch>
-            <Route path="/dashboard" exact render={() => <Dashboard />} />
-            <Route
-              path="/data-packages"
-              exact
-              render={() => <DataPackages />}
-            />
-            <Route
-              path="/audit-logs/:dataflowId"
-              exact
-              render={() => <AuditLog />}
-            />
-            <Route
-              path="/dataflow-management"
-              exact
-              render={() => <DataFlow />}
-            />
-            <Route
-              path="/datasets-management"
-              exact
-              render={() => <Dataset />}
-            />
-            <Route
-              path="/dataset/:datasetId"
-              exact
-              render={() => <Dataset />}
-            />
-            <Redirect from="/" to="/dashboard" />
+            <Route path="/dashboard" render={() => <WithPageHeader />} />
+            <Route path="/admin" render={() => <WithOutPageHeader />} />
           </Switch>
+          <Redirect from="/" to="/dashboard" />
         </div>
       ) : (
         <Switch>
