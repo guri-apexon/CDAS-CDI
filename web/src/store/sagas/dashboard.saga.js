@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import { put, call } from "redux-saga/effects";
 import axios from "axios";
 import {
@@ -10,7 +11,6 @@ import {
   GET_DATASET_INGESTION_SUMMARY_FAILURE,
 } from "../../constants";
 
-// eslint-disable-next-line import/prefer-default-export
 export function* fetchFlowData(payload) {
   // console.log("before", payload.protocolId);
   try {
