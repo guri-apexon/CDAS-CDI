@@ -141,7 +141,7 @@ const DatasetCell = ({ row, column: { accessor } }) => {
   return (
     // eslint-disable-next-line jsx-a11y/anchor-is-valid
     <Link
-      to={`/ingestion-report/${row.datasetid}`}
+      to={`/dashboard/ingestion-report/${row.datasetid}`}
       style={{
         fontWeight: 500,
         color: "#0768FD",
