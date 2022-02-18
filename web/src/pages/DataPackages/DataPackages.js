@@ -70,12 +70,12 @@ const DataPackages = () => {
     {
       href: "javascript:void(0)",
       title: "Data Flow Settings",
-      onClick: () => history.push("/dataflow-management"),
+      onClick: () => history.push("/dashboard/dataflow-management"),
     },
     {
       href: "javascript:void(0)",
       title: "Data Package Settings",
-      onClick: () => history.push("/data-packages"),
+      onClick: () => history.push("/dashboard/data-packages"),
     },
   ];
 

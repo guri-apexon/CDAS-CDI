@@ -175,23 +175,23 @@ const Dataset = () => {
 
   const goToDataflow = () => {
     if (selectedDSDetails.dataflowid) {
-      history.push("/dataflow-management");
+      history.push("/dashboard/dataflow-management");
     }
-    history.push("/dataflow-management");
+    history.push("/dashboard/dataflow-management");
   };
 
   const goToPackage = () => {
     if (selectedDSDetails.dataflowid) {
-      history.push("/dataflow-management");
+      history.push("/dashboard/dataflow-management");
     }
-    history.push("/dataflow-management");
+    history.push("/dashboard/dataflow-management");
   };
 
   const gotoDataflow = () => {
     if (selectedDSDetails.dataflowid) {
-      history.push("/data-packages");
+      history.push("/dashboard/data-packages");
     }
-    history.push("/data-packages");
+    history.push("/dashboard/data-packages");
   };
 
   const breadcrumbItems = [
