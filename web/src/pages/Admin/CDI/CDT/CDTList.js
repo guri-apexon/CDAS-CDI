@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Table, {
@@ -25,10 +26,102 @@ import {
 } from "../../../../utils/index";
 import { getCDTList } from "../../../../store/actions/CDIAdminAction";
 
+const StatusCell =
+  (handleStatusChange) =>
+  ({ row, column: { accessor } }) => {
+    const value = row[accessor];
+    return (
+      <Tooltip
+        title={`${value === 1 ? "Active" : "Inactive"}`}
+        disableFocusListener
+      >
+        <Switch
+          className="MuiSwitch"
+          checked={value === 1 ? true : false}
+          onChange={(e) => handleStatusChange(e, row.dkId)}
+          size="small"
+        />
+      </Tooltip>
+    );
+  };
+
+const LinkCell =
+  (handleLink) =>
+  ({ row, column: { accessor } }) => {
+    const rowValue = row[accessor];
+    const id = row.dkId;
+    return <Link onClick={(e) => handleLink(e, id)}>{rowValue}</Link>;
+  };
+
+const generateColumns = (
+  tableRows = [],
+  handleStatusChange = null,
+  handleLink = null
+) => {
+  return [
+    {
+      header: "",
+      accessor: "dkId",
+      hidden: true,
+    },
+    {
+      header: "Clinical Data Name",
+      accessor: "dkName",
+      customCell: LinkCell(handleLink),
+      sortFunction: compareStrings,
+      filterFunction: createStringSearchFilter("dkName"),
+      filterComponent: TextFieldFilter,
+      width: "20%",
+    },
+    {
+      header: "Description",
+      accessor: "dkDesc",
+      sortFunction: compareStrings,
+      filterFunction: createStringSearchFilter("dkDesc"),
+      filterComponent: TextFieldFilter,
+      width: "35%",
+    },
+    {
+      header: "External System",
+      accessor: "dkESName",
+      sortFunction: compareStrings,
+      filterFunction: createStringSearchFilter("dkESName"),
+      filterComponent: createAutocompleteFilter(
+        createSourceFromKey(tableRows, "dkESName")
+      ),
+      width: "25%",
+    },
+    {
+      header: "Status",
+      accessor: "dkStatus",
+      customCell: StatusCell(handleStatusChange),
+      sortFunction: compareStrings,
+      filterFunction: createStringArraySearchFilter("dkStatus"),
+      filterComponent: createAutocompleteFilter(
+        [
+          {
+            label: "Active",
+          },
+          {
+            label: "Inactive",
+          },
+        ],
+        {
+          size: "small",
+          multiple: true,
+        }
+      ),
+      width: "10%",
+    },
+  ];
+};
+
 export default function CDTList() {
   const history = useHistory();
   const messageContext = useContext(MessageContext);
   const [tableRows, setTableRows] = useState([]);
+  const columns = generateColumns(tableRows);
+  const [columnsState, setColumns] = useState([...columns]);
   const [open, setOpen] = useState(false);
   const [curRow, setCurRow] = useState({});
   const dispatch = useDispatch();
@@ -46,6 +139,16 @@ export default function CDTList() {
   useEffect(() => {
     getData();
   }, []);
+
+  const handleStatusChange = () => {};
+
+  const handleLink = () => {};
+
+  useEffect(() => {
+    setTableRows(cdtList);
+    const col = generateColumns(cdtList, handleStatusChange, handleLink);
+    setColumns([...col]);
+  }, [loading, cdtList]);
 
   // const goToCDT = (e, id) => {
   //   e.preventDefault();
@@ -72,79 +175,6 @@ export default function CDTList() {
   //     getData();
   //   }
   // };
-
-  const StatusCell = ({ row, column: { accessor } }) => {
-    const data = row[accessor];
-    const id = row.dkId;
-    if (data === "Active") {
-      return (
-        <Tooltip title="Active" disableFocusListener>
-          <Switch
-            checked={true}
-            // onChange={(e) => handleInActivate(e, id)}
-            size="small"
-          />
-        </Tooltip>
-      );
-    }
-    return (
-      <Tooltip title="Inactive" disableFocusListener>
-        <Switch
-          checked={false}
-          // onChange={(e) => handleActivate(e, id)}
-          size="small"
-        />
-      </Tooltip>
-    );
-  };
-
-  const handleMouseOver = (row) => {
-    setOpen(!open);
-    setCurRow(row);
-  };
-
-  const handleMouseOut = () => {
-    setOpen(false);
-  };
-
-  const LinkCell = ({ row, column: { accessor } }) => {
-    const rowValue = row[accessor];
-    const id = row.dkId;
-    // if (rowValue.length > 30) {
-    //   return (
-    //     <Link
-    //       onMouseOver={() => handleMouseOver(row)}
-    //       onMouseOut={handleMouseOut}
-    //       onClick={(e) => goToCDT(e, id)}
-    //     >
-    //       {`${rowValue.slice(0, 30)}  [...]`}
-    //     </Link>
-    //   );
-    // }
-    // return <Link onClick={(e) => goToCDT(e, id)}>{rowValue}</Link>;
-    return <></>;
-  };
-
-  const DespCell = ({ row, column: { accessor } }) => {
-    const data = row[accessor];
-    if (data === null || data === "") {
-      return <></>;
-    }
-    // if (data.length < 50) {
-    return <>{data}</>;
-    // }
-    // return (
-    //   <>
-    //     {data.slice(0, 50)}
-    //     <Link
-    //       onMouseOver={() => handleMouseOver(row)}
-    //       onMouseOut={handleMouseOut}
-    //     >
-    //       {`  [...]`}
-    //     </Link>
-    //   </>
-    // );
-  };
 
   const handleAddCDT = () => {
     // dispatch(createCDT());
@@ -173,102 +203,42 @@ export default function CDTList() {
     </div>
   );
 
-  const columns = [
-    {
-      header: "",
-      accessor: "dkId",
-      hidden: true,
-    },
-    {
-      header: "Clinical Data Name",
-      accessor: "dkName",
-      customCell: LinkCell,
-      sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("dkName"),
-      filterComponent: TextFieldFilter,
-      width: "20%",
-    },
-    {
-      header: "Description",
-      accessor: "dkDesc",
-      sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("dkDesc"),
-      filterComponent: TextFieldFilter,
-      customCell: DespCell,
-      width: "35%",
-    },
-    {
-      header: "External System",
-      accessor: "dkESName",
-      sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("dkESName"),
-      filterComponent: createAutocompleteFilter(
-        createSourceFromKey(tableRows, "dkESName")
-      ),
-      width: "25%",
-    },
-    {
-      header: "Status",
-      accessor: "dkStatus",
-      customCell: StatusCell,
-      sortFunction: compareStrings,
-      filterFunction: createStringArraySearchFilter("dkStatus"),
-      filterComponent: createAutocompleteFilter(
-        [
-          {
-            label: "Active",
-          },
-          {
-            label: "Inactive",
-          },
-        ],
-        {
-          size: "small",
-          multiple: true,
-        }
-      ),
-      width: "10%",
-    },
-  ];
-
-  const getTableData = React.useMemo(
-    () => (
-      <>
-        {loading ? (
-          // <Progress />
-          <></>
-        ) : (
-          <>
-            <Table
-              isLoading={loading}
-              title="Clinical Data Types"
-              subtitle={`${tableRows.length} items`}
-              columns={columns}
-              rows={tableRows}
-              rowId="dkId"
-              hasScroll={true}
-              maxHeight="calc(100vh - 162px)"
-              initialSortedColumn="dkName"
-              initialSortOrder="asc"
-              rowsPerPageOptions={[10, 50, 100, "All"]}
-              tablePaginationProps={{
-                labelDisplayedRows: ({ from, to, count }) =>
-                  `${
-                    count === 1 ? "Item " : "Items"
-                  } ${from}-${to} of ${count}`,
-                truncate: true,
-              }}
-              showFilterIcon
-              CustomHeader={(props) => (
-                <CustomButtonHeader {...props} addCDT={handleAddCDT} />
-              )}
-            />
-          </>
-        )}
-      </>
-    ),
-    [tableRows, loading, ensList]
-  );
+  // const getTableData = React.useMemo(
+  //   () => (
+  //     <>
+  //       {loading ? (
+  //         // <Progress />
+  //         <></>
+  //       ) : (
+  //         <>
+  //           <Table
+  //             isLoading={loading}
+  //             title="Clinical Data Types"
+  //             subtitle={`${tableRows.length} items`}
+  //             columns={columns}
+  //             rows={tableRows}
+  //             rowId="dkId"
+  //             hasScroll={true}
+  //             maxHeight="calc(100vh - 162px)"
+  //             rowsPerPageOptions={[10, 50, 100, "All"]}
+  //             tablePaginationProps={{
+  //               labelDisplayedRows: ({ from, to, count }) =>
+  //                 `${
+  //                   count === 1 ? "Item " : "Items"
+  //                 } ${from}-${to} of ${count}`,
+  //               truncate: true,
+  //             }}
+  //             showFilterIcon
+  //             CustomHeader={(props) => (
+  //               <CustomButtonHeader {...props} addCDT={handleAddCDT} />
+  //             )}
+  //           />
+  //         </>
+  //       )}
+  //     </>
+  //   ),
+  //   [tableRows, loading]
+  // );
 
   return (
     <div className="cdt-list-wrapper">
@@ -278,7 +248,28 @@ export default function CDTList() {
         </Typography>
       </div> */}
       <div className="cdt-table">
-        <div className="table">{getTableData}</div>
+        <div className="table">
+          <Table
+            isLoading={loading}
+            title="Clinical Data Types"
+            subtitle={`${tableRows.length} items`}
+            columns={columnsState}
+            rows={tableRows}
+            rowId="dkId"
+            hasScroll={true}
+            maxHeight="calc(100vh - 162px)"
+            rowsPerPageOptions={[10, 50, 100, "All"]}
+            tablePaginationProps={{
+              labelDisplayedRows: ({ from, to, count }) =>
+                `${count === 1 ? "Item " : "Items"} ${from}-${to} of ${count}`,
+              truncate: true,
+            }}
+            showFilterIcon
+            CustomHeader={(props) => (
+              <CustomButtonHeader {...props} addCDT={handleAddCDT} />
+            )}
+          />
+        </div>
         <Peek
           open={open}
           followCursor
