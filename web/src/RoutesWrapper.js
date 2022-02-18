@@ -63,13 +63,13 @@ const WithOutPageHeader = () => {
     <>
       <Switch>
         <Route path={`${match.path}/cdi`} exact render={() => <CDIAdmin />} />
-        <Route path={`${match.path}/jdbc`} exact render={() => <JDBCForm />} />
+        {/* <Route path={`${match.path}/jdbc`} exact render={() => <JDBCForm />} />
         <Route
           path={`${match.path}/columns`}
           exact
           render={() => <ColumnsTab />}
-        />
-        {/* <AppFooter /> */}
+        /> */}
+        <AppFooter />
       </Switch>
     </>
   );
