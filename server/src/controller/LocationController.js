@@ -52,6 +52,10 @@ exports.getLocationList = function (req, res) {
           searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ IN('SFTP','FTPS') and active=1 order by label asc`;
           dbQuery = DB.executeQuery(searchQuery);
           break;
+        case "all":
+          searchQuery = `SELECT ${select} from ${schemaName}.source_location order by label asc`;
+          dbQuery = DB.executeQuery(searchQuery);
+          break;
         default:
           searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ = $1 and active=1 order by label asc`;
           dbQuery = DB.executeQuery(searchQuery, [type]);
