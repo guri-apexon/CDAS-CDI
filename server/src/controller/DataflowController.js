@@ -91,12 +91,8 @@ exports.createDataflow = async (req, res) => {
   try {
     const uid = createUniqueID();
     let {
-      sponsorNameStandard,
       active,
       connectionType,
-      sponsorName,
-      externalVersion,
-      protocolNumberStandard,
       exptDtOfFirstProdFile,
       vendorName,
       protocolNumber,
@@ -105,14 +101,11 @@ exports.createDataflow = async (req, res) => {
       externalID,
       location,
       testFlag,
-      prodFlag,
+      userId,
       description,
       dataPackage,
-      vendorID,
       dataStructure,
-      locationType,
       externalSystemName,
-      locationName,
       firstFileDate,
       src_loc_id,
       vend_id,
@@ -126,10 +119,10 @@ exports.createDataflow = async (req, res) => {
       //validation for dataflow metadata
       if (
         vendorName !== null &&
-        protocolNumberStandard !== null &&
+        protocolNumber !== null &&
         description !== ""
       ) {
-        var DFTestname = `${vendorName}-${protocolNumberStandard}-${description}`;
+        var DFTestname = `${vendorName}-${protocolNumber}-${description}`;
         if (testFlag === true) {
           DFTestname = "TST-" + DFTestname;
         }
@@ -212,6 +205,7 @@ exports.createDataflow = async (req, res) => {
             newObj.timestamp = ts;
             newObj.externalId = each.externalID;
             newObj.action = "Data package created successfully.";
+            each.datapackageid = dpUid;
             ResponseBody.data_packages.push(newObj);
             if (each.dataSet && each.dataSet.length > 0) {
               ResponseBody.data_sets = [];
@@ -222,8 +216,6 @@ exports.createDataflow = async (req, res) => {
                 //   obj.name !== "" &&
                 //   obj.path !== "" &&
                 //   obj.mnemonic !== "" &&
-                //   obj.customQuery !== "" &&
-                //   obj.columncount !== null
                 // ) {
                 let dataKind = obj.dataKind;
                 if (externalSystemName !== "CDI") {
@@ -255,12 +247,12 @@ exports.createDataflow = async (req, res) => {
                   obj.externalID || null,
                   new Date(),
                 ];
-                console.log(DSQuery, "DSQueryDSQuery");
                 let createDS = await DB.executeQuery(DSQuery, body);
                 newobj.timestamp = ts;
                 newobj.externalId = obj.externalID;
                 newobj.action = "Data set created successfully.";
                 ResponseBody.data_sets.push(newobj);
+                obj.datasetid = dsUid;
                 if (obj.columnDefinition && obj.columnDefinition.length > 0) {
                   ResponseBody.column_definition = [];
                   for (let el of obj.columnDefinition) {
@@ -269,7 +261,6 @@ exports.createDataflow = async (req, res) => {
                     let CDQuery = `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
                                 primarykey,required,charactermin,charactermax,position,format,lov,requiredfield,
                                 insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`;
-                    console.log("88888", CDQuery);
                     let body = [
                       dsUid,
                       CDUid,
@@ -286,9 +277,29 @@ exports.createDataflow = async (req, res) => {
                       new Date(),
                     ];
                     await DB.executeQuery(CDQuery, body);
+                    // dataflow audit
+                    let dataflow_aduit_query = `INSERT INTO cdascfg.dataflow_audit_log
+                    ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`;
+                    let audit_body = [
+                      uid,
+                      dpUid,
+                      dsUid,
+                      CDUid,
+                      1,
+                      "New Package",
+                      "",
+                      "",
+                      externalSystemName === "CDI"
+                        ? userId
+                        : externalSystemName,
+                      new Date(),
+                    ];
+                    await DB.executeQuery(dataflow_aduit_query, audit_body);
                     newobj.timestamp = ts;
                     newobj.externalId = obj.externalID;
                     newobj.action = "column definition created successfully.";
+                    el.colmunid = CDUid;
                     ResponseBody.column_definition.push(newobj);
                   }
                 } else {
@@ -340,10 +351,40 @@ exports.createDataflow = async (req, res) => {
         );
       }
     }
+    let config_json = {
+      dataFlowId: uid,
+      vendorName: vendorName,
+      protocolNumber: protocolNumber,
+      type: type,
+      name: name,
+      externalID: externalID,
+      externalSystemName: externalSystemName,
+      connectionType: connectionType,
+      location: src_loc_id,
+      exptDtOfFirstProdFile: exptDtOfFirstProdFile,
+      testFlag: testFlag,
+      prodFlag: testFlag === 1 ? true : false,
+      description: description,
+      fsrstatus: fsrstatus,
+      dataPackage,
+    };
+
+    //insert into dataflow version config log table
+    let dataflow_version_query = `INSERT INTO cdascfg.dataflow_version
+    ( dataflowid, "version", config_json, created_by, created_on)
+    VALUES($1,$2,$3,$4,$5);`;
+    let aduit_version_body = [
+      uid,
+      1,
+      JSON.stringify(config_json),
+      externalSystemName === "CDI" ? userId : externalSystemName,
+      new Date(),
+    ];
+    await DB.executeQuery(dataflow_version_query, aduit_version_body);
     return apiResponse.successResponseWithData(
       res,
       "Data flow created successfully.",
-      ResponseBody
+      { ResponseBody, config_json }
     );
   } catch (err) {
     console.log(err);
