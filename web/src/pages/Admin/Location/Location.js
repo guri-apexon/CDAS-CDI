@@ -2,7 +2,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
+import { change } from "redux-form";
 import Button from "apollo-react/components/Button";
 import Link from "apollo-react/components/Link";
 import PlusIcon from "apollo-react-icons/Plus";
@@ -22,12 +22,25 @@ import {
   createStringArraySearchFilter,
   createSourceFromKey,
   createStatusArraySearchFilter,
+  Capitalize,
+  truncateString,
 } from "../../../utils/index";
 import { statusUpdate } from "../../../services/ApiServices";
 
 const LinkCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
-  return <Link onClick={() => console.log("clicked")}>{value}</Link>;
+  const { onRowCick } = row;
+  return <Link onClick={() => onRowCick(row)}>{value}</Link>;
+};
+
+const ConnCell = ({ row, column: { accessor } }) => {
+  const value = row[accessor];
+  return truncateString(value, 53);
+};
+
+const DataStructCell = ({ row, column: { accessor } }) => {
+  const value = row[accessor];
+  return Capitalize(value);
 };
 
 const StatusCell =
@@ -64,11 +77,12 @@ const generateColumns = (tableRows = [], handleStatusChange = null) => {
     {
       header: "Connection URL",
       accessor: "cnn_url",
+      customCell: ConnCell,
       sortFunction: compareStrings,
       filterFunction: createStringSearchFilter("cnn_url"),
       filterComponent: TextFieldFilter,
       frozen: true,
-      width: 150,
+      width: 320,
     },
     {
       header: "Location Type",
@@ -84,6 +98,7 @@ const generateColumns = (tableRows = [], handleStatusChange = null) => {
       header: "Data Structure",
       accessor: "data_strc",
       sortFunction: compareStrings,
+      customCell: DataStructCell,
       filterFunction: createStringArraySearchFilter("data_strc"),
       filterComponent: createAutocompleteFilter(
         createSourceFromKey(tableRows, "data_strc")
@@ -108,6 +123,7 @@ const generateColumns = (tableRows = [], handleStatusChange = null) => {
       accessor: "active",
       customCell: StatusCell(handleStatusChange),
       sortFunction: compareNumbers,
+      width: 13,
       filterFunction: createStatusArraySearchFilter("active"),
       filterComponent: createAutocompleteFilter(
         [
@@ -137,9 +153,45 @@ const Location = () => {
   const columns = generateColumns(tableRows);
   const [columnsState, setColumns] = useState([...columns]);
   const [locationOpen, setLocationOpen] = useState(false);
-
+  const [selectedLoc, setSelectedLoc] = useState({});
+  const [locationViewMode, setLocationViewMode] = useState(false);
+  const [locationEditMode, setLocationEditMode] = useState(false);
   const getData = () => {
     dispatch(getLocationsData("all"));
+  };
+
+  const onRowCick = (row) => {
+    setSelectedLoc(row);
+    console.log(row, "row");
+    dispatch(change("AddLocationForm", "locationID", row?.src_loc_id));
+    dispatch(change("AddLocationForm", "locationName", row?.loc_alias_nm));
+    dispatch(change("AddLocationForm", "active", row?.active));
+    dispatch(change("AddLocationForm", "locationType", row?.loc_typ));
+    dispatch(change("AddLocationForm", "ipServer", row?.ip_servr));
+    dispatch(change("AddLocationForm", "dataStructure", row?.data_strc));
+    dispatch(change("AddLocationForm", "userName", row?.usr_nm));
+    dispatch(change("AddLocationForm", "password", row?.pswd));
+    dispatch(change("AddLocationForm", "connURL", row?.cnn_url));
+    dispatch(change("AddLocationForm", "port", row?.port));
+    dispatch(change("AddLocationForm", "dbName", row?.db_nm));
+    dispatch(
+      change("AddLocationForm", "externalSytemName", row?.extrnl_sys_nm)
+    );
+
+    setLocationViewMode(true);
+
+    setLocationOpen(true);
+  };
+
+  const changeLocationEditMode = (val) => {
+    setLocationViewMode(!val);
+    setLocationEditMode(val);
+  };
+
+  const handleModalClose = () => {
+    setLocationOpen(false);
+    setLocationViewMode(false);
+    setLocationEditMode(false);
   };
 
   const handleStatusChange = async (e, id) => {
@@ -192,14 +244,18 @@ const Location = () => {
     <>
       <LocationModal
         locationModalOpen={locationOpen}
-        handleModalClose={() => setLocationOpen(false)}
+        selectedLoc={selectedLoc}
+        changeLocationEditMode={(val) => changeLocationEditMode(val)}
+        handleModalClose={() => handleModalClose()}
+        locationEditMode={locationEditMode}
+        locationViewMode={locationViewMode}
       />
       <Table
         title="Locations"
         isLoading={loading || statusUpdating}
         subtitle={`${totalLocations} locations`}
         columns={columnsState}
-        rows={tableRows}
+        rows={tableRows.map((row) => ({ ...row, onRowCick }))}
         rowId="src_loc_id"
         initialSortedColumn="loc_alias_nm"
         initialSortOrder="asc"

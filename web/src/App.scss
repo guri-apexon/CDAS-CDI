@@ -215,3 +215,15 @@ label.table-checkbox {
 .Message-Banner.top-0 {
   top: 0 !important;
 }
+
+input[readonly] {
+  border: 0;
+}
+div.readOnly_Dropdown {
+  div[class^="MuiSelect-root-"] {
+    border: 0;
+  }
+  svg {
+    display: none;
+  }
+}

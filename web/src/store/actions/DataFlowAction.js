@@ -9,6 +9,7 @@ import {
   UPDATE_SELECTED_LOCATION,
   GET_DATAFLOW_DETAIL,
   ADD_DATAFLOW,
+  UPDATE_LOCATION_DATA,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -54,6 +55,12 @@ export const getLocationByType = (value) => {
 };
 
 export const saveLocationData = (values) => {
+  if (values.locationID) {
+    return {
+      type: UPDATE_LOCATION_DATA,
+      values,
+    };
+  }
   return {
     type: SAVE_LOCATION_DATA,
     values,
