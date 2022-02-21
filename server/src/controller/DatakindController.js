@@ -51,25 +51,29 @@ exports.updateDataKind = async (req, res) => {
     const { dkId, dkName, dkDesc, dkStatus, dkESName } = req.body;
     const curDate = new Date();
     const query = `UPDATE ${schemaName}.datakind SET "name"=$3, active=$5, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2 AND extrnl_sys_nm=$6`;
-
-    Logger.info({
-      message: "updateDataKind",
-    });
-
-    const up = await DB.executeQuery(query, [
-      curDate,
-      dkId,
-      dkName,
-      dkDesc,
-      dkStatus,
-      dkESName,
-    ]);
-    return apiResponse.successResponseWithData(res, "Operation success", up);
+    Logger.info({ message: "updateDataKind" });
+    const isExist = await checkIsExistInDF(dkId);
+    if (isExist) {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Operation Failed",
+        "Clinical Data Type Name cannot be inactivated until removed from all datasets using this Clinical Data Type."
+      );
+    } else {
+      const up = await DB.executeQuery(query, [
+        curDate,
+        dkId,
+        dkName,
+        dkDesc,
+        dkStatus,
+        dkESName,
+      ]);
+      return apiResponse.successResponseWithData(res, "Operation success", up);
+    }
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :updateDataKind");
     Logger.error(err);
-
     return apiResponse.ErrorResponse(res, err);
   }
 };

@@ -2,14 +2,12 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Table, {
-  createSelectFilterComponent,
   createStringSearchFilter,
   compareStrings,
   compareNumbers,
 } from "apollo-react/components/Table";
 import Button from "apollo-react/components/Button";
 import PlusIcon from "apollo-react-icons/Plus";
-import Peek from "apollo-react/components/Peek";
 import FilterIcon from "apollo-react-icons/Filter";
 import Link from "apollo-react/components/Link";
 import Tooltip from "apollo-react/components/Tooltip";
@@ -117,7 +115,6 @@ const generateColumns = (
 };
 
 export default function CDTList() {
-  const history = useHistory();
   const messageContext = useContext(MessageContext);
   const [tableRows, setTableRows] = useState([]);
   const columns = generateColumns(tableRows);
@@ -166,32 +163,6 @@ export default function CDTList() {
     const col = generateColumns(cdtList, handleStatusChange, handleLink);
     setColumns([...col]);
   }, [loading, cdtList]);
-
-  // const goToCDT = (e, id) => {
-  //   e.preventDefault();
-  //   // selectCDT(id);
-  //   history.push(`/cdt/edit/${id}`);
-  // };
-
-  // const handleInActivate = async (e, id) => {
-  //   e.preventDefault();
-  //   const update = await statusUpdate(id, 0);
-  //   if (update) {
-  //     console.log(update.data);
-  //     if (update.status === 0) {
-  //       messageContext.showErrorMessage(update.data, 56);
-  //     }
-  //     getData();
-  //   }
-  // };
-
-  // const handleActivate = async (e, id) => {
-  //   e.preventDefault();
-  //   const update = await statusUpdate(id, 1);
-  //   if (update) {
-  //     getData();
-  //   }
-  // };
 
   const handleAddCDT = () => {
     // dispatch(createCDT());
@@ -260,35 +231,11 @@ export default function CDTList() {
 
   return (
     <div className="cdt-list-wrapper">
-      {/* <div className="page-header">
-        <Typography variant="h2" gutterBottom>
-          CDI Admin
-        </Typography>
-      </div> */}
       <div className="cdt-table">
-        <div className="table">
-          {getTableData}
-          {/* <Table
-            isLoading={loading}
-            title="Clinical Data Types"
-            subtitle={`${tableRows.length} items`}
-            columns={columnsState}
-            rows={tableRows}
-            rowId="dkId"
-            hasScroll={true}
-            maxHeight="calc(100vh - 162px)"
-            rowsPerPageOptions={[10, 50, 100, "All"]}
-            tablePaginationProps={{
-              labelDisplayedRows: ({ from, to, count }) =>
-                `${count === 1 ? "Item " : "Items"} ${from}-${to} of ${count}`,
-              truncate: true,
-            }}
-            showFilterIcon
-            CustomHeader={(props) => (
-              <CustomButtonHeader {...props} addCDT={handleAddCDT} />
-            )}
-          /> */}
-        </div>
+        <div className="table">{getTableData}</div>
+      </div>
+      <div>
+        <div>Edit Clinical Data Type</div>
       </div>
     </div>
   );
