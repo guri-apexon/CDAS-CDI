@@ -195,6 +195,8 @@ GET http://localhost:4001/v1/api/dataflow/studyDataflowList/a020E000005SwPtQAK H
 
 GET http://localhost:4001/v1/api/datakind/table/list HTTP/1.1
 
+
+
 ### Create DataKind 
 
 POST http://localhost:4001/v1/api/datakind/create HTTP/1.1
@@ -205,7 +207,18 @@ content-type: application/json
     "dkName": "Body_Kinetic_data",
     "dkDesc": "test",
     "dkExternalId": " 1447",
-    "dkESName": "GDMPM-DAS"
+    "dkESName": "GDMPM-DAS",
+    "dkStatus": 1
+}
+
+### Update DataKind Status
+
+POST http://localhost:4001/v1/api/datakind/status-update HTTP/1.1
+content-type: application/json
+
+{
+    "dkId": "10",
+    "dkStatus": 1
 }
 
 ### Update DataKind 

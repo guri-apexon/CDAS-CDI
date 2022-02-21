@@ -5,6 +5,7 @@ import Table, {
   createSelectFilterComponent,
   createStringSearchFilter,
   compareStrings,
+  compareNumbers,
 } from "apollo-react/components/Table";
 import Button from "apollo-react/components/Button";
 import PlusIcon from "apollo-react-icons/Plus";
@@ -16,15 +17,17 @@ import { useHistory } from "react-router-dom";
 import Switch from "apollo-react/components/Switch";
 import Typography from "apollo-react/components/Typography";
 
+import Progress from "../../../../components/Common/Progress/Progress";
 import { MessageContext } from "../../../../components/Providers/MessageProvider";
-
 import {
   TextFieldFilter,
   createSourceFromKey,
   createAutocompleteFilter,
+  createStatusArraySearchFilter,
   createStringArraySearchFilter,
 } from "../../../../utils/index";
 import { getCDTList } from "../../../../store/actions/CDIAdminAction";
+import { activateDK, inActivateDK } from "../../../../services/ApiServices";
 
 const StatusCell =
   (handleStatusChange) =>
@@ -38,7 +41,7 @@ const StatusCell =
         <Switch
           className="MuiSwitch"
           checked={value === 1 ? true : false}
-          onChange={(e) => handleStatusChange(e, row.dkId)}
+          onChange={(e) => handleStatusChange(e, row.dkId, value)}
           size="small"
         />
       </Tooltip>
@@ -71,7 +74,6 @@ const generateColumns = (
       sortFunction: compareStrings,
       filterFunction: createStringSearchFilter("dkName"),
       filterComponent: TextFieldFilter,
-      width: "20%",
     },
     {
       header: "Description",
@@ -79,24 +81,22 @@ const generateColumns = (
       sortFunction: compareStrings,
       filterFunction: createStringSearchFilter("dkDesc"),
       filterComponent: TextFieldFilter,
-      width: "35%",
     },
     {
       header: "External System",
       accessor: "dkESName",
       sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("dkESName"),
+      filterFunction: createStringArraySearchFilter("dkESName"),
       filterComponent: createAutocompleteFilter(
         createSourceFromKey(tableRows, "dkESName")
       ),
-      width: "25%",
     },
     {
       header: "Status",
       accessor: "dkStatus",
       customCell: StatusCell(handleStatusChange),
-      sortFunction: compareStrings,
-      filterFunction: createStringArraySearchFilter("dkStatus"),
+      sortFunction: compareNumbers,
+      filterFunction: createStatusArraySearchFilter("dkStatus"),
       filterComponent: createAutocompleteFilter(
         [
           {
@@ -111,7 +111,7 @@ const generateColumns = (
           multiple: true,
         }
       ),
-      width: "10%",
+      width: 120,
     },
   ];
 };
@@ -140,7 +140,24 @@ export default function CDTList() {
     getData();
   }, []);
 
-  const handleStatusChange = () => {};
+  const handleStatusChange = async (e, dkId, currStatus) => {
+    e.preventDefault();
+    if (currStatus === 0) {
+      await activateDK(dkId, 1);
+
+      getData();
+    } else {
+      const update = await inActivateDK(dkId, 0);
+      if (update) {
+        // console.log(update.data);
+        if (update.status === 0) {
+          messageContext.showErrorMessage(update.data);
+        } else {
+          getData();
+        }
+      }
+    }
+  };
 
   const handleLink = () => {};
 
@@ -203,42 +220,43 @@ export default function CDTList() {
     </div>
   );
 
-  // const getTableData = React.useMemo(
-  //   () => (
-  //     <>
-  //       {loading ? (
-  //         // <Progress />
-  //         <></>
-  //       ) : (
-  //         <>
-  //           <Table
-  //             isLoading={loading}
-  //             title="Clinical Data Types"
-  //             subtitle={`${tableRows.length} items`}
-  //             columns={columns}
-  //             rows={tableRows}
-  //             rowId="dkId"
-  //             hasScroll={true}
-  //             maxHeight="calc(100vh - 162px)"
-  //             rowsPerPageOptions={[10, 50, 100, "All"]}
-  //             tablePaginationProps={{
-  //               labelDisplayedRows: ({ from, to, count }) =>
-  //                 `${
-  //                   count === 1 ? "Item " : "Items"
-  //                 } ${from}-${to} of ${count}`,
-  //               truncate: true,
-  //             }}
-  //             showFilterIcon
-  //             CustomHeader={(props) => (
-  //               <CustomButtonHeader {...props} addCDT={handleAddCDT} />
-  //             )}
-  //           />
-  //         </>
-  //       )}
-  //     </>
-  //   ),
-  //   [tableRows, loading]
-  // );
+  const getTableData = React.useMemo(
+    () => (
+      <>
+        {loading ? (
+          <Progress />
+        ) : (
+          <>
+            <Table
+              isLoading={loading}
+              title="Clinical Data Types"
+              subtitle={`${tableRows.length} items`}
+              columns={columnsState}
+              rows={tableRows}
+              rowId="dkId"
+              hasScroll={true}
+              maxHeight="calc(100vh - 162px)"
+              rowsPerPageOptions={[10, 50, 100, "All"]}
+              initialSortedColumn="dkName"
+              initialSortOrder="asc"
+              tablePaginationProps={{
+                labelDisplayedRows: ({ from, to, count }) =>
+                  `${
+                    count === 1 ? "Item " : "Items"
+                  } ${from}-${to} of ${count}`,
+                truncate: true,
+              }}
+              showFilterIcon
+              CustomHeader={(props) => (
+                <CustomButtonHeader {...props} addCDT={handleAddCDT} />
+              )}
+            />
+          </>
+        )}
+      </>
+    ),
+    [tableRows, loading]
+  );
 
   return (
     <div className="cdt-list-wrapper">
@@ -249,7 +267,8 @@ export default function CDTList() {
       </div> */}
       <div className="cdt-table">
         <div className="table">
-          <Table
+          {getTableData}
+          {/* <Table
             isLoading={loading}
             title="Clinical Data Types"
             subtitle={`${tableRows.length} items`}
@@ -268,26 +287,8 @@ export default function CDTList() {
             CustomHeader={(props) => (
               <CustomButtonHeader {...props} addCDT={handleAddCDT} />
             )}
-          />
+          /> */}
         </div>
-        <Peek
-          open={open}
-          followCursor
-          placement="bottom"
-          content={
-            // eslint-disable-next-line react/jsx-wrap-multilines
-            <div style={{ maxWidth: 400 }}>
-              <Typography
-                variant="title2"
-                gutterBottom
-                style={{ fontWeight: 600 }}
-              >
-                Description
-              </Typography>
-              <Typography variant="body2">{curRow.vDescription}</Typography>
-            </div>
-          }
-        />
       </div>
     </div>
   );
