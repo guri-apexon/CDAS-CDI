@@ -7,5 +7,6 @@ router.post("/update", DatakindController.updateDataKind);
 router.get("/list", DatakindController.getDatakindList);
 router.get("/table/list", DatakindController.getDKList);
 router.post("/status-update", DatakindController.dkStatusUpdate);
+router.get("/ens/list", DatakindController.getENSList);
 
 module.exports = router;

@@ -158,6 +158,15 @@ export const getStudies = async () => {
   }
 };
 
+export const getENSList = async () => {
+  try {
+    const res = await axios.get(`${baseURL}/${DATAKINDAPI}/ens/list`);
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
 export const pinStudy = async (protocolId) => {
   try {
     const res = await axios.post(`${baseURL}/${PINSTUDY}`, {
