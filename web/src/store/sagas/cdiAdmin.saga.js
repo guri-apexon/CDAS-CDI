@@ -17,9 +17,10 @@ export function* fetchCDTList() {
       axios.get,
       `${baseURL}/${DATAKINDAPI}/table/list`
     );
+    // console.log("data", fetchData);
     yield put({
       type: FETCH_CDT_LIST_SUCCESS,
-      cdtList: fetchData.data?.data?.datakind || [],
+      cdtList: fetchData.data?.data || [],
     });
   } catch (e) {
     yield put({ type: FETCH_CDT_LIST_FAILURE, message: e.message });

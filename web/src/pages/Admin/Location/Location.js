@@ -53,8 +53,7 @@ const StatusCell =
         disableFocusListener
       >
         <Switch
-          className="MuiSwitch"
-          style={{ marginLeft: "-8px" }}
+          className="table-checkbox Mui"
           checked={value === 1 ? true : false}
           onChange={(e) => handleStatusChange(e, row.src_loc_id)}
           size="small"
