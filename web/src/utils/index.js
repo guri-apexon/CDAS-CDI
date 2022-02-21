@@ -4,6 +4,7 @@ import React from "react";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import { TextField } from "apollo-react/components/TextField/TextField";
+import { hive2CDH, hive2CDP, impala, oracle, SQLServer } from "../constants";
 
 export const getCookie = (key) => {
   const b = document.cookie.match(`(^|;)\\s*${key}\\s*=\\s*([^;]+)`);
@@ -479,3 +480,46 @@ export const fileTypes = ["SAS", "Excel", "Delimited", "Fixed Width"];
 export const delimeters = ["COMMA", "TAB", "TILDE", "PIPE"];
 export const loadTypes = ["Cumulative", "Incremental"];
 export const YesNo = ["Yes", "No"];
+
+export const truncateString = (str, length) => {
+  if (str) {
+    const ending = "...";
+    if (str.length > length) {
+      return str.substring(0, length - ending.length) + ending;
+    }
+    return str;
+  }
+  return "";
+};
+
+export const generateConnectionURL = (locType, hostName, port, dbName) => {
+  if (locType != "" && (locType === "SFTP" || locType === "FTPS")) {
+    return hostName;
+  }
+  if (locType === "Hive CDP" || locType === "Hive CDH") {
+    if (locType === "Hive CDP") {
+      return `jdbc:hive2://${hostName}:${port}/${hive2CDP}`;
+    }
+    return `jdbc:hive2://${hostName}:${port}/${hive2CDH}`;
+  }
+  if (locType === "Oracle") {
+    return `jdbc:${locType}${oracle}${hostName}:${port}:${dbName}`;
+  }
+  if (locType === "MySQL") {
+    return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
+  }
+  if (locType === "SQL Server") {
+    return `jdbc:${locType}://${hostName}:${port};${SQLServer}=${dbName}`;
+  }
+  if (locType === "PostgreSQL") {
+    return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
+  }
+  if (locType === "Impala") {
+    return `jdbc:${locType}://${hostName}:${port}/${impala}`;
+  }
+  if (locType && hostName && port && dbName) {
+    return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
+  }
+
+  return "";
+};

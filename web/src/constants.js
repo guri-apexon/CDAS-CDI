@@ -61,6 +61,9 @@ export const FETCH_VENDOR_FAILURE = "FETCH_VENDOR_FAILURE";
 export const UPDATE_SELECTED_LOCATION = "UPDATE_SELECTED_LOCATION";
 export const UPDATE_FORM_FIELDS = "UPDATE_FORM_FIELDS";
 export const SAVE_LOCATION_DATA = "SAVE_LOCATION_DATA";
+export const UPDATE_LOCATION_DATA = "UPDATE_LOCATION_DATA";
+export const UPDATE_LOCATION_SUCCESS = "UPDATE_LOCATION_SUCCESS";
+export const UPDATE_LOCATION_FAILURE = "UPDATE_LOCATION_FAILURE";
 
 export const GET_SERVICE_OWNERS = "GET_SERVICE_OWNERS";
 export const FETCH_SERVICE_OWNERS_SUCCESS = "FETCH_SERVICE_OWNERS_SUCCESS";
@@ -167,3 +170,9 @@ export const allowedTypes = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "csv",
 ];
+
+export const hive2CDP = "test.com";
+export const hive2CDH = "test.com";
+export const oracle = "oracle.com";
+export const SQLServer = "sqlserver.com";
+export const impala = "impala.com";

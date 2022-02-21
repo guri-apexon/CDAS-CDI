@@ -7,12 +7,18 @@ import {
   FETCH_CDT_LIST_FAILURE,
   FETCH_CDT_LIST_SUCCESS,
   FETCH_LOCATION_FAILURE,
+  UPDATE_LOCATION_DATA,
 } from "../../constants";
 
 export const initialState = {
   loading: false,
   locations: [],
   cdtList: [],
+  locForm: {
+    dataStructure: "tabular",
+    locationType: "SFTP",
+    active: true,
+  },
 };
 
 const CDIAdminReducer = (state = initialState, action) =>
@@ -37,6 +43,9 @@ const CDIAdminReducer = (state = initialState, action) =>
       case FETCH_CDT_LIST_SUCCESS:
         newState.loading = false;
         newState.cdtList = action.cdtList;
+        break;
+      case UPDATE_LOCATION_DATA:
+        newState.loading = true;
         break;
       default:
         newState.loading = false;
