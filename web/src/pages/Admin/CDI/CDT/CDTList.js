@@ -13,7 +13,10 @@ import Link from "apollo-react/components/Link";
 import Tooltip from "apollo-react/components/Tooltip";
 import { useHistory } from "react-router-dom";
 import Switch from "apollo-react/components/Switch";
-import Typography from "apollo-react/components/Typography";
+import Modal from "apollo-react/components/Modal";
+import MenuItem from "apollo-react/components/MenuItem";
+import Select from "apollo-react/components/Select";
+import TextField from "apollo-react/components/TextField";
 
 import Progress from "../../../../components/Common/Progress/Progress";
 import { MessageContext } from "../../../../components/Providers/MessageProvider";
@@ -23,9 +26,16 @@ import {
   createAutocompleteFilter,
   createStatusArraySearchFilter,
   createStringArraySearchFilter,
+  inputAlphaNumericWithUnderScore,
 } from "../../../../utils/index";
 import { getCDTList } from "../../../../store/actions/CDIAdminAction";
-import { activateDK, inActivateDK } from "../../../../services/ApiServices";
+import {
+  activateDK,
+  inActivateDK,
+  getENSList,
+} from "../../../../services/ApiServices";
+
+import "./CDTList.scss";
 
 const StatusCell =
   (handleStatusChange) =>
@@ -50,8 +60,7 @@ const LinkCell =
   (handleLink) =>
   ({ row, column: { accessor } }) => {
     const rowValue = row[accessor];
-    const id = row.dkId;
-    return <Link onClick={(e) => handleLink(e, id)}>{rowValue}</Link>;
+    return <Link onClick={(e) => handleLink(e, row.dkId)}>{rowValue}</Link>;
   };
 
 const generateColumns = (
@@ -117,16 +126,32 @@ const generateColumns = (
 export default function CDTList() {
   const messageContext = useContext(MessageContext);
   const [tableRows, setTableRows] = useState([]);
+  const [viewModal, setViewModal] = useState(true);
+  const [ens, setENS] = useState("");
+  const [ensId, setENSId] = useState("");
+  const [cName, setCName] = useState("");
+  const [status, setStatus] = useState(true);
+  const [desc, setDesc] = useState("");
+  const [selectedRow, setSelectedRow] = useState(null);
   const columns = generateColumns(tableRows);
   const [columnsState, setColumns] = useState([...columns]);
-  const [open, setOpen] = useState(false);
-  const [curRow, setCurRow] = useState({});
   const dispatch = useDispatch();
   const { cdtList, loading } = useSelector((state) => state.cdiadmin);
-  const ensList = [];
+  const [ensList, setENSList] = useState([]);
 
   const getData = () => {
     dispatch(getCDTList());
+  };
+
+  const hideViewData = async () => {
+    setViewModal(false);
+    setTimeout(() => {
+      setSelectedRow(null);
+      setENS("");
+      setCName("");
+      setStatus(false);
+      setDesc("");
+    }, 500);
   };
 
   useEffect(() => {
@@ -156,7 +181,30 @@ export default function CDTList() {
     }
   };
 
-  const handleLink = () => {};
+  const getENSlists = async () => {
+    const list = await getENSList();
+    setENSList(list);
+  };
+
+  const handleLink = async (e, Id) => {
+    e.preventDefault();
+    const selected = await cdtList.find((d) => d.dkId === Id);
+    if (ensList.length < 1) {
+      await getENSlists();
+    }
+    const { dkName, dkStatus, dkDesc, dkESName } = await selected;
+    const picked = ensList.find((d) => d.label === dkESName);
+    console.log("handleLink", "test", selected, picked);
+    setSelectedRow(Id);
+    setENS(dkESName);
+    setCName(dkName);
+    setDesc(dkDesc);
+    setStatus(dkStatus === 1 ? true : false);
+    if (picked) {
+      setENSId(picked.value);
+    }
+    setViewModal(true);
+  };
 
   useEffect(() => {
     setTableRows(cdtList);
@@ -164,9 +212,33 @@ export default function CDTList() {
     setColumns([...col]);
   }, [loading, cdtList]);
 
-  const handleAddCDT = () => {
-    // dispatch(createCDT());
-    // history.push("/cdt/create");
+  const handleAddCDT = async () => {
+    setViewModal(true);
+    if (ensList.length < 1) {
+      await getENSlists();
+    }
+  };
+
+  const handleSelection = (e) => {
+    const { value } = e.target;
+    const selected = ensList.find((d) => d.label === value);
+    setENS(selected.label);
+    setENSId(selected.value);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "name") {
+      inputAlphaNumericWithUnderScore(e, (v) => {
+        setCName(v);
+      });
+    } else if (name === "desc") {
+      setDesc(value);
+    }
+  };
+
+  const handleSave = () => {
+    console.log("state");
   };
 
   const CustomButtonHeader = ({ toggleFilters, addCDT }) => (
@@ -234,9 +306,77 @@ export default function CDTList() {
       <div className="cdt-table">
         <div className="table">{getTableData}</div>
       </div>
-      <div>
-        <div>Edit Clinical Data Type</div>
-      </div>
+      <Modal
+        open={viewModal}
+        title={<>{`${selectedRow ? "Edit" : "Create"} Clinical Data Type`}</>}
+        onClose={hideViewData}
+        message={
+          // eslint-disable-next-line react/jsx-wrap-multilines
+          <>
+            <div style={{ width: "647px" }}>
+              <div style={{ display: "flex" }}>
+                <div style={{ width: 489 }}>
+                  <TextField
+                    label="Clinical Data Name"
+                    placeholder="Enter Clinical Data Name"
+                    value={cName}
+                    name="name"
+                    onChange={(e) => handleChange(e)}
+                    required
+                    fullWidth
+                  />
+                </div>
+                <div style={{ display: "flex" }}>
+                  <div className="switch-label">Active</div>
+                  <div className="switch">
+                    <Switch
+                      className="MuiSwitch"
+                      checked={status}
+                      name="status"
+                      onChange={(e) => handleChange(e)}
+                      size="small"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: "flex" }}>
+                <div className="esn-box">
+                  <Select
+                    label="External System Name"
+                    value={ens}
+                    onChange={(e) => handleSelection(e)}
+                    canDeselect={false}
+                    placeholder="Select system name"
+                    fullWidth
+                  >
+                    {ensList.map((option) => (
+                      <MenuItem key={option.value} value={option.label}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </div>
+                <div className="desc-box">
+                  <TextField
+                    label="Description"
+                    placeholder="Enter Description"
+                    value={desc}
+                    name="desc"
+                    onChange={(e) => handleChange(e)}
+                    optional
+                    sizeAdjustable
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        }
+        buttonProps={[
+          { label: "Cancel", onClick: hideViewData },
+          { label: "Save", onClick: hideViewData },
+        ]}
+        id="createDataKind"
+      />
     </div>
   );
 }
