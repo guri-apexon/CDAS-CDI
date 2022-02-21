@@ -12,6 +12,7 @@ import {
   INACTIVATE,
   VLCDATAAPI,
   LOCATIONAPI,
+  DATAKINDAPI,
 } from "../constants";
 import { getCookie } from "../utils/index";
 
@@ -108,6 +109,41 @@ export const inActivateDF = async (dataFlowId, versionNo) => {
       versionNo,
     });
     return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const activateDK = async (dkId, dkStatus) => {
+  try {
+    const res = await axios.post(`${baseURL}/${DATAKINDAPI}/status-update`, {
+      dkId,
+      dkStatus,
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const inActivateDK = async (dkId, dkStatus) => {
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${baseURL}/${DATAKINDAPI}/status-update`, {
+          dkId,
+          dkStatus,
+        })
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          console.log("Err", err);
+          if (err.response) {
+            resolve(err.response.data);
+          }
+        });
+    });
   } catch (err) {
     return console.log("Error", err);
   }
