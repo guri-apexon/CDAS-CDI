@@ -17,11 +17,11 @@ async function checkIsExistInDF(dkId) {
 
 exports.createDataKind = async (req, res) => {
   try {
-    const { dkId, dkName, dkDesc, dkExternalId, dkESName, dkStatus } = req.body;
+    const { dkName, dkDesc, dkExternalId, dkESName, dkStatus } = req.body;
     const curDate = new Date();
     const insertQuery = `INSERT INTO ${schemaName}.datakind
-    (datakindid, "name", extrnl_sys_nm, active, extrnl_id, insrt_tm, updt_tm, dk_desc)
-    VALUES($2, $3, $6, $7, $5, $1, $1, $4)`;
+    ("name", dk_desc, extrnl_id, extrnl_sys_nm, active, insrt_tm, updt_tm)
+    VALUES($2, $3, $4, $5, $6, $1, $1)`;
 
     Logger.info({
       message: "createDataKind",
@@ -29,7 +29,6 @@ exports.createDataKind = async (req, res) => {
 
     const inset = await DB.executeQuery(insertQuery, [
       curDate,
-      dkId,
       dkName,
       dkDesc,
       dkExternalId,
@@ -50,7 +49,7 @@ exports.updateDataKind = async (req, res) => {
   try {
     const { dkId, dkName, dkDesc, dkStatus, dkESName } = req.body;
     const curDate = new Date();
-    const query = `UPDATE ${schemaName}.datakind SET "name"=$3, active=$5, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2 AND extrnl_sys_nm=$6`;
+    const query = `UPDATE ${schemaName}.datakind SET "name"=$3, active=$5, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2`;
     Logger.info({ message: "updateDataKind" });
     const isExist = await checkIsExistInDF(dkId);
     if (isExist) {

@@ -126,7 +126,7 @@ const generateColumns = (
 export default function CDTList() {
   const messageContext = useContext(MessageContext);
   const [tableRows, setTableRows] = useState([]);
-  const [viewModal, setViewModal] = useState(true);
+  const [viewModal, setViewModal] = useState(false);
   const [ens, setENS] = useState("");
   const [ensId, setENSId] = useState("");
   const [cName, setCName] = useState("");
@@ -182,19 +182,20 @@ export default function CDTList() {
   };
 
   const getENSlists = async () => {
-    const list = await getENSList();
-    setENSList(list);
+    if (ensList.length <= 0) {
+      const list = await getENSList();
+      setENSList([...list]);
+    }
+    // console.log("no", ensList.length);
   };
 
   const handleLink = async (e, Id) => {
     e.preventDefault();
     const selected = await cdtList.find((d) => d.dkId === Id);
-    if (ensList.length < 1) {
-      await getENSlists();
-    }
+    await getENSlists();
     const { dkName, dkStatus, dkDesc, dkESName } = await selected;
     const picked = ensList.find((d) => d.label === dkESName);
-    console.log("handleLink", "test", selected, picked);
+    // console.log("handleLink", "test", selected, picked);
     setSelectedRow(Id);
     setENS(dkESName);
     setCName(dkName);
@@ -214,9 +215,7 @@ export default function CDTList() {
 
   const handleAddCDT = async () => {
     setViewModal(true);
-    if (ensList.length < 1) {
-      await getENSlists();
-    }
+    await getENSlists();
   };
 
   const handleSelection = (e) => {
@@ -237,8 +236,16 @@ export default function CDTList() {
     }
   };
 
+  const handleStatusUpdate = () => {
+    setStatus(!status);
+  };
+
   const handleSave = () => {
-    console.log("state");
+    if (selectedRow) {
+      console.log("update", cName, status, desc, ensId, ens);
+    } else {
+      console.log("create", cName, status, desc, ensId, ens);
+    }
   };
 
   const CustomButtonHeader = ({ toggleFilters, addCDT }) => (
@@ -333,7 +340,7 @@ export default function CDTList() {
                       className="MuiSwitch"
                       checked={status}
                       name="status"
-                      onChange={(e) => handleChange(e)}
+                      onChange={handleStatusUpdate}
                       size="small"
                     />
                   </div>
@@ -373,7 +380,7 @@ export default function CDTList() {
         }
         buttonProps={[
           { label: "Cancel", onClick: hideViewData },
-          { label: "Save", onClick: hideViewData },
+          { label: "Save", onClick: handleSave },
         ]}
         id="createDataKind"
       />

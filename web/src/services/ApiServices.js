@@ -149,6 +149,42 @@ export const inActivateDK = async (dkId, dkStatus) => {
   }
 };
 
+export const addVendorService = async (reqBody) => {
+  // console.log("add", reqBody);
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${baseURL}/${DATAKINDAPI}/create`, reqBody)
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          reject(err.response.data);
+        });
+    });
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const updateVendorService = async (reqBody) => {
+  // console.log("edit", reqBody);
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${baseURL}/${DATAKINDAPI}/update`, reqBody)
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          reject(err.response.data);
+        });
+    });
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
 export const getStudies = async () => {
   try {
     const res = await axios.get(`${baseURL}/${STUDYLIST}/${userId}`);
