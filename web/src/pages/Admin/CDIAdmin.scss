@@ -1,0 +1,16 @@
+.cdi-page-wrapper {
+  .page-header {
+    border-bottom: 1px solid #e9e9e9;
+    height: 150px;
+    text-align: left;
+    background-color: #ffffff;
+    h2 {
+      padding: 30px;
+    }
+  }
+}
+.MuiSwitch {
+  span[class^="MuiButtonBase-"] {
+    top: -8px;
+  }
+}

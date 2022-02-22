@@ -8,7 +8,7 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 exports.searchLocationList = function (req, res) {
   try {
     const searchParam = req.params.query.toLowerCase();
-    const searchQuery = `SELECT src_loc_id,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm from ${schemaName}.source_location 
+    const searchQuery = `SELECT src_loc_id,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm from ${schemaName}.source_location 
             WHERE LOWER(loc_typ) LIKE $1 OR 
             LOWER(loc_alias_nm) LIKE $2
             `;
@@ -39,7 +39,7 @@ exports.searchLocationList = function (req, res) {
 exports.getLocationList = function (req, res) {
   try {
     let type = req.query.type || null;
-    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm`;
+    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
     let searchQuery = `SELECT ${select} from ${schemaName}.source_location where active=1 order by label asc`;
     let dbQuery = DB.executeQuery(searchQuery);
     if (type) {
@@ -50,6 +50,10 @@ exports.getLocationList = function (req, res) {
           break;
         case "ftp_only":
           searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ IN('SFTP','FTPS') and active=1 order by label asc`;
+          dbQuery = DB.executeQuery(searchQuery);
+          break;
+        case "all":
+          searchQuery = `SELECT ${select} from ${schemaName}.source_location order by label asc`;
           dbQuery = DB.executeQuery(searchQuery);
           break;
         default:
@@ -112,6 +116,47 @@ exports.getLocationById = function (req, res) {
   }
 };
 
+exports.updateLocationData = function (req, res) {
+  try {
+    const values = req.body;
+    const body = [
+      values.locationType || null,
+      values.ipServer || null,
+      values.port || null,
+      values.userName || null,
+      values.password || null,
+      values.dataStructure || null,
+      values.active == true ? 1 : 0,
+      values.externalSytemName || null,
+      values.locationName || null,
+      new Date(),
+      values.locationID,
+      values.dbName || null,
+      values.connURL || null,
+    ];
+    const searchQuery = `UPDATE ${schemaName}.source_location set loc_typ=$1, ip_servr=$2, port=$3, usr_nm=$4, pswd=$5, data_strc=$6, active=$7, extrnl_sys_nm=$8, loc_alias_nm=$9, updt_tm=$10, db_nm=$12, cnn_url=$13 where src_loc_id=$11`;
+    Logger.info({
+      message: "updateLocation",
+    });
+    DB.executeQuery(searchQuery, body)
+      .then((response) => {
+        return apiResponse.successResponseWithData(
+          res,
+          "Operation success",
+          true
+        );
+      })
+      .catch((err) => {
+        return apiResponse.ErrorResponse(res, err.message);
+      });
+  } catch (err) {
+    //throw error in json response with status 500.
+    Logger.error("catch :updateLocation");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
 exports.saveLocationData = function (req, res) {
   try {
     const values = req.body;
@@ -129,8 +174,9 @@ exports.saveLocationData = function (req, res) {
       values.locationName || null,
       new Date(),
       new Date(),
+      values.dbName || null,
     ];
-    const searchQuery = `INSERT into ${schemaName}.source_location (src_loc_id, loc_typ, ip_servr, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`;
+    const searchQuery = `INSERT into ${schemaName}.source_location (src_loc_id, loc_typ, ip_servr, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, insrt_tm, updt_tm, db_nm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`;
     Logger.info({
       message: "storeLocation",
     });
@@ -177,6 +223,33 @@ exports.getServiceOwnersList = function (req, res) {
     //throw error in json response with status 500.
     Logger.error("catch :serviceOwnerList");
     Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+exports.statusUpdate = async (req, res) => {
+  try {
+    const { id, status } = req.body;
+    const curDate = new Date();
+    Logger.info({
+      message: "statusUpdate",
+    });
+    const $query = `UPDATE ${schemaName}.source_location SET active=$1, updt_tm=$2 WHERE src_loc_id=$3`;
+    const details = await DB.executeQuery($query, [
+      status == true ? 1 : 0,
+      curDate,
+      id,
+    ]);
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      details.row || null
+    );
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error("catch :statusUpdate");
+    Logger.error(err);
+
     return apiResponse.ErrorResponse(res, err);
   }
 };

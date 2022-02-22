@@ -76,7 +76,7 @@ const PackagesList = ({ data, userInfo }) => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
     dispatch(reset("DataSetsForm"));
     dispatch(reset("DataSetsFormSQL"));
-    history.push("/datasets-management");
+    history.push("/dashboard/datasets-management");
   };
 
   const DataSetsCell = ({ row, column: { accessor } }) => {
@@ -101,7 +101,7 @@ const PackagesList = ({ data, userInfo }) => {
 
   const goToDataSet = (dfId, dfName, dpId, dpName, dsId, dsName) => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
-    history.push(`/dataset/${dsId}`);
+    history.push(`/dashboard/dataset/${dsId}`);
   };
 
   const DetailRow = ({ row }) => {

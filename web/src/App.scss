@@ -90,6 +90,22 @@
   position: relative;
   padding-top: 56px;
 }
+label.table-checkbox {
+  flex-direction: row-reverse;
+  align-items: center;
+  span[class*="MuiSwitch-switchBase-"] {
+    top: -8.5px;
+    left: -8px;
+  }
+  span[class^="MuiSwitch-thumb-"] {
+    color: #fff !important;
+  }
+  > span:last-child {
+    margin: 0;
+    padding: 0;
+    margin-right: 10px;
+  }
+}
 .navigation-panel {
   .waves {
     position: absolute;
@@ -198,4 +214,16 @@
 }
 .Message-Banner.top-0 {
   top: 0 !important;
+}
+
+input[readonly] {
+  border: 0;
+}
+div.readOnly_Dropdown {
+  div[class^="MuiSelect-root-"] {
+    border: 0;
+  }
+  svg {
+    display: none;
+  }
 }

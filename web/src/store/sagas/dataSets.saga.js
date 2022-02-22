@@ -86,15 +86,13 @@ export function* fetchSQLTables() {
 
 export function* fetchSQLColumns(action) {
   try {
-    const fetchSQLColumn = yield call(
-      axios.post,
-      `${baseURL}/${SQLCOLUMNSAPI}`,
-      { tableName: action.tableName }
-    );
-    console.log("fetchSQLColumns", fetchSQLColumns);
+    const getColumns = yield call(axios.post, `${baseURL}/${SQLCOLUMNSAPI}`, {
+      tableName: action.tableName,
+    });
+    // console.log("fetchSQLColumns", getColumns);
     yield put({
       type: FETCH_SQL_COLUMNS_SUCCESS,
-      sqlColumns: fetchSQLColumn.data.data,
+      sqlColumns: getColumns.data.data,
     });
   } catch (e) {
     yield put({ type: FETCH_SQL_COLUMNS_FAILURE, message: e.message });

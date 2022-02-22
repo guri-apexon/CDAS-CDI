@@ -21,7 +21,7 @@ import {
   ReduxFormTextField,
 } from "../../components/FormComponents/FormComponents";
 import validate from "../../components/FormComponents/validation";
-import LocationModal from "./LocationModal";
+import LocationModal from "../../components/Common/LocationModal";
 
 import { locationTypes, dataStruct } from "../../utils";
 

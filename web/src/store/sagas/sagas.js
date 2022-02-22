@@ -19,6 +19,9 @@ import {
   ADD_DATAFLOW,
   GET_VLC_RULES,
   GET_DATASET_INGESTION_SUMMARY,
+  GET_LOCATIONS_ADMIN,
+  GET_CDT_LIST,
+  UPDATE_LOCATION_DATA,
 } from "../../constants";
 
 import {
@@ -52,6 +55,8 @@ import {
 
 import { fetchAuditLogs } from "./auditLogs.saga";
 
+import { fetchCDTList, updateLocationData } from "./cdiAdmin.saga";
+
 function* cdasCoreSaga() {
   yield takeEvery(GET_DATA_FLOW_LIST, fetchFlowData);
   yield takeLatest(
@@ -75,6 +80,9 @@ function* cdasCoreSaga() {
   yield takeLatest(UPDATE_DATASET_DATA, updateDataset);
   yield takeLatest(GET_DATASET_COLUMNS, fetchDatasetColumns);
   yield takeLatest(GET_VLC_RULES, fetchVLCData);
+  yield takeLatest(GET_LOCATIONS_ADMIN, fetchLocationsData);
+  yield takeLatest(GET_CDT_LIST, fetchCDTList);
+  yield takeLatest(UPDATE_LOCATION_DATA, updateLocationData);
 }
 
 export default cdasCoreSaga;

@@ -28,25 +28,24 @@ import ChevronDown from "apollo-react-icons/ChevronDown";
 import ChevronRight from "apollo-react-icons/ChevronRight";
 import PlusIcon from "apollo-react-icons/Plus";
 import MenuButton from "apollo-react/components/MenuButton";
-import Progress from "../../components/Common/Progress/Progress";
-import { MessageContext } from "../../components/Providers/MessageProvider";
-import { ReactComponent as DataFlowIcon } from "../../components/Icons/dataflow.svg";
+import Progress from "../../../components/Common/Progress/Progress";
+import { MessageContext } from "../../../components/Providers/MessageProvider";
+import { ReactComponent as DataFlowIcon } from "../../../components/Icons/dataflow.svg";
 import {
   hardDelete,
   activateDF,
   inActivateDF,
   syncNowDataFlow,
-} from "../../services/ApiServices";
-
-import { updateSelectedDataflow } from "../../store/actions/DashboardAction";
+} from "../../../services/ApiServices";
+import Clone from "../../DataFlow/CloneDataFlow";
+import { updateSelectedDataflow } from "../../../store/actions/DashboardAction";
 
 import {
   createAutocompleteFilter,
   IntegerFilter,
   createStringArraySearchFilter,
   DateFilter,
-} from "../../utils/index";
-import Clone from "../DataFlow/CloneDataFlow";
+} from "../../../utils/index";
 
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
@@ -187,7 +186,7 @@ export default function DataflowTab({ updateData }) {
   };
 
   const viewAuditLogAction = (e) => {
-    history.push(`/audit-logs/${e}`);
+    history.push(`/dashboard/audit-logs/${e}`);
   };
 
   const cloneDataFlowAction = (e) => {
@@ -212,7 +211,7 @@ export default function DataflowTab({ updateData }) {
 
   const handleLink = (dataFlowId) => {
     dispatch(updateSelectedDataflow(dataFlowId));
-    history.push("/dataflow-management");
+    history.push("/dashboard/dataflow-management");
   };
 
   const LinkCell = ({ row, column: { accessor } }) => {
@@ -292,7 +291,15 @@ export default function DataflowTab({ updateData }) {
     const menuItems = [
       {
         text: "Create data flow",
-        onClick: () => history.push("/dataflow-management"),
+        onClick: () => {
+          if (dashboard.selectedCard.prot_id !== "") {
+            history.push("/dashboard/dataflow-management");
+          } else {
+            messageContext.showErrorMessage(
+              `Please select a study to Add Data flow`
+            );
+          }
+        },
       },
       {
         text: "Clone data flow",
@@ -638,7 +645,7 @@ export default function DataflowTab({ updateData }) {
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
 
   const toDataflowMgmt = async () => {
-    history.push("/dataflow-management");
+    history.push("/dashboard/dataflow-management");
   };
 
   useEffect(() => {
@@ -668,7 +675,7 @@ export default function DataflowTab({ updateData }) {
         variant="secondary"
         icon={<PlusIcon />}
         size="small"
-        onClick={() => history.push("/dataflow-management")}
+        onClick={() => history.push("/dashboard/dataflow-management")}
         style={{ marginRight: 10 }}
       >
         Add a data flow

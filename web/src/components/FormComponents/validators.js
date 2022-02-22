@@ -127,7 +127,7 @@ export const checkFormat = (value, key = "", dataType = "") => {
     }
   }
   if (dataType === "Date") {
-    const regexp = /^[a-zA-Z]+$/;
+    const regexp = /^\d{8}$/;
     if (value !== "" && !regexp.test(value)) {
       return (
         key === "format" &&

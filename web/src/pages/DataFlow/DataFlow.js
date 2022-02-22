@@ -88,7 +88,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
     {
       href: "javascript:void(0)",
       title: "Data Flow Settings",
-      onClick: () => history.push("/dataflow-management"),
+      onClick: () => history.push("/dashboard/dataflow-management"),
     },
   ];
 

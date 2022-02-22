@@ -80,7 +80,7 @@ const LeftPanel = () => {
   const location = useLocation();
   const { selectedDFId, selectedCard } = dashboard;
   const viewAuditLog = () => {
-    history.push("/audit-logs");
+    history.push("/dashboard/audit-logs");
   };
   const getPackages = (query = "") => {
     if (selectedDFId) {
@@ -100,10 +100,10 @@ const LeftPanel = () => {
     }, 1000);
   };
   const redirectDataPackage = () => {
-    if (location.pathname === "/data-packages") {
+    if (location.pathname === "/dashboard/data-packages") {
       dispatch(addPackageBtnAction());
     } else {
-      history.push("/data-packages");
+      history.push("/dashboard/data-packages");
     }
   };
   const menuItems = [

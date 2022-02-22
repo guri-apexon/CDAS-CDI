@@ -6,8 +6,8 @@ import Check from "apollo-react-icons/Check";
 import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
 import Arrow2Up from "apollo-react-icons/Arrow2Up";
 import Arrow2Down from "apollo-react-icons/Arrow2Down";
-
-import Link from "apollo-react/components/Link";
+import { Link } from "react-router-dom";
+// import Link from "apollo-react/components/Link";
 import Tag from "apollo-react/components/Tag";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
@@ -21,11 +21,11 @@ import {
   dateFilterV2,
   compareNumbers,
 } from "apollo-react/components/Table";
-import { ReactComponent as StaleIcon } from "../../components/Icons/Stale.svg";
-import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
-import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
-import "./Dashboard.scss";
-import { IntegerFilter } from "../../utils/index";
+import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg";
+import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
+import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
+import "../Dashboard.scss";
+import { IntegerFilter } from "../../../utils/index";
 
 const DateFilter = ({ accessor, filters, updateFilterValue }) => {
   return (
@@ -141,8 +141,13 @@ const DatasetCell = ({ row, column: { accessor } }) => {
   return (
     // eslint-disable-next-line jsx-a11y/anchor-is-valid
     <Link
-      onClick={() => console.log("link clicked")}
-      style={{ fontWeight: 500 }}
+      to={`/dashboard/ingestion-report/${row.datasetid}`}
+      style={{
+        fontWeight: 500,
+        color: "#0768FD",
+        fontSize: 14,
+        textDecoration: "none",
+      }}
     >
       {dataset}
     </Link>
