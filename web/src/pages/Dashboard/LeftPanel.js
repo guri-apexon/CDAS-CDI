@@ -94,6 +94,92 @@ const styles = {
   },
 };
 
+const CustomCard = ({
+  data,
+  index,
+  isPinned,
+  unPinningStudy,
+  pinningStudy,
+  setSelectedStudy,
+  selectedStudy,
+  classes,
+}) => {
+  const priorityCount = 3;
+  const ingestionCount = 2;
+  const staleFilesCount = 1;
+
+  const {
+    prot_id: protId,
+    protocolnumber,
+    sponsorname,
+    projectcode,
+    phase,
+  } = data;
+
+  return (
+    <Card
+      color="dark"
+      key={index}
+      interactive
+      className={classNames(
+        classes.card,
+        protId === selectedStudy && classes.cardHighlight
+      )}
+      onClick={() => setSelectedStudy(protId)}
+    >
+      <CardContent>
+        <div className="cardTopBar">
+          <div className="cardLeft">
+            {priorityCount && (
+              <span className="priority">
+                <PriorityIcon />
+                {priorityCount}
+              </span>
+            )}
+            {ingestionCount && (
+              <span>
+                <IngestionIcon />
+                {ingestionCount}
+              </span>
+            )}
+            {staleFilesCount && (
+              <span>
+                <StaleFilesIcon />
+                {staleFilesCount}
+              </span>
+            )}
+          </div>
+          <div className="cardRight">
+            {isPinned ? (
+              <PinnedIcon onClick={() => unPinningStudy(protId)} />
+            ) : (
+              <UnPinnedIcon onClick={() => pinningStudy(protId)} />
+            )}
+          </div>
+        </div>
+        <Typography className={classes.bold}>{protocolnumber}</Typography>
+        <Typography className={classes.cardSponsor} variant="caption">
+          {sponsorname}
+        </Typography>
+        <div className="cardBottom">
+          <div className="cardPC">
+            <Typography className={classes.bold}>Project Code</Typography>
+            <Typography className={classes.cardProjectCode} variant="caption">
+              {projectcode}
+            </Typography>
+          </div>
+          <div className="cardP">
+            <Typography className={classes.bold}>Phase</Typography>
+            <Typography className={classes.cardPhase} variant="caption">
+              {phase}
+            </Typography>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 const LeftPanel = () => {
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -168,83 +254,6 @@ const LeftPanel = () => {
     // console.log("selected", selectedStudy, clicked);
   }, [selectedStudy]);
 
-  const CustomCard = ({ data, index, isPinned }) => {
-    const priorityCount = 3;
-    const ingestionCount = 2;
-    const staleFilesCount = 1;
-
-    const {
-      prot_id: protId,
-      protocolnumber,
-      sponsorname,
-      projectcode,
-      phase,
-    } = data;
-
-    return (
-      <Card
-        color="dark"
-        key={index}
-        interactive
-        className={classNames(
-          classes.card,
-          protId === selectedStudy && classes.cardHighlight
-        )}
-        onClick={() => setSelectedStudy(protId)}
-      >
-        <CardContent>
-          <div className="cardTopBar">
-            <div className="cardLeft">
-              {priorityCount && (
-                <span className="priority">
-                  <PriorityIcon />
-                  {priorityCount}
-                </span>
-              )}
-              {ingestionCount && (
-                <span>
-                  <IngestionIcon />
-                  {ingestionCount}
-                </span>
-              )}
-              {staleFilesCount && (
-                <span>
-                  <StaleFilesIcon />
-                  {staleFilesCount}
-                </span>
-              )}
-            </div>
-            <div className="cardRight">
-              {isPinned ? (
-                <PinnedIcon onClick={() => unPinningStudy(protId)} />
-              ) : (
-                <UnPinnedIcon onClick={() => pinningStudy(protId)} />
-              )}
-            </div>
-          </div>
-          <Typography className={classes.bold}>{protocolnumber}</Typography>
-          <Typography className={classes.cardSponsor} variant="caption">
-            {sponsorname}
-          </Typography>
-          <div className="cardBottom">
-            <div className="cardPC">
-              <Typography className={classes.bold}>Project Code</Typography>
-              <Typography className={classes.cardProjectCode} variant="caption">
-                {projectcode}
-              </Typography>
-            </div>
-            <div className="cardP">
-              <Typography className={classes.bold}>Phase</Typography>
-              <Typography className={classes.cardPhase} variant="caption">
-                {phase}
-              </Typography>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
-
   return (
     <>
       <div className="leftPanel">
@@ -281,6 +290,10 @@ const LeftPanel = () => {
                   data={e}
                   index={`p${index}`}
                   isPinned={true}
+                  unPinningStudy={unPinningStudy}
+                  classes={classes}
+                  setSelectedStudy={setSelectedStudy}
+                  selectedStudy={selectedStudy}
                 />
               ))}
             </div>
@@ -303,6 +316,10 @@ const LeftPanel = () => {
                   data={e}
                   index={`up${index}`}
                   isPinned={false}
+                  pinningStudy={pinningStudy}
+                  classes={classes}
+                  setSelectedStudy={setSelectedStudy}
+                  selectedStudy={selectedStudy}
                 />
               ))
             )}
