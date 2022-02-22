@@ -22,6 +22,9 @@ import {
   GET_LOCATIONS_ADMIN,
   GET_CDT_LIST,
   UPDATE_LOCATION_DATA,
+  GET_PREVIEW_SQL,
+  GET_SQL_TABLES,
+  GET_SQL_COLUMNS,
 } from "../../constants";
 
 import {
@@ -41,6 +44,9 @@ import {
   fetchDatasetDetail,
   updateDataset,
   fetchDatasetColumns,
+  fetchSQLTables,
+  fetchSQLColumns,
+  fetchPreviewSQL,
   fetchVLCData,
 } from "./dataSets.saga";
 
@@ -83,6 +89,9 @@ function* cdasCoreSaga() {
   yield takeLatest(GET_LOCATIONS_ADMIN, fetchLocationsData);
   yield takeLatest(GET_CDT_LIST, fetchCDTList);
   yield takeLatest(UPDATE_LOCATION_DATA, updateLocationData);
+  yield takeLatest(GET_PREVIEW_SQL, fetchPreviewSQL);
+  yield takeLatest(GET_SQL_TABLES, fetchSQLTables);
+  yield takeLatest(GET_SQL_COLUMNS, fetchSQLColumns);
 }
 
 export default cdasCoreSaga;
