@@ -94,7 +94,9 @@ const DataFlowFormBase = (props) => {
     changeFormField,
     changeLocationType,
     connLink,
+    dataflowSource,
   } = props;
+  console.log(props);
   const onChangeServiceOwner = (values) => {
     change("serviceOwnerValue", values);
   };
@@ -122,6 +124,9 @@ const DataFlowFormBase = (props) => {
               fullWidth
               maxLength="30"
               name="description"
+              input={{
+                value: "NewValue",
+              }}
               inputProps={{ maxLength: 30 }}
               onChange={(v) => changeFormField(v, "description")}
               label="Description"
