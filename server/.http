@@ -205,7 +205,6 @@ POST http://localhost:4001/v1/api/datakind/create HTTP/1.1
 content-type: application/json
 
 {
-    "dkId": "10",
     "dkName": "Body_Kinetic_data",
     "dkDesc": "test",
     "dkExternalId": " 1447",
@@ -234,7 +233,8 @@ content-type: application/json
     "dkDesc": "test test",
     "dkExternalId": " 1447",
     "dkStatus": 1,
-    "dkESName": "GDMPM-DAS"
+    "dkESName": "GDMPM-DAS",
+    "dkExternalId": 10,
 }
 
 ### Create Vendor 

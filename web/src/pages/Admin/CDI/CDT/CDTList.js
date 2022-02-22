@@ -11,7 +11,6 @@ import PlusIcon from "apollo-react-icons/Plus";
 import FilterIcon from "apollo-react-icons/Filter";
 import Link from "apollo-react/components/Link";
 import Tooltip from "apollo-react/components/Tooltip";
-import { useHistory } from "react-router-dom";
 import Switch from "apollo-react/components/Switch";
 import Modal from "apollo-react/components/Modal";
 import MenuItem from "apollo-react/components/MenuItem";
@@ -33,6 +32,8 @@ import {
   activateDK,
   inActivateDK,
   getENSList,
+  addDK,
+  updateDK,
 } from "../../../../services/ApiServices";
 
 import "./CDTList.scss";
@@ -166,7 +167,6 @@ export default function CDTList() {
     e.preventDefault();
     if (currStatus === 0) {
       await activateDK(dkId, 1);
-
       getData();
     } else {
       const update = await inActivateDK(dkId, 0);
@@ -186,7 +186,6 @@ export default function CDTList() {
       const list = await getENSList();
       setENSList([...list]);
     }
-    // console.log("no", ensList.length);
   };
 
   const handleLink = async (e, Id) => {
@@ -240,11 +239,35 @@ export default function CDTList() {
     setStatus(!status);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (selectedRow) {
-      console.log("update", cName, status, desc, ensId, ens);
+      // console.log("update", cName, selectedRow, status, desc, ensId, ens);
+      const update = await updateDK({
+        dkId: selectedRow,
+        dkName: cName,
+        dkDesc: desc,
+        dkExternalId: ensId,
+        dkESName: ens,
+        dkStatus: status === true ? 1 : 0,
+      });
+      if (update.status === 1) {
+        setViewModal(false);
+        messageContext.showSuccessMessage("Updated successfully");
+        getData();
+      } else if (update.status === 0) {
+        setViewModal(false);
+        messageContext.showErrorMessage(update.data);
+      }
     } else {
-      console.log("create", cName, status, desc, ensId, ens);
+      // console.log("create", cName, status, desc, ensId, ens);
+      const insert = await addDK({
+        dkName: cName,
+        dkDesc: desc,
+        dkExternalId: ensId,
+        dkESName: ens,
+        dkStatus: status === true ? 1 : 0,
+      });
+      console.log("insert", insert);
     }
   };
 

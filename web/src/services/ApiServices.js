@@ -138,7 +138,7 @@ export const inActivateDK = async (dkId, dkStatus) => {
           resolve(res.data);
         })
         .catch((err) => {
-          console.log("Err", err);
+          // console.log("Err", err);
           if (err.response) {
             resolve(err.response.data);
           }
@@ -149,8 +149,7 @@ export const inActivateDK = async (dkId, dkStatus) => {
   }
 };
 
-export const addVendorService = async (reqBody) => {
-  // console.log("add", reqBody);
+export const addDK = async (reqBody) => {
   try {
     return new Promise((resolve, reject) => {
       axios
@@ -159,7 +158,9 @@ export const addVendorService = async (reqBody) => {
           resolve(res.data);
         })
         .catch((err) => {
-          reject(err.response.data);
+          if (err.response) {
+            resolve(err.response.data);
+          }
         });
     });
   } catch (err) {
@@ -167,8 +168,7 @@ export const addVendorService = async (reqBody) => {
   }
 };
 
-export const updateVendorService = async (reqBody) => {
-  // console.log("edit", reqBody);
+export const updateDK = async (reqBody) => {
   try {
     return new Promise((resolve, reject) => {
       axios
@@ -177,7 +177,9 @@ export const updateVendorService = async (reqBody) => {
           resolve(res.data);
         })
         .catch((err) => {
-          reject(err.response.data);
+          if (err.response) {
+            resolve(err.response.data);
+          }
         });
     });
   } catch (err) {
