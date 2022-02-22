@@ -116,6 +116,27 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case FETCH_DATAFLOW_DETAIL_SUCCESS:
         newState.loading = false;
+        // eslint-disable-next-line no-case-declarations
+        const { dataflowDetail } = action;
+        // eslint-disable-next-line no-case-declarations
+        const {
+          description,
+          exptfstprddt,
+          loctyp,
+          name,
+          srclocID,
+          type,
+          vendID,
+          vendorname,
+        } = dataflowDetail;
+        newState.formData.description = description;
+        newState.formData.exptfstprddt = exptfstprddt;
+        newState.formData.loctyp = loctyp;
+        newState.formData.name = name;
+        newState.formData.srclocID = srclocID;
+        newState.formData.type = type;
+        newState.formData.vendID = vendID;
+        newState.formData.vendorname = vendorname;
         newState.dataFlowdetail = action.dataflowDetail;
         break;
       default:
