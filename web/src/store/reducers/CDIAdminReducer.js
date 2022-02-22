@@ -8,12 +8,22 @@ import {
   FETCH_CDT_LIST_SUCCESS,
   FETCH_LOCATION_FAILURE,
   UPDATE_LOCATION_DATA,
+  SAVE_LOCATION_DATA,
+  STORE_LOCATION_SUCCESS,
+  STORE_LOCATION_FAILURE,
+  HIDE_ERROR_MSG,
+  UPDATE_LOCATION_SUCCESS,
+  UPDATE_LOCATION_FAILURE,
 } from "../../constants";
 
 export const initialState = {
   loading: false,
+  upsertLoading: false,
+  upserted: false,
   locations: [],
   cdtList: [],
+  error: null,
+  success: null,
   locForm: {
     dataStructure: "tabular",
     locationType: "SFTP",
@@ -45,7 +55,34 @@ const CDIAdminReducer = (state = initialState, action) =>
         newState.cdtList = action.cdtList;
         break;
       case UPDATE_LOCATION_DATA:
-        newState.loading = true;
+        newState.upsertLoading = true;
+        break;
+      case UPDATE_LOCATION_SUCCESS:
+        newState.upsertLoading = false;
+        newState.success = "Location updated succesfully";
+        newState.upserted = !state.upserted;
+        break;
+      case UPDATE_LOCATION_FAILURE:
+        newState.upsertLoading = false;
+        newState.error = action.message;
+        break;
+      case SAVE_LOCATION_DATA:
+        newState.upsertLoading = true;
+        break;
+      case STORE_LOCATION_SUCCESS:
+        newState.upsertLoading = false;
+        newState.upserted = !state.upserted;
+        newState.success = "Location inserted succesfully";
+        newState.createTriggered = !state.createTriggered;
+        break;
+      case STORE_LOCATION_FAILURE:
+        newState.upsertLoading = false;
+        newState.error = action.message;
+        break;
+      case HIDE_ERROR_MSG:
+        newState.loading = false;
+        newState.error = null;
+        newState.success = null;
         break;
       default:
         newState.loading = false;

@@ -1,12 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { change } from "redux-form";
 import Button from "apollo-react/components/Button";
 import Link from "apollo-react/components/Link";
 import PlusIcon from "apollo-react-icons/Plus";
 import FilterIcon from "apollo-react-icons/Filter";
+import Loader from "apollo-react/components/Loader";
 import Table, {
   createStringSearchFilter,
   compareStrings,
@@ -14,6 +15,7 @@ import Table, {
 } from "apollo-react/components/Table";
 import Tooltip from "apollo-react/components/Tooltip";
 import Switch from "apollo-react/components/Switch";
+import { MessageContext } from "../../../components/Providers/MessageProvider";
 import LocationModal from "../../../components/Common/LocationModal";
 import { getLocationsData } from "../../../store/actions/CDIAdminAction";
 import {
@@ -25,7 +27,11 @@ import {
   Capitalize,
   truncateString,
 } from "../../../utils/index";
-import { statusUpdate } from "../../../services/ApiServices";
+import {
+  checkLocationExistsInDataFlow,
+  statusUpdate,
+} from "../../../services/ApiServices";
+import { locationExistInDFMsg } from "../../../constants";
 
 const LinkCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
@@ -146,7 +152,10 @@ const generateColumns = (tableRows = [], handleStatusChange = null) => {
 
 const Location = () => {
   const dispatch = useDispatch();
-  const { locations, loading } = useSelector((state) => state.cdiadmin);
+  const messageContext = useContext(MessageContext);
+  const { locations, loading, upserted, upsertLoading } = useSelector(
+    (state) => state.cdiadmin
+  );
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [totalLocations, setTotalLocations] = useState(0);
   const [tableRows, setTableRows] = useState([]);
@@ -163,7 +172,6 @@ const Location = () => {
 
   const onRowCick = (row) => {
     setSelectedLoc(row);
-    console.log(row, "row");
     dispatch(change("AddLocationForm", "locationID", row?.src_loc_id));
     dispatch(change("AddLocationForm", "locationName", row?.loc_alias_nm));
     dispatch(change("AddLocationForm", "active", row?.active));
@@ -199,12 +207,31 @@ const Location = () => {
     e.preventDefault();
     const value = e.target.checked;
     setStatusUpdating(true);
+    if (value === false) {
+      const checkInDf = await checkLocationExistsInDataFlow(id);
+      if (checkInDf > 0) {
+        messageContext.showErrorMessage(locationExistInDFMsg, 56);
+        setStatusUpdating(false);
+        return null;
+      }
+    }
+    setStatusUpdating(true);
     const update = await statusUpdate(id, value);
     if (update) {
+      if (update.status === 0) {
+        messageContext.showErrorMessage(update.data, 56);
+      }
       getData();
     }
     setStatusUpdating(false);
+    return null;
   };
+
+  useEffect(() => {
+    getData();
+    handleModalClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [upserted]);
 
   useEffect(() => {
     getData();
@@ -243,6 +270,7 @@ const Location = () => {
 
   return (
     <>
+      {upsertLoading && <Loader />}
       <LocationModal
         locationModalOpen={locationOpen}
         selectedLoc={selectedLoc}
