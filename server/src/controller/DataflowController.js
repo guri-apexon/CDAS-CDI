@@ -179,6 +179,7 @@ exports.createDataflow = async (req, res) => {
         ResponseBody.status = "Inactive";
         ResponseBody.timestamp = ts;
         ResponseBody.version = 1;
+        ResponseBody.dataflowId = uid;
         if (dataPackage && dataPackage.length > 0) {
           ResponseBody.data_packages = [];
           // if datapackage exists
@@ -384,7 +385,7 @@ exports.createDataflow = async (req, res) => {
     return apiResponse.successResponseWithData(
       res,
       "Data flow created successfully.",
-      { ResponseBody, config_json }
+      ResponseBody
     );
   } catch (err) {
     console.log(err);
@@ -736,21 +737,15 @@ exports.getDataflowDetail = async (req, res) => {
 exports.updateDataFlow = async (req, res) => {
   try {
     let {
-      sponsorNameStandard,
       active,
       connectionType,
-      sponsorName,
-      externalVersion,
-      protocolNumberStandard,
       exptDtOfFirstProdFile,
       vendorName,
       protocolNumber,
       type,
-      name,
       externalID,
       location,
       testFlag,
-      prodFlag,
       description,
       dataPackage,
     } = req.body;
@@ -764,19 +759,23 @@ exports.updateDataFlow = async (req, res) => {
         //validation for dataflow metadata
         if (
           vendorName !== null &&
-          protocolNumberStandard !== null &&
+          protocolNumber !== null &&
           description !== ""
         ) {
-          const query = `update ${
-            constants.DB_SCHEMA_NAME
-          }.dataflow set vend_id='${rows[0].vend_id}',
-          type='${type}',description='${description}',src_loc_id=${
-            data[0].src_loc_id
-          },active=1,expt_fst_prd_dt='${exptDtOfFirstProdFile}',
-          testflag=${
-            testFlag === "false" ? 0 : 1
-          },connectiontype='${connectionType}',connectiondriver='${location}',
-          updt_tm=CURRENT_TIMESTAMP where extrnl_id='${externalID}'`;
+          const query = `update ${schemaName}.dataflow set vend_id=$1,type=$2,description=$3,src_loc_id=$4,active=$5,expt_fst_prd_dt=$6,
+          testflag=$7,connectiontype=$8,connectiondriver=$9,updt_tm=$10 where extrnl_id='${externalID}'`;
+          let body = [
+            vend_id,
+            type,
+            description,
+            src_loc_id,
+            active,
+            exptDtOfFirstProdFile,
+            testFlag === "false" ? 0 : 1,
+            connectionType,
+            location,
+            new Date(),
+          ];
           let ts = new Date().toLocaleString();
           // update dataflow schema into db
           let createDF = await DB.executeQuery(query);

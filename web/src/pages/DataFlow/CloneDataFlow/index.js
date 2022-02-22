@@ -105,7 +105,7 @@ const CloneDataFlow = ({
           setLoading(true);
           const newStudies = await searchStudy(newValue);
           console.log("event", newValue, newStudies);
-          setStudies(newStudies.studies);
+          setStudies(newStudies.studies ? newStudies.studies : []);
           setLoading(false);
         }, 1000);
       } else {
@@ -116,7 +116,7 @@ const CloneDataFlow = ({
             selectedStudy.study.prot_id
           );
           console.log("event", newValue, newDataflows);
-          setDatflows(newDataflows.dataflows);
+          setDatflows(newDataflows.dataflows ? newDataflows.dataflows : []);
           setLoading(false);
         }, 1000);
       }
@@ -562,11 +562,15 @@ const CloneDataFlow = ({
   };
 
   const handleClone = async () => {
-    const data = await getDataFlowDetails(selectedStudy.dataflow.dataflowid);
-    console.log(data, "data");
-    data.externalSystemName = "CDI";
-    await dataflowSave(data);
-    // history.push("/dataflow-management");
+    try {
+      const res = await getDataFlowDetails(selectedStudy.dataflow.dataflowid);
+      console.log(res, "data");
+      res.externalSystemName = "CDI";
+      const data = await dataflowSave(res);
+      history.push(`/dataflow-management/${data.dataflowId}`);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   console.log(selectedStudy, "selectedStudyselectedStudy");

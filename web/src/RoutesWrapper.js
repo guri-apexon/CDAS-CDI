@@ -12,7 +12,7 @@ import AuditLog from "./pages/AuditLog/AuditLog";
 import PageHeader from "./components/Common/PageHeader";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
-const DataFlow = lazy(() => import("./pages/DataFlow/DataFlow"));
+const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
 // const DataSets = lazy(() => import("./pages/DataSets/DataSets"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
 
@@ -71,7 +71,7 @@ const CDIWrapper = () => {
               render={() => <AuditLog />}
             />
             <Route
-              path="/dataflow-management"
+              path="/dataflow-management/:dataflowId"
               exact
               render={() => <DataFlow />}
             />
