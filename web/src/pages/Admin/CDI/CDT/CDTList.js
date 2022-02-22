@@ -285,7 +285,7 @@ export default function CDTList() {
         variant="secondary"
         icon={PlusIcon}
         onClick={addCDT}
-        style={{ marginRight: "8px", border: "none" }}
+        style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
       >
         Add data type
       </Button>
