@@ -44,7 +44,7 @@ const useStyles = makeStyles(styles);
 
 const LocationForm = (props) => {
   const classes = useStyles();
-  const { locType, selectedHost, selectedPort, selectedDB } = props;
+  const { locType, selectedHost, selectedPort, selectedDB, isActive } = props;
   const genConnectionURL = () => {
     const connurl = generateConnectionURL(
       locType,
@@ -73,6 +73,8 @@ const LocationForm = (props) => {
               <ReduxFormSwitch
                 label="Active"
                 name="active"
+                // eslint-disable-next-line eqeqeq
+                checked={isActive || isActive == 1}
                 className="activeField MuiSwitch"
                 size="small"
                 labelPlacement="start"
@@ -291,6 +293,7 @@ const form = compose(
 const selector = formValueSelector("AddLocationForm");
 const ReduxForm = connect((state) => ({
   enableReinitialize: true,
+  isActive: selector(state, "active"),
   selectedHost: selector(state, "ipServer"),
   selectedPort: selector(state, "port"),
   selectedDB: selector(state, "dbName"),
