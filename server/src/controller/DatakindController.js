@@ -17,11 +17,11 @@ async function checkIsExistInDF(dkId) {
 
 exports.createDataKind = async (req, res) => {
   try {
-    const { dkId, dkName, dkDesc, dkExternalId, dkESName, dkStatus } = req.body;
+    const { dkName, dkDesc, dkExternalId, dkESName, dkStatus } = req.body;
     const curDate = new Date();
     const insertQuery = `INSERT INTO ${schemaName}.datakind
-    (datakindid, "name", extrnl_sys_nm, active, extrnl_id, insrt_tm, updt_tm, dk_desc)
-    VALUES($2, $3, $6, $7, $5, $1, $1, $4)`;
+    ("name", dk_desc, extrnl_id, extrnl_sys_nm, active, insrt_tm, updt_tm)
+    VALUES($2, $3, $4, $5, $6, $1, $1)`;
 
     Logger.info({
       message: "createDataKind",
@@ -29,7 +29,6 @@ exports.createDataKind = async (req, res) => {
 
     const inset = await DB.executeQuery(insertQuery, [
       curDate,
-      dkId,
       dkName,
       dkDesc,
       dkExternalId,
@@ -41,16 +40,22 @@ exports.createDataKind = async (req, res) => {
     //throw error in json response with status 500.
     Logger.error("catch :createDataKind");
     Logger.error(err);
-
+    if (err.code === "23505") {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Operation failed",
+        "Clinical data type name and external system name combination already exists."
+      );
+    }
     return apiResponse.ErrorResponse(res, err);
   }
 };
 
 exports.updateDataKind = async (req, res) => {
   try {
-    const { dkId, dkName, dkDesc, dkStatus, dkESName } = req.body;
+    const { dkId, dkName, dkDesc, dkStatus, dkESName, dkExternalId } = req.body;
     const curDate = new Date();
-    const query = `UPDATE ${schemaName}.datakind SET "name"=$3, active=$5, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2 AND extrnl_sys_nm=$6`;
+    const query = `UPDATE ${schemaName}.datakind SET "name"=$3, active=$5, extrnl_id=$7, extrnl_sys_nm=$6, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2`;
     Logger.info({ message: "updateDataKind" });
     const isExist = await checkIsExistInDF(dkId);
     if (isExist) {
@@ -67,6 +72,7 @@ exports.updateDataKind = async (req, res) => {
         dkDesc,
         dkStatus,
         dkESName,
+        dkExternalId,
       ]);
       return apiResponse.successResponseWithData(res, "Operation success", up);
     }
@@ -74,6 +80,13 @@ exports.updateDataKind = async (req, res) => {
     //throw error in json response with status 500.
     Logger.error("catch :updateDataKind");
     Logger.error(err);
+    if (err.code === "23505") {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Operation failed",
+        "Clinical data type name and external system name combination already exists."
+      );
+    }
     return apiResponse.ErrorResponse(res, err);
   }
 };
@@ -153,7 +166,7 @@ exports.dkStatusUpdate = async (req, res) => {
 exports.getENSList = async (req, res) => {
   try {
     Logger.info({ message: "getENSList" });
-    const selectQuery = `select lov_nm, lov_id from ${schemaName}.cdas_core_lov ccl where act_flg = 1`;
+    const selectQuery = `select lov_nm, lov_id from ${schemaName}.cdas_core_lov ccl where lov_typ = 'externalsystemname' and act_flg = 1`;
     const list = await DB.executeQuery(selectQuery);
     const formatted = list.rows.map((e) => {
       return { label: e.lov_nm, value: e.lov_id };

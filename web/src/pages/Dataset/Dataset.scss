@@ -43,6 +43,20 @@
   padding: 16px;
 }
 
+.jdbc-form {
+  .like-fixedbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 72px;
+    .ds-status {
+      width: 232px;
+      display: flex;
+      align-items: center;
+    }
+  }
+}
+
 .vlc-table {
   max-width: calc(100vw - 40px);
 }

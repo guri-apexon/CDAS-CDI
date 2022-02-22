@@ -11,7 +11,6 @@ import PlusIcon from "apollo-react-icons/Plus";
 import FilterIcon from "apollo-react-icons/Filter";
 import Link from "apollo-react/components/Link";
 import Tooltip from "apollo-react/components/Tooltip";
-import { useHistory } from "react-router-dom";
 import Switch from "apollo-react/components/Switch";
 import Modal from "apollo-react/components/Modal";
 import MenuItem from "apollo-react/components/MenuItem";
@@ -33,6 +32,8 @@ import {
   activateDK,
   inActivateDK,
   getENSList,
+  addDK,
+  updateDK,
 } from "../../../../services/ApiServices";
 
 import "./CDTList.scss";
@@ -126,7 +127,7 @@ const generateColumns = (
 export default function CDTList() {
   const messageContext = useContext(MessageContext);
   const [tableRows, setTableRows] = useState([]);
-  const [viewModal, setViewModal] = useState(true);
+  const [viewModal, setViewModal] = useState(false);
   const [ens, setENS] = useState("");
   const [ensId, setENSId] = useState("");
   const [cName, setCName] = useState("");
@@ -166,7 +167,6 @@ export default function CDTList() {
     e.preventDefault();
     if (currStatus === 0) {
       await activateDK(dkId, 1);
-
       getData();
     } else {
       const update = await inActivateDK(dkId, 0);
@@ -182,19 +182,19 @@ export default function CDTList() {
   };
 
   const getENSlists = async () => {
-    const list = await getENSList();
-    setENSList(list);
+    if (ensList.length <= 0) {
+      const list = await getENSList();
+      setENSList([...list]);
+    }
   };
 
   const handleLink = async (e, Id) => {
     e.preventDefault();
     const selected = await cdtList.find((d) => d.dkId === Id);
-    if (ensList.length < 1) {
-      await getENSlists();
-    }
+    await getENSlists();
     const { dkName, dkStatus, dkDesc, dkESName } = await selected;
     const picked = ensList.find((d) => d.label === dkESName);
-    console.log("handleLink", "test", selected, picked);
+    // console.log("handleLink", "test", selected, picked);
     setSelectedRow(Id);
     setENS(dkESName);
     setCName(dkName);
@@ -214,9 +214,7 @@ export default function CDTList() {
 
   const handleAddCDT = async () => {
     setViewModal(true);
-    if (ensList.length < 1) {
-      await getENSlists();
-    }
+    await getENSlists();
   };
 
   const handleSelection = (e) => {
@@ -237,8 +235,47 @@ export default function CDTList() {
     }
   };
 
-  const handleSave = () => {
-    console.log("state");
+  const handleStatusUpdate = () => {
+    setStatus(!status);
+  };
+
+  const handleSave = async () => {
+    if (selectedRow) {
+      // console.log("update", cName, selectedRow, status, desc, ensId, ens);
+      const update = await updateDK({
+        dkId: selectedRow,
+        dkName: cName,
+        dkDesc: desc,
+        dkExternalId: ensId,
+        dkESName: ens,
+        dkStatus: status === true ? 1 : 0,
+      });
+      if (update.status === 1) {
+        hideViewData();
+        messageContext.showSuccessMessage("Updated successfully");
+        getData();
+      } else if (update.status === 0) {
+        hideViewData();
+        messageContext.showErrorMessage(update.data);
+      }
+    } else {
+      // console.log("create", cName, status, desc, ensId, ens);
+      const insert = await addDK({
+        dkName: cName,
+        dkDesc: desc,
+        dkExternalId: ensId,
+        dkESName: ens,
+        dkStatus: status === true ? 1 : 0,
+      });
+      if (insert.status === 1) {
+        hideViewData();
+        messageContext.showSuccessMessage("Updated successfully");
+        getData();
+      } else if (insert.status === 0) {
+        hideViewData();
+        messageContext.showErrorMessage(insert.data);
+      }
+    }
   };
 
   const CustomButtonHeader = ({ toggleFilters, addCDT }) => (
@@ -333,7 +370,7 @@ export default function CDTList() {
                       className="MuiSwitch"
                       checked={status}
                       name="status"
-                      onChange={(e) => handleChange(e)}
+                      onChange={handleStatusUpdate}
                       size="small"
                     />
                   </div>
@@ -373,7 +410,7 @@ export default function CDTList() {
         }
         buttonProps={[
           { label: "Cancel", onClick: hideViewData },
-          { label: "Save", onClick: hideViewData },
+          { label: "Save", onClick: handleSave },
         ]}
         id="createDataKind"
       />

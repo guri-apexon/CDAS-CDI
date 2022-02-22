@@ -138,7 +138,45 @@ export const inActivateDK = async (dkId, dkStatus) => {
           resolve(res.data);
         })
         .catch((err) => {
-          console.log("Err", err);
+          // console.log("Err", err);
+          if (err.response) {
+            resolve(err.response.data);
+          }
+        });
+    });
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const addDK = async (reqBody) => {
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${baseURL}/${DATAKINDAPI}/create`, reqBody)
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          if (err.response) {
+            resolve(err.response.data);
+          }
+        });
+    });
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const updateDK = async (reqBody) => {
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${baseURL}/${DATAKINDAPI}/update`, reqBody)
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
           if (err.response) {
             resolve(err.response.data);
           }
