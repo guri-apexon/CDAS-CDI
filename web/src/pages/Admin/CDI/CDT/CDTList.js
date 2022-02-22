@@ -399,6 +399,7 @@ export default function CDTList() {
                     placeholder="Enter Description"
                     value={desc}
                     name="desc"
+                    minHeight={40}
                     onChange={(e) => handleChange(e)}
                     optional
                     sizeAdjustable
