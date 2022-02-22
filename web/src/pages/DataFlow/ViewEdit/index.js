@@ -87,7 +87,6 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const getDataFlowSource = async (dataflowid) => {
     setLoading(true);
     const data = await getDataFlowDetails(dataflowid);
-    console.log(data, "datadatadata");
     setDataFlowSource(data);
     setLoading(false);
   };
@@ -121,7 +120,6 @@ const DataFlow = ({ FormValues, dashboard }) => {
     dispatch(updateSelectedLocation(location));
   };
   const changeFormField = (value, field) => {
-    console.log("is it?");
     dispatch(changeFormFieldData(value, field));
   };
   const changeLocationType = (value) => {

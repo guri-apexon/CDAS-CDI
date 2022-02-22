@@ -96,7 +96,6 @@ const DataFlowFormBase = (props) => {
     connLink,
     dataflowSource,
   } = props;
-  console.log(props);
   const onChangeServiceOwner = (values) => {
     change("serviceOwnerValue", values);
   };

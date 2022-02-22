@@ -104,7 +104,6 @@ const CloneDataFlow = ({
         debounceFunction(async () => {
           setLoading(true);
           const newStudies = await searchStudy(newValue);
-          console.log("event", newValue, newStudies);
           setStudies(newStudies.studies ? newStudies.studies : []);
           setLoading(false);
         }, 1000);
@@ -115,7 +114,6 @@ const CloneDataFlow = ({
             newValue,
             selectedStudy.study.prot_id
           );
-          console.log("event", newValue, newDataflows);
           setDatflows(newDataflows.dataflows ? newDataflows.dataflows : []);
           setLoading(false);
         }, 1000);
@@ -124,7 +122,6 @@ const CloneDataFlow = ({
   };
 
   const setDetail = async (study) => {
-    console.log(study);
     await handleSelect(study);
     await setSearchTxt("");
     await setStudies([]);
@@ -133,7 +130,6 @@ const CloneDataFlow = ({
 
   const FormatCell = ({ row, column: { accessor } }) => {
     const greyedOut = ["In Progress", "Success"].includes(row.ob_stat);
-    console.log("row[accessor]", accessor);
     const innerEl = <Highlighted text={row[accessor]} highlight={searchTxt} />;
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events
@@ -180,7 +176,6 @@ const CloneDataFlow = ({
   ];
 
   const ModalComponent = () => {
-    console.log(loading, "loading");
     return (
       <div>
         <>
@@ -445,7 +440,6 @@ const CloneDataFlow = ({
   };
 
   const DfFormatCell = ({ row, column: { accessor } }) => {
-    console.log("row[accessor]", row, accessor);
     if (row[accessor]) {
       const innerEl = (
         <Highlighted text={row[accessor]} highlight={searchTxt} />
@@ -468,7 +462,6 @@ const CloneDataFlow = ({
   };
 
   const RenderSelectDataFlowModal = () => {
-    console.log(selectedStudy.study);
     const Columns = [
       {
         header: "Protocol Number",
@@ -513,7 +506,6 @@ const CloneDataFlow = ({
         customCell: DfFormatCell,
       },
     ];
-    console.log(loading, "loading");
     return (
       <>
         {selectedStudy.dataflow ? (
@@ -564,7 +556,6 @@ const CloneDataFlow = ({
   const handleClone = async () => {
     try {
       const res = await getDataFlowDetails(selectedStudy.dataflow.dataflowid);
-      console.log(res, "data");
       res.externalSystemName = "CDI";
       const data = await dataflowSave(res);
       history.push(`/dashboard/dataflow-management/${data.dataflowId}`);
@@ -572,8 +563,6 @@ const CloneDataFlow = ({
       console.log(error);
     }
   };
-
-  console.log(selectedStudy, "selectedStudyselectedStudy");
 
   return (
     <>

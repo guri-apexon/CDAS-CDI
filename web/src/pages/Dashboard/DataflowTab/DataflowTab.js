@@ -696,11 +696,9 @@ export default function DataflowTab({ updateData }) {
 
   const handleSelect = async (data) => {
     if (Object.keys(selectedStudy).length === 0) {
-      console.log("if???", data);
       dispatch(updateSelectedStudy(data));
       await selectStudy({ study: data });
     } else {
-      console.log("else?");
       await selectStudy({ ...selectedStudy, dataflow: data });
     }
   };
