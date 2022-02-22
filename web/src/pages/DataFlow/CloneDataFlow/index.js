@@ -567,7 +567,7 @@ const CloneDataFlow = ({
       console.log(res, "data");
       res.externalSystemName = "CDI";
       const data = await dataflowSave(res);
-      history.push(`/dataflow-management/${data.dataflowId}`);
+      history.push(`/dashboard/dataflow-management/${data.dataflowId}`);
     } catch (error) {
       console.log(error);
     }

@@ -38,7 +38,10 @@ import {
   syncNowDataFlow,
 } from "../../../services/ApiServices";
 import Clone from "../../DataFlow/CloneDataFlow";
-import { updateSelectedDataflow } from "../../../store/actions/DashboardAction";
+import {
+  updateSelectedDataflow,
+  updateSelectedStudy,
+} from "../../../store/actions/DashboardAction";
 
 import {
   createAutocompleteFilter,
@@ -293,7 +296,7 @@ export default function DataflowTab({ updateData }) {
         text: "Create data flow",
         onClick: () => {
           if (dashboard.selectedCard.prot_id !== "") {
-            history.push("/dashboard/dataflow-management");
+            history.push("/dashboard/dataflow/create");
           } else {
             messageContext.showErrorMessage(
               `Please select a study to Add Data flow`
@@ -694,6 +697,7 @@ export default function DataflowTab({ updateData }) {
   const handleSelect = async (data) => {
     if (Object.keys(selectedStudy).length === 0) {
       console.log("if???", data);
+      dispatch(updateSelectedStudy(data));
       await selectStudy({ study: data });
     } else {
       console.log("else?");

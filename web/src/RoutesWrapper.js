@@ -13,6 +13,8 @@ import PageHeader from "./components/Common/PageHeader";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
+const DataFlowCreate = lazy(() => import("./pages/DataFlow/DataFlow"));
+
 // const DataSets = lazy(() => import("./pages/DataSets/DataSets"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
 // const ColumnsTab = lazy(() => import("./pages/Dataset/ColumnsTab/ColumnsTab"));
@@ -45,6 +47,11 @@ const WithPageHeader = () => {
           path={`${match.path}/dataflow-management/:dataflowId`}
           exact
           render={() => <DataFlow />}
+        />
+        <Route
+          path={`${match.path}/dataflow/create`}
+          exact
+          render={() => <DataFlowCreate />}
         />
         <Route
           path={`${match.path}/datasets-management`}
