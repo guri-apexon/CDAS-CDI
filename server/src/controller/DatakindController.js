@@ -166,7 +166,7 @@ exports.dkStatusUpdate = async (req, res) => {
 exports.getENSList = async (req, res) => {
   try {
     Logger.info({ message: "getENSList" });
-    const selectQuery = `select lov_nm, lov_id from ${schemaName}.cdas_core_lov ccl where act_flg = 1`;
+    const selectQuery = `select lov_nm, lov_id from ${schemaName}.cdas_core_lov ccl where lov_typ = 'externalsystemname' and act_flg = 1`;
     const list = await DB.executeQuery(selectQuery);
     const formatted = list.rows.map((e) => {
       return { label: e.lov_nm, value: e.lov_id };
