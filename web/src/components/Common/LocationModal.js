@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { reduxForm, submit, change, formValueSelector } from "redux-form";
 import { useDispatch, connect, useSelector } from "react-redux";
 import compose from "@hypnosphi/recompose/compose";
@@ -8,6 +8,7 @@ import Grid from "apollo-react/components/Grid";
 import Modal from "apollo-react/components/Modal";
 import MenuItem from "apollo-react/components/MenuItem";
 import Button from "apollo-react/components/Button";
+import Banner from "apollo-react/components/Banner";
 import Tag from "apollo-react/components/Tag";
 import {
   locationTypes,
@@ -15,7 +16,6 @@ import {
   extSysName,
   generateConnectionURL,
 } from "../../utils";
-
 import {
   ReduxFormSelect,
   ReduxFormSwitch,
@@ -23,7 +23,12 @@ import {
 } from "../FormComponents/FormComponents";
 
 import { locationModalValidate } from "../FormComponents/validation";
-import { saveLocationData } from "../../store/actions/DataFlowAction";
+import {
+  saveLocationData,
+  removeErrMessage,
+} from "../../store/actions/CDIAdminAction";
+import { checkLocationExistsInDataFlow } from "../../services/ApiServices";
+import { locationExistInDFMsg } from "../../constants";
 
 const styles = {
   paper: {
@@ -34,6 +39,7 @@ const styles = {
   },
   modal: {
     minWidth: "775px",
+    zIndex: "1350 !important",
   },
   rightPan: {
     paddingTop: "60px !important",
@@ -44,7 +50,7 @@ const useStyles = makeStyles(styles);
 
 const LocationForm = (props) => {
   const classes = useStyles();
-  const { locType, selectedHost, selectedPort, selectedDB } = props;
+  const { locType, selectedHost, selectedPort, selectedDB, isActive } = props;
   const genConnectionURL = () => {
     const connurl = generateConnectionURL(
       locType,
@@ -73,6 +79,8 @@ const LocationForm = (props) => {
               <ReduxFormSwitch
                 label="Active"
                 name="active"
+                // eslint-disable-next-line eqeqeq
+                checked={isActive || isActive == 1}
                 className="activeField MuiSwitch"
                 size="small"
                 labelPlacement="start"
@@ -149,8 +157,11 @@ const LocationForm = (props) => {
                   fullWidth
                   name="port"
                   label="Port"
+                  inputProps={{
+                    maxLength: 5,
+                    readOnly: props.locationViewMode,
+                  }}
                   onBlur={() => genConnectionURL()}
-                  InputProps={{ readOnly: props.locationViewMode }}
                 />
               </Grid>
             </Grid>
@@ -209,20 +220,41 @@ const LocationForm = (props) => {
 const LocationModal = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const dataFlowData = useSelector((state) => state.dataFlow);
-  const { createTriggered } = dataFlowData;
-  const onSubmit = (values) => {
-    setTimeout(() => {
-      // eslint-disable-next-line no-console
-      if (props.modalLocationType) {
-        props.modalLocationType(values?.locationType);
+  const { error, success, createTriggered } = useSelector(
+    (state) => state.cdiadmin
+  );
+  const [existErr, setExistErr] = useState("");
+  const onSubmit = async (values) => {
+    // eslint-disable-next-line no-console
+    if (props.modalLocationType) {
+      props.modalLocationType(values?.locationType);
+    }
+    if (values.locationID && values.active === false) {
+      const checkInDf = await checkLocationExistsInDataFlow(values.locationID);
+      if (checkInDf > 0) {
+        setExistErr(locationExistInDFMsg);
       }
-      dispatch(saveLocationData(values));
-    }, 400);
+      return null;
+    }
+    setExistErr("");
+    dispatch(saveLocationData(values));
+    return null;
   };
+  useEffect(() => {
+    if (error || success || existErr) {
+      setTimeout(() => {
+        setExistErr("");
+        dispatch(removeErrMessage());
+      }, 5000);
+    }
+  }, [error, success, existErr]);
   useEffect(() => {
     props.handleModalClose();
   }, [createTriggered]);
+  const handleBannerClose = () => {
+    setExistErr("");
+    dispatch(removeErrMessage());
+  };
   if (!props.locationEditMode && !props.locationViewMode) {
     dispatch(change("AddLocationForm", "active", true));
     dispatch(change("AddLocationForm", "dataStructure", "tabular"));
@@ -234,49 +266,59 @@ const LocationModal = (props) => {
     }
   };
   return (
-    <Modal
-      open={props.locationModalOpen}
-      onClose={() => props.handleModalClose()}
-      title={
-        // eslint-disable-next-line no-nested-ternary
-        props.locationViewMode ? (
-          <div>
-            {" "}
-            Location
-            <Tag
-              label={props.selectedLoc?.active === 1 ? "Active" : "Inactive"}
-              style={{ marginLeft: 30 }}
-              variant={props.selectedLoc?.active === 1 ? "green" : "gray"}
-            />
-          </div>
-        ) : props.locationEditMode ? (
-          "Edit Location"
-        ) : (
-          "Creating New Location"
-        )
-      }
-      message={
-        // eslint-disable-next-line react/jsx-wrap-multilines
-        <ReduxForm
-          onSubmit={onSubmit}
-          locationViewMode={props.locationViewMode}
-          locationEditMode={props.locationEditMode}
-          generateUrl={(v) => generateUrl(v)}
+    <>
+      {(error || success || existErr) && (
+        <Banner
+          variant={success ? "success" : "error"}
+          open={error || success || existErr}
+          message={error || success || existErr}
+          onClose={() => handleBannerClose()}
         />
-      }
-      className={classes.modal}
-      buttonProps={[
-        { label: props.locationViewMode ? "" : "Cancel" },
-        {
-          label: props.locationViewMode ? "OK" : "Save",
-          onClick: () =>
-            props.locationViewMode
-              ? props.changeLocationEditMode(true)
-              : dispatch(submit("AddLocationForm")),
-        },
-      ]}
-      id="locationModal"
-    />
+      )}
+      <Modal
+        open={props.locationModalOpen}
+        onClose={() => props.handleModalClose()}
+        title={
+          // eslint-disable-next-line no-nested-ternary
+          props.locationViewMode ? (
+            <div>
+              {" "}
+              Location
+              <Tag
+                label={props.selectedLoc?.active === 1 ? "Active" : "Inactive"}
+                style={{ marginLeft: 30 }}
+                variant={props.selectedLoc?.active === 1 ? "green" : "gray"}
+              />
+            </div>
+          ) : props.locationEditMode ? (
+            "Edit Location"
+          ) : (
+            "Creating New Location"
+          )
+        }
+        message={
+          // eslint-disable-next-line react/jsx-wrap-multilines
+          <ReduxForm
+            onSubmit={onSubmit}
+            locationViewMode={props.locationViewMode}
+            locationEditMode={props.locationEditMode}
+            generateUrl={(v) => generateUrl(v)}
+          />
+        }
+        className={classes.modal}
+        buttonProps={[
+          { label: props.locationViewMode ? "" : "Cancel" },
+          {
+            label: props.locationViewMode ? "OK" : "Save",
+            onClick: () =>
+              props.locationViewMode
+                ? props.changeLocationEditMode(true)
+                : dispatch(submit("AddLocationForm")),
+          },
+        ]}
+        id="locationModal"
+      />
+    </>
   );
 };
 
@@ -291,6 +333,7 @@ const form = compose(
 const selector = formValueSelector("AddLocationForm");
 const ReduxForm = connect((state) => ({
   enableReinitialize: true,
+  isActive: selector(state, "active"),
   selectedHost: selector(state, "ipServer"),
   selectedPort: selector(state, "port"),
   selectedDB: selector(state, "dbName"),

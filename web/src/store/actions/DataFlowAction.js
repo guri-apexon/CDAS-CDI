@@ -54,19 +54,6 @@ export const getLocationByType = (value) => {
   };
 };
 
-export const saveLocationData = (values) => {
-  if (values.locationID) {
-    return {
-      type: UPDATE_LOCATION_DATA,
-      values,
-    };
-  }
-  return {
-    type: SAVE_LOCATION_DATA,
-    values,
-  };
-};
-
 export const getServiceOwnersData = () => {
   return {
     type: GET_SERVICE_OWNERS,
