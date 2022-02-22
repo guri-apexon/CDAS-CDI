@@ -636,8 +636,16 @@ export default function DataflowTab({ updateData }) {
   ];
 
   const moreColumns = [
-    ...columns.map((column) => ({ ...column })).slice(0, -1),
-    ...columnsToAdd.map((column) => ({ ...column, hidden: true })),
+    columns[0],
+    ...columns
+      .slice(1)
+      .map((column) => ({ ...column, fixedWidth: false }))
+      .slice(0, -1),
+    ...columnsToAdd.map((column) => ({
+      ...column,
+      hidden: true,
+      fixedWidth: false,
+    })),
     columns.slice(-1)[0],
   ];
 
