@@ -251,11 +251,11 @@ export default function CDTList() {
         dkStatus: status === true ? 1 : 0,
       });
       if (update.status === 1) {
-        setViewModal(false);
+        hideViewData();
         messageContext.showSuccessMessage("Updated successfully");
         getData();
       } else if (update.status === 0) {
-        setViewModal(false);
+        hideViewData();
         messageContext.showErrorMessage(update.data);
       }
     } else {
@@ -267,7 +267,14 @@ export default function CDTList() {
         dkESName: ens,
         dkStatus: status === true ? 1 : 0,
       });
-      console.log("insert", insert);
+      if (insert.status === 1) {
+        hideViewData();
+        messageContext.showSuccessMessage("Updated successfully");
+        getData();
+      } else if (insert.status === 0) {
+        hideViewData();
+        messageContext.showErrorMessage(insert.data);
+      }
     }
   };
 
