@@ -19,11 +19,11 @@ import {
   ReduxFormSelect,
   ReduxFormAutocompleteV2,
   ReduxFormTextField,
-} from "../../components/FormComponents/FormComponents";
-import validate from "../../components/FormComponents/validation";
-import LocationModal from "../../components/Common/LocationModal";
+} from "../../../components/FormComponents/FormComponents";
+import validate from "../../../components/FormComponents/validation";
+import LocationModal from "../../../components/Common/LocationModal";
 
-import { locationTypes, dataStruct } from "../../utils";
+import { locationTypes, dataStruct } from "../../../utils";
 
 const styles = {
   paper: {
@@ -94,7 +94,6 @@ const DataFlowFormBase = (props) => {
     changeFormField,
     changeLocationType,
     connLink,
-    dataflowSource,
   } = props;
   const onChangeServiceOwner = (values) => {
     change("serviceOwnerValue", values);
@@ -123,9 +122,6 @@ const DataFlowFormBase = (props) => {
               fullWidth
               maxLength="30"
               name="description"
-              input={{
-                value: "NewValue",
-              }}
               inputProps={{ maxLength: 30 }}
               onChange={(v) => changeFormField(v, "description")}
               label="Description"
@@ -247,7 +243,7 @@ const ReduxForm = compose(
 )(DataFlowFormBase);
 
 const DataFlowForm = connect((state) => ({
-  initialValues: state.dataFlow.formData, // pull initial values from account reducer
+  initialValues: state.dataFlow, // pull initial values from account reducer
   values: getFormValues("DataFlowForm")(state),
   locations: state.dataFlow.locations?.records,
   vendors: state.dataFlow.vendors?.records,

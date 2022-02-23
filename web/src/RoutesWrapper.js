@@ -12,7 +12,10 @@ import AuditLog from "./pages/AuditLog/AuditLog";
 import PageHeader from "./components/Common/PageHeader";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
-const DataFlow = lazy(() => import("./pages/DataFlow/Create"));
+const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
+const DataFlowCreate = lazy(() => import("./pages/DataFlow/Create"));
+
+// const DataSets = lazy(() => import("./pages/DataSets/DataSets"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
 // const ColumnsTab = lazy(() => import("./pages/Dataset/ColumnsTab/ColumnsTab"));
 // const JDBCForm = lazy(() => import("./pages/Dataset/JDBCForm"));
@@ -41,9 +44,14 @@ const WithPageHeader = () => {
           render={() => <DataPackages />}
         />
         <Route
-          path={`${match.path}/dataflow-management`}
+          path={`${match.path}/dataflow-management/:dataflowId`}
           exact
           render={() => <DataFlow />}
+        />
+        <Route
+          path={`${match.path}/dataflow/create`}
+          exact
+          render={() => <DataFlowCreate />}
         />
         <Route
           path={`${match.path}/datasets-management`}
