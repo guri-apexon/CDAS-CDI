@@ -180,3 +180,5 @@ export const hive2CDH = "test.com";
 export const oracle = "oracle.com";
 export const SQLServer = "sqlserver.com";
 export const impala = "impala.com";
+export const locationExistInDFMsg =
+  "IP Server or DB Hostname cannot be inactivated until removed from all data flows using this location.";

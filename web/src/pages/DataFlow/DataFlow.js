@@ -69,7 +69,10 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const history = useHistory();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const dataFlowData = useSelector((state) => state.dataFlow);
-  const { selectedLocation, loading, createTriggered, error } = dataFlowData;
+  const { selectedLocation, loading, error } = dataFlowData;
+  const { createTriggered, upsertLoading } = useSelector(
+    (state) => state.cdiadmin
+  );
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
@@ -170,7 +173,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   return (
     <div className={classes.root}>
-      {loading && <Loader />}
+      {(loading || upsertLoading) && <Loader />}
       {error && (
         <Banner
           variant="error"

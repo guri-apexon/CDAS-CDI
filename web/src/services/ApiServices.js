@@ -22,15 +22,32 @@ import { getCookie } from "../utils/index";
 
 const userId = getCookie("user.id");
 
+const config = { headers: { userId } };
+
+export const checkLocationExistsInDataFlow = async (locId) => {
+  try {
+    const res = await axios.get(
+      `${baseURL}/${LOCATIONAPI}/check-in-df/${locId}`
+    );
+    return res.data?.data || 0;
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
 export const statusUpdate = async (id, status) => {
   try {
     return new Promise((resolve, reject) => {
       axios
-        .post(`${baseURL}/${LOCATIONAPI}/statusUpdate`, {
-          id,
-          status,
-          userId,
-        })
+        .post(
+          `${baseURL}/${LOCATIONAPI}/statusUpdate`,
+          {
+            id,
+            status,
+            userId,
+          },
+          config
+        )
         .then((res) => {
           resolve(res.data);
         })

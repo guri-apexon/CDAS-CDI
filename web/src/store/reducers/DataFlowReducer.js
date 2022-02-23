@@ -11,10 +11,7 @@ import {
   GET_SERVICE_OWNERS,
   FETCH_SERVICE_OWNERS_SUCCESS,
   FETCH_SERVICE_OWNERS_FAILURE,
-  STORE_LOCATION_SUCCESS,
-  STORE_LOCATION_FAILURE,
   HIDE_ERROR_MSG,
-  SAVE_LOCATION_DATA,
   UPDATE_SELECTED_LOCATION,
   FETCH_DATAFLOW_DETAIL_FAILURE,
   FETCH_DATAFLOW_DETAIL_SUCCESS,
@@ -86,9 +83,6 @@ const DataFlowReducer = (state = initialState, action) =>
           );
         }
         break;
-      case SAVE_LOCATION_DATA:
-        newState.loading = true;
-        break;
       case GET_SERVICE_OWNERS:
         newState.loading = true;
         break;
@@ -98,14 +92,6 @@ const DataFlowReducer = (state = initialState, action) =>
       case FETCH_SERVICE_OWNERS_SUCCESS:
         newState.loading = false;
         newState.serviceOwners = action.serviceOwners;
-        break;
-      case STORE_LOCATION_SUCCESS:
-        newState.loading = false;
-        newState.createTriggered = !state.createTriggered;
-        break;
-      case STORE_LOCATION_FAILURE:
-        newState.loading = false;
-        newState.error = action.message;
         break;
       case HIDE_ERROR_MSG:
         newState.error = action.message;

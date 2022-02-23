@@ -7,10 +7,15 @@ import {
   FETCH_CDT_LIST_FAILURE,
   FETCH_CDT_LIST_SUCCESS,
   LOCATIONAPI,
+  STORE_LOCATION_SUCCESS,
+  STORE_LOCATION_FAILURE,
   UPDATE_LOCATION_SUCCESS,
   UPDATE_LOCATION_FAILURE,
 } from "../../constants";
+import { getCookie } from "../../utils";
 
+const userId = getCookie("user.id");
+const config = { headers: { userId } };
 export function* fetchCDTList() {
   try {
     const fetchData = yield call(
@@ -27,12 +32,35 @@ export function* fetchCDTList() {
   }
 }
 
+export function* saveLocationData(action) {
+  try {
+    const fetchSBData = yield call(
+      axios.post,
+      `${baseURL}/${LOCATIONAPI}/create`,
+      action.values,
+      config
+    );
+
+    // console.log("study", fetchSBData);
+    yield put({
+      type: STORE_LOCATION_SUCCESS,
+      location: fetchSBData.data.data,
+    });
+  } catch (e) {
+    const errText = e.response?.data?.message
+      ? e.response.data.message
+      : e.message;
+    yield put({ type: STORE_LOCATION_FAILURE, message: errText });
+  }
+}
+
 export function* updateLocationData(action) {
   try {
     const fetchData = yield call(
       axios.post,
       `${baseURL}/${LOCATIONAPI}/update`,
-      action.values
+      action.values,
+      config
     );
     yield put({
       type: UPDATE_LOCATION_SUCCESS,
