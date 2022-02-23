@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import { reduxForm, submit, change, formValueSelector } from "redux-form";
@@ -183,7 +184,7 @@ const LocationForm = (props) => {
             <ReduxFormTextField
               fullWidth
               name="userName"
-              label="Username (optional)"
+              label="Username"
               InputProps={{ readOnly: props.locationViewMode }}
             />
           </Grid>
@@ -192,7 +193,14 @@ const LocationForm = (props) => {
               type="password"
               fullWidth
               name="password"
-              label="Password (optional)"
+              label={
+                <>
+                  Password
+                  {(locType === "SFTP" || locType === "FTPS") && (
+                    <span style={{ color: "#999999" }}> (optional)</span>
+                  )}
+                </>
+              }
               InputProps={{ readOnly: props.locationViewMode }}
             />
           </Grid>
