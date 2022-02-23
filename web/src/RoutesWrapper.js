@@ -12,7 +12,7 @@ import AuditLog from "./pages/AuditLog/AuditLog";
 import PageHeader from "./components/Common/PageHeader";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
-const DataFlow = lazy(() => import("./pages/DataFlow/DataFlow"));
+const DataFlow = lazy(() => import("./pages/DataFlow/Create"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
 // const ColumnsTab = lazy(() => import("./pages/Dataset/ColumnsTab/ColumnsTab"));
 // const JDBCForm = lazy(() => import("./pages/Dataset/JDBCForm"));
