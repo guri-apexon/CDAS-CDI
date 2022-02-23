@@ -247,7 +247,7 @@ const ReduxForm = compose(
 )(DataFlowFormBase);
 
 const DataFlowForm = connect((state) => ({
-  initialValues: state.dataFlow, // pull initial values from account reducer
+  initialValues: state.dataFlow.formData, // pull initial values from account reducer
   values: getFormValues("DataFlowForm")(state),
   locations: state.dataFlow.locations?.records,
   vendors: state.dataFlow.vendors?.records,

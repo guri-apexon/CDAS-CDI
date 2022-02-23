@@ -23,11 +23,11 @@ import {
   hideErrorMessage,
   getLocationByType,
   addDataFlow,
+  getDataFlowDetail,
 } from "../../../store/actions/DataFlowAction";
 
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
-import { getDataFlowDetails } from "../../../services/ApiServices";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -69,13 +69,13 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
-  const [loading, setLoading] = useState(true);
   const dataFlowData = useSelector((state) => state.dataFlow);
-  const { selectedLocation, createTriggered, error } = dataFlowData;
+  const { selectedLocation, createTriggered, error, loading, dataFlowdetail } =
+    dataFlowData;
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
-  const [dataflowSource, setDataFlowSource] = useState([]);
+  const [dataflowSource, setDataFlowSource] = useState({});
   const { dataflowId } = useParams();
 
   const pullVendorandLocation = () => {
@@ -85,10 +85,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
   };
 
   const getDataFlowSource = async (dataflowid) => {
-    setLoading(true);
-    const data = await getDataFlowDetails(dataflowid);
-    setDataFlowSource(data);
-    setLoading(false);
+    dispatch(getDataFlowDetail(dataflowid));
   };
 
   useEffect(() => {
@@ -201,8 +198,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
       >
         <LeftPanel
           dataflowId={dataflowId}
-          dataflowSource={dataflowSource}
-          headerTitle={dataflowSource.name}
+          dataflowSource={dataFlowdetail}
+          headerTitle={dataFlowdetail.name}
         />
       </Panel>
       <Panel
@@ -219,7 +216,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
                 close={closeForm}
                 submit={submitForm}
                 breadcrumbItems={breadcrumbItems}
-                headerTitle={dataflowSource.name}
+                headerTitle={dataFlowdetail.name}
                 icon={<DataPackageIcon className={classes.contentIcon} />}
                 datasetsCount={6}
               />
@@ -227,7 +224,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
             <Divider />
             <div className={classes.formSection}>
               <DataFlowForm
-                dataflowSource={dataflowSource}
+                dataflowSource={dataFlowdetail}
                 onSubmit={onSubmit}
                 changeLocationData={changeLocationData}
                 changeFormField={changeFormField}

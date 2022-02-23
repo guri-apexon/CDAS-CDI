@@ -128,16 +128,21 @@ const DataFlowReducer = (state = initialState, action) =>
           type,
           vendID,
           vendorname,
+          testflag,
         } = dataflowDetail;
-        newState.formData.description = description;
-        newState.formData.exptfstprddt = exptfstprddt;
-        newState.formData.loctyp = loctyp;
-        newState.formData.name = name;
-        newState.formData.srclocID = srclocID;
-        newState.formData.type = type;
-        newState.formData.vendID = vendID;
-        newState.formData.vendorname = vendorname;
+        // eslint-disable-next-line no-case-declarations
+        const formData = {};
+        formData.description = description;
+        formData.firstFileDate = exptfstprddt;
+        formData.locationType = loctyp;
+        formData.name = name;
+        formData.dataflowType = testflag === 1 ? true : false;
+        formData.srclocID = srclocID;
+        formData.dataStructure = type;
+        formData.vendID = vendID;
+        formData.vendorname = vendorname;
         newState.dataFlowdetail = action.dataflowDetail;
+        newState.formData = formData;
         break;
       default:
         newState.loading = false;

@@ -68,7 +68,6 @@ const useStyles = makeStyles(() => ({
 }));
 
 const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
-  console.log(dataflowSource, "dataflowSourcedataflowSourcedataflowSource");
   const classes = useStyles();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -76,7 +75,7 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
   const packageData = useSelector((state) => state.dataPackage);
   // const dataFlowData = useSelector((state) => state.dataFlow);
   const dashboard = useSelector((state) => state.dashboard);
-  const { description, vendorName, dataflowType } = dataflowSource;
+  const { description, vendorname, testflag, active } = dataflowSource;
   const { loading } = packageData;
   const userInfo = getUserInfo();
   const location = useLocation();
@@ -85,9 +84,7 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
     history.push("/audit-logs");
   };
   const getPackages = (dfid, query = "") => {
-    console.log(query, "query");
     if (dfid) {
-      console.log("huh?");
       dispatch(getPackagesList(dfid, query));
     } else {
       // history.push("dashboard");
@@ -139,7 +136,14 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
           <FormControlLabel
             style={{ fontSize: 14 }}
             value="true"
-            control={<Switch color="primary" size="small" />}
+            control={
+              // eslint-disable-next-line react/jsx-wrap-multilines
+              <Switch
+                color="primary"
+                size="small"
+                checked={active === 0 ? false : true}
+              />
+            }
             label="Active"
             labelPlacement="start"
           />
@@ -149,12 +153,12 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
       <Divider />
       <Box className="sidebar-content">
         <Tag
-          label={dataflowType}
+          label={testflag === 1 ? "Test" : "Production"}
           variant="grey"
           style={{ textTransform: "capitalize", marginBottom: 20 }}
         />
         <Typography className={classes.LeftTitle}>{headerTitle}</Typography>
-        <Typography className={classes.LeftSubTitle}>{vendorName}</Typography>
+        <Typography className={classes.LeftSubTitle}>{vendorname}</Typography>
         <Typography className={classes.description}>
           {/* <ArrowRight className={classes.icon} /> */}
           {description}
