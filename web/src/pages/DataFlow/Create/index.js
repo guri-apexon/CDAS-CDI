@@ -76,6 +76,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
+  const protId = dashboard.selectedCard.prot_id;
 
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
@@ -131,14 +132,12 @@ const DataFlow = ({ FormValues, dashboard }) => {
   // }, [dashboard?.selectedCard]);
 
   const submitForm = async () => {
-    const protId = dashboard.selectedCard.prot_id;
     console.log("FormValues?", FormValues);
     console.log("protId", protId);
     if (
       FormValues.vendor &&
       FormValues.locationName &&
       FormValues.firstFileDate &&
-      FormValues.serviceOwnerValue &&
       FormValues.description !== "" &&
       protId !== ""
     ) {
@@ -152,12 +151,13 @@ const DataFlow = ({ FormValues, dashboard }) => {
         description: FormValues.description,
         firstFileDate: FormValues.firstFileDate,
         locationType: FormValues.locationType,
-        serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
+        // serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
         protocolNumberStandard: protId,
         externalSystemName: "CDI",
       };
-      await dispatch(addDataFlow(payload));
-      history.push("/dashboard");
+      console.log(payload);
+      // await dispatch(addDataFlow(payload));
+      // history.push("/dashboard");
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
     }
@@ -189,7 +189,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
         open={isPanelOpen}
         width={446}
       >
-        <LeftPanel />
+        <LeftPanel protId={protId} />
       </Panel>
       <Panel
         className={

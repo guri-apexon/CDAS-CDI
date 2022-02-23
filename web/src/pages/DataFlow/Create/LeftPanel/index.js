@@ -67,7 +67,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LeftPanel = () => {
+const LeftPanel = ({ protId }) => {
   const classes = useStyles();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -80,6 +80,7 @@ const LeftPanel = () => {
   const userInfo = getUserInfo();
   const location = useLocation();
   const { selectedDFId, selectedCard } = dashboard;
+  let dataflowName = "";
   const viewAuditLog = () => {
     history.push("/dashboard/audit-logs");
   };
@@ -123,6 +124,10 @@ const LeftPanel = () => {
       </>
     );
   };
+
+  if (selectedVendor.label !== "" && description !== "" && protId !== "") {
+    dataflowName = `${selectedVendor.label}-${description}-${protId}`;
+  }
   return (
     <div className="leftPanel">
       <div className={classes.drawerHeader}>
@@ -150,9 +155,7 @@ const LeftPanel = () => {
           variant="grey"
           style={{ textTransform: "capitalize", marginBottom: 20 }}
         />
-        <Typography className={classes.LeftTitle}>
-          Virologicclinic-IIBR12-001-Other
-        </Typography>
+        <Typography className={classes.LeftTitle}>{dataflowName}</Typography>
         <Typography className={classes.LeftSubTitle}>
           {selectedVendor?.label}
         </Typography>
