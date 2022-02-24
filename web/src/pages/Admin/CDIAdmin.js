@@ -5,6 +5,7 @@ import Typography from "apollo-react/components/Typography";
 
 import CDTList from "./CDI/CDT/CDTList";
 import Location from "./Location/Location";
+import SystemSettings from "./Settings/SystemSettings";
 
 import "./CDIAdmin.scss";
 
@@ -38,7 +39,7 @@ const CDIAdmin = () => {
         {value === 0 && <Location />}
         {value === 1 && <CDTList />}
         {value === 2 && <CDTList />}
-        {value === 3 && <CDTList />}
+        {value === 3 && <SystemSettings />}
       </div>
     </main>
   );

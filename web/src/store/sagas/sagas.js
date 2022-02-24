@@ -25,6 +25,9 @@ import {
   GET_PREVIEW_SQL,
   GET_SQL_TABLES,
   GET_SQL_COLUMNS,
+  CREARE_SETTINGS_DATA,
+  UPDATE_SETTINGS_DATA,
+  FETCH_SETTINGS_DATA,
 } from "../../constants";
 
 import {
@@ -64,6 +67,9 @@ import {
   fetchCDTList,
   updateLocationData,
   saveLocationData,
+  createSettingsData,
+  updateSettingsData,
+  fetchSettingsList,
 } from "./cdiAdmin.saga";
 
 function* cdasCoreSaga() {
@@ -95,6 +101,9 @@ function* cdasCoreSaga() {
   yield takeLatest(GET_PREVIEW_SQL, fetchPreviewSQL);
   yield takeLatest(GET_SQL_TABLES, fetchSQLTables);
   yield takeLatest(GET_SQL_COLUMNS, fetchSQLColumns);
+  yield takeLatest(FETCH_SETTINGS_DATA, fetchSettingsList);
+  yield takeLatest(CREARE_SETTINGS_DATA, createSettingsData);
+  yield takeLatest(UPDATE_SETTINGS_DATA, updateSettingsData);
 }
 
 export default cdasCoreSaga;

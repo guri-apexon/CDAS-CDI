@@ -14,6 +14,15 @@ import {
   HIDE_ERROR_MSG,
   UPDATE_LOCATION_SUCCESS,
   UPDATE_LOCATION_FAILURE,
+  UPDATE_SETTINGS_DATA,
+  UPDATE_SETTINGS_SUCCESS,
+  UPDATE_SETTINGS_FAILURE,
+  CREARE_SETTINGS_DATA,
+  CREARE_SETTINGS_SUCCESS,
+  CREARE_SETTINGS_FAILURE,
+  FETCH_SETTINGS_DATA,
+  FETCH_SETTINGS_FAILURE,
+  FETCH_SETTINGS_SUCCESS,
 } from "../../constants";
 
 export const initialState = {
@@ -22,6 +31,7 @@ export const initialState = {
   upserted: false,
   locations: [],
   cdtList: [],
+  settings: [],
   error: null,
   success: null,
   locForm: {
@@ -76,6 +86,40 @@ const CDIAdminReducer = (state = initialState, action) =>
         newState.createTriggered = !state.createTriggered;
         break;
       case STORE_LOCATION_FAILURE:
+        newState.upsertLoading = false;
+        newState.error = action.message;
+        break;
+      case FETCH_SETTINGS_DATA:
+        newState.loading = true;
+        break;
+      case FETCH_SETTINGS_SUCCESS:
+        newState.loading = false;
+        newState.settings = action.settings;
+        break;
+      case FETCH_SETTINGS_FAILURE:
+        newState.loading = false;
+        break;
+      case UPDATE_SETTINGS_DATA:
+        newState.upsertLoading = true;
+        break;
+      case UPDATE_SETTINGS_SUCCESS:
+        newState.upsertLoading = false;
+        newState.success = "Settings updated succesfully";
+        newState.upserted = !state.upserted;
+        break;
+      case UPDATE_SETTINGS_FAILURE:
+        newState.upsertLoading = false;
+        newState.error = action.message;
+        break;
+      case CREARE_SETTINGS_DATA:
+        newState.upsertLoading = true;
+        break;
+      case CREARE_SETTINGS_SUCCESS:
+        newState.upsertLoading = false;
+        newState.upserted = !state.upserted;
+        newState.success = "Settigns inserted succesfully";
+        break;
+      case CREARE_SETTINGS_FAILURE:
         newState.upsertLoading = false;
         newState.error = action.message;
         break;
