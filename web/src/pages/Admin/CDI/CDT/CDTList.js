@@ -151,7 +151,7 @@ export default function CDTList() {
       setSelectedRow(null);
       setENS("");
       setCName("");
-      setStatus(false);
+      setStatus(true);
       setDesc("");
       setNameError(false);
     }, 500);
