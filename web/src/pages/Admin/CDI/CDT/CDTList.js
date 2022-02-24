@@ -91,7 +91,7 @@ const generateColumns = (
       filterComponent: TextFieldFilter,
     },
     {
-      header: "External System",
+      header: "External System Name",
       accessor: "dkESName",
       sortFunction: compareStrings,
       filterFunction: createStringArraySearchFilter("dkESName"),
@@ -417,6 +417,7 @@ export default function CDTList() {
                     canDeselect={false}
                     placeholder="Select system name"
                     fullWidth
+                    required
                   >
                     {ensList.map((option) => (
                       <MenuItem key={option.value} value={option.label}>
