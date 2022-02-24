@@ -239,42 +239,55 @@ export default function CDTList() {
     setStatus(!status);
   };
 
+  // eslint-disable-next-line consistent-return
   const handleSave = async () => {
+    if (cName === "") {
+      messageContext.showErrorMessage("Data Type Name shouldn't be empty");
+      return false;
+    }
+    if (ens === "") {
+      messageContext.showErrorMessage("External System shouldn't be empty");
+      return false;
+    }
     if (selectedRow) {
       // console.log("update", cName, selectedRow, status, desc, ensId, ens);
-      const update = await updateDK({
+      updateDK({
         dkId: selectedRow,
         dkName: cName,
         dkDesc: desc,
         dkExternalId: ensId,
         dkESName: ens,
         dkStatus: status === true ? 1 : 0,
+      }).then((res) => {
+        if (res.status === 1) {
+          hideViewData();
+          messageContext.showSuccessMessage("Updated successfully");
+          getData();
+        }
+        if (res.status === 0) {
+          hideViewData();
+          messageContext.showErrorMessage(res.data);
+        }
       });
-      if (update.status === 1) {
-        hideViewData();
-        messageContext.showSuccessMessage("Updated successfully");
-        getData();
-      } else if (update.status === 0) {
-        hideViewData();
-        messageContext.showErrorMessage(update.data);
-      }
     } else {
       // console.log("create", cName, status, desc, ensId, ens);
-      const insert = await addDK({
+      addDK({
         dkName: cName,
         dkDesc: desc,
         dkExternalId: ensId,
         dkESName: ens,
         dkStatus: status === true ? 1 : 0,
+      }).then((res) => {
+        if (res.status === 1) {
+          hideViewData();
+          messageContext.showSuccessMessage("Created successfully");
+          getData();
+        }
+        if (res.status === 0) {
+          hideViewData();
+          messageContext.showErrorMessage(res.data);
+        }
       });
-      if (insert.status === 1) {
-        hideViewData();
-        messageContext.showSuccessMessage("Updated successfully");
-        getData();
-      } else if (insert.status === 0) {
-        hideViewData();
-        messageContext.showErrorMessage(insert.data);
-      }
     }
   };
 
@@ -403,6 +416,7 @@ export default function CDTList() {
                     onChange={(e) => handleChange(e)}
                     optional
                     sizeAdjustable
+                    required
                   />
                 </div>
               </div>
