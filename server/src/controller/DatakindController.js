@@ -19,18 +19,12 @@ exports.createDataKind = async (req, res) => {
   try {
     const { dkName, dkDesc, dkExternalId, dkESName, dkStatus } = req.body;
     const curDate = new Date();
-    const insertQuery = `INSERT INTO ${schemaName}.datakind
-    ("name", dk_desc, extrnl_id, extrnl_sys_nm, active, insrt_tm, updt_tm)
-    VALUES($2, $3, $4, $5, $6, $1, $1)`;
-
-    Logger.info({
-      message: "createDataKind",
-    });
-
+    const insertQuery = `INSERT INTO ${schemaName}.datakind "name", dk_desc, extrnl_id, extrnl_sys_nm, active, insrt_tm, updt_tm) VALUES($2, $3, $4, $5, $6, $1, $1)`;
+    Logger.info({ message: "createDataKind" });
     const inset = await DB.executeQuery(insertQuery, [
       curDate,
       dkName,
-      dkDesc,
+      dkDesc || null,
       dkExternalId,
       dkESName,
       dkStatus,
