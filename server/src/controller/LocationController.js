@@ -5,6 +5,77 @@ const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
+async function updateDataflowVersion(locationId, location, userId) {
+  const searchQuery = `select d.src_loc_id, d.dataflowid, max(dv."version") as "version" from ${schemaName}.dataflow d inner join ${schemaName}.dataflow_version dv on dv.dataflowid = d.dataflowid where d.src_loc_id = $1 group by d.dataflowid `;
+  const dep = [locationId];
+  const res = await DB.executeQuery(searchQuery, dep);
+  if (res.rowCount > 0) {
+    const rows = res.rows;
+    rows.forEach((row) => {
+      const version = row.version + 1;
+      const dataflowid = row.dataflowid;
+      const config_json = {
+        dataflowid,
+        location,
+      };
+      const insertBody = [dataflowid, version, config_json, userId, new Date()];
+      const insertQuery = `INSERT into ${schemaName}.dataflow_version (dataflowid, "version", config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
+      DB.executeQuery(insertQuery, insertBody);
+    });
+  }
+  return null;
+}
+
+async function checkLocationExists(
+  locationType = "",
+  cnUnl = "",
+  u_name = "",
+  db_name = "",
+  esys_nm = "",
+  loc_id = null
+) {
+  const locType = locationType.toLowerCase();
+  const connUrl = cnUnl ? cnUnl.toLowerCase() : null;
+  const uname = u_name ? u_name.toLowerCase() : null;
+  const dbname = db_name ? db_name.toLowerCase() : null;
+  const exsys_nm = esys_nm ? esys_nm.toLowerCase() : null;
+  let searchQuery = `SELECT src_loc_id from ${schemaName}.source_location where LOWER(loc_typ)=$1 and LOWER(cnn_url)=$2 and LOWER(usr_nm)=$3 and LOWER(extrnl_sys_nm)=$4 and LOWER(db_nm)=$5`;
+  let dep = [locType, connUrl, uname, exsys_nm, dbname];
+  if (loc_id) {
+    searchQuery = `SELECT src_loc_id from ${schemaName}.source_location where LOWER(loc_typ) = $1 and  LOWER(cnn_url) = $2 and LOWER(usr_nm) = $3 and LOWER(extrnl_sys_nm) = $4 and LOWER(db_nm)=$5 and src_loc_id != $6`;
+    dep = [locType, connUrl, uname, exsys_nm, dbname, loc_id];
+  }
+  if (locType === "sftp" || locType === "ftps") {
+    searchQuery = `SELECT src_loc_id from ${schemaName}.source_location where LOWER(loc_typ) = $1 and  LOWER(cnn_url) = $2 and LOWER(usr_nm) = $3 and LOWER(extrnl_sys_nm) = $4`;
+    dep = [locType, connUrl, uname, exsys_nm];
+    if (loc_id) {
+      searchQuery = `SELECT src_loc_id from ${schemaName}.source_location where LOWER(loc_typ) = $1 and  LOWER(cnn_url) = $2 and LOWER(usr_nm) = $3 and LOWER(extrnl_sys_nm) = $4 and src_loc_id != $5`;
+      dep = [locType, connUrl, uname, exsys_nm, loc_id];
+    }
+  }
+  const res = await DB.executeQuery(searchQuery, dep);
+  return res.rowCount;
+}
+
+exports.checkLocationExistsInDataFlow = async function (req, res) {
+  try {
+    const locId = req.params.location_id;
+    const searchQuery = `SELECT src_loc_id from ${schemaName}.dataflow where src_loc_id=$1`;
+    const dep = [locId];
+    const response = await DB.executeQuery(searchQuery, dep);
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      response.rowCount
+    );
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
 exports.searchLocationList = function (req, res) {
   try {
     const searchParam = req.params.query.toLowerCase();
@@ -116,9 +187,24 @@ exports.getLocationById = function (req, res) {
   }
 };
 
-exports.updateLocationData = function (req, res) {
+exports.updateLocationData = async function (req, res) {
   try {
     const values = req.body;
+    const isExist = await checkLocationExists(
+      values.locationType,
+      values.connURL,
+      values.userName,
+      values.dbName,
+      values.externalSytemName,
+      values.locationID
+    );
+    if (isExist > 0) {
+      return apiResponse.ErrorResponse(
+        res,
+        "No duplicate locations are allowed"
+      );
+    }
+    var userId = req.headers["userid"];
     const body = [
       values.locationType || null,
       values.ipServer || null,
@@ -139,7 +225,8 @@ exports.updateLocationData = function (req, res) {
       message: "updateLocation",
     });
     DB.executeQuery(searchQuery, body)
-      .then((response) => {
+      .then(async (response) => {
+        await updateDataflowVersion(values.locationID, values, userId);
         return apiResponse.successResponseWithData(
           res,
           "Operation success",
@@ -157,9 +244,22 @@ exports.updateLocationData = function (req, res) {
   }
 };
 
-exports.saveLocationData = function (req, res) {
+exports.saveLocationData = async function (req, res) {
   try {
     const values = req.body;
+    const isExist = await checkLocationExists(
+      values.locationType,
+      values.connURL,
+      values.userName,
+      values.dbName,
+      values.externalSytemName
+    );
+    if (isExist > 0) {
+      return apiResponse.ErrorResponse(
+        res,
+        "No duplicate locations are allowed"
+      );
+    }
     const body = [
       helper.generateUniqueID(),
       values.locationType || null,
@@ -239,6 +339,8 @@ exports.statusUpdate = async (req, res) => {
       curDate,
       id,
     ]);
+    var userId = req.headers["userid"];
+    await updateDataflowVersion(id, { active: status == true ? 1 : 0 }, userId);
     return apiResponse.successResponseWithData(
       res,
       "Operation success",

@@ -1,7 +1,7 @@
 /* eslint-disable no-script-url */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useContext } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 // import CssBaseline from "@material-ui/core/CssBaseline";
 import Panel from "apollo-react/components/Panel";
@@ -11,9 +11,9 @@ import Loader from "apollo-react/components/Loader";
 import { values } from "lodash";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
-import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
-import Header from "../../components/DataFlow/Header";
-import "./DataFlow.scss";
+import LeftPanel from "./LeftPanel";
+import Header from "../../../components/DataFlow/Header";
+import "../DataFlow.scss";
 import DataFlowForm from "./DataFlowForm";
 import {
   getVendorsData,
@@ -23,10 +23,11 @@ import {
   hideErrorMessage,
   getLocationByType,
   addDataFlow,
-} from "../../store/actions/DataFlowAction";
+  getDataFlowDetail,
+} from "../../../store/actions/DataFlowAction";
 
-import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
-import { MessageContext } from "../../components/Providers/MessageProvider";
+import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
+import { MessageContext } from "../../../components/Providers/MessageProvider";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -69,29 +70,35 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const history = useHistory();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const dataFlowData = useSelector((state) => state.dataFlow);
-  const { selectedLocation, loading, error } = dataFlowData;
-  const { createTriggered, upsertLoading } = useSelector(
-    (state) => state.cdiadmin
-  );
+  const { selectedLocation, createTriggered, error, loading, dataFlowdetail } =
+    dataFlowData;
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
+  const [dataflowSource, setDataFlowSource] = useState({});
+  const { dataflowId } = useParams();
 
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
     dispatch(getLocationByType(locType));
     dispatch(getServiceOwnersData());
   };
+
+  const getDataFlowSource = async (dataflowid) => {
+    dispatch(getDataFlowDetail(dataflowid));
+  };
+
   useEffect(() => {
+    getDataFlowSource(dataflowId);
     pullVendorandLocation();
-  }, []);
+  }, [dataflowId]);
 
   const breadcrumbItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
       href: "javascript:void(0)",
       title: "Data Flow Settings",
-      onClick: () => history.push("/dashboard/dataflow-management"),
+      onClick: () => history.push(`/dataflow-management/${dataflowId}`),
     },
   ];
 
@@ -132,8 +139,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
-    console.log("FormValues?", FormValues);
-    console.log("protId", protId);
+    // console.log("FormValues?", FormValues);
+    // console.log("protId", protId);
     if (
       FormValues.vendor &&
       FormValues.locationName &&
@@ -173,7 +180,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   return (
     <div className={classes.root}>
-      {(loading || upsertLoading) && <Loader />}
+      {loading && <Loader />}
       {error && (
         <Banner
           variant="error"
@@ -189,7 +196,11 @@ const DataFlow = ({ FormValues, dashboard }) => {
         open={isPanelOpen}
         width={446}
       >
-        <LeftPanel />
+        <LeftPanel
+          dataflowId={dataflowId}
+          dataflowSource={dataFlowdetail}
+          headerTitle={dataFlowdetail.name}
+        />
       </Panel>
       <Panel
         className={
@@ -205,7 +216,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
                 close={closeForm}
                 submit={submitForm}
                 breadcrumbItems={breadcrumbItems}
-                headerTitle="Virologicclinic-IIBR12-001-Other"
+                headerTitle={dataFlowdetail.name}
                 icon={<DataPackageIcon className={classes.contentIcon} />}
                 datasetsCount={6}
               />
@@ -213,6 +224,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
             <Divider />
             <div className={classes.formSection}>
               <DataFlowForm
+                dataflowSource={dataFlowdetail}
                 onSubmit={onSubmit}
                 changeLocationData={changeLocationData}
                 changeFormField={changeFormField}

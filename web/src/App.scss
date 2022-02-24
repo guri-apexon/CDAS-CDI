@@ -215,6 +215,9 @@ label.table-checkbox {
 .Message-Banner.top-0 {
   top: 0 !important;
 }
+#locationModal {
+  z-index: 1350 !important;
+}
 
 input[readonly] {
   border: 0;

@@ -54,14 +54,17 @@ import {
   fetchVendorsData,
   fetchLocationsData,
   fetchServiceOwnersData,
-  saveLocationData,
   fetchDataflowDetail,
   addDataFlow,
 } from "./dataFlow.saga";
 
 import { fetchAuditLogs } from "./auditLogs.saga";
 
-import { fetchCDTList, updateLocationData } from "./cdiAdmin.saga";
+import {
+  fetchCDTList,
+  updateLocationData,
+  saveLocationData,
+} from "./cdiAdmin.saga";
 
 function* cdasCoreSaga() {
   yield takeEvery(GET_DATA_FLOW_LIST, fetchFlowData);
