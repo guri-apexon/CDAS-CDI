@@ -11,6 +11,13 @@ import {
   STORE_LOCATION_FAILURE,
   UPDATE_LOCATION_SUCCESS,
   UPDATE_LOCATION_FAILURE,
+  SETTINGAPI,
+  CREARE_SETTINGS_SUCCESS,
+  CREARE_SETTINGS_FAILURE,
+  UPDATE_SETTINGS_SUCCESS,
+  UPDATE_SETTINGS_FAILURE,
+  FETCH_SETTINGS_SUCCESS,
+  FETCH_SETTINGS_FAILURE,
 } from "../../constants";
 import { getCookie } from "../../utils";
 
@@ -29,6 +36,18 @@ export function* fetchCDTList() {
     });
   } catch (e) {
     yield put({ type: FETCH_CDT_LIST_FAILURE, message: e.message });
+  }
+}
+
+export function* fetchSettingsList() {
+  try {
+    const fetchData = yield call(axios.get, `${baseURL}/${SETTINGAPI}/list`);
+    yield put({
+      type: FETCH_SETTINGS_SUCCESS,
+      settings: fetchData.data?.data || [],
+    });
+  } catch (e) {
+    yield put({ type: FETCH_SETTINGS_FAILURE, message: e.message });
   }
 }
 
@@ -64,12 +83,54 @@ export function* updateLocationData(action) {
     );
     yield put({
       type: UPDATE_LOCATION_SUCCESS,
-      cdtList: fetchData.data.data,
+      location: fetchData.data.data,
     });
   } catch (e) {
     const errText = e.response?.data?.message
       ? e.response.data.message
       : e.message;
     yield put({ type: UPDATE_LOCATION_FAILURE, message: errText });
+  }
+}
+
+export function* createSettingsData(action) {
+  try {
+    const fetchSBData = yield call(
+      axios.post,
+      `${baseURL}/${SETTINGAPI}/create`,
+      action.values,
+      config
+    );
+
+    // console.log("study", fetchSBData);
+    yield put({
+      type: CREARE_SETTINGS_SUCCESS,
+      setting: fetchSBData.data.data,
+    });
+  } catch (e) {
+    const errText = e.response?.data?.message
+      ? e.response.data.message
+      : e.message;
+    yield put({ type: CREARE_SETTINGS_FAILURE, message: errText });
+  }
+}
+
+export function* updateSettingsData(action) {
+  try {
+    const fetchData = yield call(
+      axios.post,
+      `${baseURL}/${SETTINGAPI}/update`,
+      action.values,
+      config
+    );
+    yield put({
+      type: UPDATE_SETTINGS_SUCCESS,
+      setting: fetchData.data.data,
+    });
+  } catch (e) {
+    const errText = e.response?.data?.message
+      ? e.response.data.message
+      : e.message;
+    yield put({ type: UPDATE_SETTINGS_FAILURE, message: errText });
   }
 }

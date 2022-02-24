@@ -493,29 +493,44 @@ export const truncateString = (str, length) => {
 };
 
 export const generateConnectionURL = (locType, hostName, port, dbName) => {
+  if (!locType || !hostName) {
+    return "";
+  }
   if (locType != "" && (locType === "SFTP" || locType === "FTPS")) {
     return hostName;
   }
   if (locType === "Hive CDP" || locType === "Hive CDH") {
     if (locType === "Hive CDP") {
-      return `jdbc:hive2://${hostName}:${port}/${hive2CDP}`;
+      return port && hive2CDP
+        ? `jdbc:hive2://${hostName}:${port}/${hive2CDP}`
+        : "";
     }
-    return `jdbc:hive2://${hostName}:${port}/${hive2CDH}`;
+    return port && hive2CDH
+      ? `jdbc:hive2://${hostName}:${port}/${hive2CDH}`
+      : "";
   }
   if (locType === "Oracle") {
-    return `jdbc:${locType}${oracle}${hostName}:${port}:${dbName}`;
+    return port && dbName
+      ? `jdbc:${locType}${oracle}${hostName}:${port}:${dbName}`
+      : "";
   }
   if (locType === "MySQL") {
-    return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
+    return port && dbName
+      ? `jdbc:${locType}://${hostName}:${port}/${dbName}`
+      : "";
   }
   if (locType === "SQL Server") {
-    return `jdbc:${locType}://${hostName}:${port};${SQLServer}=${dbName}`;
+    return port && dbName
+      ? `jdbc:${locType}://${hostName}:${port};${SQLServer}=${dbName}`
+      : "";
   }
   if (locType === "PostgreSQL") {
-    return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
+    return port && dbName
+      ? `jdbc:${locType}://${hostName}:${port}/${dbName}`
+      : "";
   }
   if (locType === "Impala") {
-    return `jdbc:${locType}://${hostName}:${port}/${impala}`;
+    return port ? `jdbc:${locType}://${hostName}:${port}/${impala}` : "";
   }
   if (locType && hostName && port && dbName) {
     return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
