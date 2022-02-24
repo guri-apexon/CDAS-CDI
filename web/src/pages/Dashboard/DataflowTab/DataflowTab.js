@@ -337,6 +337,7 @@ export default function DataflowTab({ updateData }) {
             buttonText="Add data flow"
             menuItems={menuItems}
             size="small"
+            style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
           />
           <Button
             size="small"
