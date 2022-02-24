@@ -9,7 +9,7 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 exports.getUserStudyList = function (req, res) {
   try {
     const userId = req.params.userId;
-    const query = `SELECT distinct s.prot_id, prot_nbr as protocolnumber, s2.spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode,
+    const queryOld = `SELECT distinct s.prot_id, prot_nbr as protocolnumber, s2.spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode,
     count(distinct d.dataflowid) as "dfCount", 
     count(distinct d.vend_id) as "vCount",
     count(distinct d2.datapackageid) "dpCount",
@@ -24,13 +24,108 @@ exports.getUserStudyList = function (req, res) {
     WHERE s3.usr_id = $1 AND s3.act_flg=1
     group by s.prot_id, prot_nbr, s2.spnsr_nm, phase, prot_stat, proj_cd limit 10`;
 
-    Logger.info({
-      message: `getUserStudyList`,
-    });
+    const query = `with protocol as (SELECT prot_id, dataflowid
+      FROM cdascfg.dataflow
+      GROUP BY prot_id, dataflowid
+      )
+      ,cteTrnx AS -- get the latest process executionid
+      (
+      SELECT *,
+      case when downloadtrnx > 0 OR previous_downloadtrnx > 0 THEN ((downloadtrnx - previous_downloadtrnx) / ((downloadtrnx + previous_downloadtrnx) / 2)) * 100
+      when downloadtrnx = 0 and previous_downloadtrnx = 0 then 0
+      end as pct_cng FROM
+      (
+      select prot_id, dataflowid, datapackageid, datasetid, executionid, externalid, downloadtrnx, latest, LEAD(downloadtrnx,1) OVER (
+      ORDER BY latest ) previous_downloadtrnx, childstatus, errmsg from
+      (SELECT
+      prot.prot_id,
+      prot.dataflowid,
+      ts.datapackageid,
+      ts.datasetid,
+      ts.executionid,
+      ts.externalid,
+      COALESCE(ts.downloadtrnx,0) as downloadtrnx,
+      cps.STATUS AS childstatus,
+      cps.ERRMSG as errmsg,
+      ROW_NUMBER () OVER (PARTITION BY prot.prot_id,ts.dataflowid, ts.datapackageid,ts.datasetid
+      ORDER BY ts.executionid DESC) AS latest
+      FROM protocol prot
+      LEFT JOIN cdascfg.transaction_summary ts
+      ON prot.dataflowid = TS.dataflowid
+      LEFT JOIN cdascfg.child_processes_summary cps
+      ON ts.externalid = cps.externalid ) ts1_latest
+      where latest<=2
+      ) x  WHERE latest = 1
+      ) 
+      ,checkSum as ( select dataflowid,datapackageid,executionid,lastmodifiedtime,latest,no_of_staledays  from (select dc2.dataflowid,dc2.datapackageid, dc2.executionid ,lastmodifiedtime, 
+      row_number () over(partition by dc2.dataflowid,dc2.datapackageid, dc2.executionid order by lastmodifiedtime desc) as latest,
+      case when current_timestamp > to_timestamp(cast(lastmodifiedtime as numeric)/1000) 
+      then date_part('day',current_timestamp - to_timestamp(cast(lastmodifiedtime as numeric)/1000)) else -1
+      end as no_of_staledays from cdascfg.datapackage_checksum dc2 
+      inner join cteTrnx on cteTrnx.dataflowid = dc2.dataflowid 
+      and cteTrnx.datapackageid = dc2.datapackageid 
+      and cteTrnx.executionid = dc2.executionid order by lastmodifiedtime desc)  src where latest =1)
+      select prot_id,protocolnumber ,sponsorname ,phase,protocolstatus,projectcode, count(distinct datasetstatus) as "ingestionCount",count(case when jobstatus ='FAILED' then 1 else null end ) as "priorityCount",
+      count(case when upper(is_stale) ='YES' then 1 else null end ) as "staleFilesCount",count(distinct dataflowid) as "dfCount", 
+          count(distinct vend_id) as "vCount",
+          count(distinct datapackageid) "dpCount",
+          count(distinct datasetid) as "dsCount"
+      from (
+      select df.prot_id ,df.dataflowid,df.vend_id,dp.datapackageid,ds.datasetid,s.prot_nbr as protocolnumber, s2.spnsr_nm as sponsorname, 
+      s.phase, s.prot_stat as protocolstatus, s.proj_cd as projectcode,
+      CASE  
+      WHEN ts.downloadstatus = 'SUCCESSFUL' AND ts.processstatus = 'PROCESSED WITH ERRORS' THEN 'LOADED WITH INGESTION ISSUES'
+      ELSE null END AS datasetstatus, -- NEEDS COMPLETE CASE STATEMENT
+      CASE WHEN (dc.no_of_staledays > ds.staledays) THEN 'STALE'
+      WHEN ds.active = 0 THEN 'INACTIVE'
+      WHEN ts.downloadstatus = 'SUCCESSFUL' AND ts.processstatus = 'SUCCESSFUL' THEN 'UP-TO-DATE'
+      WHEN ts.downloadstatus = 'SUCCESSFUL' AND ts.processstatus = 'PROCESSED WITH ERRORS' THEN 'UP-TO-DATE'
+      WHEN ts.downloadstatus = 'SUCCESSFUL' AND ts.processstatus = 'IN PROGRESS' THEN 'PROCESSING'
+      WHEN ts.downloadstatus = 'IN PROGRESS' AND ts.processstatus = '' THEN 'PROCESSING'
+      WHEN ts.downloadstatus = 'QUEUED' AND ts.processstatus = '' THEN 'QUEUED'
+      WHEN ts.downloadstatus = 'QUEUED' AND ts.processstatus = 'SUCCESSFUL' THEN 'UP-TO-DATE'
+      WHEN ts.downloadstatus = 'IN PROGRESS' OR ts.processstatus = 'IN PROGRESS' THEN 'PROCESSING'
+      WHEN ts.downloadstatus = 'SKIPPED' OR ts.processstatus = 'SKIPPED' THEN 'SKIPPED'
+      WHEN ts.downloadstatus = 'FAILED' OR ts.processstatus = 'FAILED' THEN 'FAILED'
+      ELSE 'FAILED' END AS jobstatus, -- NEEDS COMPLETE CASE STATEMENT
+      case when dc.no_of_staledays > ds.staledays then 'yes' else 'no' end as IS_STALE --needs comparison logic to replace 'Y' for KPI,
+      FROM protocol p
+      INNER JOIN
+      cdascfg.dataflow df
+      ON df.dataflowid = p.dataflowid
+      INNER JOIN cdascfg.datapackage dp
+      ON df.dataflowid = dp.dataflowid
+      INNER JOIN cdascfg.dataset ds
+      ON dp.datapackageid = ds.datapackageid
+      INNER JOIN cdascfg.vendor vn1
+      ON vn1.vend_id = df.vend_id
+      left JOIN cteTrnx
+      ON cteTrnx.dataflowid = df.dataflowid
+      AND cteTrnx.datapackageid = dp.datapackageid
+      AND cteTrnx.datasetid = ds.datasetid
+      left JOIN cdascfg.transaction_summary ts
+      ON cteTrnx.executionid = ts.executionid
+      AND cteTrnx.externalid = ts.externalid
+      AND cteTrnx.dataflowid = ts.dataflowid
+      AND cteTrnx.datapackageid = ts.datapackageid
+      AND ctetrnx.datasetid = ts.datasetid
+      left join checkSum dc
+      on cteTrnx.executionid = dc.executionid
+      AND cteTrnx.dataflowid = dc.dataflowid
+      AND cteTrnx.datapackageid = dc.datapackageid
+      inner join cdascfg.study s on (p.prot_id=s.prot_id)
+      INNER JOIN cdascfg.study_sponsor ss on p.prot_id = ss.prot_id
+      INNER JOIN cdascfg.sponsor s2 ON s2.spnsr_id = ss.spnsr_id
+      INNER JOIN cdascfg.study_user s3 ON p.prot_id = s3.prot_id
+      where s3.usr_id = $1
+      ) as df10 group by prot_id, protocolnumber ,sponsorname ,phase, protocolstatus,projectcode`;
+
+    Logger.info({ message: `getUserStudyList` });
 
     DB.executeQuery(query, [userId]).then((resp) => {
       const studies = resp.rows || [];
       if (studies.length > 0) {
+        // studies.forEach();
         return apiResponse.successResponseWithData(
           res,
           "Operation success",

@@ -11,6 +11,10 @@ import {
   ACTIVATEDF,
   INACTIVATE,
   VLCDATAAPI,
+  DATAFLOWSEARCH,
+  DATAFLOW_SOURCE,
+  DATAFLOW_DETAILS,
+  DATAFLOW_SAVE,
   LOCATIONAPI,
   DATAKINDAPI,
 } from "../constants";
@@ -62,6 +66,51 @@ export const statusUpdate = async (id, status) => {
 const searchStudy = async (searchQuery = "") => {
   try {
     const res = await axios.post(`${baseURL}/${STUDYSEARCH}/${searchQuery}`, {
+      userId,
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const searchDataflows = async (searchQuery = "", studyId) => {
+  try {
+    const res = await axios.post(
+      `${baseURL}/${DATAFLOWSEARCH}/${searchQuery}`,
+      {
+        userId,
+        studyId,
+      }
+    );
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const getDataFlowDetails = async (dataflowId) => {
+  try {
+    const res = await axios.get(`${baseURL}/${DATAFLOW_DETAILS}/${dataflowId}`);
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const fetchDataFlowSource = async (dataflowId) => {
+  try {
+    const res = await axios.get(`${baseURL}/${DATAFLOW_SOURCE}/${dataflowId}`);
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const dataflowSave = async (payload) => {
+  try {
+    const res = await axios.post(`${baseURL}/${DATAFLOW_SAVE}`, {
+      ...payload,
       userId,
     });
     return res.data?.data || [];

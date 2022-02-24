@@ -43,6 +43,7 @@ const Breadcrumbs = (props) => {
   );
 };
 const Header = (props) => {
+  const { headerTitle } = props;
   const classes = useStyles();
   return (
     <>
@@ -52,9 +53,7 @@ const Header = (props) => {
       />
       <div style={{ display: "flex", paddingLeft: 11 }}>
         {props.icon}
-        <Typography className={classes.contentTitle}>
-          {props.headerTitle}
-        </Typography>
+        <Typography className={classes.contentTitle}>{headerTitle}</Typography>
       </div>
       {props.datasetsCount && (
         <Typography className={classes.contentSubTitle}>

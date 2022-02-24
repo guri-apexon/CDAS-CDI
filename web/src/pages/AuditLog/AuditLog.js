@@ -124,7 +124,7 @@ const AuditLog = () => {
         variant="secondary"
         icon={DownloadIcon}
         onClick={downloadFile}
-        style={{ marginRight: "8px", border: "none" }}
+        style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
       >
         Download
       </Button>
