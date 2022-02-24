@@ -153,6 +153,7 @@ export default function CDTList() {
       setCName("");
       setStatus(false);
       setDesc("");
+      setNameError(false);
     }, 500);
   };
 
@@ -434,7 +435,6 @@ export default function CDTList() {
                     onChange={(e) => handleChange(e)}
                     optional
                     sizeAdjustable
-                    required
                   />
                 </div>
               </div>
