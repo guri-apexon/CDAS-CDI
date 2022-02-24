@@ -134,6 +134,7 @@ export default function CDTList() {
   const [status, setStatus] = useState(true);
   const [desc, setDesc] = useState("");
   const [selectedRow, setSelectedRow] = useState(null);
+  const [nameError, setNameError] = useState(false);
   const columns = generateColumns(tableRows);
   const [columnsState, setColumns] = useState([...columns]);
   const dispatch = useDispatch();
@@ -227,9 +228,10 @@ export default function CDTList() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "name") {
-      inputAlphaNumericWithUnderScore(e, (v) => {
-        setCName(v);
-      });
+      // inputAlphaNumericWithUnderScore(e, (v) => {
+      //   setCName(v);
+      // });
+      setCName(value);
     } else if (name === "desc") {
       setDesc(value);
     }
@@ -243,12 +245,24 @@ export default function CDTList() {
   const handleSave = async () => {
     if (cName === "") {
       messageContext.showErrorMessage("Data Type Name shouldn't be empty");
+      hideViewData();
       return false;
     }
     if (ens === "") {
       messageContext.showErrorMessage("External System shouldn't be empty");
+      hideViewData();
       return false;
     }
+    const regexp = /^[a-zA-Z0-9-_]+$/;
+
+    if (cName && cName.search(regexp) === -1) {
+      setNameError(true);
+      console.log("tes");
+      return false;
+    }
+
+    setNameError(false);
+
     if (selectedRow) {
       // console.log("update", cName, selectedRow, status, desc, ensId, ens);
       updateDK({
@@ -374,6 +388,10 @@ export default function CDTList() {
                     onChange={(e) => handleChange(e)}
                     required
                     fullWidth
+                    helperText={
+                      nameError && "Only Alphanumeric and '_' are allowed"
+                    }
+                    error={nameError}
                   />
                 </div>
                 <div style={{ display: "flex" }}>
