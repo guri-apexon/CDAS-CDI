@@ -229,12 +229,24 @@ const LeftPanel = () => {
     const unPinnedStudy = studyList.filter((e) => !pinned.includes(e.prot_id));
     const pinnedList = _.orderBy(
       pinnedstudy,
-      ["priorityCount", "ingestionCount", "staleFilesCount"],
+      [
+        "priorityCount",
+        "ingestionCount",
+        "staleFilesCount",
+        "sponsorname",
+        "protocolnumber",
+      ],
       ["asc", "asc", "asc"]
     );
     const unpinnedList = _.orderBy(
       unPinnedStudy,
-      ["priorityCount", "ingestionCount", "staleFilesCount"],
+      [
+        "priorityCount",
+        "ingestionCount",
+        "staleFilesCount",
+        "sponsorname",
+        "protocolnumber",
+      ],
       ["desc", "desc", "desc"]
     );
     setPinnedStudies([...pinnedList]);
