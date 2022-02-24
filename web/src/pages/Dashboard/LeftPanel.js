@@ -8,6 +8,7 @@ import Divider from "apollo-react/components/Divider";
 import Typography from "apollo-react/components/Typography";
 import Search from "apollo-react/components/Search";
 import { makeStyles } from "@material-ui/core/styles";
+import _ from "lodash";
 import { ReactComponent as PriorityIcon } from "../../components/Icons/Priority.svg";
 import { ReactComponent as IngestionIcon } from "../../components/Icons/Issue.svg";
 import { ReactComponent as StaleFilesIcon } from "../../components/Icons/Stale.svg";
@@ -24,12 +25,6 @@ import searchStudy, {
 import { updateSelectedStudy } from "../../store/actions/DashboardAction";
 
 const styles = {
-  page: {
-    padding: 24,
-  },
-  content: {
-    flexGrow: 1,
-  },
   panelTitle: {
     padding: "24px 24px 0px 24px",
     fontWeight: 600,
@@ -83,15 +78,92 @@ const styles = {
   bold: {
     fontWeight: 600,
   },
-  pinnedCards: {
-    overflow: "auto",
-    maxHeight: "200vh",
-  },
-  unPinnedCards: {
-    paddingTop: 5,
-    overflow: "auto",
-    maxHeight: "100vh",
-  },
+};
+
+const CustomCard = ({
+  data,
+  index,
+  isPinned,
+  unPinningStudy,
+  pinningStudy,
+  setSelectedStudy,
+  selectedStudy,
+  classes,
+}) => {
+  const {
+    prot_id: protId,
+    protocolnumber,
+    sponsorname,
+    projectcode,
+    phase,
+    staleFilesCount,
+    ingestionCount,
+    priorityCount,
+  } = data;
+
+  return (
+    <Card
+      color="dark"
+      key={index}
+      interactive
+      className={classNames(
+        classes.card,
+        protId === selectedStudy && classes.cardHighlight
+      )}
+      onClick={() => setSelectedStudy(protId)}
+    >
+      {/* {console.log("data", data)} */}
+      <CardContent>
+        <div className="cardTopBar">
+          <div className="cardLeft">
+            {priorityCount && (
+              <span className="priority">
+                <PriorityIcon />
+                {priorityCount}
+              </span>
+            )}
+            {ingestionCount && (
+              <span>
+                <IngestionIcon />
+                {ingestionCount}
+              </span>
+            )}
+            {staleFilesCount && (
+              <span>
+                <StaleFilesIcon />
+                {staleFilesCount}
+              </span>
+            )}
+          </div>
+          <div className="cardRight">
+            {isPinned ? (
+              <PinnedIcon onClick={() => unPinningStudy(protId)} />
+            ) : (
+              <UnPinnedIcon onClick={() => pinningStudy(protId)} />
+            )}
+          </div>
+        </div>
+        <Typography className={classes.bold}>{protocolnumber}</Typography>
+        <Typography className={classes.cardSponsor} variant="caption">
+          {sponsorname}
+        </Typography>
+        <div className="cardBottom">
+          <div className="cardPC">
+            <Typography className={classes.bold}>Project Code</Typography>
+            <Typography className={classes.cardProjectCode} variant="caption">
+              {projectcode}
+            </Typography>
+          </div>
+          <div className="cardP">
+            <Typography className={classes.bold}>Phase</Typography>
+            <Typography className={classes.cardPhase} variant="caption">
+              {phase}
+            </Typography>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
 
 const LeftPanel = () => {
@@ -155,8 +227,30 @@ const LeftPanel = () => {
   useEffect(() => {
     const pinnedstudy = studyList.filter((e) => pinned.includes(e.prot_id));
     const unPinnedStudy = studyList.filter((e) => !pinned.includes(e.prot_id));
-    setPinnedStudies([...pinnedstudy]);
-    setUnPinnedStudies([...unPinnedStudy]);
+    const pinnedList = _.orderBy(
+      pinnedstudy,
+      [
+        "priorityCount",
+        "ingestionCount",
+        "staleFilesCount",
+        "sponsorname",
+        "protocolnumber",
+      ],
+      ["asc", "asc", "asc"]
+    );
+    const unpinnedList = _.orderBy(
+      unPinnedStudy,
+      [
+        "priorityCount",
+        "ingestionCount",
+        "staleFilesCount",
+        "sponsorname",
+        "protocolnumber",
+      ],
+      ["desc", "desc", "desc"]
+    );
+    setPinnedStudies([...pinnedList]);
+    setUnPinnedStudies([...unpinnedList]);
     // console.log("unpinned", unPinningStudy);
   }, [studyList, pinned]);
 
@@ -168,151 +262,75 @@ const LeftPanel = () => {
     // console.log("selected", selectedStudy, clicked);
   }, [selectedStudy]);
 
-  const CustomCard = ({ data, index, isPinned }) => {
-    const priorityCount = 3;
-    const ingestionCount = 2;
-    const staleFilesCount = 1;
-
-    const {
-      prot_id: protId,
-      protocolnumber,
-      sponsorname,
-      projectcode,
-      phase,
-    } = data;
-
-    return (
-      <Card
-        color="dark"
-        key={index}
-        interactive
-        className={classNames(
-          classes.card,
-          protId === selectedStudy && classes.cardHighlight
-        )}
-        onClick={() => setSelectedStudy(protId)}
-      >
-        <CardContent>
-          <div className="cardTopBar">
-            <div className="cardLeft">
-              {priorityCount && (
-                <span className="priority">
-                  <PriorityIcon />
-                  {priorityCount}
-                </span>
-              )}
-              {ingestionCount && (
-                <span>
-                  <IngestionIcon />
-                  {ingestionCount}
-                </span>
-              )}
-              {staleFilesCount && (
-                <span>
-                  <StaleFilesIcon />
-                  {staleFilesCount}
-                </span>
-              )}
-            </div>
-            <div className="cardRight">
-              {isPinned ? (
-                <PinnedIcon onClick={() => unPinningStudy(protId)} />
-              ) : (
-                <UnPinnedIcon onClick={() => pinningStudy(protId)} />
-              )}
-            </div>
-          </div>
-          <Typography className={classes.bold}>{protocolnumber}</Typography>
-          <Typography className={classes.cardSponsor} variant="caption">
-            {sponsorname}
-          </Typography>
-          <div className="cardBottom">
-            <div className="cardPC">
-              <Typography className={classes.bold}>Project Code</Typography>
-              <Typography className={classes.cardProjectCode} variant="caption">
-                {projectcode}
-              </Typography>
-            </div>
-            <div className="cardP">
-              <Typography className={classes.bold}>Phase</Typography>
-              <Typography className={classes.cardPhase} variant="caption">
-                {phase}
-              </Typography>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
-
   return (
-    <>
-      <div className="leftPanel">
-        <div className="searchBox">
-          <Typography
-            variant="title1"
-            className={classes.panelTitle}
-            gutterBottom
-          >
-            My Assignments
+    <div className="leftPanel">
+      <div className="searchBox">
+        <Typography
+          variant="title1"
+          className={classes.panelTitle}
+          gutterBottom
+        >
+          My Assignments
+        </Typography>
+        <Typography className={classes.panelSubtitle} variant="caption">
+          {studyList.length > 1
+            ? `${studyList.length} Studies`
+            : `${studyList.length} Study`}
+        </Typography>
+        <Search
+          className={classes.searchBar}
+          placeholder="Search for protocol, project code or sponsor"
+          value={searchTxt}
+          onChange={searchTrigger}
+        />
+        <Divider />
+      </div>
+      {pinnedStudies.length > 0 && (
+        <div className="pinned-studies">
+          <Typography className={classes.pinTitle} variant="caption">
+            Pinned Studies
           </Typography>
-          <Typography className={classes.panelSubtitle} variant="caption">
-            {studyList.length > 1
-              ? `${studyList.length} Studies`
-              : `${studyList.length} Study`}
-          </Typography>
-          <Search
-            className={classes.searchBar}
-            placeholder="Search for protocol, project code or sponsor"
-            value={searchTxt}
-            onChange={searchTrigger}
-          />
+          <div className="customScrollbar pinnedCards">
+            {pinnedStudies.map((e, index) => (
+              <CustomCard
+                key={e.prot_id}
+                data={e}
+                index={`p${index}`}
+                isPinned={true}
+                unPinningStudy={unPinningStudy}
+                classes={classes}
+                setSelectedStudy={setSelectedStudy}
+                selectedStudy={selectedStudy}
+              />
+            ))}
+          </div>
           <Divider />
         </div>
-        {pinnedStudies.length > 0 && (
-          <div className="pinned-studies">
-            <Typography className={classes.pinTitle} variant="caption">
-              Pinned Studies
-            </Typography>
-            <div className={classNames("customScrollbar", classes.pinnedCards)}>
-              {pinnedStudies.map((e, index) => (
-                <CustomCard
-                  key={e.prot_id}
-                  data={e}
-                  index={`p${index}`}
-                  isPinned={true}
-                />
-              ))}
-            </div>
-            <Divider />
-          </div>
-        )}
-        {unPinnedStudies.length > 0 && (
-          <div
-            className={classNames(
-              "customScrollbar unpinned-studies",
-              classes.unPinnedCards
-            )}
-          >
-            {loading ? (
-              <Progress />
-            ) : (
-              unPinnedStudies.map((e, index) => (
-                <CustomCard
-                  key={e.prot_id}
-                  data={e}
-                  index={`up${index}`}
-                  isPinned={false}
-                />
-              ))
-            )}
-          </div>
-        )}
-        {unPinnedStudies.length === 0 && (
-          <div className="no-data-found"> No Studies Found </div>
-        )}
-      </div>
-    </>
+      )}
+      {unPinnedStudies.length > 0 && (
+        <div className="customScrollbar unpinned-studies unPinnedCards">
+          {loading ? (
+            <Progress />
+          ) : (
+            unPinnedStudies.map((e, index) => (
+              <CustomCard
+                key={e.prot_id}
+                data={e}
+                index={`up${index}`}
+                isPinned={false}
+                pinningStudy={pinningStudy}
+                classes={classes}
+                setSelectedStudy={setSelectedStudy}
+                selectedStudy={selectedStudy}
+              />
+            ))
+          )}
+        </div>
+      )}
+      {unPinnedStudies.length === 0 && (
+        <div className="no-data-found"> No Studies Found </div>
+      )}
+    </div>
   );
 };
 

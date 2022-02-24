@@ -1,19 +1,12 @@
 import Footer from "apollo-react/components/Footer";
 
-const wrapperStyle = {
-  background: "#F6F7FB",
-  // position: "absolute",
-  // bottom: 0,
-};
-
-const footerStyle = {
-  maxWidth: "max-content",
-  padding: 0,
-};
-
-const AppFooter = () => {
+const AppFooter = ({ width }) => {
+  const footerStyle = {
+    maxWidth: { width },
+    padding: 0,
+  };
   return (
-    <div style={wrapperStyle}>
+    <div style={{ background: "#F6F7FB" }}>
       <Footer
         buttonProps={[
           {

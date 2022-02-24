@@ -19,6 +19,12 @@ import {
   ADD_DATAFLOW,
   GET_VLC_RULES,
   GET_DATASET_INGESTION_SUMMARY,
+  GET_LOCATIONS_ADMIN,
+  GET_CDT_LIST,
+  UPDATE_LOCATION_DATA,
+  GET_PREVIEW_SQL,
+  GET_SQL_TABLES,
+  GET_SQL_COLUMNS,
 } from "../../constants";
 
 import {
@@ -38,6 +44,9 @@ import {
   fetchDatasetDetail,
   updateDataset,
   fetchDatasetColumns,
+  fetchSQLTables,
+  fetchSQLColumns,
+  fetchPreviewSQL,
   fetchVLCData,
 } from "./dataSets.saga";
 
@@ -45,12 +54,17 @@ import {
   fetchVendorsData,
   fetchLocationsData,
   fetchServiceOwnersData,
-  saveLocationData,
   fetchDataflowDetail,
   addDataFlow,
 } from "./dataFlow.saga";
 
 import { fetchAuditLogs } from "./auditLogs.saga";
+
+import {
+  fetchCDTList,
+  updateLocationData,
+  saveLocationData,
+} from "./cdiAdmin.saga";
 
 function* cdasCoreSaga() {
   yield takeEvery(GET_DATA_FLOW_LIST, fetchFlowData);
@@ -75,6 +89,12 @@ function* cdasCoreSaga() {
   yield takeLatest(UPDATE_DATASET_DATA, updateDataset);
   yield takeLatest(GET_DATASET_COLUMNS, fetchDatasetColumns);
   yield takeLatest(GET_VLC_RULES, fetchVLCData);
+  yield takeLatest(GET_LOCATIONS_ADMIN, fetchLocationsData);
+  yield takeLatest(GET_CDT_LIST, fetchCDTList);
+  yield takeLatest(UPDATE_LOCATION_DATA, updateLocationData);
+  yield takeLatest(GET_PREVIEW_SQL, fetchPreviewSQL);
+  yield takeLatest(GET_SQL_TABLES, fetchSQLTables);
+  yield takeLatest(GET_SQL_COLUMNS, fetchSQLColumns);
 }
 
 export default cdasCoreSaga;

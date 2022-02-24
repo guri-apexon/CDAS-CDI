@@ -1,8 +1,10 @@
+/* eslint-disable eqeqeq */
 import moment from "moment";
 import React from "react";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import { TextField } from "apollo-react/components/TextField/TextField";
+import { hive2CDH, hive2CDP, impala, oracle, SQLServer } from "../constants";
 
 export const getCookie = (key) => {
   const b = document.cookie.match(`(^|;)\\s*${key}\\s*=\\s*([^;]+)`);
@@ -182,6 +184,21 @@ export const compareDates = (accessor, sortOrder) => {
   };
 };
 
+// eslint-disable-next-line consistent-return
+export const inputAlphaNumericWithUnderScore = (e, callback) => {
+  const value = e.target.value
+    ? e.target.value.replace(/[^0-9a-zA-Z_]+/gi, "")
+    : "";
+
+  if (e.target.value !== value) {
+    e.target.value = value;
+  }
+
+  if (typeof callback === "function") {
+    return callback(value);
+  }
+};
+
 export const createAutocompleteFilter =
   (source) =>
   ({ accessor, filters, updateFilterValue }) => {
@@ -315,6 +332,23 @@ export const createStringArraySearchFilter = (accessor) => {
     );
 };
 
+export const createStatusArraySearchFilter = (accessor) => {
+  return (row, filters) => {
+    return (
+      !Array.isArray(filters[accessor]) ||
+      filters[accessor].length === 0 ||
+      filters[accessor].some((value) => {
+        if (value == "Inactive" || value == 0) {
+          return row[accessor] == 0 || row[accessor] == "inactive";
+        }
+        if (value == "Active" || value == 1) {
+          return row[accessor] == 1 || row[accessor] == "active";
+        }
+        return false;
+      })
+    );
+  };
+};
 export const toast = (text = "", type = "success") => {
   const customEvent = new CustomEvent("toast", { detail: { text, type } });
   document.dispatchEvent(customEvent);
@@ -370,6 +404,32 @@ export const formatData = (incomingData, protNo) => {
   return [];
 };
 
+export const Capitalize = (str) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+export const createSourceFromKey = (tableRows, key) => {
+  return Array.from(
+    new Set(
+      tableRows
+        ?.map((r) => ({ label: Capitalize(r[key]) }))
+        .map((item) => item.label)
+    )
+  )
+    .map((label) => {
+      return { label };
+    })
+    .sort((a, b) => {
+      if (a.label < b.label) {
+        return -1;
+      }
+      if (a.label > b.label) {
+        return 1;
+      }
+      return 0;
+    });
+};
+
 export const dataStruct = [
   {
     value: "tabular",
@@ -420,3 +480,46 @@ export const fileTypes = ["SAS", "Excel", "Delimited", "Fixed Width"];
 export const delimeters = ["COMMA", "TAB", "TILDE", "PIPE"];
 export const loadTypes = ["Cumulative", "Incremental"];
 export const YesNo = ["Yes", "No"];
+
+export const truncateString = (str, length) => {
+  if (str) {
+    const ending = "...";
+    if (str.length > length) {
+      return str.substring(0, length - ending.length) + ending;
+    }
+    return str;
+  }
+  return "";
+};
+
+export const generateConnectionURL = (locType, hostName, port, dbName) => {
+  if (locType != "" && (locType === "SFTP" || locType === "FTPS")) {
+    return hostName;
+  }
+  if (locType === "Hive CDP" || locType === "Hive CDH") {
+    if (locType === "Hive CDP") {
+      return `jdbc:hive2://${hostName}:${port}/${hive2CDP}`;
+    }
+    return `jdbc:hive2://${hostName}:${port}/${hive2CDH}`;
+  }
+  if (locType === "Oracle") {
+    return `jdbc:${locType}${oracle}${hostName}:${port}:${dbName}`;
+  }
+  if (locType === "MySQL") {
+    return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
+  }
+  if (locType === "SQL Server") {
+    return `jdbc:${locType}://${hostName}:${port};${SQLServer}=${dbName}`;
+  }
+  if (locType === "PostgreSQL") {
+    return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
+  }
+  if (locType === "Impala") {
+    return `jdbc:${locType}://${hostName}:${port}/${impala}`;
+  }
+  if (locType && hostName && port && dbName) {
+    return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
+  }
+
+  return "";
+};

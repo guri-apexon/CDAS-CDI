@@ -16,7 +16,6 @@ import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Tooltip from "apollo-react/components/Tooltip";
 import {
   createStringSearchFilter,
-  compareDates,
   compareNumbers,
   compareStrings,
 } from "apollo-react/components/Table";
@@ -51,8 +50,7 @@ const fieldStylesNo = {
 export const makeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText =
-      checkRequired(row[key]) || checkRequiredValue(row[key], key, row.primary);
+    const errorText = checkRequiredValue(row[key], key, row.primary);
     return row.editMode ? (
       <Select
         size="small"
@@ -79,7 +77,6 @@ export const makeEditableSelectCell =
 
 export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   const errorText =
-    checkRequired(row[key]) ||
     checkNumeric(row[key]) ||
     checkCharacterLength(row[key], key, row.minLength, row.maxLength);
   return row.editMode ? (
@@ -99,12 +96,10 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   );
 };
 
-export const EditableCell = ({ row, column: { accessor: key } }) => {
-  const errorText =
-    checkRequired(row[key]) ||
-    checkAlphaNumeric(row[key], key) ||
-    checkFormat(row[key], key, row.dataType);
-  return row.editMode ? (
+export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
+  const { editMode } = row;
+  const errorText = checkRequired(row[key]);
+  return editMode ? (
     <TextField
       size="small"
       fullWidth
@@ -112,6 +107,46 @@ export const EditableCell = ({ row, column: { accessor: key } }) => {
       inputProps={{
         maxLength: row.fileType === "SAS" && key === "columnName" ? 32 : null,
       }}
+      onChange={(e) =>
+        row.editRow(row.uniqueId, key, e.target.value, errorText)
+      }
+      error={!row.isInitLoad && errorText ? true : false}
+      helperText={!row.isInitLoad ? errorText : ""}
+      {...fieldStyles}
+    />
+  ) : (
+    row[key]
+  );
+};
+
+export const FormatCell = ({ row, column: { accessor: key } }) => {
+  const { editMode } = row;
+  const errorText = checkFormat(row[key], key, row.dataType);
+  return editMode ? (
+    <TextField
+      size="small"
+      fullWidth
+      value={row[key]}
+      onChange={(e) =>
+        row.editRow(row.uniqueId, key, e.target.value, errorText)
+      }
+      error={!row.isInitLoad && errorText ? true : false}
+      helperText={!row.isInitLoad ? errorText : ""}
+      {...fieldStyles}
+    />
+  ) : (
+    row[key]
+  );
+};
+
+export const EditableCell = ({ row, column: { accessor: key } }) => {
+  const { editMode } = row;
+  const errorText = checkAlphaNumeric(row[key], key);
+  return editMode ? (
+    <TextField
+      size="small"
+      fullWidth
+      value={row[key]}
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
@@ -137,14 +172,9 @@ export const ActionCell = ({ row }) => {
     onRowCancel,
     onRowDelete,
     editMode: eMode,
-    isHavingError,
-    // isEditAll,
+    isHavingColumnName,
     onRowSave,
   } = row;
-
-  // if (isEditAll) {
-  //   return <></>;
-  // }
 
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
@@ -159,7 +189,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        // disabled={isHavingError}
+        disabled={!isHavingColumnName}
       >
         Save
       </Button>
@@ -185,7 +215,7 @@ export const columns = [
   {
     accessor: "uniqueId",
     hidden: true,
-    sortFunction: compareStrings,
+    sortFunction: compareNumbers,
   },
   {
     header: "Variable Label",
@@ -197,47 +227,60 @@ export const columns = [
   {
     header: "Column Name/Designator",
     accessor: "columnName",
+    customCell: ColumnNameCell,
+    sortFunction: compareStrings,
+  },
+  {
+    header: "Position",
+    accessor: "position",
     customCell: EditableCell,
   },
   {
     header: "Format",
     accessor: "format",
-    customCell: EditableCell,
+    customCell: FormatCell,
   },
   {
     header: "Data Type",
     accessor: "dataType",
     customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
+    sortFunction: compareStrings,
   },
   {
     header: "Primary?",
     accessor: "primary",
     customCell: makeEditableSelectCell(["Yes", "No"]),
+    sortFunction: compareStrings,
   },
   {
     header: "Unique?",
     accessor: "unique",
     customCell: makeEditableSelectCell(["Yes", "No"]),
+    sortFunction: compareStrings,
   },
   {
     header: "Required?",
     accessor: "required",
     customCell: makeEditableSelectCell(["Yes", "No"]),
+    sortFunction: compareStrings,
   },
   {
     header: "Min length",
     accessor: "minLength",
     customCell: NumericEditableCell,
+    sortFunction: compareNumbers,
   },
   {
     header: "Max length",
     accessor: "maxLength",
     customCell: NumericEditableCell,
+    sortFunction: compareNumbers,
   },
   {
     header: "List of values",
     accessor: "values",
     customCell: EditableCell,
+    sortFunction: compareStrings,
   },
   {
     accessor: "action",
@@ -261,6 +304,7 @@ export const CustomHeader = ({
   addMulti,
   cancelMulti,
   newRows,
+  disableSaveAll,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -269,34 +313,35 @@ export const CustomHeader = ({
           <Button size="small" style={{ marginRight: 8 }} onClick={onCancelAll}>
             Cancel All
           </Button>
-          <Button size="small" variant="primary" onClick={onSaveAll}>
+          <Button
+            size="small"
+            variant="primary"
+            onClick={onSaveAll}
+            disabled={disableSaveAll}
+          >
             Save All
           </Button>
         </>
       )}
-      {!isEditAll && !isMultiAdd && (
+      {!isMultiAdd && (
         <>
           <Tooltip title="Add rows" disableFocusListener>
             <IconMenuButton
               id="actions-1"
               menuItems={addMenuItems}
               size="small"
+              disabled={isEditAll}
             >
               <Plus />
             </IconMenuButton>
           </Tooltip>
           <Tooltip title="Edit all" disableFocusListener>
-            <IconButton color="primary" size="small">
+            <IconButton color="primary" size="small" disabled={isEditAll}>
               <Pencil onClick={onEditAll} />
             </IconButton>
           </Tooltip>
         </>
       )}
-      {/* {!isEditAll && !isMultiAdd && (
-        <>
-
-        </>
-      )} */}
       {isMultiAdd && (
         <>
           <TextField
@@ -322,14 +367,13 @@ export const CustomHeader = ({
         </>
       )}
       {(locationType?.toLowerCase() === "sftp" ||
-        locationType?.toLowerCase() === "ftps") &&
-        isEditAll && (
-          <Tooltip title="Import dataset column settings" disableFocusListener>
-            <IconButton color="primary" size="small">
-              <Upload />
-            </IconButton>
-          </Tooltip>
-        )}
+        locationType?.toLowerCase() === "ftps") && (
+        <Tooltip title="Import dataset column settings" disableFocusListener>
+          <IconButton color="primary" size="small" disabled={isEditAll}>
+            <Upload />
+          </IconButton>
+        </Tooltip>
+      )}
       <Divider
         orientation="vertical"
         flexItem

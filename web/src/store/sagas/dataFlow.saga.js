@@ -8,8 +8,6 @@ import {
   FETCH_VENDOR_SUCCESS,
   FETCH_VENDOR_FAILURE,
   FETCH_SERVICE_OWNERS_SUCCESS,
-  STORE_LOCATION_SUCCESS,
-  STORE_LOCATION_FAILURE,
   FETCH_SERVICE_OWNERS_FAILURE,
   LOCATIONAPI,
   VENDORAPI,
@@ -18,7 +16,6 @@ import {
   FETCH_DATAFLOW_DETAIL_SUCCESS,
   DATAFLOW_SAVE,
   ADD_DATAFLOW_SUCCESS,
-  DATAFLOWS_LIST_FAILURE,
   ADD_DATAFLOW_FAILURE,
 } from "../../constants";
 
@@ -76,24 +73,6 @@ export function* fetchLocationsData(action = null) {
     });
   } catch (e) {
     yield put({ type: FETCH_LOCATION_FAILURE, message: e.message });
-  }
-}
-
-export function* saveLocationData(action) {
-  try {
-    const fetchSBData = yield call(
-      axios.post,
-      `${baseURL}/${LOCATIONAPI}/create`,
-      action.values
-    );
-
-    // console.log("study", fetchSBData);
-    yield put({
-      type: STORE_LOCATION_SUCCESS,
-      location: fetchSBData.data.data,
-    });
-  } catch (e) {
-    yield put({ type: STORE_LOCATION_FAILURE, message: e.message });
   }
 }
 

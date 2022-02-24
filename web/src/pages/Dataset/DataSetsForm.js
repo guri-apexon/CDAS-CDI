@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch } from "react-redux";
 import {
@@ -98,6 +98,7 @@ const DataSetsFormBase = (props) => {
     defaultLoadType,
     values,
   } = props;
+  const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
 
   const setDefaultValues = (e) => {
     const fileValue = e.target.value;
@@ -117,7 +118,23 @@ const DataSetsFormBase = (props) => {
     }
   };
 
-  console.log(values, "values12");
+  useEffect(() => {
+    if (values?.clinicalDataType) {
+      const filteredDK = datakind?.filter(
+        (e) => e.value === values.clinicalDataType[0]
+      );
+      if (filteredDK?.length) {
+        SetSelectedClinicalData([]);
+        setTimeout(() => {
+          SetSelectedClinicalData([filteredDK[0].value]);
+        });
+        // change("DataSetsForm", "clinicalDataType");
+      }
+    }
+    if (!values) {
+      SetSelectedClinicalData(["1"]);
+    }
+  }, [values]);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -253,17 +270,19 @@ const DataSetsFormBase = (props) => {
               <Divider orientation="vertical" variant="middle" />
             </Grid>
             <Grid item md={6}>
-              <ReduxFormAutocomplete
-                name="clinicalDataType"
-                autoSelect
-                id="clinicalDataType"
-                label="Clinical Data Type"
-                source={datakind}
-                className="smallSize_autocomplete"
-                variant="search"
-                singleSelect
-                fullWidth
-              />
+              {selectedClinicalData.length ? (
+                <ReduxFormAutocomplete
+                  name="clinicalDataType"
+                  autoSelect
+                  id="clinicalDataType"
+                  label="Clinical Data Type"
+                  source={datakind}
+                  className="smallSize_autocomplete"
+                  variant="search"
+                  singleSelect
+                  fullWidth
+                />
+              ) : null}
               <ReduxFormTextField
                 fullWidth
                 name="transferFrequency"

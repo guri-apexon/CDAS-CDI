@@ -11,14 +11,106 @@ import {
   ACTIVATEDF,
   INACTIVATE,
   VLCDATAAPI,
+  DATAFLOWSEARCH,
+  DATAFLOW_SOURCE,
+  DATAFLOW_DETAILS,
+  DATAFLOW_SAVE,
+  LOCATIONAPI,
+  DATAKINDAPI,
 } from "../constants";
 import { getCookie } from "../utils/index";
 
 const userId = getCookie("user.id");
 
+const config = { headers: { userId } };
+
+export const checkLocationExistsInDataFlow = async (locId) => {
+  try {
+    const res = await axios.get(
+      `${baseURL}/${LOCATIONAPI}/check-in-df/${locId}`
+    );
+    return res.data?.data || 0;
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const statusUpdate = async (id, status) => {
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(
+          `${baseURL}/${LOCATIONAPI}/statusUpdate`,
+          {
+            id,
+            status,
+            userId,
+          },
+          config
+        )
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          console.log("Err", err);
+          if (err.response) {
+            resolve(err.response.data);
+          }
+        });
+    });
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
 const searchStudy = async (searchQuery = "") => {
   try {
     const res = await axios.post(`${baseURL}/${STUDYSEARCH}/${searchQuery}`, {
+      userId,
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const searchDataflows = async (searchQuery = "", studyId) => {
+  try {
+    const res = await axios.post(
+      `${baseURL}/${DATAFLOWSEARCH}/${searchQuery}`,
+      {
+        userId,
+        studyId,
+      }
+    );
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const getDataFlowDetails = async (dataflowId) => {
+  try {
+    const res = await axios.get(`${baseURL}/${DATAFLOW_DETAILS}/${dataflowId}`);
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const fetchDataFlowSource = async (dataflowId) => {
+  try {
+    const res = await axios.get(`${baseURL}/${DATAFLOW_SOURCE}/${dataflowId}`);
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const dataflowSave = async (payload) => {
+  try {
+    const res = await axios.post(`${baseURL}/${DATAFLOW_SAVE}`, {
+      ...payload,
       userId,
     });
     return res.data?.data || [];
@@ -88,9 +180,91 @@ export const inActivateDF = async (dataFlowId, versionNo) => {
   }
 };
 
+export const activateDK = async (dkId, dkStatus) => {
+  try {
+    const res = await axios.post(`${baseURL}/${DATAKINDAPI}/status-update`, {
+      dkId,
+      dkStatus,
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const inActivateDK = async (dkId, dkStatus) => {
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${baseURL}/${DATAKINDAPI}/status-update`, {
+          dkId,
+          dkStatus,
+        })
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          // console.log("Err", err);
+          if (err.response) {
+            resolve(err.response.data);
+          }
+        });
+    });
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const addDK = async (reqBody) => {
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${baseURL}/${DATAKINDAPI}/create`, reqBody)
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          if (err.response) {
+            resolve(err.response.data);
+          }
+        });
+    });
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const updateDK = async (reqBody) => {
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${baseURL}/${DATAKINDAPI}/update`, reqBody)
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          if (err.response) {
+            resolve(err.response.data);
+          }
+        });
+    });
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
 export const getStudies = async () => {
   try {
     const res = await axios.get(`${baseURL}/${STUDYLIST}/${userId}`);
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const getENSList = async () => {
+  try {
+    const res = await axios.get(`${baseURL}/${DATAKINDAPI}/ens/list`);
     return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);

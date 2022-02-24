@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-script-url */
 import React, { useState, useContext, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
@@ -6,7 +7,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
 import Banner from "apollo-react/components/Banner";
 import Panel from "apollo-react/components/Panel/Panel";
-// import Header from "./Header";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
@@ -175,23 +175,23 @@ const Dataset = () => {
 
   const goToDataflow = () => {
     if (selectedDSDetails.dataflowid) {
-      history.push("/dataflow-management");
+      history.push("/dashboard/dataflow-management");
     }
-    history.push("/dataflow-management");
+    history.push("/dashboard/dataflow-management");
   };
 
   const goToPackage = () => {
     if (selectedDSDetails.dataflowid) {
-      history.push("/dataflow-management");
+      history.push("/dashboard/dataflow-management");
     }
-    history.push("/dataflow-management");
+    history.push("/dashboard/dataflow-management");
   };
 
   const gotoDataflow = () => {
     if (selectedDSDetails.dataflowid) {
-      history.push("/data-packages");
+      history.push("/dashboard/data-packages");
     }
-    history.push("/data-packages");
+    history.push("/dashboard/data-packages");
   };
 
   const breadcrumbItems = [
@@ -276,7 +276,6 @@ const Dataset = () => {
 
   return (
     <>
-      {/* <PageHeader height={64} /> */}
       {(error || sucessMsg) && (
         <Banner
           variant={sucessMsg ? "success" : "error"}
@@ -312,7 +311,11 @@ const Dataset = () => {
               <div style={{ display: "flex", paddingLeft: 11 }}>
                 <DatasetsIcon />
                 <Typography className={classes.cTitle}>
-                  {selectedDSDetails.datasetName ?? "Dataset name"}
+                  {selectedDSDetails.datasetName
+                    ? selectedDSDetails.datasetName
+                    : selectedDataset.datasetName
+                    ? selectedDataset.datasetName
+                    : "Dataset name"}
                 </Typography>
               </div>
               {/* {datasetsCount && (
