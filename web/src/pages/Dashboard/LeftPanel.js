@@ -8,6 +8,7 @@ import Divider from "apollo-react/components/Divider";
 import Typography from "apollo-react/components/Typography";
 import Search from "apollo-react/components/Search";
 import { makeStyles } from "@material-ui/core/styles";
+import _ from "lodash";
 import { ReactComponent as PriorityIcon } from "../../components/Icons/Priority.svg";
 import { ReactComponent as IngestionIcon } from "../../components/Icons/Issue.svg";
 import { ReactComponent as StaleFilesIcon } from "../../components/Icons/Stale.svg";
@@ -89,16 +90,15 @@ const CustomCard = ({
   selectedStudy,
   classes,
 }) => {
-  const priorityCount = 3;
-  const ingestionCount = 2;
-  const staleFilesCount = 1;
-
   const {
     prot_id: protId,
     protocolnumber,
     sponsorname,
     projectcode,
     phase,
+    staleFilesCount,
+    ingestionCount,
+    priorityCount,
   } = data;
 
   return (
@@ -112,6 +112,7 @@ const CustomCard = ({
       )}
       onClick={() => setSelectedStudy(protId)}
     >
+      {/* {console.log("data", data)} */}
       <CardContent>
         <div className="cardTopBar">
           <div className="cardLeft">
@@ -226,8 +227,18 @@ const LeftPanel = () => {
   useEffect(() => {
     const pinnedstudy = studyList.filter((e) => pinned.includes(e.prot_id));
     const unPinnedStudy = studyList.filter((e) => !pinned.includes(e.prot_id));
-    setPinnedStudies([...pinnedstudy]);
-    setUnPinnedStudies([...unPinnedStudy]);
+    const pinnedList = _.orderBy(
+      pinnedstudy,
+      ["priorityCount", "ingestionCount", "staleFilesCount"],
+      ["asc", "asc", "asc"]
+    );
+    const unpinnedList = _.orderBy(
+      unPinnedStudy,
+      ["priorityCount", "ingestionCount", "staleFilesCount"],
+      ["desc", "desc", "desc"]
+    );
+    setPinnedStudies([...pinnedList]);
+    setUnPinnedStudies([...unpinnedList]);
     // console.log("unpinned", unPinningStudy);
   }, [studyList, pinned]);
 
