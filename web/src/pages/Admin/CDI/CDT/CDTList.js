@@ -134,6 +134,7 @@ export default function CDTList() {
   const [status, setStatus] = useState(true);
   const [desc, setDesc] = useState("");
   const [selectedRow, setSelectedRow] = useState(null);
+  const [nameError, setNameError] = useState(false);
   const columns = generateColumns(tableRows);
   const [columnsState, setColumns] = useState([...columns]);
   const dispatch = useDispatch();
@@ -227,9 +228,10 @@ export default function CDTList() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "name") {
-      inputAlphaNumericWithUnderScore(e, (v) => {
-        setCName(v);
-      });
+      // inputAlphaNumericWithUnderScore(e, (v) => {
+      //   setCName(v);
+      // });
+      setCName(value);
     } else if (name === "desc") {
       setDesc(value);
     }
@@ -239,42 +241,67 @@ export default function CDTList() {
     setStatus(!status);
   };
 
+  // eslint-disable-next-line consistent-return
   const handleSave = async () => {
+    if (cName === "") {
+      messageContext.showErrorMessage("Data Type Name shouldn't be empty");
+      hideViewData();
+      return false;
+    }
+    if (ens === "") {
+      messageContext.showErrorMessage("External System shouldn't be empty");
+      hideViewData();
+      return false;
+    }
+    const regexp = /^[a-zA-Z0-9-_]+$/;
+
+    if (cName && cName.search(regexp) === -1) {
+      setNameError(true);
+      console.log("tes");
+      return false;
+    }
+
+    setNameError(false);
+
     if (selectedRow) {
       // console.log("update", cName, selectedRow, status, desc, ensId, ens);
-      const update = await updateDK({
+      updateDK({
         dkId: selectedRow,
         dkName: cName,
         dkDesc: desc,
         dkExternalId: ensId,
         dkESName: ens,
         dkStatus: status === true ? 1 : 0,
+      }).then((res) => {
+        if (res.status === 1) {
+          hideViewData();
+          messageContext.showSuccessMessage("Updated successfully");
+          getData();
+        }
+        if (res.status === 0) {
+          hideViewData();
+          messageContext.showErrorMessage(res.data);
+        }
       });
-      if (update.status === 1) {
-        hideViewData();
-        messageContext.showSuccessMessage("Updated successfully");
-        getData();
-      } else if (update.status === 0) {
-        hideViewData();
-        messageContext.showErrorMessage(update.data);
-      }
     } else {
       // console.log("create", cName, status, desc, ensId, ens);
-      const insert = await addDK({
+      addDK({
         dkName: cName,
         dkDesc: desc,
         dkExternalId: ensId,
         dkESName: ens,
         dkStatus: status === true ? 1 : 0,
+      }).then((res) => {
+        if (res.status === 1) {
+          hideViewData();
+          messageContext.showSuccessMessage("Created successfully");
+          getData();
+        }
+        if (res.status === 0) {
+          hideViewData();
+          messageContext.showErrorMessage(res.data);
+        }
       });
-      if (insert.status === 1) {
-        hideViewData();
-        messageContext.showSuccessMessage("Updated successfully");
-        getData();
-      } else if (insert.status === 0) {
-        hideViewData();
-        messageContext.showErrorMessage(insert.data);
-      }
     }
   };
 
@@ -285,7 +312,7 @@ export default function CDTList() {
         variant="secondary"
         icon={PlusIcon}
         onClick={addCDT}
-        style={{ marginRight: "8px", border: "none" }}
+        style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
       >
         Add data type
       </Button>
@@ -361,6 +388,10 @@ export default function CDTList() {
                     onChange={(e) => handleChange(e)}
                     required
                     fullWidth
+                    helperText={
+                      nameError && "Only Alphanumeric and '_' are allowed"
+                    }
+                    error={nameError}
                   />
                 </div>
                 <div style={{ display: "flex" }}>
@@ -399,9 +430,11 @@ export default function CDTList() {
                     placeholder="Enter Description"
                     value={desc}
                     name="desc"
+                    minHeight={40}
                     onChange={(e) => handleChange(e)}
                     optional
                     sizeAdjustable
+                    required
                   />
                 </div>
               </div>

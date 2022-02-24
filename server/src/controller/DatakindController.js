@@ -69,7 +69,7 @@ exports.updateDataKind = async (req, res) => {
         curDate,
         dkId,
         dkName,
-        dkDesc,
+        dkDesc || null,
         dkStatus,
         dkESName,
         dkExternalId,

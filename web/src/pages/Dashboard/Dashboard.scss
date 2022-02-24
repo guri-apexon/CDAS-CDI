@@ -64,6 +64,15 @@
     padding: 20px;
     text-align: center;
   }
+  .pinnedCards {
+    overflow: auto;
+    max-height: 200vh;
+  }
+  .unPinnedCards {
+    padding-top: 5px;
+    overflow: auto;
+    max-height: 100vh;
+  }
 }
 .topContainer {
   padding-bottom: 20px;
@@ -73,7 +82,7 @@
   align-items: center;
   justify-content: space-around;
   padding: 50px 0;
-  .dashInfo{
+  .dashInfo {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -118,12 +127,12 @@
 }
 .queueStatus {
   background-color: transparent;
-  border: 1px solid #9E54B0;
-  color: #9E54B0;
+  border: 1px solid #9e54b0;
+  color: #9e54b0;
   height: auto;
 }
 .MuiSwitch {
   span[class^="MuiButtonBase-"] {
-   top: -8px;
+    top: -8px;
   }
 }

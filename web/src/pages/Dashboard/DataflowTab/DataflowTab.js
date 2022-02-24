@@ -220,7 +220,10 @@ export default function DataflowTab({ updateData }) {
   const LinkCell = ({ row, column: { accessor } }) => {
     const rowValue = row[accessor];
     const { dataFlowId } = row;
-    return <Link onClick={() => handleLink(dataFlowId)}>{rowValue}</Link>;
+    if (rowValue) {
+      return <Link onClick={() => handleLink(dataFlowId)}>{rowValue}</Link>;
+    }
+    return <></>;
   };
 
   const ActionCell = ({ row }) => {
