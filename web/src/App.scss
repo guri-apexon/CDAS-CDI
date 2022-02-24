@@ -93,6 +93,7 @@
 label.table-checkbox {
   flex-direction: row-reverse;
   align-items: center;
+  margin-left: -11px;
   span[class*="MuiSwitch-switchBase-"] {
     top: -8.5px;
     left: -8px;
