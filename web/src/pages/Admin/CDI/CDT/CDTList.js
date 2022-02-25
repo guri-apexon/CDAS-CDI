@@ -25,7 +25,6 @@ import {
   createAutocompleteFilter,
   createStatusArraySearchFilter,
   createStringArraySearchFilter,
-  inputAlphaNumericWithUnderScore,
 } from "../../../../utils/index";
 import { getCDTList } from "../../../../store/actions/CDIAdminAction";
 import {
