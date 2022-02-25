@@ -292,8 +292,7 @@ export default function DSColumnTable({
     setRows([...removeSpaces]);
     setSelectedRows([]);
     setEditedRows(rows);
-
-    // dispatch(createDatasetColumns(rows, datasetid));
+    dispatch(createDatasetColumns(rows, datasetid));
   };
 
   const onCancelAll = () => {
