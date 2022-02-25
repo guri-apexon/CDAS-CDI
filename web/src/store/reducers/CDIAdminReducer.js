@@ -23,6 +23,7 @@ import {
   FETCH_SETTINGS_DATA,
   FETCH_SETTINGS_FAILURE,
   FETCH_SETTINGS_SUCCESS,
+  SEARCH_SETTINGS_DATA,
 } from "../../constants";
 
 export const initialState = {
@@ -39,6 +40,7 @@ export const initialState = {
     locationType: "SFTP",
     active: true,
   },
+  searchString: "",
 };
 
 const CDIAdminReducer = (state = initialState, action) =>
@@ -122,6 +124,9 @@ const CDIAdminReducer = (state = initialState, action) =>
       case CREARE_SETTINGS_FAILURE:
         newState.upsertLoading = false;
         newState.error = action.message;
+        break;
+      case SEARCH_SETTINGS_DATA:
+        newState.searchString = action.search;
         break;
       case HIDE_ERROR_MSG:
         newState.loading = false;
