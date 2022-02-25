@@ -29,6 +29,7 @@ const CustomHeader = ({ addSingleRow, disableCreateMode }) => (
   <div style={{ display: "flex", alignItems: "center" }}>
     <Search
       placeholder="Search"
+      id="settingSearch"
       style={{ marginRight: 8, width: 240, marginTop: 6 }}
       size="small"
     />
@@ -101,6 +102,7 @@ const SettingCell = ({ row }) => {
                 <TextField
                   fullWidth
                   size="small"
+                  name="name"
                   value={row.editedRow.name}
                   onChange={(e) => row.editRow("name", e.target.value)}
                   label="Name of Setting"
@@ -109,6 +111,7 @@ const SettingCell = ({ row }) => {
               <TextField
                 fullWidth
                 size="small"
+                name="value"
                 value={row.editedRow.value}
                 onChange={(e) => row.editRow("value", e.target.value)}
                 label="Setting Value"
