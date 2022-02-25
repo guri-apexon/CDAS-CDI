@@ -25,10 +25,18 @@ import {
 
 import "./SystemSettings.scss";
 
-const CustomHeader = ({ addSingleRow, disableCreateMode }) => (
+const CustomHeader = ({
+  addSingleRow,
+  disableCreateMode,
+  onSearch,
+  search,
+}) => (
   <div style={{ display: "flex", alignItems: "center" }}>
     <Search
       placeholder="Search"
+      id="settingSearch"
+      value={search}
+      onChange={(e) => onSearch(e.target.value)}
       style={{ marginRight: 8, width: 240, marginTop: 6 }}
       size="small"
     />
@@ -101,6 +109,7 @@ const SettingCell = ({ row }) => {
                 <TextField
                   fullWidth
                   size="small"
+                  name="name"
                   value={row.editedRow.name}
                   onChange={(e) => row.editRow("name", e.target.value)}
                   label="Name of Setting"
@@ -109,6 +118,7 @@ const SettingCell = ({ row }) => {
               <TextField
                 fullWidth
                 size="small"
+                name="value"
                 value={row.editedRow.value}
                 onChange={(e) => row.editRow("value", e.target.value)}
                 label="Setting Value"
@@ -135,6 +145,7 @@ const SystemSettings = () => {
     useSelector((state) => state.cdiadmin);
   const [totalsettings, setTotalSettings] = useState(0);
   const [rows, setRows] = useState([]);
+  const [search, setSearch] = useState("");
   const [editedRow, setEditedRow] = useState({});
   const [disableCreateMode, setDisableCreateMode] = useState(false);
 
@@ -151,6 +162,10 @@ const SystemSettings = () => {
     setRows(settings?.records ?? []);
     setTotalSettings(settings.totalSize ?? 0);
   }, [settings]);
+
+  const onSearch = (value) => {
+    setSearch(value);
+  };
 
   const addSingleRow = () => {
     const r = [
@@ -200,6 +215,14 @@ const SystemSettings = () => {
     }
   }, [error, success]);
 
+  // console.log("testtes");
+
+  const filteredRow = search
+    ? rows?.filter((row) =>
+        row.name?.toLowerCase().includes(search.toLowerCase())
+      )
+    : rows;
+
   return (
     <div className="system-table">
       {upsertLoading && <Loader />}
@@ -207,9 +230,9 @@ const SystemSettings = () => {
         title="System Settings"
         isLoading={loading}
         className="system-table"
-        subtitle={`${totalsettings} settings`}
+        subtitle={`${filteredRow.length} settings`}
         columns={columns}
-        rows={rows.map((row) => ({
+        rows={filteredRow.map((row) => ({
           ...row,
           onRowEdit,
           editedRow,
@@ -220,15 +243,16 @@ const SystemSettings = () => {
         }))}
         rowId="config_id"
         rowProps={{ hover: false }}
-        CustomHeader={(props) => (
+        CustomHeader={() => (
           <CustomHeader
             addSingleRow={addSingleRow}
+            onSearch={(v) => onSearch(v)}
+            search={search}
             disableCreateMode={disableCreateMode}
-            {...props}
           />
         )}
         // hidePagination={true}
-        rowsPerPageOptions={[10, 50, 100, "All"]}
+        rowsPerPageOptions={[50, 100, "All"]}
         tablePaginationProps={{
           labelDisplayedRows: ({ from, to, count }) =>
             `${count === 1 ? "Item" : "Items"} ${from}-${to} of ${count}`,
