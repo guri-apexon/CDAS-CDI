@@ -134,6 +134,8 @@ export default function CDTList() {
   const [desc, setDesc] = useState("");
   const [selectedRow, setSelectedRow] = useState(null);
   const [nameError, setNameError] = useState(false);
+  const [reqNameError, setReqNameError] = useState(false);
+  const [reqENSError, setReqENSError] = useState(false);
   const columns = generateColumns(tableRows);
   const [columnsState, setColumns] = useState([...columns]);
   const dispatch = useDispatch();
@@ -228,9 +230,6 @@ export default function CDTList() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "name") {
-      // inputAlphaNumericWithUnderScore(e, (v) => {
-      //   setCName(v);
-      // });
       setCName(value);
     } else if (name === "desc") {
       setDesc(value);
@@ -243,24 +242,25 @@ export default function CDTList() {
 
   // eslint-disable-next-line consistent-return
   const handleSave = async () => {
-    if (cName === "") {
-      messageContext.showErrorMessage("Data Type Name shouldn't be empty");
-      hideViewData();
-      return false;
-    }
-    if (ens === "") {
-      messageContext.showErrorMessage("External System shouldn't be empty");
-      hideViewData();
-      return false;
-    }
     const regexp = /^[a-zA-Z0-9-_]+$/;
+
+    if (ens === "") {
+      setReqENSError(true);
+      return false;
+    }
+
+    if (cName === "") {
+      setReqNameError(true);
+      return false;
+    }
 
     if (cName && cName.search(regexp) === -1) {
       setNameError(true);
-      console.log("tes");
       return false;
     }
 
+    setReqNameError(false);
+    setReqENSError(false);
     setNameError(false);
 
     if (selectedRow) {
@@ -389,9 +389,10 @@ export default function CDTList() {
                     required
                     fullWidth
                     helperText={
-                      nameError && "Only Alphanumeric and '_' are allowed"
+                      (nameError && "Only Alphanumeric and '_' are allowed") ||
+                      (reqNameError && "Data Type Name shouldn't be empty")
                     }
-                    error={nameError}
+                    error={nameError || reqNameError}
                   />
                 </div>
                 <div style={{ display: "flex" }}>
@@ -417,6 +418,10 @@ export default function CDTList() {
                     placeholder="Select system name"
                     fullWidth
                     required
+                    helperText={
+                      reqENSError && "External System shouldn't be empty"
+                    }
+                    error={reqENSError}
                   >
                     {ensList.map((option) => (
                       <MenuItem key={option.value} value={option.label}>
