@@ -594,7 +594,7 @@ const CloneDataFlow = ({
         <Modal
           open={open}
           onClose={() => handleModalClose()}
-          title="Select a study to Clone Data Flow from"
+          title="Select a Study to Clone Data Flow from"
           message={<ModalComponent onSubmit={onSubmit} />}
           className={classes.modal}
           buttonProps={[{}, { label: "Back", onClick: () => handleBack() }]}
