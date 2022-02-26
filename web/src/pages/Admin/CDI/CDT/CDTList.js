@@ -155,6 +155,8 @@ export default function CDTList() {
       setStatus(true);
       setDesc("");
       setNameError(false);
+      setReqENSError(false);
+      setReqNameError(false);
     }, 500);
   };
 
@@ -163,7 +165,7 @@ export default function CDTList() {
   }, [loading, cdtList]);
 
   useEffect(() => {
-    getData();
+    if (cdtList.length < 1) getData();
   }, []);
 
   const handleStatusChange = async (e, dkId, currStatus) => {
@@ -244,13 +246,11 @@ export default function CDTList() {
   const handleSave = async () => {
     const regexp = /^[a-zA-Z0-9-_]+$/;
 
-    if (ens === "") {
-      setReqENSError(true);
-      return false;
-    }
-
     if (cName === "") {
       setReqNameError(true);
+      if (ens === "") {
+        setReqENSError(true);
+      }
       return false;
     }
 
@@ -260,8 +260,14 @@ export default function CDTList() {
     }
 
     setReqNameError(false);
-    setReqENSError(false);
     setNameError(false);
+
+    if (ens === "") {
+      setReqENSError(true);
+      return false;
+    }
+
+    setReqENSError(false);
 
     if (selectedRow) {
       // console.log("update", cName, selectedRow, status, desc, ensId, ens);
