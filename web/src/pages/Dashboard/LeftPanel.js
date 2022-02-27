@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import classNames from "classnames";
-import { neutral1, neutral7 } from "apollo-react/colors";
-import Card from "apollo-react/components/Card";
-import CardContent from "apollo-react/components/CardContent";
+import { neutral7 } from "apollo-react/colors";
 import Divider from "apollo-react/components/Divider";
 import Typography from "apollo-react/components/Typography";
 import Search from "apollo-react/components/Search";
 import { makeStyles } from "@material-ui/core/styles";
 import _ from "lodash";
-import { ReactComponent as PriorityIcon } from "../../components/Icons/Priority.svg";
-import { ReactComponent as IngestionIcon } from "../../components/Icons/Issue.svg";
-import { ReactComponent as StaleFilesIcon } from "../../components/Icons/Stale.svg";
-import { ReactComponent as PinnedIcon } from "../../components/Icons/Pin.svg";
-import { ReactComponent as UnPinnedIcon } from "../../components/Icons/UnPin.svg";
 import Progress from "../../components/Common/Progress/Progress";
 import { debounceFunction } from "../../utils";
 import searchStudy, {
@@ -23,6 +15,7 @@ import searchStudy, {
   pinStudy,
 } from "../../services/ApiServices";
 import { updateSelectedStudy } from "../../store/actions/DashboardAction";
+import CustomCard from "./CustomCard";
 
 const styles = {
   panelTitle: {
@@ -80,92 +73,6 @@ const styles = {
   },
 };
 
-const CustomCard = ({
-  data,
-  index,
-  isPinned,
-  unPinningStudy,
-  pinningStudy,
-  setSelectedStudy,
-  selectedStudy,
-  classes,
-}) => {
-  const {
-    prot_id: protId,
-    protocolnumber,
-    sponsorname,
-    projectcode,
-    phase,
-    staleFilesCount,
-    ingestionCount,
-    priorityCount,
-  } = data;
-
-  return (
-    <Card
-      color="dark"
-      key={index}
-      interactive
-      className={classNames(
-        classes.card,
-        protId === selectedStudy && classes.cardHighlight
-      )}
-      onClick={() => setSelectedStudy(protId)}
-    >
-      {/* {console.log("data", data)} */}
-      <CardContent>
-        <div className="cardTopBar">
-          <div className="cardLeft">
-            {priorityCount && (
-              <span className="priority">
-                <PriorityIcon />
-                {priorityCount}
-              </span>
-            )}
-            {ingestionCount && (
-              <span>
-                <IngestionIcon />
-                {ingestionCount}
-              </span>
-            )}
-            {staleFilesCount && (
-              <span>
-                <StaleFilesIcon />
-                {staleFilesCount}
-              </span>
-            )}
-          </div>
-          <div className="cardRight">
-            {isPinned ? (
-              <PinnedIcon onClick={() => unPinningStudy(protId)} />
-            ) : (
-              <UnPinnedIcon onClick={() => pinningStudy(protId)} />
-            )}
-          </div>
-        </div>
-        <Typography className={classes.bold}>{protocolnumber}</Typography>
-        <Typography className={classes.cardSponsor} variant="caption">
-          {sponsorname}
-        </Typography>
-        <div className="cardBottom">
-          <div className="cardPC">
-            <Typography className={classes.bold}>Project Code</Typography>
-            <Typography className={classes.cardProjectCode} variant="caption">
-              {projectcode}
-            </Typography>
-          </div>
-          <div className="cardP">
-            <Typography className={classes.bold}>Phase</Typography>
-            <Typography className={classes.cardPhase} variant="caption">
-              {phase}
-            </Typography>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
 const LeftPanel = () => {
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -183,7 +90,6 @@ const LeftPanel = () => {
     setLoading(true);
     const newStudies = await getStudies();
     const newPinned = await getPinnedStudies();
-    // console.log("event", newPinned, newStudies);
     if (newStudies !== undefined && newStudies.length) {
       setStudyList([...newStudies]);
     }
@@ -203,7 +109,6 @@ const LeftPanel = () => {
     debounceFunction(async () => {
       setLoading(true);
       const newStudies = await searchStudy(newValue);
-      // console.log("event", newValue, newStudies);
       // eslint-disable-next-line no-unused-expressions
       newStudies && newStudies.studies
         ? setUnPinnedStudies([...newStudies.studies])
@@ -259,7 +164,6 @@ const LeftPanel = () => {
       const clicked = studyList.filter((e) => e.prot_id === selectedStudy)[0];
       dispatch(updateSelectedStudy(clicked));
     }
-    // console.log("selected", selectedStudy, clicked);
   }, [selectedStudy]);
 
   return (
