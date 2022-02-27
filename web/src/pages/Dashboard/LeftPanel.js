@@ -230,22 +230,22 @@ const LeftPanel = () => {
     const pinnedList = _.orderBy(
       pinnedstudy,
       [
-        "priorityCount",
-        "ingestionCount",
-        "staleFilesCount",
-        "sponsorname",
         "protocolnumber",
+        "sponsorname",
+        "staleFilesCount",
+        "ingestionCount",
+        "priorityCount",
       ],
-      ["asc", "asc", "asc"]
+      ["desc", "desc", "desc"]
     );
     const unpinnedList = _.orderBy(
       unPinnedStudy,
       [
-        "priorityCount",
-        "ingestionCount",
-        "staleFilesCount",
-        "sponsorname",
         "protocolnumber",
+        "sponsorname",
+        "staleFilesCount",
+        "ingestionCount",
+        "priorityCount",
       ],
       ["desc", "desc", "desc"]
     );
