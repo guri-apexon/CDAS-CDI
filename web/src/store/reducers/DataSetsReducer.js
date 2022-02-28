@@ -175,7 +175,7 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case FETCH_PREVIEW_SQL_SUCCESS:
         newState.loading = false;
-        newState.previewSQL = action.previewSQL;
+        newState.previewSQL = action.previewSQL.flat();
         break;
       case GET_SQL_COLUMNS:
         newState.loading = true;
@@ -186,7 +186,7 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case FETCH_SQL_COLUMNS_SUCCESS:
         newState.loading = false;
-        newState.sqlTables = action.sqlTables;
+        newState.sqlColumns = action.sqlColumns;
         break;
       case GET_DATASET_DETAIL:
         newState.loading = true;
@@ -240,7 +240,6 @@ const DataFlowReducer = (state = initialState, action) =>
             incremental === "Y" ? "Incremental" : "Cumulative";
           newState.formData.datasetid = datasetid;
         }
-        newState.dataFlowdetail = action.datasetDetail;
         newState.selectedDataset = action.datasetDetail;
         break;
       case GET_DATASET_COLUMNS:

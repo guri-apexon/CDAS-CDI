@@ -58,7 +58,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
 
   useEffect(() => {
     fetchLatestData(control, activeOnly);
-  }, [activeOnly, control]);
+  }, [activeOnly, control, protId]);
 
   const handleChange = (e, checked) => {
     setActiveOnly(checked);

@@ -355,29 +355,49 @@ content-type: application/json
   "query": "string"
 }
 
-### create dataset
+### create sftp dataset
 
 POST http://localhost:4001/v1/api/dataset/create HTTP/1.1
 content-type: application/json
 
 {
-  "datapackageid": "",
-  "datasetId": "string",
-  "datasetName": "",
-  "active": 1,
-  "fileType": "",
-  "encoding": "",
-  "delimiter": "",
+  "datapackageid": "Zn2Jyi7zMUbuULOL",
+  "datasetName": "asdfasdfsda_Asdfads",
+  "active": true,
+  "fileType": "SAS",
+  "encoding": "UTF-8",
+  "delimiter": "COMMA",
+  "dfTestFlag": 1,
   "escapeCharacter": "",
   "quote": "",
-  "headerRowNumber": "",
+  "headerRowNumber": 1,
   "footerRowNumber": "",
-  "fileNamingConvention": "",
-  "folderPath": "",
-  "clinicalDataType": "",
+  "fileNamingConvention": "asdfadsfsa.sas7bdat",
+  "folderPath": "asdfsdasfasd",
+  "loadType": "Cumulative",
+  "clinicalDataType": [1],
   "transferFrequency": "",
   "overrideStaleAlert": "",
   "rowDecreaseAllowed": "",
+  "insrt_tm": "",
+  "updt_tm": "",
+}
+
+### create jdbc dataset
+
+POST http://localhost:4001/v1/api/dataset/create HTTP/1.1
+content-type: application/json
+
+{
+  "datapackageid": "Zn2Jyi7zMUbuULOL",
+  "datasetName": "asdfasdfsda_Asdfads",
+  "active": true,
+  "customSQLQuery": "",
+  "clinicalDataType": [1],
+  "customSQLQuery": "Yes",
+  "sQLQuery": "select * from data",
+  "tableName": "I2.TOAD_PLAN_TABLE",
+  
   "insrt_tm": "",
   "updt_tm": "",
 }

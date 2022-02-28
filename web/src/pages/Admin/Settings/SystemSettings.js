@@ -34,10 +34,15 @@ const CustomHeader = ({
   <div style={{ display: "flex", alignItems: "center" }}>
     <Search
       placeholder="Search"
+      autoFocus={search !== ""}
       id="settingSearch"
       value={search}
       onChange={(e) => onSearch(e.target.value)}
-      style={{ marginRight: 8, width: 240, marginTop: 6 }}
+      style={{
+        marginRight: 8,
+        width: 240,
+        marginTop: 6,
+      }}
       size="small"
     />
     <Button
