@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -39,7 +40,6 @@ import {
   testConnectionFSR,
 } from "../../services/ApiServices";
 import { locationExistInDFMsg } from "../../constants";
-import { MessageContext } from "../Providers/MessageProvider";
 
 const styles = {
   paper: {
@@ -237,7 +237,7 @@ const LocationForm = (props) => {
               <Button
                 variant="secondary"
                 size="small"
-                onClick={() => props.testConnection()}
+                onClick={() => props.testConnection(props.formState)}
               >
                 Test Connection
               </Button>
@@ -261,8 +261,8 @@ const LocationModal = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const locationForm = useRef();
-  const toast = useContext(MessageContext);
   const selector = formValueSelector("AddLocationForm");
+  const [connectionResponse, setConnectionResponse] = useState(null);
   const { error, success, createTriggered } = useSelector(
     (state) => state.cdiadmin
   );
@@ -314,23 +314,56 @@ const LocationModal = (props) => {
       dispatch(change("AddLocationForm", "connURL", connurl));
     }
   };
-  const testConnection = async () => {
-    const reqBody = {
-      username: "User Name",
-      password: "Password",
-      host: "host",
-      databaseName: "dbName",
-      endPoint: "/checkconnection/jdbc",
+  const showLocationMessage = (msg, type = "error") => {
+    const modalObj = {
+      text: msg,
+      type,
     };
-    console.log("AddLocationForm", reqBody, props.formState);
-    // const result = await testConnectionFSR(reqBody);
-    // console.log("result", result);
-    // if (result.code === 400) {
-    //   toast.showErrorMessage(result.message || "Something went wrong");
-    // }
+    setConnectionResponse(modalObj);
+    setTimeout(() => {
+      setConnectionResponse(null);
+    }, 2500);
+  };
+  const testConnection = async (formState) => {
+    const { userName, password, ipServer, port, locationType, dbName } =
+      formState;
+    if (userName === "" || password === "") {
+      showLocationMessage("Please enter username and password to continue");
+      return false;
+    }
+    const reqBody = {
+      username: userName || "",
+      password: password || "",
+      host: ipServer || "",
+      endPoint: "/checkconnection/sftp",
+      // port: port || "",
+    };
+    if (locationType) {
+      if (locationType !== "SFTP" && locationType !== "FTPS") {
+        reqBody.endPoint = "/checkconnection/jdbc";
+        reqBody.databaseName = dbName || "";
+      }
+    }
+    const result = await testConnectionFSR(reqBody);
+    console.log("result", result);
+    if (result.status === "OK") {
+      showLocationMessage(
+        result.message || "Operation Successfully",
+        "success"
+      );
+    } else {
+      showLocationMessage(result.message || "Something went wrong");
+    }
   };
   return (
     <>
+      {connectionResponse && (
+        <Banner
+          variant={connectionResponse.type}
+          open={true}
+          message={connectionResponse.text}
+        />
+      )}
       {(error || success || existErr) && (
         <Banner
           variant={success ? "success" : "error"}
