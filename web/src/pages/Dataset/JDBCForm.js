@@ -1,12 +1,14 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState } from "react";
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { makeStyles } from "@material-ui/core/styles";
-// import compose from "@hypnosphi/recompose/compose";
 import { useDispatch, useSelector } from "react-redux";
-// import { reduxForm, getFormValues, formValueSelector } from "redux-form";
-
 import Paper from "apollo-react/components/Paper";
-import FixedBar from "apollo-react/components/FixedBar";
 import Status from "apollo-react/components/Status";
 import Radio from "apollo-react/components/Radio";
 import RadioError from "apollo-react-icons/RadioError";
@@ -19,16 +21,20 @@ import RadioGroup from "apollo-react/components/RadioGroup";
 import Switch from "apollo-react/components/Switch";
 import Select from "apollo-react/components/Select";
 import TextField from "apollo-react/components/TextField";
+import Table from "apollo-react/components/Table";
 
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 
 import {
   getSQLTables,
   getSQLColumns,
   getPreviewSQL,
+  saveDatasetData,
+  updateDatasetData,
 } from "../../store/actions/DataSetsAction";
 
-import { YesNo } from "../../utils";
+import { inputAlphaNumericWithUnderScore, YesNo } from "../../utils";
 
 const styles = {
   paper: {
@@ -84,54 +90,228 @@ const styles = {
   },
 };
 
-const JDBCForm = (props) => {
-  const { handleSubmit, datakind, formValues } = props;
+const JDBCForm = forwardRef((props, ref) => {
   const dispatch = useDispatch();
   const dataSets = useSelector((state) => state.dataSets);
   const useStyles = makeStyles(styles);
   const classes = useStyles();
-  const [dsActive, setDsActive] = useState(false);
-  const [dsName, setDsName] = useState("");
-  const [clinicalDataType, setClinicalDataType] = useState("");
-  const [customSQLQuery, setCustomSQLQuery] = useState("");
+  const [isPreviewReady, setIsPreviewReady] = useState(false);
+  const [dsActive, setDsActive] = useState(true);
+  const [datasetName, setDatasetName] = useState("");
+  const [clinicalDataType, setClinicalDataType] = useState(null);
+  const [isCustomSQL, setIsCustomSQL] = useState("Yes");
   const [sQLQuery, setSQLQuery] = useState("");
-  const [tableName, setTableName] = useState("");
+  const [tableName, setTableName] = useState(null);
   const [filterCondition, setFilterCondition] = useState("");
-  const [dataType, setDataType] = useState("");
-  const [offsetColumn, setOffsetColumn] = useState("");
+  const [dataType, setDataType] = useState("Cumulative");
+  const [offsetColumn, setOffsetColumn] = useState(null);
+  const messageContext = useContext(MessageContext);
 
-  const handlePreview = () => {
-    console.log("data", dataSets);
+  const { datakind, selectedDataset, previewSQL, sqlTables, sqlColumns } =
+    dataSets;
+
+  const { datasetId, datapackageid, dfTestFlag } = props;
+
+  const setDefaultValues = () => {
+    setDsActive(true);
+    setDatasetName("");
+    setClinicalDataType(null);
+    setIsCustomSQL("Yes");
+    setSQLQuery("");
+    setTableName(null);
+    setFilterCondition("");
+    setDataType("Cumulative");
+    setOffsetColumn(null);
+    setIsPreviewReady(false);
+  };
+
+  useEffect(() => {
+    if (selectedDataset?.datasetid) {
+      const {
+        active,
+        incremental,
+        mnemonic,
+        customsql,
+        customsql_query: customQuery,
+        datakindid,
+        offsetcolumn,
+        tbl_nm: tName,
+      } = selectedDataset;
+      setDsActive(active === 1 ? true : false);
+      setDatasetName(mnemonic);
+      setSQLQuery(customQuery);
+      setDataType(incremental);
+      if (customsql) {
+        setIsCustomSQL(customsql);
+      }
+      // if (datakindid) {
+      //   setClinicalDataType([datakindid]);
+      // }
+      // if (tName) {
+      //   setTableName([tName]);
+      // }
+      // if (offsetcolumn) {
+      //   setOffsetColumn([offsetcolumn]);
+      // }
+    }
+  }, [selectedDataset]);
+
+  useEffect(() => {
+    if (datasetId === "new") {
+      setDefaultValues();
+    }
+  }, [datasetId]);
+
+  const handlePreview = async () => {
+    await dispatch(getPreviewSQL(sQLQuery));
+    setTimeout(() => {
+      setIsPreviewReady(true);
+    }, 100);
+  };
+
+  const handleStatusUpdate = () => {
+    setDsActive(!dsActive);
+  };
+
+  const handleSelection = (e) => {
+    const { value } = e.target;
+    setIsCustomSQL(value);
+    props.onChangeSql(value);
+  };
+
+  const handleCDT = (e) => {
+    setClinicalDataType(e);
+  };
+
+  const handleTableSelect = (e) => {
+    setTableName(e);
+  };
+
+  const handleColumnSelect = (e) => {
+    setOffsetColumn(e);
+  };
+
+  const handleDTChange = (e) => {
+    setDataType(e.target.value);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "datasetName") {
+      inputAlphaNumericWithUnderScore(e, (v) => {
+        setDatasetName(v);
+      });
+    } else if (name === "sQLQuery") {
+      setSQLQuery(value);
+    } else if (name === "filterCondition") {
+      setFilterCondition(value);
+    }
+  };
+
+  useEffect(() => {
+    if (isCustomSQL === "No") {
+      dispatch(getSQLTables());
+      setIsPreviewReady(false);
+    }
+  }, [isCustomSQL]);
+
+  useEffect(() => {
+    if (dataType === "Incremental") {
+      dispatch(getSQLColumns(tableName));
+    }
+  }, [dataType]);
+
+  useImperativeHandle(ref, () => ({
+    handleSubmit() {
+      if (datasetId === "new") {
+        dispatch(
+          saveDatasetData({
+            datapackageid,
+            datasetName,
+            active: dsActive,
+            incremental: dataType,
+            clinicalDataType,
+            customSQLQuery: isCustomSQL,
+            sQLQuery,
+            tableName,
+            offsetColumn,
+            dfTestFlag,
+          })
+        );
+        // console.log("save jdbc");
+      } else {
+        dispatch(
+          updateDatasetData({
+            datapackageid,
+            datasetid: datasetId,
+            datasetName,
+            active: dsActive,
+            incremental: dataType,
+            clinicalDataType,
+            customSQLQuery: isCustomSQL,
+            sQLQuery,
+            tableName,
+            offsetColumn,
+            dfTestFlag,
+          })
+        );
+      }
+    },
+    handleCancel() {
+      setDefaultValues();
+    },
+  }));
+
+  const locationChange = () => {
+    messageContext.showErrorMessage(
+      `No Tables Returned. Pls reach out to admins`
+    );
+  };
+
+  const queryCompilationError = () => {
+    messageContext.showErrorMessage(
+      `Query Compilation Error, check query syntax.`
+    );
+  };
+
+  const noRecordsFound = () => {
+    messageContext.showErrorMessage(`No records found.`);
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="jdbc-form">
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
         <div className={classes.section}>
-          <FixedBar
-            title="Dataset Settings"
-            style={{ padding: 0, border: "none" }}
-          >
-            <Switch
-              label="Dataset Active"
-              name="active"
-              className="MuiSwitch"
-              size="small"
-              labelPlacement="start"
-            />
-            <Status
-              variant="positive"
-              icon={RadioError}
-              size="small"
-              style={{ marginLeft: 35 }}
-              label={
-                // eslint-disable-next-line react/jsx-wrap-multilines
-                <Typography variant="body2" style={{ color: "#595959" }}>
-                  Ready
-                </Typography>
-              }
-            />
-          </FixedBar>
+          <div className="like-fixedbar">
+            <Typography variant="title1" gutterBottom>
+              Dataset Settings
+            </Typography>
+            <div className="ds-status">
+              <Switch
+                label="Dataset Active"
+                name="active"
+                checked={dsActive}
+                className="MuiSwitch"
+                size="small"
+                labelPlacement="start"
+                onChange={handleStatusUpdate}
+              />
+              {dsActive && (
+                <Status
+                  variant="positive"
+                  icon={RadioError}
+                  size="small"
+                  style={{ marginLeft: 35 }}
+                  label={
+                    // eslint-disable-next-line react/jsx-wrap-multilines
+                    <Typography variant="body2" style={{ color: "#595959" }}>
+                      Ready
+                    </Typography>
+                  }
+                />
+              )}
+            </div>
+          </div>
           <Grid container spacing={3}>
             <Grid item md={5}>
               <TextField
@@ -139,6 +319,8 @@ const JDBCForm = (props) => {
                 maxLength="30"
                 style={{ width: 275 }}
                 name="datasetName"
+                value={datasetName}
+                onChange={handleChange}
                 inputProps={{ maxLength: 30 }}
                 label="Data Set Name (Mnemonic)"
                 size="small"
@@ -147,34 +329,39 @@ const JDBCForm = (props) => {
             <Grid item md={6}>
               <Autocomplete
                 name="clinicalDataType"
-                id="clinicalDataType"
+                value={clinicalDataType}
                 label="Clinical Data Type"
-                source={datakind}
+                source={datakind.records}
                 className="smallSize_autocomplete"
+                onChange={handleCDT}
                 variant="search"
                 singleSelect
+                required
                 size="small"
                 fullWidth
               />
             </Grid>
           </Grid>
           <Select
-            name="customSQLQuery"
-            id="customSQLQuery"
+            name="isCustomSQL"
+            id="isCustomSQL"
+            value={isCustomSQL}
             size="small"
+            onChange={(e) => handleSelection(e)}
             label="Custom SQL Query"
           >
             {YesNo?.map((type) => (
               <MenuItem value={type}>{type}</MenuItem>
             ))}
           </Select>
-          {formValues === "Yes" && (
+          {isCustomSQL === "Yes" && (
             <div style={{ display: "flex", alignItems: "flex-end" }}>
               <TextField
                 fullWidth
                 name="sQLQuery"
-                id="sQLQuery"
                 size="small"
+                value={sQLQuery}
+                onChange={handleChange}
                 minHeight={32}
                 multiline
                 sizeAdjustable
@@ -191,15 +378,24 @@ const JDBCForm = (props) => {
               </Button>
             </div>
           )}
-          {formValues !== "Yes" && (
+          {isCustomSQL === "No" && (
             <>
-              <TextField
+              <Autocomplete
                 name="tableName"
                 id="tableName"
                 size="small"
-                style={{ width: 272, display: "flex" }}
-                inputProps={{ maxLength: 255 }}
                 label="Table Name"
+                value={tableName}
+                source={sqlTables.map((e) => ({
+                  label: e.tableName,
+                  value: e.tableName,
+                }))}
+                className="smallSize_autocomplete"
+                onChange={handleTableSelect}
+                variant="search"
+                singleSelect
+                required
+                fullWidth
               />
               <TextField
                 fullWidth
@@ -207,8 +403,10 @@ const JDBCForm = (props) => {
                 id="filterCondition"
                 style={{ width: "70%", display: "flex" }}
                 size="small"
+                value={filterCondition}
                 minHeight={32}
                 multiline
+                onChange={handleChange}
                 sizeAdjustable
                 inputProps={{ maxLength: 255 }}
                 label="Filter Condition"
@@ -218,27 +416,50 @@ const JDBCForm = (props) => {
                 id="dataType"
                 size="small"
                 label="Type of Data"
+                value={dataType}
+                required
+                onChange={handleDTChange}
               >
                 <Radio value="Cumulative" label="Cumulative" />
                 <Radio value="Incremental" label="Incremental" />
               </RadioGroup>
-              <Select
-                name="offsetColumn"
-                id="offsetColumn"
-                label="Offset Column"
-                style={{ width: 272 }}
-                size="small"
-                disabled
-              >
-                <MenuItem value="Enabled">Enabled</MenuItem>
-                <MenuItem value="Disabled">Disabled</MenuItem>
-              </Select>
+              {dataType === "Incremental" && (
+                <Autocomplete
+                  name="offsetColumn"
+                  id="offsetColumn"
+                  size="small"
+                  label="Offset Column"
+                  value={offsetColumn}
+                  source={sqlColumns.map((e) => ({
+                    label: e.columnName,
+                    value: e.columnName,
+                  }))}
+                  className="smallSize_autocomplete"
+                  onChange={handleColumnSelect}
+                  variant="search"
+                  singleSelect
+                  required
+                  fullWidth
+                />
+              )}
             </>
+          )}
+          {isPreviewReady && (
+            <div className="preview-table">
+              <Table
+                columns={Object.keys(previewSQL[0]).map((e) => ({
+                  header: e,
+                  accessor: e,
+                }))}
+                rows={previewSQL}
+                hidePagination
+              />
+            </div>
           )}
         </div>
       </Paper>
     </form>
   );
-};
+});
 
 export default JDBCForm;

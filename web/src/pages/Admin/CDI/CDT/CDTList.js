@@ -25,6 +25,7 @@ import {
   createAutocompleteFilter,
   createStatusArraySearchFilter,
   createStringArraySearchFilter,
+  getCookie,
 } from "../../../../utils/index";
 import { getCDTList } from "../../../../store/actions/CDIAdminAction";
 import {
@@ -155,6 +156,8 @@ export default function CDTList() {
       setStatus(true);
       setDesc("");
       setNameError(false);
+      setReqENSError(false);
+      setReqNameError(false);
     }, 500);
   };
 
@@ -163,7 +166,7 @@ export default function CDTList() {
   }, [loading, cdtList]);
 
   useEffect(() => {
-    getData();
+    if (cdtList.length < 1) getData();
   }, []);
 
   const handleStatusChange = async (e, dkId, currStatus) => {
@@ -243,14 +246,13 @@ export default function CDTList() {
   // eslint-disable-next-line consistent-return
   const handleSave = async () => {
     const regexp = /^[a-zA-Z0-9-_]+$/;
-
-    if (ens === "") {
-      setReqENSError(true);
-      return false;
-    }
+    const userId = getCookie("user.id");
 
     if (cName === "") {
       setReqNameError(true);
+      if (ens === "") {
+        setReqENSError(true);
+      }
       return false;
     }
 
@@ -260,11 +262,18 @@ export default function CDTList() {
     }
 
     setReqNameError(false);
-    setReqENSError(false);
     setNameError(false);
+
+    if (ens === "") {
+      setReqENSError(true);
+      return false;
+    }
+
+    setReqENSError(false);
 
     if (selectedRow) {
       // console.log("update", cName, selectedRow, status, desc, ensId, ens);
+
       updateDK({
         dkId: selectedRow,
         dkName: cName,
@@ -272,6 +281,7 @@ export default function CDTList() {
         dkExternalId: ensId,
         dkESName: ens,
         dkStatus: status === true ? 1 : 0,
+        userId,
       }).then((res) => {
         if (res.status === 1) {
           hideViewData();
@@ -395,18 +405,20 @@ export default function CDTList() {
                     error={nameError || reqNameError}
                   />
                 </div>
-                <div style={{ display: "flex" }}>
-                  <div className="switch-label">Active</div>
-                  <div className="switch">
-                    <Switch
-                      className="MuiSwitch"
-                      checked={status}
-                      name="status"
-                      onChange={handleStatusUpdate}
-                      size="small"
-                    />
+                {!selectedRow && (
+                  <div style={{ display: "flex" }}>
+                    <div className="switch-label">Active</div>
+                    <div className="switch">
+                      <Switch
+                        className="MuiSwitch"
+                        checked={status}
+                        name="status"
+                        onChange={handleStatusUpdate}
+                        size="small"
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
               <div style={{ display: "flex" }}>
                 <div className="esn-box">

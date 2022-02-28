@@ -9,7 +9,7 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const sagaMiddleware = createSagaMiddleware();
 
 const rootReducer = (state, action) => {
-  console.log("Redux", action);
+  // console.log("Redux", action);
   if (action.type === "LOGOUT_SUCCESS") {
     state = undefined;
   }

@@ -325,7 +325,7 @@ export const CustomHeader = ({
       )}
       {!isMultiAdd && (
         <>
-          <Tooltip title="Add rows" disableFocusListener>
+          <Tooltip title={!isEditAll && "Add rows"} disableFocusListener>
             <IconMenuButton
               id="actions-1"
               menuItems={addMenuItems}
@@ -335,7 +335,7 @@ export const CustomHeader = ({
               <Plus />
             </IconMenuButton>
           </Tooltip>
-          <Tooltip title="Edit all" disableFocusListener>
+          <Tooltip title={!isEditAll && "Edit all"} disableFocusListener>
             <IconButton color="primary" size="small" disabled={isEditAll}>
               <Pencil onClick={onEditAll} />
             </IconButton>
@@ -368,7 +368,10 @@ export const CustomHeader = ({
       )}
       {(locationType?.toLowerCase() === "sftp" ||
         locationType?.toLowerCase() === "ftps") && (
-        <Tooltip title="Import dataset column settings" disableFocusListener>
+        <Tooltip
+          title={!isEditAll && "Import dataset column settings"}
+          disableFocusListener
+        >
           <IconButton color="primary" size="small" disabled={isEditAll}>
             <Upload />
           </IconButton>
