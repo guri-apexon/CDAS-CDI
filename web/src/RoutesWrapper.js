@@ -54,11 +54,6 @@ const WithPageHeader = () => {
           render={() => <DataFlowCreate />}
         />
         <Route
-          path={`${match.path}/datasets-management`}
-          exact
-          render={() => <Dataset />}
-        />
-        <Route
           path={`${match.path}/dataset/:datasetId`}
           exact
           render={() => <Dataset />}
@@ -68,6 +63,7 @@ const WithPageHeader = () => {
           exact
           render={() => <DatasetIngestionReport />}
         />
+        <Redirect from="*" to="/dashboard" />
       </Switch>
     </>
   );
@@ -79,8 +75,8 @@ const WithOutPageHeader = () => {
     <>
       <Switch>
         <Route path={`${match.path}/cdi`} exact render={() => <CDIAdmin />} />
-        {/* <Route path={`${match.path}/jdbc`} exact render={() => <JDBCForm />} />
-        <Route
+        {/* <Route path={`${match.path}/jdbc`} exact render={() => <JDBCForm />} />  */}
+        {/* <Route
           path={`${match.path}/columns`}
           exact
           render={() => <ColumnsTab />}
@@ -133,8 +129,8 @@ const CDIWrapper = () => {
           <Switch>
             <Route path="/dashboard" render={() => <WithPageHeader />} />
             <Route path="/admin" render={() => <WithOutPageHeader />} />
+            <Route path="*" render={() => <WithPageHeader />} />
           </Switch>
-          <Redirect from="/" to="/dashboard" />
         </div>
       ) : (
         <Switch>
