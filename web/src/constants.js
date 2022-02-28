@@ -130,6 +130,18 @@ export const GET_DATASET_INGESTION_SUMMARY_SUCCESS =
 export const GET_DATASET_INGESTION_SUMMARY_FAILURE =
   "GET_DATASET_INGESTION_SUMMARY_FAILURE";
 
+export const FETCH_SETTINGS_DATA = "FETCH_SETTINGS_DATA";
+export const CREARE_SETTINGS_DATA = "CREARE_SETTINGS_DATA";
+export const UPDATE_SETTINGS_DATA = "UPDATE_SETTINGS_DATA";
+export const SEARCH_SETTINGS_DATA = "SEARCH_SETTINGS_DATA";
+
+export const FETCH_SETTINGS_SUCCESS = "FETCH_SETTINGS_SUCCESS";
+export const FETCH_SETTINGS_FAILURE = "FETCH_SETTINGS_FAILURE";
+export const CREARE_SETTINGS_SUCCESS = "CREARE_SETTINGS_SUCCESS";
+export const CREARE_SETTINGS_FAILURE = "CREARE_SETTINGS_FAILURE";
+export const UPDATE_SETTINGS_SUCCESS = "UPDATE_SETTINGS_SUCCESS";
+export const UPDATE_SETTINGS_FAILURE = "UPDATE_SETTINGS_FAILURE";
+
 // API URLS
 
 export const FLOW_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
@@ -165,6 +177,7 @@ export const VLCDATAAPI = "v1/api/dataset/getVLCData";
 export const SQLTABLESAPI = "v1/api/dataset/getTables";
 export const SQLCOLUMNSAPI = "v1/api/dataset/getColumns";
 export const PREVIEWSQLAPI = "v1/api/dataset/previewSQL";
+export const SETTINGAPI = "v1/api/system-settings";
 
 export const baseURL = process.env.REACT_APP_API_URL;
 
@@ -175,10 +188,11 @@ export const allowedTypes = [
   "csv",
 ];
 
-export const hive2CDP = "test.com";
-export const hive2CDH = "test.com";
-export const oracle = "oracle.com";
-export const SQLServer = "sqlserver.com";
-export const impala = "impala.com";
+export const hive2CDP = "com.cloudera.hive.jdbc41.HS2Driver";
+export const hive2CDH = "com.cloudera.hive.jdbc41.HS2Driver";
+export const oracle = "oracle.jdbc.driver.OracleDriver";
+export const SQLServer = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+export const impala = "com.cloudera.impala.jdbc41.Driver";
+export const PostgreSQL = "org.postgresql.Driver";
 export const locationExistInDFMsg =
   "IP Server or DB Hostname cannot be inactivated until removed from all data flows using this location.";

@@ -4,6 +4,7 @@ const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
+const AuditLogController = require("./AuditLogController");
 
 async function checkIsExistInDF(dkId) {
   let listQuery = `select distinct (d3.datakindid) from ${schemaName}.dataflow d 
@@ -15,22 +16,32 @@ async function checkIsExistInDF(dkId) {
   return existingInDF.includes(parseInt(dkId));
 }
 
+async function getAllRelatedDF(dkId) {
+  let query = `select d.dataflowid, dv."version" as "dfVer" from cdascfg.dataflow d 
+  inner join cdascfg.dataflow_version dv on d.dataflowid = dv.dataflowid 
+  right join cdascfg.datapackage d2 on d.dataflowid = d2.dataflowid 
+  right join cdascfg.dataset d3 on d2.datapackageid = d3.datapackageid
+  where d.active = 1 and d2.active = 1 and d3.active = 1 and d3.datakindid $1`;
+  const { rows } = await DB.executeQuery(query, [dkId]);
+  return rows;
+}
+
+async function getCurrentDKDetails(dkId) {
+  let query = `SELECT "name" as "curDkName", extrnl_sys_nm as "curDkESName", dk_desc as "curDkDesc" FROM cdascfg.datakind where datakindid = $1`;
+  const { rows } = await DB.executeQuery(query, [dkId]);
+  return rows[0];
+}
+
 exports.createDataKind = async (req, res) => {
   try {
     const { dkName, dkDesc, dkExternalId, dkESName, dkStatus } = req.body;
     const curDate = new Date();
-    const insertQuery = `INSERT INTO ${schemaName}.datakind
-    ("name", dk_desc, extrnl_id, extrnl_sys_nm, active, insrt_tm, updt_tm)
-    VALUES($2, $3, $4, $5, $6, $1, $1)`;
-
-    Logger.info({
-      message: "createDataKind",
-    });
-
+    const insertQuery = `INSERT INTO ${schemaName}.datakind ("name", dk_desc, extrnl_id, extrnl_sys_nm, active, insrt_tm, updt_tm) VALUES($2, $3, $4, $5, $6, $1, $1)`;
+    Logger.info({ message: "createDataKind" });
     const inset = await DB.executeQuery(insertQuery, [
       curDate,
       dkName,
-      dkDesc,
+      dkDesc || null,
       dkExternalId,
       dkESName,
       dkStatus,
@@ -38,7 +49,7 @@ exports.createDataKind = async (req, res) => {
     return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :createDataKind");
+    Logger.error("catch: createDataKind");
     Logger.error(err);
     if (err.code === "23505") {
       return apiResponse.validationErrorWithData(
@@ -53,23 +64,69 @@ exports.createDataKind = async (req, res) => {
 
 exports.updateDataKind = async (req, res) => {
   try {
-    const { dkId, dkName, dkDesc, dkStatus, dkESName, dkExternalId } = req.body;
+    const { dkId, dkName, dkDesc, dkStatus, dkESName, dkExternalId, userId } =
+      req.body;
     const curDate = new Date();
-    const query = `UPDATE ${schemaName}.datakind SET "name"=$3, active=$5, extrnl_id=$7, extrnl_sys_nm=$6, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2`;
+    const allUpdatequery = `UPDATE ${schemaName}.datakind SET "name"=$3, active=$5, extrnl_id=$7, extrnl_sys_nm=$6, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2`;
     Logger.info({ message: "updateDataKind" });
     const isExist = await checkIsExistInDF(dkId);
     if (isExist) {
-      return apiResponse.validationErrorWithData(
-        res,
-        "Operation Failed",
-        "Clinical Data Type Name cannot be inactivated until removed from all datasets using this Clinical Data Type."
-      );
-    } else {
-      const up = await DB.executeQuery(query, [
+      const dfList = await getAllRelatedDF(dkId);
+      const existingDK = await getCurrentDKDetails(dkId);
+      const { curDkName, curDkESName, curDkDesc } = existingDK;
+      if (curDkName != dkName) {
+        dfList.forEach((element) => {
+          AuditLogController.addAuditSingleLog(
+            element.dataflowid,
+            curDkName,
+            dkName
+          );
+        });
+      }
+      if (curDkESName != dkESName) {
+        dfList.forEach((element) => {
+          AuditLogController.addAuditSingleLog(
+            element.dataflowid,
+            curDkESName,
+            dkESName
+          );
+        });
+      }
+      if (curDkDesc != dkDesc) {
+        dfList.forEach((element) => {
+          AuditLogController.addAuditSingleLog(
+            element.dataflowid,
+            curDkDesc,
+            dkDesc
+          );
+        });
+      }
+
+      dfList.forEach((ele) => {
+        AuditLogController.addDFVersion(
+          ele.dataflowid,
+          parseInt(ele.dfVer) + 1,
+          null,
+          userId
+        );
+      });
+
+      const updateQuery = `UPDATE ${schemaName}.datakind SET "name"=$3, extrnl_id=$5, extrnl_sys_nm=$6, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2`;
+      const up = await DB.executeQuery(updateQuery, [
         curDate,
         dkId,
         dkName,
-        dkDesc,
+        dkDesc || null,
+        dkExternalId,
+        dkESName,
+      ]);
+      return apiResponse.successResponseWithData(res, "Operation success", up);
+    } else {
+      const up = await DB.executeQuery(allUpdatequery, [
+        curDate,
+        dkId,
+        dkName,
+        dkDesc || null,
         dkStatus,
         dkESName,
         dkExternalId,

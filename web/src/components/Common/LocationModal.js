@@ -52,17 +52,7 @@ const useStyles = makeStyles(styles);
 const LocationForm = (props) => {
   const classes = useStyles();
   const { locType, selectedHost, selectedPort, selectedDB, isActive } = props;
-  const genConnectionURL = () => {
-    const connurl = generateConnectionURL(
-      locType,
-      selectedHost,
-      selectedPort,
-      selectedDB
-    );
-    if (connurl) {
-      props.generateUrl(connurl);
-    }
-  };
+
   return (
     <form onSubmit={props.handleSubmit}>
       <div className={classes.section}>
@@ -123,7 +113,14 @@ const LocationForm = (props) => {
               name="locationType"
               label="Location Type"
               InputProps={{ readOnly: props.locationViewMode }}
-              onChange={() => genConnectionURL()}
+              onChange={(v) =>
+                props.generateUrl(
+                  v.target.value,
+                  selectedHost,
+                  selectedPort,
+                  selectedDB
+                )
+              }
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
               fullWidth
             >
@@ -145,7 +142,14 @@ const LocationForm = (props) => {
                   ? "IP Server"
                   : "Database Host Name"
               }
-              onBlur={() => genConnectionURL()}
+              onChange={(v) =>
+                props.generateUrl(
+                  locType,
+                  v.target.value,
+                  selectedPort,
+                  selectedDB
+                )
+              }
               InputProps={{ readOnly: props.locationViewMode }}
             />
           </Grid>
@@ -162,7 +166,14 @@ const LocationForm = (props) => {
                     maxLength: 5,
                     readOnly: props.locationViewMode,
                   }}
-                  onBlur={() => genConnectionURL()}
+                  onChange={(v) =>
+                    props.generateUrl(
+                      locType,
+                      selectedHost,
+                      v.target.value,
+                      selectedDB
+                    )
+                  }
                 />
               </Grid>
             </Grid>
@@ -172,7 +183,14 @@ const LocationForm = (props) => {
                   fullWidth
                   name="dbName"
                   label="Database Name"
-                  onBlur={() => genConnectionURL()}
+                  onChange={(v) =>
+                    props.generateUrl(
+                      locType,
+                      selectedHost,
+                      selectedPort,
+                      v.target.value
+                    )
+                  }
                   InputProps={{ readOnly: props.locationViewMode }}
                 />
               </Grid>
@@ -268,9 +286,15 @@ const LocationModal = (props) => {
     dispatch(change("AddLocationForm", "dataStructure", "tabular"));
     dispatch(change("AddLocationForm", "locationType", "SFTP"));
   }
-  const generateUrl = (v) => {
-    if (v) {
-      dispatch(change("AddLocationForm", "connURL", v));
+  const generateUrl = (locType, selectedHost, selectedPort, selectedDB) => {
+    const connurl = generateConnectionURL(
+      locType,
+      selectedHost,
+      selectedPort,
+      selectedDB
+    );
+    if (connurl) {
+      dispatch(change("AddLocationForm", "connURL", connurl));
     }
   };
   return (
@@ -310,14 +334,14 @@ const LocationModal = (props) => {
             onSubmit={onSubmit}
             locationViewMode={props.locationViewMode}
             locationEditMode={props.locationEditMode}
-            generateUrl={(v) => generateUrl(v)}
+            generateUrl={generateUrl}
           />
         }
         className={classes.modal}
         buttonProps={[
-          { label: props.locationViewMode ? "" : "Cancel" },
+          { label: "Cancel" },
           {
-            label: props.locationViewMode ? "OK" : "Save",
+            label: props.locationViewMode ? "Edit" : "Save",
             onClick: () =>
               props.locationViewMode
                 ? props.changeLocationEditMode(true)
@@ -330,23 +354,20 @@ const LocationModal = (props) => {
   );
 };
 
-const form = compose(
+const selector = formValueSelector("AddLocationForm");
+const ReduxForm = compose(
   reduxForm({
     form: "AddLocationForm",
-    validate: locationModalValidate,
     enableReinitialize: true,
-  })
+    validate: locationModalValidate,
+  }),
+  connect((state) => ({
+    isActive: selector(state, "active"),
+    selectedHost: selector(state, "ipServer"),
+    selectedPort: selector(state, "port"),
+    selectedDB: selector(state, "dbName"),
+    locType: selector(state, "locationType"),
+  }))
 )(LocationForm);
-
-const selector = formValueSelector("AddLocationForm");
-const ReduxForm = connect((state) => ({
-  enableReinitialize: true,
-  isActive: selector(state, "active"),
-  selectedHost: selector(state, "ipServer"),
-  selectedPort: selector(state, "port"),
-  selectedDB: selector(state, "dbName"),
-  locType: selector(state, "locationType"),
-  saveLocationData,
-}))(form);
 
 export default LocationModal;

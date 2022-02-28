@@ -82,7 +82,7 @@ const generateColumns = (tableRows = [], handleStatusChange = null) => {
       width: 180,
     },
     {
-      header: "Connection URL",
+      header: "IP Server/Connection URL",
       accessor: "cnn_url",
       customCell: ConnCell,
       sortFunction: compareStrings,

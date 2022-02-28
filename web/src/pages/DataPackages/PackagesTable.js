@@ -76,7 +76,7 @@ const PackagesList = ({ data, userInfo }) => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
     dispatch(reset("DataSetsForm"));
     dispatch(reset("DataSetsFormSQL"));
-    history.push("/dashboard/datasets-management");
+    history.push("/dashboard/dataset/new");
   };
 
   const DataSetsCell = ({ row, column: { accessor } }) => {

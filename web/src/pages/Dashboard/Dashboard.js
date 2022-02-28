@@ -88,7 +88,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (dashboard?.selectedCard?.prot_id) {
       updateData();
-      fetchLatestData();
+      // fetchLatestData();
     }
   }, [dashboard.selectedCard]);
 

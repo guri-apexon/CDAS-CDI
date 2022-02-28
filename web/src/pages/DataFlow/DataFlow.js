@@ -6,7 +6,7 @@ import { makeStyles } from "@material-ui/core/styles";
 // import CssBaseline from "@material-ui/core/CssBaseline";
 import Panel from "apollo-react/components/Panel";
 import { useDispatch, useSelector, connect } from "react-redux";
-import { submit, reset, getFormValues } from "redux-form";
+import { reset, getFormValues } from "redux-form";
 import Loader from "apollo-react/components/Loader";
 import { values } from "lodash";
 import Banner from "apollo-react/components/Banner";

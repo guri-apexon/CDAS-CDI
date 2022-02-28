@@ -214,13 +214,16 @@ export default function DataflowTab({ updateData }) {
 
   const handleLink = (dataFlowId) => {
     dispatch(updateSelectedDataflow(dataFlowId));
-    history.push("/dashboard/dataflow-management");
+    history.push(`/dashboard/dataflow-management/${dataFlowId}`);
   };
 
   const LinkCell = ({ row, column: { accessor } }) => {
     const rowValue = row[accessor];
     const { dataFlowId } = row;
-    return <Link onClick={() => handleLink(dataFlowId)}>{rowValue}</Link>;
+    if (rowValue) {
+      return <Link onClick={() => handleLink(dataFlowId)}>{rowValue}</Link>;
+    }
+    return <></>;
   };
 
   const ActionCell = ({ row }) => {
@@ -334,6 +337,7 @@ export default function DataflowTab({ updateData }) {
             buttonText="Add data flow"
             menuItems={menuItems}
             size="small"
+            style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
           />
           <Button
             size="small"
@@ -655,10 +659,6 @@ export default function DataflowTab({ updateData }) {
   const [tableRows, setTableRows] = useState([...rowData]);
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
 
-  const toDataflowMgmt = async () => {
-    history.push("/dashboard/dataflow-management");
-  };
-
   useEffect(() => {
     setTableColumns([...moreColumns]);
     setTableRows([...rowData]);
@@ -759,9 +759,7 @@ export default function DataflowTab({ updateData }) {
               frozenColumnsEnabled: true,
               defaultColumns: moreColumns,
             }}
-            CustomHeader={(props) => (
-              <CustomButtonHeader toDataflowMgmt={toDataflowMgmt} {...props} />
-            )}
+            CustomHeader={(props) => <CustomButtonHeader {...props} />}
             emptyProps={{
               content: <EmptyTableComponent />,
             }}
