@@ -35,13 +35,14 @@ async function saveSQLDataset(req, res, values, datasetId) {
       values.clinicalDataType[0],
       values.customSQLQuery,
       values.sQLQuery || null,
+      values.loadType == "Incremental" ? "Y" : "N" || null,
       values.tableName || null,
       values.offsetColumn || null,
       new Date(),
       new Date(),
       values.datapackageid,
     ];
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_query, customsql, tbl_nm, offsetcolumn, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_query, customsql, incremental, tbl_nm, offsetcolumn, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
     const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {
