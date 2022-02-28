@@ -154,11 +154,11 @@ exports.createDataflow = async (req, res) => {
           externalSystemName === "CDI"
             ? src_loc_id
             : data[0].src_loc_id || null,
-          0,
+          active || 0,
           configured || 0,
           exptDtOfFirstProdFile || null,
-          testFlag === "false" ? 0 : 1,
-          data_in_cdr || 0,
+          testFlag,
+          data_in_cdr || "N",
           connectionType || null,
           externalSystemName === "CDI" ? connectiondriver : location || null,
           externalSystemName || null,

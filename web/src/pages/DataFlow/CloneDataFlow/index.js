@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 // import { reduxForm, submit, getFormValues } from "redux-form";
 import { useDispatch, connect, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
@@ -31,6 +31,7 @@ import searchStudy, {
   dataflowSave,
 } from "../../../services/ApiServices";
 import "./index.scss";
+import { MessageContext } from "../../../components/Providers/MessageProvider";
 
 const styles = {
   paper: {
@@ -81,6 +82,8 @@ const CloneDataFlow = ({
   const [datflows, setDatflows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dataFlowSource, setDataFlowSource] = useState([]);
+  const messageContext = useContext(MessageContext);
+
   //   const studies = useSelector((state) => state.dashboard);
   const onSubmit = (values) => {
     // setTimeout(() => {
@@ -329,7 +332,7 @@ const CloneDataFlow = ({
             <Typography variant="caption">Verify data flow to clone</Typography>
             <Accordion defaultExpanded>
               <AccordionSummary>
-                <Typography>Data Flow Detials</Typography>
+                <Typography>Data Flow Details</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Grid
@@ -559,8 +562,10 @@ const CloneDataFlow = ({
       res.externalSystemName = "CDI";
       const data = await dataflowSave(res);
       history.push(`/dashboard/dataflow-management/${data.dataflowId}`);
+      messageContext.showSuccessMessage(`Data Flow Successfully Cloned`);
     } catch (error) {
       console.log(error);
+      messageContext.showErrorMessage(`Something went wrong`);
     }
   };
 
