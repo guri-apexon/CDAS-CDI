@@ -107,6 +107,19 @@ export const fetchDataFlowSource = async (dataflowId) => {
   }
 };
 
+export const testConnectionFSR = async (reqBody) => {
+  try {
+    const { endPoint, ...params } = reqBody;
+    const res = await axios.post(`${baseURL}/v1/api/fsr-connect`, {
+      params,
+      endPoint,
+    });
+    return res.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
 export const dataflowSave = async (payload) => {
   try {
     const res = await axios.post(`${baseURL}/${DATAFLOW_SAVE}`, {

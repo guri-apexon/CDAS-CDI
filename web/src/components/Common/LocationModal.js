@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { reduxForm, submit, change, formValueSelector } from "redux-form";
 import { useDispatch, connect, useSelector } from "react-redux";
 import compose from "@hypnosphi/recompose/compose";
@@ -28,8 +28,12 @@ import {
   saveLocationData,
   removeErrMessage,
 } from "../../store/actions/CDIAdminAction";
-import { checkLocationExistsInDataFlow } from "../../services/ApiServices";
+import {
+  checkLocationExistsInDataFlow,
+  testConnectionFSR,
+} from "../../services/ApiServices";
 import { locationExistInDFMsg } from "../../constants";
+import { MessageContext } from "../Providers/MessageProvider";
 
 const styles = {
   paper: {
@@ -224,7 +228,11 @@ const LocationForm = (props) => {
           </Grid>
           {!props.locationViewMode && (
             <Grid item md={2} style={{ paddingTop: 54 }}>
-              <Button variant="secondary" size="small">
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={() => props.testConnection()}
+              >
                 Test Connection
               </Button>
             </Grid>
@@ -246,6 +254,9 @@ const LocationForm = (props) => {
 const LocationModal = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const locationForm = useRef();
+  const toast = useContext(MessageContext);
+  const selector = formValueSelector("AddLocationForm");
   const { error, success, createTriggered } = useSelector(
     (state) => state.cdiadmin
   );
@@ -297,6 +308,21 @@ const LocationModal = (props) => {
       dispatch(change("AddLocationForm", "connURL", connurl));
     }
   };
+  const testConnection = async () => {
+    const reqBody = {
+      username: "User Name",
+      password: "Password",
+      host: "host",
+      databaseName: "dbName",
+      endPoint: "/checkconnection/jdbc",
+    };
+    console.log("AddLocationForm", reqBody);
+    // const result = await testConnectionFSR(reqBody);
+    // console.log("result", result);
+    // if (result.code === 400) {
+    //   toast.showErrorMessage(result.message || "Something went wrong");
+    // }
+  };
   return (
     <>
       {(error || success || existErr) && (
@@ -331,10 +357,12 @@ const LocationModal = (props) => {
         message={
           // eslint-disable-next-line react/jsx-wrap-multilines
           <ReduxForm
+            ref={locationForm}
             onSubmit={onSubmit}
             locationViewMode={props.locationViewMode}
             locationEditMode={props.locationEditMode}
             generateUrl={generateUrl}
+            testConnection={testConnection}
           />
         }
         className={classes.modal}
