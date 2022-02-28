@@ -178,8 +178,9 @@ exports.getDatasetIngestionDashboardDetail = function (req, res) {
 ,cteTrnx AS -- get the latest process executionid 
 (
 SELECT *, 
-case when downloadtrnx > 0 OR previous_downloadtrnx > 0 THEN  ((downloadtrnx - previous_downloadtrnx) / ((downloadtrnx + previous_downloadtrnx) / 2)) * 100
+case when (downloadtrnx > 0 OR previous_downloadtrnx > 0) THEN  ((downloadtrnx - previous_downloadtrnx) / nullif(((downloadtrnx + previous_downloadtrnx) / 2), 0)) * 100
 when downloadtrnx = 0 and previous_downloadtrnx = 0 then 0
+else 0
 end as pct_cng  FROM
 (
 select prot_id, dataflowid, datapackageid, datasetid, executionid, externalid, downloadtrnx, latest, LEAD(downloadtrnx,1) OVER (
@@ -204,8 +205,14 @@ ON ts.externalid = cps.externalid )  ts1_latest
 where latest<=2 
 ) x WHERE latest = 1 
 ) 
-,checkSum as ( select case when current_timestamp > to_timestamp(cast(lastmodifiedtime as numeric)/1000) then date_part('day',current_timestamp - to_timestamp(cast(lastmodifiedtime as numeric)/1000)) else -1
-          end as no_of_staledays, lastmodifiedtime as file_timestamp, dc2.executionid from ${schemaName}.datapackage_checksum dc2 inner join cteTrnx on cteTrnx.dataflowid = dc2.dataflowid and cteTrnx.datapackageid = dc2.datapackageid and cteTrnx.executionid = dc2.executionid limit 1)
+,checkSum as ( select dataflowid,datapackageid,executionid,lastmodifiedtime,latest,no_of_staledays, lastmodifiedtime as file_timestamp  from (select dc2.dataflowid,dc2.datapackageid, dc2.executionid ,lastmodifiedtime, 
+  row_number () over(partition by dc2.dataflowid,dc2.datapackageid, dc2.executionid order by lastmodifiedtime desc) as latest,
+  case when current_timestamp > to_timestamp(cast(lastmodifiedtime as numeric)/1000) 
+  then date_part('day',current_timestamp - to_timestamp(cast(lastmodifiedtime as numeric)/1000)) else -1
+  end as no_of_staledays from ${schemaName}.datapackage_checksum dc2 
+  inner join cteTrnx on cteTrnx.dataflowid = dc2.dataflowid 
+  and cteTrnx.datapackageid = dc2.datapackageid 
+  and cteTrnx.executionid = dc2.executionid order by lastmodifiedtime desc)  src where latest =1)
 ,cteFile AS -- get the latest file name
 (
 SELECT * FROM
