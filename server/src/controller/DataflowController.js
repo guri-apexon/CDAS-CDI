@@ -1043,6 +1043,7 @@ exports.fetchdataflowDetails = async (req, res) => {
       src_loc_id: rows[0].src_loc_id,
       data_in_cdr: rows[0].data_in_cdr,
       configured: rows[0].configured,
+      active: rows[0].active,
       dataPackage: newArr,
     };
     return apiResponse.successResponseWithData(
