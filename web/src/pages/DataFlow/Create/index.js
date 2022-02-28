@@ -1,6 +1,7 @@
 /* eslint-disable no-script-url */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useContext } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 // import CssBaseline from "@material-ui/core/CssBaseline";
@@ -12,7 +13,8 @@ import { values } from "lodash";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
 import LeftPanel from "./LeftPanel";
-import Header from "../../../components/DataFlow/Header";
+// eslint-disable-next-line import/no-unresolved
+import Header from "./Header";
 import "../DataFlow.scss";
 import DataFlowForm from "./DataFlowForm";
 import {
@@ -24,9 +26,10 @@ import {
   getLocationByType,
   addDataFlow,
 } from "../../../store/actions/DataFlowAction";
-
+import DataPackages from "./Datapackage";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
+import DataSet from "./Dataset";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -63,11 +66,18 @@ const onSubmit = () => {
   }, 400);
 };
 
-const DataFlow = ({ FormValues, dashboard }) => {
+const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
+  const [myform, setForm] = useState({});
   const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const [compression, setCompression] = useState("not_compressed");
+  const [namingConvention, setNamingConvention] = useState("");
+  const [packagePassword, setPackagePassword] = useState("");
+  const [FormType, setFormType] = useState("dataflow");
+  const [sftpPath, setSftpPath] = useState("");
+  const [selectedDatapackage, setselectedDatapackage] = useState("");
   const dataFlowData = useSelector((state) => state.dataFlow);
   const { selectedLocation, loading, error } = dataFlowData;
   const { createTriggered, upsertLoading } = useSelector(
@@ -131,9 +141,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
   //   }
   // }, [dashboard?.selectedCard]);
 
-  const submitForm = async () => {
-    console.log("FormValues?", FormValues);
-    console.log("protId", protId);
+  const AddDataflowData = () => {
     if (
       FormValues.vendor &&
       FormValues.locationName &&
@@ -142,25 +150,87 @@ const DataFlow = ({ FormValues, dashboard }) => {
       protId !== ""
     ) {
       const payload = {
+        id: uuidv4(),
         vendorID: FormValues.vendor[0],
         locationName: FormValues.locationName[0],
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.dataflowType,
-        testFlag: FormValues.dataflowType === "test" ? "true" : "false",
-        prodFlag: FormValues.dataflowType === "production" ? "true" : "false",
+        testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
         firstFileDate: FormValues.firstFileDate,
         locationType: FormValues.locationType,
         // serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
         protocolNumberStandard: protId,
         externalSystemName: "CDI",
+        DataPackage: [],
       };
       console.log(payload);
+      setForm(payload);
+      setFormType("datapackage");
       // await dispatch(addDataFlow(payload));
       // history.push("/dashboard");
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
     }
+  };
+
+  const getDataSetValue = (val) => {
+    console.log(val);
+    // return val;
+  };
+
+  const AddDatapackage = () => {
+    const newForm = { ...myform };
+    const datapckageId = uuidv4();
+    setselectedDatapackage(datapckageId);
+    const obj = {
+      id: datapckageId,
+      compression,
+      namingConvention,
+      packagePassword,
+      sftpPath,
+      datasets: [],
+    };
+    newForm.DataPackage.push(obj);
+    setForm(newForm);
+    setFormType("dataset");
+  };
+
+  const AddDatasetData = (packageid) => {
+    const newForm = { ...myform };
+    const datasetID = uuidv4();
+    const index = newForm.DataPackage.findIndex((r) => r.id === packageid);
+    const obj = {
+      id: datasetID,
+      compression,
+      namingConvention,
+      packagePassword,
+      sftpPath,
+      columnDefinition: [],
+    };
+    newForm.DataPackage[index].datasets.push(obj);
+    setForm(newForm);
+  };
+  const submitForm = async () => {
+    console.log("datasetFormValues?", datasetFormValues);
+
+    switch (FormType) {
+      case "dataflow":
+        AddDataflowData();
+        return null;
+
+      case "datapackage":
+        AddDatapackage();
+        return null;
+
+      case "dataset":
+        AddDatasetData(selectedDatapackage);
+        return null;
+
+      default:
+        break;
+    }
+    return null;
   };
 
   const handleClose = () => {
@@ -170,6 +240,58 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const handleOpen = () => {
     setIsPanelOpen(true);
   };
+
+  const RenderForm = () => {
+    console.log(FormType, "FormTypeFormType");
+
+    switch (FormType) {
+      case "datapackage":
+        return (
+          <DataPackages
+            setCompression={setCompression}
+            setNamingConvention={setNamingConvention}
+            setPackagePassword={setPackagePassword}
+            setSftpPath={setSftpPath}
+            compression={compression}
+            namingConvention={namingConvention}
+            packagePassword={packagePassword}
+            sftpPath={sftpPath}
+          />
+        );
+
+      case "dataset":
+        return <DataSet myform={myform} getDataSetValue={getDataSetValue} />;
+
+      case "dataflow":
+        return (
+          <DataFlowForm
+            onSubmit={onSubmit}
+            changeLocationData={changeLocationData}
+            changeFormField={changeFormField}
+            changeLocationType={changeLocationType}
+            modalLocationType={modalLocationType}
+            userName={selectedLocation?.usr_nm}
+            password={selectedLocation?.pswd}
+            connLink={selectedLocation?.cnn_url}
+          />
+        );
+
+      default:
+        return (
+          <DataFlowForm
+            onSubmit={onSubmit}
+            changeLocationData={changeLocationData}
+            changeFormField={changeFormField}
+            changeLocationType={changeLocationType}
+            modalLocationType={modalLocationType}
+            userName={selectedLocation?.usr_nm}
+            password={selectedLocation?.pswd}
+            connLink={selectedLocation?.cnn_url}
+          />
+        );
+    }
+  };
+  console.log(myform, "sdsasa", myform.DataPackage);
 
   return (
     <div className={classes.root}>
@@ -189,7 +311,12 @@ const DataFlow = ({ FormValues, dashboard }) => {
         open={isPanelOpen}
         width={446}
       >
-        <LeftPanel protId={protId} />
+        <LeftPanel
+          protId={protId}
+          packages={myform.DataPackage}
+          setFormType={setFormType}
+          myform={myform}
+        />
       </Panel>
       <Panel
         className={
@@ -211,18 +338,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
               />
             </div>
             <Divider />
-            <div className={classes.formSection}>
-              <DataFlowForm
-                onSubmit={onSubmit}
-                changeLocationData={changeLocationData}
-                changeFormField={changeFormField}
-                changeLocationType={changeLocationType}
-                modalLocationType={modalLocationType}
-                userName={selectedLocation?.usr_nm}
-                password={selectedLocation?.pswd}
-                connLink={selectedLocation?.cnn_url}
-              />
-            </div>
+            <div className={classes.formSection}>{RenderForm()}</div>
           </div>
         </main>
       </Panel>
@@ -234,5 +350,6 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
 export default connect((state) => ({
   FormValues: getFormValues("DataFlowForm")(state),
+  datasetFormValues: getFormValues("DataSetsForm")(state),
   dashboard: state.dashboard,
 }))(DataFlow);

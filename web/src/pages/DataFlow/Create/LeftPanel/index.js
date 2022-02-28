@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -16,12 +16,13 @@ import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Tooltip from "apollo-react/components/Tooltip";
 import { ReactComponent as DataFlowIcon } from "../../../../components/Icons/dataflow.svg";
-import PackagesList from "../../../DataPackages/PackagesTable";
+import PackagesList from "./PackagesTable";
 import { getUserInfo, debounceFunction } from "../../../../utils";
 import {
   getPackagesList,
   addPackageBtnAction,
 } from "../../../../store/actions/DataPackageAction";
+import { MessageContext } from "../../../../components/Providers/MessageProvider";
 
 import "./LeftPanel.scss";
 
@@ -67,12 +68,12 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LeftPanel = ({ protId }) => {
+const LeftPanel = ({ protId, packages, setFormType, myform }) => {
   const classes = useStyles();
   const history = useHistory();
   const dispatch = useDispatch();
   const [searchTxt, setSearchTxt] = useState("");
-  const [packages, setPackages] = useState([]);
+  // const [packages, setPackages] = useState([]);
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlowData = useSelector((state) => state.dataFlow);
   const dashboard = useSelector((state) => state.dashboard);
@@ -80,33 +81,39 @@ const LeftPanel = ({ protId }) => {
   const userInfo = getUserInfo();
   const location = useLocation();
   const { selectedDFId, selectedCard } = dashboard;
+  const messageContext = useContext(MessageContext);
   let dataflowName = "";
   const viewAuditLog = () => {
     history.push("/dashboard/audit-logs");
   };
-  const getPackages = (query = "") => {
-    if (selectedDFId) {
-      dispatch(getPackagesList(selectedDFId, query));
-    } else {
-      // history.push("dashboard");
-    }
-  };
-  useEffect(() => {
-    getPackages();
-  }, []);
+  // const getPackages = (query = "") => {
+  //   if (selectedDFId) {
+  //     dispatch(getPackagesList(selectedDFId, query));
+  //   } else {
+  //     // history.push("dashboard");
+  //   }
+  // };
+  // useEffect(() => {
+  //   getPackages();
+  // }, []);
   const searchTrigger = (e) => {
     const newValue = e.target.value;
     setSearchTxt(newValue);
-    debounceFunction(async () => {
-      await getPackages(newValue);
-    }, 1000);
+    // debounceFunction(async () => {
+    //   await getPackages(newValue);
+    // }, 1000);
   };
   const redirectDataPackage = () => {
-    if (location.pathname === "/dashboard/data-packages") {
-      dispatch(addPackageBtnAction());
+    if (Object.keys(myform).length > 0) {
+      setFormType("datapackage");
     } else {
-      history.push("/dashboard/data-packages");
+      messageContext.showErrorMessage("Please fill data flow details");
     }
+    // if (location.pathname === "/dashboard/data-packages") {
+    //   dispatch(addPackageBtnAction());
+    // } else {
+    //   history.push("/dashboard/data-packages");
+    // }
   };
   const menuItems = [
     { text: "View audit log", onClick: viewAuditLog },
@@ -125,9 +132,15 @@ const LeftPanel = ({ protId }) => {
     );
   };
 
-  if (selectedVendor.label !== "" && description !== "" && protId !== "") {
+  if (
+    selectedVendor &&
+    selectedVendor.label !== "" &&
+    description !== "" &&
+    protId !== ""
+  ) {
     dataflowName = `${selectedVendor.label}-${description}-${protId}`;
   }
+  console.log(packages, "packages");
   return (
     <div className="leftPanel">
       <div className={classes.drawerHeader}>
