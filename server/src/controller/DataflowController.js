@@ -945,21 +945,24 @@ exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
     let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
-    d2.* ,d3."name" as datasetname ,d3.*,c.*
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
       inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
-      inner join cdas1d.cdascfg.columndefinition c on (c.datasetid =d3.datasetid)
+      inner join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
       where d.dataflowid ='${dataflow_id}'`;
+    console.log(q);
     Logger.info({
       message: "fetchdataflowDetails",
       dataflow_id,
     });
     let { rows } = await DB.executeQuery(q);
-    let tempDP = _.uniqBy(rows, "datapackageid");
-    let tempDS = _.uniqBy(rows, "datasetid");
+    console.log(rows);
+    let response = rows;
+    let tempDP = _.uniqBy(response, "datapackageid");
+    let tempDS = _.uniqBy(response, "datasetid");
     let newArr = [];
     for (const each of tempDP) {
       for (const el of tempDS) {
@@ -1034,8 +1037,8 @@ exports.fetchdataflowDetails = async (req, res) => {
       connectionType: rows[0].connectiontype,
       location: rows[0].src_loc_id,
       exptDtOfFirstProdFile: rows[0].expt_fst_prd_dt,
-      testFlag: rows[0].testflag,
-      prodFlag: rows[0].testflag === 1 ? 1 : 0,
+      testFlag: rows[0].test_flag,
+      prodFlag: rows[0].test_flag === 1 ? 1 : 0,
       description: rows[0].description,
       connectiondriver: rows[0].connectiondriver,
       fsrstatus: rows[0].fsrstatus,
