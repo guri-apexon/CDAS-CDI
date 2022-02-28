@@ -1,7 +1,13 @@
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { reduxForm, submit, change, formValueSelector } from "redux-form";
+import {
+  reduxForm,
+  submit,
+  change,
+  formValueSelector,
+  getFormValues,
+} from "redux-form";
 import { useDispatch, connect, useSelector } from "react-redux";
 import compose from "@hypnosphi/recompose/compose";
 import makeStyles from "@material-ui/core/styles/makeStyles";
@@ -316,7 +322,7 @@ const LocationModal = (props) => {
       databaseName: "dbName",
       endPoint: "/checkconnection/jdbc",
     };
-    console.log("AddLocationForm", reqBody);
+    console.log("AddLocationForm", reqBody, props.formState);
     // const result = await testConnectionFSR(reqBody);
     // console.log("result", result);
     // if (result.code === 400) {
@@ -395,6 +401,7 @@ const ReduxForm = compose(
     selectedPort: selector(state, "port"),
     selectedDB: selector(state, "dbName"),
     locType: selector(state, "locationType"),
+    formState: getFormValues("AddLocationForm")(state),
   }))
 )(LocationForm);
 
