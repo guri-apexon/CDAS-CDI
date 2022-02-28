@@ -39,9 +39,14 @@ export function* fetchCDTList() {
   }
 }
 
-export function* fetchSettingsList() {
+export function* fetchSettingsList(action = "") {
   try {
-    const fetchData = yield call(axios.get, `${baseURL}/${SETTINGAPI}/list`);
+    const fetchData = action?.search
+      ? yield call(
+          axios.get,
+          `${baseURL}/${SETTINGAPI}/search-settings/${action.search}`
+        )
+      : yield call(axios.get, `${baseURL}/${SETTINGAPI}/list`);
     yield put({
       type: FETCH_SETTINGS_SUCCESS,
       settings: fetchData.data?.data || [],

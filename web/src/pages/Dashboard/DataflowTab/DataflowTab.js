@@ -214,7 +214,7 @@ export default function DataflowTab({ updateData }) {
 
   const handleLink = (dataFlowId) => {
     dispatch(updateSelectedDataflow(dataFlowId));
-    history.push("/dashboard/dataflow-management");
+    history.push(`/dashboard/dataflow-management/${dataFlowId}`);
   };
 
   const LinkCell = ({ row, column: { accessor } }) => {
@@ -659,10 +659,6 @@ export default function DataflowTab({ updateData }) {
   const [tableRows, setTableRows] = useState([...rowData]);
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
 
-  const toDataflowMgmt = async () => {
-    history.push("/dashboard/dataflow-management");
-  };
-
   useEffect(() => {
     setTableColumns([...moreColumns]);
     setTableRows([...rowData]);
@@ -763,9 +759,7 @@ export default function DataflowTab({ updateData }) {
               frozenColumnsEnabled: true,
               defaultColumns: moreColumns,
             }}
-            CustomHeader={(props) => (
-              <CustomButtonHeader toDataflowMgmt={toDataflowMgmt} {...props} />
-            )}
+            CustomHeader={(props) => <CustomButtonHeader {...props} />}
             emptyProps={{
               content: <EmptyTableComponent />,
             }}

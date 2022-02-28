@@ -74,7 +74,7 @@ export function* fetchSQLTables() {
       `${baseURL}/${SQLTABLESAPI}`,
       {}
     );
-    console.log("fetchSQLTables", fetchSQLTables);
+    // console.log("fetchSQLTables", fetchSQLTables);
     yield put({
       type: FETCH_SQL_TABLES_SUCCESS,
       sqlTables: fetchSQLTable.data.data,
@@ -106,7 +106,7 @@ export function* fetchPreviewSQL(action) {
       `${baseURL}/${PREVIEWSQLAPI}`,
       { query: action.query }
     );
-    console.log("fetchPreviewSQLData", fetchPreviewSQLData);
+    // console.log("fetchPreviewSQLData", fetchPreviewSQLData);
     yield put({
       type: FETCH_PREVIEW_SQL_SUCCESS,
       previewSQL: fetchPreviewSQLData.data.data,

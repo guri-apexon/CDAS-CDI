@@ -9,6 +9,13 @@ import {
   FETCH_SETTINGS_DATA,
 } from "../../constants";
 
+export const searchSettings = (search) => {
+  return {
+    type: FETCH_SETTINGS_DATA,
+    search,
+  };
+};
+
 export const fetchSettingsData = () => {
   return { type: FETCH_SETTINGS_DATA };
 };
