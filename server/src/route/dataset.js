@@ -29,4 +29,9 @@ router.get(
   DSIngestionReportController.getDatasetIssueTypes
 );
 
+router.get(
+  "/ingestion-report/transferhistory/:datasetid",
+  DSIngestionReportController.getFileTransferHistory
+);
+
 module.exports = router;
