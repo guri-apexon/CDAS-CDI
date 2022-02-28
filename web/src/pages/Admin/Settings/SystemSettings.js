@@ -42,7 +42,6 @@ const CustomHeader = ({
         marginRight: 8,
         width: 240,
         marginTop: 6,
-        borderColor: "#768fd",
       }}
       size="small"
     />
