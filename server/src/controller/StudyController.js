@@ -10,12 +10,16 @@ exports.getUserStudyList = function (req, res) {
   try {
     const userId = req.params.userId;
 
-    const query = `SELECT prot_id, protocolnumber, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount" 
-    FROM ${schemaName}.study_ingestion_dashboard WHERE usr_id = $1`;
+    // const query = `SELECT prot_id, protocolnumber, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
+    // FROM ${schemaName}.study_ingestion_dashboard WHERE usr_id = $1`;
+
+    const newQuery = `SELECT prot_id, protocolnumber, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
+    FROM cdascfg.study_ingestion_dashboard
+    WHERE prot_id in (select prot_id from study_user where usr_id=$1)`;
 
     Logger.info({ message: `getUserStudyList` });
 
-    DB.executeQuery(query, [userId]).then((resp) => {
+    DB.executeQuery(newQuery, [userId]).then((resp) => {
       const studies = resp.rows || [];
       if (studies.length > 0) {
         // studies.forEach();
