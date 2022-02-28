@@ -24,4 +24,9 @@ router.get(
   DSIngestionReportController.getDatasetIngestionReportMetrics
 );
 
+router.get(
+  "/ingestion-report/issuetypes/:datasetid",
+  DSIngestionReportController.getDatasetIssueTypes
+);
+
 module.exports = router;
