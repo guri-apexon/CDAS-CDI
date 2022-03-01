@@ -144,7 +144,7 @@ export const UPDATE_SETTINGS_FAILURE = "UPDATE_SETTINGS_FAILURE";
 
 // API URLS
 
-export const FLOW_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
+export const GETSTUDYDF = "v1/api/dataflow/studyDataflowList";
 export const STUDYSEARCH = "v1/api/study/search-study";
 export const STUDYAPI = "v1/api/study";
 export const HARDDELETE = "v1/api/dataflow/hardDelete";

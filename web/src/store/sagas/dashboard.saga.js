@@ -3,7 +3,7 @@ import { put, call } from "redux-saga/effects";
 import axios from "axios";
 import {
   baseURL,
-  FLOW_DATA_FETCH,
+  GETSTUDYDF,
   STUDYAPI,
   GET_DATA_FLOW_LIST_SUCCESS,
   GET_DATA_FLOW_LIST_FAILURE,
@@ -14,11 +14,9 @@ import {
 export function* fetchFlowData(payload) {
   // console.log("before", payload.protocolId);
   try {
-    const fetchDBData = yield call(
-      axios.post,
-      `${baseURL}/${FLOW_DATA_FETCH}`,
-      { protocolId: payload.protocolId }
-    );
+    const fetchDBData = yield call(axios.post, `${baseURL}/${GETSTUDYDF}`, {
+      protocolId: payload.protocolId,
+    });
 
     // console.log("study", fetchDBData);
     yield put({

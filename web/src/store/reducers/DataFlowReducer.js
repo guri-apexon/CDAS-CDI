@@ -36,6 +36,9 @@ export const initialState = {
   locationType: "SFTP",
   selectedVendor: {},
   dataFlowdetail: {},
+  testProdLock: false,
+  prodLock: false,
+  testLock: false,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -104,6 +107,7 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = false;
         // eslint-disable-next-line no-case-declarations
         const { dataflowDetail } = action;
+
         // eslint-disable-next-line no-case-declarations
         const {
           description,
@@ -115,7 +119,11 @@ const DataFlowReducer = (state = initialState, action) =>
           vendID,
           vendorname,
           testflag,
+          isSync,
         } = dataflowDetail;
+        newState.testLock = testflag === 1 && isSync === "Y";
+        newState.prodLock = testflag === 0 && isSync === "Y";
+        newState.testProdLock = isSync === "Y";
         // eslint-disable-next-line no-case-declarations
         const formData = {};
         formData.description = description;
