@@ -127,8 +127,8 @@ const Dataset = () => {
   };
 
   const onChangeSql = (val) => {
-    setColumnsActive(val === "No");
     setCustomSql(val);
+    setColumnsActive(val === "No");
   };
 
   useEffect(() => {
@@ -146,12 +146,11 @@ const Dataset = () => {
       dispatch(getDataSetDetail(datasetId));
       dispatch(getDatasetColumns(datasetId));
     }
-    // console.log(datasetId);
   }, [datasetId]);
 
   useEffect(() => {
     if (isDatasetCreated) {
-      if (dataFlowdetail?.loctyp === ("sftp" || "ftps")) {
+      if (dataFlowdetail?.loctyp === ("sftp" || "ftps") || customSql === "No") {
         setValue(1);
       }
     }
