@@ -21,8 +21,11 @@ export default function DSColumnTable({
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
+  const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDataset } = dataSets;
   const { fileType, datasetid } = selectedDataset;
+  const { testLock, prodLock, testProdLock } = dataFlow;
+
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     uniqueId: `u${index}`,
     columnId: index + 1,
@@ -67,6 +70,7 @@ export default function DSColumnTable({
       // setIsAdding(false);
     } else if (dataOrigin === "fromDB") {
       setRows([...formattedData]);
+
       // setIsAdding(false);
     } else if (dataOrigin === "manually") {
       setSelectedRows([...initRows]);

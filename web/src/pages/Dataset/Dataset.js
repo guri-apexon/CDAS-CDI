@@ -88,7 +88,7 @@ const Dataset = () => {
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
-  const [customSql, setCustomSql] = useState("no");
+  const [customSql, setCustomSql] = useState("No");
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
@@ -126,10 +126,7 @@ const Dataset = () => {
     return "jdbc";
   };
 
-  const onChangeSql = (val) => {
-    setCustomSql(val);
-    setColumnsActive(val === "No");
-  };
+  const onChangeSql = (val) => setCustomSql(val);
 
   useEffect(() => {
     if (selectedDFId === "") {
@@ -153,6 +150,7 @@ const Dataset = () => {
       if (dataFlowdetail?.loctyp === ("sftp" || "ftps") || customSql === "No") {
         setValue(1);
       }
+      setColumnsActive(customSql === "No");
     }
   }, [isDatasetCreated]);
 
@@ -342,6 +340,8 @@ const Dataset = () => {
                     datapackageid={datapackageid}
                     dataflowid={selectedDFId}
                     datasetId={datasetId}
+                    isDatasetCreated={isDatasetCreated}
+                    selectedDataset={selectedDataset}
                     dfTestFlag={dataFlowdetail.testflag}
                     onChangeSql={onChangeSql}
                     ref={jdbcRef}
