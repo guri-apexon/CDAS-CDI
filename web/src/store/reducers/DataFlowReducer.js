@@ -126,7 +126,7 @@ const DataFlowReducer = (state = initialState, action) =>
         formData.dataflowType = testflag === 1 ? "test" : "production";
         formData.locations = [{ value: srclocID, label: locationName }];
         formData.dataStructure = type;
-        formData.vendors = [{ value: vendID, label: vendorname }];
+        formData.vendors = [3];
         formData.vendorname = vendorname;
         newState.dataFlowdetail = action.dataflowDetail;
         newState.formData = formData;
