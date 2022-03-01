@@ -59,11 +59,10 @@ async function getCurrentDKDetails(dkId) {
 exports.createDataKind = async (req, res) => {
   try {
     const { dkName, dkDesc, dkExternalId, dkESName, dkStatus } = req.body;
-    const curDate = new Date();
     const insertQuery = `INSERT INTO ${schemaName}.datakind ("name", dk_desc, extrnl_id, extrnl_sys_nm, active, insrt_tm, updt_tm) VALUES($2, $3, $4, $5, $6, $1, $1)`;
     Logger.info({ message: "createDataKind" });
     const inset = await DB.executeQuery(insertQuery, [
-      curDate,
+      helper.getCurrentTime(),
       dkName,
       dkDesc || null,
       dkExternalId,
@@ -117,7 +116,7 @@ exports.updateDataKind = async (req, res) => {
             parseInt(ele.dfVer) + parseInt(1),
             null,
             userId,
-            new Date(),
+            helper.getCurrentTime(),
           ];
           DB.executeQuery(query, body);
         });
@@ -170,9 +169,7 @@ exports.getDatakindList = function (req, res) {
   try {
     let searchQuery = `SELECT datakindid,datakindid as value,CONCAT(name, ' - ', extrnl_sys_nm) as label, name from ${schemaName}.datakind where active= $1 order by label asc`;
     let dbQuery = DB.executeQuery(searchQuery, [1]);
-    Logger.info({
-      message: "datakindList",
-    });
+    Logger.info({ message: "datakindList" });
 
     dbQuery
       .then((response) => {
