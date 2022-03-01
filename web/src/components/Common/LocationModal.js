@@ -61,7 +61,18 @@ const useStyles = makeStyles(styles);
 
 const LocationForm = (props) => {
   const classes = useStyles();
-  const { locType, selectedHost, selectedPort, selectedDB, isActive } = props;
+  const {
+    locType,
+    selectedHost,
+    selectedPort,
+    selectedDB,
+    isActive,
+    formState,
+    loading,
+  } = props;
+  const testConnectionTrigger = () => {
+    props.testConnection(formState);
+  };
 
   return (
     <form onSubmit={props.handleSubmit}>
@@ -237,7 +248,8 @@ const LocationForm = (props) => {
               <Button
                 variant="secondary"
                 size="small"
-                onClick={() => props.testConnection(props.formState)}
+                disabled={loading}
+                onClick={testConnectionTrigger}
               >
                 Test Connection
               </Button>
@@ -263,6 +275,7 @@ const LocationModal = (props) => {
   const locationForm = useRef();
   const selector = formValueSelector("AddLocationForm");
   const [connectionResponse, setConnectionResponse] = useState(null);
+  const [loadingConn, setLoadingConn] = useState(false);
   const { error, success, createTriggered } = useSelector(
     (state) => state.cdiadmin
   );
@@ -344,8 +357,10 @@ const LocationModal = (props) => {
         reqBody.databaseName = dbName || "";
       }
     }
+    setLoadingConn(true);
     const result = await testConnectionFSR(reqBody);
     console.log("result", result);
+    setLoadingConn(false);
     if (result.status === "OK") {
       showLocationMessage(
         result.message || "Operation Successfully",
@@ -402,6 +417,7 @@ const LocationModal = (props) => {
             locationEditMode={props.locationEditMode}
             generateUrl={generateUrl}
             testConnection={testConnection}
+            loading={loadingConn}
           />
         }
         className={classes.modal}
