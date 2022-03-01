@@ -94,11 +94,11 @@ const DataFlowFormBase = (props) => {
     changeFormField,
     changeLocationType,
     connLink,
-    dataflowSource,
   } = props;
   const onChangeServiceOwner = (values) => {
     change("serviceOwnerValue", values);
   };
+
   const openLocationModal = () => {
     setLocationOpen(true);
   };
