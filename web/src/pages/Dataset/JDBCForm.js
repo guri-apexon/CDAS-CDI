@@ -105,6 +105,11 @@ const JDBCForm = forwardRef((props, ref) => {
   const [filterCondition, setFilterCondition] = useState("");
   const [dataType, setDataType] = useState("Cumulative");
   const [offsetColumn, setOffsetColumn] = useState(null);
+  const [sQLQueryErr, setSQLQueryErr] = useState(false);
+  const [filterConditionErr, setFilterConditionErr] = useState(false);
+  const [datasetNameErr, setDatasetNameErr] = useState(false);
+  const [clinicalDataTypeErr, setClinicalDataTypeErr] = useState(false);
+
   const messageContext = useContext(MessageContext);
 
   const { datakind, selectedDataset, previewSQL, sqlTables, sqlColumns } =
@@ -123,6 +128,10 @@ const JDBCForm = forwardRef((props, ref) => {
     setDataType("Cumulative");
     setOffsetColumn(null);
     setIsPreviewReady(false);
+    setSQLQueryErr(false);
+    setFilterConditionErr(false);
+    setDatasetNameErr(false);
+    setClinicalDataTypeErr(false);
   };
 
   useEffect(() => {
@@ -222,7 +231,24 @@ const JDBCForm = forwardRef((props, ref) => {
   }, [dataType]);
 
   useImperativeHandle(ref, () => ({
+    // eslint-disable-next-line consistent-return
     handleSubmit() {
+      if (datasetName === "") {
+        setDatasetNameErr(true);
+        return false;
+      }
+      setDatasetNameErr(false);
+      if (clinicalDataType === "") {
+        setClinicalDataTypeErr(true);
+        return false;
+      }
+      setClinicalDataTypeErr(false);
+      if (datasetName === "") {
+        return false;
+      }
+      if (datasetName === "") {
+        return false;
+      }
       if (datasetId === "new") {
         dispatch(
           saveDatasetData({
@@ -238,7 +264,6 @@ const JDBCForm = forwardRef((props, ref) => {
             dfTestFlag,
           })
         );
-        // console.log("save jdbc");
       } else {
         dispatch(
           updateDatasetData({
