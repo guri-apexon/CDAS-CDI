@@ -4,7 +4,6 @@ const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
-const AuditLogController = require("./AuditLogController");
 
 async function checkIsExistInDF(dkId) {
   let listQuery = `select distinct (d3.datakindid) from ${schemaName}.dataflow d 
@@ -91,8 +90,6 @@ exports.updateDataKind = async (req, res) => {
   try {
     const { dkId, dkName, dkDesc, dkStatus, dkESName, dkExternalId, userId } =
       req.body;
-    const curDate = new Date();
-    const allUpdatequery = `UPDATE ${schemaName}.datakind SET "name"=$3, active=$5, extrnl_id=$7, extrnl_sys_nm=$6, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2`;
     Logger.info({ message: "updateDataKind" });
     const isExist = await checkIsExistInDF(dkId);
 
@@ -105,92 +102,54 @@ exports.updateDataKind = async (req, res) => {
       const dfList = await DB.executeQuery(getReleatedDF, [dkId]);
       const existingDK = await getCurrentDKDetails(dkId);
       const { curDkName, curDkESName, curDkDesc } = existingDK;
+
       if (
-        curDkName != dkName ||
-        curDkESName != dkESName ||
-        curDkDesc != dkDesc
+        (curDkName != dkName ||
+          curDkESName != dkESName ||
+          curDkDesc != dkDesc) &&
+        dfList.length > 0
       ) {
         dfList.forEach((ele) => {
-          addDFVersion(ele.dataflowid, parseInt(ele.dfVer) + 1, null, userId);
+          console.log(ele);
           const query = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version", config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
           const body = [
             ele.dataflowid,
-            parseInt(ele.dfVer) + 1,
+            parseInt(ele.dfVer) + parseInt(1),
             null,
             userId,
             new Date(),
           ];
           DB.executeQuery(query, body);
         });
-
-        // dfList.forEach((ele) => {
-        //   addAuditLog(
-        //     ele.dataflowid,
-        //     null,
-        //     null,
-        //     null,
-        //     parseInt(ele.dfVer) + 1,
-        //     "datakindid",
-        //     curDkName,
-        //     dkName,
-        //     userId
-        //   );
-        // });
       }
-
-      // if () {
-      //   dfList.forEach((ele) => {
-      //     addAuditLog(
-      //       ele.dataflowid,
-      //       null,
-      //       null,
-      //       null,
-      //       parseInt(ele.dfVer) + 1,
-      //       "datakindid",
-      //       curDkESName,
-      //       dkESName,
-      //       userId
-      //     );
-      //   });
-      // }
-      // if () {
-      //   console.log("desc changed");
-      //   dfList.forEach((ele) => {
-      //     addAuditLog(
-      //       ele.dataflowid,
-      //       null,
-      //       null,
-      //       null,
-      //       parseInt(ele.dfVer) + 1,
-      //       "datakindid",
-      //       curDkDesc,
-      //       dkDesc,
-      //       userId
-      //     );
-      //   });
-      // }
-
-      const updateQuery = `UPDATE ${schemaName}.datakind SET "name"=$3, extrnl_id=$5, extrnl_sys_nm=$6, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2`;
-      const up = await DB.executeQuery(updateQuery, [
-        curDate,
+      const query = `UPDATE ${schemaName}.datakind SET "name"=$2, extrnl_sys_nm=$3, extrnl_id=$4, updt_tm=$6, dk_desc=$5 WHERE datakindid=$1;`;
+      const up = await DB.executeQuery(query, [
         dkId,
         dkName,
-        dkDesc || null,
-        dkExternalId,
         dkESName,
+        dkExternalId,
+        dkDesc,
+        helper.getCurrentTime(),
       ]);
       return apiResponse.successResponseWithData(res, "Operation success", up);
     } else {
-      const up = await DB.executeQuery(allUpdatequery, [
-        curDate,
+      const updateQuery = `UPDATE ${schemaName}.datakind SET "name"=$2, extrnl_sys_nm=$3, active=$4, extrnl_id=$5, updt_tm=$7, dk_desc=$6 WHERE datakindid=$1`;
+      console.log(dkId, dkName, dkESName, dkStatus, dkExternalId, dkDesc);
+      DB.executeQuery(updateQuery, [
         dkId,
         dkName,
-        dkDesc || null,
-        dkStatus,
         dkESName,
+        dkStatus,
         dkExternalId,
-      ]);
-      return apiResponse.successResponseWithData(res, "Operation success", up);
+        dkDesc,
+        helper.getCurrentTime(),
+      ])
+        .then(() => {
+          return apiResponse.successResponse(res, "Operation success");
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
   } catch (err) {
     //throw error in json response with status 500.
