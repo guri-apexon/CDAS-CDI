@@ -70,9 +70,6 @@ const LocationForm = (props) => {
     formState,
     loading,
   } = props;
-  const testConnectionTrigger = () => {
-    props.testConnection(formState);
-  };
 
   return (
     <form onSubmit={props.handleSubmit}>
@@ -249,7 +246,7 @@ const LocationForm = (props) => {
                 variant="secondary"
                 size="small"
                 disabled={loading}
-                onClick={testConnectionTrigger}
+                onClick={() => props.testConnection(formState)}
               >
                 Test Connection
               </Button>
