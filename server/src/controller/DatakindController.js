@@ -59,11 +59,10 @@ async function getCurrentDKDetails(dkId) {
 exports.createDataKind = async (req, res) => {
   try {
     const { dkName, dkDesc, dkExternalId, dkESName, dkStatus } = req.body;
-    const curDate = new Date();
     const insertQuery = `INSERT INTO ${schemaName}.datakind ("name", dk_desc, extrnl_id, extrnl_sys_nm, active, insrt_tm, updt_tm) VALUES($2, $3, $4, $5, $6, $1, $1)`;
     Logger.info({ message: "createDataKind" });
     const inset = await DB.executeQuery(insertQuery, [
-      curDate,
+      helper.getCurrentTime(),
       dkName,
       dkDesc || null,
       dkExternalId,
@@ -94,47 +93,53 @@ exports.updateDataKind = async (req, res) => {
     const isExist = await checkIsExistInDF(dkId);
 
     if (isExist) {
-      let getReleatedDF = `select d.dataflowid, dv."version" as "dfVer" from ${schemaName}.dataflow d 
-  inner join ${schemaName}.dataflow_version dv on d.dataflowid = dv.dataflowid 
-  right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid 
-  right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid
-  where d.active = 1 and d2.active = 1 and d3.active = 1 and d3.datakindid = $1`;
+      let getReleatedDF = `select distinct (d.dataflowid), max (dv."version") from ${schemaName}.dataflow d 
+      inner join ${schemaName}.dataflow_version dv on d.dataflowid = dv.dataflowid 
+      right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid 
+      right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid
+      where d.active = 1 and d2.active = 1 and d3.active = 1 and d3.datakindid=$1 group by d.dataflowid`;
+
       const dfList = await DB.executeQuery(getReleatedDF, [dkId]);
       const existingDK = await getCurrentDKDetails(dkId);
       const { curDkName, curDkESName, curDkDesc } = existingDK;
 
       if (
-        (curDkName != dkName ||
-          curDkESName != dkESName ||
-          curDkDesc != dkDesc) &&
-        dfList.length > 0
+        curDkName != dkName ||
+        curDkESName != dkESName ||
+        curDkDesc != dkDesc
       ) {
-        dfList.forEach((ele) => {
-          console.log(ele);
-          const query = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version", config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
-          const body = [
-            ele.dataflowid,
-            parseInt(ele.dfVer) + parseInt(1),
-            null,
+        dfList.rows.forEach((row) => {
+          const dataflowid = row.dataflowid;
+          const config_json = {};
+          const insertBody = [
+            dataflowid,
+            parseInt(row.max) + 1,
+            { dataflowid },
             userId,
-            new Date(),
+            helper.getCurrentTime(),
           ];
-          DB.executeQuery(query, body);
+          const insertQuery = `INSERT into ${schemaName}.dataflow_version (dataflowid, "version", config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
+          DB.executeQuery(insertQuery, insertBody);
         });
       }
+
       const query = `UPDATE ${schemaName}.datakind SET "name"=$2, extrnl_sys_nm=$3, extrnl_id=$4, updt_tm=$6, dk_desc=$5 WHERE datakindid=$1;`;
-      const up = await DB.executeQuery(query, [
+      DB.executeQuery(query, [
         dkId,
         dkName,
         dkESName,
         dkExternalId,
         dkDesc,
         helper.getCurrentTime(),
-      ]);
-      return apiResponse.successResponseWithData(res, "Operation success", up);
+      ])
+        .then(() => {
+          return apiResponse.successResponse(res, "Operation success");
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     } else {
       const updateQuery = `UPDATE ${schemaName}.datakind SET "name"=$2, extrnl_sys_nm=$3, active=$4, extrnl_id=$5, updt_tm=$7, dk_desc=$6 WHERE datakindid=$1`;
-      console.log(dkId, dkName, dkESName, dkStatus, dkExternalId, dkDesc);
       DB.executeQuery(updateQuery, [
         dkId,
         dkName,
@@ -170,9 +175,7 @@ exports.getDatakindList = function (req, res) {
   try {
     let searchQuery = `SELECT datakindid,datakindid as value,CONCAT(name, ' - ', extrnl_sys_nm) as label, name from ${schemaName}.datakind where active= $1 order by label asc`;
     let dbQuery = DB.executeQuery(searchQuery, [1]);
-    Logger.info({
-      message: "datakindList",
-    });
+    Logger.info({ message: "datakindList" });
 
     dbQuery
       .then((response) => {
