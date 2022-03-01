@@ -1,12 +1,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-script-url */
-import React, {
-  Fragment,
-  useState,
-  useContext,
-  useEffect,
-  useRef,
-} from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -157,7 +151,9 @@ const Dataset = () => {
 
   useEffect(() => {
     if (isDatasetCreated) {
-      setValue(1);
+      if (dataFlowdetail?.loctyp === ("sftp" || "ftps")) {
+        setValue(1);
+      }
     }
   }, [isDatasetCreated]);
 
