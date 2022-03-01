@@ -148,9 +148,7 @@ const ColumnsTab = ({ locationType }) => {
       locationType?.toLowerCase() !== "ftps"
     ) {
       setShowColumns(true);
-      console.log("inside if", locationType);
     }
-    // console.log(locationType);
   }, [locationType]);
 
   const handleChange = (e) => {
