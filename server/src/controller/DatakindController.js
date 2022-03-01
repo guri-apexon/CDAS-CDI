@@ -16,18 +16,43 @@ async function checkIsExistInDF(dkId) {
   return existingInDF.includes(parseInt(dkId));
 }
 
-async function getAllRelatedDF(dkId) {
-  let query = `select d.dataflowid, dv."version" as "dfVer" from cdascfg.dataflow d 
-  inner join cdascfg.dataflow_version dv on d.dataflowid = dv.dataflowid 
-  right join cdascfg.datapackage d2 on d.dataflowid = d2.dataflowid 
-  right join cdascfg.dataset d3 on d2.datapackageid = d3.datapackageid
-  where d.active = 1 and d2.active = 1 and d3.active = 1 and d3.datakindid $1`;
-  const { rows } = await DB.executeQuery(query, [dkId]);
-  return rows;
-}
+// async function addAuditLog(
+//   dfId,
+//   dpId,
+//   dsId,
+//   cdId,
+//   audVer,
+//   att,
+//   oValue,
+//   nValue,
+//   userId
+// ) {
+//   console.log("addlog");
+//   try {
+//     const query = `INSERT INTO ${schemaName}.dataflow_audit_log
+//     (dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+//     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+//     const body = [
+//       dfId || null,
+//       dpId || null,
+//       dsId || null,
+//       cdId || null,
+//       audVer,
+//       att,
+//       oValue,
+//       nValue,
+//       userId,
+//       new Date(),
+//     ];
+//     await DB.executeQuery(query, body);
+//     return true;
+//   } catch (error) {
+//     return false;
+//   }
+// }
 
 async function getCurrentDKDetails(dkId) {
-  let query = `SELECT "name" as "curDkName", extrnl_sys_nm as "curDkESName", dk_desc as "curDkDesc" FROM cdascfg.datakind where datakindid = $1`;
+  let query = `SELECT "name" as "curDkName", extrnl_sys_nm as "curDkESName", dk_desc as "curDkDesc" FROM ${schemaName}.datakind where datakindid = $1`;
   const { rows } = await DB.executeQuery(query, [dkId]);
   return rows[0];
 }
@@ -70,46 +95,80 @@ exports.updateDataKind = async (req, res) => {
     const allUpdatequery = `UPDATE ${schemaName}.datakind SET "name"=$3, active=$5, extrnl_id=$7, extrnl_sys_nm=$6, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2`;
     Logger.info({ message: "updateDataKind" });
     const isExist = await checkIsExistInDF(dkId);
+
     if (isExist) {
-      const dfList = await getAllRelatedDF(dkId);
+      let getReleatedDF = `select d.dataflowid, dv."version" as "dfVer" from ${schemaName}.dataflow d 
+  inner join ${schemaName}.dataflow_version dv on d.dataflowid = dv.dataflowid 
+  right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid 
+  right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid
+  where d.active = 1 and d2.active = 1 and d3.active = 1 and d3.datakindid = $1`;
+      const dfList = await DB.executeQuery(getReleatedDF, [dkId]);
       const existingDK = await getCurrentDKDetails(dkId);
       const { curDkName, curDkESName, curDkDesc } = existingDK;
-      if (curDkName != dkName) {
-        dfList.forEach((element) => {
-          AuditLogController.addAuditSingleLog(
-            element.dataflowid,
-            curDkName,
-            dkName
-          );
+      if (
+        curDkName != dkName ||
+        curDkESName != dkESName ||
+        curDkDesc != dkDesc
+      ) {
+        dfList.forEach((ele) => {
+          addDFVersion(ele.dataflowid, parseInt(ele.dfVer) + 1, null, userId);
+          const query = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version", config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
+          const body = [
+            ele.dataflowid,
+            parseInt(ele.dfVer) + 1,
+            null,
+            userId,
+            new Date(),
+          ];
+          DB.executeQuery(query, body);
         });
-      }
-      if (curDkESName != dkESName) {
-        dfList.forEach((element) => {
-          AuditLogController.addAuditSingleLog(
-            element.dataflowid,
-            curDkESName,
-            dkESName
-          );
-        });
-      }
-      if (curDkDesc != dkDesc) {
-        dfList.forEach((element) => {
-          AuditLogController.addAuditSingleLog(
-            element.dataflowid,
-            curDkDesc,
-            dkDesc
-          );
-        });
+
+        // dfList.forEach((ele) => {
+        //   addAuditLog(
+        //     ele.dataflowid,
+        //     null,
+        //     null,
+        //     null,
+        //     parseInt(ele.dfVer) + 1,
+        //     "datakindid",
+        //     curDkName,
+        //     dkName,
+        //     userId
+        //   );
+        // });
       }
 
-      dfList.forEach((ele) => {
-        AuditLogController.addDFVersion(
-          ele.dataflowid,
-          parseInt(ele.dfVer) + 1,
-          null,
-          userId
-        );
-      });
+      // if () {
+      //   dfList.forEach((ele) => {
+      //     addAuditLog(
+      //       ele.dataflowid,
+      //       null,
+      //       null,
+      //       null,
+      //       parseInt(ele.dfVer) + 1,
+      //       "datakindid",
+      //       curDkESName,
+      //       dkESName,
+      //       userId
+      //     );
+      //   });
+      // }
+      // if () {
+      //   console.log("desc changed");
+      //   dfList.forEach((ele) => {
+      //     addAuditLog(
+      //       ele.dataflowid,
+      //       null,
+      //       null,
+      //       null,
+      //       parseInt(ele.dfVer) + 1,
+      //       "datakindid",
+      //       curDkDesc,
+      //       dkDesc,
+      //       userId
+      //     );
+      //   });
+      // }
 
       const updateQuery = `UPDATE ${schemaName}.datakind SET "name"=$3, extrnl_id=$5, extrnl_sys_nm=$6, updt_tm=$1, dk_desc=$4 WHERE datakindid=$2`;
       const up = await DB.executeQuery(updateQuery, [
