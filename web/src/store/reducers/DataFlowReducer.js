@@ -115,6 +115,7 @@ const DataFlowReducer = (state = initialState, action) =>
           vendID,
           vendorname,
           testflag,
+          locationName,
         } = dataflowDetail;
         // eslint-disable-next-line no-case-declarations
         const formData = {};
@@ -122,10 +123,10 @@ const DataFlowReducer = (state = initialState, action) =>
         formData.firstFileDate = exptfstprddt;
         formData.locationType = loctyp;
         formData.name = name;
-        formData.dataflowType = testflag === 1 ? true : false;
-        formData.srclocID = srclocID;
+        formData.dataflowType = testflag === 1 ? "test" : "production";
+        formData.locations = [{ value: srclocID, label: locationName }];
         formData.dataStructure = type;
-        formData.vendID = vendID;
+        formData.vendors = [{ value: vendID, label: vendorname }];
         formData.vendorname = vendorname;
         newState.dataFlowdetail = action.dataflowDetail;
         newState.formData = formData;

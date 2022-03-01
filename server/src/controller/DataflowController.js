@@ -713,7 +713,7 @@ exports.syncDataFlow = async (req, res) => {
 exports.getDataflowDetail = async (req, res) => {
   try {
     const dataFlowId = req.params.dataFlowId;
-    const searchQuery = `SELECT dataflowTbl.active, dataflowTbl.name,dataflowTbl.testflag, dataflowTbl.type, dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID
+    const searchQuery = `SELECT dataflowTbl.active, dataflowTbl.name,dataflowTbl.testflag, dataflowTbl.type, dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID,, locationTbl.loc_alias_nm as locationName
     from ${schemaName}.dataflow as dataflowTbl 
     JOIN ${schemaName}.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id
     JOIN ${schemaName}.vendor v on (v.vend_id = dataflowTbl.vend_id)
@@ -1036,6 +1036,7 @@ exports.fetchdataflowDetails = async (req, res) => {
       externalSystemName: rows[0].externalsystemname,
       connectionType: rows[0].connectiontype,
       location: rows[0].src_loc_id,
+      locationName: rows[0].locationName,
       exptDtOfFirstProdFile: rows[0].expt_fst_prd_dt,
       testFlag: rows[0].test_flag,
       prodFlag: rows[0].test_flag === 1 ? 1 : 0,
