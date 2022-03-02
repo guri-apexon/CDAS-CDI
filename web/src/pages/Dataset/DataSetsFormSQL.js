@@ -174,6 +174,7 @@ const DataSetsFormBase = (props) => {
             id="customSQLQuery"
             size="small"
             label="Custom SQL Query"
+            canDeselect={false}
           >
             {YesNo?.map((type) => (
               <MenuItem value={type}>{type}</MenuItem>
@@ -242,6 +243,7 @@ const DataSetsFormBase = (props) => {
                 label="Offset Column"
                 style={{ width: 272 }}
                 size="small"
+                canDeselect={false}
                 // disabled
               >
                 <MenuItem value="Enabled">Enabled</MenuItem>

@@ -24,7 +24,7 @@ export default function DSColumnTable({
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDataset } = dataSets;
   const { fileType, datasetid } = selectedDataset;
-  const { testLock, prodLock, testProdLock } = dataFlow;
+  const { testLock, prodLock } = dataFlow;
 
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     uniqueId: `u${index}`,
@@ -458,6 +458,8 @@ export default function DSColumnTable({
             cancelMulti,
             newRows,
             disableSaveAll,
+            testLock,
+            prodLock,
           }}
         />
       </div>
