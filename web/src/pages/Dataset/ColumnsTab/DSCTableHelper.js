@@ -327,16 +327,18 @@ export const CustomHeader = ({
       )}
       {!isMultiAdd && (
         <>
-          <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
-            <IconMenuButton
-              id="actions-1"
-              menuItems={addMenuItems}
-              size="small"
-              disabled={isEditAll}
-            >
-              <Plus />
-            </IconMenuButton>
-          </Tooltip>
+          {locationType?.toLowerCase() === ("sftp" || "ftps") && (
+            <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
+              <IconMenuButton
+                id="actions-1"
+                menuItems={addMenuItems}
+                size="small"
+                disabled={isEditAll}
+              >
+                <Plus />
+              </IconMenuButton>
+            </Tooltip>
+          )}
           <Tooltip title={!isEditAll && "Edit all"} disableFocusListener>
             <IconButton color="primary" size="small" disabled={isEditAll}>
               <Pencil onClick={onEditAll} />
