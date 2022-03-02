@@ -105,17 +105,21 @@ const DataFlowFormBase = (props) => {
   const [dataLoaded, setDataLoaded] = useState(false);
   useEffect(() => {
     if (initialValues) {
+      const { dataflowType } = initialValues;
       setDataLoaded(true);
+      if (dataflowType) {
+        // changeFormField(dataflowType, "dataflowType");
+      }
+      console.log("initialValues", initialValues, dataflowType);
     }
-    console.log("initialValues", initialValues, vendors);
-  }, [vendors]);
+  }, [initialValues]);
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper}>
         <div className={classes.section}>
           <Typography variant="title1">Flow Details</Typography>
           <div style={{ width: "50%" }}>
-            {dataLoaded && (
+            {dataLoaded && vendors && (
               <ReduxFormAutocomplete
                 name="vendor"
                 autoSelect
@@ -123,7 +127,7 @@ const DataFlowFormBase = (props) => {
                 source={vendors}
                 id="vendor"
                 input={{
-                  value: initialValues.vendors,
+                  value: initialValues?.vendors,
                 }}
                 className="autocomplete_field"
                 onChange={(v) => changeFormField(v, "vendor")}
