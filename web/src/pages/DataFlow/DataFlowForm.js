@@ -163,6 +163,7 @@ const DataFlowFormBase = (props) => {
                 label="Data Structure"
                 fullWidth
                 disabled={testLock || prodLock}
+                canDeselect={false}
               >
                 {dataStruct?.map((type) => (
                   <MenuItem key={type.value} value={type.value}>
@@ -176,6 +177,7 @@ const DataFlowFormBase = (props) => {
                 onChange={(e) => changeLocationType(e.target.value)}
                 fullWidth
                 disabled={testLock || prodLock}
+                canDeselect={false}
               >
                 {locationTypes?.map((type) => (
                   <MenuItem key={type} value={type}>

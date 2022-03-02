@@ -141,8 +141,8 @@ const JDBCForm = forwardRef((props, ref) => {
         active,
         incremental,
         mnemonic,
-        customsql,
-        customsql_query: customQuery,
+        customsql_yn: customSQLYN,
+        customsql: customQuery,
         datakindid,
         offsetcolumn,
         tbl_nm: tName,
@@ -151,9 +151,7 @@ const JDBCForm = forwardRef((props, ref) => {
       setDatasetName(mnemonic);
       setSQLQuery(customQuery);
       setDataType(incremental);
-      if (customsql) {
-        setIsCustomSQL(customsql);
-      }
+      setIsCustomSQL(customSQLYN);
       // if (datakindid) {
       //   setClinicalDataType([datakindid]);
       // }

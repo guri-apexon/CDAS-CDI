@@ -102,6 +102,7 @@ const LocationForm = (props) => {
               label="External System Name"
               InputProps={{ readOnly: props.locationViewMode }}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
+              canDeselect={false}
               fullWidth
             >
               {extSysName?.map((type) => (
@@ -116,6 +117,7 @@ const LocationForm = (props) => {
               name="dataStructure"
               label="Data Structure"
               InputProps={{ readOnly: props.locationViewMode }}
+              canDeselect={false}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
               fullWidth
             >
@@ -131,6 +133,7 @@ const LocationForm = (props) => {
               name="locationType"
               label="Location Type"
               InputProps={{ readOnly: props.locationViewMode }}
+              canDeselect={false}
               onChange={(v) =>
                 props.generateUrl(
                   v.target.value,
