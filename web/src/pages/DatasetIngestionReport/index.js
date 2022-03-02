@@ -1,7 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-script-url */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router";
 import { useHistory } from "react-router-dom";
 import Paper from "apollo-react/components/Paper";
+import Loader from "apollo-react/components/Loader";
 import Typography from "apollo-react/components/Typography";
 import Box from "apollo-react/components/Box";
 import Tab from "apollo-react/components/Tab";
@@ -18,13 +22,22 @@ import TransferLog from "./transferLog";
 import Properties from "./properties";
 import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
 import "./ingestionReport.scss";
+import { getDatasetProperties } from "../../store/actions/IngestionReportAction";
+import { updateSelectedDataflow } from "../../store/actions/DashboardAction";
 
 const DatasetIngestionReport = () => {
   const history = useHistory();
+  const dispatch = useDispatch();
+  const params = useParams();
+  const { datasetProperties, loading } = useSelector(
+    (state) => state.ingestionReports
+  );
   const [tabvalue, setTabValue] = useState(0);
   const handleChangeTab = (event, value) => {
     setTabValue(value);
   };
+  const { datasetId } = params;
+
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
@@ -33,11 +46,27 @@ const DatasetIngestionReport = () => {
     },
     {
       href: "javascript:void(0)",
-      title: "Dataset Name",
+      title: datasetProperties?.DatasetName ?? "",
     },
   ];
+
+  const getProperties = () => {
+    dispatch(getDatasetProperties(datasetId));
+  };
+
+  useEffect(() => {
+    getProperties();
+  }, []);
+
+  useEffect(() => {
+    if (datasetProperties) {
+      dispatch(updateSelectedDataflow(datasetProperties?.dataflowid));
+    }
+  }, [datasetProperties]);
+
   return (
     <main className="ingestion-report">
+      {loading && <Loader />}
       <Paper className="no-shadow">
         <Box className="top-content">
           <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />
@@ -59,10 +88,10 @@ const DatasetIngestionReport = () => {
             </div>
           </div>
           <Typography variant="title1" gutterBottom>
-            DatasetName
+            {datasetProperties?.DatasetName}
           </Typography>
           <Typography variant="body2" gutterBottom>
-            Vendor name
+            {datasetProperties?.Vendor}
           </Typography>
         </Box>
         <Divider />
@@ -77,9 +106,11 @@ const DatasetIngestionReport = () => {
         </Tabs>
       </Paper>
       <div style={{ padding: 24 }}>
-        {tabvalue === 0 && <Metrics />}
-        {tabvalue === 1 && <TransferLog />}
-        {tabvalue === 2 && <Properties />}
+        {tabvalue === 0 && <Metrics datasetProperties={datasetProperties} />}
+        {tabvalue === 1 && (
+          <TransferLog datasetProperties={datasetProperties} />
+        )}
+        {tabvalue === 2 && <Properties datasetProperties={datasetProperties} />}
       </div>
     </main>
   );

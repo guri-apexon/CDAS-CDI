@@ -50,4 +50,55 @@
       line-height: 24px;
     }
   }
+  #properties-box {
+    border: 1px solid #e9e9e9;
+    border-radius: 4px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.04);
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-body {
+      padding: 24px;
+      padding-left: 0;
+      .row {
+        margin-bottom: 24px;
+      }
+      .label {
+        color: #595959;
+        font-size: 14px;
+        letter-spacing: 0;
+        line-height: 24px;
+        align-items: center;
+        display: flex;
+        .properties-icon {
+          width: 16px;
+          height: 16px;
+          margin-right: 8px;
+          use#dataflow,
+          g#datapackage {
+            fill: #999999;
+          }
+        }
+      }
+      .text {
+        color: #000000;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0;
+        line-height: 24px;
+        align-items: center;
+        display: flex;
+        .copy-icon {
+          margin-left: 8px;
+          color: #0768fd;
+          & :hover {
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  }
 }

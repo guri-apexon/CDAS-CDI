@@ -142,6 +142,16 @@ export const CREARE_SETTINGS_FAILURE = "CREARE_SETTINGS_FAILURE";
 export const UPDATE_SETTINGS_SUCCESS = "UPDATE_SETTINGS_SUCCESS";
 export const UPDATE_SETTINGS_FAILURE = "UPDATE_SETTINGS_FAILURE";
 
+export const GET_TRANSFER_LOG = "GET_TRANSFER_LOG";
+export const FETCH_TRANSFER_LOG_SUCCESS = "FETCH_TRANSFER_LOG_SUCCESS";
+export const FETCH_TRANSFER_LOG_FAILURE = "FETCH_TRANSFER_LOG_FAILURE";
+
+export const GET_DATASET_PROPERTIES = "GET_DATASET_PROPERTIES";
+export const FETCH_DATASET_PROPERTIES_SUCCESS =
+  "FETCH_DATASET_PROPERTIES_SUCCESS";
+export const FETCH_DATASET_PROPERTIES_FAILURE =
+  "FETCH_DATASET_PROPERTIES_FAILURE";
+
 // API URLS
 
 export const GETSTUDYDF = "v1/api/dataflow/studyDataflowList";
@@ -178,6 +188,7 @@ export const SQLTABLESAPI = "v1/api/dataset/getTables";
 export const SQLCOLUMNSAPI = "v1/api/dataset/getColumns";
 export const PREVIEWSQLAPI = "v1/api/dataset/previewSQL";
 export const SETTINGAPI = "v1/api/system-settings";
+export const INGESTIONREPORTAPI = "v1/api/dataset/ingestion-report";
 
 export const baseURL = process.env.REACT_APP_API_URL;
 
