@@ -304,6 +304,12 @@ const JDBCForm = forwardRef((props, ref) => {
     messageContext.showErrorMessage(`No records found.`);
   };
 
+  const notAllowIncremental = () => {
+    messageContext.showErrorMessage(
+      `Cannot switch to Incremental as the dataset that has been synched does not have any primary key defined`
+    );
+  };
+
   return (
     <form className="jdbc-form">
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
