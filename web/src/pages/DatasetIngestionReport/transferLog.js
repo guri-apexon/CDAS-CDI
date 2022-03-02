@@ -297,7 +297,7 @@ const TransferLog = ({ datasetProperties }) => {
   );
 
   return (
-    <>
+    <div style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24 }}>
       <Table
         title={`${loadType} File Transfer Log`}
         subtitle={
@@ -332,7 +332,7 @@ const TransferLog = ({ datasetProperties }) => {
           frozenColumnsEnabled: true,
         }}
       />
-    </>
+    </div>
   );
 };
 

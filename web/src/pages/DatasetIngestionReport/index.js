@@ -105,7 +105,7 @@ const DatasetIngestionReport = () => {
           <Tab label="Properties" />
         </Tabs>
       </Paper>
-      <div style={{ padding: 24 }}>
+      <div style={{ paddingBottom: 24 }}>
         {tabvalue === 0 && <Metrics datasetProperties={datasetProperties} />}
         {tabvalue === 1 && (
           <TransferLog datasetProperties={datasetProperties} />

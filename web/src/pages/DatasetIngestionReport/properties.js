@@ -25,110 +25,115 @@ const Properties = ({ datasetProperties }) => {
     history.push(`/dashboard/dataset/${datasetId}`);
   };
   return (
-    <Paper style={{ padding: 24, backgroundColor: "#fff" }} id="properties-box">
-      <div className="panel-header">
-        <Typography variant="title1" style={{ fontSize: 16, marginTop: 0 }}>
-          Dataset Properties
-        </Typography>
-        <Button
-          variant="text"
-          onClick={() => setModalOpen(true)}
-          size="small"
-          style={{ marginRight: 10 }}
-        >
-          View Dataset Settings
-        </Button>
-      </div>
-      <div className="panel-body">
-        <Grid container style={{ width: "calc(50% + 16px)" }} spacing={2}>
-          <Grid item xs={12}>
-            <div className="label">Vendor Contact Information</div>
-            <div className="text">
-              {datasetProperties?.VendorContactInformation}
-              {datasetProperties?.VendorContactInformation && (
-                <Tooltip title={copyText} placement="top">
-                  <IconButton color="primary" size="small">
-                    <CopyIcon
-                      onClick={() => copyVendor()}
-                      onMouseOut={() => setCopyText("Copy")}
-                    />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </div>
-          </Grid>
-          <Grid item xs={6}>
-            <div className="label">Date Last Checked</div>
-            <div className="text">{datasetProperties?.DateLastChecked}</div>
-          </Grid>
-          <Grid item xs={6}>
-            <div className="label">Date of Last Succesful Process</div>
-            <div className="text">
-              {datasetProperties?.DateofLastSuccessfulProcess}
-            </div>
-          </Grid>
-          {datasetProperties?.SourceOrigin?.toLowerCase() !== "sftp" &&
-            datasetProperties?.SourceOrigin?.toLowerCase() !== "ftps" && (
-              <>
-                <Grid item xs={6}>
-                  <div className="label">Expected Date of Next Transfer</div>
-                  <div className="text">
-                    {datasetProperties?.ExpectedDateofNextTransfer}
-                  </div>
-                </Grid>
+    <div style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24 }}>
+      <Paper
+        style={{ padding: 24, backgroundColor: "#fff" }}
+        id="properties-box"
+      >
+        <div className="panel-header">
+          <Typography variant="title1" style={{ fontSize: 16, marginTop: 0 }}>
+            Dataset Properties
+          </Typography>
+          <Button
+            variant="text"
+            onClick={() => setModalOpen(true)}
+            size="small"
+            style={{ marginRight: 10 }}
+          >
+            View Dataset Settings
+          </Button>
+        </div>
+        <div className="panel-body">
+          <Grid container style={{ width: "calc(50% + 16px)" }} spacing={2}>
+            <Grid item xs={12}>
+              <div className="label">Vendor Contact Information</div>
+              <div className="text">
+                {datasetProperties?.VendorContactInformation}
+                {datasetProperties?.VendorContactInformation && (
+                  <Tooltip title={copyText} placement="top">
+                    <IconButton color="primary" size="small">
+                      <CopyIcon
+                        onClick={() => copyVendor()}
+                        onMouseOut={() => setCopyText("Copy")}
+                      />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </div>
+            </Grid>
+            <Grid item xs={6}>
+              <div className="label">Date Last Checked</div>
+              <div className="text">{datasetProperties?.DateLastChecked}</div>
+            </Grid>
+            <Grid item xs={6}>
+              <div className="label">Date of Last Succesful Process</div>
+              <div className="text">
+                {datasetProperties?.DateofLastSuccessfulProcess}
+              </div>
+            </Grid>
+            {datasetProperties?.SourceOrigin?.toLowerCase() !== "sftp" &&
+              datasetProperties?.SourceOrigin?.toLowerCase() !== "ftps" && (
+                <>
+                  <Grid item xs={6}>
+                    <div className="label">Expected Date of Next Transfer</div>
+                    <div className="text">
+                      {datasetProperties?.ExpectedDateofNextTransfer}
+                    </div>
+                  </Grid>
 
-                <Grid item xs={6}>
-                  <div className="label">Expected Transfer Frequency</div>
+                  <Grid item xs={6}>
+                    <div className="label">Expected Transfer Frequency</div>
+                    <div className="text">
+                      {datasetProperties?.ExpectedTransferFrequency}
+                    </div>
+                  </Grid>
+                </>
+              )}
+            <Grid item xs={6}>
+              <div className="label">Load Type</div>
+              <div className="text">
+                {datasetProperties?.LoadType?.toLowerCase() === "incremental"
+                  ? datasetProperties?.LoadType
+                  : "Cumulative"}
+              </div>
+            </Grid>
+            <Grid item xs={6}>
+              <div className="label">Source Origin</div>
+              <div className="text">{datasetProperties?.SourceOrigin}</div>
+            </Grid>
+            <Grid item xs={12}>
+              <div className="label">
+                <DataFlowIcon className="properties-icon" />
+                Data Flow Name
+              </div>
+              <div className="text">{datasetProperties?.DataFlowName}</div>
+            </Grid>
+            {datasetProperties?.SourceOrigin?.toLowerCase() !== "sftp" &&
+              datasetProperties?.SourceOrigin?.toLowerCase() !== "ftps" && (
+                <Grid item xs={12}>
+                  <div className="label">
+                    <DataPackageIcon className="properties-icon" />
+                    Data Package Naming Convention (zip files)
+                  </div>
                   <div className="text">
-                    {datasetProperties?.ExpectedTransferFrequency}
+                    {datasetProperties?.DataPackageNamingConvention}
                   </div>
                 </Grid>
-              </>
-            )}
-          <Grid item xs={6}>
-            <div className="label">Load Type</div>
-            <div className="text">
-              {datasetProperties?.LoadType?.toLowerCase() === "incremental"
-                ? datasetProperties?.LoadType
-                : "Cumulative"}
-            </div>
+              )}
           </Grid>
-          <Grid item xs={6}>
-            <div className="label">Source Origin</div>
-            <div className="text">{datasetProperties?.SourceOrigin}</div>
-          </Grid>
-          <Grid item xs={12}>
-            <div className="label">
-              <DataFlowIcon className="properties-icon" />
-              Data Flow Name
-            </div>
-            <div className="text">{datasetProperties?.DataFlowName}</div>
-          </Grid>
-          {datasetProperties?.SourceOrigin?.toLowerCase() !== "sftp" &&
-            datasetProperties?.SourceOrigin?.toLowerCase() !== "ftps" && (
-              <Grid item xs={12}>
-                <div className="label">
-                  <DataPackageIcon className="properties-icon" />
-                  Data Package Naming Convention (zip files)
-                </div>
-                <div className="text">
-                  {datasetProperties?.DataPackageNamingConvention}
-                </div>
-              </Grid>
-            )}
-        </Grid>
-      </div>
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="You are about to leave dashboard page?"
-        id="neutral"
-        buttonProps={[
-          {},
-          { label: "Continue", onClick: () => redirectToDataset() },
-        ]}
-      />
-    </Paper>
+        </div>
+        <Modal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          title="You are about to leave dashboard page?"
+          id="neutral"
+          buttonProps={[
+            {},
+            { label: "Continue", onClick: () => redirectToDataset() },
+          ]}
+        />
+      </Paper>
+    </div>
   );
 };
 
