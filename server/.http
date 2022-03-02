@@ -191,17 +191,35 @@ GET http://localhost:4001/v1/api/dataflow/studyDataflowList/a020E000005SwPtQAK H
   ]
 }
 
+### DataKind list
+
+GET http://localhost:4001/v1/api/datakind/table/list HTTP/1.1
+
+### ENS list
+
+GET http://localhost:4001/v1/api/datakind/ens/list HTTP/1.1
+
 ### Create DataKind 
 
 POST http://localhost:4001/v1/api/datakind/create HTTP/1.1
 content-type: application/json
 
 {
-    "dkId": "10",
     "dkName": "Body_Kinetic_data",
     "dkDesc": "test",
     "dkExternalId": " 1447",
-    "dkESName": "GDMPM-DAS"
+    "dkESName": "GDMPM-DAS",
+    "dkStatus": 1
+}
+
+### Update DataKind Status
+
+POST http://localhost:4001/v1/api/datakind/status-update HTTP/1.1
+content-type: application/json
+
+{
+    "dkId": "10",
+    "dkStatus": 1
 }
 
 ### Update DataKind 
@@ -210,12 +228,13 @@ POST http://localhost:4001/v1/api/datakind/update HTTP/1.1
 content-type: application/json
 
 {
-    "dkId": "10",
-    "dkName": "Body_Kinetic_data",
+    "dkId": 1,
+    "dkName": "Gene_Expression_Profiling",
     "dkDesc": "test test",
-    "dkExternalId": " 1447",
+    "dkExternalId": 2,
     "dkStatus": 1,
-    "dkESName": "GDMPM-DAS"
+    "dkESName": "GDMPM-DAS",
+    "userId": "u1105372"
 }
 
 ### Create Vendor 
@@ -330,6 +349,107 @@ content-type: application/json
 ### getColumns
 
 POST http://localhost:4001/v1/api/dataset/getColumns HTTP/1.1
+content-type: application/json
+
+{
+  "query": "string"
+}
+
+### create sftp dataset
+
+POST http://localhost:4001/v1/api/dataset/create HTTP/1.1
+content-type: application/json
+
+{
+  "datapackageid": "Zn2Jyi7zMUbuULOL",
+  "datasetName": "asdfasdfsda_Asdfads",
+  "active": true,
+  "fileType": "SAS",
+  "encoding": "UTF-8",
+  "delimiter": "COMMA",
+  "dfTestFlag": 1,
+  "escapeCharacter": "",
+  "quote": "",
+  "headerRowNumber": 1,
+  "footerRowNumber": "",
+  "fileNamingConvention": "asdfadsfsa.sas7bdat",
+  "folderPath": "asdfsdasfasd",
+  "loadType": "Cumulative",
+  "clinicalDataType": [1],
+  "transferFrequency": "",
+  "overrideStaleAlert": "",
+  "rowDecreaseAllowed": "",
+  "insrt_tm": "",
+  "updt_tm": "",
+}
+
+### create jdbc dataset
+
+POST http://localhost:4001/v1/api/dataset/create HTTP/1.1
+content-type: application/json
+
+{
+  "datapackageid": "Zn2Jyi7zMUbuULOL",
+  "datasetName": "asdfasdfsda_Asdfads",
+  "active": true,
+  "customSQLQuery": "",
+  "clinicalDataType": [1],
+  "customSQLQuery": "Yes",
+  "sQLQuery": "select * from data",
+  "tableName": "I2.TOAD_PLAN_TABLE",
+
+  "insrt_tm": "",
+  "updt_tm": "",
+}
+
+### dataset details
+
+GET http://localhost:4001/v1/api/dataset/detail/a070E00000FhoKXQAZ HTTP/1.1
+content-type: application/json
+
+# "data": {
+#     "datapackageid": "a0C0E00000Bx60JUAR",
+#     "datasetid": "a070E00000FhoKXQAZ",
+#     "mnemonic": "DRM_XLS_AE",
+#     "type": "Excel",
+#     "active": 1,
+#     "columncount": 51,
+#     "name": "000108_Ferring_XLS_AE_<MMDDYYYY>.xls",
+#     "path": "",
+#     "headerrow": 1,
+#     "footerrow": 0,
+#     "headerrownumber": 1,
+#     "footerrownumber": 0,
+#     "delimiter": "COMMA",
+#     "escapecode": "\\",
+#     "quote": "\"",
+#     "datakindid": "1",
+#     "staledays": 3,
+#     "rowdecreaseallowed": 0,
+#     "testflag": 0,
+#     "charset": "UTF-8",
+#     "validate_data": "F",
+#     "file_pwd": null,
+#     "customsql": null,
+#     "offsetcolumn": null,
+#     "incremental": "N",
+#     "offset_val": null,
+#     "skipvalidation": null,
+#     "externalid": null,
+#     "del_flg": null,
+#     "err_typ": null,
+#     "tbl_nm": null,
+#     "data_freq": null,
+#     "ovrd_stale_alert": null,
+#     "naming_convention": null,
+#     "days_until_data_is_stale": null,
+#     "updt_tm": null,
+#     "insrt_tm": null
+#   }
+
+### update dataset
+
+POST http://localhost:4001/v1/api/dataset/update HTTP/1.1
 content-type: application/json
 
 {

@@ -96,6 +96,7 @@ const DataSetsFormBase = (props) => {
     defaultHeaderRowNumber,
     defaultFooterRowNumber,
     defaultLoadType,
+    prodLock,
     values,
   } = props;
   const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
@@ -136,8 +137,6 @@ const DataSetsFormBase = (props) => {
     }
   }, [values]);
 
-  console.log(values, "values12");
-
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
@@ -175,6 +174,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 inputProps={{ maxLength: 30 }}
                 label="Data Set Name (Mnemonic)"
+                disabled={prodLock}
               />
               <ReduxFormSelect
                 name="fileType"
@@ -183,6 +183,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 onChange={setDefaultValues}
                 fullWidth
+                disabled={prodLock}
               >
                 {fileTypes?.map((type) => (
                   <MenuItem value={type}>{type}</MenuItem>
@@ -283,6 +284,7 @@ const DataSetsFormBase = (props) => {
                   variant="search"
                   singleSelect
                   fullWidth
+                  disabled={prodLock}
                 />
               ) : null}
               <ReduxFormTextField
@@ -349,6 +351,7 @@ const DataSetsForm = connect((state) => ({
   defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
   defaultLoadType: state.dataSets.defaultLoadType,
   datakind: state.dataSets.datakind?.records,
+  prodLock: state.dataFlow.prodLock,
 }))(ReduxForm);
 
 export default DataSetsForm;

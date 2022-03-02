@@ -11,14 +11,14 @@ import {
   getFlowDetailsOfStudy,
   getDatasetIngestionOfStudy,
 } from "../../store/actions/DashboardAction";
-// import PageHeader from "../../components/DataFlow/PageHeader";
+
 import LeftPanel from "./LeftPanel";
 import "./Dashboard.scss";
 
 // import { downloadTemplate } from "../../utils/downloadData";
 
-import DataflowTab from "./DataflowTab";
-import MonitorTab from "./MonitorTab";
+import DataflowTab from "./DataflowTab/DataflowTab";
+import MonitorTab from "./MonitorTab/MonitorTab";
 
 const styles = {
   rightPanel: {
@@ -88,13 +88,12 @@ const Dashboard = () => {
   useEffect(() => {
     if (dashboard?.selectedCard?.prot_id) {
       updateData();
-      fetchLatestData();
+      // fetchLatestData();
     }
   }, [dashboard.selectedCard]);
 
   return (
     <>
-      {/* <PageHeader height={64} /> */}
       <div className="pageRoot">
         <Panel
           onClose={handleClose}

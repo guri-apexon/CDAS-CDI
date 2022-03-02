@@ -11,10 +11,7 @@ import {
   GET_SERVICE_OWNERS,
   FETCH_SERVICE_OWNERS_SUCCESS,
   FETCH_SERVICE_OWNERS_FAILURE,
-  STORE_LOCATION_SUCCESS,
-  STORE_LOCATION_FAILURE,
   HIDE_ERROR_MSG,
-  SAVE_LOCATION_DATA,
   UPDATE_SELECTED_LOCATION,
   FETCH_DATAFLOW_DETAIL_FAILURE,
   FETCH_DATAFLOW_DETAIL_SUCCESS,
@@ -39,6 +36,9 @@ export const initialState = {
   locationType: "SFTP",
   selectedVendor: {},
   dataFlowdetail: {},
+  testProdLock: false,
+  prodLock: false,
+  testLock: false,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -86,9 +86,6 @@ const DataFlowReducer = (state = initialState, action) =>
           );
         }
         break;
-      case SAVE_LOCATION_DATA:
-        newState.loading = true;
-        break;
       case GET_SERVICE_OWNERS:
         newState.loading = true;
         break;
@@ -99,14 +96,6 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = false;
         newState.serviceOwners = action.serviceOwners;
         break;
-      case STORE_LOCATION_SUCCESS:
-        newState.loading = false;
-        newState.createTriggered = !state.createTriggered;
-        break;
-      case STORE_LOCATION_FAILURE:
-        newState.loading = false;
-        newState.error = action.message;
-        break;
       case HIDE_ERROR_MSG:
         newState.error = action.message;
         break;
@@ -116,7 +105,38 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case FETCH_DATAFLOW_DETAIL_SUCCESS:
         newState.loading = false;
+        // eslint-disable-next-line no-case-declarations
+        const { dataflowDetail } = action;
+
+        // eslint-disable-next-line no-case-declarations
+        const {
+          description,
+          exptfstprddt,
+          loctyp,
+          name,
+          srclocID,
+          type,
+          vendID,
+          vendorname,
+          testflag,
+          isSync,
+        } = dataflowDetail;
+        newState.testLock = testflag === 1 && isSync === "Y";
+        newState.prodLock = testflag === 0 && isSync === "Y";
+        newState.testProdLock = isSync === "Y";
+        // eslint-disable-next-line no-case-declarations
+        const formData = {};
+        formData.description = description;
+        formData.firstFileDate = exptfstprddt;
+        formData.locationType = loctyp;
+        formData.name = name;
+        formData.dataflowType = testflag === 1 ? true : false;
+        formData.srclocID = srclocID;
+        formData.dataStructure = type;
+        formData.vendID = vendID;
+        formData.vendorname = vendorname;
         newState.dataFlowdetail = action.dataflowDetail;
+        newState.formData = formData;
         break;
       default:
         newState.loading = false;

@@ -6,7 +6,7 @@ import { makeStyles } from "@material-ui/core/styles";
 // import CssBaseline from "@material-ui/core/CssBaseline";
 import Panel from "apollo-react/components/Panel";
 import { useDispatch, useSelector, connect } from "react-redux";
-import { submit, reset, getFormValues } from "redux-form";
+import { reset, getFormValues } from "redux-form";
 import Loader from "apollo-react/components/Loader";
 import { values } from "lodash";
 import Banner from "apollo-react/components/Banner";
@@ -69,7 +69,10 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const history = useHistory();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const dataFlowData = useSelector((state) => state.dataFlow);
-  const { selectedLocation, loading, createTriggered, error } = dataFlowData;
+  const { selectedLocation, loading, error } = dataFlowData;
+  const { createTriggered, upsertLoading } = useSelector(
+    (state) => state.cdiadmin
+  );
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
@@ -88,7 +91,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
     {
       href: "javascript:void(0)",
       title: "Data Flow Settings",
-      onClick: () => history.push("/dataflow-management"),
+      onClick: () => history.push("/dashboard/dataflow-management"),
     },
   ];
 
@@ -170,7 +173,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   return (
     <div className={classes.root}>
-      {loading && <Loader />}
+      {(loading || upsertLoading) && <Loader />}
       {error && (
         <Banner
           variant="error"

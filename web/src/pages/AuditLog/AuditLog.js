@@ -16,7 +16,6 @@ import Button from "apollo-react/components/Button";
 import DownloadIcon from "apollo-react-icons/Download";
 import FilterIcon from "apollo-react-icons/Filter";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
-// import PageHeader from "../../components/DataFlow/PageHeader";
 import columns from "./columns.data";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import { getAuditLogs } from "../../store/actions/AuditLogsAction";
@@ -28,7 +27,7 @@ const AuditLog = () => {
   const [pageNo, setPageNo] = useState(0);
   const auditLogs = useSelector((state) => state.auditLogs);
   const auditData = auditLogs.data;
-  const [sortedColumnValue, setSortedColumnValue] = useState("dateadded");
+  const [sortedColumnValue, setSortedColumnValue] = useState("user_name");
   const [sortOrderValue, setSortOrderValue] = useState("asc");
   const [inlineFilters, setInlineFilters] = useState([]);
 
@@ -48,7 +47,7 @@ const AuditLog = () => {
     {
       href: "javascript:void(0)",
       title: "Data Flow Settings",
-      onClick: () => history.push("/dataflow-management"),
+      onClick: () => history.push("/dashboard/dataflow-management"),
     },
     {
       title: "Audit Log",
@@ -125,7 +124,7 @@ const AuditLog = () => {
         variant="secondary"
         icon={DownloadIcon}
         onClick={downloadFile}
-        style={{ marginRight: "8px", border: "none" }}
+        style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
       >
         Download
       </Button>
@@ -154,7 +153,7 @@ const AuditLog = () => {
         title="Data Flow Audit Log"
         columns={tableColumns}
         rows={tableRows}
-        initialSortedColumn="name"
+        initialSortedColumn="user_name"
         sortedColumn={sortedColumnValue}
         sortOrder={sortOrderValue}
         rowsPerPageOptions={[10, 50, 100, "All"]}
@@ -189,7 +188,6 @@ const AuditLog = () => {
 
   return (
     <main className="audit-logs-wrapper">
-      {/* <PageHeader height={60} /> */}
       <Paper className="no-shadow">
         <Box className="top-content">
           <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />

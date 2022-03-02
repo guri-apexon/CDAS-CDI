@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect } from "react-redux";
 import { reduxForm, getFormValues } from "redux-form";
@@ -21,7 +21,7 @@ import {
   ReduxFormTextField,
 } from "../../components/FormComponents/FormComponents";
 import validate from "../../components/FormComponents/validation";
-import LocationModal from "./LocationModal";
+import LocationModal from "../../components/Common/LocationModal";
 
 import { locationTypes, dataStruct } from "../../utils";
 
@@ -94,6 +94,9 @@ const DataFlowFormBase = (props) => {
     changeFormField,
     changeLocationType,
     connLink,
+    testLock,
+    prodLock,
+    testProdLock,
   } = props;
   const onChangeServiceOwner = (values) => {
     change("serviceOwnerValue", values);
@@ -122,9 +125,13 @@ const DataFlowFormBase = (props) => {
               fullWidth
               maxLength="30"
               name="description"
+              input={{
+                value: "NewValue",
+              }}
               inputProps={{ maxLength: 30 }}
               onChange={(v) => changeFormField(v, "description")}
               label="Description"
+              disabled={testLock || prodLock}
             />
             <ReduxFormDatePickerV2
               name="firstFileDate"
@@ -136,6 +143,7 @@ const DataFlowFormBase = (props) => {
               name="dataflowType"
               onChange={(v) => changeFormField(v, "dataflowType")}
               label="Data Flow Type"
+              disabled={testLock || prodLock}
             >
               <Radio value="test" label="Test" />
               <Radio value="production" label="Production" />
@@ -154,6 +162,7 @@ const DataFlowFormBase = (props) => {
                 id="dataStructure"
                 label="Data Structure"
                 fullWidth
+                disabled={testLock || prodLock}
               >
                 {dataStruct?.map((type) => (
                   <MenuItem key={type.value} value={type.value}>
@@ -166,6 +175,7 @@ const DataFlowFormBase = (props) => {
                 label="Location Type"
                 onChange={(e) => changeLocationType(e.target.value)}
                 fullWidth
+                disabled={testLock || prodLock}
               >
                 {locationTypes?.map((type) => (
                   <MenuItem key={type} value={type}>
@@ -243,11 +253,14 @@ const ReduxForm = compose(
 )(DataFlowFormBase);
 
 const DataFlowForm = connect((state) => ({
-  initialValues: state.dataFlow, // pull initial values from account reducer
+  initialValues: state.dataFlow.formData, // pull initial values from account reducer
   values: getFormValues("DataFlowForm")(state),
   locations: state.dataFlow.locations?.records,
   vendors: state.dataFlow.vendors?.records,
   serviceOwners: state.dataFlow.serviceOwners?.records,
+  testLock: state.dataFlow.testLock,
+  prodLock: state.dataFlow.prodLock,
+  testProdLock: state.dataFlow.testProdLock,
 }))(ReduxForm);
 
 export default DataFlowForm;
