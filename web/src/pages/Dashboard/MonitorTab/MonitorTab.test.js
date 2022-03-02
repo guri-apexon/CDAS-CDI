@@ -90,9 +90,9 @@ describe("MonitorTab", () => {
     wrapper.unmount();
   });
 
-  it("check for Show inactive datasets in Header", () => {
+  it("check for Show active datasets in Header", () => {
     const { queryByText } = render(wrapper);
-    expect(queryByText("Show inactive datasets")).toBeTruthy();
+    expect(queryByText("Show active datasets")).toBeTruthy();
     wrapper.unmount();
   });
 

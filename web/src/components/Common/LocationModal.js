@@ -1,7 +1,14 @@
+/* eslint-disable consistent-return */
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from "react";
-import { reduxForm, submit, change, formValueSelector } from "redux-form";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import {
+  reduxForm,
+  submit,
+  change,
+  formValueSelector,
+  getFormValues,
+} from "redux-form";
 import { useDispatch, connect, useSelector } from "react-redux";
 import compose from "@hypnosphi/recompose/compose";
 import makeStyles from "@material-ui/core/styles/makeStyles";
@@ -28,7 +35,10 @@ import {
   saveLocationData,
   removeErrMessage,
 } from "../../store/actions/CDIAdminAction";
-import { checkLocationExistsInDataFlow } from "../../services/ApiServices";
+import {
+  checkLocationExistsInDataFlow,
+  testConnectionFSR,
+} from "../../services/ApiServices";
 import { locationExistInDFMsg } from "../../constants";
 
 const styles = {
@@ -51,7 +61,15 @@ const useStyles = makeStyles(styles);
 
 const LocationForm = (props) => {
   const classes = useStyles();
-  const { locType, selectedHost, selectedPort, selectedDB, isActive } = props;
+  const {
+    locType,
+    selectedHost,
+    selectedPort,
+    selectedDB,
+    isActive,
+    formState,
+    loading,
+  } = props;
 
   return (
     <form onSubmit={props.handleSubmit}>
@@ -224,7 +242,12 @@ const LocationForm = (props) => {
           </Grid>
           {!props.locationViewMode && (
             <Grid item md={2} style={{ paddingTop: 54 }}>
-              <Button variant="secondary" size="small">
+              <Button
+                variant="secondary"
+                size="small"
+                disabled={loading}
+                onClick={() => props.testConnection(formState)}
+              >
                 Test Connection
               </Button>
             </Grid>
@@ -246,6 +269,10 @@ const LocationForm = (props) => {
 const LocationModal = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const locationForm = useRef();
+  const selector = formValueSelector("AddLocationForm");
+  const [connectionResponse, setConnectionResponse] = useState(null);
+  const [loadingConn, setLoadingConn] = useState(false);
   const { error, success, createTriggered } = useSelector(
     (state) => state.cdiadmin
   );
@@ -297,8 +324,58 @@ const LocationModal = (props) => {
       dispatch(change("AddLocationForm", "connURL", connurl));
     }
   };
+  const showLocationMessage = (msg, type = "error") => {
+    const modalObj = {
+      text: msg,
+      type,
+    };
+    setConnectionResponse(modalObj);
+    setTimeout(() => {
+      setConnectionResponse(null);
+    }, 2500);
+  };
+  const testConnection = async (formState) => {
+    const { userName, password, ipServer, port, locationType, dbName } =
+      formState;
+    if (userName === "" || password === "") {
+      showLocationMessage("Please enter username and password to continue");
+      return false;
+    }
+    const reqBody = {
+      username: userName || "",
+      password: password || "",
+      host: ipServer || "",
+      endPoint: "/checkconnection/sftp",
+      // port: port || "",
+    };
+    if (locationType) {
+      if (locationType !== "SFTP" && locationType !== "FTPS") {
+        reqBody.endPoint = "/checkconnection/jdbc";
+        reqBody.databaseName = dbName || "";
+      }
+    }
+    setLoadingConn(true);
+    const result = await testConnectionFSR(reqBody);
+    console.log("result", result);
+    setLoadingConn(false);
+    if (result.status === "OK") {
+      showLocationMessage(
+        result.message || "Operation Successfully",
+        "success"
+      );
+    } else {
+      showLocationMessage(result.message || "Something went wrong");
+    }
+  };
   return (
     <>
+      {connectionResponse && (
+        <Banner
+          variant={connectionResponse.type}
+          open={true}
+          message={connectionResponse.text}
+        />
+      )}
       {(error || success || existErr) && (
         <Banner
           variant={success ? "success" : "error"}
@@ -331,10 +408,13 @@ const LocationModal = (props) => {
         message={
           // eslint-disable-next-line react/jsx-wrap-multilines
           <ReduxForm
+            ref={locationForm}
             onSubmit={onSubmit}
             locationViewMode={props.locationViewMode}
             locationEditMode={props.locationEditMode}
             generateUrl={generateUrl}
+            testConnection={testConnection}
+            loading={loadingConn}
           />
         }
         className={classes.modal}
@@ -367,6 +447,7 @@ const ReduxForm = compose(
     selectedPort: selector(state, "port"),
     selectedDB: selector(state, "dbName"),
     locType: selector(state, "locationType"),
+    formState: getFormValues("AddLocationForm")(state),
   }))
 )(LocationForm);
 

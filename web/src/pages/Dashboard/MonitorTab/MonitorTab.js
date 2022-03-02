@@ -74,7 +74,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
   const CustomHeader = ({ toggleFilters }) => (
     <div>
       <Switch
-        label="Show inactive datasets"
+        label="Show active datasets"
         size="small"
         checked={activeOnly}
         labelPlacement="start"

@@ -1,10 +1,15 @@
 const DB = require("../config/db");
 const moment = require("moment");
 const crypto = require("crypto");
+const apiResponse = require("../helpers/apiResponse");
+const Logger = require("../config/logger");
+const axios = require("axios");
 const cron = require("node-cron");
 const { cronHardDelete } = require("./DataflowController");
 const constants = require("../config/constants");
 const helper = require("../helpers/customFunctions");
+const { encrypt } = require("../helpers/encrypter");
+const { FSR_HEADERS, FSR_API_URI, SDA_BASE_URL } = constants;
 
 cron.schedule("*/30 * * * *", () => {
   console.log("running a task every 30 minute");
@@ -129,5 +134,34 @@ module.exports = {
         });
       });
     });
+  },
+  fsrConnect: (req, res) => {
+    try {
+      const { params, endPoint } = req.body;
+      if (!endPoint || !params) {
+        return apiResponse.ErrorResponse(res, "Something went wrong");
+      }
+      if (params.password) {
+        params.password = encrypt(params.password);
+      }
+      axios
+        .post(`${FSR_API_URI}/${endPoint}`, params, {
+          headers: FSR_HEADERS,
+        })
+        .then((response) => {
+          return res.json(response.data);
+        })
+        .catch((err) => {
+          if (err.response?.data) {
+            return res.json(err.response.data);
+          } else {
+            return apiResponse.ErrorResponse(res, "Something went wrong");
+          }
+        });
+    } catch (err) {
+      Logger.error(err);
+      console.log("err:", err);
+      return apiResponse.ErrorResponse(res, err);
+    }
   },
 };
