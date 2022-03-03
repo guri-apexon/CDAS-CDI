@@ -148,7 +148,6 @@ const SystemSettings = () => {
   const messageContext = useContext(MessageContext);
   const { settings, loading, upserted, upsertLoading, error, success } =
     useSelector((state) => state.cdiadmin);
-  const [totalsettings, setTotalSettings] = useState(0);
   const [rows, setRows] = useState([]);
   const [search, setSearch] = useState("");
   const [editedRow, setEditedRow] = useState({});
@@ -165,7 +164,6 @@ const SystemSettings = () => {
 
   useEffect(() => {
     setRows(settings?.records ?? []);
-    setTotalSettings(settings.totalSize ?? 0);
   }, [settings]);
 
   const onSearch = (value) => {

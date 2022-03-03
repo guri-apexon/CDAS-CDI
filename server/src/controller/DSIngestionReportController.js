@@ -94,7 +94,7 @@ exports.getDatasetIngestionReportTransferLog = (req, res) => {
         const records = response.rows || [];
         return apiResponse.successResponseWithData(res, "Operation success", {
           records,
-          totaSize: response.rowCount,
+          totalSize: response.rowCount,
         });
       })
       .catch((err) => {
@@ -185,7 +185,7 @@ exports.getDatasetIssueTypes = (req, res) => {
         const records = response.rows || [];
         return apiResponse.successResponseWithData(res, "Operation success", {
           records,
-          totaSize: response.rowCount,
+          totalSize: response.rowCount,
         });
       })
       .catch((err) => {
@@ -215,7 +215,7 @@ exports.getFileTransferHistory = (req, res) => {
         const records = response.rows || [];
         return apiResponse.successResponseWithData(res, "Operation success", {
           records,
-          totaSize: response.rowCount,
+          totalSize: response.rowCount,
         });
       })
       .catch((err) => {

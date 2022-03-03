@@ -28,6 +28,8 @@ import {
   CREARE_SETTINGS_DATA,
   UPDATE_SETTINGS_DATA,
   FETCH_SETTINGS_DATA,
+  GET_TRANSFER_LOG,
+  GET_DATASET_PROPERTIES,
 } from "../../constants";
 
 import {
@@ -71,6 +73,7 @@ import {
   updateSettingsData,
   fetchSettingsList,
 } from "./cdiAdmin.saga";
+import { fetchProperties, fetchTransferLog } from "./IngestionReport.saga";
 
 function* cdasCoreSaga() {
   yield takeEvery(GET_DATA_FLOW_LIST, fetchFlowData);
@@ -104,6 +107,8 @@ function* cdasCoreSaga() {
   yield takeLatest(FETCH_SETTINGS_DATA, fetchSettingsList);
   yield takeLatest(CREARE_SETTINGS_DATA, createSettingsData);
   yield takeLatest(UPDATE_SETTINGS_DATA, updateSettingsData);
+  yield takeLatest(GET_TRANSFER_LOG, fetchTransferLog);
+  yield takeLatest(GET_DATASET_PROPERTIES, fetchProperties);
 }
 
 export default cdasCoreSaga;
