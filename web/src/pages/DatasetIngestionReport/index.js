@@ -28,7 +28,6 @@ import { updateSelectedDataflow } from "../../store/actions/DashboardAction";
 const DatasetIngestionReport = () => {
   const history = useHistory();
   const dispatch = useDispatch();
-  const params = useParams();
   const { datasetProperties, loading } = useSelector(
     (state) => state.ingestionReports
   );
@@ -36,7 +35,7 @@ const DatasetIngestionReport = () => {
   const handleChangeTab = (event, value) => {
     setTabValue(value);
   };
-  const { datasetId } = params;
+  const { datasetId } = useParams();
 
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -73,7 +72,7 @@ const DatasetIngestionReport = () => {
           <div className="flex header_title">
             <div className="flex left_title">
               <DatasetsIcon id="datasetRepicon" />
-              <Typography className="b-font">
+              <Typography className="b-font" id="ingestion-report-title">
                 Dataset Ingestion Report
               </Typography>
             </div>
@@ -96,13 +95,14 @@ const DatasetIngestionReport = () => {
         </Box>
         <Divider />
         <Tabs
+          id="ingestion-report-tab"
           value={tabvalue}
           style={{ marginLeft: 25 }}
           onChange={handleChangeTab}
         >
-          <Tab label="Metrics" />
-          <Tab label="Transfer Log" />
-          <Tab label="Properties" />
+          <Tab id="report-metrics" label="Metrics" />
+          <Tab id="report-transferlog" label="Transfer Log" />
+          <Tab id="report-properties" label="Properties" />
         </Tabs>
       </Paper>
       <div style={{ paddingBottom: 24 }}>

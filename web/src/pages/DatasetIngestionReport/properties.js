@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
+import moment from "moment";
 import Paper from "apollo-react/components/Box";
 import Grid from "apollo-react/components/Grid";
 import Typography from "apollo-react/components/Typography";
@@ -10,6 +11,12 @@ import Tooltip from "apollo-react/components/Tooltip";
 import Modal from "apollo-react/components/Modal";
 import { ReactComponent as DataFlowIcon } from "../../components/Icons/dataflow.svg";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
+
+const formatDate = (v) => {
+  return v && moment(v, "YYYY-MM-DD HH:mm:ss").isValid()
+    ? moment(v, "YYYY-MM-DD HH:mm:ss").format("DD-MMM-YYYY / hh:mm a")
+    : "";
+};
 
 const Properties = ({ datasetProperties }) => {
   const history = useHistory();
@@ -63,12 +70,14 @@ const Properties = ({ datasetProperties }) => {
             </Grid>
             <Grid item xs={6}>
               <div className="label">Date Last Checked</div>
-              <div className="text">{datasetProperties?.DateLastChecked}</div>
+              <div className="text">
+                {formatDate(datasetProperties?.DateLastChecked)}
+              </div>
             </Grid>
             <Grid item xs={6}>
               <div className="label">Date of Last Succesful Process</div>
               <div className="text">
-                {datasetProperties?.DateofLastSuccessfulProcess}
+                {formatDate(datasetProperties?.DateofLastSuccessfulProcess)}
               </div>
             </Grid>
             {datasetProperties?.SourceOrigin?.toLowerCase() !== "sftp" &&
@@ -77,7 +86,9 @@ const Properties = ({ datasetProperties }) => {
                   <Grid item xs={6}>
                     <div className="label">Expected Date of Next Transfer</div>
                     <div className="text">
-                      {datasetProperties?.ExpectedDateofNextTransfer}
+                      {formatDate(
+                        datasetProperties?.ExpectedDateofNextTransfer
+                      )}
                     </div>
                   </Grid>
 

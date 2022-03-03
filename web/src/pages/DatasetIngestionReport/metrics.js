@@ -12,9 +12,8 @@ import Divider from "apollo-react/components/Divider";
 
 const Metrics = () => {
   const data = [
-    { country: "Germany", yield: 106 },
-    { country: "USA", yield: 10000 },
-    { country: "Canada", yield: 3003 },
+    { type: "New Records", yield: 1000 },
+    { type: "Modified Records", yield: 500 },
   ];
   return (
     <div className="ingestion-report-metrics">
@@ -57,7 +56,10 @@ const Metrics = () => {
             <Divider type="axis" className="divider-dotted" />
           </div>
           <div className="barchart-records">
-            <BarChart data={data} />
+            <Typography variant="body2" style={{ marginBottom: 20 }} darkMode>
+              Number of Records Changed by status from Previous Transfer
+            </Typography>
+            <BarChart suffix="%" data={data} width={350} height={250} />
           </div>
         </div>
       </Hero>
