@@ -305,6 +305,8 @@ export const CustomHeader = ({
   cancelMulti,
   newRows,
   disableSaveAll,
+  testLock,
+  prodLock,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -325,16 +327,18 @@ export const CustomHeader = ({
       )}
       {!isMultiAdd && (
         <>
-          <Tooltip title={!isEditAll && "Add rows"} disableFocusListener>
-            <IconMenuButton
-              id="actions-1"
-              menuItems={addMenuItems}
-              size="small"
-              disabled={isEditAll}
-            >
-              <Plus />
-            </IconMenuButton>
-          </Tooltip>
+          {locationType?.toLowerCase() === ("sftp" || "ftps") && (
+            <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
+              <IconMenuButton
+                id="actions-1"
+                menuItems={addMenuItems}
+                size="small"
+                disabled={isEditAll}
+              >
+                <Plus />
+              </IconMenuButton>
+            </Tooltip>
+          )}
           <Tooltip title={!isEditAll && "Edit all"} disableFocusListener>
             <IconButton color="primary" size="small" disabled={isEditAll}>
               <Pencil onClick={onEditAll} />
@@ -366,13 +370,19 @@ export const CustomHeader = ({
           </Button>
         </>
       )}
-      {(locationType?.toLowerCase() === "sftp" ||
-        locationType?.toLowerCase() === "ftps") && (
+      {locationType?.toLowerCase() === ("sftp" || "ftps") && (
         <Tooltip
-          title={!isEditAll && "Import dataset column settings"}
+          title={
+            (!isEditAll || !prodLock || !testLock) &&
+            "Import dataset column settings"
+          }
           disableFocusListener
         >
-          <IconButton color="primary" size="small" disabled={isEditAll}>
+          <IconButton
+            color="primary"
+            size="small"
+            disabled={isEditAll || prodLock || testLock}
+          >
             <Upload />
           </IconButton>
         </Tooltip>

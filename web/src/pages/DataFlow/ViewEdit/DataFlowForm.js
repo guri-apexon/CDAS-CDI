@@ -154,6 +154,7 @@ const DataFlowFormBase = (props) => {
                 id="dataStructure"
                 label="Data Structure"
                 fullWidth
+                canDeselect={false}
               >
                 {dataStruct?.map((type) => (
                   <MenuItem key={type.value} value={type.value}>
@@ -166,6 +167,7 @@ const DataFlowFormBase = (props) => {
                 label="Location Type"
                 onChange={(e) => changeLocationType(e.target.value)}
                 fullWidth
+                canDeselect={false}
               >
                 {locationTypes?.map((type) => (
                   <MenuItem key={type} value={type}>

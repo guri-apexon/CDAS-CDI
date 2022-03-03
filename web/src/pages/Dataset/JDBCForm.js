@@ -141,8 +141,8 @@ const JDBCForm = forwardRef((props, ref) => {
         active,
         incremental,
         mnemonic,
-        customsql,
-        customsql_query: customQuery,
+        customsql_yn: customSQLYN,
+        customsql: customQuery,
         datakindid,
         offsetcolumn,
         tbl_nm: tName,
@@ -151,9 +151,7 @@ const JDBCForm = forwardRef((props, ref) => {
       setDatasetName(mnemonic);
       setSQLQuery(customQuery);
       setDataType(incremental);
-      if (customsql) {
-        setIsCustomSQL(customsql);
-      }
+      setIsCustomSQL(customSQLYN);
       // if (datakindid) {
       //   setClinicalDataType([datakindid]);
       // }
@@ -302,6 +300,12 @@ const JDBCForm = forwardRef((props, ref) => {
 
   const noRecordsFound = () => {
     messageContext.showErrorMessage(`No records found.`);
+  };
+
+  const notAllowIncremental = () => {
+    messageContext.showErrorMessage(
+      `Cannot switch to Incremental as the dataset that has been synched does not have any primary key defined`
+    );
   };
 
   return (

@@ -184,6 +184,7 @@ const DataSetsFormBase = (props) => {
                 onChange={setDefaultValues}
                 fullWidth
                 disabled={prodLock}
+                canDeselect={false}
               >
                 {fileTypes?.map((type) => (
                   <MenuItem value={type}>{type}</MenuItem>
@@ -210,6 +211,7 @@ const DataSetsFormBase = (props) => {
                     size="small"
                     disabled={formValues === "SAS"}
                     fullWidth
+                    canDeselect={false}
                   >
                     {delimeters?.map((type) => (
                       <MenuItem value={type}>{type}</MenuItem>
@@ -317,6 +319,7 @@ const DataSetsFormBase = (props) => {
                 id="loadType"
                 size="small"
                 label="Load Type"
+                canDeselect={false}
               >
                 {loadTypes?.map((type) => (
                   <MenuItem value={type}>{type}</MenuItem>
