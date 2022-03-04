@@ -28,11 +28,11 @@ const ColumnsTab = ({ locationType }) => {
   const { datasetColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
-  const [numberOfRows, setNumberOfRows] = useState(1);
   const [showColumns, setShowColumns] = useState(false);
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
   const [formattedData, setFormattedData] = useState([]);
+  const numberOfRows = 1;
 
   const maxSize = 150000;
 
@@ -139,10 +139,17 @@ const ColumnsTab = ({ locationType }) => {
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
-    } else {
-      setShowColumns(false);
     }
   }, [datasetColumns]);
+
+  useEffect(() => {
+    if (
+      locationType?.toLowerCase() !== "sftp" &&
+      locationType?.toLowerCase() !== "ftps"
+    ) {
+      setShowColumns(true);
+    }
+  }, [locationType]);
 
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
@@ -152,7 +159,7 @@ const ColumnsTab = ({ locationType }) => {
     return (
       <>
         <DSColumnTable
-          numberOfRows={numberOfRows || 1}
+          numberOfRows={numberOfRows}
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}
@@ -200,17 +207,6 @@ const ColumnsTab = ({ locationType }) => {
                 onClick={handleChange}
                 checked={selectedMethod === "manually"}
               />
-              {/* <div className="center">
-                <Pencil />
-              </div> */}
-              {/* <TextField
-                label="Number of rows"
-                type="number"
-                max="500"
-                min="1"
-                onChange={(e) => setNumberOfRows(e.target.value)}
-                defaultValue={numberOfRows}
-              /> */}
             </Card>
           </div>
           <div style={{ display: "flex", justifyContent: "end" }}>
@@ -220,7 +216,7 @@ const ColumnsTab = ({ locationType }) => {
               onClick={() => setShowColumns(true)}
               disabled={
                 !(
-                  (selectedMethod === "manually" && numberOfRows >= 1) ||
+                  selectedMethod === "manually" ||
                   (selectedMethod === "fileUpload" && isImportReady)
                 )
               }

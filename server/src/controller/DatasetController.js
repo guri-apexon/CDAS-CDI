@@ -15,10 +15,10 @@ async function checkNameExists(
   testflag,
   datasetid = null
 ) {
-  let searchQuery = `select d3.mnemonic from cdascfg.study s right join cdascfg.dataflow d on s.prot_id = d.prot_id right join cdascfg.datapackage d2 on d.dataflowid = d2.dataflowid right join cdascfg.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2`;
+  let searchQuery = `select d3.mnemonic from ${schemaName}.study s right join ${schemaName}.dataflow d on s.prot_id = d.prot_id right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2`;
   let dep = [datapackageid, testflag];
   if (datasetid) {
-    searchQuery = `select d3.mnemonic from cdascfg.study s right join cdascfg.dataflow d on s.prot_id = d.prot_id right join cdascfg.datapackage d2 on d.dataflowid = d2.dataflowid right join cdascfg.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2 and d3.datasetid !=$3`;
+    searchQuery = `select d3.mnemonic from ${schemaName}.study s right join ${schemaName}.dataflow d on s.prot_id = d.prot_id right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2 and d3.datasetid !=$3`;
     dep = [datapackageid, testflag, datasetid];
   }
   const res = await DB.executeQuery(searchQuery, dep);
@@ -35,13 +35,14 @@ async function saveSQLDataset(req, res, values, datasetId) {
       values.clinicalDataType[0],
       values.customSQLQuery,
       values.sQLQuery || null,
+      values.loadType == "Incremental" ? "Y" : "N" || null,
       values.tableName || null,
       values.offsetColumn || null,
       new Date(),
       new Date(),
       values.datapackageid,
     ];
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_query, customsql, tbl_nm, offsetcolumn, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_query, customsql, incremental, tbl_nm, offsetcolumn, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
     const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {

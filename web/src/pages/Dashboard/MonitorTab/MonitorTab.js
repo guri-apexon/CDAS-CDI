@@ -58,7 +58,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
 
   useEffect(() => {
     fetchLatestData(control, activeOnly);
-  }, [activeOnly, control]);
+  }, [activeOnly, control, protId]);
 
   const handleChange = (e, checked) => {
     setActiveOnly(checked);
@@ -74,7 +74,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
   const CustomHeader = ({ toggleFilters }) => (
     <div>
       <Switch
-        label="Show inactive datasets"
+        label="Show active datasets"
         size="small"
         checked={activeOnly}
         labelPlacement="start"

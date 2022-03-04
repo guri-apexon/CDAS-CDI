@@ -1,12 +1,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-script-url */
-import React, {
-  Fragment,
-  useState,
-  useContext,
-  useEffect,
-  useRef,
-} from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -94,7 +88,7 @@ const Dataset = () => {
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
-  const [customSql, setCustomSql] = useState("no");
+  const [customSql, setCustomSql] = useState("No");
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
@@ -132,10 +126,7 @@ const Dataset = () => {
     return "jdbc";
   };
 
-  const onChangeSql = (val) => {
-    setColumnsActive(val === "No");
-    setCustomSql(val);
-  };
+  const onChangeSql = (val) => setCustomSql(val);
 
   useEffect(() => {
     if (selectedDFId === "") {
@@ -152,12 +143,14 @@ const Dataset = () => {
       dispatch(getDataSetDetail(datasetId));
       dispatch(getDatasetColumns(datasetId));
     }
-    // console.log(datasetId);
   }, [datasetId]);
 
   useEffect(() => {
     if (isDatasetCreated) {
-      setValue(1);
+      if (dataFlowdetail?.loctyp === ("sftp" || "ftps") || customSql === "No") {
+        setValue(1);
+      }
+      setColumnsActive(customSql === "No");
     }
   }, [isDatasetCreated]);
 
@@ -347,6 +340,8 @@ const Dataset = () => {
                     datapackageid={datapackageid}
                     dataflowid={selectedDFId}
                     datasetId={datasetId}
+                    isDatasetCreated={isDatasetCreated}
+                    selectedDataset={selectedDataset}
                     dfTestFlag={dataFlowdetail.testflag}
                     onChangeSql={onChangeSql}
                     ref={jdbcRef}

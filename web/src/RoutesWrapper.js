@@ -59,7 +59,7 @@ const WithPageHeader = () => {
           render={() => <Dataset />}
         />
         <Route
-          path="/ingestion-report/:datasetId"
+          path={`${match.path}/ingestion-report/:datasetId`}
           exact
           render={() => <DatasetIngestionReport />}
         />

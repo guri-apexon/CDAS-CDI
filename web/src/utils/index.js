@@ -11,6 +11,14 @@ export const getCookie = (key) => {
   return b ? b.pop() : "";
 };
 
+export const secondsToHms = (d) => {
+  d = Number(d);
+  const h = Math.floor(d / 3600);
+  const m = Math.floor((d % 3600) / 60);
+  const s = Math.floor((d % 3600) % 60);
+  return `${h}h ${m}m ${s}s`;
+};
+
 // URL Related
 export function getQueryParams(query) {
   const queryStrings = query.substr(1).split("&");

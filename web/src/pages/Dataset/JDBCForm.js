@@ -93,6 +93,7 @@ const styles = {
 const JDBCForm = forwardRef((props, ref) => {
   const dispatch = useDispatch();
   const dataSets = useSelector((state) => state.dataSets);
+  const dataFlow = useSelector((state) => state.dataFlow);
   const useStyles = makeStyles(styles);
   const classes = useStyles();
   const [isPreviewReady, setIsPreviewReady] = useState(false);
@@ -105,11 +106,16 @@ const JDBCForm = forwardRef((props, ref) => {
   const [filterCondition, setFilterCondition] = useState("");
   const [dataType, setDataType] = useState("Cumulative");
   const [offsetColumn, setOffsetColumn] = useState(null);
+  const [sQLQueryErr, setSQLQueryErr] = useState(false);
+  const [filterConditionErr, setFilterConditionErr] = useState(false);
+  const [datasetNameErr, setDatasetNameErr] = useState(false);
+  const [clinicalDataTypeErr, setClinicalDataTypeErr] = useState(false);
+
   const messageContext = useContext(MessageContext);
 
   const { datakind, selectedDataset, previewSQL, sqlTables, sqlColumns } =
     dataSets;
-
+  const { testLock, prodLock, testProdLock } = dataFlow;
   const { datasetId, datapackageid, dfTestFlag } = props;
 
   const setDefaultValues = () => {
@@ -123,6 +129,10 @@ const JDBCForm = forwardRef((props, ref) => {
     setDataType("Cumulative");
     setOffsetColumn(null);
     setIsPreviewReady(false);
+    setSQLQueryErr(false);
+    setFilterConditionErr(false);
+    setDatasetNameErr(false);
+    setClinicalDataTypeErr(false);
   };
 
   useEffect(() => {
@@ -131,8 +141,8 @@ const JDBCForm = forwardRef((props, ref) => {
         active,
         incremental,
         mnemonic,
-        customsql,
-        customsql_query: customQuery,
+        customsql_yn: customSQLYN,
+        customsql: customQuery,
         datakindid,
         offsetcolumn,
         tbl_nm: tName,
@@ -141,9 +151,7 @@ const JDBCForm = forwardRef((props, ref) => {
       setDatasetName(mnemonic);
       setSQLQuery(customQuery);
       setDataType(incremental);
-      if (customsql) {
-        setIsCustomSQL(customsql);
-      }
+      setIsCustomSQL(customSQLYN);
       // if (datakindid) {
       //   setClinicalDataType([datakindid]);
       // }
@@ -222,7 +230,24 @@ const JDBCForm = forwardRef((props, ref) => {
   }, [dataType]);
 
   useImperativeHandle(ref, () => ({
+    // eslint-disable-next-line consistent-return
     handleSubmit() {
+      if (datasetName === "") {
+        setDatasetNameErr(true);
+        return false;
+      }
+      setDatasetNameErr(false);
+      if (clinicalDataType === "") {
+        setClinicalDataTypeErr(true);
+        return false;
+      }
+      setClinicalDataTypeErr(false);
+      if (datasetName === "") {
+        return false;
+      }
+      if (datasetName === "") {
+        return false;
+      }
       if (datasetId === "new") {
         dispatch(
           saveDatasetData({
@@ -238,7 +263,6 @@ const JDBCForm = forwardRef((props, ref) => {
             dfTestFlag,
           })
         );
-        // console.log("save jdbc");
       } else {
         dispatch(
           updateDatasetData({
@@ -276,6 +300,12 @@ const JDBCForm = forwardRef((props, ref) => {
 
   const noRecordsFound = () => {
     messageContext.showErrorMessage(`No records found.`);
+  };
+
+  const notAllowIncremental = () => {
+    messageContext.showErrorMessage(
+      `Cannot switch to Incremental as the dataset that has been synched does not have any primary key defined`
+    );
   };
 
   return (
@@ -324,6 +354,8 @@ const JDBCForm = forwardRef((props, ref) => {
                 inputProps={{ maxLength: 30 }}
                 label="Data Set Name (Mnemonic)"
                 size="small"
+                required
+                disabled={prodLock}
               />
             </Grid>
             <Grid item md={6}>
@@ -339,6 +371,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 required
                 size="small"
                 fullWidth
+                disabled={prodLock}
               />
             </Grid>
           </Grid>
@@ -349,6 +382,7 @@ const JDBCForm = forwardRef((props, ref) => {
             size="small"
             onChange={(e) => handleSelection(e)}
             label="Custom SQL Query"
+            disabled={testLock || prodLock || testProdLock}
           >
             {YesNo?.map((type) => (
               <MenuItem value={type}>{type}</MenuItem>
@@ -367,6 +401,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 sizeAdjustable
                 inputProps={{ maxLength: 255 }}
                 label="SQL Query"
+                disabled={prodLock}
               />
               <Button
                 variant="secondary"
@@ -396,6 +431,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 singleSelect
                 required
                 fullWidth
+                disabled={prodLock}
               />
               <TextField
                 fullWidth
@@ -419,6 +455,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 value={dataType}
                 required
                 onChange={handleDTChange}
+                disabled={prodLock}
               >
                 <Radio value="Cumulative" label="Cumulative" />
                 <Radio value="Incremental" label="Incremental" />

@@ -96,6 +96,7 @@ const DataSetsFormBase = (props) => {
     defaultHeaderRowNumber,
     defaultFooterRowNumber,
     defaultLoadType,
+    prodLock,
     values,
   } = props;
   const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
@@ -173,6 +174,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 inputProps={{ maxLength: 30 }}
                 label="Data Set Name (Mnemonic)"
+                disabled={prodLock}
               />
               <ReduxFormSelect
                 name="fileType"
@@ -181,6 +183,8 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 onChange={setDefaultValues}
                 fullWidth
+                disabled={prodLock}
+                canDeselect={false}
               >
                 {fileTypes?.map((type) => (
                   <MenuItem value={type}>{type}</MenuItem>
@@ -207,6 +211,7 @@ const DataSetsFormBase = (props) => {
                     size="small"
                     disabled={formValues === "SAS"}
                     fullWidth
+                    canDeselect={false}
                   >
                     {delimeters?.map((type) => (
                       <MenuItem value={type}>{type}</MenuItem>
@@ -281,6 +286,7 @@ const DataSetsFormBase = (props) => {
                   variant="search"
                   singleSelect
                   fullWidth
+                  disabled={prodLock}
                 />
               ) : null}
               <ReduxFormTextField
@@ -313,6 +319,7 @@ const DataSetsFormBase = (props) => {
                 id="loadType"
                 size="small"
                 label="Load Type"
+                canDeselect={false}
               >
                 {loadTypes?.map((type) => (
                   <MenuItem value={type}>{type}</MenuItem>
@@ -347,6 +354,7 @@ const DataSetsForm = connect((state) => ({
   defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
   defaultLoadType: state.dataSets.defaultLoadType,
   datakind: state.dataSets.datakind?.records,
+  prodLock: state.dataFlow.prodLock,
 }))(ReduxForm);
 
 export default DataSetsForm;
