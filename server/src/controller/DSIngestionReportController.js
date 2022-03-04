@@ -45,7 +45,7 @@ exports.getDatasetIngestionReportProperties = (req, res) => {
   try {
     const id = req.params.datasetid;
     const userId = req.headers["userid"];
-    const searchQuery = `SELECT datasetid,"DatasetName","Vendor",vend_id,"VendorContactInformation","DateLastChecked","DateofLastSuccessfulProcess","ExpectedDateofNextTransfer","ExpectedTransferFrequency","LoadType", "SourceOrigin", dataflowid, "DataFlowName", datapackageid, "FileName", "DataPackageNamingConvention" from ${schemaName}.dataset_stat_current 
+    const searchQuery = `SELECT datasetid,"DatasetName","Vendor",vend_id,"VendorContactInformation","DateLastChecked","DateofLastSuccessfulProcess","ExpectedDateofNextTransfer","ExpectedTransferFrequency","LoadType", "SourceOrigin", dataflowid, "DataFlowName", datapackageid, "FileName", "DataPackageNamingConvention", "DatasetStatus" from ${schemaName}.dataset_stat_current 
             WHERE datasetid = $1`;
     Logger.info({
       message: "getDatasetIngestionReportProperties",

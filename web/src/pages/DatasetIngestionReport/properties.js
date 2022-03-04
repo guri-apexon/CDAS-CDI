@@ -24,6 +24,7 @@ const Properties = ({ datasetProperties }) => {
   const [copyText, setCopyText] = useState("Copy");
   const [modalOpen, setModalOpen] = useState(false);
   const { datasetId } = params;
+  const connectionTypeCheck = ["sftp", "ftps"];
   const copyVendor = () => {
     navigator.clipboard.writeText(datasetProperties?.VendorContactInformation);
     setCopyText("Copied");
@@ -80,26 +81,25 @@ const Properties = ({ datasetProperties }) => {
                 {formatDate(datasetProperties?.DateofLastSuccessfulProcess)}
               </div>
             </Grid>
-            {datasetProperties?.SourceOrigin?.toLowerCase() !== "sftp" &&
-              datasetProperties?.SourceOrigin?.toLowerCase() !== "ftps" && (
-                <>
-                  <Grid item xs={6}>
-                    <div className="label">Expected Date of Next Transfer</div>
-                    <div className="text">
-                      {formatDate(
-                        datasetProperties?.ExpectedDateofNextTransfer
-                      )}
-                    </div>
-                  </Grid>
+            {connectionTypeCheck.indexOf(
+              datasetProperties?.SourceOrigin?.toLowerCase()
+            ) !== -1 && (
+              <>
+                <Grid item xs={6}>
+                  <div className="label">Expected Date of Next Transfer</div>
+                  <div className="text">
+                    {formatDate(datasetProperties?.ExpectedDateofNextTransfer)}
+                  </div>
+                </Grid>
 
-                  <Grid item xs={6}>
-                    <div className="label">Expected Transfer Frequency</div>
-                    <div className="text">
-                      {datasetProperties?.ExpectedTransferFrequency}
-                    </div>
-                  </Grid>
-                </>
-              )}
+                <Grid item xs={6}>
+                  <div className="label">Expected Transfer Frequency</div>
+                  <div className="text">
+                    {datasetProperties?.ExpectedTransferFrequency}
+                  </div>
+                </Grid>
+              </>
+            )}
             <Grid item xs={6}>
               <div className="label">Load Type</div>
               <div className="text">
@@ -119,18 +119,19 @@ const Properties = ({ datasetProperties }) => {
               </div>
               <div className="text">{datasetProperties?.DataFlowName}</div>
             </Grid>
-            {datasetProperties?.SourceOrigin?.toLowerCase() !== "sftp" &&
-              datasetProperties?.SourceOrigin?.toLowerCase() !== "ftps" && (
-                <Grid item xs={12}>
-                  <div className="label">
-                    <DataPackageIcon className="properties-icon" />
-                    Data Package Naming Convention (zip files)
-                  </div>
-                  <div className="text">
-                    {datasetProperties?.DataPackageNamingConvention}
-                  </div>
-                </Grid>
-              )}
+            {connectionTypeCheck.indexOf(
+              datasetProperties?.SourceOrigin?.toLowerCase()
+            ) !== -1 && (
+              <Grid item xs={12}>
+                <div className="label">
+                  <DataPackageIcon className="properties-icon" />
+                  Data Package Naming Convention (zip files)
+                </div>
+                <div className="text">
+                  {datasetProperties?.DataPackageNamingConvention}
+                </div>
+              </Grid>
+            )}
           </Grid>
         </div>
         <Modal
