@@ -151,7 +151,7 @@ const JDBCForm = forwardRef((props, ref) => {
       setDatasetName(mnemonic);
       setSQLQuery(customQuery);
       setDataType(incremental);
-      setIsCustomSQL(customSQLYN);
+      setIsCustomSQL(customSQLYN || "Yes");
       // if (datakindid) {
       //   setClinicalDataType([datakindid]);
       // }

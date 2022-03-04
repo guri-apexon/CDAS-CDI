@@ -11,9 +11,8 @@ import Box from "apollo-react/components/Box";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
-import Status from "apollo-react/components/Status";
 import Divider from "apollo-react/components/Divider";
-
+import Tag from "apollo-react/components/Tag";
 import CheckIcon from "apollo-react-icons/Check";
 import ClockIcon from "apollo-react-icons/Clock";
 
@@ -21,9 +20,73 @@ import Metrics from "./metrics";
 import TransferLog from "./transferLog";
 import Properties from "./properties";
 import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
+import { ReactComponent as StaleIcon } from "../../components/Icons/Stale.svg";
+import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
 import "./ingestionReport.scss";
 import { getDatasetProperties } from "../../store/actions/IngestionReportAction";
 import { updateSelectedDataflow } from "../../store/actions/DashboardAction";
+
+const getDatasetStatus = (status) => {
+  return (
+    <div>
+      {status?.toLowerCase() === "up-to-date" && (
+        <div style={{ marginTop: "-2px" }}>
+          <CheckIcon
+            style={{
+              position: "relative",
+              top: 4,
+              fontSize: 14,
+              color: "#00C221",
+              marginRight: 8,
+            }}
+          />
+          {status}
+        </div>
+      )}
+      {status?.toLowerCase() === "stale" && (
+        <div style={{ marginTop: "-5px" }}>
+          <Tag
+            label={status}
+            className="staleAlertStatus"
+            style={{
+              backgroundColor: "#e2000012",
+              fontWeight: 600,
+              color: "#E20000",
+            }}
+            Icon={StaleIcon}
+          />
+        </div>
+      )}
+      {status?.toLowerCase() === "failed" && (
+        <div style={{ marginTop: "-5px" }}>
+          <Tag
+            label={status}
+            className="failedStatus"
+            style={{
+              backgroundColor: "#e20000",
+              fontWeight: 600,
+              color: "#fff",
+            }}
+            Icon={FailureIcon}
+          />
+        </div>
+      )}
+
+      {status?.toLowerCase() === "inactive" && (
+        <div style={{ marginTop: "-5px" }}>
+          <Tag label={status} color="#B5B5B5" />
+        </div>
+      )}
+      {(status?.toLowerCase() === "processing" ||
+        status?.toLowerCase() === "queued" ||
+        status?.toLowerCase() === "skipped") && (
+        <div style={{ marginTop: "-3px" }}>
+          <Tag label={status} className="queueStatus" />
+        </div>
+      )}
+    </div>
+  );
+};
 
 const DatasetIngestionReport = () => {
   const history = useHistory();
@@ -77,12 +140,7 @@ const DatasetIngestionReport = () => {
               </Typography>
             </div>
             <div className="flex right_title">
-              <Status
-                variant="positive"
-                className="datasetSts"
-                label="Up-to-date"
-                icon={CheckIcon}
-              />
+              {getDatasetStatus(datasetProperties?.DatasetStatus)}
               <ClockIcon className="clockIcon" />
             </div>
           </div>
