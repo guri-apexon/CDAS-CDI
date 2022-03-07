@@ -96,7 +96,6 @@ const DataFlowFormBase = (props) => {
     connLink,
     testLock,
     prodLock,
-    testProdLock,
   } = props;
   const onChangeServiceOwner = (values) => {
     change("serviceOwnerValue", values);
@@ -131,7 +130,6 @@ const DataFlowFormBase = (props) => {
               inputProps={{ maxLength: 30 }}
               onChange={(v) => changeFormField(v, "description")}
               label="Description"
-              disabled={testLock || prodLock}
             />
             <ReduxFormDatePickerV2
               name="firstFileDate"
@@ -143,7 +141,6 @@ const DataFlowFormBase = (props) => {
               name="dataflowType"
               onChange={(v) => changeFormField(v, "dataflowType")}
               label="Data Flow Type"
-              disabled={testLock || prodLock}
             >
               <Radio value="test" label="Test" />
               <Radio value="production" label="Production" />
@@ -162,7 +159,6 @@ const DataFlowFormBase = (props) => {
                 id="dataStructure"
                 label="Data Structure"
                 fullWidth
-                disabled={testLock || prodLock}
                 canDeselect={false}
               >
                 {dataStruct?.map((type) => (
@@ -176,7 +172,6 @@ const DataFlowFormBase = (props) => {
                 label="Location Type"
                 onChange={(e) => changeLocationType(e.target.value)}
                 fullWidth
-                disabled={testLock || prodLock}
                 canDeselect={false}
               >
                 {locationTypes?.map((type) => (
