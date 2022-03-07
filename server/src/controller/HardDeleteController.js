@@ -4,7 +4,7 @@ const Logger = require("../config/logger");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
-exports.addEdit = async (req, res) => {
+exports.hardDelete = async (req, res) => {
   try {
     const dflowID = req.body.dataflowid;
     const curDate = new Date();
@@ -23,7 +23,7 @@ exports.addEdit = async (req, res) => {
     const upData = await DB.executeQuery(updateQuery, [curDate, dflowID, 1]);
 
     // const getData = await DB.executeQuery(getQuery, [dflowID]);
-    const inset = await DB.executeQuery(insertQuery, [
+    const addAuditLog = await DB.executeQuery(insertQuery, [
       "dataflow",
       dflowID,
       "delete",
