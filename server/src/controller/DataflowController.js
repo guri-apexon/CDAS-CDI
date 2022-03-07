@@ -110,7 +110,7 @@ exports.createDataflow = async (req, res) => {
       src_loc_id,
       vend_id,
       fsrstatus,
-      connectiondriver,
+      // connectiondriver,
       data_in_cdr,
       configured,
     } = req.body;
@@ -160,7 +160,7 @@ exports.createDataflow = async (req, res) => {
           testFlag,
           data_in_cdr || "N",
           connectionType || null,
-          externalSystemName === "CDI" ? connectiondriver : location || null,
+          // externalSystemName === "CDI" ? connectiondriver || null : location || null,
           externalSystemName || null,
           externalID || null,
           fsrstatus || null,
@@ -169,7 +169,7 @@ exports.createDataflow = async (req, res) => {
         ];
         const query = `insert into ${schemaName}.dataflow 
           (dataflowid,name,vend_id,type,description,src_loc_id,active,configured,expt_fst_prd_dt,
-            testflag,data_in_cdr,connectiontype,connectiondriver,externalsystemname,externalid,
+            testflag,data_in_cdr,connectiontype,externalsystemname,externalid,
             fsrstatus,prot_id,insrt_tm) VALUES 
             ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`;
 
@@ -496,6 +496,7 @@ const addDeleteTempLog = async (dataflowId, user) => {
     });
   return result;
 };
+
 exports.cronHardDelete = async () => {
   DB.executeQuery(`SELECT * FROM ${schemaName}.temp_json_log`).then(
     async (response) => {
@@ -521,6 +522,7 @@ exports.cronHardDelete = async () => {
     }
   );
 };
+
 exports.hardDelete = async (req, res) => {
   try {
     const { dataFlowId, userId } = req.body;
@@ -768,7 +770,7 @@ exports.updateDataFlow = async (req, res) => {
           description !== ""
         ) {
           const query = `update ${schemaName}.dataflow set vend_id=$1,type=$2,description=$3,src_loc_id=$4,active=$5,expt_fst_prd_dt=$6,
-          testflag=$7,connectiontype=$8,connectiondriver=$9,updt_tm=$10 where extrnl_id='${externalID}'`;
+          testflag=$7,connectiontype=$8,updt_tm=$9 where extrnl_id='${externalID}'`;
           let body = [
             vend_id,
             type,
@@ -778,7 +780,7 @@ exports.updateDataFlow = async (req, res) => {
             exptDtOfFirstProdFile,
             testFlag === "false" ? 0 : 1,
             connectionType,
-            location,
+            // location,
             new Date(),
           ];
           let ts = new Date().toLocaleString();
@@ -1037,7 +1039,7 @@ exports.fetchdataflowDetails = async (req, res) => {
       testFlag: rows[0].testflag,
       prodFlag: rows[0].testflag === 1 ? 1 : 0,
       description: rows[0].description,
-      connectiondriver: rows[0].connectiondriver,
+      // connectiondriver: rows[0].connectiondriver,
       fsrstatus: rows[0].fsrstatus,
       vend_id: rows[0].vend_id,
       src_loc_id: rows[0].src_loc_id,

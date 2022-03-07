@@ -11,6 +11,7 @@ import DownloadIcon from "apollo-react-icons/Download";
 import FilterIcon from "apollo-react-icons/Filter";
 import FileIcon from "apollo-react-icons/File";
 import Check from "apollo-react-icons/Check";
+import FileZipIcon from "apollo-react-icons/FileZip";
 import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
 import Table, {
   createStringSearchFilter,
@@ -18,13 +19,15 @@ import Table, {
   compareNumbers,
   compareDates,
 } from "apollo-react/components/Table";
+import Search from "apollo-react/components/Search";
 import { getTransferLog } from "../../store/actions/IngestionReportAction";
 import {
-  TextFieldFilter,
   createStringArraySearchFilter,
   createSourceFromKey,
   createAutocompleteFilter,
   secondsToHms,
+  DateFilter,
+  dateFilterCustom,
 } from "../../utils/index";
 
 import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
@@ -34,6 +37,29 @@ const TimeCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
   const time = value ? secondsToHms(value) : "";
   return <span>{time}</span>;
+};
+
+const FileNameCell = ({ row, column: { accessor } }) => {
+  const value = row[accessor];
+  const packageName = row.PackageName;
+  return (
+    <>
+      <span>{value}</span>
+      {packageName && (
+        <>
+          <br />
+          <span style={{ display: "flex" }}>
+            {" "}
+            <FileZipIcon
+              fontSize="extraSmall"
+              style={{ color: "#999999", marginRight: 5 }}
+            />
+            {packageName}
+          </span>
+        </>
+      )}
+    </>
+  );
 };
 
 const DateCell = ({ row, column: { accessor } }) => {
@@ -134,6 +160,19 @@ const StatusCell = ({ row, column: { accessor } }) => {
   );
 };
 
+const SearchTextFieldFilter = ({ accessor, filters, updateFilterValue }) => {
+  return (
+    <Search
+      value={filters[accessor]}
+      name={accessor}
+      onChange={updateFilterValue}
+      fullWidth
+      margin="none"
+      size="small"
+    />
+  );
+};
+
 const generateColumns = (tableRows = []) => {
   return [
     {
@@ -141,17 +180,18 @@ const generateColumns = (tableRows = []) => {
       accessor: "TransferDate",
       customCell: DateCell,
       sortFunction: compareDates,
-      filterFunction: createStringSearchFilter("TransferDate"),
-      filterComponent: TextFieldFilter,
+      filterFunction: dateFilterCustom("TransferDate"),
+      filterComponent: DateFilter,
       frozen: true,
       width: 180,
     },
     {
       header: "File Name",
       accessor: "FileName",
+      customCell: FileNameCell,
       sortFunction: compareStrings,
       filterFunction: createStringSearchFilter("FileName"),
-      filterComponent: TextFieldFilter,
+      filterComponent: SearchTextFieldFilter,
       frozen: true,
       fixedWidth: false,
     },

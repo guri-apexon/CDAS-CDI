@@ -32,7 +32,7 @@ async function saveSQLDataset(req, res, values, datasetId) {
       datasetId,
       values.datasetName,
       values.active == true ? 1 : 0,
-      values.clinicalDataType[0],
+      values.clinicalDataType[0] ? values.clinicalDataType[0] : null,
       values.customSQLQuery,
       values.sQLQuery || null,
       values.loadType == "Incremental" ? "Y" : "N" || null,
@@ -42,7 +42,7 @@ async function saveSQLDataset(req, res, values, datasetId) {
       new Date(),
       values.datapackageid,
     ];
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_query, customsql, incremental, tbl_nm, offsetcolumn, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
     const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {
@@ -117,7 +117,7 @@ async function updateSQLDataset(req, res, values) {
       new Date(),
       values.datasetid,
     ];
-    const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_query = $4, customsql =$5, tbl_nm = $6, updt_tm = $7 where datasetid = $8`;
+    const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, updt_tm = $7 where datasetid = $8`;
     const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {

@@ -546,3 +546,24 @@ export const generateConnectionURL = (locType, hostName, port, dbName) => {
 
   return "";
 };
+
+export const dateFilterCustom = (accessor) => (row, filters) => {
+  if (!filters[accessor]) {
+    return true;
+  }
+
+  if (!row[accessor]) {
+    return false;
+  }
+
+  const date = moment(row[accessor], "YYYY-MM-DD");
+
+  const fromDate = moment(filters[accessor][0], "YYYY-MM-DD");
+
+  const toDate = moment(filters[accessor][1], "YYYY-MM-DD");
+
+  return (
+    (!fromDate.isValid() || date.isAfter(fromDate)) &&
+    (!toDate.isValid() || date.isBefore(toDate))
+  );
+};
