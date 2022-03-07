@@ -20,20 +20,24 @@ exports.hardDelete = async (req, res) => {
       message: "hardDelete",
     });
 
-    const upData = await DB.executeQuery(updateQuery, [curDate, dflowID, 1]);
+    const getData = await DB.executeQuery(getQuery, [dflowID]);
 
-    // const getData = await DB.executeQuery(getQuery, [dflowID]);
-    const addAuditLog = await DB.executeQuery(insertQuery, [
-      "dataflow",
-      dflowID,
-      "delete",
-      0,
-      1,
-      "Test Data",
-      curDate,
-    ]);
+    if (getData.rows.length > 0) {
+      const upData = await DB.executeQuery(updateQuery, [curDate, dflowID, 1]);
+      const addAuditLog = await DB.executeQuery(insertQuery, [
+        "dataflow",
+        dflowID,
+        "delete",
+        0,
+        1,
+        "Test Data",
+        curDate,
+      ]);
 
-    return apiResponse.successResponseWithData(res, "Operation success");
+      return apiResponse.successResponseWithData(res, "Operation success");
+    }
+
+    return apiResponse.successResponseWithData(res, "Data Flow Id Not Found");
   } catch (err) {
     Logger.error("catch :hardDelete");
     Logger.error(err);
