@@ -18,13 +18,15 @@ import Table, {
   compareNumbers,
   compareDates,
 } from "apollo-react/components/Table";
+import Search from "apollo-react/components/Search";
 import { getTransferLog } from "../../store/actions/IngestionReportAction";
 import {
-  TextFieldFilter,
   createStringArraySearchFilter,
   createSourceFromKey,
   createAutocompleteFilter,
   secondsToHms,
+  DateFilter,
+  dateFilterCustom,
 } from "../../utils/index";
 
 import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
@@ -134,6 +136,19 @@ const StatusCell = ({ row, column: { accessor } }) => {
   );
 };
 
+const SearchTextFieldFilter = ({ accessor, filters, updateFilterValue }) => {
+  return (
+    <Search
+      value={filters[accessor]}
+      name={accessor}
+      onChange={updateFilterValue}
+      fullWidth
+      margin="none"
+      size="small"
+    />
+  );
+};
+
 const generateColumns = (tableRows = []) => {
   return [
     {
@@ -141,8 +156,8 @@ const generateColumns = (tableRows = []) => {
       accessor: "TransferDate",
       customCell: DateCell,
       sortFunction: compareDates,
-      filterFunction: createStringSearchFilter("TransferDate"),
-      filterComponent: TextFieldFilter,
+      filterFunction: dateFilterCustom("TransferDate"),
+      filterComponent: DateFilter,
       frozen: true,
       width: 180,
     },
@@ -151,7 +166,7 @@ const generateColumns = (tableRows = []) => {
       accessor: "FileName",
       sortFunction: compareStrings,
       filterFunction: createStringSearchFilter("FileName"),
-      filterComponent: TextFieldFilter,
+      filterComponent: SearchTextFieldFilter,
       frozen: true,
       fixedWidth: false,
     },
