@@ -11,6 +11,7 @@ import DownloadIcon from "apollo-react-icons/Download";
 import FilterIcon from "apollo-react-icons/Filter";
 import FileIcon from "apollo-react-icons/File";
 import Check from "apollo-react-icons/Check";
+import FileZipIcon from "apollo-react-icons/FileZip";
 import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
 import Table, {
   createStringSearchFilter,
@@ -36,6 +37,29 @@ const TimeCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
   const time = value ? secondsToHms(value) : "";
   return <span>{time}</span>;
+};
+
+const FileNameCell = ({ row, column: { accessor } }) => {
+  const value = row[accessor];
+  const packageName = row.PackageName;
+  return (
+    <>
+      <span>{value}</span>
+      {packageName && (
+        <>
+          <br />
+          <span style={{ display: "flex" }}>
+            {" "}
+            <FileZipIcon
+              fontSize="extraSmall"
+              style={{ color: "#999999", marginRight: 5 }}
+            />
+            {packageName}
+          </span>
+        </>
+      )}
+    </>
+  );
 };
 
 const DateCell = ({ row, column: { accessor } }) => {
@@ -164,6 +188,7 @@ const generateColumns = (tableRows = []) => {
     {
       header: "File Name",
       accessor: "FileName",
+      customCell: FileNameCell,
       sortFunction: compareStrings,
       filterFunction: createStringSearchFilter("FileName"),
       filterComponent: SearchTextFieldFilter,
