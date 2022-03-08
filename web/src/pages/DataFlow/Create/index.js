@@ -77,6 +77,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   const [packagePassword, setPackagePassword] = useState("");
   const [FormType, setFormType] = useState("dataflow");
   const [sftpPath, setSftpPath] = useState("");
+  const [currentStep, setCurrentStep] = useState(1);
   const [selectedDatapackage, setselectedDatapackage] = useState("");
   const dataFlowData = useSelector((state) => state.dataFlow);
   const { selectedLocation, loading, error } = dataFlowData;
@@ -93,9 +94,6 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
     dispatch(getLocationByType(locType));
     dispatch(getServiceOwnersData());
   };
-  useEffect(() => {
-    pullVendorandLocation();
-  }, []);
 
   const breadcrumbItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -105,12 +103,6 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
       onClick: () => history.push("/dashboard/dataflow-management"),
     },
   ];
-
-  useEffect(() => {
-    if (modalLocType === locType) {
-      dispatch(getLocationByType(locType));
-    }
-  }, [createTriggered]);
 
   const changeLocationData = (value) => {
     const locationsRec = dataFlowData.locations?.records ?? [];
@@ -142,7 +134,9 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
+    console.log("FormValues", FormValues);
     if (
+      FormValues &&
       FormValues.vendor &&
       FormValues.locationName &&
       FormValues.firstFileDate &&
@@ -167,6 +161,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
       console.log(payload);
       setForm(payload);
       setFormType("datapackage");
+      setCurrentStep((step) => step + 1);
       // await dispatch(addDataFlow(payload));
       // history.push("/dashboard");
     } else {
@@ -194,43 +189,45 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
     newForm.DataPackage.push(obj);
     setForm(newForm);
     setFormType("dataset");
+    setCurrentStep((step) => step + 1);
   };
 
   const AddDatasetData = (packageid) => {
-    const newForm = { ...myform };
-    const datasetID = uuidv4();
-    const index = newForm.DataPackage.findIndex((r) => r.id === packageid);
-    const obj = {
-      id: datasetID,
-      compression,
-      namingConvention,
-      packagePassword,
-      sftpPath,
-      columnDefinition: [],
-    };
-    newForm.DataPackage[index].datasets.push(obj);
-    setForm(newForm);
+    console.log("AddDatasetData", packageid);
+    dispatch(submit("DataSetsForm"));
+    // const newForm = { ...myform };
+    // const datasetID = uuidv4();
+    // const index = newForm.DataPackage.findIndex((r) => r.id === packageid);
+    // const obj = {
+    //   id: datasetID,
+    //   compression,
+    //   namingConvention,
+    //   packagePassword,
+    //   sftpPath,
+    //   columnDefinition: [],
+    // };
+    // console.log("AddDatasetData", obj);
+    // newForm.DataPackage[index].datasets.push(obj);
+    // setForm(newForm);
   };
-  const submitForm = async () => {
+  const backStep = () => {
+    setCurrentStep((step) => step - 1);
+  };
+  const nextStep = async () => {
     console.log("datasetFormValues?", datasetFormValues);
-
-    switch (FormType) {
-      case "dataflow":
+    switch (currentStep) {
+      case 1:
         AddDataflowData();
-        return null;
-
-      case "datapackage":
+        break;
+      case 2:
         AddDatapackage();
-        return null;
-
-      case "dataset":
+        break;
+      case 3:
         AddDatasetData(selectedDatapackage);
-        return null;
-
+        break;
       default:
         break;
     }
-    return null;
   };
 
   const handleClose = () => {
@@ -242,11 +239,24 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   };
 
   const RenderForm = () => {
-    console.log(FormType, "FormTypeFormType");
-
-    switch (FormType) {
-      case "datapackage":
-        return (
+    let formEl = <></>;
+    switch (currentStep) {
+      case 1:
+        formEl = (
+          <DataFlowForm
+            onSubmit={onSubmit}
+            changeLocationData={changeLocationData}
+            changeFormField={changeFormField}
+            changeLocationType={changeLocationType}
+            modalLocationType={modalLocationType}
+            userName={selectedLocation?.usr_nm}
+            password={selectedLocation?.pswd}
+            connLink={selectedLocation?.cnn_url}
+          />
+        );
+        break;
+      case 2:
+        formEl = (
           <DataPackages
             setCompression={setCompression}
             setNamingConvention={setNamingConvention}
@@ -258,26 +268,12 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
             sftpPath={sftpPath}
           />
         );
-
-      case "dataset":
-        return <DataSet myform={myform} getDataSetValue={getDataSetValue} />;
-
-      case "dataflow":
-        return (
-          <DataFlowForm
-            onSubmit={onSubmit}
-            changeLocationData={changeLocationData}
-            changeFormField={changeFormField}
-            changeLocationType={changeLocationType}
-            modalLocationType={modalLocationType}
-            userName={selectedLocation?.usr_nm}
-            password={selectedLocation?.pswd}
-            connLink={selectedLocation?.cnn_url}
-          />
-        );
-
+        break;
+      case 3:
+        formEl = <DataSet myform={myform} getDataSetValue={getDataSetValue} />;
+        break;
       default:
-        return (
+        formEl = (
           <DataFlowForm
             onSubmit={onSubmit}
             changeLocationData={changeLocationData}
@@ -289,10 +285,23 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
             connLink={selectedLocation?.cnn_url}
           />
         );
+        break;
     }
+    return formEl;
   };
-  console.log(myform, "sdsasa", myform.DataPackage);
 
+  useEffect(() => {
+    pullVendorandLocation();
+    console.log(myform, "sdsasa", myform.DataPackage);
+  }, []);
+  useEffect(() => {
+    console.log("myform:", myform);
+  }, [myform]);
+  useEffect(() => {
+    if (modalLocType === locType) {
+      dispatch(getLocationByType(locType));
+    }
+  }, [createTriggered]);
   return (
     <div className={classes.root}>
       {(loading || upsertLoading) && <Loader />}
@@ -309,28 +318,24 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         onClose={handleClose}
         onOpen={handleOpen}
         open={isPanelOpen}
-        width={446}
+        width={20}
       >
-        <LeftPanel
+        {/* <LeftPanel
           protId={protId}
           packages={myform.DataPackage}
           setFormType={setFormType}
           myform={myform}
-        />
+        /> */}
       </Panel>
-      <Panel
-        className={
-          isPanelOpen ? classes.rightPanel : classes.rightPanelExtended
-        }
-        width="100%"
-        hideButton
-      >
+      <Panel className={classes.rightPanelExtended} width="100%" hideButton>
         <main className={classes.content}>
           <div className="content">
             <div className={classes.contentHeader}>
               <Header
                 close={closeForm}
-                submit={submitForm}
+                submit={nextStep}
+                back={backStep}
+                currentStep={currentStep}
                 breadcrumbItems={breadcrumbItems}
                 headerTitle="Virologicclinic-IIBR12-001-Other"
                 icon={<DataPackageIcon className={classes.contentIcon} />}

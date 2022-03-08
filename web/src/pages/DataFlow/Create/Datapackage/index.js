@@ -148,7 +148,8 @@ const DataPackage = ({
                   helperText="File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
                   onChange={(e) => setNamingConvention(e.target.value)}
                 />
-                <PasswordInput
+                <TextField
+                  type="password"
                   defaultValue=""
                   size="small"
                   label="Package Password"

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
@@ -43,8 +43,14 @@ const Breadcrumbs = (props) => {
   );
 };
 const Header = (props) => {
-  const { headerTitle } = props;
+  const { headerTitle, currentStep } = props;
   const classes = useStyles();
+  const [hidebackBtn, setHideBackBtn] = useState(true);
+  useEffect(() => {
+    if (currentStep) {
+      setHideBackBtn(currentStep <= 1);
+    }
+  }, [currentStep]);
   return (
     <>
       <Breadcrumbs
@@ -67,10 +73,19 @@ const Header = (props) => {
             {
               label: "Cancel",
               onClick: () => props.close(),
+              size: "small",
             },
             {
-              label: "Save",
+              label: "Back",
+              style: { display: hidebackBtn ? "none" : "flex" },
+              variant: "secondary",
+              onClick: () => props.back(),
+              size: "small",
+            },
+            {
+              label: "Next",
               onClick: () => props.submit(),
+              size: "small",
             },
           ]}
         />

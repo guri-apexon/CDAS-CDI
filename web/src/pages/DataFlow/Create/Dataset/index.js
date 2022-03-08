@@ -217,6 +217,7 @@ const Dataset = () => {
   };
 
   const onSubmit = (formValue) => {
+    console.log("AddDatasetData:onSubmit", formValue);
     setTimeout(() => {
       const data = {
         ...formValue,
@@ -241,11 +242,7 @@ const Dataset = () => {
   };
 
   return (
-    <Panel
-      className={isPanelOpen ? classes.rightPanel : classes.rightPanelExtended}
-      width="100%"
-      hideButton
-    >
+    <Panel className={classes.rightPanelExtended} width="100%" hideButton>
       <main className={classes.content}>
         <div className={classes.contentHeader}>
           {dataSettabs && (
@@ -270,7 +267,7 @@ const Dataset = () => {
           {value === 0 &&
             (locationType?.toLowerCase() === "sftp" ||
               locationType?.toLowerCase() === "ftps") && (
-              <DataSetsForm loading={loading} onSubmit={onSubmit} />
+              <DataSetsForm loading={loading} handleSubmit={onSubmit} />
             )}
           {value === 0 &&
             locationType?.toLowerCase() !== "sftp" &&
