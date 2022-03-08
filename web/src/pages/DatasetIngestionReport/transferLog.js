@@ -295,7 +295,7 @@ const TransferLog = ({ datasetProperties }) => {
   };
 
   useEffect(() => {
-    if (datasetProperties?.LoadType.toLowerCase() === "incremental") {
+    if (datasetProperties?.LoadType?.toLowerCase() === "incremental") {
       setLoadType(datasetProperties?.LoadType);
     } else {
       setLoadType("Cumulative");

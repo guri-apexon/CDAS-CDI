@@ -7,6 +7,7 @@ import Grid from "apollo-react/components/Grid";
 import DataVizCard from "apollo-react/components/DataVizCard";
 import DonutChartV2 from "apollo-react/components/DonutChartV2";
 import BarChart from "apollo-react/components/BarChart";
+import BulletChart from "apollo-react/components/BulletChart";
 import Typography from "apollo-react/components/Typography";
 import Link from "apollo-react/components/Link";
 import Divider from "apollo-react/components/Divider";
@@ -16,11 +17,32 @@ const Metrics = ({ datasetProperties }) => {
     { type: "New Records", a: 25 },
     { type: "Modified Records", a: 15 },
   ];
+  const historyData = [
+    { filename: "File Name1", yield: [200, 400, 600] },
+    { filename: "File Name2", yield: [300, 100, 500] },
+    { filename: "File Name3", yield: [200, 300, 400] },
+    { filename: "File Name4", yield: [150, 250, 500] },
+    { filename: "File Name5", yield: [300, 200, 100] },
+  ];
+
+  const legendLabels = ["New", "Modified", "Unchanged"];
+
   return (
     <div className="ingestion-report-metrics">
       <Hero
-        title="File transfer summary"
-        subtitle="When there is no data to display"
+        title={
+          <Typography variant="title1" darkMode style={{ marginTop: "auto" }}>
+            File transfer summary
+          </Typography>
+        }
+        subtitle={
+          <>
+            <Typography darkMode>When there is no data to display</Typography>
+            <Typography variant="body2" darkMode>
+              12-Apr-2021 / 3:00 pm
+            </Typography>
+          </>
+        }
         className="file-transfer-kpi"
       >
         <div className="summary-body">
@@ -113,10 +135,11 @@ const Metrics = ({ datasetProperties }) => {
       >
         <Grid item xs={12}>
           <DataVizCard
-            title="Card Title"
-            href="javascript:void(0);"
-            subtitle="Optional subtitle"
-          />
+            title="File Transfer History"
+            subtitle="500 total files transfered"
+          >
+            <BulletChart data={historyData} legendLabels={legendLabels} />
+          </DataVizCard>
         </Grid>
       </Grid>
     </div>
