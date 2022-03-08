@@ -2,10 +2,14 @@
 import React, { useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch, useSelector } from "react-redux";
-import { reduxForm, getFormValues, formValueSelector } from "redux-form";
+import {
+  change as changeFieldValue,
+  reduxForm,
+  getFormValues,
+  formValueSelector,
+} from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
-import FixedBar from "apollo-react/components/FixedBar";
 import Status from "apollo-react/components/Status";
 import Radio from "apollo-react/components/Radio";
 import RadioError from "apollo-react-icons/RadioError";
@@ -13,12 +17,14 @@ import Typography from "apollo-react/components/Typography";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
 import Button from "apollo-react/components/Button";
+import Table from "apollo-react/components/Table";
 import {
   ReduxFormAutocomplete,
   ReduxFormRadioGroup,
   ReduxFormSwitch,
   ReduxFormSelect,
   ReduxFormTextField,
+  ReduxFormMultiSelect,
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
 import {
@@ -89,60 +95,82 @@ const DataSetsFormBase = (props) => {
     classes,
     datakind,
     formValues,
+    previewSQL,
     sqlTables,
+    sqlColumns,
     onChange,
-    defaultFields,
   } = props;
   const dispatch = useDispatch();
-  const dataSets = useSelector((state) => state.dataSets);
   const [showPreview, setShowPreview] = useState(false);
-  const { formDataSQL } = dataSets;
-  const { sQLQuery, tableName } = formDataSQL;
-
   const handlePreview = () => {
-    console.log("data", formDataSQL);
     setShowPreview(true);
-    dispatch(getPreviewSQL(sQLQuery));
+    dispatch(getPreviewSQL(formValues.sQLQuery));
   };
 
-  const handleOnChange = () => {
-    dispatch(getSQLTables(tableName));
-  };
+  useEffect(() => {
+    dispatch(getSQLColumns(formValues.tableName));
+  }, [formValues.tableName]);
 
   useEffect(() => {
     if (formValues && ["Yes", "No"].includes(formValues)) {
       onChange(formValues);
     }
-  }, [formValues]);
+    dispatch(getSQLTables("test"));
+  }, [formValues.customSQLQuery]);
+
+  useEffect(() => {
+    if (formValues && ["Yes", "No"].includes(formValues)) {
+      onChange(formValues);
+    }
+    setShowPreview(false);
+  }, [formValues.customSQLQuery]);
+
+  // const onColumnChange = function (event) {
+  //   const { options } = event.target;
+  //   const selectedOptions = [];
+  //   if (options) {
+  //     // eslint-disable-next-line no-restricted-syntax
+  //     for (const option of options) {
+  //       if (option.selected) {
+  //         selectedOptions.push(option.value);
+  //       }
+  //     }
+  //     if (changeFieldValue) changeFieldValue("offsetColumn", selectedOptions);
+  //   }
+  // };
 
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
         <div className={classes.section}>
-          <FixedBar
-            title="Dataset Settings"
-            style={{ padding: 0, border: "none" }}
-          >
-            <ReduxFormSwitch
-              label="Dataset Active"
-              name="active"
-              className="MuiSwitch"
-              size="small"
-              labelPlacement="start"
-            />
-            <Status
-              variant="positive"
-              icon={RadioError}
-              size="small"
-              style={{ marginLeft: 35 }}
-              label={
-                // eslint-disable-next-line react/jsx-wrap-multilines
-                <Typography variant="body2" style={{ color: "#595959" }}>
-                  Ready
-                </Typography>
-              }
-            />
-          </FixedBar>
+          <div className="like-fixedbar">
+            <Typography variant="title1" gutterBottom>
+              Dataset Settings
+            </Typography>
+            <div className="ds-status">
+              <ReduxFormSwitch
+                label="Dataset Active"
+                name="active"
+                className="MuiSwitch"
+                size="small"
+                labelPlacement="start"
+              />
+              {formValues.active && (
+                <Status
+                  variant="positive"
+                  icon={RadioError}
+                  size="small"
+                  style={{ marginLeft: 35 }}
+                  label={
+                    // eslint-disable-next-line react/jsx-wrap-multilines
+                    <Typography variant="body2" style={{ color: "#595959" }}>
+                      Ready
+                    </Typography>
+                  }
+                />
+              )}
+            </div>
+          </div>
           <Grid container spacing={3}>
             <Grid item md={5}>
               <ReduxFormTextField
@@ -153,6 +181,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 30 }}
                 label="Data Set Name (Mnemonic)"
                 size="small"
+                required
               />
             </Grid>
             <Grid item md={6}>
@@ -166,6 +195,7 @@ const DataSetsFormBase = (props) => {
                 singleSelect
                 size="small"
                 fullWidth
+                required
               />
             </Grid>
           </Grid>
@@ -174,13 +204,14 @@ const DataSetsFormBase = (props) => {
             id="customSQLQuery"
             size="small"
             label="Custom SQL Query"
+            required
             canDeselect={false}
           >
             {YesNo?.map((type) => (
               <MenuItem value={type}>{type}</MenuItem>
             ))}
           </ReduxFormSelect>
-          {formValues === "Yes" && (
+          {formValues.customSQLQuery === "Yes" && (
             <div style={{ display: "flex", alignItems: "flex-end" }}>
               <ReduxFormTextField
                 fullWidth
@@ -203,19 +234,20 @@ const DataSetsFormBase = (props) => {
               </Button>
             </div>
           )}
-          {formValues !== "Yes" && (
+          {formValues.customSQLQuery === "No" && (
             <>
-              <ReduxFormAutocomplete
+              <ReduxFormSelect
                 name="tableName"
                 id="tableName"
-                size="small"
-                style={{ width: 272, display: "flex" }}
-                source={sqlTables}
-                onChange={handleOnChange}
-                variant="search"
-                singleSelect
                 label="Table Name"
-              />
+                size="small"
+                style={{ width: 300, display: "block" }}
+                canDeselect={false}
+              >
+                {sqlTables?.map((e) => (
+                  <MenuItem value={e.tableName}>{e.tableName}</MenuItem>
+                ))}
+              </ReduxFormSelect>
               <ReduxFormTextField
                 fullWidth
                 name="filterCondition"
@@ -237,28 +269,38 @@ const DataSetsFormBase = (props) => {
                 <Radio value="Cumulative" label="Cumulative" />
                 <Radio value="Incremental" label="Incremental" />
               </ReduxFormRadioGroup>
-              <ReduxFormSelect
-                name="offsetColumn"
-                id="offsetColumn"
-                label="Offset Column"
-                style={{ width: 272 }}
-                size="small"
-                canDeselect={false}
-                // disabled
-              >
-                <MenuItem value="Enabled">Enabled</MenuItem>
-                <MenuItem value="Disabled">Disabled</MenuItem>
-              </ReduxFormSelect>
+              {formValues.dataType === "Incremental" && (
+                <ReduxFormMultiSelect
+                  name="offsetColumn"
+                  id="offsetColumn"
+                  label="Offset Column"
+                  size="small"
+                  canDeselect={true}
+                  // eslint-disable-next-line react/jsx-no-bind
+                  // onChange={onColumnChange}
+                >
+                  {sqlColumns?.map((e) => (
+                    <MenuItem value={e.columnName}>{e.columnName}</MenuItem>
+                  ))}
+                </ReduxFormMultiSelect>
+              )}
             </>
           )}
+          {showPreview && (
+            <div className="preview-table">
+              {previewSQL.length > 0 && (
+                <Table
+                  columns={Object.keys(previewSQL[0]).map((e) => ({
+                    header: e,
+                    accessor: e,
+                  }))}
+                  rows={previewSQL}
+                  hidePagination
+                />
+              )}
+            </div>
+          )}
         </div>
-        {/* {showPreview && (
-          <div>
-            <table>
-              <tr>data</tr>
-            </table>
-          </div>
-        )} */}
       </Paper>
     </form>
   );
@@ -276,7 +318,15 @@ const ReduxForm = compose(
 const selector = formValueSelector("DataSetsFormSQL");
 const DataSetsFormSQL = connect((state) => ({
   initialValues: state.dataSets.formDataSQL, // pull initial values from account reducer
-  formValues: selector(state, "customSQLQuery"),
+  formValues: selector(
+    state,
+    "active",
+    "customSQLQuery",
+    "sQLQuery",
+    "tableName",
+    "dataType",
+    "offsetColumn"
+  ),
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
   defaultQuote: state.dataSets.defaultQuote,
@@ -284,6 +334,8 @@ const DataSetsFormSQL = connect((state) => ({
   defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
   datakind: state.dataSets.datakind?.records,
   sqlTables: state.dataSets.sqlTables,
+  sqlColumns: state.dataSets.sqlColumns,
+  previewSQL: state.dataSets.previewSQL,
 }))(ReduxForm);
 
 export default DataSetsFormSQL;

@@ -219,6 +219,10 @@ const DataFlowReducer = (state = initialState, action) =>
           rowdecreaseallowed,
           incremental,
           datasetid,
+          customsql_yn,
+          customsql,
+          offsetcolumn,
+          tbl_nm,
         } = datasetDetail;
         if (type) {
           newState.formData.fileType = type;
@@ -239,6 +243,13 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.loadType =
             incremental === "Y" ? "Incremental" : "Cumulative";
           newState.formData.datasetid = datasetid;
+        } else {
+          newState.formDataSQL.active = active === 1 ? true : false;
+          newState.formDataSQL.datasetName = mnemonic;
+          newState.formDataSQL.customSQLQuery = customsql_yn;
+          newState.formDataSQL.sQLQuery = customsql;
+          newState.formDataSQL.offsetColumn = offsetcolumn;
+          newState.formDataSQL.tableName = tbl_nm;
         }
         newState.selectedDataset = action.datasetDetail;
         break;
