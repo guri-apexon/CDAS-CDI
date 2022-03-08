@@ -43,6 +43,10 @@
   padding: 16px;
 }
 
+label + div[class^="MuiInput-formControl"] {
+  min-width: 200px;
+}
+
 .like-fixedbar {
   display: flex;
   justify-content: space-between;

@@ -26,8 +26,8 @@ import {
 } from "../../store/actions/DataSetsAction";
 import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
 import DataSetsForm from "./DataSetsForm";
-// import DataSetsFormSQL from "./DataSetsFormSQL";
-import JDBCForm from "./JDBCForm";
+import DataSetsFormSQL from "./DataSetsFormSQL";
+// import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
 
@@ -205,7 +205,8 @@ const Dataset = () => {
     if (locationType?.toLowerCase() === ("sftp" || "ftps")) {
       dispatch(submit("DataSetsForm"));
     } else {
-      jdbcRef.current.handleSubmit();
+      dispatch(submit("DataSetsFormSQL"));
+      // jdbcRef.current.handleSubmit();
     }
   };
 
@@ -328,24 +329,24 @@ const Dataset = () => {
               {value === 0 &&
                 locationType?.toLowerCase() !== "sftp" &&
                 locationType?.toLowerCase() !== "ftps" && (
-                  // <DataSetsFormSQL
-                  //   onChange={onChangeSql}
-                  //   defaultFields={{
-                  //     sql: customSql,
-                  //   }}
-                  //   loading={loading}
-                  //   onSubmit={onSubmit}
-                  // />
-                  <JDBCForm
-                    datapackageid={datapackageid}
-                    dataflowid={selectedDFId}
-                    datasetId={datasetId}
-                    isDatasetCreated={isDatasetCreated}
-                    selectedDataset={selectedDataset}
-                    dfTestFlag={dataFlowdetail.testflag}
-                    onChangeSql={onChangeSql}
-                    ref={jdbcRef}
+                  <DataSetsFormSQL
+                    onChange={onChangeSql}
+                    defaultFields={{
+                      sql: customSql,
+                    }}
+                    loading={loading}
+                    onSubmit={onSubmit}
                   />
+                  // <JDBCForm
+                  //   datapackageid={datapackageid}
+                  //   dataflowid={selectedDFId}
+                  //   datasetId={datasetId}
+                  //   isDatasetCreated={isDatasetCreated}
+                  //   selectedDataset={selectedDataset}
+                  //   dfTestFlag={dataFlowdetail.testflag}
+                  //   onChangeSql={onChangeSql}
+                  //   ref={jdbcRef}
+                  // />
                 )}
               {value === 1 && <ColumnsTab locationType={locationType} />}
               {value === 2 && <VLCTab />}
