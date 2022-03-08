@@ -320,6 +320,20 @@ content-type: application/json
 "action": "SYNC"
 }
 
+### hard delete DataFlow
+
+POST http://localhost:4001/v1/api/dataflow/hardDeleteNew HTTP/1.1
+content-type: application/json
+
+{
+"dataFlowId": "a0A0E000004k7m3UAA",
+"userId": "u1105372",
+"version": 2,
+"studyId": "",
+"dataFlowName": "",
+"fsrStatus": "Success"
+}
+
 ### Get VLC Data
 
 POST http://localhost:4001/v1/api/dataset/getVLCData HTTP/1.1

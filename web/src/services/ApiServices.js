@@ -132,10 +132,20 @@ export const dataflowSave = async (payload) => {
   }
 };
 
-export const hardDelete = async (dataFlowId) => {
+export const hardDelete = async (
+  dataFlowId,
+  dataFlowName,
+  version,
+  studyId,
+  fsrStatus
+) => {
   try {
     const res = await axios.post(`${baseURL}/${HARDDELETE}`, {
       dataFlowId,
+      dataFlowName,
+      version,
+      studyId,
+      fsrStatus,
       userId,
     });
     return res.data?.data || [];
