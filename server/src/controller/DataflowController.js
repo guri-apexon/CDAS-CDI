@@ -1156,14 +1156,16 @@ exports.hardDeleteNew = async (req, res) => {
     const q3 = await DB.executeQuery($q3, [
       dataFlowId,
       dataFlowName,
-      "Delete",
+      "delete",
       fsrStatus,
       userId,
       curDate,
       studyId,
       version,
     ]);
-    return apiResponse.successResponseWithData(res, "Operation success", q4);
+    return apiResponse.successResponseWithData(res, "Operation success", {
+      success: true,
+    });
   } catch (err) {
     Logger.error("catch :hardDeleteNew");
     Logger.error(err);

@@ -166,7 +166,7 @@ export default function DataflowTab({ updateData }) {
   };
 
   const handleHardDelete = async () => {
-    console.log("delete", selectedFlow);
+    // console.log("delete", selectedFlow);
     const { dataFlowId, dataFlowName, version, studyId, fsrStatus } =
       selectedFlow;
     const deleteStatus = await hardDelete(
@@ -176,7 +176,9 @@ export default function DataflowTab({ updateData }) {
       studyId,
       fsrStatus
     );
+    // console.log(deleteStatus);
     if (deleteStatus?.success) {
+      messageContext.showSuccessMessage("Dataflow deleted Successfully");
       await updateData();
     } else {
       messageContext.showErrorMessage("Something went Wrong");
