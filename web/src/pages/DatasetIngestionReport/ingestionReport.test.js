@@ -68,30 +68,44 @@ describe("DatasetIngestionReport", () => {
 
   it("check properties tab clicked", () => {
     const filterBtn = wrap.find("button#report-properties");
-    expect(filterBtn.length).toEqual(1);
-    filterBtn.simulate("click");
-    expect(wrap.find("h3").text()).toBe("Dataset Properties");
-    wrap.unmount();
+    setTimeout(() => {
+      expect(filterBtn.length).toEqual(1);
+      filterBtn.simulate("click");
+      expect(wrap.find("h3").text()).toBe("Dataset Properties");
+      wrap.unmount();
+    }, 100);
   });
 
-  //   it("check table available", () => {
-  //     const table = wrapper.find("table");
-  //     expect(table.exists()).toBeTruthy();
-  //     wrapper.unmount();
-  //   });
+  it("check table available", () => {
+    const filterBtn = wrap.find("button#report-transferlog");
+    setTimeout(() => {
+      expect(filterBtn.length).toEqual(1);
+      filterBtn.simulate("click");
+      expect(wrap.find("table").exists()).toBeTruthy();
+      wrap.unmount();
+    }, 100);
+  });
 
-  //   it("check Add Location button in Header", () => {
-  //     const { queryByText } = render(wrapper);
-  //     expect(queryByText("Add Location")).toBeTruthy();
-  //     wrapper.unmount();
-  //   });
+  it("check Add Download button in Header", () => {
+    const filterBtn = wrap.find("button#report-transferlog");
+    setTimeout(() => {
+      expect(filterBtn.length).toEqual(1);
+      filterBtn.simulate("click");
+      expect(wrap.find("Download").exists()).toBeTruthy();
+      wrap.unmount();
+    }, 100);
+  });
 
-  //   it("check filter button clicked in table", () => {
-  //     const filterBtn = wrapper.find("button#filterBtn");
-  //     setTimeout(() => {
-  //       expect(filterBtn.length).toEqual(1);
-  //       filterBtn.simulate("click");
-  //       expect(wrapper.find("input[[name='datasetname']").exists()).toBeTruthy();
-  //       wrapper.unmount();
-  //     });
+  it("check filter button clicked in table", () => {
+    const trlogBtn = wrap.find("button#report-transferlog");
+    setTimeout(() => {
+      expect(trlogBtn.length).toEqual(1);
+      trlogBtn.simulate("click");
+      const filterBtn = wrap.find("button#filterBtn");
+      expect(filterBtn.length).toEqual(1);
+      filterBtn.simulate("click");
+      expect(wrap.find("input[[name='FileName']").exists()).toBeTruthy();
+      wrap.unmount();
+    });
+  });
 });

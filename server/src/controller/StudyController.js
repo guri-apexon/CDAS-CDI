@@ -9,10 +9,6 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 exports.getUserStudyList = function (req, res) {
   try {
     const userId = req.params.userId;
-
-    // const query = `SELECT prot_id, protocolnumber, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
-    // FROM ${schemaName}.study_ingestion_dashboard WHERE usr_id = $1`;
-
     const newQuery = `SELECT prot_id, protocolnumber, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
     FROM cdascfg.study_ingestion_dashboard
     WHERE prot_id in (select prot_id from study_user where usr_id=$1)`;
@@ -270,8 +266,6 @@ ts.datasetname AS filenamingconvention ,
 ds.rowdecreaseallowed ,
 df.testflag AS testdataflow ,
 ds.staledays AS overridestalealert ,
-df.connectiontype ,
-df.connectiondriver,      
 ts.mnemonicfile,
 ts.processtype,
 ts.downloadstatus,
@@ -325,7 +319,7 @@ cteTrnx.childstatus,
 cteTrnx.errmsg ,
 ctefile.filestagedate AS lastFileTransferred ,
 CASE WHEN dp.NOPACKAGECONFIG = 0 THEN cteFile.packagename END AS packagename ,
-CASE WHEN df.connectiontype NOT IN ('SFTP','FTPS') THEN ds.name ELSE cteFile.filename END AS filename,
+CASE WHEN sl.loc_typ NOT IN ('SFTP','FTPS') THEN ds.name ELSE cteFile.filename END AS filename,
 case when (ds.incremental = 'true' or ds.incremental = 'Y') or columnDef.columncount > 0 then 'Incremental' else 'Full' end as loadType
 FROM protocol p
 INNER JOIN
@@ -351,6 +345,7 @@ AND cteTrnx.datapackageid = ts.datapackageid
 AND ctetrnx.datasetid = ts.datasetid
 left join checkSum dc 
 on cteTrnx.executionid = dc.executionid
+LEFT JOIN source_location sl ON df.dataflowid::text = sl.src_loc_id::text
 LEFT JOIN cteFile 
   ON cteTrnx.dataflowid = cteFile.dataflowid
   AND cteTrnx.executionid = cteFile.executionid

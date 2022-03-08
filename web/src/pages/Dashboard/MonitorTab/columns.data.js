@@ -25,7 +25,7 @@ import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg
 import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
 import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
 import "../Dashboard.scss";
-import { IntegerFilter } from "../../../utils/index";
+import { dateFilterCustom, IntegerFilter } from "../../../utils/index";
 
 const DateFilter = ({ accessor, filters, updateFilterValue }) => {
   return (
@@ -414,7 +414,7 @@ const columns = [
     accessor: "lastfiletransferred",
     sortFunction: compareDates,
     customCell: DateCell,
-    filterFunction: dateFilterV2("lastfiletransferred"),
+    filterFunction: dateFilterCustom("lastfiletransferred"),
     filterComponent: DateFilter,
   },
 ];
