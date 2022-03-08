@@ -34,9 +34,9 @@ exports.getStudyDataflows = async (req, res) => {
       const $q1 = await DB.executeQuery(query, [protocolId]);
 
       const formatDateValues = await $q1.rows.map((e) => {
-        let editT = moment(e.lastModified).format("MM/DD/YYYY");
-        let addT = moment(e.dateCreated).format("MM/DD/YYYY");
-        let syncT = moment(e.lastSyncDate).format("MM/DD/YYYY");
+        let editT = moment(e.lastModified).format("DD-MMM-YYYY");
+        let addT = moment(e.dateCreated).format("DD-MMM-YYYY");
+        let syncT = moment(e.lastSyncDate).format("DD-MMM-YYYY");
         let status = e.status === 0 ? "Inactive" : "Active";
         let dfType = e.type === 0 ? "Production" : "Test";
         return {
@@ -1057,5 +1057,52 @@ exports.fetchdataflowDetails = async (req, res) => {
     Logger.error("catch :fetchdataflowDetails");
     Logger.error(error);
     return apiResponse.ErrorResponse(res, error);
+  }
+};
+
+exports.hardDeleteNew = async (req, res) => {
+  try {
+    const { dataFlowId, userId } = req.body;
+    const curDate = helper.getCurrentTime();
+    const $q0 = `SELECT max ("version") from ${schemaName}.dataflow_version WHERE dataflowid = $1`;
+    const $q1 = `SELECT "name", prot_id, from ${schemaName}.dataflow WHERE dataflowid = $1`;
+    const $q2 = `UPDATE ${schemaName}.dataflow SET updt_tm=$2, del_flg=$3 WHERE dataflowid=$1`;
+    const $q3 = `INSERT INTO ${schemaName}.dataflow_action (df_id, df_nm, action_typ, df_status, action_usr, insrt_tmstmp, updt_tmstmp, prot_id, df_versn)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+    const $q4 = `INSERT INTO cdascfg.dataflow_audit_log
+    (dataflowid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    `;
+
+    Logger.info({ message: "hardDeleteNew" });
+    const q0 = await DB.executeQuery($q0, [dataFlowId]);
+    const q1 = await DB.executeQuery($q1, [dataFlowId]);
+    const q2 = await DB.executeQuery($q2, [dataFlowId, curDate, 1]);
+    const q3 = await DB.executeQuery($q3, [
+      dataFlowId,
+      q1[0].name,
+      "Delete",
+      "Success",
+      userId,
+      curDate,
+      curDate,
+      q1[0].prot_id,
+      q0[0].max,
+    ]);
+    const q4 = await DB.executeQuery($q4, [
+      dataFlowId,
+      q0[0].max,
+      "del_flg",
+      null,
+      1,
+      userId,
+      curDate,
+    ]);
+
+    return apiResponse.successResponseWithData(res, "Operation success", q4);
+  } catch (err) {
+    Logger.error("catch :hardDeleteNew");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
   }
 };
