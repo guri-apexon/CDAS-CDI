@@ -29,7 +29,7 @@ export function* fetchProperties(action) {
   try {
     const fetchData = yield call(
       axios.get,
-      `${baseURL}/${INGESTIONREPORTAPI}/properties/${action.datasetId}`
+      `${baseURL}/${INGESTIONREPORTAPI}/metrics/${action.datasetId}`
     );
     yield put({
       type: FETCH_DATASET_PROPERTIES_SUCCESS,

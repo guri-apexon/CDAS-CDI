@@ -113,7 +113,7 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
   try {
     const id = req.params.datasetid;
     const userId = req.headers["userid"];
-    const searchQuery = `SELECT "DatasetName", "Vendor", "TransferDate", "FileName", datasetname, "FileTransferStatus", "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords", "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate", "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue", "DownloadStart", "ProcessStart", "VendorContactInformation", "DateLastChecked", "DateofLastSuccessfulProcess", "ExpectedDateofNextTransfer", "ExpectedTransferFrequency", "SourceOrigin", "DataFlowName", "DataPackageNamingConvention", incincremental, postingestionissues, recordswithissues, total_records, incpostingestionissues, increcordswithissues, inctotal_records, inctotalincrementalfilestransferred, incfiles_not_ingested, incfileswithissues, inctotalfilesingested, fst_prd_file_recvd, dataflowid, datapackageid, datasetid from ${schemaName}.dataset_stat_current 
+    const searchQuery = `SELECT "DatasetName", "Vendor",vend_id, "TransferDate", "FileName", datasetname, "FileTransferStatus", "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords", "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate", "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue", "DownloadStart", "ProcessStart", "VendorContactInformation", "DateLastChecked", "DateofLastSuccessfulProcess", "ExpectedDateofNextTransfer", "ExpectedTransferFrequency", "SourceOrigin", "DataFlowName", "DataPackageNamingConvention", incincremental, postingestionissues, recordswithissues, total_records, incpostingestionissues, increcordswithissues, inctotal_records, inctotalincrementalfilestransferred, incfiles_not_ingested, incfileswithissues, inctotalfilesingested, fst_prd_file_recvd, dataflowid, datapackageid, datasetid, "DatasetStatus" from ${schemaName}.dataset_stat_current 
                 WHERE datasetid = $1`;
     Logger.info({
       message: "getDatasetIngestionReportMetrics",
@@ -134,6 +134,21 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
             filesNotIngested: records.incfiles_not_ingested,
             filesWithIssues: records.incfileswithissues,
             totalFileIngested: records.inctotalfilesingested,
+            vend_id: records.vend_id,
+            Vendor: records.Vendor,
+            VendorContactInformation: records.VendorContactInformation,
+            DateLastChecked: records.DateLastChecked,
+            DateofLastSuccessfulProcess: records.DateofLastSuccessfulProcess,
+            ExpectedDateofNextTransfer: records.ExpectedDateofNextTransfer,
+            ExpectedTransferFrequency: records.ExpectedTransferFrequency,
+            SourceOrigin: records.SourceOrigin,
+            dataflowid: records.dataflowid,
+            DataFlowName: records.DataFlowName,
+            datapackageid: records.datapackageid,
+            FileName: records.FileName,
+            DataPackageNamingConvention: records.DataPackageNamingConvention,
+            DatasetStatus: records.DatasetStatus,
+            DatasetName: records.DatasetName,
           };
         } else if (records && records.LoadType === "Full") {
           metrics = {
@@ -144,6 +159,21 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
             totalRecords: records.total_records,
             newRecords: records.NewRecords,
             modifiedRecords: records.ModifiedRecords,
+            vend_id: records.vend_id,
+            Vendor: records.Vendor,
+            VendorContactInformation: records.VendorContactInformation,
+            DateLastChecked: records.DateLastChecked,
+            DateofLastSuccessfulProcess: records.DateofLastSuccessfulProcess,
+            ExpectedDateofNextTransfer: records.ExpectedDateofNextTransfer,
+            ExpectedTransferFrequency: records.ExpectedTransferFrequency,
+            SourceOrigin: records.SourceOrigin,
+            dataflowid: records.dataflowid,
+            DataFlowName: records.DataFlowName,
+            datapackageid: records.datapackageid,
+            FileName: records.FileName,
+            DataPackageNamingConvention: records.DataPackageNamingConvention,
+            DatasetStatus: records.DatasetStatus,
+            DatasetName: records.DatasetName,
           };
         }
         await createTemporaryLog(
