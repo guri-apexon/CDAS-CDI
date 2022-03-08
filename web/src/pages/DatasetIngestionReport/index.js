@@ -14,6 +14,7 @@ import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import Divider from "apollo-react/components/Divider";
 import Tag from "apollo-react/components/Tag";
 import CheckIcon from "apollo-react-icons/Check";
+import Tooltip from "apollo-react/components/Tooltip";
 import ClockIcon from "apollo-react-icons/Clock";
 
 import Metrics from "./metrics";
@@ -140,8 +141,15 @@ const DatasetIngestionReport = () => {
               </Typography>
             </div>
             <div className="flex right_title">
-              {getDatasetStatus(datasetProperties?.DatasetStatus)}
-              <ClockIcon className="clockIcon" />
+              <Tooltip title="Current Status of Dataset" placement="top">
+                <span
+                  className="datasetStatus"
+                  style={{ display: "flex", alignItems: "center" }}
+                >
+                  {getDatasetStatus(datasetProperties?.DatasetStatus)}
+                  <ClockIcon className="clockIcon" />
+                </span>
+              </Tooltip>
             </div>
           </div>
           <Typography variant="title1" gutterBottom>

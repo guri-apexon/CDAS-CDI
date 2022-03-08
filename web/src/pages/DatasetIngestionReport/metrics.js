@@ -1,22 +1,25 @@
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-script-url */
-import React from "react";
+import React, { useRef, useState } from "react";
 import Hero from "apollo-react/components/Hero";
 import Grid from "apollo-react/components/Grid";
-import DataVizCard from "apollo-react/components/DataVizCard";
-import DonutChartV2 from "apollo-react/components/DonutChartV2";
-import BarChart from "apollo-react/components/BarChart";
 import BulletChart from "apollo-react/components/BulletChart";
 import Typography from "apollo-react/components/Typography";
-import Link from "apollo-react/components/Link";
-import Divider from "apollo-react/components/Divider";
+import MenuItem from "apollo-react/components/MenuItem";
+import SelectButton from "apollo-react/components/SelectButton";
+import Paper from "apollo-react/components/Box";
+import Button from "apollo-react/components/Button";
+import DateRangePicker from "apollo-react/components/DateRangePickerV2";
+import Popper from "apollo-react/components/Popper";
+import CummulativeSummary from "./metricsSummary/cummulativeSummary";
+import IncrementalSummary from "./metricsSummary/incrementalSummary";
+import IngestionIssuesModal from "./metricsSummary/ingestionIssuesModal";
 
 const Metrics = ({ datasetProperties }) => {
-  const data = [
-    { type: "New Records", a: 25 },
-    { type: "Modified Records", a: 15 },
-  ];
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const selectRef = useRef();
   const historyData = [
     { filename: "File Name1", yield: [200, 400, 600] },
     { filename: "File Name2", yield: [300, 100, 500] },
@@ -27,6 +30,37 @@ const Metrics = ({ datasetProperties }) => {
 
   const legendLabels = ["New", "Modified", "Unchanged"];
 
+  const selectChangeView = (val) => {
+    console.log(selectRef.current, "selectRef");
+    if (val === "custom") {
+      setAnchorEl(!anchorEl ? selectRef.current : null);
+    } else {
+      setAnchorEl(null);
+    }
+  };
+
+  const MetricsSubtitle = () => {
+    if (datasetProperties?.LoadType?.toLowerCase() === "incremental") {
+      return (
+        <>
+          <Typography darkMode style={{ lineHeight: "24px" }}>
+            60 Total incremental files transfered
+          </Typography>
+        </>
+      );
+    }
+    return (
+      <>
+        <Typography style={{ lineHeight: "24px" }} darkMode>
+          When there is no data to display
+        </Typography>
+        <Typography variant="body2" darkMode>
+          12-Apr-2021 / 3:00 pm
+        </Typography>
+      </>
+    );
+  };
+
   return (
     <div className="ingestion-report-metrics">
       <Hero
@@ -35,111 +69,92 @@ const Metrics = ({ datasetProperties }) => {
             File transfer summary
           </Typography>
         }
-        subtitle={
-          <>
-            <Typography darkMode>When there is no data to display</Typography>
-            <Typography variant="body2" darkMode>
-              12-Apr-2021 / 3:00 pm
-            </Typography>
-          </>
-        }
+        subtitle={<MetricsSubtitle />}
         className="file-transfer-kpi"
       >
-        <div className="summary-body">
-          <div className="post-ingestion-issues">
-            <Typography variant="h2" gutterBottom darkMode>
-              2200
-            </Typography>
-            <Typography gutterBottom darkMode style={{ marginBottom: 32 }}>
-              Post Ingestion Issues
-            </Typography>
-            <Link
-              onClick={() => console.log("link clicked")}
-              style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
-            >
-              View issue types
-            </Link>
-            <Divider type="axis" className="divider-dotted" />
-          </div>
-          <div className="records-with-issues">
-            <DonutChartV2
-              className="records-with-issue-chart"
-              percent={50}
-              stroke="#fff"
-              width={162}
-              height={168}
-              style={{ width: 162, height: 168, paddingTop: 0 }}
-              subtitle={
-                <>
-                  <Typography
-                    gutterBottom
-                    darkMode
-                    style={{
-                      marginBottom: 2,
-                      fontSize: 34,
-                      fontWeight: 600,
-                      lineHeight: "56px",
-                      position: "relative",
-                      top: 35,
-                    }}
-                  >
-                    1000
-                  </Typography>
-                  <Typography
-                    gutterBottom
-                    darkMode
-                    style={{
-                      marginBottom: 2,
-                      fontSize: 16,
-                      lineHeight: "18px",
-                      position: "relative",
-                      top: 28,
-                      right: "-32px",
-                      width: 97,
-                    }}
-                  >
-                    Records with Issues
-                  </Typography>
-                </>
-              }
-            />
-            <div className="right-se">
-              <Typography gutterBottom darkMode style={{ marginBottom: 14 }}>
-                2,000 Total Records
-              </Typography>
-              <Link
-                onClick={() => console.log("link clicked")}
-                style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
-              >
-                View issues in file
-              </Link>
-              <Divider type="axis" className="divider-dotted" />
-            </div>
-          </div>
-          <div className="barchart-records">
-            <Typography
-              variant="body2"
-              style={{ marginBottom: 20, width: 246 }}
-              darkMode
-            >
-              Number of Records Changed by status from Previous Transfer
-            </Typography>
-            <BarChart suffix="%" data={data} width={308} height={250} />
-          </div>
-        </div>
+        {datasetProperties?.LoadType?.toLowerCase() !== "incremental" && (
+          <CummulativeSummary
+            setModalOpen={() => setModalOpen(true)}
+            datasetProperties={datasetProperties}
+          />
+        )}
+        {datasetProperties?.LoadType?.toLowerCase() === "incremental" && (
+          <IncrementalSummary
+            setModalOpen={() => setModalOpen(true)}
+            datasetProperties={datasetProperties}
+          />
+        )}
+        <IngestionIssuesModal
+          open={modalOpen}
+          handleClose={() => setModalOpen(false)}
+        />
       </Hero>
-      <Grid
-        container
-        spacing={3}
-        style={{ padding: "12px 24px 24px 24px", backgroundColor: "#f8f9fb" }}
-      >
+      <Grid container style={{ padding: 24, backgroundColor: "#f8f9fb" }}>
         <Grid item xs={12}>
-          <DataVizCard
-            title="File Transfer History"
-            subtitle="500 total files transfered"
+          <Paper
+            style={{ padding: 24, backgroundColor: "#fff" }}
+            id="filehistory-box"
           >
-            <BulletChart data={historyData} legendLabels={legendLabels} />
-          </DataVizCard>
+            <div className="panel-header">
+              <div className="left-part">
+                <Typography
+                  variant="title1"
+                  style={{ fontSize: 16, marginTop: 0 }}
+                >
+                  File Transfer History
+                </Typography>
+                <Typography
+                  variant="body2"
+                  style={{ fontSize: 14, marginTop: 0 }}
+                >
+                  500 total files transfered
+                </Typography>
+              </div>
+              <div className="right-part">
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <Typography
+                    variant="body2"
+                    style={{ fontSize: 14, marginRight: 10 }}
+                  >
+                    Change View:
+                  </Typography>
+                  <SelectButton
+                    placeholder="Within past 10 days"
+                    style={{ marginRight: 10 }}
+                    onChange={selectChangeView}
+                    ref={selectRef}
+                  >
+                    <MenuItem value="10">Within past 10 days</MenuItem>
+                    <MenuItem value="20">Within past 30 days</MenuItem>
+                    <MenuItem value="custom">Custom date range</MenuItem>
+                  </SelectButton>
+                </div>
+                {/* <Popper open={true} anchorEl={anchorEl}>
+                  <DateRangePicker
+                    size="small"
+                    helperText="Select a start and end date"
+                  />
+                </Popper> */}
+                <div>
+                  <Typography
+                    variant="body2"
+                    style={{ fontSize: 14, marginTop: 14 }}
+                  >
+                    Expected transfer frequency: Every 2 days
+                  </Typography>
+                </div>
+              </div>
+            </div>
+            <div className="panel-body">
+              <BulletChart data={historyData} legendLabels={legendLabels} />
+              <Button
+                size="small"
+                style={{ marginTop: 27, marginLeft: "-3px" }}
+              >
+                Load More
+              </Button>
+            </div>
+          </Paper>
         </Grid>
       </Grid>
     </div>
