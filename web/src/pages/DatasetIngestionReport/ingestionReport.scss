@@ -74,6 +74,10 @@
         margin-top: 85px;
         margin-left: 40px;
         text-align: center;
+        a:hover {
+          text-decoration: none !important;
+          border-bottom: none;
+        }
       }
     }
     .records-with-issue-chart {
