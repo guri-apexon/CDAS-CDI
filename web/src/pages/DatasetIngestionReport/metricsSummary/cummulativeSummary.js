@@ -1,0 +1,100 @@
+/* eslint-disable react/jsx-wrap-multilines */
+/* eslint-disable jsx-a11y/anchor-is-valid */
+import React from "react";
+import DonutChartV2 from "apollo-react/components/DonutChartV2";
+import BarChart from "apollo-react/components/BarChart";
+import Typography from "apollo-react/components/Typography";
+import Link from "apollo-react/components/Link";
+import Divider from "apollo-react/components/Divider";
+
+const CummulativeSummary = ({ datasetProperties, setModalOpen }) => {
+  const data = [
+    { type: "New Records", a: 25 },
+    { type: "Modified Records", a: 15 },
+  ];
+  return (
+    <div className="summary-body">
+      <div className="post-ingestion-issues">
+        <Typography variant="h2" gutterBottom darkMode>
+          2200
+        </Typography>
+        <Typography gutterBottom darkMode style={{ marginBottom: 32 }}>
+          Post Ingestion Issues
+        </Typography>
+        <Link
+          onClick={() => setModalOpen(true)}
+          style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
+        >
+          View issue types
+        </Link>
+        <Divider type="axis" className="divider-dotted" />
+      </div>
+      <div className="records-with-issues">
+        <DonutChartV2
+          className="records-with-issue-chart"
+          percent={50}
+          stroke="#fff"
+          width={162}
+          height={168}
+          style={{ width: 162, height: 168, paddingTop: 0 }}
+          subtitle={
+            <>
+              <Typography
+                gutterBottom
+                darkMode
+                style={{
+                  marginBottom: 2,
+                  fontSize: 34,
+                  fontWeight: 600,
+                  lineHeight: "56px",
+                  position: "relative",
+                  top: 35,
+                }}
+              >
+                1000
+              </Typography>
+              <Typography
+                gutterBottom
+                darkMode
+                style={{
+                  marginBottom: 2,
+                  fontSize: 16,
+                  lineHeight: "18px",
+                  position: "relative",
+                  top: 28,
+                  right: "-32px",
+                  width: 97,
+                }}
+              >
+                Records with Issues
+              </Typography>
+            </>
+          }
+        />
+        <div className="right-se">
+          <Typography gutterBottom darkMode style={{ marginBottom: 14 }}>
+            2,000 Total Records
+          </Typography>
+          <Link
+            onClick={() => console.log("link clicked")}
+            style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
+          >
+            View issues in file
+          </Link>
+          <Divider type="axis" className="divider-dotted" />
+        </div>
+      </div>
+      <div className="barchart-records">
+        <Typography
+          variant="body2"
+          style={{ marginBottom: 20, width: 246 }}
+          darkMode
+        >
+          Number of Records Changed by status from Previous Transfer
+        </Typography>
+        <BarChart suffix="%" data={data} width={308} height={250} />
+      </div>
+    </div>
+  );
+};
+export default CummulativeSummary;
