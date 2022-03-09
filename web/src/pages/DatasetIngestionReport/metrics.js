@@ -93,7 +93,7 @@ const Metrics = ({ datasetProperties, issuetypes }) => {
           />
         )}
         {datasetProperties?.loadType?.toLowerCase() === "incremental" && (
-          <CummulativeSummary
+          <IncrementalSummary
             setModalOpen={() => setModalOpen(true)}
             datasetProperties={datasetProperties}
           />

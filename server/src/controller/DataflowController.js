@@ -300,7 +300,7 @@ exports.createDataflow = async (req, res) => {
                 const dsUid = createUniqueID();
                 let DSQuery = `insert into ${schemaName}.dataset(datasetid,datapackageid,datakindid,mnemonic,columncount,incremental,
                             offsetcolumn,type,path,ovrd_stale_alert,headerrownumber,footerrownumber,customsql,
-                            customsql_query,tbl_nm,externalid,insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`;
+                            customsql_yn,tbl_nm,externalid,insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`;
                 let body = [
                   dsUid,
                   dpUid,
@@ -1051,8 +1051,8 @@ exports.fetchdataflowDetails = async (req, res) => {
             let datasetObj = {
               columncount: el.columncount,
               externalID: el.externalid,
-              customQuery: el.customsql,
-              customSql: el.customsql_query,
+              customQuery: el.customsql_yn,
+              customSql: el.customsql,
               tableName: el.tbl_nm,
               incremental: el.incremental,
               offsetColumn: el.offsetcolumn,
