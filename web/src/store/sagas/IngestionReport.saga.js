@@ -3,6 +3,10 @@ import { put, call } from "redux-saga/effects";
 import axios from "axios";
 import {
   baseURL,
+  FETCH_DATASET_INGESTION_FILE_HISTORY_FAILURE,
+  FETCH_DATASET_INGESTION_FILE_HISTORY_SUCCESS,
+  FETCH_DATASET_INGESTION_ISSUE_TYPES_FAILURE,
+  FETCH_DATASET_INGESTION_ISSUE_TYPES_SUCCESS,
   FETCH_DATASET_PROPERTIES_FAILURE,
   FETCH_DATASET_PROPERTIES_SUCCESS,
   FETCH_TRANSFER_LOG_FAILURE,
@@ -37,5 +41,41 @@ export function* fetchProperties(action) {
     });
   } catch (e) {
     yield put({ type: FETCH_DATASET_PROPERTIES_FAILURE, message: e.message });
+  }
+}
+
+export function* fetchDatasetIngestionIssueTypes(action) {
+  try {
+    const fetchData = yield call(
+      axios.get,
+      `${baseURL}/${INGESTIONREPORTAPI}/issuetypes/${action.datasetId}`
+    );
+    yield put({
+      type: FETCH_DATASET_INGESTION_ISSUE_TYPES_SUCCESS,
+      issuetypes: fetchData.data?.data || [],
+    });
+  } catch (e) {
+    yield put({
+      type: FETCH_DATASET_INGESTION_ISSUE_TYPES_FAILURE,
+      message: e.message,
+    });
+  }
+}
+
+export function* fetchDatasetIngestionFileHistory(action) {
+  try {
+    const fetchData = yield call(
+      axios.get,
+      `${baseURL}/${INGESTIONREPORTAPI}/transferhistory/${action.datasetId}`
+    );
+    yield put({
+      type: FETCH_DATASET_INGESTION_FILE_HISTORY_SUCCESS,
+      filehistory: fetchData.data?.data || [],
+    });
+  } catch (e) {
+    yield put({
+      type: FETCH_DATASET_INGESTION_FILE_HISTORY_FAILURE,
+      message: e.message,
+    });
   }
 }

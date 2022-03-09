@@ -1,7 +1,9 @@
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-script-url */
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
+import { useParams } from "react-router";
 import Hero from "apollo-react/components/Hero";
 import Grid from "apollo-react/components/Grid";
 import BulletChart from "apollo-react/components/BulletChart";
@@ -15,11 +17,14 @@ import Popper from "apollo-react/components/Popper";
 import CummulativeSummary from "./metricsSummary/cummulativeSummary";
 import IncrementalSummary from "./metricsSummary/incrementalSummary";
 import IngestionIssuesModal from "./metricsSummary/ingestionIssuesModal";
+import { getDatasetIngestionFileHistory } from "../../store/actions/IngestionReportAction";
 
-const Metrics = ({ datasetProperties }) => {
+const Metrics = ({ datasetProperties, issuetypes }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const selectRef = useRef();
+  const dispatch = useDispatch();
+  const { datasetId } = useParams();
   const historyData = [
     { filename: "File Name1", yield: [200, 400, 600] },
     { filename: "File Name2", yield: [300, 100, 500] },
@@ -39,12 +44,21 @@ const Metrics = ({ datasetProperties }) => {
     }
   };
 
+  const getFileHistoryData = () => {
+    dispatch(getDatasetIngestionFileHistory(datasetId));
+  };
+
+  useEffect(() => {
+    getFileHistoryData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const MetricsSubtitle = () => {
-    if (datasetProperties?.LoadType?.toLowerCase() === "incremental") {
+    if (datasetProperties?.loadType?.toLowerCase() === "incremental") {
       return (
         <>
           <Typography darkMode style={{ lineHeight: "24px" }}>
-            60 Total incremental files transfered
+            {`${datasetProperties?.totalIncrementalFileTransferred} Total incremental files transfered`}
           </Typography>
         </>
       );
@@ -72,14 +86,14 @@ const Metrics = ({ datasetProperties }) => {
         subtitle={<MetricsSubtitle />}
         className="file-transfer-kpi"
       >
-        {datasetProperties?.LoadType?.toLowerCase() !== "incremental" && (
+        {datasetProperties?.loadType?.toLowerCase() !== "incremental" && (
           <CummulativeSummary
             setModalOpen={() => setModalOpen(true)}
             datasetProperties={datasetProperties}
           />
         )}
-        {datasetProperties?.LoadType?.toLowerCase() === "incremental" && (
-          <IncrementalSummary
+        {datasetProperties?.loadType?.toLowerCase() === "incremental" && (
+          <CummulativeSummary
             setModalOpen={() => setModalOpen(true)}
             datasetProperties={datasetProperties}
           />
@@ -87,6 +101,7 @@ const Metrics = ({ datasetProperties }) => {
         <IngestionIssuesModal
           open={modalOpen}
           handleClose={() => setModalOpen(false)}
+          issuetypes={issuetypes}
         />
       </Hero>
       <Grid container style={{ padding: 24, backgroundColor: "#f8f9fb" }}>
@@ -140,7 +155,7 @@ const Metrics = ({ datasetProperties }) => {
                     variant="body2"
                     style={{ fontSize: 14, marginTop: 14 }}
                   >
-                    Expected transfer frequency: Every 2 days
+                    {`Expected transfer frequency: ${datasetProperties?.ExpectedTransferFrequency}`}
                   </Typography>
                 </div>
               </div>

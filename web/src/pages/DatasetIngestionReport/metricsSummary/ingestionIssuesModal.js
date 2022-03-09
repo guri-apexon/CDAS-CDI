@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "apollo-react/components/Modal";
 import Table, {
   compareStrings,
   compareNumbers,
 } from "apollo-react/components/Table";
 
-const IngestionIssuesModal = ({ open, handleClose }) => {
+const IngestionIssuesModal = ({ open, handleClose, issuetypes }) => {
+  const [rows, setRows] = useState([]);
+  const [totalCount, setTotalCount] = useState("");
   const columns = [
     {
       header: "Ingestion Issue Type",
@@ -18,23 +20,33 @@ const IngestionIssuesModal = ({ open, handleClose }) => {
       accessor: "no_issues",
     },
   ];
-  const rows = [
-    {
-      issue_type: "LOV issues",
-      no_issues: 14,
-    },
-    {
-      issue_type: "LOV issues",
-      no_issues: 14,
-    },
-  ];
+  // console.log(issuetypes, "issuetypes");
+
+  useEffect(() => {
+    if (issuetypes) {
+      const records = issuetypes?.records?.map((rec) => ({
+        ...rec,
+        issue_type:
+          rec?.incremental?.toLowerCase() === "y"
+            ? rec.incrementalIssueType
+            : rec.cumIngestionIssueType,
+        no_issues:
+          rec?.incremental?.toLowerCase() === "y"
+            ? rec.incrementalTotalIssues
+            : rec.cumTotalNoOfIssuess,
+      }));
+      setRows(records);
+      setTotalCount(issuetypes.totalSize);
+    }
+  }, [issuetypes]);
+
   return (
     <div>
       <Modal
         open={open}
         onClose={() => handleClose()}
         title="Types of Ingestion Issues"
-        subtitle="10 Ingestion Issue Types"
+        subtitle={`${totalCount} Ingestion Issue Types`}
         style={{ minWidth: 440 }}
         buttonProps={[
           { label: "Close", onClick: handleClose, variant: "primary" },
