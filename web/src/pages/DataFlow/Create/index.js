@@ -1,6 +1,6 @@
 /* eslint-disable no-script-url */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -192,9 +192,8 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
     setCurrentStep((step) => step + 1);
   };
 
-  const AddDatasetData = (packageid) => {
-    console.log("AddDatasetData", packageid);
-    dispatch(submit("DataSetsForm"));
+  const AddDatasetData = (datasetObj) => {
+    console.log("AddDatasetData", selectedDatapackage, datasetObj);
     // const newForm = { ...myform };
     // const datasetID = uuidv4();
     // const index = newForm.DataPackage.findIndex((r) => r.id === packageid);
@@ -210,6 +209,12 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
     // newForm.DataPackage[index].datasets.push(obj);
     // setForm(newForm);
   };
+  useEffect(() => {
+    if (messageContext?.dataflowObj?.dataset) {
+      const datasetObj = messageContext?.dataflowObj?.dataset || {};
+      AddDatasetData(datasetObj);
+    }
+  }, [messageContext?.dataflowObj?.dataset]);
   const backStep = () => {
     setCurrentStep((step) => step - 1);
   };
@@ -223,7 +228,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         AddDatapackage();
         break;
       case 3:
-        AddDatasetData(selectedDatapackage);
+        messageContext?.setDataflow({ datasetSubmit: true });
         break;
       default:
         break;
@@ -270,7 +275,13 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         );
         break;
       case 3:
-        formEl = <DataSet myform={myform} getDataSetValue={getDataSetValue} />;
+        formEl = (
+          <DataSet
+            myform={myform}
+            datapackageid={selectedDatapackage}
+            getDataSetValue={getDataSetValue}
+          />
+        );
         break;
       default:
         formEl = (

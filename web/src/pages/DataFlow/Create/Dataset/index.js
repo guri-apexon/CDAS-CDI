@@ -87,7 +87,8 @@ const styles = {
     marginBottom: "8px",
   },
 };
-const Dataset = () => {
+const Dataset = (props) => {
+  const { datapackageid } = props;
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
@@ -102,8 +103,7 @@ const Dataset = () => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
   //   const { selectedDFId } = dashboard;
-  const { dataflowName, datapackageid, datapackageName, datasetName } =
-    selectedDSDetails;
+  const { dataflowName, datapackageName, datasetName } = selectedDSDetails;
   const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
     dataSets;
   const { dataFlowdetail } = dataFlow;
@@ -188,24 +188,6 @@ const Dataset = () => {
     }
   };
 
-  const breadcrumbItems = [
-    { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
-    {
-      href: "javascript:void(0)",
-      title: dataflowName ?? "Dataflow Name",
-      onClick: goToDataflow,
-    },
-    {
-      href: "javascript:void(0)",
-      title: datapackageName ?? "Datapackage Name",
-      onClick: gotoDataPackage,
-    },
-    {
-      href: "#",
-      title: datasetName ?? "Create Dataset",
-    },
-  ];
-
   const jdbcRef = useRef();
 
   const submitForm = () => {
@@ -272,14 +254,6 @@ const Dataset = () => {
           {value === 0 &&
             locationType?.toLowerCase() !== "sftp" &&
             locationType?.toLowerCase() !== "ftps" && (
-              // <DataSetsFormSQL
-              //   onChange={onChangeSql}
-              //   defaultFields={{
-              //     sql: customSql,
-              //   }}
-              //   loading={loading}
-              //   onSubmit={onSubmit}
-              // />
               <JDBCForm
                 datapackageid={datapackageid}
                 dataflowid="123abc"

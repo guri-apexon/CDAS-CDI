@@ -117,6 +117,10 @@ const DataSetsFormBase = (props) => {
       dispatch(change("DataSetsForm", "loadType", defaultLoadType));
     }
   };
+  const submitForm = () => {
+    console.log("submitForm");
+    handleSubmit();
+  };
 
   useEffect(() => {
     if (values?.clinicalDataType) {
@@ -137,7 +141,7 @@ const DataSetsFormBase = (props) => {
   }, [values]);
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={submitForm}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
         <div className={classes.section}>
           <FixedBar

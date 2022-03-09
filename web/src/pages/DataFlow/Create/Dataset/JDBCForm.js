@@ -223,6 +223,7 @@ const JDBCForm = forwardRef((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     handleSubmit() {
+      console.log("useImperativeHandle");
       if (datasetId === "new") {
         dispatch(
           saveDatasetData({
@@ -277,7 +278,26 @@ const JDBCForm = forwardRef((props, ref) => {
   const noRecordsFound = () => {
     messageContext.showErrorMessage(`No records found.`);
   };
-
+  useEffect(() => {
+    if (messageContext?.dataflowObj?.datasetSubmit) {
+      console.log("datasetSubmit", messageContext.dataflowObj);
+      messageContext?.setDataflow({
+        datasetSubmit: false,
+        dataset: {
+          datapackageid,
+          datasetName,
+          active: dsActive,
+          incremental: dataType,
+          clinicalDataType,
+          customSQLQuery: isCustomSQL,
+          sQLQuery,
+          tableName,
+          offsetColumn,
+          dfTestFlag,
+        },
+      });
+    }
+  }, [messageContext?.dataflowObj?.datasetSubmit]);
   return (
     <form className="jdbc-form">
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
