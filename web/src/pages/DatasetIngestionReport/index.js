@@ -24,7 +24,10 @@ import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.s
 import { ReactComponent as StaleIcon } from "../../components/Icons/Stale.svg";
 import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
 import "./ingestionReport.scss";
-import { getDatasetProperties } from "../../store/actions/IngestionReportAction";
+import {
+  getDatasetProperties,
+  getDatasetIngestionIssueTypes,
+} from "../../store/actions/IngestionReportAction";
 import { updateSelectedDataflow } from "../../store/actions/DashboardAction";
 
 const getDatasetStatus = (status) => {
@@ -92,9 +95,13 @@ const getDatasetStatus = (status) => {
 const DatasetIngestionReport = () => {
   const history = useHistory();
   const dispatch = useDispatch();
-  const { datasetProperties, loading } = useSelector(
-    (state) => state.ingestionReports
-  );
+  const {
+    datasetProperties,
+    loading,
+    issuetypeloading,
+    historyloading,
+    issuetypes,
+  } = useSelector((state) => state.ingestionReports);
   const [tabvalue, setTabValue] = useState(0);
   const handleChangeTab = (event, value) => {
     setTabValue(value);
@@ -113,12 +120,17 @@ const DatasetIngestionReport = () => {
     },
   ];
 
+  const getIngestionIssueTypes = () => {
+    dispatch(getDatasetIngestionIssueTypes(datasetId));
+  };
+
   const getProperties = () => {
     dispatch(getDatasetProperties(datasetId));
   };
 
   useEffect(() => {
     getProperties();
+    getIngestionIssueTypes();
   }, []);
 
   useEffect(() => {
@@ -129,7 +141,7 @@ const DatasetIngestionReport = () => {
 
   return (
     <main className="ingestion-report">
-      {loading && <Loader />}
+      {(loading || issuetypeloading || historyloading) && <Loader />}
       <Paper className="no-shadow">
         <Box className="top-content">
           <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />
@@ -172,7 +184,12 @@ const DatasetIngestionReport = () => {
         </Tabs>
       </Paper>
       <div style={{ paddingBottom: 24 }}>
-        {tabvalue === 0 && <Metrics datasetProperties={datasetProperties} />}
+        {tabvalue === 0 && (
+          <Metrics
+            datasetProperties={datasetProperties}
+            issuetypes={issuetypes}
+          />
+        )}
         {tabvalue === 1 && (
           <TransferLog datasetProperties={datasetProperties} />
         )}

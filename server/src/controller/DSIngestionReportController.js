@@ -234,18 +234,20 @@ exports.getFileTransferHistory = (req, res) => {
   try {
     const id = req.params.datasetid;
     const dayFilter = req.query.dayFilter ?? "10";
-    const searchQuery = `SELECT dataflowid, executionid, "VERSION", datapackageid, datasetid, mnemonicfile, datapackagename, datasetname, datasettype, processtype, "user", downloadstatus, downloadstarttime, downloadendtime, processstatus, processstarttime, processendtime, downloadtrnx, processtrnx, filerpath, lastsucceeded, lastattempted, failurecat, refreshtimestamp, stage, fst_prd_file_recvd, deleted_records, modified_records, new_records from ${schemaName}.transaction_summary
-              WHERE datasetid = $1 and lastattempted BETWEEN NOW() - INTERVAL '${dayFilter} days' AND NOW()`;
+    const page = req.query.page ? req.query.page * 5 : 5;
+    const searchQuery = `SELECT count(datasetid) OVER() AS total_transfered, dataflowid, executionid, "VERSION", datapackageid, datasetid, mnemonicfile, datapackagename, datasetname, datasettype, processtype, "user", downloadstatus, downloadstarttime, downloadendtime, processstatus, processstarttime, processendtime, downloadtrnx, processtrnx, filerpath, lastsucceeded, lastattempted, failurecat, refreshtimestamp, stage, fst_prd_file_recvd, deleted_records, modified_records, new_records from ${schemaName}.transaction_summary
+              WHERE datasetid = $1 limit $2`;
+    //  and lastattempted BETWEEN NOW() - INTERVAL '${dayFilter} days' AND NOW()
     Logger.info({
       message: "getFileTransferHistory",
     });
 
-    DB.executeQuery(searchQuery, [id])
+    DB.executeQuery(searchQuery, [id, page])
       .then((response) => {
         const records = response.rows || [];
         return apiResponse.successResponseWithData(res, "Operation success", {
           records,
-          totalSize: response.rowCount,
+          totalSize: records.length > 0 ? records[0]?.total_transfered : 0,
         });
       })
       .catch((err) => {

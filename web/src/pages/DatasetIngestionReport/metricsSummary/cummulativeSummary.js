@@ -12,11 +12,16 @@ const CummulativeSummary = ({ datasetProperties, setModalOpen }) => {
     { type: "New Records", a: 25 },
     { type: "Modified Records", a: 15 },
   ];
+  const postIngestionIssues = datasetProperties?.postIngestionIssues || 0;
+  const recordsWithIssues = datasetProperties?.recordsWithIssues || 0;
+  const totalRecords = datasetProperties?.totalRecords || 0;
+  const recordsWithIssuesPer =
+    totalRecords > 0 ? (recordsWithIssues * 100) / totalRecords : 0;
   return (
     <div className="summary-body">
       <div className="post-ingestion-issues">
         <Typography variant="h2" gutterBottom darkMode>
-          2200
+          {postIngestionIssues}
         </Typography>
         <Typography gutterBottom darkMode style={{ marginBottom: 32 }}>
           Post Ingestion Issues
@@ -32,7 +37,7 @@ const CummulativeSummary = ({ datasetProperties, setModalOpen }) => {
       <div className="records-with-issues">
         <DonutChartV2
           className="records-with-issue-chart"
-          percent={50}
+          percent={recordsWithIssuesPer}
           stroke="#fff"
           width={162}
           height={168}
@@ -51,7 +56,7 @@ const CummulativeSummary = ({ datasetProperties, setModalOpen }) => {
                   top: 35,
                 }}
               >
-                1000
+                {recordsWithIssues}
               </Typography>
               <Typography
                 gutterBottom
@@ -73,7 +78,7 @@ const CummulativeSummary = ({ datasetProperties, setModalOpen }) => {
         />
         <div className="right-se">
           <Typography gutterBottom darkMode style={{ marginBottom: 14 }}>
-            2,000 Total Records
+            {`${datasetProperties?.totalRecords || 0} Total Records`}
           </Typography>
           <Link
             onClick={() => console.log("link clicked")}

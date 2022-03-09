@@ -195,11 +195,11 @@
 }
 
 .ingestionissueModal {
-  table tbody tr td:last-child,
+  table tbody tr td:nth-child(2),
   table thead tr th:last-child {
     text-align: right;
   }
-  table tbody tr td:last-child {
+  table tbody tr td:nth-child(2) {
     padding-right: 25px;
   }
   min-width: 441px;
