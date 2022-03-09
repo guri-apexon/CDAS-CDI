@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch, useSelector } from "react-redux";
 import {
@@ -32,6 +32,7 @@ import {
   getSQLColumns,
   getPreviewSQL,
 } from "../../store/actions/DataSetsAction";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 
 import { YesNo } from "../../utils";
 
@@ -99,9 +100,14 @@ const DataSetsFormBase = (props) => {
     sqlTables,
     sqlColumns,
     onChange,
+    testLock,
+    prodLock,
+    testProdLock,
   } = props;
   const dispatch = useDispatch();
+  const messageContext = useContext(MessageContext);
   const [showPreview, setShowPreview] = useState(false);
+
   const handlePreview = () => {
     setShowPreview(true);
     dispatch(getPreviewSQL(formValues.sQLQuery));
@@ -115,15 +121,41 @@ const DataSetsFormBase = (props) => {
     if (formValues && ["Yes", "No"].includes(formValues)) {
       onChange(formValues);
     }
-    dispatch(getSQLTables("test"));
+    if (formValues.customSQLQuery === "No") {
+      dispatch(getSQLTables("test"));
+      setShowPreview(false);
+    }
   }, [formValues.customSQLQuery]);
 
-  useEffect(() => {
-    if (formValues && ["Yes", "No"].includes(formValues)) {
-      onChange(formValues);
-    }
-    setShowPreview(false);
-  }, [formValues.customSQLQuery]);
+  useEffect(() => {}, [showPreview]);
+
+  const locationChange = () => {
+    messageContext.showErrorMessage(
+      `No Tables Returned. Pls reach out to admins`
+    );
+  };
+
+  const queryCompilationError = () => {
+    messageContext.showErrorMessage(
+      `Query Compilation Error, check query syntax.`
+    );
+  };
+
+  const noRecordsFound = () => {
+    messageContext.showErrorMessage(`No records found.`);
+  };
+
+  const notAllowIncremental = () => {
+    messageContext.showErrorMessage(
+      `Cannot switch to Incremental as the dataset that has been synched does not have any primary key defined`
+    );
+  };
+
+  const firstSyncHappened = () => {
+    messageContext.showErrorMessage(
+      `Custom SQL Query setting cannot be changed after the dataset has been sync'd`
+    );
+  };
 
   // const onColumnChange = function (event) {
   //   const { options } = event.target;
@@ -265,6 +297,7 @@ const DataSetsFormBase = (props) => {
                 id="dataType"
                 size="small"
                 label="Type of Data"
+                disabled={prodLock}
               >
                 <Radio value="Cumulative" label="Cumulative" />
                 <Radio value="Incremental" label="Incremental" />
@@ -336,6 +369,9 @@ const DataSetsFormSQL = connect((state) => ({
   sqlTables: state.dataSets.sqlTables,
   sqlColumns: state.dataSets.sqlColumns,
   previewSQL: state.dataSets.previewSQL,
+  prodLock: state.dataFlow.prodLock,
+  testLock: state.dataFlow.testLock,
+  testProdLock: state.dataFlow.testProdLock,
 }))(ReduxForm);
 
 export default DataSetsFormSQL;
