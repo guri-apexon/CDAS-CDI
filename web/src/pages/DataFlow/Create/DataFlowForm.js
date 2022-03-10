@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
-import { connect } from "react-redux";
+import { connect, useDispatch } from "react-redux";
 import { reduxForm, getFormValues } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
@@ -81,6 +81,7 @@ const styles = {
 
 const DataFlowFormBase = (props) => {
   const [locationOpen, setLocationOpen] = useState(false);
+  const dispatch = useDispatch();
   const {
     handleSubmit,
     classes,
@@ -94,6 +95,7 @@ const DataFlowFormBase = (props) => {
     changeFormField,
     changeLocationType,
     connLink,
+    initialValues,
   } = props;
   const onChangeServiceOwner = (values) => {
     change("serviceOwnerValue", values);
@@ -101,6 +103,14 @@ const DataFlowFormBase = (props) => {
   const openLocationModal = () => {
     setLocationOpen(true);
   };
+  useEffect(() => {
+    console.log("initialValues", initialValues);
+    // if (initialValues?.selectedVendor?.value) {
+    //   dispatch(
+    //     change("DataFlowForm", "vendor", [initialValues?.selectedVendor?.value])
+    //   );
+    // }
+  }, [initialValues]);
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper}>

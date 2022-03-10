@@ -29,7 +29,7 @@ const DataPackage = ({
   sftpPath,
   setSftpPath,
 }) => {
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(true);
   const [configShow, setConfigShow] = useState(false);
   //   const [compression, setCompression] = useState("not_compressed");
   //   const [namingConvention, setNamingConvention] = useState("");

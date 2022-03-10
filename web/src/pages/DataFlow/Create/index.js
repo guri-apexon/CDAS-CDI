@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-script-url */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, {
@@ -32,6 +33,7 @@ import {
   hideErrorMessage,
   getLocationByType,
   addDataFlow,
+  setDataflowLocal,
 } from "../../../store/actions/DataFlowAction";
 import DataPackages from "./Datapackage";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
@@ -45,10 +47,12 @@ const useStyles = makeStyles(() => ({
   rightPanel: {
     maxWidth: "calc(100vw - 466px)",
     width: "calc(100vw - 464px)",
+    overflow: "hidden",
   },
   rightPanelExtended: {
     maxWidth: "calc(100vw - 42px)",
     width: "calc(100vw - 40px)",
+    overflow: "hidden",
   },
   // necessary for content to be below app bar
   content: {
@@ -169,12 +173,10 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         externalSystemName: "CDI",
         DataPackage: [],
       };
-      console.log(payload);
       setForm(payload);
       setFormType("datapackage");
       setCurrentStep();
-      // await dispatch(addDataFlow(payload));
-      // history.push("/dashboard");
+      // setDataflowLocal(payload);
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
     }
@@ -186,6 +188,10 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   };
 
   const AddDatapackage = () => {
+    if (namingConvention === "" || compression === "") {
+      messageContext.showErrorMessage("Please fill required fields to proceed");
+      return false;
+    }
     const newForm = { ...myform };
     const datapckageId = uuidv4();
     setselectedDatapackage(datapckageId);
@@ -204,6 +210,10 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   };
 
   const AddDatasetData = (datasetObj) => {
+    if (namingConvention === "" || compression === "") {
+      messageContext.showErrorMessage("Please fill required fields to proceed");
+      return false;
+    }
     console.log("AddDatasetData", selectedDatapackage, datasetObj);
     const newForm = { ...myform };
     const datasetID = uuidv4();
@@ -227,12 +237,13 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         AddDatapackage();
         break;
       case 3:
-        messageContext?.setDataflow({ datasetSubmit: true });
+        setCurrentStep();
         break;
       case 4:
         setCurrentStep();
         break;
       case 5:
+        messageContext?.setDataflow({ datasetSubmit: true });
         submitFinalForm();
         break;
       default:
@@ -255,11 +266,11 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   };
 
   const RenderForm = () => {
-    let formEl = <></>;
-    switch (currentStep) {
-      case 1:
-        formEl = (
+    const formEl = (
+      <>
+        <div style={{ display: currentStep === 1 ? "block" : "none" }}>
           <DataFlowForm
+            currentStep={currentStep}
             onSubmit={onSubmit}
             changeLocationData={changeLocationData}
             changeFormField={changeFormField}
@@ -269,10 +280,8 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
             password={selectedLocation?.pswd}
             connLink={selectedLocation?.cnn_url}
           />
-        );
-        break;
-      case 2:
-        formEl = (
+        </div>
+        <div style={{ display: currentStep === 2 ? "block" : "none" }}>
           <DataPackages
             setCompression={setCompression}
             setNamingConvention={setNamingConvention}
@@ -283,12 +292,12 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
             packagePassword={packagePassword}
             sftpPath={sftpPath}
           />
-        );
-        break;
-      case 3:
-      case 4:
-      case 5:
-        formEl = (
+        </div>
+        <div
+          style={{
+            display: [3, 4, 5].includes(currentStep) ? "block" : "none",
+          }}
+        >
           <DataSet
             currentStep={currentStep}
             myform={myform}
@@ -296,23 +305,67 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
             datapackageid={selectedDatapackage}
             getDataSetValue={getDataSetValue}
           />
-        );
-        break;
-      default:
-        formEl = (
-          <DataFlowForm
-            onSubmit={onSubmit}
-            changeLocationData={changeLocationData}
-            changeFormField={changeFormField}
-            changeLocationType={changeLocationType}
-            modalLocationType={modalLocationType}
-            userName={selectedLocation?.usr_nm}
-            password={selectedLocation?.pswd}
-            connLink={selectedLocation?.cnn_url}
-          />
-        );
-        break;
-    }
+        </div>
+      </>
+    );
+    // switch (currentStep) {
+    //   case 1:
+    //     formEl = (
+    //       <DataFlowForm
+    //         currentStep={currentStep}
+    //         onSubmit={onSubmit}
+    //         changeLocationData={changeLocationData}
+    //         changeFormField={changeFormField}
+    //         changeLocationType={changeLocationType}
+    //         modalLocationType={modalLocationType}
+    //         userName={selectedLocation?.usr_nm}
+    //         password={selectedLocation?.pswd}
+    //         connLink={selectedLocation?.cnn_url}
+    //       />
+    //     );
+    //     break;
+    //   case 2:
+    //     formEl = (
+    //       <DataPackages
+    //         setCompression={setCompression}
+    //         setNamingConvention={setNamingConvention}
+    //         setPackagePassword={setPackagePassword}
+    //         setSftpPath={setSftpPath}
+    //         compression={compression}
+    //         namingConvention={namingConvention}
+    //         packagePassword={packagePassword}
+    //         sftpPath={sftpPath}
+    //       />
+    //     );
+    //     break;
+    //   case 3:
+    //   case 4:
+    //   case 5:
+    //     formEl = (
+    //       <DataSet
+    //         currentStep={currentStep}
+    //         myform={myform}
+    //         updateStep={(step) => setCurrentStep({ step })}
+    //         datapackageid={selectedDatapackage}
+    //         getDataSetValue={getDataSetValue}
+    //       />
+    //     );
+    //     break;
+    //   default:
+    //     formEl = (
+    //       <DataFlowForm
+    //         onSubmit={onSubmit}
+    //         changeLocationData={changeLocationData}
+    //         changeFormField={changeFormField}
+    //         changeLocationType={changeLocationType}
+    //         modalLocationType={modalLocationType}
+    //         userName={selectedLocation?.usr_nm}
+    //         password={selectedLocation?.pswd}
+    //         connLink={selectedLocation?.cnn_url}
+    //       />
+    //     );
+    //     break;
+    // }
     return formEl;
   };
 

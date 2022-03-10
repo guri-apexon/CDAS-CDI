@@ -16,6 +16,7 @@ import {
   FETCH_DATAFLOW_DETAIL_FAILURE,
   FETCH_DATAFLOW_DETAIL_SUCCESS,
   ADD_DATAFLOW_SUCCESS,
+  SAVE_DATAFLOW_LOCAL_DETAIL,
 } from "../../constants";
 
 export const initialState = {
@@ -137,6 +138,27 @@ const DataFlowReducer = (state = initialState, action) =>
         formData.vendorname = vendorname;
         newState.dataFlowdetail = action.dataflowDetail;
         newState.formData = formData;
+        break;
+      case SAVE_DATAFLOW_LOCAL_DETAIL:
+        console.log("SAVE_DATAFLOW_LOCAL_DETAIL", action);
+        // eslint-disable-next-line no-case-declarations
+        const { dataflow } = action;
+        newState.testLock = testflag === 1 && dataflow.isSync === "Y";
+        newState.prodLock = testflag === 0 && dataflow.isSync === "Y";
+        newState.testProdLock = dataflow.isSync === "Y";
+        newState.formData = {
+          description: dataflow.description,
+          firstFileDate: dataflow.exptfstprddt,
+          locationType: dataflow.loctyp,
+          name: dataflow.name,
+          dataflowType: dataflow.testflag === 1 ? true : false,
+          srclocID: dataflow.srclocID,
+          dataStructure: dataflow.type,
+          vendID: dataflow.vendID,
+          vendorname: dataflow.vendorname,
+          dataFlowdetail: action.dataflowDetail,
+        };
+        newState.loading = false;
         break;
       default:
         newState.loading = false;
