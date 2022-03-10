@@ -1,57 +1,114 @@
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-script-url */
-import React, { useEffect, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
+import moment from "moment";
 import Hero from "apollo-react/components/Hero";
 import Grid from "apollo-react/components/Grid";
-import BulletChart from "apollo-react/components/BulletChart";
+import ClusterColumnChart from "apollo-react/components/ClusterColumnChart";
 import Typography from "apollo-react/components/Typography";
+import Modal from "apollo-react/components/Modal";
+import TextField from "apollo-react/components/TextField";
 import MenuItem from "apollo-react/components/MenuItem";
 import SelectButton from "apollo-react/components/SelectButton";
 import Paper from "apollo-react/components/Box";
-import Button from "apollo-react/components/Button";
-import DateRangePicker from "apollo-react/components/DateRangePickerV2";
-import Popper from "apollo-react/components/Popper";
 import CummulativeSummary from "./metricsSummary/cummulativeSummary";
 import IncrementalSummary from "./metricsSummary/incrementalSummary";
 import IngestionIssuesModal from "./metricsSummary/ingestionIssuesModal";
 import { getDatasetIngestionFileHistory } from "../../store/actions/IngestionReportAction";
 
+const formatDate = (v) => {
+  return v && moment(v, "YYYY-MM-DD HH:mm:ss").isValid()
+    ? moment(v, "YYYY-MM-DD HH:mm:ss").format("DD-MMM-YYYY / hh:mm a")
+    : "";
+};
+
 const Metrics = ({ datasetProperties, issuetypes }) => {
-  const [anchorEl, setAnchorEl] = useState(null);
+  const { filehistory } = useSelector((state) => state.ingestionReports);
   const [modalOpen, setModalOpen] = useState(false);
-  const selectRef = useRef();
+  const [historyData, setHistoryData] = useState([]);
+  const [totalSize, setTotalSize] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedMenuText, setSelectedMenuText] = useState(
+    "Within past 10 days"
+  );
+  const [errorInput, setErrorInput] = useState(false);
+  const [customValue, setCustomValue] = useState(null);
   const dispatch = useDispatch();
   const { datasetId } = useParams();
-  const historyData = [
-    { filename: "File Name1", yield: [200, 400, 600] },
-    { filename: "File Name2", yield: [300, 100, 500] },
-    { filename: "File Name3", yield: [200, 300, 400] },
-    { filename: "File Name4", yield: [150, 250, 500] },
-    { filename: "File Name5", yield: [300, 200, 100] },
-  ];
+  const connectionTypeCheck = ["sftp", "ftps"];
 
-  const legendLabels = ["New", "Modified", "Unchanged"];
-
-  const selectChangeView = (val) => {
-    console.log(selectRef.current, "selectRef");
-    if (val === "custom") {
-      setAnchorEl(!anchorEl ? selectRef.current : null);
-    } else {
-      setAnchorEl(null);
+  const changeCustomDays = (val) => {
+    if (val < 1 || val > 120) {
+      setErrorInput(true);
+      return false;
     }
+    setCustomValue(val);
+    setSelectedMenuText(`Within past ${val} days`);
+    setErrorInput(false);
+    return null;
   };
 
-  const getFileHistoryData = () => {
-    dispatch(getDatasetIngestionFileHistory(datasetId));
+  const getFileHistoryData = (days = "") => {
+    dispatch(getDatasetIngestionFileHistory(datasetId, days));
+    setMenuOpen(false);
+  };
+
+  const selectChangeView = (val) => {
+    if (val === "custom") {
+      setMenuOpen(true);
+    } else {
+      setMenuOpen(false);
+      getFileHistoryData(val);
+      setSelectedMenuText(`Within past ${val} days`);
+    }
   };
 
   useEffect(() => {
     getFileHistoryData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setTotalSize(filehistory?.totalSize);
+    const histories = [];
+    if (datasetProperties?.loadType?.toLowerCase() === "incremental") {
+      filehistory?.records?.forEach((record) => {
+        histories.push({
+          label: `${record.datasetname}, ${formatDate(record.lastsucceeded)}`,
+          label2: ":test",
+          data: [
+            {
+              Total: (record.new_records + record.modified_records) / 1000,
+              New: record.new_records / 1000,
+              Modified: record.modified_records / 1000,
+            },
+          ],
+        });
+      });
+    } else if (datasetProperties?.loadType?.toLowerCase() === "full") {
+      filehistory?.records?.forEach((record) => {
+        histories.push({
+          label: `${record.datasetname}, ${formatDate(record.lastsucceeded)}`,
+          data: [
+            {
+              Total: (record.new_records + record.modified_records) / 1000,
+              New: record.new_records / 1000,
+              Modified: record.modified_records / 1000,
+              Unchanged: record.new_records / 1000,
+            },
+          ],
+        });
+      });
+    }
+    if (histories.length > 0) {
+      setHistoryData(histories);
+    } else {
+      setHistoryData([]);
+    }
+  }, [datasetProperties?.loadType, filehistory]);
 
   const MetricsSubtitle = () => {
     if (datasetProperties?.loadType?.toLowerCase() === "incremental") {
@@ -66,10 +123,10 @@ const Metrics = ({ datasetProperties, issuetypes }) => {
     return (
       <>
         <Typography style={{ lineHeight: "24px" }} darkMode>
-          When there is no data to display
+          {datasetProperties?.FileName || ""}
         </Typography>
         <Typography variant="body2" darkMode>
-          12-Apr-2021 / 3:00 pm
+          {formatDate(datasetProperties?.DateofLastSuccessfulProcess) || ""}
         </Typography>
       </>
     );
@@ -122,7 +179,7 @@ const Metrics = ({ datasetProperties, issuetypes }) => {
                   variant="body2"
                   style={{ fontSize: 14, marginTop: 0 }}
                 >
-                  500 total files transfered
+                  {`${totalSize} files transfered`}
                 </Typography>
               </div>
               <div className="right-part">
@@ -134,44 +191,95 @@ const Metrics = ({ datasetProperties, issuetypes }) => {
                     Change View:
                   </Typography>
                   <SelectButton
+                    size="small"
                     placeholder="Within past 10 days"
                     style={{ marginRight: 10 }}
                     onChange={selectChangeView}
-                    ref={selectRef}
+                    displayText={selectedMenuText}
+                    noDeselect
                   >
                     <MenuItem value="10">Within past 10 days</MenuItem>
-                    <MenuItem value="20">Within past 30 days</MenuItem>
+                    <MenuItem value="30">Within past 30 days</MenuItem>
                     <MenuItem value="custom">Custom date range</MenuItem>
                   </SelectButton>
                 </div>
-                {/* <Popper open={true} anchorEl={anchorEl}>
-                  <DateRangePicker
-                    size="small"
-                    helperText="Select a start and end date"
-                  />
-                </Popper> */}
-                <div>
-                  <Typography
-                    variant="body2"
-                    style={{ fontSize: 14, marginTop: 14 }}
-                  >
-                    {`Expected transfer frequency: ${datasetProperties?.ExpectedTransferFrequency}`}
-                  </Typography>
-                </div>
+                {connectionTypeCheck.indexOf(
+                  datasetProperties?.SourceOrigin?.toLowerCase()
+                ) !== -1 &&
+                  datasetProperties?.ExpectedTransferFrequency && (
+                    <div>
+                      <Typography
+                        variant="body2"
+                        style={{ fontSize: 14, marginTop: 14 }}
+                      >
+                        {`Expected transfer frequency: ${
+                          datasetProperties?.ExpectedTransferFrequency || ""
+                        }`}
+                      </Typography>
+                    </div>
+                  )}
               </div>
             </div>
-            <div className="panel-body">
-              <BulletChart data={historyData} legendLabels={legendLabels} />
-              <Button
-                size="small"
-                style={{ marginTop: 27, marginLeft: "-3px" }}
-              >
-                Load More
-              </Button>
+            <div
+              className="panel-body"
+              style={{ overflow: "hidden", overflowX: "auto" }}
+            >
+              {historyData.length > 0 && (
+                <ClusterColumnChart
+                  width={
+                    historyData.length > 10
+                      ? historyData.length * 80 + 1000
+                      : "1160"
+                  }
+                  data={historyData}
+                  suffix="k"
+                  yTicks={6}
+                />
+              )}
+              {historyData.length === 0 && (
+                <div
+                  style={{
+                    height: "50vh",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    style={{ fontSize: 20, lineHeight: "48px" }}
+                  >
+                    No data to display
+                  </Typography>
+                </div>
+              )}
             </div>
           </Paper>
         </Grid>
       </Grid>
+      <Modal
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        title="Choose Custom Days"
+        message={
+          <TextField
+            type="number"
+            label="Choose upto past 120 days"
+            value={customValue}
+            inputProps={{ min: 1, max: 120, pattern: "[0-9]" }}
+            onChange={(e) => changeCustomDays(e.target.value)}
+            helperText={errorInput ? "Select valid input" : null}
+            error={errorInput}
+          />
+        }
+        buttonProps={[
+          {
+            label: "Ok",
+            disabled: errorInput || !customValue,
+            onClick: () => getFileHistoryData(customValue),
+          },
+        ]}
+      />
     </div>
   );
 };
