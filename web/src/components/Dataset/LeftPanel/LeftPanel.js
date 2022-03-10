@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-wrap-multilines */
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
@@ -73,9 +74,10 @@ const LeftPanel = () => {
   const dispatch = useDispatch();
   const [searchTxt, setSearchTxt] = useState("");
   const packageData = useSelector((state) => state.dataPackage);
-  const dataFlowData = useSelector((state) => state.dataFlow);
+  const dataFlow = useSelector((state) => state.dataFlow);
   const dashboard = useSelector((state) => state.dashboard);
-  const { description, selectedVendor, dataflowType, loading } = dataFlowData;
+  const { dataFlowdetail, loading } = dataFlow;
+  const { description, vendorname, testflag, active, name } = dataFlowdetail;
   const userInfo = getUserInfo();
   const location = useLocation();
   const { selectedDFId, selectedCard } = dashboard;
@@ -135,7 +137,13 @@ const LeftPanel = () => {
           <FormControlLabel
             style={{ fontSize: 14 }}
             value="true"
-            control={<Switch color="primary" size="small" />}
+            control={
+              <Switch
+                color="primary"
+                size="small"
+                checked={active === 0 ? false : true}
+              />
+            }
             label="Active"
             labelPlacement="start"
           />
@@ -145,16 +153,12 @@ const LeftPanel = () => {
       <Divider />
       <Box className="sidebar-content">
         <Tag
-          label={dataflowType}
+          label={testflag === 1 ? "Test" : "Production"}
           variant="grey"
           style={{ textTransform: "capitalize", marginBottom: 20 }}
         />
-        <Typography className={classes.LeftTitle}>
-          Virologicclinic-IIBR12-001-Other
-        </Typography>
-        <Typography className={classes.LeftSubTitle}>
-          {selectedVendor?.label}
-        </Typography>
+        <Typography className={classes.LeftTitle}>{name}</Typography>
+        <Typography className={classes.LeftSubTitle}>{vendorname}</Typography>
         <Typography className={classes.description}>
           {/* <ArrowRight className={classes.icon} /> */}
           {description}
