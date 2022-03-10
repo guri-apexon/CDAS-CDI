@@ -75,7 +75,7 @@ export function* fetchUserStudiesData(payload) {
     // console.log("study", fetchDBData);
     yield put({
       type: GET_STUDIES_LIST_SUCCESS,
-      flowData: fetchDBData.data.data,
+      userStudies: fetchDBData.data.data,
     });
   } catch (e) {
     yield put({ type: GET_STUDIES_LIST_FAILURE, message: e.message });
@@ -93,7 +93,7 @@ export function* fetchPinnedStudies(payload) {
     // console.log("study", fetchDBData);
     yield put({
       type: GET_PINNED_LIST_SUCCESS,
-      flowData: fetchDBData.data.data,
+      userPinnedStudies: fetchDBData.data.data,
     });
   } catch (e) {
     yield put({ type: GET_PINNED_LIST_FAILURE, message: e.message });
