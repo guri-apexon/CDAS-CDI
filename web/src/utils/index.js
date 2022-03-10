@@ -226,7 +226,7 @@ export const createAutocompleteFilter =
       <div
         style={{
           minWidth: 160,
-          maxWidth: 200,
+          maxWidth: "100%",
           position: "relative",
           height,
         }}
