@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { neutral7 } from "apollo-react/colors";
 import Divider from "apollo-react/components/Divider";
 import Typography from "apollo-react/components/Typography";
@@ -7,14 +7,13 @@ import Search from "apollo-react/components/Search";
 import { makeStyles } from "@material-ui/core/styles";
 import _ from "lodash";
 import Progress from "../../components/Common/Progress/Progress";
-import { debounceFunction } from "../../utils";
-import searchStudy, {
-  getPinnedStudies,
-  getStudies,
-  unPinStudy,
-  pinStudy,
-} from "../../services/ApiServices";
-import { updateSelectedStudy } from "../../store/actions/DashboardAction";
+import { debounceFunction, getUserInfo } from "../../utils";
+import searchStudy, { unPinStudy, pinStudy } from "../../services/ApiServices";
+import {
+  updateSelectedStudy,
+  getPinnedData,
+  getStudiesData,
+} from "../../store/actions/DashboardAction";
 import CustomCard from "./CustomCard";
 
 const styles = {
@@ -77,7 +76,7 @@ const LeftPanel = () => {
   const useStyles = makeStyles(styles);
   const classes = useStyles();
   const dispatch = useDispatch();
-
+  const dashboard = useSelector((state) => state.dashboard);
   const [selectedStudy, setSelectedStudy] = useState(null);
   const [loading, setLoading] = useState(false);
   const [studyList, setStudyList] = useState([]);
@@ -85,22 +84,40 @@ const LeftPanel = () => {
   const [unPinnedStudies, setUnPinnedStudies] = useState([]);
   const [pinnedStudies, setPinnedStudies] = useState([]);
   const [pinned, setPinned] = useState([]);
+  const { loading: isLoading, userStudies, userPinnedStudies } = dashboard;
+  const userInfo = getUserInfo();
 
   const updateList = async () => {
+    // const newStudies = await getStudies();
+    // const newPinned = await getPinnedStudies();
+    // if (newStudies !== undefined && newStudies.length) {
+    //   setStudyList([...newStudies]);
+    // }
+    // if (newStudies !== undefined && newStudies.length) {
+    //   setPinned([...newPinned]);
+    // }
     setLoading(true);
-    const newStudies = await getStudies();
-    const newPinned = await getPinnedStudies();
-    if (newStudies !== undefined && newStudies.length) {
-      setStudyList([...newStudies]);
-    }
-    if (newStudies !== undefined && newStudies.length) {
-      setPinned([...newPinned]);
-    }
+    dispatch(getStudiesData(userInfo.userId));
+    dispatch(getPinnedData(userInfo.userId));
     setLoading(false);
   };
 
+  // useEffect(() => {
+  //   setLoading(isLoading);
+  // }, [isLoading]);
+
   useEffect(() => {
-    updateList();
+    setStudyList([...userStudies]);
+  }, [userStudies]);
+
+  useEffect(() => {
+    setPinned([...userPinnedStudies]);
+  }, [userPinnedStudies]);
+
+  useEffect(() => {
+    if (userStudies.length === 0) {
+      updateList();
+    }
   }, []);
 
   const searchTrigger = (e) => {
@@ -132,30 +149,8 @@ const LeftPanel = () => {
   useEffect(() => {
     const pinnedstudy = studyList.filter((e) => pinned.includes(e.prot_id));
     const unPinnedStudy = studyList.filter((e) => !pinned.includes(e.prot_id));
-    const pinnedList = _.orderBy(
-      pinnedstudy,
-      [
-        "protocolnumber",
-        "sponsorname",
-        "staleFilesCount",
-        "ingestionCount",
-        "priorityCount",
-      ],
-      ["desc", "desc", "desc"]
-    );
-    const unpinnedList = _.orderBy(
-      unPinnedStudy,
-      [
-        "protocolnumber",
-        "sponsorname",
-        "staleFilesCount",
-        "ingestionCount",
-        "priorityCount",
-      ],
-      ["desc", "desc", "desc"]
-    );
-    setPinnedStudies([...pinnedList]);
-    setUnPinnedStudies([...unpinnedList]);
+    setPinnedStudies([...pinnedstudy]);
+    setUnPinnedStudies([...unPinnedStudy]);
     // console.log("unpinned", unPinningStudy);
   }, [studyList, pinned]);
 

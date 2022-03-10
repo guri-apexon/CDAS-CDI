@@ -12,6 +12,8 @@ import {
   SAVE_DATASET_DATA,
   SAVE_DATASET_COLUMNS,
   GET_DATA_FLOW_LIST,
+  GET_STUDIES_LIST,
+  GET_PINNED_LIST,
   GET_DATAFLOW_DETAIL,
   GET_DATASET_DETAIL,
   UPDATE_DATASET_DATA,
@@ -43,6 +45,8 @@ import {
 import {
   fetchFlowData,
   fetchDatasetIngestionSummaryData,
+  fetchUserStudiesData,
+  fetchPinnedStudies,
 } from "./dashboard.saga";
 import {
   fetchDataKindData,
@@ -84,6 +88,8 @@ import {
 
 function* cdasCoreSaga() {
   yield takeEvery(GET_DATA_FLOW_LIST, fetchFlowData);
+  yield takeEvery(GET_STUDIES_LIST, fetchUserStudiesData);
+  yield takeEvery(GET_PINNED_LIST, fetchPinnedStudies);
   yield takeLatest(
     GET_DATASET_INGESTION_SUMMARY,
     fetchDatasetIngestionSummaryData

@@ -64,7 +64,7 @@ export function* fetchDatasetIngestionIssueTypes(action) {
 
 export function* fetchDatasetIngestionFileHistory(action) {
   try {
-    const fetchData = yield call(
+    const fetchDatas = yield call(
       axios.get,
       `${baseURL}/${INGESTIONREPORTAPI}/transferhistory/${action.datasetId}${
         // eslint-disable-next-line prefer-template
@@ -73,7 +73,7 @@ export function* fetchDatasetIngestionFileHistory(action) {
     );
     yield put({
       type: FETCH_DATASET_INGESTION_FILE_HISTORY_SUCCESS,
-      filehistory: fetchData.data?.data || [],
+      filehistory: fetchDatas.data?.data || [],
     });
   } catch (e) {
     yield put({

@@ -27,7 +27,7 @@ export const getDatasetIngestionIssueTypes = (datasetId) => {
   };
 };
 
-export const getDatasetIngestionFileHistory = (datasetId, days = "") => {
+export const getDatasetIngestionFileHistory = (datasetId, days = null) => {
   return {
     type: GET_DATASET_INGESTION_FILE_HISTORY,
     datasetId,

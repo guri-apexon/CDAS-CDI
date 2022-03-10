@@ -276,15 +276,6 @@ export const updateDK = async (reqBody) => {
   }
 };
 
-export const getStudies = async () => {
-  try {
-    const res = await axios.get(`${baseURL}/${STUDYLIST}/${userId}`);
-    return res.data?.data || [];
-  } catch (err) {
-    return console.log("Error", err);
-  }
-};
-
 export const getENSList = async () => {
   try {
     const res = await axios.get(`${baseURL}/${DATAKINDAPI}/ens/list`);
@@ -312,6 +303,15 @@ export const unPinStudy = async (protocolId) => {
       userId,
       protocolId,
     });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const getStudies = async () => {
+  try {
+    const res = await axios.get(`${baseURL}/${STUDYLIST}/${userId}`);
     return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);

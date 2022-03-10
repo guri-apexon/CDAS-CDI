@@ -44,6 +44,7 @@ const columns = [
     filterFunction: createStringSearchFilter("log_version"),
     filterComponent: TextFieldFilter,
     width: 70,
+    align: "right",
   },
   {
     header: "Column Name",
