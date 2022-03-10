@@ -8,12 +8,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import _ from "lodash";
 import Progress from "../../components/Common/Progress/Progress";
 import { debounceFunction, getUserInfo } from "../../utils";
-import searchStudy, {
-  getPinnedStudies,
-  getStudies,
-  unPinStudy,
-  pinStudy,
-} from "../../services/ApiServices";
+import searchStudy, { unPinStudy, pinStudy } from "../../services/ApiServices";
 import {
   updateSelectedStudy,
   getPinnedData,
