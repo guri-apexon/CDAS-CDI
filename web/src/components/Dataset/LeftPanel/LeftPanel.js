@@ -68,32 +68,30 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LeftPanel = () => {
+const LeftPanel = ({ dataflowSource }) => {
   const classes = useStyles();
   const history = useHistory();
   const dispatch = useDispatch();
   const [searchTxt, setSearchTxt] = useState("");
   const packageData = useSelector((state) => state.dataPackage);
-  const dataFlow = useSelector((state) => state.dataFlow);
-  const dashboard = useSelector((state) => state.dashboard);
-  const { dataFlowdetail, loading } = dataFlow;
-  const { description, vendorname, testflag, active, name } = dataFlowdetail;
+  const { description, dataflowid, vendorname, name, testflag, active } =
+    dataflowSource;
+  const { loading } = packageData;
   const userInfo = getUserInfo();
   const location = useLocation();
-  const { selectedDFId, selectedCard } = dashboard;
   const viewAuditLog = () => {
     history.push("/dashboard/audit-logs");
   };
-  const getPackages = (query = "") => {
-    if (selectedDFId) {
-      dispatch(getPackagesList(selectedDFId, query));
-    } else {
-      // history.push("dashboard");
+  const getPackages = (dfid, query = "") => {
+    if (dfid) {
+      dispatch(getPackagesList(dfid, query));
     }
   };
-  useEffect(() => {
-    getPackages();
-  }, []);
+
+  // useEffect(() => {
+  //   getPackages(dataflowid);
+  // }, [dataflowid]);
+
   const searchTrigger = (e) => {
     const newValue = e.target.value;
     setSearchTxt(newValue);

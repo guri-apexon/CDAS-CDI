@@ -237,10 +237,10 @@ const Dataset = () => {
   const getLeftPanel = React.useMemo(
     () => (
       <>
-        <LeftPanel />
+        <LeftPanel dataflowSource={dataFlowdetail} />
       </>
     ),
-    []
+    [dataFlowdetail]
   );
 
   return (

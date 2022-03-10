@@ -786,14 +786,12 @@ exports.syncDataFlow = async (req, res) => {
 exports.getDataflowDetail = async (req, res) => {
   try {
     const dataFlowId = req.params.dataFlowId;
-    const searchQuery = `SELECT dataflowTbl.active, dataflowTbl.name, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID
+    const searchQuery = `SELECT dataflowTbl.active, dataflowTbl.dataflowid, dataflowTbl.name, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID
     from ${schemaName}.dataflow as dataflowTbl 
     JOIN ${schemaName}.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id
     JOIN ${schemaName}.vendor v on (v.vend_id = dataflowTbl.vend_id)
     WHERE dataflowid = $1`;
-    Logger.info({
-      message: "datafloDetail",
-    });
+    Logger.info({ message: "dataflowDetail" });
     DB.executeQuery(searchQuery, [dataFlowId]).then((response) => {
       const dataflowDetail = response.rows[0] || null;
       return apiResponse.successResponseWithData(
@@ -805,7 +803,7 @@ exports.getDataflowDetail = async (req, res) => {
   } catch (err) {
     //throw error in json response with status 500.
     console.log(err);
-    Logger.error("catch :datafloDetail");
+    Logger.error("catch :dataflowDetail");
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
