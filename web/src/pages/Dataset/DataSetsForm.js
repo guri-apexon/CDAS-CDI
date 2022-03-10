@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
-import { connect, useSelector, useDispatch } from "react-redux";
+import { connect, useDispatch } from "react-redux";
 import {
   reduxForm,
   getFormValues,
@@ -32,59 +32,13 @@ const styles = {
   paper: {
     padding: "25px 16px",
   },
-  submit: {
-    margin: "16px 0",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
   section: {
     marginBottom: 32,
-  },
-  subsection: {
-    marginBottom: 8,
-  },
-  divider: {
-    marginBottom: 24,
-  },
-  locationBox: {
-    boxSizing: "border-box",
-    border: "1px solid #E9E9E9",
-    borderRadius: 4,
-    backgroundColor: "#FFFFFF",
-    padding: "10px 15px",
-  },
-  formLabel: {
-    color: "#444444",
-    fontSize: 14,
-    marginTop: "15px",
-    letterSpacing: 0,
-    lineHeight: "24px",
-  },
-  formText: {
-    color: "#000000",
-    fontSize: 14,
-    marginTop: 8,
-    marginLeft: 5,
-    letterSpacing: 0,
-    lineHeight: "24px",
-  },
-  formPass: {
-    color: "#000000",
-    fontSize: 30,
-    marginTop: 8,
-    marginLeft: 5,
-    textSecurity: "disc",
-    "-webkit-text-security": "disc",
-    "-moz-text-security": "disc",
-    letterSpacing: 5,
-    lineHeight: "24px",
   },
 };
 
 const DataSetsFormBase = (props) => {
   const dispatch = useDispatch();
-  const dataSets = useSelector((state) => state.dataSets);
   const {
     handleSubmit,
     classes,
