@@ -245,6 +245,7 @@ const DataPackages = () => {
                       <PasswordInput
                         defaultValue=""
                         size="small"
+                        icon={false}
                         label="Package Password"
                         className="mb-20"
                         style={{ width: "70%" }}
