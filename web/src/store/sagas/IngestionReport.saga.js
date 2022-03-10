@@ -66,7 +66,10 @@ export function* fetchDatasetIngestionFileHistory(action) {
   try {
     const fetchData = yield call(
       axios.get,
-      `${baseURL}/${INGESTIONREPORTAPI}/transferhistory/${action.datasetId}`
+      `${baseURL}/${INGESTIONREPORTAPI}/transferhistory/${action.datasetId}${
+        // eslint-disable-next-line prefer-template
+        action.days ? "?dayFilter=" + action.days : ""
+      }`
     );
     yield put({
       type: FETCH_DATASET_INGESTION_FILE_HISTORY_SUCCESS,

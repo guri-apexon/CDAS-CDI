@@ -9,8 +9,22 @@ import Divider from "apollo-react/components/Divider";
 
 const CummulativeSummary = ({ datasetProperties, setModalOpen }) => {
   const data = [
-    { type: "New Records", a: 25 },
-    { type: "Modified Records", a: 15 },
+    {
+      type: "New Records",
+      a:
+        datasetProperties?.totalRecords > 0
+          ? ((datasetProperties?.newRecords || 0) * 100) /
+            datasetProperties?.totalRecords
+          : 0,
+    },
+    {
+      type: "Modified Records",
+      a:
+        datasetProperties?.totalRecords > 0
+          ? ((datasetProperties?.modifiedRecords || 0) * 100) /
+            datasetProperties?.totalRecords
+          : 0,
+    },
   ];
   const postIngestionIssues = datasetProperties?.postIngestionIssues || 0;
   const recordsWithIssues = datasetProperties?.recordsWithIssues || 0;
