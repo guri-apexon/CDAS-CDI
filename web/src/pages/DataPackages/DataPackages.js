@@ -132,7 +132,7 @@ const DataPackages = () => {
       sftp_path: sftpPath,
       study_id: selectedCard.prot_id,
       dataflow_id: selectedDFId,
-      user_id: userInfo.user_id,
+      user_id: userInfo.userId,
     };
     dispatch(addDataPackage(reqBody));
   };
