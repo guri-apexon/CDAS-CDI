@@ -132,30 +132,8 @@ const LeftPanel = () => {
   useEffect(() => {
     const pinnedstudy = studyList.filter((e) => pinned.includes(e.prot_id));
     const unPinnedStudy = studyList.filter((e) => !pinned.includes(e.prot_id));
-    const pinnedList = _.orderBy(
-      pinnedstudy,
-      [
-        "protocolnumber",
-        "sponsorname",
-        "staleFilesCount",
-        "ingestionCount",
-        "priorityCount",
-      ],
-      ["desc", "desc", "desc"]
-    );
-    const unpinnedList = _.orderBy(
-      unPinnedStudy,
-      [
-        "protocolnumber",
-        "sponsorname",
-        "staleFilesCount",
-        "ingestionCount",
-        "priorityCount",
-      ],
-      ["desc", "desc", "desc"]
-    );
-    setPinnedStudies([...pinnedList]);
-    setUnPinnedStudies([...unpinnedList]);
+    setPinnedStudies([...pinnedstudy]);
+    setUnPinnedStudies([...unPinnedStudy]);
     // console.log("unpinned", unPinningStudy);
   }, [studyList, pinned]);
 
