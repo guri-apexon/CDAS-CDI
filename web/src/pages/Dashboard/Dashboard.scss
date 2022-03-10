@@ -57,6 +57,12 @@
   .inActive {
     background: #999999;
   }
+
+  div[class^="MuiPopover-root"] {
+    div[class^="MuiMenu-paper"] {
+      max-height: 178px;
+    }
+  }
 }
 
 .leftPanel {
