@@ -7,11 +7,20 @@ import Link from "apollo-react/components/Link";
 import Divider from "apollo-react/components/Divider";
 
 const IncrementalSummary = ({ datasetProperties, setModalOpen }) => {
+  const postIngestionIssues = datasetProperties?.postIngestionIssues || 0;
+  const recordsWithIssues = datasetProperties?.recordsWithIssues || 0;
+  const totalRecords = datasetProperties?.totalRecords || 0;
+  const recordsWithIssuesPer =
+    totalRecords > 0 ? (recordsWithIssues * 100) / totalRecords : 0;
+  const filesWithIssues = datasetProperties?.filesWithIssues || 0;
+  const totalFileIngested = datasetProperties?.totalFileIngested || 0;
+  const filesWithIssuesPer =
+    totalFileIngested > 0 ? (filesWithIssues * 100) / totalFileIngested : 0;
   return (
     <div className="summary-body" style={{ marginTop: 40 }}>
       <div className="post-ingestion-issues">
         <Typography variant="h2" gutterBottom darkMode>
-          2200
+          {postIngestionIssues}
         </Typography>
         <Typography gutterBottom darkMode style={{ marginBottom: 32 }}>
           Post Ingestion Issues
@@ -27,7 +36,7 @@ const IncrementalSummary = ({ datasetProperties, setModalOpen }) => {
       <div className="records-with-issues">
         <DonutChartV2
           className="records-with-issue-chart"
-          percent={50}
+          percent={recordsWithIssuesPer}
           stroke="#fff"
           width={162}
           height={168}
@@ -46,7 +55,7 @@ const IncrementalSummary = ({ datasetProperties, setModalOpen }) => {
                   top: 35,
                 }}
               >
-                1000
+                {recordsWithIssues}
               </Typography>
               <Typography
                 gutterBottom
@@ -68,7 +77,7 @@ const IncrementalSummary = ({ datasetProperties, setModalOpen }) => {
         />
         <div className="right-se">
           <Typography gutterBottom darkMode style={{ marginBottom: 14 }}>
-            2,000 Total Records
+            {`${totalRecords} Total Records`}
           </Typography>
           <Link
             onClick={() => console.log("link clicked")}
@@ -85,7 +94,7 @@ const IncrementalSummary = ({ datasetProperties, setModalOpen }) => {
       </div>
       <div className="post-ingestion-issues">
         <Typography variant="h2" gutterBottom darkMode>
-          10
+          {datasetProperties?.filesNotIngested || 0}
         </Typography>
         <Typography gutterBottom darkMode style={{ marginBottom: 32 }}>
           Files not ingested
@@ -105,7 +114,7 @@ const IncrementalSummary = ({ datasetProperties, setModalOpen }) => {
       <div className="records-with-issues">
         <DonutChartV2
           className="records-with-issue-chart"
-          percent={50}
+          percent={filesWithIssuesPer}
           stroke="#fff"
           width={162}
           height={168}
@@ -124,7 +133,7 @@ const IncrementalSummary = ({ datasetProperties, setModalOpen }) => {
                   top: 35,
                 }}
               >
-                25
+                {filesWithIssues}
               </Typography>
               <Typography
                 gutterBottom
@@ -146,7 +155,7 @@ const IncrementalSummary = ({ datasetProperties, setModalOpen }) => {
         />
         <div className="right-se">
           <Typography gutterBottom darkMode style={{ marginBottom: 14 }}>
-            50 Total files ingested
+            {`${totalFileIngested} Total files ingested`}
           </Typography>
           <Link
             onClick={() => console.log("link clicked")}
