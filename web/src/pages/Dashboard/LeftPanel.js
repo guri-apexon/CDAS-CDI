@@ -115,7 +115,9 @@ const LeftPanel = () => {
   }, [userPinnedStudies]);
 
   useEffect(() => {
-    updateList();
+    if (userStudies.length === 0) {
+      updateList();
+    }
   }, []);
 
   const searchTrigger = (e) => {
