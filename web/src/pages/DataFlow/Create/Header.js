@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Tab from "apollo-react/components/Tab";
+import Modal from "apollo-react/components/Modal";
 import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
@@ -46,6 +47,7 @@ const Header = (props) => {
   const { headerTitle, currentStep } = props;
   const classes = useStyles();
   const [hidebackBtn, setHideBackBtn] = useState(true);
+  const [confirmCancel, setConfirmCancel] = useState(false);
   useEffect(() => {
     if (currentStep) {
       setHideBackBtn(currentStep <= 1);
@@ -72,7 +74,7 @@ const Header = (props) => {
           buttonProps={[
             {
               label: "Cancel",
-              onClick: () => props.close(),
+              onClick: () => setConfirmCancel(true),
               size: "small",
             },
             {
@@ -83,7 +85,7 @@ const Header = (props) => {
               size: "small",
             },
             {
-              label: "Next",
+              label: currentStep >= 5 ? "Save data flow" : "Next",
               onClick: () => props.submit(),
               size: "small",
             },
@@ -109,6 +111,18 @@ const Header = (props) => {
           ))}
         </Tabs>
       )}
+      <Modal
+        open={confirmCancel}
+        variant="warning"
+        onClose={() => setConfirmCancel(false)}
+        title="Are you sure you want to cancel?"
+        message="All progress will be lost"
+        buttonProps={[
+          { label: "Dismiss" },
+          { label: "Yes cancel", onClick: () => props.close() },
+        ]}
+        id="warning"
+      />
     </>
   );
 };

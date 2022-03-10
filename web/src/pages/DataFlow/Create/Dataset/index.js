@@ -88,7 +88,7 @@ const styles = {
   },
 };
 const Dataset = (props) => {
-  const { datapackageid } = props;
+  const { datapackageid, currentStep, updateStep } = props;
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
@@ -122,6 +122,17 @@ const Dataset = (props) => {
 
   const handleChangeTab = (event, v) => {
     setValue(v);
+    switch (v) {
+      case 1:
+        updateStep(4);
+        break;
+      case 2:
+        updateStep(5);
+        break;
+      default:
+        updateStep(3);
+        break;
+    }
   };
   const getDataSetType = (type) => {
     if (type?.toLowerCase() === ("sftp" || "ftps")) {
@@ -222,6 +233,16 @@ const Dataset = (props) => {
     }
     history.push("/dashboard");
   };
+  useEffect(() => {
+    console.log("currentStep", currentStep);
+    if (currentStep === 5) {
+      setValue(2);
+    } else if (currentStep === 4) {
+      setValue(1);
+    } else if (currentStep === 3) {
+      setValue(0);
+    }
+  }, [currentStep]);
 
   return (
     <Panel className={classes.rightPanelExtended} width="100%" hideButton>

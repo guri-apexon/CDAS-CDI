@@ -8,14 +8,9 @@ import PlusIcon from "apollo-react-icons/Plus";
 import Button from "apollo-react/components/Button";
 import Checkbox from "apollo-react/components/Checkbox";
 import TextField from "apollo-react/components/TextField";
-import PasswordInput from "apollo-react/components/PasswordInput";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
-import Panel from "apollo-react/components/Panel";
-import { makeStyles } from "@material-ui/core/styles";
-// import CssBaseline from "@material-ui/core/CssBaseline";
-import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
-import ButtonGroup from "apollo-react/components/ButtonGroup";
+import { ReactComponent as DataPackageIcon } from "../../../../components/Icons/datapackage.svg";
 import "./DataPackages.scss";
 // import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, toast } from "../../../../utils";
@@ -171,11 +166,7 @@ const DataPackage = ({
         ) : (
           <>
             <Box className="h-v-center flex-column add-btn-container">
-              <img
-                src="assets/svg/datapackage.svg"
-                className="head-icon"
-                alt="datapackage"
-              />
+              <DataPackageIcon className="head-icon" />
               <Typography variant="title1">
                 No Data Package or Datasets Added
               </Typography>

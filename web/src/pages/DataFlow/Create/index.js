@@ -1,6 +1,12 @@
 /* eslint-disable no-script-url */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useContext, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useMemo,
+  useReducer,
+} from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -9,6 +15,7 @@ import Panel from "apollo-react/components/Panel";
 import { useDispatch, useSelector, connect } from "react-redux";
 import { submit, reset, getFormValues } from "redux-form";
 import Loader from "apollo-react/components/Loader";
+import Modal from "apollo-react/components/Modal";
 import { values } from "lodash";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
@@ -72,12 +79,16 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   const history = useHistory();
   const [myform, setForm] = useState({});
   const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [compression, setCompression] = useState("not_compressed");
   const [namingConvention, setNamingConvention] = useState("");
   const [packagePassword, setPackagePassword] = useState("");
   const [FormType, setFormType] = useState("dataflow");
   const [sftpPath, setSftpPath] = useState("");
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useReducer((state, action) => {
+    if (action?.step) return action.step;
+    return action?.prev ? state - 1 : state + 1;
+  }, 1);
   const [selectedDatapackage, setselectedDatapackage] = useState("");
   const dataFlowData = useSelector((state) => state.dataFlow);
   const { selectedLocation, loading, error } = dataFlowData;
@@ -161,7 +172,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
       console.log(payload);
       setForm(payload);
       setFormType("datapackage");
-      setCurrentStep((step) => step + 1);
+      setCurrentStep();
       // await dispatch(addDataFlow(payload));
       // history.push("/dashboard");
     } else {
@@ -189,37 +200,25 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
     newForm.DataPackage.push(obj);
     setForm(newForm);
     setFormType("dataset");
-    setCurrentStep((step) => step + 1);
+    setCurrentStep();
   };
 
   const AddDatasetData = (datasetObj) => {
     console.log("AddDatasetData", selectedDatapackage, datasetObj);
-    // const newForm = { ...myform };
-    // const datasetID = uuidv4();
-    // const index = newForm.DataPackage.findIndex((r) => r.id === packageid);
-    // const obj = {
-    //   id: datasetID,
-    //   compression,
-    //   namingConvention,
-    //   packagePassword,
-    //   sftpPath,
-    //   columnDefinition: [],
-    // };
-    // console.log("AddDatasetData", obj);
-    // newForm.DataPackage[index].datasets.push(obj);
-    // setForm(newForm);
+    const newForm = { ...myform };
+    const datasetID = uuidv4();
+    const packageIndex = newForm.DataPackage.findIndex(
+      (r) => r.id === selectedDatapackage
+    );
+    newForm.DataPackage[packageIndex].datasets.push({ datasetObj, datasetID });
+    setForm(newForm);
+    setCurrentStep();
   };
-  useEffect(() => {
-    if (messageContext?.dataflowObj?.dataset) {
-      const datasetObj = messageContext?.dataflowObj?.dataset || {};
-      AddDatasetData(datasetObj);
-    }
-  }, [messageContext?.dataflowObj?.dataset]);
-  const backStep = () => {
-    setCurrentStep((step) => step - 1);
+  const submitFinalForm = () => {
+    setSaveSuccess(true);
   };
   const nextStep = async () => {
-    console.log("datasetFormValues?", datasetFormValues);
+    console.log("datasetFormValues?", datasetFormValues, currentStep);
     switch (currentStep) {
       case 1:
         AddDataflowData();
@@ -230,10 +229,22 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
       case 3:
         messageContext?.setDataflow({ datasetSubmit: true });
         break;
+      case 4:
+        setCurrentStep();
+        break;
+      case 5:
+        submitFinalForm();
+        break;
       default:
         break;
     }
   };
+  useEffect(() => {
+    if (messageContext?.dataflowObj?.dataset) {
+      const datasetObj = messageContext?.dataflowObj?.dataset || {};
+      AddDatasetData(datasetObj);
+    }
+  }, [messageContext?.dataflowObj?.dataset]);
 
   const handleClose = () => {
     setIsPanelOpen(false);
@@ -275,9 +286,13 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         );
         break;
       case 3:
+      case 4:
+      case 5:
         formEl = (
           <DataSet
+            currentStep={currentStep}
             myform={myform}
+            updateStep={(step) => setCurrentStep({ step })}
             datapackageid={selectedDatapackage}
             getDataSetValue={getDataSetValue}
           />
@@ -345,7 +360,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
               <Header
                 close={closeForm}
                 submit={nextStep}
-                back={backStep}
+                back={() => setCurrentStep({ prev: true })}
                 currentStep={currentStep}
                 breadcrumbItems={breadcrumbItems}
                 headerTitle="Virologicclinic-IIBR12-001-Other"
@@ -358,6 +373,18 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
           </div>
         </main>
       </Panel>
+      <Modal
+        open={saveSuccess}
+        variant="success"
+        onClose={() => setSaveSuccess(false)}
+        title="Data Flow saved successfully"
+        message="Data Flow saved successfully"
+        buttonProps={[
+          { label: "Continue editing data flow", variant: "primary" },
+          { label: "Exit", onClick: () => closeForm() },
+        ]}
+        id="success"
+      />
     </div>
   );
 };
