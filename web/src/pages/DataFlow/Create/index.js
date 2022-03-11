@@ -149,6 +149,9 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   //   }
   // }, [dashboard?.selectedCard]);
 
+  const isSftp = (str) => {
+    return ["SFTP", "FTPS"].includes(str.toUpperCase());
+  };
   const AddDataflowData = () => {
     console.log("FormValues", FormValues);
     if (
@@ -177,7 +180,11 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
       setForm(payload);
       setFormType("datapackage");
       setCurrentStep();
-      if (FormValues?.locationType?.toUpperCase() === ("SFTP" || "FTPS")) {
+      console.log(
+        "FormValues?.locationType?.toUpperCase()",
+        FormValues?.locationType?.toUpperCase()
+      );
+      if (!isSftp(FormValues?.locationType)) {
         setCurrentStep();
       }
       dispatch(setDataflowLocal(FormValues));
@@ -187,7 +194,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   };
 
   const backStep = () => {
-    if (myform?.locationType?.toUpperCase() === ("SFTP" || "FTPS")) {
+    if (!isSftp(myform?.locationType)) {
       setCurrentStep({ prev: true });
     }
     setCurrentStep({ prev: true });
