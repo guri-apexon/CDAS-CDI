@@ -225,10 +225,10 @@ exports.createDataflow = async (req, res) => {
           externalSystemName === "CDI"
             ? src_loc_id
             : data[0].src_loc_id || null,
-          active || 0,
+          active === true ? 1 : 0,
           configured || 0,
           exptDtOfFirstProdFile || null,
-          testFlag,
+          testFlag === true ? 1 : 0,
           data_in_cdr || "N",
           connectionType || null,
           // externalSystemName === "CDI" ? connectiondriver || null : location || null,
@@ -242,7 +242,7 @@ exports.createDataflow = async (req, res) => {
           (dataflowid,name,vend_id,type,description,src_loc_id,active,configured,expt_fst_prd_dt,
             testflag,data_in_cdr,connectiontype,externalsystemname,externalid,
             fsrstatus,prot_id,insrt_tm) VALUES 
-            ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`;
+            ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`;
 
         let ts = new Date().toLocaleString();
         // insert dataflow schema into db
@@ -268,8 +268,8 @@ exports.createDataflow = async (req, res) => {
               each.name || null,
               each.path || null,
               each.password || null,
-              0,
-              each.noPackageConfig === "false" ? 0 : 1 || null,
+              each.active === false ? 0 : 1,
+              each.noPackageConfig === false ? 0 : 1 || null,
               each.externalID || null,
               new Date(),
               uid,
@@ -298,14 +298,15 @@ exports.createDataflow = async (req, res) => {
                   dataKind = checkDataKind.rows[0].datakindid;
                 }
                 const dsUid = createUniqueID();
-                let DSQuery = `insert into ${schemaName}.dataset(datasetid,datapackageid,datakindid,mnemonic,columncount,incremental,
+                let DSQuery = `insert into ${schemaName}.dataset(datasetid,datapackageid,datakindid,mnemonic,active,columncount,incremental,
                             offsetcolumn,type,path,ovrd_stale_alert,headerrownumber,footerrownumber,customsql,
-                            customsql_yn,tbl_nm,externalid,insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`;
+                            customsql_yn,tbl_nm,externalid,insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`;
                 let body = [
                   dsUid,
                   dpUid,
                   dataKind || null,
                   obj.mnemonic || null,
+                  obj.active === true ? 1 : 0 || null,
                   obj.columncount || null,
                   obj.incremental === "NO" ? 0 : 1 || null,
                   obj.offsetColumn || null,
