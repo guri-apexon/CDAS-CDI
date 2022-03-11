@@ -80,9 +80,9 @@ export const getDataKindData = () => {
   };
 };
 
-export const setDataflowLocal = (dataflow) => {
+export const setDataflowLocal = (details) => {
   return {
     type: SAVE_DATAFLOW_LOCAL_DETAIL,
-    dataflow,
+    details,
   };
 };

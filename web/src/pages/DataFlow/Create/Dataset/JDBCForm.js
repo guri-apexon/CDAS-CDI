@@ -223,40 +223,22 @@ const JDBCForm = forwardRef((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     handleSubmit() {
-      console.log("useImperativeHandle");
-      if (datasetId === "new") {
-        dispatch(
-          saveDatasetData({
-            datapackageid,
-            datasetName,
-            active: dsActive,
-            incremental: dataType,
-            clinicalDataType,
-            customSQLQuery: isCustomSQL,
-            sQLQuery,
-            tableName,
-            offsetColumn,
-            dfTestFlag,
-          })
-        );
-        // console.log("save jdbc");
-      } else {
-        dispatch(
-          updateDatasetData({
-            datapackageid,
-            datasetid: datasetId,
-            datasetName,
-            active: dsActive,
-            incremental: dataType,
-            clinicalDataType,
-            customSQLQuery: isCustomSQL,
-            sQLQuery,
-            tableName,
-            offsetColumn,
-            dfTestFlag,
-          })
-        );
-      }
+      const data = {
+        datapackageid,
+        datasetName,
+        active: dsActive,
+        incremental: dataType,
+        clinicalDataType,
+        customSQLQuery: isCustomSQL,
+        sQLQuery,
+        tableName,
+        offsetColumn,
+        dfTestFlag,
+      };
+      console.log("data", data);
+      // dispatch(
+      //   saveDatasetData()
+      // );
     },
     handleCancel() {
       setDefaultValues();

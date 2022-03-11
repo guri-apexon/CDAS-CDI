@@ -40,6 +40,7 @@ import DataPackages from "./Datapackage";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import DataSet from "./Dataset";
+import { dataflowSave } from "../../../services/ApiServices";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -82,14 +83,13 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
+  const packagesRef = useRef();
+  const datasetRef = useRef();
   const [myform, setForm] = useState({});
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [compression, setCompression] = useState("not_compressed");
-  const [namingConvention, setNamingConvention] = useState("");
-  const [packagePassword, setPackagePassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [FormType, setFormType] = useState("dataflow");
-  const [sftpPath, setSftpPath] = useState("");
   const [currentStep, setCurrentStep] = useReducer((state, action) => {
     if (action?.step) return action.step;
     return action?.prev ? state - 1 : state + 1;
@@ -177,7 +177,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
       setForm(payload);
       setFormType("datapackage");
       setCurrentStep();
-      // setDataflowLocal(payload);
+      dispatch(setDataflowLocal(FormValues));
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
     }
@@ -204,24 +204,28 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   };
 
   const AddDatasetData = (datasetObj) => {
-    if (namingConvention === "" || compression === "") {
-      messageContext.showErrorMessage("Please fill required fields to proceed");
-      return false;
-    }
     console.log("AddDatasetData", selectedDatapackage, datasetObj);
     const newForm = { ...myform };
     const datasetID = uuidv4();
     const packageIndex = newForm.DataPackage.findIndex(
       (r) => r.id === selectedDatapackage
     );
-    newForm.DataPackage[packageIndex].datasets.push({ datasetObj, datasetID });
+    newForm.DataPackage[packageIndex].datasets[0] = { datasetObj, datasetID };
     setForm(newForm);
     setCurrentStep();
   };
-  const submitFinalForm = () => {
-    setSaveSuccess(true);
+  const submitFinalForm = async () => {
+    const reqBody = {
+      ...myform,
+    };
+    setSubmitting(true);
+    const result = await dataflowSave(reqBody);
+    console.log("submitFinalForm", reqBody, result);
+    if (result) {
+      setSaveSuccess(true);
+    }
+    setSubmitting(false);
   };
-  const packagesRef = useRef();
   const nextStep = async () => {
     console.log("datasetFormValues?", datasetFormValues, currentStep);
     switch (currentStep) {
@@ -232,25 +236,19 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         packagesRef.current.submitForm();
         break;
       case 3:
+        datasetRef.current.submitForm(datasetFormValues);
         setCurrentStep();
         break;
       case 4:
         setCurrentStep();
         break;
       case 5:
-        messageContext?.setDataflow({ datasetSubmit: true });
         submitFinalForm();
         break;
       default:
         break;
     }
   };
-  useEffect(() => {
-    if (messageContext?.dataflowObj?.dataset) {
-      const datasetObj = messageContext?.dataflowObj?.dataset || {};
-      AddDatasetData(datasetObj);
-    }
-  }, [messageContext?.dataflowObj?.dataset]);
 
   const handleClose = () => {
     setIsPanelOpen(false);
@@ -289,8 +287,11 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
           }}
         >
           <DataSet
+            ref={datasetRef}
             currentStep={currentStep}
             myform={myform}
+            messageContext={messageContext}
+            submitData={AddDatasetData}
             updateStep={(step) => setCurrentStep({ step })}
             datapackageid={selectedDatapackage}
             getDataSetValue={getDataSetValue}
@@ -409,6 +410,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
                 headerTitle="Virologicclinic-IIBR12-001-Other"
                 icon={<DataPackageIcon className={classes.contentIcon} />}
                 datasetsCount={6}
+                submitting={submitting}
               />
             </div>
             <Divider />

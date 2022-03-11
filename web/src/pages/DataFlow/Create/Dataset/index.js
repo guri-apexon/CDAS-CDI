@@ -6,30 +6,22 @@ import React, {
   useContext,
   useEffect,
   useRef,
+  forwardRef,
+  useImperativeHandle,
 } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
-import Banner from "apollo-react/components/Banner";
 import Panel from "apollo-react/components/Panel/Panel";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
-import Typography from "apollo-react/components/Typography";
-import ButtonGroup from "apollo-react/components/ButtonGroup";
-import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
-import { ReactComponent as DatasetsIcon } from "../../../../components/Icons/dataset.svg";
-import { MessageContext } from "../../../../components/Providers/MessageProvider";
 import "./Dataset.scss";
 import {
-  hideErrorMessage,
   getDataKindData,
   saveDatasetData,
   updateDatasetData,
-  getDataSetDetail,
-  getDatasetColumns,
 } from "../../../../store/actions/DataSetsAction";
-import { getDataFlowDetail } from "../../../../store/actions/DataFlowAction";
 import DataSetsForm from "./DataSetsForm";
 // import DataSetsFormSQL from "./DataSetsFormSQL";
 import JDBCForm from "./JDBCForm";
@@ -87,15 +79,14 @@ const styles = {
     marginBottom: "8px",
   },
 };
-const Dataset = (props) => {
-  const { datapackageid, currentStep, updateStep } = props;
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
+const Dataset = (props, ref) => {
+  const { datapackageid, currentStep, updateStep, messageContext, submitData } =
+    props;
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
   const [customSql, setCustomSql] = useState("no");
   const dispatch = useDispatch();
-  const messageContext = useContext(MessageContext);
   const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
@@ -111,14 +102,6 @@ const Dataset = (props) => {
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
-
-  const handleClose = () => {
-    setIsPanelOpen(false);
-  };
-
-  const handleOpen = () => {
-    setIsPanelOpen(true);
-  };
 
   const handleChangeTab = (event, v) => {
     setValue(v);
@@ -147,23 +130,12 @@ const Dataset = (props) => {
   };
 
   useEffect(() => {
-    // if (selectedDFId === "") {
-    //   history.push("/dashboard");
-    // }
     dispatch(getDataKindData());
   }, []);
 
   useEffect(() => {
     dispatch(reset("DataSetsForm"));
     dispatch(reset("DataSetsFormSQL"));
-    // if (datasetId === "new") {
-    //   dispatch(reset("DataSetsForm"));
-    //   dispatch(reset("DataSetsFormSQL"));
-    // } else {
-    //   dispatch(getDataSetDetail(datasetId));
-    //   dispatch(getDatasetColumns(datasetId));
-    // }
-    // console.log(datasetId);
   }, []);
 
   useEffect(() => {
@@ -172,57 +144,46 @@ const Dataset = (props) => {
     }
   }, [isDatasetCreated]);
 
-  //   useEffect(() => {
-  //     if (selectedDFId) {
-  //       dispatch(getDataFlowDetail(selectedDFId));
-  //     }
-  //   }, [selectedDFId]);
-
   useEffect(() => {
-    if (dataFlowdetail?.loctyp) {
-      setLocationType(dataFlowdetail?.loctyp);
-      if (getDataSetType(dataFlowdetail?.loctyp) === ("sftp" || "ftps")) {
+    if (dataFlowdetail?.locationType) {
+      setLocationType(dataFlowdetail?.locationType);
+      if (getDataSetType(dataFlowdetail?.locationType) === ("sftp" || "ftps")) {
         setColumnsActive(true);
       }
     }
+    console.log("dataFlowdetail?.locationType", dataFlowdetail?.locationType);
   }, [dataFlowdetail]);
-
-  const goToDataflow = () => {
-    // if (selectedDFId) {
-    //   history.push(`/dashboard/dataflow-management/${selectedDFId}`);
-    // }
-  };
-
-  const gotoDataPackage = () => {
-    if (datapackageid) {
-      history.push("/dashboard/data-packages");
-    }
-  };
 
   const jdbcRef = useRef();
 
-  const submitForm = () => {
-    if (locationType?.toLowerCase() === ("sftp" || "ftps")) {
-      dispatch(submit("DataSetsForm"));
-    } else {
-      jdbcRef.current.handleSubmit();
+  useImperativeHandle(ref, () => ({
+    submitForm(datasetObj) {
+      if (locationType?.toLowerCase() === ("sftp" || "ftps")) {
+        console.log("locationType", locationType);
+        submitData(datasetObj);
+        // dispatch(submit("DataSetsForm"));
+      } else {
+        messageContext?.setDataflow({ datasetSubmit: true });
+      }
+    },
+  }));
+  useEffect(() => {
+    if (messageContext?.dataflowObj?.dataset) {
+      const datasetObj = messageContext?.dataflowObj?.dataset || {};
+      submitData(datasetObj);
     }
-  };
+  }, [messageContext?.dataflowObj?.dataset]);
 
   const onSubmit = (formValue) => {
-    console.log("AddDatasetData:onSubmit", formValue);
-    setTimeout(() => {
-      const data = {
-        ...formValue,
-        datapackageid,
-        dfTestFlag: dataFlowdetail.testflag,
-      };
-      if (data.datasetid) {
-        dispatch(updateDatasetData(data));
-      } else {
-        dispatch(saveDatasetData(data));
-      }
-    }, 400);
+    console.log("onSubmit", formValue);
+    // setTimeout(() => {
+    //   const data = {
+    //     ...formValue,
+    //     datapackageid,
+    //     dfTestFlag: dataFlowdetail.testflag,
+    //   };
+    //   submitData(data);
+    // }, 400);
   };
 
   const closeForm = async () => {
@@ -292,4 +253,4 @@ const Dataset = (props) => {
   );
 };
 
-export default Dataset;
+export default forwardRef(Dataset);
