@@ -13,7 +13,7 @@ import PageHeader from "./components/Common/PageHeader";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
-const DataFlowCreate = lazy(() => import("./pages/DataFlow/DataFlow"));
+const DataFlowCreate = lazy(() => import("./pages/DataFlow/Create"));
 
 // const DataSets = lazy(() => import("./pages/DataSets/DataSets"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));

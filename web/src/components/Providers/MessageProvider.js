@@ -9,6 +9,9 @@ const MessageProvider = ({ children }) => {
     messages: "",
     show: false,
   });
+  const [dataflowObj, setdataflowObj] = useState({
+    datasetSubmit: false,
+  });
 
   const bannerCloseHandle = () => {
     setErrorMessage({ show: false });
@@ -46,7 +49,9 @@ const MessageProvider = ({ children }) => {
       setErrorMessage({ show: false });
     }, 5000);
   };
-
+  const setDataflow = (obj) => {
+    setdataflowObj({ ...dataflowObj, ...obj });
+  };
   return (
     <MessageContext.Provider
       value={{
@@ -56,6 +61,8 @@ const MessageProvider = ({ children }) => {
         showInfoMessage,
         showWarningMessage,
         showSuccessMessage,
+        setDataflow,
+        dataflowObj,
       }}
     >
       {children}
