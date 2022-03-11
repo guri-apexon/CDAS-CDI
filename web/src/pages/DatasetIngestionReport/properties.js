@@ -103,8 +103,8 @@ const Properties = ({ datasetProperties }) => {
             <Grid item xs={6}>
               <div className="label">Load Type</div>
               <div className="text">
-                {datasetProperties?.LoadType?.toLowerCase() === "incremental"
-                  ? datasetProperties?.LoadType
+                {datasetProperties?.loadType?.toLowerCase() === "incremental"
+                  ? datasetProperties?.loadType
                   : "Cumulative"}
               </div>
             </Grid>

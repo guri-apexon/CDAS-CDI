@@ -118,7 +118,7 @@ const StatusCell = ({ row, column: { accessor } }) => {
       </div>
     );
   }
-  if (status?.toLowerCase() === "loaded with ingestion issues") {
+  if (status?.toLowerCase() === "loaded with issues") {
     return (
       <div>
         <div style={{ position: "relative" }}>
@@ -295,8 +295,8 @@ const TransferLog = ({ datasetProperties }) => {
   };
 
   useEffect(() => {
-    if (datasetProperties?.LoadType.toLowerCase() === "incremental") {
-      setLoadType(datasetProperties?.LoadType);
+    if (datasetProperties?.loadType?.toLowerCase() === "incremental") {
+      setLoadType(datasetProperties?.loadType);
     } else {
       setLoadType("Cumulative");
     }

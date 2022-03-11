@@ -156,7 +156,7 @@ const AuditLog = () => {
         initialSortedColumn="user_name"
         sortedColumn={sortedColumnValue}
         sortOrder={sortOrderValue}
-        rowsPerPageOptions={[10, 50, 100, "All"]}
+        rowsPerPageOptions={[10, 20, 50, "All"]}
         tablePaginationProps={{
           labelDisplayedRows: ({ from, to, count }) =>
             `${count === 1 ? "Item " : "Items"} ${from}-${to} of ${count}`,

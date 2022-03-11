@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Table, {
+  createSelectFilterComponent,
   createStringSearchFilter,
   compareStrings,
   compareNumbers,
@@ -37,6 +38,8 @@ import {
 } from "../../../../services/ApiServices";
 
 import "./CDTList.scss";
+
+const statusList = ["Active", "Inactive"];
 
 const StatusCell =
   (handleStatusChange) =>
@@ -105,20 +108,10 @@ const generateColumns = (
       customCell: StatusCell(handleStatusChange),
       sortFunction: compareNumbers,
       filterFunction: createStatusArraySearchFilter("dkStatus"),
-      filterComponent: createAutocompleteFilter(
-        [
-          {
-            label: "Active",
-          },
-          {
-            label: "Inactive",
-          },
-        ],
-        {
-          size: "small",
-          multiple: true,
-        }
-      ),
+      filterComponent: createSelectFilterComponent(statusList, {
+        size: "small",
+        multiple: true,
+      }),
       width: 120,
     },
   ];

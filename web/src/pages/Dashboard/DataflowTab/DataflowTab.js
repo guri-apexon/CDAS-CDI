@@ -50,15 +50,15 @@ import {
   DateFilter,
 } from "../../../utils/index";
 
-const DateCell = ({ row, column: { accessor } }) => {
-  const rowValue = row[accessor];
-  const date =
-    rowValue && moment(rowValue, "DD-MMM-YYYY").isValid()
-      ? moment(rowValue).format("DD-MMM-YYYY")
-      : moment(rowValue).format("DD-MMM-YYYY");
+// const DateCell = ({ row, column: { accessor } }) => {
+//   const rowValue = row[accessor];
+//   const date =
+//     rowValue && moment(rowValue, "MM/DD/YYYY").isValid()
+//       ? moment(rowValue).format("DD-MMM-YYYY")
+//       : moment(rowValue).format("DD-MMM-YYYY");
 
-  return <span>{date}</span>;
-};
+//   return <span>{date}</span>;
+// };
 
 const StatusCell = ({ row, column: { accessor } }) => {
   const description = row[accessor];
@@ -166,10 +166,22 @@ export default function DataflowTab({ updateData }) {
   };
 
   const handleHardDelete = async () => {
-    const { dataFlowId } = selectedFlow;
-    const deleteStatus = await hardDelete(dataFlowId);
-    if (deleteStatus.success) {
+    // console.log("delete", selectedFlow);
+    const { dataFlowId, dataFlowName, version, studyId, fsrStatus } =
+      selectedFlow;
+    const deleteStatus = await hardDelete(
+      dataFlowId,
+      dataFlowName,
+      version,
+      studyId,
+      fsrStatus
+    );
+    // console.log(deleteStatus);
+    if (deleteStatus?.success) {
+      messageContext.showSuccessMessage("Dataflow deleted Successfully");
       await updateData();
+    } else {
+      messageContext.showErrorMessage("Something went Wrong");
     }
     setShowHardDelete(false);
   };
@@ -537,7 +549,7 @@ export default function DataflowTab({ updateData }) {
       accessor: "lastModified",
       frozen: false,
       sortFunction: compareDates,
-      customCell: DateCell,
+      // customCell: DateCell,
       filterFunction: dateFilterV2("lastModified"),
       filterComponent: DateFilter,
     },
@@ -591,7 +603,7 @@ export default function DataflowTab({ updateData }) {
       accessor: "dateCreated",
       frozen: false,
       sortFunction: compareDates,
-      customCell: DateCell,
+      // customCell: DateCell,
       filterFunction: dateFilterV2("dateCreated"),
       filterComponent: DateFilter,
     },
@@ -610,7 +622,7 @@ export default function DataflowTab({ updateData }) {
       accessor: "lastSyncDate",
       frozen: false,
       sortFunction: compareDates,
-      customCell: DateCell,
+      // customCell: DateCell,
       filterFunction: dateFilterV2("lastSyncDate"),
       filterComponent: DateFilter,
     },

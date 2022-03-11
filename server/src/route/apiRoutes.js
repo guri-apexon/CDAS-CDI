@@ -12,8 +12,6 @@ const datasetRoute = require("./dataset");
 const systemSettingsRoute = require("./settings");
 const CommonController = require("../controller/CommonController");
 
-const hardDeleteRoute = require("./hardDelete");
-
 const router = express.Router();
 // const alother= express.Router();
 
@@ -36,8 +34,6 @@ router.use("/columnset/", columnSetRoute);
 router.use("/datakind/", dataKindRoute);
 router.use("/dataset/", datasetRoute);
 router.use("/system-settings/", systemSettingsRoute);
-
-router.use("/hardDelete/", hardDeleteRoute);
 
 //fsr-connect API
 router.post("/fsr-connect", CommonController.fsrConnect);

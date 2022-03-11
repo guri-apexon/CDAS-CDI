@@ -88,12 +88,7 @@ const menuItems = [
   },
   {
     text: "Admin",
-    menuItems: [
-      {
-        text: "CDI Admin",
-        pathname: "/admin/cdi",
-      },
-    ],
+    pathname: "/admin/cdi",
   },
 ];
 
