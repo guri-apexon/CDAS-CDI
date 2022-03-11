@@ -199,7 +199,11 @@ const Dataset = (props, ref) => {
     if (currentStep === 5) {
       setValue(2);
     } else if (currentStep === 4) {
-      setValue(1);
+      if (columnsActive) {
+        setValue(1);
+      } else {
+        setValue(value === 2 ? 0 : 2);
+      }
     } else if (currentStep === 3) {
       setValue(0);
     }

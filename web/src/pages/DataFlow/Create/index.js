@@ -177,10 +177,20 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
       setForm(payload);
       setFormType("datapackage");
       setCurrentStep();
+      if (FormValues?.locationType?.toUpperCase() === ("SFTP" || "FTPS")) {
+        setCurrentStep();
+      }
       dispatch(setDataflowLocal(FormValues));
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
     }
+  };
+
+  const backStep = () => {
+    if (myform?.locationType?.toUpperCase() === ("SFTP" || "FTPS")) {
+      setCurrentStep({ prev: true });
+    }
+    setCurrentStep({ prev: true });
   };
 
   const getDataSetValue = (val) => {
@@ -404,7 +414,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
               <Header
                 close={closeForm}
                 submit={nextStep}
-                back={() => setCurrentStep({ prev: true })}
+                back={() => backStep()}
                 currentStep={currentStep}
                 breadcrumbItems={breadcrumbItems}
                 headerTitle="Virologicclinic-IIBR12-001-Other"
