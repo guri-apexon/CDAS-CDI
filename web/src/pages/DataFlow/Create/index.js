@@ -7,6 +7,7 @@ import React, {
   useContext,
   useMemo,
   useReducer,
+  useRef,
 } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useHistory } from "react-router-dom";
@@ -187,23 +188,16 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
     // return val;
   };
 
-  const AddDatapackage = () => {
-    if (namingConvention === "" || compression === "") {
-      messageContext.showErrorMessage("Please fill required fields to proceed");
-      return false;
-    }
+  const AddDatapackage = (payload) => {
     const newForm = { ...myform };
     const datapckageId = uuidv4();
     setselectedDatapackage(datapckageId);
     const obj = {
       id: datapckageId,
-      compression,
-      namingConvention,
-      packagePassword,
-      sftpPath,
       datasets: [],
+      ...payload,
     };
-    newForm.DataPackage.push(obj);
+    newForm.DataPackage[0] = obj;
     setForm(newForm);
     setFormType("dataset");
     setCurrentStep();
@@ -227,6 +221,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   const submitFinalForm = () => {
     setSaveSuccess(true);
   };
+  const packagesRef = useRef();
   const nextStep = async () => {
     console.log("datasetFormValues?", datasetFormValues, currentStep);
     switch (currentStep) {
@@ -234,7 +229,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         AddDataflowData();
         break;
       case 2:
-        AddDatapackage();
+        packagesRef.current.submitForm();
         break;
       case 3:
         setCurrentStep();
@@ -283,14 +278,9 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         </div>
         <div style={{ display: currentStep === 2 ? "block" : "none" }}>
           <DataPackages
-            setCompression={setCompression}
-            setNamingConvention={setNamingConvention}
-            setPackagePassword={setPackagePassword}
-            setSftpPath={setSftpPath}
-            compression={compression}
-            namingConvention={namingConvention}
-            packagePassword={packagePassword}
-            sftpPath={sftpPath}
+            toast={messageContext}
+            ref={packagesRef}
+            payloadBack={AddDatapackage}
           />
         </div>
         <div

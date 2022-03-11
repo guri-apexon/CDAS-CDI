@@ -1,4 +1,9 @@
-import React, { useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import Paper from "apollo-react/components/Paper";
@@ -13,28 +18,19 @@ import Select from "apollo-react/components/Select";
 import { ReactComponent as DataPackageIcon } from "../../../../components/Icons/datapackage.svg";
 import "./DataPackages.scss";
 // import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
-import { getUserInfo, toast } from "../../../../utils";
+import { getUserInfo } from "../../../../utils";
 // import {
 //   addDataPackage,
 //   getPackagesList,
 // } from "../../store/actions/DataPackageAction";
 
-const DataPackage = ({
-  compression,
-  setCompression,
-  namingConvention,
-  setNamingConvention,
-  packagePassword,
-  setPackagePassword,
-  sftpPath,
-  setSftpPath,
-}) => {
+const DataPackage = ({ payloadBack, toast }, ref) => {
   const [showForm, setShowForm] = useState(true);
   const [configShow, setConfigShow] = useState(false);
-  //   const [compression, setCompression] = useState("not_compressed");
-  //   const [namingConvention, setNamingConvention] = useState("");
-  //   const [packagePassword, setPackagePassword] = useState("");
-  //   const [sftpPath, setSftpPath] = useState("");
+  const [compression, setCompression] = useState("not_compressed");
+  const [namingConvention, setNamingConvention] = useState("");
+  const [packagePassword, setPackagePassword] = useState("");
+  const [sftpPath, setSftpPath] = useState("");
   const [notMatchedType, setNotMatchedType] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const userInfo = getUserInfo();
@@ -62,41 +58,33 @@ const DataPackage = ({
     }
     return false;
   };
+  useImperativeHandle(ref, () => ({
+    // eslint-disable-next-line consistent-return
+    submitForm: () => {
+      const validated = validateFields();
+      setNotMatchedType(!validated);
+      if (!validated) return false;
+      if (namingConvention === "" || compression === "") {
+        toast.showErrorMessage("Please fill all fields to proceed", "error");
+        return false;
+      }
+      const reqBody = {
+        compression_type: compression,
+        naming_convention: namingConvention,
+        package_password: packagePassword,
+        sftp_path: sftpPath,
+      };
+      payloadBack(reqBody);
+    },
+  }));
 
-  // eslint-disable-next-line consistent-return
-  //   const submitPackage = () => {
-  //     const validated = validateFields();
-  //     setNotMatchedType(!validated);
-  //     if (!validated) return false;
-  //     if (
-  //       namingConvention === "" ||
-  //       compression === "" ||
-  //       packagePassword === "" ||
-  //       sftpPath === ""
-  //     ) {
-  //       toast("Please fill all fields to proceed", "error");
-  //       return false;
-  //     }
-  //     const reqBody = {
-  //       compression_type: compression,
-  //       naming_convention: namingConvention,
-  //       package_password: packagePassword,
-  //       sftp_path: sftpPath,
-  //       study_id: selectedCard.prot_id,
-  //       dataflow_id: selectedDFId,
-  //       user_id: userInfo.user_id,
-  //     };
-  //     dispatch(addDataPackage(reqBody));
-  //   };
+  const handleClose = () => {
+    setIsPanelOpen(false);
+  };
 
-  //   const handleClose = () => {
-  //     setIsPanelOpen(false);
-  //   };
-
-  //   const handleOpen = () => {
-  //     setIsPanelOpen(true);
-  //   };
-
+  const handleOpen = () => {
+    setIsPanelOpen(true);
+  };
   return (
     <div className="data-packages">
       <Paper className="add-package-box">
@@ -147,14 +135,14 @@ const DataPackage = ({
                   type="password"
                   defaultValue=""
                   size="small"
-                  label="Package Password"
+                  label="Package Password (Optional)"
                   className="mb-20"
                   style={{ width: "70%" }}
                   onChange={(e) => setPackagePassword(e.target.value)}
                 />
                 <TextField
                   className="mb-20"
-                  label="sFTP Folder Path"
+                  label="sFTP Folder Path (Optional)"
                   placeholder=""
                   size="small"
                   fullWidth
@@ -186,4 +174,4 @@ const DataPackage = ({
   );
 };
 
-export default DataPackage;
+export default forwardRef(DataPackage);
