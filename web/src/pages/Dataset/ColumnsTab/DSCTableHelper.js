@@ -349,7 +349,7 @@ export const CustomHeader = ({
       {isMultiAdd && (
         <>
           <TextField
-            placeholder="# of rows"
+            placeholder="# of columns"
             type="number"
             min="1"
             max="499"

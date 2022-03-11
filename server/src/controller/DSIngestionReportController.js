@@ -206,7 +206,7 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
 exports.getDatasetIssueTypes = (req, res) => {
   try {
     const id = req.params.datasetid;
-    const searchQuery = `SELECT incdatasetid as datasetid, incremental, "incIngestionIssueType" as "incrementalIssueType", "incTotalNoOfIssuess" as "incrementalTotalIssues", "cumIngestionIssueType" as "cummulativeIssueType", "cumTotalNoOfIssuess" as "cummulativeTotalIssues" from ${schemaName}.dataset_issue_summary 
+    const searchQuery = `SELECT incdatasetid as datasetid, incremental, "incIngestionIssueType" as "incrementalIssueType", "incTotalNoOfIssuess" as "incrementalTotalIssues", "cumIngestionIssueType" as "cummulativeIssueType", "cumTotalNoOfIssuess" as "cummulativeTotalIssues", ingestionissuetype from ${schemaName}.dataset_issue_summary 
                 WHERE incdatasetid = $1`;
     Logger.info({
       message: "getDatasetIssueTypes",
