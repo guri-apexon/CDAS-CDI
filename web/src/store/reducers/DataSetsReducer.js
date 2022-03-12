@@ -34,12 +34,14 @@ import {
   GET_PREVIEW_SQL,
   FETCH_PREVIEW_SQL_SUCCESS,
   FETCH_PREVIEW_SQL_FAILURE,
+  UPDATE_DS,
 } from "../../constants";
 
 export const initialState = {
   loading: false,
   isDatasetCreated: false,
   isColumnsConfigured: false,
+  isDatasetCreation: true,
   datasetColumns: [],
   datasetDetail: {},
   formDataSQL: {
@@ -94,6 +96,10 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case SAVE_DATASET_DATA:
         newState.loading = true;
+        break;
+
+      case UPDATE_DS:
+        newState.isDatasetCreation = action.status;
         break;
       case STORE_DATASET_SUCCESS:
         newState.loading = false;
