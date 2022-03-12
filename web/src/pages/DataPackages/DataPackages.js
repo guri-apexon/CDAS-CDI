@@ -246,14 +246,14 @@ const DataPackages = () => {
                         defaultValue=""
                         size="small"
                         icon={false}
-                        label="Package Password"
+                        label="Package Password (optional)"
                         className="mb-20"
                         style={{ width: "70%" }}
                         onChange={(e) => setPackagePassword(e.target.value)}
                       />
                       <TextField
                         className="mb-20"
-                        label="sFTP Folder Path"
+                        label="sFTP Folder Path (optional)"
                         placeholder=""
                         size="small"
                         fullWidth

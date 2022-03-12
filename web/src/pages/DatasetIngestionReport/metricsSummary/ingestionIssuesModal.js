@@ -12,7 +12,7 @@ const IngestionIssuesModal = ({ open, handleClose, issuetypes }) => {
     {
       header: "Ingestion Issue Type",
       sortFunction: compareStrings,
-      accessor: "issue_type",
+      accessor: "ingestionissuetype",
     },
     {
       header: "Total # of Issues",
@@ -57,7 +57,7 @@ const IngestionIssuesModal = ({ open, handleClose, issuetypes }) => {
         <Table
           columns={columns}
           rows={rows}
-          rowId="issue_type"
+          rowId="ingestionissuetype"
           initialSortedColumn="no_issues"
           initialSortOrder="asc"
           hidePagination
