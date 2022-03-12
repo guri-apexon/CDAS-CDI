@@ -232,7 +232,9 @@ const DataSetsFormBase = (props) => {
               />
             </Grid>
             <Grid item md={1}>
-              <Divider orientation="vertical" variant="middle" />
+              <div className="vertical-line">
+                <div />
+              </div>
             </Grid>
             <Grid item md={5}>
               {/* {selectedClinicalData.length ? ( */}
