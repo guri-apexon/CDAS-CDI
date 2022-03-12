@@ -413,7 +413,8 @@ export const formatData = (incomingData, protNo) => {
 };
 
 export const Capitalize = (str) => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  console.log(str, "stt");
+  return str && str.charAt(0).toUpperCase() + str.slice(1);
 };
 
 export const createSourceFromKey = (tableRows, key) => {
@@ -566,4 +567,17 @@ export const dateFilterCustom = (accessor) => (row, filters) => {
     (!fromDate.isValid() || date.isAfter(fromDate)) &&
     (!toDate.isValid() || date.isBefore(toDate))
   );
+};
+
+export const isSftp = (str) => {
+  return ["SFTP", "FTPS"].includes(str.toUpperCase());
+};
+
+export const validateFields = (name, ext) => {
+  const nameArr = name.split(".");
+  if (ext === nameArr[1]) {
+    console.log("nameArr[1]", nameArr[1], ext);
+    return true;
+  }
+  return false;
 };

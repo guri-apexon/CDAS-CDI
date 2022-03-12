@@ -128,9 +128,9 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
             loadType: records.LoadType,
             totalIncrementalFileTransferred:
               records.inctotalincrementalfilestransferred,
-            postIngestionIssues: records.postingestionissues,
-            recordsWithIssues: records.recordswithissues,
-            totalRecords: records.total_records,
+            postIngestionIssues: records.incpostingestionissues,
+            recordsWithIssues: records.increcordswithissues,
+            totalRecords: records.inctotal_records,
             newRecords: records.NewRecords,
             modifiedRecords: records.ModifiedRecords,
             filesNotIngested: records.incfiles_not_ingested,

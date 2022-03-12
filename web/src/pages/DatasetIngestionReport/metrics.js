@@ -25,7 +25,7 @@ const formatDate = (v) => {
     : "";
 };
 
-const Metrics = ({ datasetProperties, issuetypes }) => {
+const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
   const { filehistory } = useSelector((state) => state.ingestionReports);
   const [modalOpen, setModalOpen] = useState(false);
   const [historyData, setHistoryData] = useState([]);
@@ -147,12 +147,14 @@ const Metrics = ({ datasetProperties, issuetypes }) => {
           <CummulativeSummary
             setModalOpen={() => setModalOpen(true)}
             datasetProperties={datasetProperties}
+            handleChangeTab={handleChangeTab}
           />
         )}
         {datasetProperties?.loadType?.toLowerCase() === "incremental" && (
           <IncrementalSummary
             setModalOpen={() => setModalOpen(true)}
             datasetProperties={datasetProperties}
+            handleChangeTab={handleChangeTab}
           />
         )}
         <IngestionIssuesModal
