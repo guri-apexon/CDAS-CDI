@@ -128,3 +128,12 @@
   line-height: 16px;
   font-weight: 400;
 }
+
+.vertical-line {
+  height: 100%;
+  margin: 0% 50%;
+  > div {
+    border-left: 1px solid #d9d9d9;
+    height: 100%;
+  }
+}

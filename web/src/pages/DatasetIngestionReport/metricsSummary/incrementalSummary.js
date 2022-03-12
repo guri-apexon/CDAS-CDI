@@ -6,7 +6,11 @@ import Typography from "apollo-react/components/Typography";
 import Link from "apollo-react/components/Link";
 import Divider from "apollo-react/components/Divider";
 
-const IncrementalSummary = ({ datasetProperties, setModalOpen }) => {
+const IncrementalSummary = ({
+  datasetProperties,
+  setModalOpen,
+  handleChangeTab,
+}) => {
   const postIngestionIssues = datasetProperties?.postIngestionIssues || 0;
   const recordsWithIssues = datasetProperties?.recordsWithIssues || 0;
   const totalRecords = datasetProperties?.totalRecords || 0;
@@ -100,7 +104,7 @@ const IncrementalSummary = ({ datasetProperties, setModalOpen }) => {
           Files not ingested
         </Typography>
         <Link
-          onClick={() => console.log("link clicked")}
+          onClick={() => handleChangeTab()}
           style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
         >
           View files with fatal issues
@@ -158,7 +162,7 @@ const IncrementalSummary = ({ datasetProperties, setModalOpen }) => {
             {`${totalFileIngested} Total files ingested`}
           </Typography>
           <Link
-            onClick={() => console.log("link clicked")}
+            onClick={() => handleChangeTab()}
             style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
           >
             View files with issues

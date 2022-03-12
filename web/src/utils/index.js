@@ -413,7 +413,8 @@ export const formatData = (incomingData, protNo) => {
 };
 
 export const Capitalize = (str) => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  console.log(str, "stt");
+  return str && str.charAt(0).toUpperCase() + str.slice(1);
 };
 
 export const createSourceFromKey = (tableRows, key) => {

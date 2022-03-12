@@ -104,6 +104,7 @@ const DatasetIngestionReport = () => {
   } = useSelector((state) => state.ingestionReports);
   const [tabvalue, setTabValue] = useState(0);
   const handleChangeTab = (event, value) => {
+    console.log(value, "vvvvv");
     setTabValue(value);
   };
   const { datasetId } = useParams();
@@ -188,6 +189,7 @@ const DatasetIngestionReport = () => {
           <Metrics
             datasetProperties={datasetProperties}
             issuetypes={issuetypes}
+            handleChangeTab={() => handleChangeTab("", 1)}
           />
         )}
         {tabvalue === 1 && (

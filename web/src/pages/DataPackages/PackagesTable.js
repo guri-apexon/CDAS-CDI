@@ -48,7 +48,7 @@ const NameCustomCell = ({ row, column: { accessor } }) => {
   const title = row[accessor] || row.datapackageid;
   return (
     <div className="flex package-name-td">
-      <PackageIcon style={{ width: 15, margin: "0px 8px" }} />
+      <PackageIcon style={{ width: 15, margin: "0px 10px" }} />
       <span className="b-font">{title}</span>
     </div>
   );

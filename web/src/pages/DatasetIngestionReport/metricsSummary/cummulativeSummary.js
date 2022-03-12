@@ -7,7 +7,11 @@ import Typography from "apollo-react/components/Typography";
 import Link from "apollo-react/components/Link";
 import Divider from "apollo-react/components/Divider";
 
-const CummulativeSummary = ({ datasetProperties, setModalOpen }) => {
+const CummulativeSummary = ({
+  datasetProperties,
+  setModalOpen,
+  handleChangeTab,
+}) => {
   const data = [
     {
       type: "New Records",
@@ -95,7 +99,7 @@ const CummulativeSummary = ({ datasetProperties, setModalOpen }) => {
             {`${datasetProperties?.totalRecords || 0} Total Records`}
           </Typography>
           <Link
-            onClick={() => console.log("link clicked")}
+            onClick={() => handleChangeTab()}
             style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
           >
             View issues in file
