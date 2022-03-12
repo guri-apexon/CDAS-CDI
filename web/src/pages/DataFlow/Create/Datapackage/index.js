@@ -4,8 +4,6 @@ import React, {
   useImperativeHandle,
   useState,
 } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useHistory } from "react-router-dom";
 import Paper from "apollo-react/components/Paper";
 import Typography from "apollo-react/components/Typography";
 import Box from "apollo-react/components/Box";
@@ -18,21 +16,21 @@ import Select from "apollo-react/components/Select";
 import { ReactComponent as DataPackageIcon } from "../../../../components/Icons/datapackage.svg";
 import "./DataPackages.scss";
 // import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
-import { getUserInfo } from "../../../../utils";
+import { getUserInfo, isSftp, validateFields } from "../../../../utils";
 // import {
 //   addDataPackage,
 //   getPackagesList,
 // } from "../../store/actions/DataPackageAction";
 
-const DataPackage = ({ payloadBack, toast }, ref) => {
+const DataPackage = ({ payloadBack, toast, locType }, ref) => {
   const [showForm, setShowForm] = useState(true);
   const [configShow, setConfigShow] = useState(false);
   const [compression, setCompression] = useState("not_compressed");
   const [namingConvention, setNamingConvention] = useState("");
   const [packagePassword, setPackagePassword] = useState("");
   const [sftpPath, setSftpPath] = useState("");
+  const [disabled, setDisabled] = useState(false);
   const [notMatchedType, setNotMatchedType] = useState(false);
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
   const userInfo = getUserInfo();
 
   const compressionTypes = [
@@ -50,18 +48,14 @@ const DataPackage = ({ payloadBack, toast }, ref) => {
   //     setConfigShow(false);
   //     setShowForm(false);
   //   };
-  const validateFields = () => {
-    const nameArr = namingConvention.split(".");
-    if (compression === nameArr[1]) {
-      console.log("nameArr[1]", nameArr[1], compression);
-      return true;
-    }
-    return false;
-  };
   useImperativeHandle(ref, () => ({
     // eslint-disable-next-line consistent-return
     submitForm: () => {
-      const validated = validateFields();
+      if (disabled) {
+        payloadBack(null);
+        return false;
+      }
+      const validated = validateFields(namingConvention, compression);
       setNotMatchedType(!validated);
       if (!validated) return false;
       if (namingConvention === "" || compression === "") {
@@ -78,13 +72,9 @@ const DataPackage = ({ payloadBack, toast }, ref) => {
     },
   }));
 
-  const handleClose = () => {
-    setIsPanelOpen(false);
-  };
-
-  const handleOpen = () => {
-    setIsPanelOpen(true);
-  };
+  useEffect(() => {
+    // setDisabled(locType && !isSftp(locType));
+  }, [locType]);
   return (
     <div className="data-packages">
       <Paper className="add-package-box">
@@ -96,11 +86,12 @@ const DataPackage = ({ payloadBack, toast }, ref) => {
                 className="config-checkbox"
                 size="small"
                 label="Package Level Configuration"
-                checked={configShow}
+                checked={!disabled && configShow}
+                disabled={disabled}
                 onChange={showConfig}
               />
             </div>
-            {configShow && (
+            {configShow && !disabled && (
               <div className="package-form">
                 {/* <CreatepackageForm onSubmit={onSubmit} /> */}
                 <Select

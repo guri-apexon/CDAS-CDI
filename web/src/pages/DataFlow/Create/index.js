@@ -149,9 +149,6 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   //   }
   // }, [dashboard?.selectedCard]);
 
-  const isSftp = (str) => {
-    return ["SFTP", "FTPS"].includes(str.toUpperCase());
-  };
   const AddDataflowData = () => {
     console.log("FormValues", FormValues);
     if (
@@ -175,7 +172,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         // serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
         protocolNumberStandard: protId,
         externalSystemName: "CDI",
-        DataPackage: [],
+        DataPackage: [{ datasets: [] }],
       };
       setForm(payload);
       setFormType("datapackage");
@@ -184,9 +181,6 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         "FormValues?.locationType?.toUpperCase()",
         FormValues?.locationType?.toUpperCase()
       );
-      if (!isSftp(FormValues?.locationType)) {
-        setCurrentStep();
-      }
       dispatch(setDataflowLocal(FormValues));
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
@@ -194,9 +188,6 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   };
 
   const backStep = () => {
-    if (!isSftp(myform?.locationType)) {
-      setCurrentStep({ prev: true });
-    }
     setCurrentStep({ prev: true });
   };
 
@@ -207,29 +198,42 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
 
   const AddDatapackage = (payload) => {
     const newForm = { ...myform };
-    const datapckageId = uuidv4();
-    setselectedDatapackage(datapckageId);
-    const obj = {
-      id: datapckageId,
-      datasets: [],
-      ...payload,
-    };
-    newForm.DataPackage[0] = obj;
-    setForm(newForm);
+    if (payload) {
+      const datapckageId = uuidv4();
+      setselectedDatapackage(datapckageId);
+      const obj = {
+        id: datapckageId,
+        datasets: [],
+        ...payload,
+      };
+      newForm.DataPackage[0] = obj;
+      setForm(newForm);
+    }
     setFormType("dataset");
     setCurrentStep();
   };
 
   const AddDatasetData = (datasetObj) => {
     console.log("AddDatasetData", selectedDatapackage, datasetObj);
+    if (datasetObj.datasetName === "" || datasetObj.clinicalDataType === null) {
+      messageContext.showErrorMessage("Please fill required fields to proceed");
+      return false;
+    }
     const newForm = { ...myform };
     const datasetID = uuidv4();
     const packageIndex = newForm.DataPackage.findIndex(
       (r) => r.id === selectedDatapackage
     );
-    newForm.DataPackage[packageIndex].datasets[0] = { datasetObj, datasetID };
+    newForm.DataPackage[0].datasets[0] = { ...datasetObj, datasetID };
     setForm(newForm);
     setCurrentStep();
+  };
+
+  const AddColumnDefinitions = (rows) => {
+    console.log("AddColumnDefinitions");
+    const newForm = { ...myform };
+    newForm.DataPackage[0].datasets[0].columnDefinition = rows;
+    setForm(newForm);
   };
   const submitFinalForm = async () => {
     const reqBody = {
@@ -237,7 +241,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
     };
     setSubmitting(true);
     const result = await dataflowSave(reqBody);
-    console.log("submitFinalForm", reqBody, result);
+    console.log("submitFinalForm", result);
     if (result) {
       setSaveSuccess(true);
     }
@@ -253,14 +257,13 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         packagesRef.current.submitForm();
         break;
       case 3:
-        datasetRef.current.submitForm(datasetFormValues);
-        setCurrentStep();
+        datasetRef.current.submitForm();
         break;
       case 4:
-        setCurrentStep();
+        submitFinalForm();
         break;
       case 5:
-        submitFinalForm();
+        setCurrentStep({ step: 3 });
         break;
       default:
         break;
@@ -274,6 +277,14 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   const handleOpen = () => {
     setIsPanelOpen(true);
   };
+
+  useEffect(() => {
+    const columnDefinition =
+      messageContext?.dataflowObj?.columnDefinition || [];
+    if (columnDefinition.length) {
+      AddColumnDefinitions(columnDefinition);
+    }
+  }, [messageContext?.dataflowObj?.columnDefinition]);
 
   const RenderForm = () => {
     const formEl = (
@@ -293,6 +304,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
         </div>
         <div style={{ display: currentStep === 2 ? "block" : "none" }}>
           <DataPackages
+            locType={locType}
             toast={messageContext}
             ref={packagesRef}
             payloadBack={AddDatapackage}
@@ -382,7 +394,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
     console.log(myform, "sdsasa", myform.DataPackage);
   }, []);
   useEffect(() => {
-    console.log("myform:", myform);
+    console.log("myform:", modalLocType, myform);
   }, [myform]);
   useEffect(() => {
     if (modalLocType === locType) {
@@ -424,9 +436,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
                 back={() => backStep()}
                 currentStep={currentStep}
                 breadcrumbItems={breadcrumbItems}
-                headerTitle="Virologicclinic-IIBR12-001-Other"
                 icon={<DataPackageIcon className={classes.contentIcon} />}
-                datasetsCount={6}
                 submitting={submitting}
               />
             </div>

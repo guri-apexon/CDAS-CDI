@@ -110,7 +110,7 @@ const JDBCForm = forwardRef((props, ref) => {
   const { datakind, selectedDataset, previewSQL, sqlTables, sqlColumns } =
     dataSets;
 
-  const { datasetId, datapackageid, dfTestFlag } = props;
+  const { datasetId, datapackageid, dfTestFlag, onSubmit } = props;
 
   const setDefaultValues = () => {
     setDsActive(true);
@@ -236,9 +236,7 @@ const JDBCForm = forwardRef((props, ref) => {
         dfTestFlag,
       };
       console.log("data", data);
-      // dispatch(
-      //   saveDatasetData()
-      // );
+      onSubmit(data);
     },
     handleCancel() {
       setDefaultValues();
@@ -260,26 +258,26 @@ const JDBCForm = forwardRef((props, ref) => {
   const noRecordsFound = () => {
     messageContext.showErrorMessage(`No records found.`);
   };
-  useEffect(() => {
-    if (messageContext?.dataflowObj?.datasetSubmit) {
-      console.log("datasetSubmit", messageContext.dataflowObj);
-      messageContext?.setDataflow({
-        datasetSubmit: false,
-        dataset: {
-          datapackageid,
-          datasetName,
-          active: dsActive,
-          incremental: dataType,
-          clinicalDataType,
-          customSQLQuery: isCustomSQL,
-          sQLQuery,
-          tableName,
-          offsetColumn,
-          dfTestFlag,
-        },
-      });
-    }
-  }, [messageContext?.dataflowObj?.datasetSubmit]);
+  // useEffect(() => {
+  //   if (messageContext?.dataflowObj?.datasetSubmit) {
+  //     console.log("datasetSubmit", messageContext.dataflowObj);
+  //     messageContext?.setDataflow({
+  //       datasetSubmit: false,
+  //       dataset: {
+  //         datapackageid,
+  //         datasetName,
+  //         active: dsActive,
+  //         incremental: dataType,
+  //         clinicalDataType,
+  //         customSQLQuery: isCustomSQL,
+  //         sQLQuery,
+  //         tableName,
+  //         offsetColumn,
+  //         dfTestFlag,
+  //       },
+  //     });
+  //   }
+  // }, [messageContext?.dataflowObj?.datasetSubmit]);
   return (
     <form className="jdbc-form">
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
@@ -298,20 +296,6 @@ const JDBCForm = forwardRef((props, ref) => {
                 labelPlacement="start"
                 onChange={handleStatusUpdate}
               />
-              {dsActive && (
-                <Status
-                  variant="positive"
-                  icon={RadioError}
-                  size="small"
-                  style={{ marginLeft: 35 }}
-                  label={
-                    // eslint-disable-next-line react/jsx-wrap-multilines
-                    <Typography variant="body2" style={{ color: "#595959" }}>
-                      Ready
-                    </Typography>
-                  }
-                />
-              )}
             </div>
           </div>
           <Grid container spacing={3}>

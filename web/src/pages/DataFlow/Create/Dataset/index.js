@@ -22,11 +22,12 @@ import {
   saveDatasetData,
   updateDatasetData,
 } from "../../../../store/actions/DataSetsAction";
-import DataSetsForm from "./DataSetsForm";
+import CreateDataSetsForm from "./DataSetsForm";
 // import DataSetsFormSQL from "./DataSetsFormSQL";
 import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
+import { isSftp } from "../../../../utils";
 
 const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
 
@@ -134,7 +135,7 @@ const Dataset = (props, ref) => {
   }, []);
 
   useEffect(() => {
-    dispatch(reset("DataSetsForm"));
+    dispatch(reset("CreateDataSetsForm"));
     dispatch(reset("DataSetsFormSQL"));
   }, []);
 
@@ -157,38 +158,34 @@ const Dataset = (props, ref) => {
   const jdbcRef = useRef();
 
   useImperativeHandle(ref, () => ({
-    submitForm(datasetObj) {
-      if (locationType?.toLowerCase() === ("sftp" || "ftps")) {
-        console.log("locationType", locationType);
-        submitData(datasetObj);
-        // dispatch(submit("DataSetsForm"));
+    submitForm() {
+      if (isSftp(locationType)) {
+        dispatch(submit("CreateDataSetsForm"));
       } else {
-        messageContext?.setDataflow({ datasetSubmit: true });
+        // messageContext?.setDataflow({ datasetSubmit: true });
+        jdbcRef.current.handleSubmit();
       }
     },
   }));
-  useEffect(() => {
-    if (messageContext?.dataflowObj?.dataset) {
-      const datasetObj = messageContext?.dataflowObj?.dataset || {};
-      submitData(datasetObj);
-    }
-  }, [messageContext?.dataflowObj?.dataset]);
+  // useEffect(() => {
+  //   if (messageContext?.dataflowObj?.dataset) {
+  //     const datasetObj = messageContext?.dataflowObj?.dataset || {};
+  //     submitData(datasetObj);
+  //   }
+  // }, [messageContext?.dataflowObj?.dataset]);
 
   const onSubmit = (formValue) => {
-    console.log("onSubmit", formValue);
-    // setTimeout(() => {
-    //   const data = {
-    //     ...formValue,
-    //     datapackageid,
-    //     dfTestFlag: dataFlowdetail.testflag,
-    //   };
-    //   submitData(data);
-    // }, 400);
+    const data = {
+      ...formValue,
+      datapackageid,
+      dfTestFlag: dataFlowdetail.testflag,
+    };
+    submitData(data);
   };
 
   const closeForm = async () => {
     if (locationType?.toLowerCase() === ("sftp" || "ftps")) {
-      await dispatch(reset("DataSetsForm"));
+      await dispatch(reset("CreateDataSetsForm"));
     } else {
       jdbcRef.current.handleCancel();
     }
@@ -199,11 +196,11 @@ const Dataset = (props, ref) => {
     if (currentStep === 5) {
       setValue(2);
     } else if (currentStep === 4) {
-      if (columnsActive) {
-        setValue(1);
-      } else {
-        setValue(value === 2 ? 0 : 2);
-      }
+      // if (columnsActive) {
+      setValue(1);
+      // } else {
+      //   setValue(value === 2 ? 0 : 2);
+      // }
     } else if (currentStep === 3) {
       setValue(0);
     }
@@ -235,7 +232,7 @@ const Dataset = (props, ref) => {
           {value === 0 &&
             (locationType?.toLowerCase() === "sftp" ||
               locationType?.toLowerCase() === "ftps") && (
-              <DataSetsForm loading={loading} handleSubmit={onSubmit} />
+              <CreateDataSetsForm loading={loading} onSubmit={onSubmit} />
             )}
           {value === 0 &&
             locationType?.toLowerCase() !== "sftp" &&
@@ -246,6 +243,7 @@ const Dataset = (props, ref) => {
                 datasetId={datasetId}
                 dfTestFlag={dataFlowdetail.testflag}
                 onChangeSql={onChangeSql}
+                onSubmit={onSubmit}
                 ref={jdbcRef}
               />
             )}

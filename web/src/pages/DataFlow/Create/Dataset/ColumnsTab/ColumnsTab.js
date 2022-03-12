@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-nested-ternary */
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import * as XLSX from "xlsx";
 import FileUpload from "apollo-react/components/FileUpload";
@@ -16,7 +16,7 @@ import { allowedTypes } from "../../../../../constants";
 import DSColumnTable from "./DSColumnTable";
 
 import { downloadTemplate } from "../../../../../utils/downloadData";
-import { checkHeaders, formatData } from "../../../../../utils/index";
+import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 
 // const DSColumnTable = lazy(() => import("./DSColumnTable"));
 
@@ -135,7 +135,7 @@ const ColumnsTab = ({ locationType }) => {
   }, [importedData]);
 
   useEffect(() => {
-    if (datasetColumns.length > 0) {
+    if (!isSftp(locationType)) {
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
