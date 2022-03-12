@@ -29,11 +29,11 @@ const IngestionIssuesModal = ({ open, handleClose, issuetypes }) => {
         issue_type:
           rec?.incremental?.toLowerCase() === "y"
             ? rec.incrementalIssueType
-            : rec.cumIngestionIssueType,
+            : rec.cummulativeIssueType,
         no_issues:
           rec?.incremental?.toLowerCase() === "y"
             ? rec.incrementalTotalIssues
-            : rec.cumTotalNoOfIssuess,
+            : rec.cummulativeTotalIssues,
       }));
       setRows(records);
       setTotalCount(issuetypes.totalSize);
