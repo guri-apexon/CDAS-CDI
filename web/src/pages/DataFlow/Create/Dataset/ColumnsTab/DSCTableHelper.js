@@ -20,8 +20,8 @@ import {
   compareStrings,
 } from "apollo-react/components/Table";
 
-import { ReactComponent as Plus } from "../../../components/Icons/roundPlusBlue.svg";
-import { TextFieldFilter } from "../../../utils/index";
+import { ReactComponent as Plus } from "../../../../../components/Icons/roundPlusBlue.svg";
+import { TextFieldFilter } from "../../../../../utils/index";
 
 import {
   checkNumeric,
@@ -30,7 +30,7 @@ import {
   checkFormat,
   checkRequiredValue,
   checkCharacterLength,
-} from "../../../components/FormComponents/validators";
+} from "../../../../../components/FormComponents/validators";
 
 const fieldStyles = {
   style: {
@@ -305,8 +305,6 @@ export const CustomHeader = ({
   cancelMulti,
   newRows,
   disableSaveAll,
-  testLock,
-  prodLock,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -327,18 +325,16 @@ export const CustomHeader = ({
       )}
       {!isMultiAdd && (
         <>
-          {locationType?.toLowerCase() === ("sftp" || "ftps") && (
-            <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
-              <IconMenuButton
-                id="actions-1"
-                menuItems={addMenuItems}
-                size="small"
-                disabled={isEditAll}
-              >
-                <Plus />
-              </IconMenuButton>
-            </Tooltip>
-          )}
+          <Tooltip title={!isEditAll && "Add rows"} disableFocusListener>
+            <IconMenuButton
+              id="actions-1"
+              menuItems={addMenuItems}
+              size="small"
+              disabled={isEditAll}
+            >
+              <Plus />
+            </IconMenuButton>
+          </Tooltip>
           <Tooltip title={!isEditAll && "Edit all"} disableFocusListener>
             <IconButton color="primary" size="small" disabled={isEditAll}>
               <Pencil onClick={onEditAll} />
@@ -349,7 +345,7 @@ export const CustomHeader = ({
       {isMultiAdd && (
         <>
           <TextField
-            placeholder="# of columns"
+            placeholder="# of rows"
             type="number"
             min="1"
             max="499"
@@ -370,19 +366,13 @@ export const CustomHeader = ({
           </Button>
         </>
       )}
-      {locationType?.toLowerCase() === ("sftp" || "ftps") && (
+      {(locationType?.toLowerCase() === "sftp" ||
+        locationType?.toLowerCase() === "ftps") && (
         <Tooltip
-          title={
-            (!isEditAll || !prodLock || !testLock) &&
-            "Import dataset column settings"
-          }
+          title={!isEditAll && "Import dataset column settings"}
           disableFocusListener
         >
-          <IconButton
-            color="primary"
-            size="small"
-            disabled={isEditAll || prodLock || testLock}
-          >
+          <IconButton color="primary" size="small" disabled={isEditAll}>
             <Upload />
           </IconButton>
         </Tooltip>

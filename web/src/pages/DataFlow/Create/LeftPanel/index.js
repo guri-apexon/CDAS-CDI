@@ -1,5 +1,4 @@
-/* eslint-disable react/jsx-wrap-multilines */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -16,13 +15,14 @@ import Tag from "apollo-react/components/Tag";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Tooltip from "apollo-react/components/Tooltip";
-import { ReactComponent as DataFlowIcon } from "../../Icons/dataflow.svg";
-import PackagesList from "../../../pages/DataPackages/PackagesTable";
-import { getUserInfo, debounceFunction } from "../../../utils";
+import { ReactComponent as DataFlowIcon } from "../../../../components/Icons/dataflow.svg";
+import PackagesList from "./PackagesTable";
+import { getUserInfo, debounceFunction } from "../../../../utils";
 import {
   getPackagesList,
   addPackageBtnAction,
-} from "../../../store/actions/DataPackageAction";
+} from "../../../../store/actions/DataPackageAction";
+import { MessageContext } from "../../../../components/Providers/MessageProvider";
 
 import "./LeftPanel.scss";
 
@@ -68,43 +68,52 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LeftPanel = ({ dataflowSource }) => {
+const LeftPanel = ({ protId, packages, setFormType, myform }) => {
   const classes = useStyles();
   const history = useHistory();
   const dispatch = useDispatch();
   const [searchTxt, setSearchTxt] = useState("");
+  // const [packages, setPackages] = useState([]);
   const packageData = useSelector((state) => state.dataPackage);
-  const { description, dataflowid, vendorname, name, testflag, active } =
-    dataflowSource;
-  const { loading } = packageData;
+  const dataFlowData = useSelector((state) => state.dataFlow);
+  const dashboard = useSelector((state) => state.dashboard);
+  const { description, selectedVendor, dataflowType, loading } = dataFlowData;
   const userInfo = getUserInfo();
   const location = useLocation();
+  const { selectedDFId, selectedCard } = dashboard;
+  const messageContext = useContext(MessageContext);
+  let dataflowName = "";
   const viewAuditLog = () => {
     history.push("/dashboard/audit-logs");
   };
-  const getPackages = (dfid, query = "") => {
-    if (dfid) {
-      dispatch(getPackagesList(dfid, query));
-    }
-  };
-
+  // const getPackages = (query = "") => {
+  //   if (selectedDFId) {
+  //     dispatch(getPackagesList(selectedDFId, query));
+  //   } else {
+  //     // history.push("dashboard");
+  //   }
+  // };
   // useEffect(() => {
-  //   getPackages(dataflowid);
-  // }, [dataflowid]);
-
+  //   getPackages();
+  // }, []);
   const searchTrigger = (e) => {
     const newValue = e.target.value;
     setSearchTxt(newValue);
-    debounceFunction(async () => {
-      await getPackages(newValue);
-    }, 1000);
+    // debounceFunction(async () => {
+    //   await getPackages(newValue);
+    // }, 1000);
   };
   const redirectDataPackage = () => {
-    if (location.pathname === "/dashboard/data-packages") {
-      dispatch(addPackageBtnAction());
+    if (Object.keys(myform).length > 0) {
+      setFormType("datapackage");
     } else {
-      history.push("/dashboard/data-packages");
+      messageContext.showErrorMessage("Please fill data flow details");
     }
+    // if (location.pathname === "/dashboard/data-packages") {
+    //   dispatch(addPackageBtnAction());
+    // } else {
+    //   history.push("/dashboard/data-packages");
+    // }
   };
   const menuItems = [
     { text: "View audit log", onClick: viewAuditLog },
@@ -122,6 +131,16 @@ const LeftPanel = ({ dataflowSource }) => {
       </>
     );
   };
+
+  if (
+    selectedVendor &&
+    selectedVendor.label !== "" &&
+    description !== "" &&
+    protId !== ""
+  ) {
+    dataflowName = `${selectedVendor.label}-${description}-${protId}`;
+  }
+  console.log(packages, "packages");
   return (
     <div className="leftPanel">
       <div className={classes.drawerHeader}>
@@ -135,13 +154,7 @@ const LeftPanel = ({ dataflowSource }) => {
           <FormControlLabel
             style={{ fontSize: 14 }}
             value="true"
-            control={
-              <Switch
-                color="primary"
-                size="small"
-                checked={active === 0 ? false : true}
-              />
-            }
+            control={<Switch color="primary" size="small" />}
             label="Active"
             labelPlacement="start"
           />
@@ -151,12 +164,14 @@ const LeftPanel = ({ dataflowSource }) => {
       <Divider />
       <Box className="sidebar-content">
         <Tag
-          label={testflag === 1 ? "Test" : "Production"}
+          label={dataflowType}
           variant="grey"
           style={{ textTransform: "capitalize", marginBottom: 20 }}
         />
-        <Typography className={classes.LeftTitle}>{name}</Typography>
-        <Typography className={classes.LeftSubTitle}>{vendorname}</Typography>
+        <Typography className={classes.LeftTitle}>{dataflowName}</Typography>
+        <Typography className={classes.LeftSubTitle}>
+          {selectedVendor?.label}
+        </Typography>
         <Typography className={classes.description}>
           {/* <ArrowRight className={classes.icon} /> */}
           {description}
@@ -196,7 +211,7 @@ const LeftPanel = ({ dataflowSource }) => {
         </div>
       </div>
       <div className="packages-list customScrollbar">
-        {packageData ? (
+        {packages ? (
           <div className="list-container">
             {loading ? (
               <Box display="flex" className="loader-container">
@@ -205,9 +220,9 @@ const LeftPanel = ({ dataflowSource }) => {
             ) : (
               <>
                 <Typography variant="body2" style={{ marginLeft: 10 }}>
-                  {`${packageData.packagesList.length} Data Packages`}
+                  {`${packages.length} Data Packages`}
                 </Typography>
-                <PackagesList userInfo={userInfo} data={packageData} />
+                <PackagesList userInfo={userInfo} data={packages} />
               </>
             )}
           </div>

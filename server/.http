@@ -469,3 +469,80 @@ content-type: application/json
 {
   "query": "string"
 }
+
+
+### update dataset
+
+POST http://localhost:4001/v1/api/dataflow/create HTTP/1.1
+content-type: application/json
+
+{
+	"sponsorNameStandard": null,
+	"sponsorName": "",
+	"externalVersion": 5951,
+	"protocolNumberStandard": "AL07",
+	"vendorName": "IQVIA Connected Devices",
+	"protocolNumber": "a020E000005SwQmQAK",
+	"type": "Tabular",
+	"name": "TST-ALMAC-AL07-IntD495",
+	"externalID": 495,
+	"externalSystemName": "GDMPM-DAS",
+	"connectionType": "Hive CDH",
+	"location": "sftp://secure-transfer-ftp.solutions.iqvia.com/Home/IQVIA/000108/",
+	"exptDtOfFirstProdFile": "2019-10-14 00:00:00",
+	"testFlag": true,
+	"prodFlag": true,
+	"description": "IntD495",
+	"dataPackage": [{
+		"externalID": 4950,
+		"externalSystemName": "GDMPM-DAS",
+		"type": "ngl",
+		"sasXptMethod": "",
+		"path": "sql",
+		"password": "",
+		"noPackageConfig": true,
+		"name": "yolo new",
+		"dataSet": [{
+      "columncount": 45,
+			"externalID": 4950,
+			"customQuery": "NO",
+			"customSql": "",
+			"tableName": "dflowTable",
+			"conditionalExpression": "where id !=null",
+			"incremental": true,
+			"offsetColumn": "CreatedDate",
+			"type": "",
+			"dataTransferFrequency": 0,
+			"OverrideStaleAlert": 0,
+			"rowDecreaseAllowed": 0,
+			"quote": "",
+			"path": "/foldername",
+			"name": "myfolder",
+			"mnemonic": "TestMenmonic4950",
+			"headerRowNumber": 0,
+			"footerRowNumber": 0,
+			"escapeCode": "",
+			"delimiter": "",
+			"externalSystemName": "GDMPM-DAS",
+			"dataKind": "Cardiac_Safety_Data",
+      "naming_convention": "yolo",
+			"columnDefinition": [{
+				"includeFlag": true,
+				"unique": true,
+				"required": true,
+				"primaryKey": true,
+				"position": null,
+				"name": "VID1",
+				"lov": "",
+				"format": "X",
+				"dataType": "Alphanumeric",
+				"characterMin": 0,
+				"characterMax": 0
+			}],
+			"columnCount": 1,
+			"active": false
+		}],
+		"active": false
+	}],
+	"active": false
+}

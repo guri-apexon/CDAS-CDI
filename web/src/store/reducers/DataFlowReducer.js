@@ -16,6 +16,7 @@ import {
   FETCH_DATAFLOW_DETAIL_FAILURE,
   FETCH_DATAFLOW_DETAIL_SUCCESS,
   ADD_DATAFLOW_SUCCESS,
+  SAVE_DATAFLOW_LOCAL_DETAIL,
 } from "../../constants";
 
 export const initialState = {
@@ -98,6 +99,27 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case HIDE_ERROR_MSG:
         newState.error = action.message;
+        break;
+      case SAVE_DATAFLOW_LOCAL_DETAIL:
+        console.log("SAVE_DATAFLOW_LOCAL_DETAIL", action, state);
+        // eslint-disable-next-line no-case-declarations
+        const { details } = action;
+        newState.dataFlowdetail = details;
+        newState.loading = false;
+        // newState.testLock = details.testflag === 1 && dataflow.isSync === "Y";
+        // newState.prodLock = details.testflag === 0 && dataflow.isSync === "Y";
+        // newState.testProdLock = dataflow.isSync === "Y";
+        // newState.formData = {
+        //   description: dataflow.description,
+        //   firstFileDate: dataflow.exptfstprddt,
+        //   locationType: dataflow.loctyp,
+        //   name: dataflow.name,
+        //   dataflowType: dataflow.testflag === 1 ? true : false,
+        //   srclocID: dataflow.srclocID,
+        //   dataStructure: dataflow.type,
+        //   vendID: dataflow.vendID,
+        //   vendorname: dataflow.vendorname,
+        // };
         break;
       case FETCH_DATAFLOW_DETAIL_FAILURE:
         newState.loading = false;

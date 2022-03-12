@@ -43,33 +43,18 @@
   padding: 16px;
 }
 
-label + div[class^="MuiInput-formControl"] {
-  min-width: 200px;
-}
-
-.like-fixedbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 72px;
-  .ds-status {
-    width: 232px;
-    display: flex;
-    align-items: center;
-  }
-}
-.smallSize_autocomplete {
-  width: 100%;
-  input {
-    height: 32px;
-    font-size: 14px;
-    line-height: 30px !important;
-    padding-top: 0px !important;
-    padding-bottom: 0px !important;
-  }
-}
-
 .jdbc-form {
+  .like-fixedbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 72px;
+    .ds-status {
+      width: 232px;
+      display: flex;
+      align-items: center;
+    }
+  }
   .preview-table {
     margin-top: 20px;
   }

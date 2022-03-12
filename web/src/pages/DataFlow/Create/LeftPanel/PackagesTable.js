@@ -14,13 +14,13 @@ import StatusDotSolid from "apollo-react-icons/StatusDotSolid";
 import MenuItem from "apollo-react/components/MenuItem";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
-import { ReactComponent as RoundPlusSvg } from "../../components/Icons/roundplus.svg";
-import { ReactComponent as PackageIcon } from "../../components/Icons/datapackage.svg";
+import { ReactComponent as RoundPlusSvg } from "../../../../components/Icons/roundplus.svg";
+import { ReactComponent as PackageIcon } from "../../../../components/Icons/datapackage.svg";
 import {
   deletePackage,
   redirectToDataSet,
   updateStatus,
-} from "../../store/actions/DataPackageAction";
+} from "../../../../store/actions/DataPackageAction";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
@@ -76,14 +76,13 @@ const PackagesList = ({ data, userInfo }) => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
     dispatch(reset("DataSetsForm"));
     dispatch(reset("DataSetsFormSQL"));
-    history.push("/dashboard/dataset/new");
+    history.push("/dashboard/datasets-management");
   };
 
   const DataSetsCell = ({ row, column: { accessor } }) => {
-    const datasets = row[accessor] || row.datasets;
+    const { datasets } = row;
     return (
       <div className="flex flex-center dataset-count-td">
-        {/* {console.log("row", row)} */}
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
@@ -167,7 +166,7 @@ const PackagesList = ({ data, userInfo }) => {
           updateStatus({
             package_id: packageId,
             active: status === 1 ? "0" : "1",
-            user_id: userInfo.userId,
+            user_id: userInfo.user_id,
           })
         );
       }
@@ -175,7 +174,7 @@ const PackagesList = ({ data, userInfo }) => {
     const deleteAction = () => {
       if (packageId) {
         dispatch(
-          deletePackage({ package_id: packageId, user_id: userInfo.userId })
+          deletePackage({ package_id: packageId, user_id: userInfo.user_id })
         );
       }
     };
@@ -230,7 +229,7 @@ const PackagesList = ({ data, userInfo }) => {
     },
     {
       header: "Package Name",
-      accessor: "name",
+      accessor: "namingConvention",
       customCell: NameCustomCell,
     },
     {
@@ -268,10 +267,10 @@ const PackagesList = ({ data, userInfo }) => {
     // }, 1000);
   };
   useEffect(() => {
-    const newData = data.packagesList || [];
+    const newData = data || [];
     setTableData(newData);
     // console.log("newData", newData);
-  }, [data.packagesList]);
+  }, [data]);
   return (
     <Table
       columns={columns}

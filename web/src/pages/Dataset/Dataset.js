@@ -98,11 +98,12 @@ const Dataset = () => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
   const { selectedDFId } = dashboard;
-  const { dataflowName, datapackageid, datapackageName, datasetName } =
-    selectedDSDetails;
+  const { datapackageid, datapackageName, datasetName } = selectedDSDetails;
   const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
     dataSets;
   const { dataFlowdetail } = dataFlow;
+  const { name: dataflowName } = dataFlowdetail;
+
   const { datasetId } = useParams();
 
   const useStyles = makeStyles(styles);
@@ -154,11 +155,11 @@ const Dataset = () => {
     }
   }, [isDatasetCreated]);
 
-  useEffect(() => {
-    if (selectedDFId) {
-      dispatch(getDataFlowDetail(selectedDFId));
-    }
-  }, [selectedDFId]);
+  // useEffect(() => {
+  //   if (selectedDFId) {
+  //     dispatch(getDataFlowDetail(selectedDFId));
+  //   }
+  // }, [selectedDFId]);
 
   useEffect(() => {
     if (dataFlowdetail?.loctyp) {
@@ -237,10 +238,10 @@ const Dataset = () => {
   const getLeftPanel = React.useMemo(
     () => (
       <>
-        <LeftPanel />
+        <LeftPanel dataflowSource={dataFlowdetail} />
       </>
     ),
-    []
+    [dataFlowdetail]
   );
 
   return (
