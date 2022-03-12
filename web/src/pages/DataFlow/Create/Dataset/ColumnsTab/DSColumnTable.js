@@ -292,7 +292,8 @@ export default function DSColumnTable({
     setRows([...removeSpaces]);
     setSelectedRows([]);
     setEditedRows(rows);
-    dispatch(createDatasetColumns(rows, datasetid));
+    console.log("datasetid", datasetid, rows);
+    // dispatch(createDatasetColumns(rows, datasetid));
   };
 
   const onCancelAll = () => {
@@ -400,6 +401,12 @@ export default function DSColumnTable({
   const handleOverWrite = () => {
     console.log("handle overwrite");
   };
+
+  useEffect(() => {
+    if (rows?.length) {
+      messageContext?.setDataflow({ columnDefinition: rows });
+    }
+  }, [rows]);
 
   return (
     <div>

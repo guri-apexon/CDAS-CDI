@@ -44,13 +44,31 @@ const Breadcrumbs = (props) => {
   );
 };
 const Header = (props) => {
-  const { headerTitle, currentStep, submitting } = props;
+  const { currentStep, submitting } = props;
   const classes = useStyles();
   const [hidebackBtn, setHideBackBtn] = useState(true);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [headerTitle, setHeaderTitle] = useState("");
   useEffect(() => {
     if (currentStep) {
       setHideBackBtn(currentStep <= 1);
+    }
+    switch (currentStep) {
+      case 1:
+        setHeaderTitle("Creating New Data Flow");
+        break;
+      case 2:
+        setHeaderTitle("Creating New Package");
+        break;
+      case 3:
+        setHeaderTitle("Creating Dataset");
+        break;
+      case 4:
+        setHeaderTitle("Creating Dataset");
+        break;
+      default:
+        setHeaderTitle("Creating Dataset");
+        break;
     }
   }, [currentStep]);
   return (
@@ -63,11 +81,6 @@ const Header = (props) => {
         {props.icon}
         <Typography className={classes.contentTitle}>{headerTitle}</Typography>
       </div>
-      {props.datasetsCount && (
-        <Typography className={classes.contentSubTitle}>
-          {`${props.datasetsCount} datasets`}
-        </Typography>
-      )}
       {(!props.tabValue || props.tabValue === 0) && (
         <ButtonGroup
           alignItems="right"
@@ -85,7 +98,7 @@ const Header = (props) => {
               size: "small",
             },
             {
-              label: currentStep >= 5 ? "Save data flow" : "Next",
+              label: currentStep >= 4 ? "Save data flow" : "Next",
               onClick: () => props.submit(),
               size: "small",
               disabled: submitting,
