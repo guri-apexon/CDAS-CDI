@@ -104,7 +104,7 @@ const IncrementalSummary = ({
           Files not ingested
         </Typography>
         <Link
-          onClick={() => handleChangeTab()}
+          onClick={() => handleChangeTab("failed")}
           style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
         >
           View files with fatal issues
@@ -162,7 +162,7 @@ const IncrementalSummary = ({
             {`${totalFileIngested} Total files ingested`}
           </Typography>
           <Link
-            onClick={() => handleChangeTab()}
+            onClick={() => handleChangeTab("ingestion_issues")}
             style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
           >
             View files with issues
