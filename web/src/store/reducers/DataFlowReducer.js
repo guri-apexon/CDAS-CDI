@@ -143,9 +143,11 @@ const DataFlowReducer = (state = initialState, action) =>
           testflag,
           isSync,
         } = dataflowDetail;
+
         newState.testLock = testflag === 1 && isSync === "Y";
         newState.prodLock = testflag === 0 && isSync === "Y";
         newState.testProdLock = isSync === "Y";
+
         // eslint-disable-next-line no-case-declarations
         const formData = {};
         formData.description = description;
