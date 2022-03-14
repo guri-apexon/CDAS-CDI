@@ -277,6 +277,11 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   const handleOpen = () => {
     setIsPanelOpen(true);
   };
+  const configMessage = () => {
+    messageContext.showErrorMessage(
+      "Please select package level config to proceed"
+    );
+  };
 
   useEffect(() => {
     const columnDefinition =
@@ -308,6 +313,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
             toast={messageContext}
             ref={packagesRef}
             payloadBack={AddDatapackage}
+            configRequired={configMessage}
           />
         </div>
         <div

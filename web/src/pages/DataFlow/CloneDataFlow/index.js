@@ -104,12 +104,12 @@ const CloneDataFlow = ({
     setSearchTxt(newValue);
     if (newValue !== "") {
       if (el === "study") {
-        debounceFunction(async () => {
-          setLoading(true);
-          const newStudies = await searchStudy(newValue);
-          setStudies(newStudies.studies ? newStudies.studies : []);
-          setLoading(false);
-        }, 1000);
+        // debounceFunction(async () => {
+        //   setLoading(true);
+        //   const newStudies = await searchStudy(newValue);
+        //   setStudies(newStudies.studies ? newStudies.studies : []);
+        //   setLoading(false);
+        // }, 1000);
       } else {
         debounceFunction(async () => {
           setLoading(true);

@@ -146,7 +146,7 @@ const DataSetsFormBase = (props) => {
         <div className={classes.section}>
           <FixedBar
             title="Dataset Settings"
-            style={{ padding: 0, border: "none" }}
+            style={{ paddingLeft: 0, border: "none" }}
           >
             <ReduxFormSwitch
               label="Dataset Active"
