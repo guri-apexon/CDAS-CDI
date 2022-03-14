@@ -103,9 +103,10 @@ const DatasetIngestionReport = () => {
     issuetypes,
   } = useSelector((state) => state.ingestionReports);
   const [tabvalue, setTabValue] = useState(0);
-  const handleChangeTab = (event, value) => {
-    console.log(value, "vvvvv");
+  const [transferLogFilter, setTransferLogFilter] = useState("");
+  const handleChangeTab = (event, value, filter = "") => {
     setTabValue(value);
+    setTransferLogFilter(filter);
   };
   const { datasetId } = useParams();
 
@@ -189,11 +190,14 @@ const DatasetIngestionReport = () => {
           <Metrics
             datasetProperties={datasetProperties}
             issuetypes={issuetypes}
-            handleChangeTab={() => handleChangeTab("", 1)}
+            handleChangeTab={(v) => handleChangeTab("", 1, v)}
           />
         )}
         {tabvalue === 1 && (
-          <TransferLog datasetProperties={datasetProperties} />
+          <TransferLog
+            datasetProperties={datasetProperties}
+            transferLogFilter={transferLogFilter}
+          />
         )}
         {tabvalue === 2 && <Properties datasetProperties={datasetProperties} />}
       </div>
