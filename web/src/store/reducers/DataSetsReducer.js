@@ -51,7 +51,6 @@ export const initialState = {
     active: true,
     customSQLQuery: "Yes",
     dataType: "Cumulative",
-    offsetColumn: "Disabled",
   },
   formData: {
     active: true,
@@ -127,7 +126,6 @@ const DataFlowReducer = (state = initialState, action) =>
           active: true,
           customSQLQuery: "Yes",
           dataType: "Cumulative",
-          offsetColumn: "Disabled",
         };
         break;
 
@@ -279,7 +277,8 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.loadType =
             incremental === "Y" ? "Incremental" : "Cumulative";
           newState.formData.datasetid = datasetid;
-        } else {
+        }
+        if (customsql_yn) {
           newState.formDataSQL.active = active === 1 ? true : false;
           newState.formDataSQL.datasetName = mnemonic;
           newState.formDataSQL.customSQLQuery = customsql_yn;

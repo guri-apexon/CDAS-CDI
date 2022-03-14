@@ -62,27 +62,30 @@ exports.saveDatasetData = async (req, res) => {
       values.datapackageid,
       values.dfTestFlag
     );
+
     if (isExist) {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
     }
+
     const datasetId = helper.generateUniqueID();
-    if (values.locationType === "JDBC") {
+    if (values.locationType === "jdbc") {
       return saveSQLDataset(req, res, values, datasetId);
     }
+
     Logger.info({ message: "create Dataset" });
     const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`;
 
     const body = [
       datasetId,
       values.datasetName,
-      values.fileType || null,
+      values.fileType,
       values.encoding || null,
       values.delimiter || null,
       values.escapeCharacter || null,
       values.quote || null,
       values.headerRowNumber || 0,
       values.footerRowNumber || 0,
-      values.active == true ? 1 : 0,
+      values.active === true ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
       values.clinicalDataType[0],
@@ -99,7 +102,6 @@ exports.saveDatasetData = async (req, res) => {
   } catch (err) {
     Logger.error("catch :storeDataset");
     Logger.error(err);
-    // console.log(err, "err");
     return apiResponse.ErrorResponse(res, err);
   }
 };
@@ -143,7 +145,7 @@ exports.updateDatasetData = async (req, res) => {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
     }
 
-    if (values.locationType === "JDBC") {
+    if (values.locationType === "jdbc") {
       return updateSQLDataset(req, res, values);
     }
 

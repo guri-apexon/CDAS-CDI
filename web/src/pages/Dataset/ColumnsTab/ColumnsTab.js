@@ -143,10 +143,7 @@ const ColumnsTab = ({ locationType }) => {
   }, [datasetColumns]);
 
   useEffect(() => {
-    if (
-      locationType?.toLowerCase() !== "sftp" &&
-      locationType?.toLowerCase() !== "ftps"
-    ) {
+    if (locationType !== ("sftp" || "ftps")) {
       setShowColumns(true);
     }
   }, [locationType]);
