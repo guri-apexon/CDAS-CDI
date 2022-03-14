@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-condition */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-script-url */
 import React, { useState, useContext, useEffect, useRef } from "react";
@@ -23,8 +24,9 @@ import {
   updateDatasetData,
   getDataSetDetail,
   getDatasetColumns,
+  resetFTP,
+  resetJDBC,
 } from "../../store/actions/DataSetsAction";
-import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
@@ -98,13 +100,12 @@ const Dataset = () => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
   const { selectedDFId } = dashboard;
-  const { datapackageid, datapackageName, datasetName } = selectedDSDetails;
+  const { datapackageid, datapackageName, datasetid, datasetName } =
+    selectedDSDetails;
   const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
     dataSets;
   const { dataFlowdetail } = dataFlow;
-  const { name: dataflowName } = dataFlowdetail;
-
-  const { datasetId } = useParams();
+  const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -120,6 +121,7 @@ const Dataset = () => {
   const handleChangeTab = (event, v) => {
     setValue(v);
   };
+
   const getDataSetType = (type) => {
     if (type?.toLowerCase() === ("sftp" || "ftps")) {
       return "sftp";
@@ -137,38 +139,32 @@ const Dataset = () => {
   }, []);
 
   useEffect(() => {
-    if (datasetId === "new") {
-      dispatch(reset("DataSetsForm"));
-      dispatch(reset("DataSetsFormSQL"));
+    if (datasetid === null) {
+      dispatch(resetFTP());
+      dispatch(resetJDBC());
     } else {
-      dispatch(getDataSetDetail(datasetId));
-      dispatch(getDatasetColumns(datasetId));
+      dispatch(getDataSetDetail(datasetid));
+      dispatch(getDatasetColumns(datasetid));
     }
-  }, [datasetId]);
+  }, [datasetid]);
 
   useEffect(() => {
     if (isDatasetCreated) {
-      if (dataFlowdetail?.loctyp === ("sftp" || "ftps") || customSql === "No") {
+      if (getDataSetType(loctyp) === ("sftp" || "ftps") || customSql === "No") {
         setValue(1);
       }
       setColumnsActive(customSql === "No");
     }
-  }, [isDatasetCreated]);
-
-  // useEffect(() => {
-  //   if (selectedDFId) {
-  //     dispatch(getDataFlowDetail(selectedDFId));
-  //   }
-  // }, [selectedDFId]);
+  }, [customSql, isDatasetCreated, loctyp]);
 
   useEffect(() => {
-    if (dataFlowdetail?.loctyp) {
-      setLocationType(dataFlowdetail?.loctyp);
-      if (getDataSetType(dataFlowdetail?.loctyp) === ("sftp" || "ftps")) {
+    if (loctyp) {
+      setLocationType(getDataSetType(loctyp));
+      if (getDataSetType(loctyp) === ("sftp" || "ftps")) {
         setColumnsActive(true);
       }
     }
-  }, [dataFlowdetail]);
+  }, [loctyp]);
 
   const goToDataflow = () => {
     if (selectedDFId) {
@@ -203,7 +199,7 @@ const Dataset = () => {
   const jdbcRef = useRef();
 
   const submitForm = () => {
-    if (locationType?.toLowerCase() === ("sftp" || "ftps")) {
+    if (locationType === ("sftp" || "ftps")) {
       dispatch(submit("DataSetsForm"));
     } else {
       dispatch(submit("DataSetsFormSQL"));
@@ -216,7 +212,7 @@ const Dataset = () => {
       const data = {
         ...formValue,
         datapackageid,
-        dfTestFlag: dataFlowdetail.testflag,
+        dfTestFlag: testflag,
       };
       if (data.datasetid) {
         dispatch(updateDatasetData(data));
@@ -227,7 +223,7 @@ const Dataset = () => {
   };
 
   const closeForm = async () => {
-    if (locationType?.toLowerCase() === ("sftp" || "ftps")) {
+    if (locationType === ("sftp" || "ftps")) {
       await dispatch(reset("DataSetsForm"));
     } else {
       jdbcRef.current.handleCancel();
@@ -322,33 +318,34 @@ const Dataset = () => {
             </div>
 
             <div style={{ padding: 20, marginTop: 20 }}>
-              {value === 0 &&
-                (locationType?.toLowerCase() === "sftp" ||
-                  locationType?.toLowerCase() === "ftps") && (
-                  <DataSetsForm loading={loading} onSubmit={onSubmit} />
-                )}
-              {value === 0 &&
-                locationType?.toLowerCase() !== "sftp" &&
-                locationType?.toLowerCase() !== "ftps" && (
-                  <DataSetsFormSQL
-                    onChange={onChangeSql}
-                    defaultFields={{
-                      sql: customSql,
-                    }}
-                    loading={loading}
-                    onSubmit={onSubmit}
-                  />
-                  // <JDBCForm
-                  //   datapackageid={datapackageid}
-                  //   dataflowid={selectedDFId}
-                  //   datasetId={datasetId}
-                  //   isDatasetCreated={isDatasetCreated}
-                  //   selectedDataset={selectedDataset}
-                  //   dfTestFlag={dataFlowdetail.testflag}
-                  //   onChangeSql={onChangeSql}
-                  //   ref={jdbcRef}
-                  // />
-                )}
+              {value === 0 && (
+                <>
+                  {console.log("ltype", locationType)}
+                  {locationType === ("sftp" || "ftps") ? (
+                    <DataSetsForm loading={loading} onSubmit={onSubmit} />
+                  ) : (
+                    <DataSetsFormSQL
+                      onChange={onChangeSql}
+                      defaultFields={{ sql: customSql }}
+                      loading={loading}
+                      onSubmit={onSubmit}
+                    />
+                  )}
+                </>
+              )}
+
+              {
+                // <JDBCForm
+                //   datapackageid={datapackageid}
+                //   dataflowid={selectedDFId}
+                //   datasetId={datasetid}
+                //   isDatasetCreated={isDatasetCreated}
+                //   selectedDataset={selectedDataset}
+                //   dfTestFlag={testflag}
+                //   onChangeSql={onChangeSql}
+                //   ref={jdbcRef}
+                // />
+              }
               {value === 1 && <ColumnsTab locationType={locationType} />}
               {value === 2 && <VLCTab />}
             </div>

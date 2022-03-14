@@ -34,12 +34,16 @@ import {
   GET_PREVIEW_SQL,
   FETCH_PREVIEW_SQL_SUCCESS,
   FETCH_PREVIEW_SQL_FAILURE,
+  UPDATE_DS,
+  RESET_FTP_FORM,
+  RESET_JDBC_FORM,
 } from "../../constants";
 
 export const initialState = {
   loading: false,
   isDatasetCreated: false,
   isColumnsConfigured: false,
+  isDatasetCreation: true,
   datasetColumns: [],
   datasetDetail: {},
   formDataSQL: {
@@ -47,7 +51,6 @@ export const initialState = {
     active: true,
     customSQLQuery: "Yes",
     dataType: "Cumulative",
-    offsetColumn: "Disabled",
   },
   formData: {
     active: true,
@@ -95,6 +98,37 @@ const DataFlowReducer = (state = initialState, action) =>
       case SAVE_DATASET_DATA:
         newState.loading = true;
         break;
+
+      case UPDATE_DS:
+        newState.isDatasetCreation = action.status;
+        break;
+
+      case RESET_FTP_FORM:
+        newState.formData = {
+          active: true,
+          locationType: "SFTP",
+          delimiter: "COMMA",
+          fileType: "SAS",
+          encoding: "UTF-8",
+          escapeCharacter: "\\",
+          quote: `""`,
+          headerRowNumber: 1,
+          footerRowNumber: "",
+          overrideStaleAlert: 3,
+          rowDecreaseAllowed: 0,
+          loadType: "Cumulative",
+        };
+        break;
+
+      case RESET_JDBC_FORM:
+        newState.formDataSQL = {
+          locationType: "JDBC",
+          active: true,
+          customSQLQuery: "Yes",
+          dataType: "Cumulative",
+        };
+        break;
+
       case STORE_DATASET_SUCCESS:
         newState.loading = false;
         newState.isDatasetCreated = !state.isDatasetCreated;
@@ -243,7 +277,8 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.loadType =
             incremental === "Y" ? "Incremental" : "Cumulative";
           newState.formData.datasetid = datasetid;
-        } else {
+        }
+        if (customsql_yn) {
           newState.formDataSQL.active = active === 1 ? true : false;
           newState.formDataSQL.datasetName = mnemonic;
           newState.formDataSQL.customSQLQuery = customsql_yn;

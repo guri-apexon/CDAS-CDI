@@ -77,7 +77,7 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
     if (datasetProperties?.loadType?.toLowerCase() === "incremental") {
       filehistory?.records?.forEach((record) => {
         histories.push({
-          label: `${record.datasetname}, ${formatDate(record.lastsucceeded)}`,
+          label: `${formatDate(record.lastsucceeded)}`,
           label2: ":test",
           data: [
             {
@@ -207,19 +207,18 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
                 </div>
                 {connectionTypeCheck.indexOf(
                   datasetProperties?.SourceOrigin?.toLowerCase()
-                ) !== -1 &&
-                  datasetProperties?.ExpectedTransferFrequency && (
-                    <div>
-                      <Typography
-                        variant="body2"
-                        style={{ fontSize: 14, marginTop: 14 }}
-                      >
-                        {`Expected transfer frequency: ${
-                          datasetProperties?.ExpectedTransferFrequency || ""
-                        }`}
-                      </Typography>
-                    </div>
-                  )}
+                ) !== -1 && (
+                  <div>
+                    <Typography
+                      variant="body2"
+                      style={{ fontSize: 14, marginTop: 14 }}
+                    >
+                      {`Expected transfer frequency: ${
+                        datasetProperties?.ExpectedTransferFrequency || ""
+                      }`}
+                    </Typography>
+                  </div>
+                )}
               </div>
             </div>
             <div
@@ -231,7 +230,7 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
                   width={
                     historyData.length > 10
                       ? historyData.length * 80 + 1000
-                      : "1160"
+                      : "1560"
                   }
                   data={historyData}
                   suffix="k"
