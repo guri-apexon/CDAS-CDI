@@ -207,19 +207,18 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
                 </div>
                 {connectionTypeCheck.indexOf(
                   datasetProperties?.SourceOrigin?.toLowerCase()
-                ) !== -1 &&
-                  datasetProperties?.ExpectedTransferFrequency && (
-                    <div>
-                      <Typography
-                        variant="body2"
-                        style={{ fontSize: 14, marginTop: 14 }}
-                      >
-                        {`Expected transfer frequency: ${
-                          datasetProperties?.ExpectedTransferFrequency || ""
-                        }`}
-                      </Typography>
-                    </div>
-                  )}
+                ) !== -1 && (
+                  <div>
+                    <Typography
+                      variant="body2"
+                      style={{ fontSize: 14, marginTop: 14 }}
+                    >
+                      {`Expected transfer frequency: ${
+                        datasetProperties?.ExpectedTransferFrequency || ""
+                      }`}
+                    </Typography>
+                  </div>
+                )}
               </div>
             </div>
             <div
