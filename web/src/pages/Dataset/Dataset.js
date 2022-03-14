@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-condition */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-script-url */
 import React, { useState, useContext, useEffect, useRef } from "react";
@@ -316,17 +317,21 @@ const Dataset = () => {
             </div>
 
             <div style={{ padding: 20, marginTop: 20 }}>
-              {value === 0 && (locationType === "sftp" || "ftps") && (
-                <DataSetsForm loading={loading} onSubmit={onSubmit} />
+              {value === 0 && (
+                <>
+                  {locationType === "sftp" || "ftps" ? (
+                    <DataSetsForm loading={loading} onSubmit={onSubmit} />
+                  ) : (
+                    <DataSetsFormSQL
+                      onChange={onChangeSql}
+                      defaultFields={{ sql: customSql }}
+                      loading={loading}
+                      onSubmit={onSubmit}
+                    />
+                  )}
+                </>
               )}
-              {value === 0 && (locationType !== "sftp" || "ftps") && (
-                <DataSetsFormSQL
-                  onChange={onChangeSql}
-                  defaultFields={{ sql: customSql }}
-                  loading={loading}
-                  onSubmit={onSubmit}
-                />
-              )}
+
               {
                 // <JDBCForm
                 //   datapackageid={datapackageid}
