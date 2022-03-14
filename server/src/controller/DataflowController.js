@@ -105,9 +105,9 @@ exports.getStudyDataflows = async (req, res) => {
       const $q1 = await DB.executeQuery(query, [protocolId]);
 
       const formatDateValues = await $q1.rows.map((e) => {
-        let editT = moment(e.lastModified).format("DD-MMM-YYYY");
-        let addT = moment(e.dateCreated).format("DD-MMM-YYYY");
-        let syncT = moment(e.lastSyncDate).format("DD-MMM-YYYY");
+        let editT = moment(e.lastModified).format("MM/DD/YYYY");
+        let addT = moment(e.dateCreated).format("MM/DD/YYYY");
+        let syncT = moment(e.lastSyncDate).format("MM/DD/YYYY");
         let status = e.status === 0 ? "Inactive" : "Active";
         let dfType = e.type === 0 ? "Production" : "Test";
         return {

@@ -173,6 +173,7 @@ const DataSetsFormBase = (props) => {
             size="small"
             label="Custom SQL Query"
             required
+            disabled={testProdLock}
             canDeselect={false}
           >
             {YesNo?.map((type) => (
@@ -305,9 +306,6 @@ const DataSetsFormSQL = connect((state) => ({
   sqlTables: state.dataSets.sqlTables,
   sqlColumns: state.dataSets.sqlColumns,
   previewSQL: state.dataSets.previewSQL,
-  prodLock: state.dataFlow.prodLock,
-  testLock: state.dataFlow.testLock,
-  testProdLock: state.dataFlow.testProdLock,
 }))(ReduxForm);
 
 export default DataSetsFormSQL;

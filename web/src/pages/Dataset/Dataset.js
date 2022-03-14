@@ -102,9 +102,15 @@ const Dataset = () => {
   const { selectedDFId } = dashboard;
   const { datapackageid, datapackageName, datasetid, datasetName } =
     selectedDSDetails;
-  const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
-    dataSets;
-  const { dataFlowdetail } = dataFlow;
+  const {
+    loading,
+    error,
+    sucessMsg,
+    isDatasetCreated,
+    isDatasetCreation,
+    selectedDataset,
+  } = dataSets;
+  const { dataFlowdetail, prodLock, testLock, testProdLock } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
 
   const useStyles = makeStyles(styles);
@@ -322,13 +328,18 @@ const Dataset = () => {
                 <>
                   {console.log("ltype", locationType)}
                   {locationType === ("sftp" || "ftps") ? (
-                    <DataSetsForm loading={loading} onSubmit={onSubmit} />
+                    <DataSetsForm
+                      loading={loading}
+                      onSubmit={onSubmit}
+                      prodLock
+                    />
                   ) : (
                     <DataSetsFormSQL
                       onChange={onChangeSql}
-                      defaultFields={{ sql: customSql }}
-                      loading={loading}
                       onSubmit={onSubmit}
+                      prodLock
+                      testLock
+                      testProdLock
                     />
                   )}
                 </>
