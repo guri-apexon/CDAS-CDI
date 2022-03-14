@@ -34,7 +34,6 @@ export const initialState = {
   description: "",
   dataflowType: "test",
   dataStructure: "tabular",
-  locationType: "SFTP",
   selectedVendor: {},
   dataFlowdetail: {},
   testProdLock: false,
@@ -144,9 +143,11 @@ const DataFlowReducer = (state = initialState, action) =>
           locationName,
           isSync,
         } = dataflowDetail;
+
         newState.testLock = testflag === 1 && isSync === "Y";
         newState.prodLock = testflag === 0 && isSync === "Y";
         newState.testProdLock = isSync === "Y";
+
         // eslint-disable-next-line no-case-declarations
         const formData = {};
         formData.description = description;

@@ -10,6 +10,9 @@ import {
   GET_SQL_TABLES,
   GET_SQL_COLUMNS,
   GET_PREVIEW_SQL,
+  RESET_FTP_FORM,
+  RESET_JDBC_FORM,
+  UPDATE_DS,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -84,5 +87,24 @@ export const getPreviewSQL = (query) => {
   return {
     type: GET_PREVIEW_SQL,
     query,
+  };
+};
+
+export const updateDSState = (status) => {
+  return {
+    type: UPDATE_DS,
+    status,
+  };
+};
+
+export const resetFTP = () => {
+  return {
+    type: RESET_FTP_FORM,
+  };
+};
+
+export const resetJDBC = () => {
+  return {
+    type: RESET_JDBC_FORM,
   };
 };

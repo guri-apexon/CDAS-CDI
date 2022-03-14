@@ -134,6 +134,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 30 }}
                 label="Data Set Name (Mnemonic)"
                 disabled={prodLock}
+                required
               />
               <ReduxFormSelect
                 name="fileType"
@@ -142,6 +143,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 onChange={setDefaultValues}
                 fullWidth
+                required
                 disabled={prodLock}
                 canDeselect={false}
               >
@@ -248,6 +250,7 @@ const DataSetsFormBase = (props) => {
                 variant="search"
                 singleSelect
                 fullWidth
+                required
                 disabled={prodLock}
               />
               {/* ) : null} */}
