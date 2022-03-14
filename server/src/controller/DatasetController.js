@@ -68,7 +68,7 @@ exports.saveDatasetData = async (req, res) => {
     }
 
     const datasetId = helper.generateUniqueID();
-    if (values.locationType === "JDBC") {
+    if (values.locationType === "jdbc") {
       return saveSQLDataset(req, res, values, datasetId);
     }
 
@@ -145,7 +145,7 @@ exports.updateDatasetData = async (req, res) => {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
     }
 
-    if (values.locationType === "JDBC") {
+    if (values.locationType === "jdbc") {
       return updateSQLDataset(req, res, values);
     }
 
