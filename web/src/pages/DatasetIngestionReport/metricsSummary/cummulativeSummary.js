@@ -99,7 +99,7 @@ const CummulativeSummary = ({
             {`${datasetProperties?.totalRecords || 0} Total Records`}
           </Typography>
           <Link
-            onClick={() => handleChangeTab()}
+            onClick={() => handleChangeTab("ingestion_issues")}
             style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
           >
             View issues in file
