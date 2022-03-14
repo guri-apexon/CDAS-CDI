@@ -48,7 +48,7 @@ const NameCustomCell = ({ row, column: { accessor } }) => {
   const title = row[accessor] || row.datapackageid;
   return (
     <div className="flex package-name-td">
-      <PackageIcon style={{ width: 15, margin: "0px 8px" }} />
+      <PackageIcon style={{ width: 15, margin: "0px 10px" }} />
       <span className="b-font">{title}</span>
     </div>
   );
@@ -167,7 +167,7 @@ const PackagesList = ({ data, userInfo }) => {
           updateStatus({
             package_id: packageId,
             active: status === 1 ? "0" : "1",
-            user_id: userInfo.user_id,
+            user_id: userInfo.userId,
           })
         );
       }
@@ -175,7 +175,7 @@ const PackagesList = ({ data, userInfo }) => {
     const deleteAction = () => {
       if (packageId) {
         dispatch(
-          deletePackage({ package_id: packageId, user_id: userInfo.user_id })
+          deletePackage({ package_id: packageId, user_id: userInfo.userId })
         );
       }
     };

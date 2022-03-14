@@ -132,7 +132,7 @@ const DataPackages = () => {
       sftp_path: sftpPath,
       study_id: selectedCard.prot_id,
       dataflow_id: selectedDFId,
-      user_id: userInfo.user_id,
+      user_id: userInfo.userId,
     };
     dispatch(addDataPackage(reqBody));
   };
@@ -245,14 +245,15 @@ const DataPackages = () => {
                       <PasswordInput
                         defaultValue=""
                         size="small"
-                        label="Package Password"
+                        icon={false}
+                        label="Package Password (optional)"
                         className="mb-20"
                         style={{ width: "70%" }}
                         onChange={(e) => setPackagePassword(e.target.value)}
                       />
                       <TextField
                         className="mb-20"
-                        label="sFTP Folder Path"
+                        label="sFTP Folder Path (optional)"
                         placeholder=""
                         size="small"
                         fullWidth

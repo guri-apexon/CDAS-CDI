@@ -302,6 +302,23 @@ const RenderSelect = ({
 
 export const ReduxFormSelect = reduxFormify(RenderSelect);
 
+const RenderMultiSelect = ({
+  input,
+  helperText,
+  meta: { touched, error },
+  ...rest
+}) => (
+  <Select
+    helperText={(touched && error) || helperText}
+    error={touched && !!error}
+    {...input}
+    {...rest}
+    // multiple
+  />
+);
+
+export const ReduxFormMultiSelect = reduxFormify(RenderMultiSelect);
+
 const RenderSlider = ({
   label,
   classes,

@@ -1,12 +1,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-script-url */
-import React, {
-  Fragment,
-  useState,
-  useContext,
-  useEffect,
-  useRef,
-} from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,8 +26,8 @@ import {
 } from "../../store/actions/DataSetsAction";
 import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
 import DataSetsForm from "./DataSetsForm";
-// import DataSetsFormSQL from "./DataSetsFormSQL";
-import JDBCForm from "./JDBCForm";
+import DataSetsFormSQL from "./DataSetsFormSQL";
+// import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
 
@@ -94,7 +88,7 @@ const Dataset = () => {
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
-  const [customSql, setCustomSql] = useState("no");
+  const [customSql, setCustomSql] = useState("No");
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
@@ -104,11 +98,12 @@ const Dataset = () => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
   const { selectedDFId } = dashboard;
-  const { dataflowName, datapackageid, datapackageName, datasetName } =
-    selectedDSDetails;
+  const { datapackageid, datapackageName, datasetName } = selectedDSDetails;
   const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
     dataSets;
   const { dataFlowdetail } = dataFlow;
+  const { name: dataflowName } = dataFlowdetail;
+
   const { datasetId } = useParams();
 
   const useStyles = makeStyles(styles);
@@ -132,10 +127,7 @@ const Dataset = () => {
     return "jdbc";
   };
 
-  const onChangeSql = (val) => {
-    setColumnsActive(val === "No");
-    setCustomSql(val);
-  };
+  const onChangeSql = (val) => setCustomSql(val);
 
   useEffect(() => {
     if (selectedDFId === "") {
@@ -152,20 +144,22 @@ const Dataset = () => {
       dispatch(getDataSetDetail(datasetId));
       dispatch(getDatasetColumns(datasetId));
     }
-    // console.log(datasetId);
   }, [datasetId]);
 
   useEffect(() => {
     if (isDatasetCreated) {
-      setValue(1);
+      if (dataFlowdetail?.loctyp === ("sftp" || "ftps") || customSql === "No") {
+        setValue(1);
+      }
+      setColumnsActive(customSql === "No");
     }
   }, [isDatasetCreated]);
 
-  useEffect(() => {
-    if (selectedDFId) {
-      dispatch(getDataFlowDetail(selectedDFId));
-    }
-  }, [selectedDFId]);
+  // useEffect(() => {
+  //   if (selectedDFId) {
+  //     dispatch(getDataFlowDetail(selectedDFId));
+  //   }
+  // }, [selectedDFId]);
 
   useEffect(() => {
     if (dataFlowdetail?.loctyp) {
@@ -212,7 +206,8 @@ const Dataset = () => {
     if (locationType?.toLowerCase() === ("sftp" || "ftps")) {
       dispatch(submit("DataSetsForm"));
     } else {
-      jdbcRef.current.handleSubmit();
+      dispatch(submit("DataSetsFormSQL"));
+      // jdbcRef.current.handleSubmit();
     }
   };
 
@@ -243,10 +238,10 @@ const Dataset = () => {
   const getLeftPanel = React.useMemo(
     () => (
       <>
-        <LeftPanel />
+        <LeftPanel dataflowSource={dataFlowdetail} />
       </>
     ),
-    []
+    [dataFlowdetail]
   );
 
   return (
@@ -335,22 +330,24 @@ const Dataset = () => {
               {value === 0 &&
                 locationType?.toLowerCase() !== "sftp" &&
                 locationType?.toLowerCase() !== "ftps" && (
-                  // <DataSetsFormSQL
-                  //   onChange={onChangeSql}
-                  //   defaultFields={{
-                  //     sql: customSql,
-                  //   }}
-                  //   loading={loading}
-                  //   onSubmit={onSubmit}
-                  // />
-                  <JDBCForm
-                    datapackageid={datapackageid}
-                    dataflowid={selectedDFId}
-                    datasetId={datasetId}
-                    dfTestFlag={dataFlowdetail.testflag}
-                    onChangeSql={onChangeSql}
-                    ref={jdbcRef}
+                  <DataSetsFormSQL
+                    onChange={onChangeSql}
+                    defaultFields={{
+                      sql: customSql,
+                    }}
+                    loading={loading}
+                    onSubmit={onSubmit}
                   />
+                  // <JDBCForm
+                  //   datapackageid={datapackageid}
+                  //   dataflowid={selectedDFId}
+                  //   datasetId={datasetId}
+                  //   isDatasetCreated={isDatasetCreated}
+                  //   selectedDataset={selectedDataset}
+                  //   dfTestFlag={dataFlowdetail.testflag}
+                  //   onChangeSql={onChangeSql}
+                  //   ref={jdbcRef}
+                  // />
                 )}
               {value === 1 && <ColumnsTab locationType={locationType} />}
               {value === 2 && <VLCTab />}

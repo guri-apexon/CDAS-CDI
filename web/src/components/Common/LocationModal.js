@@ -61,7 +61,15 @@ const useStyles = makeStyles(styles);
 
 const LocationForm = (props) => {
   const classes = useStyles();
-  const { locType, selectedHost, selectedPort, selectedDB, isActive } = props;
+  const {
+    locType,
+    selectedHost,
+    selectedPort,
+    selectedDB,
+    isActive,
+    formState,
+    loading,
+  } = props;
 
   return (
     <form onSubmit={props.handleSubmit}>
@@ -94,6 +102,7 @@ const LocationForm = (props) => {
               label="External System Name"
               InputProps={{ readOnly: props.locationViewMode }}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
+              canDeselect={false}
               fullWidth
             >
               {extSysName?.map((type) => (
@@ -108,6 +117,7 @@ const LocationForm = (props) => {
               name="dataStructure"
               label="Data Structure"
               InputProps={{ readOnly: props.locationViewMode }}
+              canDeselect={false}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
               fullWidth
             >
@@ -123,6 +133,7 @@ const LocationForm = (props) => {
               name="locationType"
               label="Location Type"
               InputProps={{ readOnly: props.locationViewMode }}
+              canDeselect={false}
               onChange={(v) =>
                 props.generateUrl(
                   v.target.value,
@@ -237,7 +248,8 @@ const LocationForm = (props) => {
               <Button
                 variant="secondary"
                 size="small"
-                onClick={() => props.testConnection(props.formState)}
+                disabled={loading}
+                onClick={() => props.testConnection(formState)}
               >
                 Test Connection
               </Button>
@@ -263,6 +275,7 @@ const LocationModal = (props) => {
   const locationForm = useRef();
   const selector = formValueSelector("AddLocationForm");
   const [connectionResponse, setConnectionResponse] = useState(null);
+  const [loadingConn, setLoadingConn] = useState(false);
   const { error, success, createTriggered } = useSelector(
     (state) => state.cdiadmin
   );
@@ -301,7 +314,7 @@ const LocationModal = (props) => {
   if (!props.locationEditMode && !props.locationViewMode) {
     dispatch(change("AddLocationForm", "active", true));
     dispatch(change("AddLocationForm", "dataStructure", "tabular"));
-    dispatch(change("AddLocationForm", "locationType", "SFTP"));
+    // dispatch(change("AddLocationForm", "locationType", "SFTP"));
   }
   const generateUrl = (locType, selectedHost, selectedPort, selectedDB) => {
     const connurl = generateConnectionURL(
@@ -331,21 +344,28 @@ const LocationModal = (props) => {
       showLocationMessage("Please enter username and password to continue");
       return false;
     }
-    const reqBody = {
+    let reqBody = {
       username: userName || "",
       password: password || "",
       host: ipServer || "",
       endPoint: "/checkconnection/sftp",
-      // port: port || "",
     };
     if (locationType) {
       if (locationType !== "SFTP" && locationType !== "FTPS") {
-        reqBody.endPoint = "/checkconnection/jdbc";
-        reqBody.databaseName = dbName || "";
+        reqBody = {
+          ...reqBody,
+          endPoint: "/checkconnection/jdbc",
+          databaseName: dbName || "",
+          userId: "",
+          database: locationType.toUpperCase(),
+          port: port ? port : "",
+        };
       }
     }
+    setLoadingConn(true);
     const result = await testConnectionFSR(reqBody);
     console.log("result", result);
+    setLoadingConn(false);
     if (result.status === "OK") {
       showLocationMessage(
         result.message || "Operation Successfully",
@@ -402,6 +422,7 @@ const LocationModal = (props) => {
             locationEditMode={props.locationEditMode}
             generateUrl={generateUrl}
             testConnection={testConnection}
+            loading={loadingConn}
           />
         }
         className={classes.modal}

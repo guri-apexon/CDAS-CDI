@@ -15,10 +15,10 @@ async function checkNameExists(
   testflag,
   datasetid = null
 ) {
-  let searchQuery = `select d3.mnemonic from cdascfg.study s right join cdascfg.dataflow d on s.prot_id = d.prot_id right join cdascfg.datapackage d2 on d.dataflowid = d2.dataflowid right join cdascfg.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2`;
+  let searchQuery = `select d3.mnemonic from ${schemaName}.study s right join ${schemaName}.dataflow d on s.prot_id = d.prot_id right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2`;
   let dep = [datapackageid, testflag];
   if (datasetid) {
-    searchQuery = `select d3.mnemonic from cdascfg.study s right join cdascfg.dataflow d on s.prot_id = d.prot_id right join cdascfg.datapackage d2 on d.dataflowid = d2.dataflowid right join cdascfg.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2 and d3.datasetid !=$3`;
+    searchQuery = `select d3.mnemonic from ${schemaName}.study s right join ${schemaName}.dataflow d on s.prot_id = d.prot_id right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2 and d3.datasetid !=$3`;
     dep = [datapackageid, testflag, datasetid];
   }
   const res = await DB.executeQuery(searchQuery, dep);
@@ -32,7 +32,7 @@ async function saveSQLDataset(req, res, values, datasetId) {
       datasetId,
       values.datasetName,
       values.active == true ? 1 : 0,
-      values.clinicalDataType[0],
+      values.clinicalDataType[0] ? values.clinicalDataType[0] : null,
       values.customSQLQuery,
       values.sQLQuery || null,
       values.loadType == "Incremental" ? "Y" : "N" || null,
@@ -42,7 +42,7 @@ async function saveSQLDataset(req, res, values, datasetId) {
       new Date(),
       values.datapackageid,
     ];
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_query, customsql, incremental, tbl_nm, offsetcolumn, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
     const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {
@@ -117,7 +117,7 @@ async function updateSQLDataset(req, res, values) {
       new Date(),
       values.datasetid,
     ];
-    const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_query = $4, customsql =$5, tbl_nm = $6, updt_tm = $7 where datasetid = $8`;
+    const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, updt_tm = $7 where datasetid = $8`;
     const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {

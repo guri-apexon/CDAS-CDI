@@ -32,6 +32,7 @@ const CreatePackageFormBase = ({ handleSubmit, values }) => {
         name="compression_type"
         label="Package Compression Type"
         size="small"
+        canDeselect={false}
       >
         {compressionTypes.map((type, i) => (
           // eslint-disable-next-line react/no-array-index-key

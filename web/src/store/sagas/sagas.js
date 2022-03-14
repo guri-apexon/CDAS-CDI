@@ -12,6 +12,8 @@ import {
   SAVE_DATASET_DATA,
   SAVE_DATASET_COLUMNS,
   GET_DATA_FLOW_LIST,
+  GET_STUDIES_LIST,
+  GET_PINNED_LIST,
   GET_DATAFLOW_DETAIL,
   GET_DATASET_DETAIL,
   UPDATE_DATASET_DATA,
@@ -28,6 +30,10 @@ import {
   CREARE_SETTINGS_DATA,
   UPDATE_SETTINGS_DATA,
   FETCH_SETTINGS_DATA,
+  GET_TRANSFER_LOG,
+  GET_DATASET_PROPERTIES,
+  GET_DATASET_INGESTION_ISSUE_TYPES,
+  GET_DATASET_INGESTION_FILE_HISTORY,
 } from "../../constants";
 
 import {
@@ -39,6 +45,8 @@ import {
 import {
   fetchFlowData,
   fetchDatasetIngestionSummaryData,
+  fetchUserStudiesData,
+  fetchPinnedStudies,
 } from "./dashboard.saga";
 import {
   fetchDataKindData,
@@ -71,9 +79,17 @@ import {
   updateSettingsData,
   fetchSettingsList,
 } from "./cdiAdmin.saga";
+import {
+  fetchDatasetIngestionFileHistory,
+  fetchDatasetIngestionIssueTypes,
+  fetchProperties,
+  fetchTransferLog,
+} from "./IngestionReport.saga";
 
 function* cdasCoreSaga() {
   yield takeEvery(GET_DATA_FLOW_LIST, fetchFlowData);
+  yield takeEvery(GET_STUDIES_LIST, fetchUserStudiesData);
+  yield takeEvery(GET_PINNED_LIST, fetchPinnedStudies);
   yield takeLatest(
     GET_DATASET_INGESTION_SUMMARY,
     fetchDatasetIngestionSummaryData
@@ -104,6 +120,16 @@ function* cdasCoreSaga() {
   yield takeLatest(FETCH_SETTINGS_DATA, fetchSettingsList);
   yield takeLatest(CREARE_SETTINGS_DATA, createSettingsData);
   yield takeLatest(UPDATE_SETTINGS_DATA, updateSettingsData);
+  yield takeLatest(GET_TRANSFER_LOG, fetchTransferLog);
+  yield takeLatest(GET_DATASET_PROPERTIES, fetchProperties);
+  yield takeLatest(
+    GET_DATASET_INGESTION_ISSUE_TYPES,
+    fetchDatasetIngestionIssueTypes
+  );
+  yield takeLatest(
+    GET_DATASET_INGESTION_FILE_HISTORY,
+    fetchDatasetIngestionFileHistory
+  );
 }
 
 export default cdasCoreSaga;

@@ -144,7 +144,6 @@ module.exports = {
       if (params.password) {
         params.password = encrypt(params.password);
       }
-      console.log("params.password", params);
       axios
         .post(`${FSR_API_URI}/${endPoint}`, params, {
           headers: FSR_HEADERS,
