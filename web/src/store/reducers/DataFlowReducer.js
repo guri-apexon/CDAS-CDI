@@ -34,7 +34,6 @@ export const initialState = {
   description: "",
   dataflowType: "test",
   dataStructure: "tabular",
-  locationType: "SFTP",
   selectedVendor: {},
   dataFlowdetail: {},
   testProdLock: false,

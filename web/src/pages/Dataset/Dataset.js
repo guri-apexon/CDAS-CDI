@@ -163,7 +163,7 @@ const Dataset = () => {
         setColumnsActive(true);
       }
     }
-  }, [dataFlowdetail]);
+  }, [loctyp]);
 
   const goToDataflow = () => {
     if (selectedDFId) {

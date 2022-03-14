@@ -327,7 +327,7 @@ export const CustomHeader = ({
       )}
       {!isMultiAdd && (
         <>
-          {locationType?.toLowerCase() === ("sftp" || "ftps") && (
+          {locationType === ("sftp" || "ftps") && (
             <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
               <IconMenuButton
                 id="actions-1"
@@ -370,7 +370,7 @@ export const CustomHeader = ({
           </Button>
         </>
       )}
-      {locationType?.toLowerCase() === ("sftp" || "ftps") && (
+      {locationType === ("sftp" || "ftps") && (
         <Tooltip
           title={
             (!isEditAll || !prodLock || !testLock) &&
