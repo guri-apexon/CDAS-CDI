@@ -23,6 +23,8 @@ import {
   updateDatasetData,
   getDataSetDetail,
   getDatasetColumns,
+  resetFTP,
+  resetJDBC,
 } from "../../store/actions/DataSetsAction";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
@@ -136,8 +138,8 @@ const Dataset = () => {
 
   useEffect(() => {
     if (datasetid === null) {
-      dispatch(reset("DataSetsForm"));
-      dispatch(reset("DataSetsFormSQL"));
+      dispatch(resetFTP());
+      dispatch(resetJDBC());
       console.log("working");
     } else {
       dispatch(getDataSetDetail(datasetid));

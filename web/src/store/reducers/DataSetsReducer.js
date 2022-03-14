@@ -35,6 +35,8 @@ import {
   FETCH_PREVIEW_SQL_SUCCESS,
   FETCH_PREVIEW_SQL_FAILURE,
   UPDATE_DS,
+  RESET_FTP_FORM,
+  RESET_JDBC_FORM,
 } from "../../constants";
 
 export const initialState = {
@@ -101,6 +103,34 @@ const DataFlowReducer = (state = initialState, action) =>
       case UPDATE_DS:
         newState.isDatasetCreation = action.status;
         break;
+
+      case RESET_FTP_FORM:
+        newState.formData = {
+          active: true,
+          locationType: "SFTP",
+          delimiter: "COMMA",
+          fileType: "SAS",
+          encoding: "UTF-8",
+          escapeCharacter: "\\",
+          quote: `""`,
+          headerRowNumber: 1,
+          footerRowNumber: "",
+          overrideStaleAlert: 3,
+          rowDecreaseAllowed: 0,
+          loadType: "Cumulative",
+        };
+        break;
+
+      case RESET_JDBC_FORM:
+        newState.formDataSQL = {
+          locationType: "JDBC",
+          active: true,
+          customSQLQuery: "Yes",
+          dataType: "Cumulative",
+          offsetColumn: "Disabled",
+        };
+        break;
+
       case STORE_DATASET_SUCCESS:
         newState.loading = false;
         newState.isDatasetCreated = !state.isDatasetCreated;
