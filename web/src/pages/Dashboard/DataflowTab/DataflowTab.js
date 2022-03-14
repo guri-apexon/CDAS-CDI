@@ -10,6 +10,7 @@ import Table, {
   compareDates,
   compareNumbers,
   compareStrings,
+  createSelectFilterComponent,
 } from "apollo-react/components/Table";
 import { neutral7, neutral8 } from "apollo-react/colors";
 import Modal from "apollo-react/components/Modal";
@@ -45,6 +46,7 @@ import {
 
 import {
   createAutocompleteFilter,
+  createSourceFromKey,
   IntegerFilter,
   createStringArraySearchFilter,
   DateFilter,
@@ -112,6 +114,9 @@ const DetailRow = ({ row }) => {
   );
 };
 
+const statusList = ["Active", "Inactive"];
+// const typeList = ["Production", "Test"];
+
 export default function DataflowTab({ updateData }) {
   const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState(null);
@@ -128,6 +133,7 @@ export default function DataflowTab({ updateData }) {
   const history = useHistory();
   const dispatch = useDispatch();
   const dashboard = useSelector((state) => state.dashboard);
+  const [tableRows, setTableRows] = useState([...rowData]);
 
   const [expandedRows, setExpandedRows] = useState([]);
 
@@ -430,26 +436,6 @@ export default function DataflowTab({ updateData }) {
       accessor: "type",
       frozen: true,
       sortFunction: compareStrings,
-      filterFunction: createStringArraySearchFilter("type"),
-      filterComponent: createAutocompleteFilter(
-        Array.from(
-          new Set(
-            rowData.map((r) => ({ label: r.type })).map((item) => item.label)
-          )
-        )
-          .map((label) => {
-            return { label };
-          })
-          .sort((a, b) => {
-            if (a.label < b.label) {
-              return -1;
-            }
-            if (a.label > b.label) {
-              return 1;
-            }
-            return 0;
-          })
-      ),
     },
     {
       header: "Status",
@@ -458,25 +444,10 @@ export default function DataflowTab({ updateData }) {
       customCell: StatusCell,
       sortFunction: compareStrings,
       filterFunction: createStringArraySearchFilter("status"),
-      filterComponent: createAutocompleteFilter(
-        Array.from(
-          new Set(
-            rowData.map((r) => ({ label: r.status })).map((item) => item.label)
-          )
-        )
-          .map((label) => {
-            return { label };
-          })
-          .sort((a, b) => {
-            if (a.label < b.label) {
-              return -1;
-            }
-            if (a.label > b.label) {
-              return 1;
-            }
-            return 0;
-          })
-      ),
+      filterComponent: createSelectFilterComponent(statusList, {
+        size: "small",
+        multiple: true,
+      }),
     },
     {
       header: "External Source System",
@@ -668,7 +639,6 @@ export default function DataflowTab({ updateData }) {
     columns.slice(-1)[0],
   ];
 
-  const [tableRows, setTableRows] = useState([...rowData]);
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
 
   useEffect(() => {
