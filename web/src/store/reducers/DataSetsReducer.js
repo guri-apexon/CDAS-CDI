@@ -51,7 +51,6 @@ export const initialState = {
     active: true,
     customSQLQuery: "Yes",
     dataType: "Cumulative",
-    offsetColumn: "Disabled",
   },
   formData: {
     active: true,
@@ -127,7 +126,6 @@ const DataFlowReducer = (state = initialState, action) =>
           active: true,
           customSQLQuery: "Yes",
           dataType: "Cumulative",
-          offsetColumn: "Disabled",
         };
         break;
 
