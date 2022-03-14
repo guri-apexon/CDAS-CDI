@@ -24,7 +24,6 @@ import {
   getDataSetDetail,
   getDatasetColumns,
 } from "../../store/actions/DataSetsAction";
-import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
@@ -98,13 +97,12 @@ const Dataset = () => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
   const { selectedDFId } = dashboard;
-  const { datapackageid, datapackageName, datasetName } = selectedDSDetails;
+  const { datapackageid, datapackageName, datasetid, datasetName } =
+    selectedDSDetails;
   const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
     dataSets;
   const { dataFlowdetail } = dataFlow;
   const { name: dataflowName } = dataFlowdetail;
-
-  const { datasetId } = useParams();
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -137,14 +135,15 @@ const Dataset = () => {
   }, []);
 
   useEffect(() => {
-    if (datasetId === "new") {
+    if (datasetid === null) {
       dispatch(reset("DataSetsForm"));
       dispatch(reset("DataSetsFormSQL"));
+      console.log("working");
     } else {
-      dispatch(getDataSetDetail(datasetId));
-      dispatch(getDatasetColumns(datasetId));
+      dispatch(getDataSetDetail(datasetid));
+      dispatch(getDatasetColumns(datasetid));
     }
-  }, [datasetId]);
+  }, [datasetid]);
 
   useEffect(() => {
     if (isDatasetCreated) {
@@ -154,12 +153,6 @@ const Dataset = () => {
       setColumnsActive(customSql === "No");
     }
   }, [isDatasetCreated]);
-
-  // useEffect(() => {
-  //   if (selectedDFId) {
-  //     dispatch(getDataFlowDetail(selectedDFId));
-  //   }
-  // }, [selectedDFId]);
 
   useEffect(() => {
     if (dataFlowdetail?.loctyp) {
@@ -341,7 +334,7 @@ const Dataset = () => {
                   // <JDBCForm
                   //   datapackageid={datapackageid}
                   //   dataflowid={selectedDFId}
-                  //   datasetId={datasetId}
+                  //   datasetId={datasetid}
                   //   isDatasetCreated={isDatasetCreated}
                   //   selectedDataset={selectedDataset}
                   //   dfTestFlag={dataFlowdetail.testflag}
