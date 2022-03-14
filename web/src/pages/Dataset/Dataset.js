@@ -121,6 +121,7 @@ const Dataset = () => {
   const handleChangeTab = (event, v) => {
     setValue(v);
   };
+
   const getDataSetType = (type) => {
     if (type?.toLowerCase() === ("sftp" || "ftps")) {
       return "sftp";
@@ -154,7 +155,7 @@ const Dataset = () => {
       }
       setColumnsActive(customSql === "No");
     }
-  }, [isDatasetCreated]);
+  }, [customSql, isDatasetCreated, loctyp]);
 
   useEffect(() => {
     if (loctyp) {
@@ -319,7 +320,8 @@ const Dataset = () => {
             <div style={{ padding: 20, marginTop: 20 }}>
               {value === 0 && (
                 <>
-                  {locationType === "sftp" || "ftps" ? (
+                  {console.log("ltype", locationType)}
+                  {locationType === ("sftp" || "ftps") ? (
                     <DataSetsForm loading={loading} onSubmit={onSubmit} />
                   ) : (
                     <DataSetsFormSQL
