@@ -103,18 +103,18 @@ const DataSetsFormBase = (props) => {
   const setDefaultValues = (e) => {
     const fileValue = e.target.value;
     if (fileValue !== "Delimited") {
-      dispatch(change("DataSetsForm", "delimiter", defaultDelimiter));
+      dispatch(change("CreateDataSetsForm", "delimiter", defaultDelimiter));
       dispatch(
-        change("DataSetsForm", "escapeCharacter", defaultEscapeCharacter)
+        change("CreateDataSetsForm", "escapeCharacter", defaultEscapeCharacter)
       );
-      dispatch(change("DataSetsForm", "quote", defaultQuote));
+      dispatch(change("CreateDataSetsForm", "quote", defaultQuote));
       dispatch(
-        change("DataSetsForm", "headerRowNumber", defaultHeaderRowNumber)
+        change("CreateDataSetsForm", "headerRowNumber", defaultHeaderRowNumber)
       );
       dispatch(
-        change("DataSetsForm", "footerRowNumber", defaultFooterRowNumber)
+        change("CreateDataSetsForm", "footerRowNumber", defaultFooterRowNumber)
       );
-      dispatch(change("DataSetsForm", "loadType", defaultLoadType));
+      dispatch(change("CreateDataSetsForm", "loadType", defaultLoadType));
     }
   };
   const submitForm = () => {
@@ -132,7 +132,7 @@ const DataSetsFormBase = (props) => {
         setTimeout(() => {
           SetSelectedClinicalData([filteredDK[0].value]);
         });
-        // change("DataSetsForm", "clinicalDataType");
+        // change("CreateDataSetsForm", "clinicalDataType");
       }
     }
     if (!values) {
@@ -141,7 +141,7 @@ const DataSetsFormBase = (props) => {
   }, [values]);
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={handleSubmit}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
         <div className={classes.section}>
           <FixedBar
@@ -154,18 +154,6 @@ const DataSetsFormBase = (props) => {
               className="MuiSwitch"
               size="small"
               labelPlacement="start"
-            />
-            <Status
-              variant="positive"
-              icon={RadioError}
-              size="small"
-              style={{ marginLeft: 35 }}
-              label={
-                // eslint-disable-next-line react/jsx-wrap-multilines
-                <Typography variant="body2" style={{ color: "#595959" }}>
-                  Ready
-                </Typography>
-              }
             />
           </FixedBar>
           <Grid container spacing={3}>
@@ -335,14 +323,14 @@ const DataSetsFormBase = (props) => {
 const ReduxForm = compose(
   withStyles(styles),
   reduxForm({
-    form: "DataSetsForm",
+    form: "CreateDataSetsForm",
     validate: dataSetsValidation,
   }),
-  connect((state) => ({ values: getFormValues("DataSetsForm")(state) }))
+  connect((state) => ({ values: getFormValues("CreateDataSetsForm")(state) }))
 )(DataSetsFormBase);
 
-const selector = formValueSelector("DataSetsForm");
-const DataSetsForm = connect((state) => ({
+const selector = formValueSelector("CreateDataSetsForm");
+const CreateDataSetsForm = connect((state) => ({
   initialValues: state.dataSets.formData, // pull initial values from account reducer
   enableReinitialize: true,
   formValues: selector(state, "fileType"),
@@ -355,4 +343,4 @@ const DataSetsForm = connect((state) => ({
   datakind: state.dataSets.datakind?.records,
 }))(ReduxForm);
 
-export default DataSetsForm;
+export default CreateDataSetsForm;

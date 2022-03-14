@@ -185,6 +185,7 @@ const CloneDataFlow = ({
           <Typography variant="caption">Search for a study</Typography>
           <Search
             // onKeyDown={searchTrigger}
+            style={{ marginTop: "0px" }}
             placeholder="Search"
             value={searchTxt}
             onChange={(e) => searchTrigger(e, "study")}
@@ -340,7 +341,7 @@ const CloneDataFlow = ({
                   spacing={1}
                   style={{
                     padding: "12px 5px 24px 5px",
-                    backgroundColor: "#f8f9fb",
+                    backgroundColor: "rgba(35, 114, 253, 0.08)",
                   }}
                 >
                   <Grid item xs={12}>

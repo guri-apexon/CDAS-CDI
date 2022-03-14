@@ -568,3 +568,16 @@ export const dateFilterCustom = (accessor) => (row, filters) => {
     (!toDate.isValid() || date.isBefore(toDate))
   );
 };
+
+export const isSftp = (str) => {
+  return ["SFTP", "FTPS"].includes(str.toUpperCase());
+};
+
+export const validateFields = (name, ext) => {
+  const nameArr = name.split(".");
+  if (ext === nameArr[1]) {
+    console.log("nameArr[1]", nameArr[1], ext);
+    return true;
+  }
+  return false;
+};
