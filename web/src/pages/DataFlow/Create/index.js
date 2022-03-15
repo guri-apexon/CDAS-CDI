@@ -79,7 +79,11 @@ const onSubmit = () => {
   }, 400);
 };
 
-const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
+const DataFlow = ({
+  FormValues,
+  dashboard: { selectedCard },
+  datasetFormValues,
+}) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
@@ -89,6 +93,7 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedVendor, setSelectedVendor] = useState(null);
   const [FormType, setFormType] = useState("dataflow");
   const [currentStep, setCurrentStep] = useReducer((state, action) => {
     if (action?.step) return action.step;
@@ -103,7 +108,6 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
-  const protId = dashboard.selectedCard.prot_id;
 
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
@@ -128,7 +132,10 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
     );
     dispatch(updateSelectedLocation(location));
   };
-  const changeFormField = (value, field) => {
+  const changeFormField = (value, field, arr) => {
+    if (field === "vendor" && value[0]) {
+      setSelectedVendor(arr.find((x) => x.vend_id === value[0]));
+    }
     dispatch(changeFormFieldData(value, field));
   };
   const changeLocationType = (value) => {
@@ -150,29 +157,32 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
-    console.log("FormValues", FormValues);
+    console.log("FormValues", FormValues, selectedVendor);
     if (
       FormValues &&
       FormValues.vendor &&
       FormValues.locationName &&
       FormValues.firstFileDate &&
       FormValues.description !== "" &&
-      protId !== ""
+      selectedCard.prot_id !== ""
     ) {
       const payload = {
         id: uuidv4(),
-        vendorID: FormValues.vendor[0],
-        locationName: FormValues.locationName[0],
+        vend_id: FormValues.vendor[0],
+        src_loc_id: FormValues.locationName[0],
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.dataflowType,
-        testFlag: FormValues.dataflowType === "test" ? 1 : 0,
+        testFlag: FormValues.dataflowType === "test" ? true : false,
         description: FormValues.description,
         firstFileDate: FormValues.firstFileDate,
         locationType: FormValues.locationType,
         // serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
-        protocolNumberStandard: protId,
+        // protocolNumberStandard: selectedCard.prot_id,
+        protocolNumber: selectedCard.prot_id,
         externalSystemName: "CDI",
-        DataPackage: [{ datasets: [] }],
+        dataPackage: [{ dataSet: [] }],
+        active: true,
+        vendorName: selectedVendor?.vend_nm,
       };
       setForm(payload);
       setFormType("datapackage");
@@ -203,10 +213,10 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
       setselectedDatapackage(datapckageId);
       const obj = {
         id: datapckageId,
-        datasets: [],
+        dataSet: [],
         ...payload,
       };
-      newForm.DataPackage[0] = obj;
+      newForm.dataPackage[0] = obj;
       setForm(newForm);
     }
     setFormType("dataset");
@@ -221,10 +231,10 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
     }
     const newForm = { ...myform };
     const datasetID = uuidv4();
-    const packageIndex = newForm.DataPackage.findIndex(
+    const packageIndex = newForm.dataPackage.findIndex(
       (r) => r.id === selectedDatapackage
     );
-    newForm.DataPackage[0].datasets[0] = { ...datasetObj, datasetID };
+    newForm.dataPackage[0].dataSet[0] = { ...datasetObj, datasetID };
     setForm(newForm);
     setCurrentStep();
   };
@@ -232,7 +242,8 @@ const DataFlow = ({ FormValues, dashboard, datasetFormValues }) => {
   const AddColumnDefinitions = (rows) => {
     console.log("AddColumnDefinitions");
     const newForm = { ...myform };
-    newForm.DataPackage[0].datasets[0].columnDefinition = rows;
+    newForm.dataPackage[0].dataSet[0].columncount = rows.length;
+    newForm.dataPackage[0].dataSet[0].columnDefinition = rows;
     setForm(newForm);
   };
   const submitFinalForm = async () => {

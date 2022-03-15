@@ -11,6 +11,7 @@ import {
   ADD_DATAFLOW,
   UPDATE_LOCATION_DATA,
   SAVE_DATAFLOW_LOCAL_DETAIL,
+  UPDATE_DS,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -84,5 +85,12 @@ export const setDataflowLocal = (details) => {
   return {
     type: SAVE_DATAFLOW_LOCAL_DETAIL,
     details,
+  };
+};
+
+export const updateDSState = (status) => {
+  return {
+    type: UPDATE_DS,
+    status,
   };
 };

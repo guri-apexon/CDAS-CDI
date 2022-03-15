@@ -105,9 +105,9 @@ exports.getStudyDataflows = async (req, res) => {
       const $q1 = await DB.executeQuery(query, [protocolId]);
 
       const formatDateValues = await $q1.rows.map((e) => {
-        let editT = moment(e.lastModified).format("DD-MMM-YYYY");
-        let addT = moment(e.dateCreated).format("DD-MMM-YYYY");
-        let syncT = moment(e.lastSyncDate).format("DD-MMM-YYYY");
+        let editT = moment(e.lastModified).format("MM/DD/YYYY");
+        let addT = moment(e.dateCreated).format("MM/DD/YYYY");
+        let syncT = moment(e.lastSyncDate).format("MM/DD/YYYY");
         let status = e.status === 0 ? "Inactive" : "Active";
         let dfType = e.type === 0 ? "Production" : "Test";
         return {
@@ -186,7 +186,8 @@ exports.createDataflow = async (req, res) => {
       configured,
     } = req.body;
     var ResponseBody = {};
-    if (vendorName !== "") {
+    if (!type && dataStructure) type = dataStructure;
+    if (vendorName && vendorName !== "") {
       //validation for dataflow metadata
       if (
         vendorName !== null &&
@@ -241,8 +242,8 @@ exports.createDataflow = async (req, res) => {
         const query = `insert into ${schemaName}.dataflow 
           (dataflowid,name,vend_id,type,description,src_loc_id,active,configured,expt_fst_prd_dt,
             testflag,data_in_cdr,connectiontype,externalsystemname,externalid,
-            fsrstatus,prot_id,insrt_tm) VALUES 
-            ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`;
+            fsrstatus,prot_id,insrt_tm,updt_tm) VALUES 
+            ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17)`;
 
         let ts = new Date().toLocaleString();
         // insert dataflow schema into db

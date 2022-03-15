@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { reset } from "redux-form";
 import Typography from "apollo-react/components/Typography";
 import Tooltip from "apollo-react/components/Tooltip";
 import IconButton from "apollo-react/components/IconButton";
@@ -21,6 +20,7 @@ import {
   redirectToDataSet,
   updateStatus,
 } from "../../../../store/actions/DataPackageAction";
+import { updateDSState } from "../../../../store/actions/DataFlowAction";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
@@ -74,9 +74,8 @@ const PackagesList = ({ data, userInfo }) => {
 
   const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
-    dispatch(reset("DataSetsForm"));
-    dispatch(reset("DataSetsFormSQL"));
-    history.push("/dashboard/datasets-management");
+    dispatch(updateDSState(true));
+    history.push("/dashboard/dataset/new");
   };
 
   const DataSetsCell = ({ row, column: { accessor } }) => {
@@ -100,6 +99,7 @@ const PackagesList = ({ data, userInfo }) => {
 
   const goToDataSet = (dfId, dfName, dpId, dpName, dsId, dsName) => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
+    dispatch(updateDSState(false));
     history.push(`/dashboard/dataset/${dsId}`);
   };
 
