@@ -79,6 +79,22 @@ export const editableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
     const errorText = checkRequiredValue(row[key], key, row.primary);
+
+    // eslint-disable-next-line consistent-return
+    const checkDisabled = () => {
+      if (row.locationType === "jdbc") {
+        if (row.testLock || row.prodLock) {
+          return true;
+        }
+      }
+      if (row.locationType === "sftp") {
+        if (row.prodLock) {
+          return true;
+        }
+      }
+      return false;
+    };
+
     return row.editMode ? (
       <Select
         size="small"
@@ -91,7 +107,7 @@ export const editableSelectCell =
           row.editRow(row.uniqueId, key, e.target.value, errorText)
         }
         {...fieldStyles}
-        disabled={row.testLock || row.prodLock}
+        disabled={checkDisabled}
       >
         {options.map((option) => (
           <MenuItem key={option} value={option}>
