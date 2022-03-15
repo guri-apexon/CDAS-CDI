@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-condition */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-nested-ternary */
 import React, { useState, useContext, useEffect } from "react";
@@ -139,10 +140,10 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
   }, [datasetColumns]);
 
   useEffect(() => {
-    if (locationType !== ("sftp" || "ftps") || testLock) {
+    if (locationType !== ("sftp" || "ftps")) {
       setShowColumns(true);
     }
-  }, [locationType, testLock]);
+  }, [locationType]);
 
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
@@ -176,20 +177,22 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
                 selectedMethod === "fileUpload" ? "active card" : "card"
               }
             >
-              <Radio
-                value="fileUpload"
-                label="Upload dataset column settings"
-                onClick={handleChange}
-                checked={selectedMethod === "fileUpload"}
-              />
-              <Link onClick={downloadTemplate}>Download Excel Template</Link>
-              <div className="upload-box">
-                <FileUpload
-                  value={selectedFile}
-                  onUpload={handleUpload}
-                  onFileDelete={handleDelete}
-                  maxItems={1}
+              <div className={testLock || prodLock ? "disable-card" : ""}>
+                <Radio
+                  value="fileUpload"
+                  label="Upload dataset column settings"
+                  onClick={handleChange}
+                  checked={selectedMethod === "fileUpload"}
                 />
+                <Link onClick={downloadTemplate}>Download Excel Template</Link>
+                <div className="upload-box">
+                  <FileUpload
+                    value={selectedFile}
+                    onUpload={handleUpload}
+                    onFileDelete={handleDelete}
+                    maxItems={1}
+                  />
+                </div>
               </div>
             </Card>
             <Card
