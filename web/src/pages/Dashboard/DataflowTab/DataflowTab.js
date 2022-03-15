@@ -284,7 +284,7 @@ export default function DataflowTab({ updateData }) {
       {
         text: "Send sync request",
         onClick: () => sendSyncRequest(row),
-        disabled: !(status === "Active"),
+        disabled: status !== "Active",
       },
       {
         text: "Clone data flow",
@@ -529,6 +529,9 @@ export default function DataflowTab({ updateData }) {
       filterFunction: numberSearchFilter("version"),
       filterComponent: IntegerFilter,
     },
+  ];
+
+  const ActionColumn = [
     {
       accessor: "action",
       customCell: ActionCell,
@@ -623,16 +626,13 @@ export default function DataflowTab({ updateData }) {
 
   const moreColumns = [
     columns[0],
-    ...columns
-      .slice(1)
-      .map((column) => ({ ...column, fixedWidth: false }))
-      .slice(0, -1),
+    ...columns.slice(1).map((column) => ({ ...column, fixedWidth: false })),
     ...columnsToAdd.map((column) => ({
       ...column,
       hidden: true,
       fixedWidth: false,
     })),
-    columns.slice(-1)[0],
+    ...ActionColumn,
   ];
 
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
@@ -708,7 +708,7 @@ export default function DataflowTab({ updateData }) {
             title={
               // eslint-disable-next-line react/jsx-wrap-multilines
               <>
-                {`${totalRows} ${totalRows >= 1 ? "Data Flows" : "Data Flow"}`}
+                {`${totalRows} ${totalRows > 1 ? "Data Flows" : "Data Flow"}`}
               </>
             }
             col
