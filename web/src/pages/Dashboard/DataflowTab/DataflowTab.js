@@ -114,6 +114,28 @@ const DetailRow = ({ row }) => {
   );
 };
 
+const ExpandCell = ({ row: { dataFlowId, expanded } }, handleTR) => {
+  const iconButton = (
+    <IconButton id="expand" size="small" onClick={() => handleTR(dataFlowId)}>
+      {expanded ? <ChevronDown /> : <ChevronRight />}
+    </IconButton>
+  );
+
+  return (
+    <div
+      style={{
+        width: 32,
+        marginTop: 0,
+        marginLeft: 0,
+      }}
+    >
+      <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
+        {iconButton}
+      </Tooltip>
+    </div>
+  );
+};
+
 const statusList = ["Active", "Inactive"];
 // const typeList = ["Production", "Test"];
 
@@ -285,32 +307,6 @@ export default function DataflowTab({ updateData }) {
     );
   };
 
-  const ExpandCell = ({ row: { dataFlowId, expanded } }) => {
-    const iconButton = (
-      <IconButton
-        id="expand"
-        size="small"
-        onClick={() => handleToggleRow(dataFlowId)}
-      >
-        {expanded ? <ChevronDown /> : <ChevronRight />}
-      </IconButton>
-    );
-
-    return (
-      <div
-        style={{
-          width: 32,
-          marginTop: 0,
-          marginLeft: 0,
-        }}
-      >
-        <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
-          {iconButton}
-        </Tooltip>
-      </div>
-    );
-  };
-
   const CustomButtonHeader = ({ toggleFilters }) => {
     const menuItems = [
       {
@@ -373,7 +369,7 @@ export default function DataflowTab({ updateData }) {
   const columns = [
     {
       accessor: "expand",
-      customCell: ExpandCell,
+      customCell: (props) => ExpandCell(props, handleToggleRow),
     },
     {
       header: "Vendor Source",
