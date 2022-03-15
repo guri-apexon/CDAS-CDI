@@ -21,7 +21,7 @@ export default function DSColumnTable({
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
-  const { selectedDataset } = dataSets;
+  const { selectedDataset, previewSQL } = dataSets;
   const { fileType, datasetid } = selectedDataset;
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     uniqueId: `u${index}`,
@@ -135,14 +135,14 @@ export default function DSColumnTable({
     // setFilteredRows([...filteredRows]);
   };
 
-  const addSingleRow = () => {
+  const addSingleRow = (obj) => {
     if (rows.length < 500) {
       const singleRow = [
         {
           uniqueId: `u${rows.length}`,
           columnId: rows.length + 1,
           variableLabel: "",
-          columnName: "",
+          columnName: obj.column || "",
           position: "",
           format: "",
           dataType: "",
@@ -151,7 +151,7 @@ export default function DSColumnTable({
           required: "No",
           minLength: "",
           maxLength: "",
-          values: "",
+          values: obj.value || "",
           isInitLoad: true,
           isHavingError: false,
           isHavingColumnName: false,
@@ -175,16 +175,18 @@ export default function DSColumnTable({
     setNewRows("");
   };
 
-  const addMulti = () => {
+  const addMulti = (arr) => {
     setIsMultiAdd(false);
+    console.log("arr", newRows);
     if (parseInt(newRows, 10) > 0) {
+      console.log("arr", arr);
       const multiRows = Array.from(
         { length: parseInt(newRows, 10) },
         (i, index) => ({
           uniqueId: `u${rows.length + index}`,
           columnId: rows.length + index + 1,
           variableLabel: "",
-          columnName: "",
+          columnName: (arr && arr[i]?.column) || "",
           position: "",
           format: "",
           dataType: "",
@@ -193,7 +195,7 @@ export default function DSColumnTable({
           required: "No",
           minLength: "",
           maxLength: "",
-          values: "",
+          values: (arr && arr[i]?.value) || "",
           isInitLoad: true,
           isHavingError: false,
           isHavingColumnName: false,
@@ -407,6 +409,16 @@ export default function DSColumnTable({
       messageContext?.setDataflow({ columnDefinition: rows });
     }
   }, [rows]);
+
+  useEffect(() => {
+    console.log("previewSQL::", previewSQL);
+    if (previewSQL?.length) {
+      setNewRows(previewSQL?.length);
+      setTimeout(() => {
+        addMulti(previewSQL);
+      });
+    }
+  }, [previewSQL]);
 
   return (
     <div>

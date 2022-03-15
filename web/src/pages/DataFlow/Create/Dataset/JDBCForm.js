@@ -110,7 +110,7 @@ const JDBCForm = forwardRef((props, ref) => {
   const { datakind, selectedDataset, previewSQL, sqlTables, sqlColumns } =
     dataSets;
 
-  const { datasetId, datapackageid, dfTestFlag, onSubmit } = props;
+  const { datasetId, datapackageid, dfTestFlag, onSubmit, moveNext } = props;
 
   const setDefaultValues = () => {
     setDsActive(true);
@@ -161,6 +161,13 @@ const JDBCForm = forwardRef((props, ref) => {
       setDefaultValues();
     }
   }, [datasetId]);
+
+  useEffect(() => {
+    console.log("previewSQL", previewSQL);
+    if (previewSQL?.length) {
+      moveNext();
+    }
+  }, [previewSQL]);
 
   const handlePreview = async () => {
     await dispatch(getPreviewSQL(sQLQuery));
