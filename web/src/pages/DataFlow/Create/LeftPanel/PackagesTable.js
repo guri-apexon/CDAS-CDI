@@ -20,7 +20,7 @@ import {
   redirectToDataSet,
   updateStatus,
 } from "../../../../store/actions/DataPackageAction";
-import { updateDSState } from "../../../../store/actions/DataSetsAction";
+import { updateDSState } from "../../../../store/actions/DataFlowAction";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (

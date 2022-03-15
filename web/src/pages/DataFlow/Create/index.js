@@ -408,7 +408,10 @@ const DataFlow = ({
 
   useEffect(() => {
     pullVendorandLocation();
-    console.log(myform, "sdsasa", myform.DataPackage);
+    return () => {
+      console.log("MyForm", myform);
+      messageContext?.resetDataflow();
+    };
   }, []);
   useEffect(() => {
     console.log("myform:", modalLocType, myform);

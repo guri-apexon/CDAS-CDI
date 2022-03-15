@@ -319,7 +319,6 @@ const DataSetsForm = connect((state) => ({
   defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
   defaultLoadType: state.dataSets.defaultLoadType,
   datakind: state.dataSets.datakind?.records,
-  prodLock: state.dataFlow.prodLock,
 }))(ReduxForm);
 
 export default DataSetsForm;

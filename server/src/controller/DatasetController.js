@@ -111,7 +111,7 @@ async function updateSQLDataset(req, res, values) {
     Logger.info({ message: "update SQL Dataset" });
     const body = [
       values.datasetName,
-      values.active == true ? 1 : 0,
+      values.active === true ? 1 : 0,
       values.clinicalDataType ? values.clinicalDataType[0] : null,
       values.customSQLQuery || null,
       values.sQLQuery || null,
