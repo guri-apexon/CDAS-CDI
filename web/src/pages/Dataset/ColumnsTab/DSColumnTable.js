@@ -425,6 +425,7 @@ export default function DSColumnTable({
             onRowEdit,
             testLock,
             prodLock,
+            locationType,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}
