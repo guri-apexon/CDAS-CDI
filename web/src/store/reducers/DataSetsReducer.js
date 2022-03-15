@@ -273,7 +273,7 @@ const DataFlowReducer = (state = initialState, action) =>
             incremental === "Y" ? "Incremental" : "Cumulative";
           newState.formData.datasetid = datasetid;
         }
-        if (customsql_yn) {
+        if (customsql_yn === ("Yes" || "No")) {
           newState.formDataSQL.active = active === 1 ? true : false;
           newState.formDataSQL.datasetName = mnemonic;
           newState.formDataSQL.customSQLQuery = customsql_yn;

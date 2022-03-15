@@ -190,6 +190,7 @@ const DataSetsFormBase = (props) => {
                 minHeight={32}
                 multiline
                 sizeAdjustable
+                disabled={prodLock}
                 inputProps={{ maxLength: 255 }}
                 label="SQL Query"
               />
@@ -212,6 +213,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 style={{ width: 300, display: "block" }}
                 canDeselect={false}
+                disabled={prodLock}
               >
                 {sqlTables?.map((e) => (
                   <MenuItem value={e.tableName}>{e.tableName}</MenuItem>
@@ -246,6 +248,7 @@ const DataSetsFormBase = (props) => {
                   label="Offset Column"
                   size="small"
                   canDeselect={true}
+                  disabled={prodLock}
                   // eslint-disable-next-line react/jsx-no-bind
                   // onChange={onColumnChange}
                 >

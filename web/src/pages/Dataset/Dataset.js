@@ -90,7 +90,7 @@ const Dataset = () => {
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
-  const [customSql, setCustomSql] = useState("No");
+  const [customSql, setCustomSql] = useState("Yes");
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
@@ -152,8 +152,9 @@ const Dataset = () => {
     if (isDatasetCreated) {
       if (getDataSetType(loctyp) === ("sftp" || "ftps") || customSql === "No") {
         setValue(1);
+      } else {
+        history.goBack();
       }
-      setColumnsActive(customSql === "No");
     }
   }, [customSql, isDatasetCreated, loctyp]);
 
@@ -351,6 +352,7 @@ const Dataset = () => {
                 //   ref={jdbcRef}
                 // />
               }
+
               {value === 1 && <ColumnsTab locationType={locationType} />}
               {value === 2 && <VLCTab />}
             </div>
