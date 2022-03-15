@@ -353,7 +353,13 @@ const Dataset = () => {
                 // />
               }
 
-              {value === 1 && <ColumnsTab locationType={locationType} />}
+              {value === 1 && (
+                <ColumnsTab
+                  locationType={locationType}
+                  prodLock={dsProdLock}
+                  testLock={dsTestLock}
+                />
+              )}
               {value === 2 && <VLCTab />}
             </div>
           </main>

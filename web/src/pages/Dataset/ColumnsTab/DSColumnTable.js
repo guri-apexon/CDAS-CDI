@@ -17,6 +17,8 @@ export default function DSColumnTable({
   dataOrigin,
   formattedData,
   locationType,
+  testLock,
+  prodLock,
 }) {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
@@ -24,7 +26,6 @@ export default function DSColumnTable({
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDataset } = dataSets;
   const { fileType, datasetid } = selectedDataset;
-  const { testLock, prodLock } = dataFlow;
 
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     uniqueId: `u${index}`,
@@ -64,18 +65,13 @@ export default function DSColumnTable({
   useEffect(() => {
     const initRows = initialRows.map((e) => e.uniqueId);
     if (dataOrigin === "fileUpload") {
-      // setRows([...formattedData]);
       setSelectedRows([...initRows]);
       setEditedRows(formattedData);
-      // setIsAdding(false);
     } else if (dataOrigin === "fromDB") {
       setRows([...formattedData]);
-
-      // setIsAdding(false);
     } else if (dataOrigin === "manually") {
       setSelectedRows([...initRows]);
       setEditedRows(initialRows);
-      // setIsAdding(true);
     }
   }, [dataOrigin]);
 
@@ -161,10 +157,8 @@ export default function DSColumnTable({
           isHavingColumnName: false,
         },
       ];
-      // setRows([...rows, ...singleRow]);
       setSelectedRows([...selectedRows, `u${rows.length}`]);
       setEditedRows([...rows, ...singleRow]);
-      // setIsAdding(true);
     } else {
       messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
     }
@@ -203,11 +197,9 @@ export default function DSColumnTable({
           isHavingColumnName: false,
         })
       );
-      // setRows((rw) => [...rw, ...multiRows]);
       const moreRows = multiRows.map((e) => e.uniqueId);
       setSelectedRows([...moreRows]);
       setEditedRows([...editedRows, ...multiRows]);
-      // setIsAdding(true);
       setNewRows("");
     }
   };
@@ -408,7 +400,6 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {/* {console.log(editMode, selectedRows, editedRows, rows)} */}
         <Table
           title="Dataset Column Settings"
           subtitle={`${
@@ -432,6 +423,8 @@ export default function DSColumnTable({
             isEditAll,
             onRowCancel,
             onRowEdit,
+            testLock,
+            prodLock,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}
