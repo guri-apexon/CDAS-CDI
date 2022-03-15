@@ -173,7 +173,8 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
             <Card
               style={{ maxWidth: 320, height: 300 }}
               className={
-                selectedMethod === "fileUpload" ? "active card" : "card"
+                (selectedMethod === "fileUpload" ? "active card" : "card",
+                testLock || prodLock ? "DisableCard" : "")
               }
             >
               <Radio
