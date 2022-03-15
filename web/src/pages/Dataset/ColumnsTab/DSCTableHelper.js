@@ -158,6 +158,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       error={!row.isInitLoad && errorText ? true : false}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
+      disabled={row.prodLock}
     />
   ) : (
     row[key]
