@@ -139,10 +139,10 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
   }, [datasetColumns]);
 
   useEffect(() => {
-    if (locationType !== ("sftp" || "ftps")) {
+    if (locationType !== ("sftp" || "ftps") || testLock) {
       setShowColumns(true);
     }
-  }, [locationType]);
+  }, [locationType, testLock]);
 
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
