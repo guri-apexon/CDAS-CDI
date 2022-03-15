@@ -102,15 +102,9 @@ const Dataset = () => {
   const { selectedDFId } = dashboard;
   const { datapackageid, datapackageName, datasetid, datasetName } =
     selectedDSDetails;
-  const {
-    loading,
-    error,
-    sucessMsg,
-    isDatasetCreated,
-    isDatasetCreation,
-    selectedDataset,
-  } = dataSets;
-  const { dataFlowdetail, prodLock, testLock, testProdLock } = dataFlow;
+  const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
+    dataSets;
+  const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
 
   const useStyles = makeStyles(styles);
@@ -331,15 +325,15 @@ const Dataset = () => {
                     <DataSetsForm
                       loading={loading}
                       onSubmit={onSubmit}
-                      prodLock
+                      prodLock={dsProdLock}
                     />
                   ) : (
                     <DataSetsFormSQL
                       onChange={onChangeSql}
                       onSubmit={onSubmit}
-                      prodLock
-                      testLock
-                      testProdLock
+                      prodLock={dsProdLock}
+                      testLock={dsTestLock}
+                      testProdLock={dsTestProdLock}
                     />
                   )}
                 </>
