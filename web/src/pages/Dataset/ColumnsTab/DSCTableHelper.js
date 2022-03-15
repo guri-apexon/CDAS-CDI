@@ -75,6 +75,35 @@ export const makeEditableSelectCell =
     );
   };
 
+export const editableSelectCell =
+  (options) =>
+  ({ row, column: { accessor: key } }) => {
+    const errorText = checkRequiredValue(row[key], key, row.primary);
+    return row.editMode ? (
+      <Select
+        size="small"
+        fullWidth
+        canDeselect={false}
+        value={row[key]}
+        error={!row.isInitLoad && errorText ? true : false}
+        helperText={!row.isInitLoad ? errorText : ""}
+        onChange={(e) =>
+          row.editRow(row.uniqueId, key, e.target.value, errorText)
+        }
+        {...fieldStyles}
+        disabled={row.testLock || row.prodLock}
+      >
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </Select>
+    ) : (
+      row[key]
+    );
+  };
+
 export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   const errorText =
     checkNumeric(row[key]) ||
@@ -249,7 +278,7 @@ export const columns = [
   {
     header: "Primary?",
     accessor: "primary",
-    customCell: makeEditableSelectCell(["Yes", "No"]),
+    customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
   },
   {
@@ -261,7 +290,7 @@ export const columns = [
   {
     header: "Required?",
     accessor: "required",
-    customCell: makeEditableSelectCell(["Yes", "No"]),
+    customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
   },
   {

@@ -90,7 +90,7 @@ const Dataset = () => {
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
-  const [customSql, setCustomSql] = useState("No");
+  const [customSql, setCustomSql] = useState("Yes");
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
@@ -104,7 +104,7 @@ const Dataset = () => {
     selectedDSDetails;
   const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
     dataSets;
-  const { dataFlowdetail } = dataFlow;
+  const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
 
   const useStyles = makeStyles(styles);
@@ -152,8 +152,9 @@ const Dataset = () => {
     if (isDatasetCreated) {
       if (getDataSetType(loctyp) === ("sftp" || "ftps") || customSql === "No") {
         setValue(1);
+      } else {
+        history.goBack();
       }
-      setColumnsActive(customSql === "No");
     }
   }, [customSql, isDatasetCreated, loctyp]);
 
@@ -322,13 +323,18 @@ const Dataset = () => {
                 <>
                   {console.log("ltype", locationType)}
                   {locationType === ("sftp" || "ftps") ? (
-                    <DataSetsForm loading={loading} onSubmit={onSubmit} />
+                    <DataSetsForm
+                      loading={loading}
+                      onSubmit={onSubmit}
+                      prodLock={dsProdLock}
+                    />
                   ) : (
                     <DataSetsFormSQL
                       onChange={onChangeSql}
-                      defaultFields={{ sql: customSql }}
-                      loading={loading}
                       onSubmit={onSubmit}
+                      prodLock={dsProdLock}
+                      testLock={dsTestLock}
+                      testProdLock={dsTestProdLock}
                     />
                   )}
                 </>
@@ -346,7 +352,14 @@ const Dataset = () => {
                 //   ref={jdbcRef}
                 // />
               }
-              {value === 1 && <ColumnsTab locationType={locationType} />}
+
+              {value === 1 && (
+                <ColumnsTab
+                  locationType={locationType}
+                  prodLock={dsProdLock}
+                  testLock={dsTestLock}
+                />
+              )}
               {value === 2 && <VLCTab />}
             </div>
           </main>

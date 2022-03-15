@@ -173,6 +173,7 @@ const DataSetsFormBase = (props) => {
             size="small"
             label="Custom SQL Query"
             required
+            disabled={testProdLock}
             canDeselect={false}
           >
             {YesNo?.map((type) => (
@@ -189,6 +190,7 @@ const DataSetsFormBase = (props) => {
                 minHeight={32}
                 multiline
                 sizeAdjustable
+                disabled={prodLock}
                 inputProps={{ maxLength: 255 }}
                 label="SQL Query"
               />
@@ -211,6 +213,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 style={{ width: 300, display: "block" }}
                 canDeselect={false}
+                disabled={prodLock}
               >
                 {sqlTables?.map((e) => (
                   <MenuItem value={e.tableName}>{e.tableName}</MenuItem>
@@ -245,6 +248,7 @@ const DataSetsFormBase = (props) => {
                   label="Offset Column"
                   size="small"
                   canDeselect={true}
+                  disabled={prodLock}
                   // eslint-disable-next-line react/jsx-no-bind
                   // onChange={onColumnChange}
                 >
@@ -305,9 +309,6 @@ const DataSetsFormSQL = connect((state) => ({
   sqlTables: state.dataSets.sqlTables,
   sqlColumns: state.dataSets.sqlColumns,
   previewSQL: state.dataSets.previewSQL,
-  prodLock: state.dataFlow.prodLock,
-  testLock: state.dataFlow.testLock,
-  testProdLock: state.dataFlow.testProdLock,
 }))(ReduxForm);
 
 export default DataSetsFormSQL;
