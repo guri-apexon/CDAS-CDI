@@ -91,7 +91,7 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
     } else if (datasetProperties?.loadType?.toLowerCase() === "full") {
       filehistory?.records?.forEach((record) => {
         histories.push({
-          label: `${record.datasetname}, ${formatDate(record.lastsucceeded)}`,
+          label: `${formatDate(record.lastsucceeded)}`,
           data: [
             {
               Total: (record.new_records + record.modified_records) / 1000,
@@ -227,11 +227,12 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
             >
               {historyData.length > 0 && (
                 <ClusterColumnChart
-                  width={
-                    historyData.length > 10
-                      ? historyData.length * 80 + 1000
-                      : "1560"
-                  }
+                  {...(historyData.length > 4 && {
+                    width:
+                      historyData.length > 10
+                        ? historyData.length * 80 + 1000
+                        : "1560",
+                  })}
                   data={historyData}
                   suffix="k"
                   yTicks={6}

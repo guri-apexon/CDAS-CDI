@@ -150,6 +150,7 @@ const DataSetsFormBase = (props) => {
                 label="Data Set Name (Mnemonic)"
                 size="small"
                 required
+                disabled={prodLock}
               />
             </Grid>
             <Grid item md={6}>
@@ -164,6 +165,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 fullWidth
                 required
+                disabled={prodLock}
               />
             </Grid>
           </Grid>

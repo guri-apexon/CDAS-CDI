@@ -31,18 +31,19 @@ async function saveSQLDataset(req, res, values, datasetId) {
     const body = [
       datasetId,
       values.datasetName,
-      values.active == true ? 1 : 0,
+      values.active === true ? 1 : 0,
       values.clinicalDataType[0] ? values.clinicalDataType[0] : null,
       values.customSQLQuery,
       values.sQLQuery || null,
-      values.loadType == "Incremental" ? "Y" : "N" || null,
+      values.dataType == "Incremental" ? "Y" : "N" || null,
       values.tableName || null,
       values.offsetColumn || null,
+      values.filterCondition || null,
       new Date(),
       new Date(),
       values.datapackageid,
     ];
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, offset_val, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`;
     const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {
@@ -68,7 +69,7 @@ exports.saveDatasetData = async (req, res) => {
     }
 
     const datasetId = helper.generateUniqueID();
-    if (values.locationType === "jdbc") {
+    if (values.locationType.toLowerCase() === "jdbc") {
       return saveSQLDataset(req, res, values, datasetId);
     }
 
@@ -116,10 +117,13 @@ async function updateSQLDataset(req, res, values) {
       values.customSQLQuery || null,
       values.sQLQuery || null,
       values.tableName || null,
+      values.filterCondition || null,
+      values.dataType == "Incremental" ? "Y" : "N" || null,
+      values.offsetColumn || null,
       new Date(),
       values.datasetid,
     ];
-    const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, updt_tm = $7 where datasetid = $8`;
+    const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, offset_val = $7, offsetcolumn = $8, incremental = $9, updt_tm = $10 where datasetid = $11`;
     const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {
@@ -145,7 +149,7 @@ exports.updateDatasetData = async (req, res) => {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
     }
 
-    if (values.locationType === "jdbc") {
+    if (values.locationType.toLowerCase() === "jdbc") {
       return updateSQLDataset(req, res, values);
     }
 
