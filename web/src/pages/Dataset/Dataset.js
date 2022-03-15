@@ -151,9 +151,10 @@ const Dataset = () => {
   useEffect(() => {
     if (isDatasetCreated) {
       if (getDataSetType(loctyp) === ("sftp" || "ftps") || customSql === "No") {
+        messageContext.showSuccessMessage("Dataset Created Successfully");
         setValue(1);
       } else {
-        history.goBack();
+        messageContext.showSuccessMessage("Dataset Created Successfully");
       }
     }
   }, [customSql, isDatasetCreated, loctyp]);
