@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, {
   useEffect,
@@ -96,6 +97,7 @@ const JDBCForm = forwardRef((props, ref) => {
   const useStyles = makeStyles(styles);
   const classes = useStyles();
   const [isPreviewReady, setIsPreviewReady] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [dsActive, setDsActive] = useState(true);
   const [datasetName, setDatasetName] = useState("");
   const [clinicalDataType, setClinicalDataType] = useState(null);
@@ -163,17 +165,38 @@ const JDBCForm = forwardRef((props, ref) => {
   }, [datasetId]);
 
   useEffect(() => {
-    console.log("previewSQL", previewSQL);
-    if (previewSQL?.length) {
+    setLoading(false);
+    if (isPreviewReady && previewSQL?.length) {
       moveNext();
     }
   }, [previewSQL]);
 
+  const submitJDBCForm = () => {
+    const data = {
+      datapackageid,
+      datasetName,
+      active: dsActive,
+      incremental: dataType,
+      clinicalDataType,
+      customSQLQuery: isCustomSQL,
+      sQLQuery,
+      tableName,
+      offsetColumn,
+      dfTestFlag,
+    };
+    onSubmit(data);
+  };
   const handlePreview = async () => {
+    if (clinicalDataType === null || datasetName === "") {
+      messageContext.showErrorMessage(
+        `Please fill required fields to proceed.`
+      );
+      return false;
+    }
+    submitJDBCForm();
+    setIsPreviewReady(true);
+    setLoading(true);
     await dispatch(getPreviewSQL(sQLQuery));
-    setTimeout(() => {
-      setIsPreviewReady(true);
-    }, 100);
   };
 
   const handleStatusUpdate = () => {
@@ -230,20 +253,7 @@ const JDBCForm = forwardRef((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     handleSubmit() {
-      const data = {
-        datapackageid,
-        datasetName,
-        active: dsActive,
-        incremental: dataType,
-        clinicalDataType,
-        customSQLQuery: isCustomSQL,
-        sQLQuery,
-        tableName,
-        offsetColumn,
-        dfTestFlag,
-      };
-      console.log("data", data);
-      onSubmit(data);
+      submitJDBCForm();
     },
     handleCancel() {
       setDefaultValues();
@@ -365,6 +375,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 variant="secondary"
                 size="small"
                 onClick={handlePreview}
+                disabled={loading}
                 style={{ marginRight: 10, top: "-9px", marginLeft: 24 }}
               >
                 Preview SQL
@@ -437,7 +448,7 @@ const JDBCForm = forwardRef((props, ref) => {
               )}
             </>
           )}
-          {isPreviewReady && (
+          {/* {isPreviewReady && previewSQL?.length && (
             <div className="preview-table">
               <Table
                 columns={Object.keys(previewSQL[0]).map((e) => ({
@@ -448,7 +459,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 hidePagination
               />
             </div>
-          )}
+          )} */}
         </div>
       </Paper>
     </form>

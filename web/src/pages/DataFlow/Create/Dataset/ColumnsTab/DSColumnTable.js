@@ -177,34 +177,39 @@ export default function DSColumnTable({
 
   const addMulti = (arr) => {
     setIsMultiAdd(false);
-    console.log("arr", newRows);
-    if (parseInt(newRows, 10) > 0) {
-      console.log("arr", arr);
+    const rowCount = arr ? arr.length : newRows;
+    if (parseInt(rowCount, 10) > 0) {
       const multiRows = Array.from(
-        { length: parseInt(newRows, 10) },
-        (i, index) => ({
-          uniqueId: `u${rows.length + index}`,
-          columnId: rows.length + index + 1,
-          variableLabel: "",
-          columnName: (arr && arr[i]?.column) || "",
-          position: "",
-          format: "",
-          dataType: "",
-          primary: "No",
-          unique: "No",
-          required: "No",
-          minLength: "",
-          maxLength: "",
-          values: (arr && arr[i]?.value) || "",
-          isInitLoad: true,
-          isHavingError: false,
-          isHavingColumnName: false,
-        })
+        { length: parseInt(rowCount, 10) },
+        (i, index) => {
+          return {
+            uniqueId: `u${rows.length + index}`,
+            columnId: rows.length + index + 1,
+            variableLabel: "",
+            columnName: (arr && arr[index]?.column) || "",
+            position: "",
+            format: "",
+            dataType: "Alphanumeric",
+            primary: "No",
+            unique: "No",
+            required: "No",
+            minLength: "",
+            maxLength: "",
+            values: (arr && arr[index]?.value) || "",
+            isInitLoad: true,
+            isHavingError: false,
+            isHavingColumnName: arr && arr[index]?.column ? true : false,
+          };
+        }
       );
       // setRows((rw) => [...rw, ...multiRows]);
       const moreRows = multiRows.map((e) => e.uniqueId);
       setSelectedRows([...moreRows]);
-      setEditedRows([...editedRows, ...multiRows]);
+      if (arr) {
+        setEditedRows(multiRows);
+      } else {
+        setEditedRows([...editedRows, ...multiRows]);
+      }
       // setIsAdding(true);
       setNewRows("");
     }
@@ -411,14 +416,10 @@ export default function DSColumnTable({
   }, [rows]);
 
   useEffect(() => {
-    console.log("previewSQL::", previewSQL);
     if (previewSQL?.length) {
-      setNewRows(previewSQL?.length);
-      setTimeout(() => {
-        addMulti(previewSQL);
-      });
+      addMulti(previewSQL);
     }
-  }, [previewSQL]);
+  }, []);
 
   return (
     <div>
