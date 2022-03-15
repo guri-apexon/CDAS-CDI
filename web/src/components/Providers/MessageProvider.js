@@ -52,6 +52,9 @@ const MessageProvider = ({ children }) => {
   const setDataflow = (obj) => {
     setdataflowObj({ ...dataflowObj, ...obj });
   };
+  const resetDataflow = () => {
+    setdataflowObj({ datasetSubmit: false });
+  };
   return (
     <MessageContext.Provider
       value={{
@@ -63,6 +66,7 @@ const MessageProvider = ({ children }) => {
         showSuccessMessage,
         setDataflow,
         dataflowObj,
+        resetDataflow,
       }}
     >
       {children}
