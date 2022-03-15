@@ -17,6 +17,7 @@ import {
   FETCH_DATAFLOW_DETAIL_SUCCESS,
   ADD_DATAFLOW_SUCCESS,
   SAVE_DATAFLOW_LOCAL_DETAIL,
+  UPDATE_DS,
 } from "../../constants";
 
 export const initialState = {
@@ -39,6 +40,10 @@ export const initialState = {
   testProdLock: false,
   prodLock: false,
   testLock: false,
+  dsTestProdLock: false,
+  dsProdLock: false,
+  dsTestLock: false,
+  isDatasetCreation: true,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -53,6 +58,15 @@ const DataFlowReducer = (state = initialState, action) =>
       case FETCH_LOCATION_SUCCESS:
         newState.loading = false;
         newState.locations = action.locations;
+        break;
+
+      case UPDATE_DS:
+        newState.isDatasetCreation = action.status;
+        if (action.status) {
+          newState.dsTestProdLock = false;
+          newState.dsProdLock = false;
+          newState.dsTestLock = false;
+        }
         break;
 
       case ADD_DATAFLOW_SUCCESS:
