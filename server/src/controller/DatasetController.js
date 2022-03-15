@@ -117,10 +117,13 @@ async function updateSQLDataset(req, res, values) {
       values.customSQLQuery || null,
       values.sQLQuery || null,
       values.tableName || null,
+      values.filterCondition || null,
+      values.dataType == "Incremental" ? "Y" : "N" || null,
+      values.offsetColumn || null,
       new Date(),
       values.datasetid,
     ];
-    const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, updt_tm = $7 where datasetid = $8`;
+    const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, offset_val = $7, offsetcolumn = $8, incremental = $9, updt_tm = $10 where datasetid = $11`;
     const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {
@@ -146,7 +149,7 @@ exports.updateDatasetData = async (req, res) => {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
     }
 
-    if (values.locationType === "jdbc") {
+    if (values.locationType.toLowerCase() === "jdbc") {
       return updateSQLDataset(req, res, values);
     }
 
