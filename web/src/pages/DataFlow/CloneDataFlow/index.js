@@ -102,6 +102,7 @@ const CloneDataFlow = ({
   const searchTrigger = (e, el) => {
     const newValue = e.target.value;
     setSearchTxt(newValue);
+    console.log("searchTrigger", el, newValue);
     if (newValue !== "") {
       if (el === "study") {
         // debounceFunction(async () => {
@@ -178,7 +179,8 @@ const CloneDataFlow = ({
     },
   ];
 
-  const ModalComponent = () => {
+  const ModalComponent = React.memo(() => {
+    console.log("ModalComponent:Render");
     return (
       <div>
         <>
@@ -217,7 +219,7 @@ const CloneDataFlow = ({
         </Button> */}
       </div>
     );
-  };
+  }, [studies]);
 
   const ActionCell = ({ row }) => {
     return (
