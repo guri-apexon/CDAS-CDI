@@ -66,6 +66,10 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.dsTestProdLock = false;
           newState.dsProdLock = false;
           newState.dsTestLock = false;
+        } else {
+          newState.dsTestProdLock = state.testLock;
+          newState.dsProdLock = state.prodLock;
+          newState.dsTestLock = state.testProdLock;
         }
         break;
 

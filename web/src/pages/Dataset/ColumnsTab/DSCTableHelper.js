@@ -158,6 +158,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       error={!row.isInitLoad && errorText ? true : false}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
+      disabled={row.prodLock}
     />
   ) : (
     row[key]
@@ -266,6 +267,7 @@ export const columns = [
     header: "Variable Label",
     accessor: "variableLabel",
     customCell: EditableCell,
+    sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("variableLabel"),
     filterComponent: TextFieldFilter,
   },
@@ -279,11 +281,14 @@ export const columns = [
     header: "Position",
     accessor: "position",
     customCell: EditableCell,
+    sortFunction: compareStrings,
+    hidden: true,
   },
   {
     header: "Format",
     accessor: "format",
     customCell: FormatCell,
+    sortFunction: compareStrings,
   },
   {
     header: "Data Type",

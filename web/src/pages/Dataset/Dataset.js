@@ -102,10 +102,17 @@ const Dataset = () => {
   const { selectedDFId } = dashboard;
   const { datapackageid, datapackageName, datasetid, datasetName } =
     selectedDSDetails;
-  const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
-    dataSets;
+  const {
+    loading,
+    error,
+    sucessMsg,
+    isDatasetCreated,
+    selectedDataset,
+    formDataSQL,
+  } = dataSets;
   const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
+  const { locationType: newLT, customSQLQuery } = selectedDataset;
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -129,8 +136,6 @@ const Dataset = () => {
     return "jdbc";
   };
 
-  const onChangeSql = (val) => setCustomSql(val);
-
   useEffect(() => {
     if (selectedDFId === "") {
       history.push("/dashboard");
@@ -150,14 +155,14 @@ const Dataset = () => {
 
   useEffect(() => {
     if (isDatasetCreated) {
-      if (getDataSetType(loctyp) === ("sftp" || "ftps") || customSql === "No") {
+      if (getDataSetType(loctyp) === ("sftp" || "ftps")) {
         messageContext.showSuccessMessage("Dataset Created Successfully");
         setValue(1);
       } else {
         messageContext.showSuccessMessage("Dataset Created Successfully");
       }
     }
-  }, [customSql, isDatasetCreated, loctyp]);
+  }, [isDatasetCreated, loctyp]);
 
   useEffect(() => {
     if (loctyp) {
@@ -167,6 +172,17 @@ const Dataset = () => {
       }
     }
   }, [loctyp]);
+
+  useEffect(() => {
+    if (newLT === "JDBC") {
+      if (customSQLQuery === "No") {
+        setColumnsActive(true);
+      }
+    }
+    if (formDataSQL?.customSQLQuery === "No") {
+      setColumnsActive(true);
+    }
+  }, [newLT, customSQLQuery, formDataSQL]);
 
   const goToDataflow = () => {
     if (selectedDFId) {
@@ -331,7 +347,6 @@ const Dataset = () => {
                     />
                   ) : (
                     <DataSetsFormSQL
-                      onChange={onChangeSql}
                       onSubmit={onSubmit}
                       prodLock={dsProdLock}
                       testLock={dsTestLock}
