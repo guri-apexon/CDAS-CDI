@@ -38,9 +38,6 @@ const styles = {
   section: {
     marginBottom: 32,
   },
-  subsection: {
-    marginBottom: 8,
-  },
   divider: {
     marginBottom: 24,
   },

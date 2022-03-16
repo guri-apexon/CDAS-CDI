@@ -74,10 +74,11 @@ const run = async () => {
     secret_id: secretId,
   });
 
-  vault.token = result.auth.client_token;
-  console.log(vault.token);
+  vault.token = result.auth;
+  // console.log(vault.token);
 };
 run();
+
 app.listen(PORT, () => {
   console.log(`app started on port ${PORT}`);
   // Logger.info({ message: `app started on port ${PORT}` });

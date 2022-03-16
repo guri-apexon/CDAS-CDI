@@ -29,6 +29,8 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
   const [formattedData, setFormattedData] = useState([]);
+  const { selectedCard } = dashboard;
+  const { protocolnumber } = selectedCard;
   const numberOfRows = 1;
 
   const maxSize = 150000;
@@ -111,17 +113,17 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        const newData = formatData(
-          importedData,
-          dashboard?.selectedCard?.protocolnumber
-        );
+        const newData = formatData(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
-        newData.length > 1
-          ? (setFormattedData(newData), setIsImportReady(true))
-          : (messageContext.showErrorMessage(
-              `Protocol Number in file does not match protocol number ‘${dashboard?.selectedCard?.protocolnumber}’ for this data flow. Please make sure these match and try again`
-            ),
-            handleDelete());
+        if (newData.length > 1) {
+          setFormattedData(newData);
+          setIsImportReady(true);
+        } else {
+          messageContext.showErrorMessage(
+            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+          );
+          handleDelete();
+        }
       } else {
         messageContext.showErrorMessage(
           `The Selected File Does Not Match the Template`

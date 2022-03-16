@@ -1,7 +1,7 @@
 export const Success = "success";
 export const Warning = "warning";
 export const Info = "info";
-export const Error = "error";
+export const Err = "error";
 
 export const LOGIN_REQUEST = "LOGIN_REQUEST";
 export const LOGOUT_REQUEST = "LOGOUT_REQUEST";
