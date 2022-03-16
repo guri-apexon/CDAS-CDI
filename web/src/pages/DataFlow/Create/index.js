@@ -242,9 +242,11 @@ const DataFlow = ({
   const AddColumnDefinitions = (rows) => {
     console.log("AddColumnDefinitions");
     const newForm = { ...myform };
-    newForm.dataPackage[0].dataSet[0].columncount = rows.length;
-    newForm.dataPackage[0].dataSet[0].columnDefinition = rows;
-    setForm(newForm);
+    if (newForm.dataPackage[0].dataSet[0]) {
+      newForm.dataPackage[0].dataSet[0].columncount = rows.length;
+      newForm.dataPackage[0].dataSet[0].columnDefinition = rows;
+      setForm(newForm);
+    }
   };
   const submitFinalForm = async () => {
     const reqBody = {

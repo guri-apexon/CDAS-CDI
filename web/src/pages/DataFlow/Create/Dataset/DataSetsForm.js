@@ -264,19 +264,17 @@ const DataSetsFormBase = (props) => {
               </div>
             </Grid>
             <Grid item md={6}>
-              {selectedClinicalData.length ? (
-                <ReduxFormAutocomplete
-                  name="clinicalDataType"
-                  autoSelect
-                  id="clinicalDataType"
-                  label="Clinical Data Type"
-                  source={datakind}
-                  className="smallSize_autocomplete"
-                  variant="search"
-                  singleSelect
-                  fullWidth
-                />
-              ) : null}
+              <ReduxFormAutocomplete
+                name="clinicalDataType"
+                autoSelect
+                id="clinicalDataType"
+                label="Clinical Data Type"
+                source={datakind}
+                className="smallSize_autocomplete"
+                variant="search"
+                singleSelect
+                fullWidth
+              />
               <ReduxFormTextField
                 fullWidth
                 name="transferFrequency"

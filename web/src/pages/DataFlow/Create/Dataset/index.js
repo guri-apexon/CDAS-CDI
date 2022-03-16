@@ -245,6 +245,7 @@ const Dataset = (props, ref) => {
                 onChangeSql={onChangeSql}
                 onSubmit={onSubmit}
                 ref={jdbcRef}
+                moveNext={() => setValue(1)}
               />
             )}
           {value === 1 && <ColumnsTab locationType={locationType} />}
