@@ -4,6 +4,7 @@ const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
+const curDate = helper.getCurrentTime();
 
 async function checkIsExistInDF(dkId) {
   let listQuery = `select distinct (d3.datakindid) from ${schemaName}.dataflow d 
@@ -15,40 +16,18 @@ async function checkIsExistInDF(dkId) {
   return existingInDF.includes(parseInt(dkId));
 }
 
-// async function addAuditLog(
-//   dfId,
-//   dpId,
-//   dsId,
-//   cdId,
-//   audVer,
-//   att,
-//   oValue,
-//   nValue,
-//   userId
-// ) {
-//   console.log("addlog");
-//   try {
-//     const query = `INSERT INTO ${schemaName}.dataflow_audit_log
-//     (dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-//     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-//     const body = [
-//       dfId || null,
-//       dpId || null,
-//       dsId || null,
-//       cdId || null,
-//       audVer,
-//       att,
-//       oValue,
-//       nValue,
-//       userId,
-//       new Date(),
-//     ];
-//     await DB.executeQuery(query, body);
-//     return true;
-//   } catch (error) {
-//     return false;
-//   }
-// }
+async function addAuditLog(dfId, audVer, att, oValue, nValue, userId) {
+  try {
+    const query = `INSERT INTO ${schemaName}.dataflow_audit_log
+    (dataflowid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+    const body = [dfId, audVer, att, oValue, nValue, userId, curDate];
+    await DB.executeQuery(query, body);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
 
 async function getCurrentDKDetails(dkId) {
   let query = `SELECT "name" as "curDkName", extrnl_sys_nm as "curDkESName", dk_desc as "curDkDesc" FROM ${schemaName}.datakind where datakindid = $1`;
@@ -116,7 +95,7 @@ exports.updateDataKind = async (req, res) => {
             parseInt(row.max) + 1,
             { dataflowid },
             userId,
-            helper.getCurrentTime(),
+            curDate,
           ];
           const insertQuery = `INSERT into ${schemaName}.dataflow_version (dataflowid, "version", config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
           DB.executeQuery(insertQuery, insertBody);
@@ -130,7 +109,7 @@ exports.updateDataKind = async (req, res) => {
         dkESName,
         dkExternalId,
         dkDesc,
-        helper.getCurrentTime(),
+        curDate,
       ])
         .then(() => {
           return apiResponse.successResponse(res, "Operation success");
@@ -147,7 +126,7 @@ exports.updateDataKind = async (req, res) => {
         dkStatus,
         dkExternalId,
         dkDesc,
-        helper.getCurrentTime(),
+        curDate,
       ])
         .then(() => {
           return apiResponse.successResponse(res, "Operation success");
@@ -219,7 +198,6 @@ exports.getDKList = async (req, res) => {
 exports.dkStatusUpdate = async (req, res) => {
   try {
     const { dkId, dkStatus } = req.body;
-    const curDate = new Date();
     const query = `UPDATE ${schemaName}.datakind SET active=$3, updt_tm=$1 WHERE datakindid=$2`;
     Logger.info({ message: "dkStatusUpdate" });
     const isExist = await checkIsExistInDF(dkId);
