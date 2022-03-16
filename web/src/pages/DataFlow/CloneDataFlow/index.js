@@ -94,33 +94,27 @@ const CloneDataFlow = ({
     // }, 400);
   };
 
-  //   useEffect(() => {
-  //     // props.handleModalClose();
-  //     fetchStudies();
-  //   }, []);
-
   const searchTrigger = (e, el) => {
     const newValue = e.target.value;
     setSearchTxt(newValue);
-    console.log("searchTrigger", el, newValue);
     if (newValue !== "") {
       if (el === "study") {
-        // debounceFunction(async () => {
-        //   setLoading(true);
-        //   const newStudies = await searchStudy(newValue);
-        //   setStudies(newStudies.studies ? newStudies.studies : []);
-        //   setLoading(false);
-        // }, 1000);
-      } else {
         debounceFunction(async () => {
           setLoading(true);
-          const newDataflows = await searchDataflows(
-            newValue,
-            selectedStudy.study.prot_id
-          );
-          setDatflows(newDataflows.dataflows ? newDataflows.dataflows : []);
+          const newStudies = await searchStudy(newValue);
+          setStudies(newStudies.studies ? newStudies.studies : []);
           setLoading(false);
         }, 1000);
+      } else {
+        // debounceFunction(async () => {
+        //   setLoading(true);
+        //   const newDataflows = await searchDataflows(
+        //     newValue,
+        //     selectedStudy.study.prot_id
+        //   );
+        //   setDatflows(newDataflows.dataflows ? newDataflows.dataflows : []);
+        //   setLoading(false);
+        // }, 1000);
       }
     }
   };
@@ -133,27 +127,18 @@ const CloneDataFlow = ({
   };
 
   const FormatCell = ({ row, column: { accessor } }) => {
-    const greyedOut = ["In Progress", "Success"].includes(row.ob_stat);
-    const innerEl = <Highlighted text={row[accessor]} highlight={searchTxt} />;
+    if (!row[accessor]) {
+      return false;
+    }
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events
       <div
-        className={`result-row ${greyedOut ? "greyedout" : ""}`}
-        onClick={() => !greyedOut && setDetail(row)}
+        className="result-row"
+        onClick={() => setDetail(row)}
         role="menu"
         tabIndex={0}
       >
-        {accessor === "prot_nbr" && greyedOut ? (
-          <Tooltip
-            variant="dark"
-            title="This study has been imported into CDAS"
-            placement="top"
-          >
-            <span>{innerEl}</span>
-          </Tooltip>
-        ) : (
-          innerEl
-        )}
+        <Highlighted text={row[accessor]} highlight={searchTxt} />
       </div>
     );
   };
@@ -178,48 +163,6 @@ const CloneDataFlow = ({
       width: "25%",
     },
   ];
-
-  const ModalComponent = React.memo(() => {
-    console.log("ModalComponent:Render");
-    return (
-      <div>
-        <>
-          <Typography variant="caption">Search for a study</Typography>
-          <Search
-            // onKeyDown={searchTrigger}
-            style={{ marginTop: "0px" }}
-            placeholder="Search"
-            value={searchTxt}
-            onChange={(e) => searchTrigger(e, "study")}
-            fullWidth
-          />
-          {loading ? (
-            <Box display="flex" className="loader-container">
-              <ApolloProgress />
-            </Box>
-          ) : (
-            <Table
-              columns={columns}
-              rows={studies}
-              rowId="prot_id"
-              hidePagination
-              maxHeight="40vh"
-              emptyProps={{
-                text: searchTxt === "" && !loading ? "" : "No data to display",
-              }}
-            />
-          )}
-        </>
-
-        {/* <Button variant="secondary" size="small">
-          Cancel
-        </Button>
-        <Button variant="secondary" size="small">
-          Back
-        </Button> */}
-      </div>
-    );
-  }, [studies]);
 
   const ActionCell = ({ row }) => {
     return (
@@ -467,7 +410,7 @@ const CloneDataFlow = ({
     return null;
   };
 
-  const RenderSelectDataFlowModal = () => {
+  const RenderSelectDataFlowModal = React.memo(() => {
     const Columns = [
       {
         header: "Protocol Number",
@@ -512,6 +455,9 @@ const CloneDataFlow = ({
         customCell: DfFormatCell,
       },
     ];
+    useEffect(() => {
+      console.log("RenderDataflowTable");
+    }, []);
     return (
       <>
         {selectedStudy.dataflow ? (
@@ -529,7 +475,6 @@ const CloneDataFlow = ({
               </span>
             </Grid>
             <Typography variant="caption">Search for a Data Flow</Typography>
-
             <Search
               placeholder="Search"
               value={searchTxt}
@@ -557,7 +502,7 @@ const CloneDataFlow = ({
         )}
       </>
     );
-  };
+  });
 
   const handleClone = async () => {
     try {
@@ -572,6 +517,9 @@ const CloneDataFlow = ({
     }
   };
 
+  useEffect(() => {
+    console.log("Render", selectedStudy);
+  }, []);
   return (
     <>
       {selectedStudy.study ? (
@@ -580,8 +528,7 @@ const CloneDataFlow = ({
             open={open}
             onClose={() => handleModalClose()}
             title="Select Data Flow from Study"
-            message={<RenderSelectDataFlowModal onSubmit={onSubmit} />}
-            className={classes.modal}
+            className="custom-modal"
             buttonProps={[
               {},
               {
@@ -596,18 +543,48 @@ const CloneDataFlow = ({
               },
             ]}
             id="dataflowModal"
-          />
+          >
+            <RenderSelectDataFlowModal onSubmit={onSubmit} />
+          </Modal>
         </>
       ) : (
         <Modal
           open={open}
           onClose={() => handleModalClose()}
           title="Select a Study to Clone Data Flow from"
-          message={<ModalComponent onSubmit={onSubmit} />}
           className={classes.modal}
           buttonProps={[{}, { label: "Back", onClick: () => handleBack() }]}
           id="studymodal"
-        />
+        >
+          <Typography variant="caption">Search for a study</Typography>
+          <Search
+            // onKeyDown={searchTrigger}
+            style={{ marginTop: "0px" }}
+            placeholder="Search"
+            value={searchTxt}
+            onChange={(e) => searchTrigger(e, "study")}
+            fullWidth
+          />
+          {loading ? (
+            <Box display="flex" className="loader-container">
+              <ApolloProgress />
+            </Box>
+          ) : (
+            <div className="study-list-table">
+              <Table
+                columns={columns}
+                rows={studies}
+                rowId="prot_id"
+                hidePagination
+                maxHeight="40vh"
+                emptyProps={{
+                  text:
+                    searchTxt === "" && !loading ? "" : "No data to display",
+                }}
+              />
+            </div>
+          )}
+        </Modal>
       )}
     </>
   );

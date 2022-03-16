@@ -1,8 +1,29 @@
+@import "../../../styles/customscroll.scss";
 .value {
   font-weight: 700;
 }
 .selected-study-table {
   [class*="Table-root"] {
     height: 110px;
+  }
+}
+.study-list-table {
+  tr {
+    cursor: pointer !important;
+  }
+}
+#dataflowModal {
+  .custom-modal {
+    width: 775px;
+    max-width: 775px;
+    .modal-content {
+      thead {
+        padding-right: 16px;
+        display: block;
+      }
+      .MuiDialogContent-root {
+        @extend .customscroll;
+      }
+    }
   }
 }
