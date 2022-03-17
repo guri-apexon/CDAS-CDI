@@ -234,6 +234,9 @@ const CloneDataFlow = ({
   ];
 
   const RenderDataFlowDetails = () => {
+    useEffect(() => {
+      console.log("dataFlowSource", dataFlowSource);
+    }, [dataFlowSource]);
     if (!dataFlowSource?.length) {
       return null;
     }
@@ -427,13 +430,13 @@ const CloneDataFlow = ({
       {
         header: "Data Flow Name",
         accessor: "name",
-        width: "34%",
+        width: "22%",
         customCell: DfFormatCell,
       },
       {
         header: "Vendor Source",
         accessor: "vend_nm",
-        width: "41%",
+        width: "21%",
         customCell: DfFormatCell,
       },
       {
@@ -445,7 +448,7 @@ const CloneDataFlow = ({
       {
         header: "External Source System",
         accessor: "externalsystemname",
-        width: "25%",
+        width: "22%",
         customCell: DfFormatCell,
       },
     ];
@@ -466,7 +469,7 @@ const CloneDataFlow = ({
       console.log("RenderDataflowTable");
     }, []);
     return (
-      <div id="selectDataFlowModal">
+      <div id="selectDataFlowModal" className="scrollable-table">
         {selectedStudy.dataflow ? (
           <RenderDataFlowDetails />
         ) : (
@@ -483,6 +486,7 @@ const CloneDataFlow = ({
             </Grid>
             <Typography variant="caption">Search for a Data Flow</Typography>
             <Search
+              className="search-box"
               placeholder="Search"
               value={searchText}
               onChange={searchDataflow}
@@ -498,6 +502,7 @@ const CloneDataFlow = ({
                 rows={datflows}
                 rowId="dataflowid"
                 hidePagination
+                hasScroll
                 maxHeight="40vh"
                 emptyProps={{
                   text:
@@ -579,12 +584,13 @@ const CloneDataFlow = ({
               <ApolloProgress />
             </Box>
           ) : (
-            <div className="study-list-table">
+            <div className="study-list-table scrollable-table">
               <Table
                 columns={columns}
                 rows={studies}
                 rowId="prot_id"
                 hidePagination
+                hasScroll
                 maxHeight="40vh"
                 emptyProps={{
                   text:
