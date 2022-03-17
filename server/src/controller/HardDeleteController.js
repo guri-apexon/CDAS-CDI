@@ -37,7 +37,7 @@ exports.hardDelete = async (req, res) => {
       return apiResponse.successResponseWithData(res, "Operation success");
     }
 
-    return apiResponse.successResponseWithData(res, "Data Flow Id Not Found");
+    return apiResponse.notFoundResponse(res, "Data Flow Id Not Found");
   } catch (err) {
     Logger.error("catch :hardDelete");
     Logger.error(err);
