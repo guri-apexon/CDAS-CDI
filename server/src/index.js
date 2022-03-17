@@ -8,11 +8,6 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 
-const vault = require("node-vault")({
-  apiVersion: "v1",
-  endpoint: "http://ca2updb249vd:8200",
-});
-
 const app = express();
 dotenv.config();
 const PORT = process.env.PORT;
@@ -64,20 +59,6 @@ app.use("/public", express.static("public"));
 if (!fs.existsSync(dir)) {
   fs.mkdirSync(dir, { recursive: true });
 }
-
-const roleId = process.env.ROLE_ID;
-const secretId = process.env.SECRET_ID;
-
-const run = async () => {
-  const result = await vault.approleLogin({
-    role_id: roleId,
-    secret_id: secretId,
-  });
-
-  vault.token = result.auth;
-  // console.log(vault.token);
-};
-run();
 
 app.listen(PORT, () => {
   console.log(`app started on port ${PORT}`);
