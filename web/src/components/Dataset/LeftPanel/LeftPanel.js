@@ -76,7 +76,7 @@ const LeftPanel = ({ dataflowSource }) => {
   const packageData = useSelector((state) => state.dataPackage);
   const { description, dataflowid, vendorname, name, testflag, active } =
     dataflowSource;
-  const { loading } = packageData;
+  const { loading, packagesList } = packageData;
   const userInfo = getUserInfo();
   const location = useLocation();
   const viewAuditLog = () => {
@@ -198,14 +198,18 @@ const LeftPanel = ({ dataflowSource }) => {
       <div className="packages-list customScrollbar">
         {packageData ? (
           <div className="list-container">
-            {loading ? (
+            {loading && (
               <Box display="flex" className="loader-container">
                 <ApolloProgress />
               </Box>
-            ) : (
+            )}
+            {!loading && (
               <>
                 <Typography variant="body2" style={{ marginLeft: 10 }}>
-                  {`${packageData.packagesList.length} Data Packages`}
+                  {packagesList.length === 1 &&
+                    `${packagesList.length}  Data Package`}
+                  {packagesList.length >=
+                    1`${packagesList.length} Data Packages`}
                 </Typography>
                 <PackagesList userInfo={userInfo} data={packageData} />
               </>
