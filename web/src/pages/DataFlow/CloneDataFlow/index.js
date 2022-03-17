@@ -81,6 +81,7 @@ const CloneDataFlow = ({
   const [studies, setStudies] = useState([]);
   const [datflows, setDatflows] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingTableData, setLoadingTableData] = useState(false);
   const [dataFlowSource, setDataFlowSource] = useState([]);
   const messageContext = useContext(MessageContext);
 
@@ -113,10 +114,12 @@ const CloneDataFlow = ({
   );
 
   const setDetail = async (study) => {
+    setLoadingTableData(true);
     await handleSelect(study);
     await setSearchTxt("");
     await setStudies([]);
     await setDatflows([]);
+    setLoadingTableData(false);
   };
 
   const FormatCell = ({ row, column: { accessor } }) => {
@@ -136,7 +139,7 @@ const CloneDataFlow = ({
     );
   };
 
-  const columns = [
+  const studyColumns = [
     {
       header: "Protocol Number",
       accessor: "protocolnumber",
@@ -174,71 +177,23 @@ const CloneDataFlow = ({
     );
   };
 
-  const rows = [
-    {
-      employeeId: 8473,
-      name: "Bob Henderson",
-      dept: "Human Resources",
-      email: "bhenderson@abc-corp.com",
-      employmentStatus: "Full-time",
-      //   hireDate: "10/12/2016",
-    },
-    {
-      employeeId: 4856,
-      name: "Lakshmi Patel",
-      dept: "Marketing",
-      email: "lpatel@abc-corp.com",
-      employmentStatus: "Full-time",
-      //   hireDate: "09/04/2016",
-    },
-    {
-      employeeId: 2562,
-      name: "Cathy Simoyan",
-      dept: "Engineering",
-      email: "csimoyan@abc-corp.com",
-      employmentStatus: "Contractor",
-      //   hireDate: "05/25/2014",
-    },
-    {
-      employeeId: 2563,
-      name: "Mike Zhang",
-      dept: "Engineering",
-      email: "mzhang@abc-corp.com",
-      employmentStatus: "Full-time",
-      //   hireDate: "02/04/2015",
-    },
-    {
-      employeeId: 1945,
-      name: "Kai Vongvilay",
-      dept: "Human Resources",
-      email: "kvongvilay@abc-corp.com",
-      employmentStatus: "Full-time",
-      //   hireDate: "10/14/2016",
-    },
-    {
-      employeeId: 2518,
-      name: "Dennis Smith",
-      dept: "Engineering",
-      email: "dsmith@abc-corp.com",
-      employmentStatus: "Contractor",
-      //   hireDate: "12/03/2015",
-    },
-    {
-      employeeId: 7455,
-      name: "Dennis Reynolds",
-      dept: "Design",
-      email: "dreynolds@abc-corp.com",
-      employmentStatus: "Full-time",
-      //   hireDate: "02/05/2015",
-    },
-  ];
-
   const RenderDataFlowDetails = () => {
+    const backBtn = (
+      <Button
+        className="back-btn"
+        variant="text"
+        size="small"
+        onClick={handleBack}
+      >
+        <ChevronLeft style={{ width: 12, marginRight: 5 }} width={10} />
+        Back to search
+      </Button>
+    );
     useEffect(() => {
       console.log("dataFlowSource", dataFlowSource);
     }, [dataFlowSource]);
     if (!dataFlowSource?.length) {
-      return null;
+      return <>{backBtn}</>;
     }
     const {
       name,
@@ -254,39 +209,34 @@ const CloneDataFlow = ({
         header: "Datapackage Name",
         accessor: "datapackagename",
         width: "34%",
+        customCell: ({ row, column: { accessor } }) => {
+          return (
+            <>{row[accessor] ? row[accessor] : "-----------------------"}</>
+          );
+        },
       },
       {
         header: "Dataset Name",
         accessor: "datasetname",
         width: "41%",
+        customCell: ({ row, column: { accessor } }) => {
+          return (
+            <>{row[accessor] ? row[accessor] : "-----------------------"}</>
+          );
+        },
       },
     ];
     return (
       <>
-        <Button
-          className="back-btn"
-          variant="text"
-          size="small"
-          onClick={handleBack}
-        >
-          <ChevronLeft style={{ width: 12, marginRight: 5 }} width={10} />
-          Back to search
-        </Button>
-        <div>
+        {backBtn}
+        <div className="dataflow-details">
           <Typography variant="caption">Verify data flow to clone</Typography>
           <Accordion defaultExpanded>
             <AccordionSummary>
               <Typography>Data Flow Details</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Grid
-                container
-                spacing={1}
-                style={{
-                  padding: "12px 5px 24px 5px",
-                  backgroundColor: "rgba(35, 114, 253, 0.08)",
-                }}
-              >
+              <Grid container spacing={1}>
                 <Grid item xs={12}>
                   <div>
                     <Typography variant="caption">Data Flow Name</Typography>
@@ -362,7 +312,7 @@ const CloneDataFlow = ({
             <AccordionSummary>
               <Typography>Data Packages & Datasets</Typography>
             </AccordionSummary>
-            <AccordionDetails>
+            <AccordionDetails className="table-ac-content">
               <Grid item xs={12}>
                 <Table
                   columns={DfDetailsColumns}
@@ -408,7 +358,7 @@ const CloneDataFlow = ({
 
   const RenderSelectDataFlowModal = React.memo(() => {
     const [searchText, setSearchText] = useState("");
-    const Columns = [
+    const selectedStudyColumns = [
       {
         header: "Protocol Number",
         accessor: "protocolnumber",
@@ -426,7 +376,7 @@ const CloneDataFlow = ({
       },
     ];
 
-    const dfcolumns = [
+    const dataflowColumns = [
       {
         header: "Data Flow Name",
         accessor: "name",
@@ -477,7 +427,7 @@ const CloneDataFlow = ({
             <Grid item xs={12}>
               <span className="selected-study-table">
                 <Table
-                  columns={Columns}
+                  columns={selectedStudyColumns}
                   rows={[selectedStudy.study]}
                   rowId="prot_id"
                   hidePagination
@@ -498,7 +448,7 @@ const CloneDataFlow = ({
               </Box>
             ) : (
               <Table
-                columns={dfcolumns}
+                columns={dataflowColumns}
                 rows={datflows}
                 rowId="dataflowid"
                 hidePagination
@@ -518,15 +468,18 @@ const CloneDataFlow = ({
 
   const handleClone = async () => {
     try {
+      setLoading(true);
       const res = await getDataFlowDetails(selectedStudy.dataflow.dataflowid);
       res.externalSystemName = "CDI";
       const data = await dataflowSave(res);
+      setLoading(false);
       messageContext.showSuccessMessage(
         `Selected Dataflow has been cloned to this study.`
       );
       history.push(`/dashboard/dataflow-management/${data.dataflowId}`);
     } catch (error) {
       console.log(error);
+      setLoading(false);
       messageContext.showErrorMessage(`Something went wrong`);
     }
   };
@@ -544,8 +497,16 @@ const CloneDataFlow = ({
             title="Select Data Flow from Study"
             className="custom-modal"
             buttonProps={[
-              {},
               {
+                size: "small",
+                className:
+                  selectedStudy.dataflow && selectedStudy.study
+                    ? ""
+                    : "left-btn",
+              },
+              {
+                size: "small",
+                disabled: loading,
                 label:
                   selectedStudy.dataflow && selectedStudy.study
                     ? "Clone & Edit"
@@ -567,7 +528,10 @@ const CloneDataFlow = ({
           onClose={() => handleModalClose()}
           title="Select a Study to Clone Data Flow from"
           className={classes.modal}
-          buttonProps={[{}, { label: "Back", onClick: () => handleBack() }]}
+          buttonProps={[
+            { size: "small", className: "left-btn" },
+            { label: "Back", size: "small", onClick: () => handleBack() },
+          ]}
           id="studymodal"
         >
           <Typography variant="caption">Search for a study</Typography>
@@ -586,7 +550,7 @@ const CloneDataFlow = ({
           ) : (
             <div className="study-list-table scrollable-table">
               <Table
-                columns={columns}
+                columns={studyColumns}
                 rows={studies}
                 rowId="prot_id"
                 hidePagination
