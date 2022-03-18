@@ -88,10 +88,6 @@ const LeftPanel = ({ dataflowSource }) => {
     }
   };
 
-  // useEffect(() => {
-  //   getPackages(dataflowid);
-  // }, [dataflowid]);
-
   const searchTrigger = (e) => {
     const newValue = e.target.value;
     setSearchTxt(newValue);
