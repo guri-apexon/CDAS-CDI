@@ -210,8 +210,8 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
                 <Typography variant="body2" style={{ marginLeft: 10 }}>
                   {packagesList.length === 1 &&
                     `${packagesList.length}  Data Package`}
-                  {packagesList.length >=
-                    1`${packagesList.length} Data Packages`}
+                  {packagesList.length >= 1 &&
+                    `${packagesList.length} Data Packages`}
                 </Typography>
                 <PackagesList userInfo={userInfo} data={packageData} />
               </>
