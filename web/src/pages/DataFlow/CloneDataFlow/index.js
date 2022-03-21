@@ -84,8 +84,7 @@ const CloneDataFlow = ({
   const [loadingTableData, setLoadingTableData] = useState(false);
   const [dataFlowSource, setDataFlowSource] = useState([]);
   const messageContext = useContext(MessageContext);
-
-  //   const studies = useSelector((state) => state.dashboard);
+  const { flowData } = useSelector((state) => state.dashboard);
   const onSubmit = (values) => {
     // setTimeout(() => {
     //   console.log(props);
@@ -193,7 +192,14 @@ const CloneDataFlow = ({
       console.log("dataFlowSource", dataFlowSource);
     }, [dataFlowSource]);
     if (!dataFlowSource?.length) {
-      return <>{backBtn}</>;
+      return (
+        <>
+          {backBtn}
+          <br />
+          <br />
+          <Typography>No data available for this dataflow</Typography>
+        </>
+      );
     }
     const {
       name,
@@ -379,13 +385,13 @@ const CloneDataFlow = ({
     const dataflowColumns = [
       {
         header: "Data Flow Name",
-        accessor: "name",
+        accessor: "dataFlowName",
         width: "22%",
         customCell: DfFormatCell,
       },
       {
         header: "Vendor Source",
-        accessor: "vend_nm",
+        accessor: "vendorSource",
         width: "21%",
         customCell: DfFormatCell,
       },
@@ -397,7 +403,7 @@ const CloneDataFlow = ({
       },
       {
         header: "External Source System",
-        accessor: "externalsystemname",
+        accessor: "externalSourceSystem",
         width: "22%",
         customCell: DfFormatCell,
       },
@@ -470,6 +476,7 @@ const CloneDataFlow = ({
     try {
       setLoading(true);
       const res = await getDataFlowDetails(selectedStudy.dataflow.dataflowid);
+      console.log("res", res);
       res.externalSystemName = "CDI";
       const data = await dataflowSave(res);
       setLoading(false);
@@ -484,6 +491,12 @@ const CloneDataFlow = ({
     }
   };
 
+  // useEffect(() => {
+  //   console.log("selectedStudy", selectedStudy);
+  //   if (selectedStudy) {
+  //     setDatflows(flowData);
+  //   }
+  // }, [flowData]);
   useEffect(() => {
     console.log("Render", selectedStudy);
   }, []);
@@ -506,7 +519,9 @@ const CloneDataFlow = ({
               },
               {
                 size: "small",
-                disabled: loading,
+                disabled:
+                  loading ||
+                  (selectedStudy.dataflow && !dataFlowSource?.length),
                 label:
                   selectedStudy.dataflow && selectedStudy.study
                     ? "Clone & Edit"
