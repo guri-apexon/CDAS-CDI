@@ -2,7 +2,57 @@
   font-weight: 700;
 }
 .selected-study-table {
-  [class*="Table-root"] {
-    height: 110px;
+  tr:last-child {
+    height: 0 !important;
+  }
+}
+.study-list-table {
+  tr {
+    cursor: pointer !important;
+  }
+}
+#dataflowModal {
+  .custom-modal {
+    width: 775px;
+    max-width: 775px;
+    .modal-content {
+      thead {
+        padding-right: 16px;
+        display: block;
+      }
+    }
+  }
+}
+#selectDataFlowModal {
+  tr {
+    cursor: pointer !important;
+  }
+  .search-box {
+    margin-top: 0;
+  }
+}
+#studymodal,
+#dataflowModal {
+  .MuiDialogActions-root {
+    > div {
+      width: 100%;
+      justify-content: end;
+    }
+  }
+  .left-btn {
+    margin-right: auto;
+  }
+  .result-row {
+    height: 48px;
+    align-items: center;
+    display: flex;
+  }
+}
+.dataflow-details {
+  .Mui-expanded {
+    border: none;
+  }
+  .table-ac-content {
+    padding: 0 5px;
   }
 }

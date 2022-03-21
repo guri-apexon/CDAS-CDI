@@ -22,7 +22,7 @@ import { getUserInfo, isSftp, validateFields } from "../../../../utils";
 //   getPackagesList,
 // } from "../../store/actions/DataPackageAction";
 
-const DataPackage = ({ payloadBack, toast, locType }, ref) => {
+const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
   const [showForm, setShowForm] = useState(true);
   const [configShow, setConfigShow] = useState(false);
   const [compression, setCompression] = useState("not_compressed");
@@ -51,6 +51,10 @@ const DataPackage = ({ payloadBack, toast, locType }, ref) => {
   useImperativeHandle(ref, () => ({
     // eslint-disable-next-line consistent-return
     submitForm: () => {
+      if (!configShow) {
+        configRequired();
+        return false;
+      }
       if (disabled) {
         payloadBack(null);
         return false;
