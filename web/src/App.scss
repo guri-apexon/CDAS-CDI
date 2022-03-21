@@ -197,7 +197,7 @@ label.table-checkbox {
 
 .pageRoot {
   display: flex;
-  height: 100vh;
+  height: calc( 100vh - 120px);
   box-sizing: content-box;
   max-width: 100vw;
 }
