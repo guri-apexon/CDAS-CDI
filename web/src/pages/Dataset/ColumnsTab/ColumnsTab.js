@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-condition */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-nested-ternary */
 import React, { useState, useContext, useEffect } from "react";
@@ -7,9 +8,7 @@ import FileUpload from "apollo-react/components/FileUpload";
 import Card from "apollo-react/components/Card";
 import Radio from "apollo-react/components/Radio";
 import Link from "apollo-react/components/Link";
-// import { useHistory } from "react-router-dom";
-// import Pencil from "apollo-react-icons/Pencil";
-// import TextField from "apollo-react/components/TextField";
+
 import Button from "apollo-react/components/Button";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { allowedTypes } from "../../../constants";
@@ -18,9 +17,7 @@ import DSColumnTable from "./DSColumnTable";
 import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatData } from "../../../utils/index";
 
-// const DSColumnTable = lazy(() => import("./DSColumnTable"));
-
-const ColumnsTab = ({ locationType }) => {
+const ColumnsTab = ({ locationType, testLock, prodLock }) => {
   // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -32,6 +29,8 @@ const ColumnsTab = ({ locationType }) => {
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
   const [formattedData, setFormattedData] = useState([]);
+  const { selectedCard } = dashboard;
+  const { protocolnumber } = selectedCard;
   const numberOfRows = 1;
 
   const maxSize = 150000;
@@ -114,17 +113,17 @@ const ColumnsTab = ({ locationType }) => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        const newData = formatData(
-          importedData,
-          dashboard?.selectedCard?.protocolnumber
-        );
+        const newData = formatData(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
-        newData.length > 1
-          ? (setFormattedData(newData), setIsImportReady(true))
-          : (messageContext.showErrorMessage(
-              `Protocol Number in file does not match protocol number ‘${dashboard?.selectedCard?.protocolnumber}’ for this data flow. Please make sure these match and try again`
-            ),
-            handleDelete());
+        if (newData.length > 1) {
+          setFormattedData(newData);
+          setIsImportReady(true);
+        } else {
+          messageContext.showErrorMessage(
+            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+          );
+          handleDelete();
+        }
       } else {
         messageContext.showErrorMessage(
           `The Selected File Does Not Match the Template`
@@ -160,6 +159,8 @@ const ColumnsTab = ({ locationType }) => {
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}
+          testLock={testLock}
+          prodLock={prodLock}
         />
       </>
     );
@@ -178,20 +179,22 @@ const ColumnsTab = ({ locationType }) => {
                 selectedMethod === "fileUpload" ? "active card" : "card"
               }
             >
-              <Radio
-                value="fileUpload"
-                label="Upload dataset column settings"
-                onClick={handleChange}
-                checked={selectedMethod === "fileUpload"}
-              />
-              <Link onClick={downloadTemplate}>Download Excel Template</Link>
-              <div className="upload-box">
-                <FileUpload
-                  value={selectedFile}
-                  onUpload={handleUpload}
-                  onFileDelete={handleDelete}
-                  maxItems={1}
+              <div className={testLock || prodLock ? "disable-card" : ""}>
+                <Radio
+                  value="fileUpload"
+                  label="Upload dataset column settings"
+                  onClick={handleChange}
+                  checked={selectedMethod === "fileUpload"}
                 />
+                <Link onClick={downloadTemplate}>Download Excel Template</Link>
+                <div className="upload-box">
+                  <FileUpload
+                    value={selectedFile}
+                    onUpload={handleUpload}
+                    onFileDelete={handleDelete}
+                    maxItems={1}
+                  />
+                </div>
               </div>
             </Card>
             <Card

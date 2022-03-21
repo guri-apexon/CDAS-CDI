@@ -34,7 +34,6 @@ import {
   GET_PREVIEW_SQL,
   FETCH_PREVIEW_SQL_SUCCESS,
   FETCH_PREVIEW_SQL_FAILURE,
-  UPDATE_DS,
   RESET_FTP_FORM,
   RESET_JDBC_FORM,
 } from "../../constants";
@@ -43,7 +42,7 @@ export const initialState = {
   loading: false,
   isDatasetCreated: false,
   isColumnsConfigured: false,
-  isDatasetCreation: true,
+
   datasetColumns: [],
   datasetDetail: {},
   formDataSQL: {
@@ -59,7 +58,7 @@ export const initialState = {
     fileType: "SAS",
     encoding: "UTF-8",
     escapeCharacter: "\\",
-    quote: `""`,
+    quote: `''`,
     headerRowNumber: 1,
     footerRowNumber: "",
     overrideStaleAlert: 3,
@@ -69,7 +68,7 @@ export const initialState = {
   selectedDataset: {},
   defaultDelimiter: "COMMA",
   defaultEscapeCharacter: "\\",
-  defaultQuote: `""`,
+  defaultQuote: `''`,
   defaultHeaderRowNumber: 1,
   defaultFooterRowNumber: "",
   defaultLoadType: "Cumulative",
@@ -99,10 +98,6 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = true;
         break;
 
-      case UPDATE_DS:
-        newState.isDatasetCreation = action.status;
-        break;
-
       case RESET_FTP_FORM:
         newState.formData = {
           active: true,
@@ -111,7 +106,7 @@ const DataFlowReducer = (state = initialState, action) =>
           fileType: "SAS",
           encoding: "UTF-8",
           escapeCharacter: "\\",
-          quote: `""`,
+          quote: `''`,
           headerRowNumber: 1,
           footerRowNumber: "",
           overrideStaleAlert: 3,
@@ -256,6 +251,7 @@ const DataFlowReducer = (state = initialState, action) =>
           customsql_yn,
           customsql,
           offsetcolumn,
+          offsetvalues,
           tbl_nm,
         } = datasetDetail;
         if (type) {
@@ -280,11 +276,15 @@ const DataFlowReducer = (state = initialState, action) =>
         }
         if (customsql_yn) {
           newState.formDataSQL.active = active === 1 ? true : false;
+          newState.formData.clinicalDataType = [datakindid];
           newState.formDataSQL.datasetName = mnemonic;
           newState.formDataSQL.customSQLQuery = customsql_yn;
           newState.formDataSQL.sQLQuery = customsql;
           newState.formDataSQL.offsetColumn = offsetcolumn;
           newState.formDataSQL.tableName = tbl_nm;
+          newState.formDataSQL.filterCondition = offsetvalues;
+          newState.formData.dataType =
+            incremental === "Y" ? "Incremental" : "Cumulative";
         }
         newState.selectedDataset = action.datasetDetail;
         break;

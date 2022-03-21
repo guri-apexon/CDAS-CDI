@@ -17,6 +17,7 @@ import {
   FETCH_DATAFLOW_DETAIL_SUCCESS,
   ADD_DATAFLOW_SUCCESS,
   SAVE_DATAFLOW_LOCAL_DETAIL,
+  UPDATE_DS,
 } from "../../constants";
 
 export const initialState = {
@@ -39,6 +40,10 @@ export const initialState = {
   testProdLock: false,
   prodLock: false,
   testLock: false,
+  dsTestProdLock: false,
+  dsProdLock: false,
+  dsTestLock: false,
+  isDatasetCreation: true,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -53,6 +58,19 @@ const DataFlowReducer = (state = initialState, action) =>
       case FETCH_LOCATION_SUCCESS:
         newState.loading = false;
         newState.locations = action.locations;
+        break;
+
+      case UPDATE_DS:
+        newState.isDatasetCreation = action.status;
+        if (action.status) {
+          newState.dsTestProdLock = false;
+          newState.dsProdLock = false;
+          newState.dsTestLock = false;
+        } else {
+          newState.dsTestProdLock = state.testLock;
+          newState.dsProdLock = state.prodLock;
+          newState.dsTestLock = state.testProdLock;
+        }
         break;
 
       case ADD_DATAFLOW_SUCCESS:
@@ -137,15 +155,19 @@ const DataFlowReducer = (state = initialState, action) =>
           name,
           srclocID,
           type,
-          vendID,
+          vendorid,
           vendorname,
           testflag,
+          locationName,
           isSync,
         } = dataflowDetail;
 
         newState.testLock = testflag === 1 && isSync === "Y";
         newState.prodLock = testflag === 0 && isSync === "Y";
         newState.testProdLock = isSync === "Y";
+        newState.dsTestLock = testflag === 1 && isSync === "Y";
+        newState.dsProdLock = testflag === 0 && isSync === "Y";
+        newState.dsTestProdLock = isSync === "Y";
 
         // eslint-disable-next-line no-case-declarations
         const formData = {};
@@ -153,10 +175,10 @@ const DataFlowReducer = (state = initialState, action) =>
         formData.firstFileDate = exptfstprddt;
         formData.locationType = loctyp;
         formData.name = name;
-        formData.dataflowType = testflag === 1 ? true : false;
-        formData.srclocID = srclocID;
+        formData.dataflowType = testflag === 1 ? "test" : "production";
+        formData.locations = [{ value: srclocID, label: locationName }];
         formData.dataStructure = type;
-        formData.vendID = vendID;
+        formData.vendors = [vendorid];
         formData.vendorname = vendorname;
         newState.dataFlowdetail = action.dataflowDetail;
         newState.formData = formData;

@@ -218,7 +218,6 @@ const DataFlow = ({ FormValues, dashboard }) => {
                 breadcrumbItems={breadcrumbItems}
                 headerTitle={dataFlowdetail.name}
                 icon={<DataPackageIcon className={classes.contentIcon} />}
-                datasetsCount={6}
               />
             </div>
             <Divider />

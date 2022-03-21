@@ -90,7 +90,7 @@ const Dataset = () => {
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
-  const [customSql, setCustomSql] = useState("No");
+  const [customSql, setCustomSql] = useState("Yes");
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
@@ -102,10 +102,17 @@ const Dataset = () => {
   const { selectedDFId } = dashboard;
   const { datapackageid, datapackageName, datasetid, datasetName } =
     selectedDSDetails;
-  const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
-    dataSets;
-  const { dataFlowdetail } = dataFlow;
+  const {
+    loading,
+    error,
+    sucessMsg,
+    isDatasetCreated,
+    selectedDataset,
+    formDataSQL,
+  } = dataSets;
+  const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
+  const { locationType: newLT, customSQLQuery } = selectedDataset;
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -129,8 +136,6 @@ const Dataset = () => {
     return "jdbc";
   };
 
-  const onChangeSql = (val) => setCustomSql(val);
-
   useEffect(() => {
     if (selectedDFId === "") {
       history.push("/dashboard");
@@ -150,12 +155,14 @@ const Dataset = () => {
 
   useEffect(() => {
     if (isDatasetCreated) {
-      if (getDataSetType(loctyp) === ("sftp" || "ftps") || customSql === "No") {
+      if (getDataSetType(loctyp) === ("sftp" || "ftps")) {
+        messageContext.showSuccessMessage("Dataset Created Successfully");
         setValue(1);
+      } else {
+        messageContext.showSuccessMessage("Dataset Created Successfully");
       }
-      setColumnsActive(customSql === "No");
     }
-  }, [customSql, isDatasetCreated, loctyp]);
+  }, [isDatasetCreated, loctyp]);
 
   useEffect(() => {
     if (loctyp) {
@@ -165,6 +172,17 @@ const Dataset = () => {
       }
     }
   }, [loctyp]);
+
+  useEffect(() => {
+    if (newLT === "JDBC") {
+      if (customSQLQuery === "No") {
+        setColumnsActive(true);
+      }
+    }
+    if (formDataSQL?.customSQLQuery === "No") {
+      setColumnsActive(true);
+    }
+  }, [newLT, customSQLQuery, formDataSQL]);
 
   const goToDataflow = () => {
     if (selectedDFId) {
@@ -322,13 +340,17 @@ const Dataset = () => {
                 <>
                   {console.log("ltype", locationType)}
                   {locationType === ("sftp" || "ftps") ? (
-                    <DataSetsForm loading={loading} onSubmit={onSubmit} />
-                  ) : (
-                    <DataSetsFormSQL
-                      onChange={onChangeSql}
-                      defaultFields={{ sql: customSql }}
+                    <DataSetsForm
                       loading={loading}
                       onSubmit={onSubmit}
+                      prodLock={dsProdLock}
+                    />
+                  ) : (
+                    <DataSetsFormSQL
+                      onSubmit={onSubmit}
+                      prodLock={dsProdLock}
+                      testLock={dsTestLock}
+                      testProdLock={dsTestProdLock}
                     />
                   )}
                 </>
@@ -346,7 +368,14 @@ const Dataset = () => {
                 //   ref={jdbcRef}
                 // />
               }
-              {value === 1 && <ColumnsTab locationType={locationType} />}
+
+              {value === 1 && (
+                <ColumnsTab
+                  locationType={locationType}
+                  prodLock={dsProdLock}
+                  testLock={dsTestLock}
+                />
+              )}
               {value === 2 && <VLCTab />}
             </div>
           </main>

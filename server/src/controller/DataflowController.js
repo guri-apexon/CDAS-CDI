@@ -105,9 +105,9 @@ exports.getStudyDataflows = async (req, res) => {
       const $q1 = await DB.executeQuery(query, [protocolId]);
 
       const formatDateValues = await $q1.rows.map((e) => {
-        let editT = moment(e.lastModified).format("DD-MMM-YYYY");
-        let addT = moment(e.dateCreated).format("DD-MMM-YYYY");
-        let syncT = moment(e.lastSyncDate).format("DD-MMM-YYYY");
+        let editT = moment(e.lastModified).format("MM/DD/YYYY");
+        let addT = moment(e.dateCreated).format("MM/DD/YYYY");
+        let syncT = moment(e.lastSyncDate).format("MM/DD/YYYY");
         let status = e.status === 0 ? "Inactive" : "Active";
         let dfType = e.type === 0 ? "Production" : "Test";
         return {
@@ -341,8 +341,8 @@ exports.createDataflow = async (req, res) => {
                       CDUid,
                       el.name || null,
                       el.dataType || null,
-                      el.primaryKey ? 1 : 0 || 0,
-                      el.required ? 1 : 0 || 0,
+                      el.primaryKey ? 1 : 0,
+                      el.required ? 1 : 0,
                       el.characterMin || 0,
                       el.characterMax || 0,
                       el.position || 0,
@@ -788,7 +788,7 @@ exports.syncDataFlow = async (req, res) => {
 exports.getDataflowDetail = async (req, res) => {
   try {
     const dataFlowId = req.params.dataFlowId;
-    const searchQuery = `SELECT dataflowTbl.active, dataflowTbl.dataflowid, dataflowTbl.name, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID
+    const searchQuery = `SELECT dataflowTbl.active, dataflowTbl.dataflowid, dataflowTbl.name, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID, locationTbl.loc_alias_nm as locationName
     from ${schemaName}.dataflow as dataflowTbl 
     JOIN ${schemaName}.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id
     JOIN ${schemaName}.vendor v on (v.vend_id = dataflowTbl.vend_id)
@@ -972,7 +972,7 @@ exports.searchDataflow = async (req, res) => {
       message: "searchDataflow",
       searchParam,
     });
-    const searchQuery = `SELECT d.dataflowid,d."name" ,d.description, d.externalsystemname , v.vend_nm FROM ${schemaName}.dataflow d inner join ${schemaName}.vendor v on d.vend_id  = v.vend_id where d.prot_id = '${studyId}' and (LOWER(v.vend_nm)) LIKE '${searchParam}%' or (LOWER(d.name)) LIKE '${searchParam}%' or (LOWER(d.description)) LIKE '${searchParam}%' or (LOWER(d.externalsystemname)) LIKE '${searchParam}%' LIMIT 10`;
+    const searchQuery = `SELECT d.dataflowid, d."name" as "dataFlowName", d.description, d.externalsystemname as "externalSourceSystem" , v.vend_nm as "vendorSource" FROM ${schemaName}.dataflow d inner join ${schemaName}.vendor v on d.vend_id  = v.vend_id where d.prot_id = '${studyId}' and (LOWER(v.vend_nm)) LIKE '${searchParam}%' or (LOWER(d.name)) LIKE '${searchParam}%' or (LOWER(d.description)) LIKE '${searchParam}%' or (LOWER(d.externalsystemname)) LIKE '${searchParam}%' LIMIT 10`;
     // console.log(searchQuery);
     let { rows } = await DB.executeQuery(searchQuery);
     return apiResponse.successResponseWithData(res, "Operation success", {
@@ -1018,21 +1018,24 @@ exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
     let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
-    d2.* ,d3."name" as datasetname ,d3.*,c.*
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
       inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
-      inner join cdas1d.${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
+      inner join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
       where d.dataflowid ='${dataflow_id}'`;
+    console.log(q);
     Logger.info({
       message: "fetchdataflowDetails",
       dataflow_id,
     });
     let { rows } = await DB.executeQuery(q);
-    let tempDP = _.uniqBy(rows, "datapackageid");
-    let tempDS = _.uniqBy(rows, "datasetid");
+    console.log(rows);
+    let response = rows;
+    let tempDP = _.uniqBy(response, "datapackageid");
+    let tempDS = _.uniqBy(response, "datasetid");
     let newArr = [];
     for (const each of tempDP) {
       for (const el of tempDS) {
@@ -1106,9 +1109,10 @@ exports.fetchdataflowDetails = async (req, res) => {
       externalSystemName: rows[0].externalsystemname,
       connectionType: rows[0].connectiontype,
       location: rows[0].src_loc_id,
+      locationName: rows[0].locationName,
       exptDtOfFirstProdFile: rows[0].expt_fst_prd_dt,
-      testFlag: rows[0].testflag,
-      prodFlag: rows[0].testflag === 1 ? 1 : 0,
+      testFlag: rows[0].test_flag,
+      prodFlag: rows[0].test_flag === 1 ? 1 : 0,
       description: rows[0].description,
       // connectiondriver: rows[0].connectiondriver,
       fsrstatus: rows[0].fsrstatus,
@@ -1116,6 +1120,7 @@ exports.fetchdataflowDetails = async (req, res) => {
       src_loc_id: rows[0].src_loc_id,
       data_in_cdr: rows[0].data_in_cdr,
       configured: rows[0].configured,
+      active: rows[0].active,
       dataPackage: newArr,
     };
     return apiResponse.successResponseWithData(
