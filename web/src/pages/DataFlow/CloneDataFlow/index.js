@@ -180,7 +180,7 @@ const CloneDataFlow = ({
 
   const ModalComponent = () => {
     return (
-      <div>
+      <div style={{ minHeight: "413px" }}>
         <>
           <Typography variant="caption">Search for a study</Typography>
           <Search
