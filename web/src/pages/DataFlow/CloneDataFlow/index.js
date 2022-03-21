@@ -236,7 +236,9 @@ const CloneDataFlow = ({
       <>
         {backBtn}
         <div className="dataflow-details">
-          <Typography variant="caption">Verify data flow to clone</Typography>
+          <Typography className="clone-verify-title">
+            Verify data flow to clone
+          </Typography>
           <Accordion defaultExpanded>
             <AccordionSummary>
               <Typography>Data Flow Details</Typography>
