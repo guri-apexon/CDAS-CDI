@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect } from "react-redux";
 import { reduxForm, getFormValues } from "redux-form";
@@ -94,6 +94,7 @@ const DataFlowFormBase = (props) => {
     changeFormField,
     changeLocationType,
     connLink,
+    initialValues,
     testLock,
     prodLock,
   } = props;
@@ -103,23 +104,40 @@ const DataFlowFormBase = (props) => {
   const openLocationModal = () => {
     setLocationOpen(true);
   };
+  const [dataLoaded, setDataLoaded] = useState(false);
+  useEffect(() => {
+    if (initialValues) {
+      const { dataflowType } = initialValues;
+      setDataLoaded(true);
+      if (dataflowType) {
+        // changeFormField(dataflowType, "dataflowType");
+      }
+      console.log("initialValues", initialValues, dataflowType);
+    }
+  }, [initialValues]);
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper}>
         <div className={classes.section}>
           <Typography variant="title1">Flow Details</Typography>
           <div style={{ width: "50%" }}>
-            <ReduxFormAutocomplete
-              name="vendor"
-              label="Vendor"
-              source={vendors}
-              id="vendor"
-              className="autocomplete_field"
-              onChange={(v) => changeFormField(v, "vendor")}
-              singleSelect
-              variant="search"
-              fullWidth
-            />
+            {dataLoaded && vendors && (
+              <ReduxFormAutocomplete
+                name="vendor"
+                autoSelect
+                label="Vendor"
+                source={vendors}
+                id="vendor"
+                input={{
+                  value: initialValues?.vendors,
+                }}
+                className="autocomplete_field"
+                onChange={(v) => changeFormField(v, "vendor")}
+                singleSelect
+                variant="search"
+                fullWidth
+              />
+            )}
             <ReduxFormTextField
               fullWidth
               maxLength="30"
@@ -246,12 +264,13 @@ const ReduxForm = compose(
   withStyles(styles),
   reduxForm({
     form: "DataFlowForm",
+    enableReinitialize: true,
     validate,
   })
 )(DataFlowFormBase);
 
 const DataFlowForm = connect((state) => ({
-  initialValues: state.dataFlow, // pull initial values from account reducer
+  initialValues: state.dataFlow.formData, // pull initial values from account reducer
   values: getFormValues("DataFlowForm")(state),
   locations: state.dataFlow.locations?.records,
   vendors: state.dataFlow.vendors?.records,

@@ -1,3 +1,4 @@
+@import "./styles/customscroll.scss";
 .App {
   text-align: center;
 }
@@ -106,6 +107,11 @@ label.table-checkbox {
     padding: 0;
     margin-right: 10px;
   }
+  :hover {
+    span[class^="MuiSwitch-thumb-"] {
+      color: rgba(236, 243, 255, 1) !important;
+    }
+  }
 }
 .navigation-panel {
   .waves {
@@ -164,7 +170,11 @@ label.table-checkbox {
     }
   }
 }
-
+.scrollable-table {
+  div[class*=" Table-scrollRoot-"] {
+    @extend .customscroll;
+  }
+}
 .customScrollbar::-webkit-scrollbar {
   background-color: #fff;
   width: 16px;

@@ -16,6 +16,7 @@ import {
   GET_PINNED_LIST,
   GET_PINNED_LIST_SUCCESS,
   GET_PINNED_LIST_FAILURE,
+  SELECTED_DATAFLOW,
 } from "../../constants";
 
 export const initialState = {
@@ -37,6 +38,7 @@ export const initialState = {
   },
   selectedDFId: "",
   userStudies: [],
+  selectedDataFlow: "",
   userPinnedStudies: [],
 };
 
@@ -101,6 +103,10 @@ const DashboardReducer = (state = initialState, action) =>
 
       case GET_DATASET_INGESTION_SUMMARY_FAILURE:
         newState.summaryLoading = false;
+        break;
+
+      case SELECTED_DATAFLOW:
+        newState.selectedDataFlow = action.dataflow;
         break;
 
       default:

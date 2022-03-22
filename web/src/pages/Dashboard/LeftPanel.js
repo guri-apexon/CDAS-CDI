@@ -47,6 +47,7 @@ const styles = {
   },
   cardHighlight: {
     border: "1px solid #0768FD",
+    cursor: "auto",
     boxShadow: "0px 8px 16px 0px rgba(0,0,0,0.08)",
   },
   cardProtocolNo: {

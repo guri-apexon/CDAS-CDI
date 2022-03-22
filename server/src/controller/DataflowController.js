@@ -226,10 +226,10 @@ exports.createDataflow = async (req, res) => {
           externalSystemName === "CDI"
             ? src_loc_id
             : data[0].src_loc_id || null,
-          active === true ? 1 : 0,
+          helper.stringToBoolean(active) ? 1 : 0,
           configured || 0,
           exptDtOfFirstProdFile || null,
-          testFlag === true ? 1 : 0,
+          helper.stringToBoolean(testFlag) ? 1 : 0,
           data_in_cdr || "N",
           connectionType || null,
           // externalSystemName === "CDI" ? connectiondriver || null : location || null,
@@ -249,7 +249,9 @@ exports.createDataflow = async (req, res) => {
         // insert dataflow schema into db
         let createDF = await DB.executeQuery(query, body);
         ResponseBody.action = "Data flow created successfully.";
-        ResponseBody.status = "Inactive";
+        ResponseBody.status = helper.stringToBoolean(active)
+          ? "Active"
+          : "Inactive";
         ResponseBody.timestamp = ts;
         ResponseBody.version = 1;
         ResponseBody.dataflowId = uid;
@@ -281,6 +283,24 @@ exports.createDataflow = async (req, res) => {
             newObj.action = "Data package created successfully.";
             each.datapackageid = dpUid;
             ResponseBody.data_packages.push(newObj);
+
+            await DB.executeQuery(
+              `INSERT INTO ${schemaName}.dataflow_audit_log
+            ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+              [
+                uid,
+                dpUid,
+                null,
+                null,
+                1,
+                "New Datapackage",
+                "",
+                "",
+                externalSystemName === "CDI" ? userId : externalSystemName,
+                new Date(),
+              ]
+            );
             if (each.dataSet && each.dataSet.length > 0) {
               ResponseBody.data_sets = [];
               // if datasets exists
@@ -308,7 +328,7 @@ exports.createDataflow = async (req, res) => {
                   dataKind || null,
                   obj.mnemonic || null,
                   obj.active === true ? 1 : 0 || null,
-                  obj.columncount || null,
+                  typeof obj.columncount != "undefined" ? obj.columncount : 0,
                   obj.incremental === "NO" ? 0 : 1 || null,
                   obj.offsetColumn || null,
                   obj.type || null,
@@ -328,6 +348,24 @@ exports.createDataflow = async (req, res) => {
                 newobj.action = "Data set created successfully.";
                 ResponseBody.data_sets.push(newobj);
                 obj.datasetid = dsUid;
+                await DB.executeQuery(
+                  `INSERT INTO ${schemaName}.dataflow_audit_log
+                ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+                  [
+                    uid,
+                    dpUid,
+                    dsUid,
+                    null,
+                    1,
+                    "New Dataset",
+                    "",
+                    "",
+                    externalSystemName === "CDI" ? userId : externalSystemName,
+                    new Date(),
+                  ]
+                );
+
                 if (obj.columnDefinition && obj.columnDefinition.length > 0) {
                   ResponseBody.column_definition = [];
                   for (let el of obj.columnDefinition) {
@@ -362,7 +400,7 @@ exports.createDataflow = async (req, res) => {
                       dsUid,
                       CDUid,
                       1,
-                      "New Package",
+                      "New Column definition",
                       "",
                       "",
                       externalSystemName === "CDI"
@@ -371,54 +409,18 @@ exports.createDataflow = async (req, res) => {
                       new Date(),
                     ];
                     await DB.executeQuery(dataflow_aduit_query, audit_body);
+
                     newobj.timestamp = ts;
                     newobj.externalId = obj.externalID;
                     newobj.action = "column definition created successfully.";
                     el.colmunid = CDUid;
                     ResponseBody.column_definition.push(newobj);
                   }
-                } else {
-                  return apiResponse.successResponseWithData(
-                    res,
-                    "Data flow created successfully",
-                    ResponseBody
-                  );
                 }
-                // } else {
-                //   return apiResponse.ErrorResponse(
-                //     res,
-                //     "Data set Datakind is required"
-                //   );
-                // }
-                // } else {
-                //   return apiResponse.ErrorResponse(
-                //     res,
-                //     "Data set name and path is required"
-                //   );
-                // }
               }
-            } else {
-              return apiResponse.successResponseWithData(
-                res,
-                "Data flow created successfully",
-                ResponseBody
-              );
             }
-            // } else {
-            //   return apiResponse.ErrorResponse(
-            //     res,
-            //     "Data package name, type and path is required"
-            //   );
-            // }
           }
-        } else {
-          return apiResponse.successResponseWithData(
-            res,
-            "Data flow created successfully",
-            ResponseBody
-          );
         }
-        // }
       } else {
         return apiResponse.ErrorResponse(
           res,
@@ -426,6 +428,24 @@ exports.createDataflow = async (req, res) => {
         );
       }
     }
+
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_audit_log
+    ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+      [
+        uid,
+        null,
+        null,
+        null,
+        1,
+        "New Dataflow",
+        "",
+        "",
+        externalSystemName === "CDI" ? userId : externalSystemName,
+        new Date(),
+      ]
+    );
     let config_json = {
       dataFlowId: uid,
       vendorName: vendorName,
@@ -788,7 +808,7 @@ exports.syncDataFlow = async (req, res) => {
 exports.getDataflowDetail = async (req, res) => {
   try {
     const dataFlowId = req.params.dataFlowId;
-    const searchQuery = `SELECT dataflowTbl.active, dataflowTbl.dataflowid, dataflowTbl.name, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID
+    const searchQuery = `SELECT dataflowTbl.active, dataflowTbl.dataflowid, dataflowTbl.name, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID, locationTbl.loc_alias_nm as locationName
     from ${schemaName}.dataflow as dataflowTbl 
     JOIN ${schemaName}.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id
     JOIN ${schemaName}.vendor v on (v.vend_id = dataflowTbl.vend_id)
@@ -972,7 +992,7 @@ exports.searchDataflow = async (req, res) => {
       message: "searchDataflow",
       searchParam,
     });
-    const searchQuery = `SELECT d.dataflowid,d."name" ,d.description, d.externalsystemname , v.vend_nm FROM ${schemaName}.dataflow d inner join ${schemaName}.vendor v on d.vend_id  = v.vend_id where d.prot_id = '${studyId}' and (LOWER(v.vend_nm)) LIKE '${searchParam}%' or (LOWER(d.name)) LIKE '${searchParam}%' or (LOWER(d.description)) LIKE '${searchParam}%' or (LOWER(d.externalsystemname)) LIKE '${searchParam}%' LIMIT 10`;
+    const searchQuery = `SELECT d.dataflowid, d."name" as "dataFlowName", d.description, d.externalsystemname as "externalSourceSystem" , v.vend_nm as "vendorSource" FROM ${schemaName}.dataflow d inner join ${schemaName}.vendor v on d.vend_id  = v.vend_id where d.prot_id = '${studyId}' and (LOWER(v.vend_nm)) LIKE '${searchParam}%' or (LOWER(d.name)) LIKE '${searchParam}%' or (LOWER(d.description)) LIKE '${searchParam}%' or (LOWER(d.externalsystemname)) LIKE '${searchParam}%' LIMIT 10`;
     // console.log(searchQuery);
     let { rows } = await DB.executeQuery(searchQuery);
     return apiResponse.successResponseWithData(res, "Operation success", {
@@ -1018,21 +1038,24 @@ exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
     let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
-    d2.* ,d3."name" as datasetname ,d3.*,c.*
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
       inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
-      inner join cdas1d.${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
+      inner join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
       where d.dataflowid ='${dataflow_id}'`;
+    console.log(q);
     Logger.info({
       message: "fetchdataflowDetails",
       dataflow_id,
     });
     let { rows } = await DB.executeQuery(q);
-    let tempDP = _.uniqBy(rows, "datapackageid");
-    let tempDS = _.uniqBy(rows, "datasetid");
+    console.log(rows);
+    let response = rows;
+    let tempDP = _.uniqBy(response, "datapackageid");
+    let tempDS = _.uniqBy(response, "datasetid");
     let newArr = [];
     for (const each of tempDP) {
       for (const el of tempDS) {
@@ -1106,9 +1129,10 @@ exports.fetchdataflowDetails = async (req, res) => {
       externalSystemName: rows[0].externalsystemname,
       connectionType: rows[0].connectiontype,
       location: rows[0].src_loc_id,
+      locationName: rows[0].locationName,
       exptDtOfFirstProdFile: rows[0].expt_fst_prd_dt,
-      testFlag: rows[0].testflag,
-      prodFlag: rows[0].testflag === 1 ? 1 : 0,
+      testFlag: rows[0].test_flag,
+      prodFlag: rows[0].test_flag === 1 ? 1 : 0,
       description: rows[0].description,
       // connectiondriver: rows[0].connectiondriver,
       fsrstatus: rows[0].fsrstatus,
@@ -1116,6 +1140,7 @@ exports.fetchdataflowDetails = async (req, res) => {
       src_loc_id: rows[0].src_loc_id,
       data_in_cdr: rows[0].data_in_cdr,
       configured: rows[0].configured,
+      active: rows[0].active,
       dataPackage: newArr,
     };
     return apiResponse.successResponseWithData(
