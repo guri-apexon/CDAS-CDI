@@ -433,6 +433,7 @@ const CloneDataFlow = ({
         ) : (
           <>
             <Grid item xs={12}>
+              <Typography variant="body2">Study Information</Typography>
               <span className="selected-study-table">
                 <Table
                   columns={selectedStudyColumns}
@@ -521,6 +522,10 @@ const CloneDataFlow = ({
               },
               {
                 size: "small",
+                variant:
+                  selectedStudy.dataflow && selectedStudy.study
+                    ? "primary"
+                    : "secondary",
                 disabled:
                   loading ||
                   (selectedStudy.dataflow && !dataFlowSource?.length),
@@ -547,7 +552,12 @@ const CloneDataFlow = ({
           className={classes.modal}
           buttonProps={[
             { size: "small", className: "left-btn" },
-            { label: "Back", size: "small", onClick: () => handleBack() },
+            {
+              variant: "secondary",
+              label: "Back",
+              size: "small",
+              onClick: () => handleBack(),
+            },
           ]}
           id="studymodal"
         >

@@ -51,21 +51,22 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
   useImperativeHandle(ref, () => ({
     // eslint-disable-next-line consistent-return
     submitForm: () => {
-      if (!configShow) {
-        configRequired();
-        return false;
-      }
       if (disabled) {
-        payloadBack(null);
+        payloadBack({
+          compression_type: "",
+          naming_convention: "No package",
+          package_password: "",
+          sftp_path: "",
+        });
         return false;
       }
-      const validated = validateFields(namingConvention, compression);
-      setNotMatchedType(!validated);
-      if (!validated) return false;
-      if (namingConvention === "" || compression === "") {
-        toast.showErrorMessage("Please fill all fields to proceed", "error");
-        return false;
-      }
+      // const validated = validateFields(namingConvention, compression);
+      // setNotMatchedType(!validated);
+      // if (!validated) return false;
+      // if (namingConvention === "" || compression === "") {
+      //   toast.showErrorMessage("Please fill all fields to proceed", "error");
+      //   return false;
+      // }
       const reqBody = {
         compression_type: compression,
         naming_convention: namingConvention,
@@ -77,7 +78,7 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
   }));
 
   useEffect(() => {
-    // setDisabled(locType && !isSftp(locType));
+    setDisabled(locType && !isSftp(locType));
   }, [locType]);
   return (
     <div className="data-packages">

@@ -226,10 +226,10 @@ exports.createDataflow = async (req, res) => {
           externalSystemName === "CDI"
             ? src_loc_id
             : data[0].src_loc_id || null,
-          active === true ? 1 : 0,
+          helper.stringToBoolean(active) ? 1 : 0,
           configured || 0,
           exptDtOfFirstProdFile || null,
-          testFlag === true ? 1 : 0,
+          helper.stringToBoolean(testFlag) ? 1 : 0,
           data_in_cdr || "N",
           connectionType || null,
           // externalSystemName === "CDI" ? connectiondriver || null : location || null,
@@ -249,7 +249,9 @@ exports.createDataflow = async (req, res) => {
         // insert dataflow schema into db
         let createDF = await DB.executeQuery(query, body);
         ResponseBody.action = "Data flow created successfully.";
-        ResponseBody.status = "Inactive";
+        ResponseBody.status = helper.stringToBoolean(active)
+          ? "Active"
+          : "Inactive";
         ResponseBody.timestamp = ts;
         ResponseBody.version = 1;
         ResponseBody.dataflowId = uid;
@@ -281,6 +283,24 @@ exports.createDataflow = async (req, res) => {
             newObj.action = "Data package created successfully.";
             each.datapackageid = dpUid;
             ResponseBody.data_packages.push(newObj);
+
+            await DB.executeQuery(
+              `INSERT INTO ${schemaName}.dataflow_audit_log
+            ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+              [
+                uid,
+                dpUid,
+                null,
+                null,
+                1,
+                "New Datapackage",
+                "",
+                "",
+                externalSystemName === "CDI" ? userId : externalSystemName,
+                new Date(),
+              ]
+            );
             if (each.dataSet && each.dataSet.length > 0) {
               ResponseBody.data_sets = [];
               // if datasets exists
@@ -328,6 +348,24 @@ exports.createDataflow = async (req, res) => {
                 newobj.action = "Data set created successfully.";
                 ResponseBody.data_sets.push(newobj);
                 obj.datasetid = dsUid;
+                await DB.executeQuery(
+                  `INSERT INTO ${schemaName}.dataflow_audit_log
+                ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+                  [
+                    uid,
+                    dpUid,
+                    dsUid,
+                    null,
+                    1,
+                    "New Dataset",
+                    "",
+                    "",
+                    externalSystemName === "CDI" ? userId : externalSystemName,
+                    new Date(),
+                  ]
+                );
+
                 if (obj.columnDefinition && obj.columnDefinition.length > 0) {
                   ResponseBody.column_definition = [];
                   for (let el of obj.columnDefinition) {
@@ -362,7 +400,7 @@ exports.createDataflow = async (req, res) => {
                       dsUid,
                       CDUid,
                       1,
-                      "New Package",
+                      "New Column definition",
                       "",
                       "",
                       externalSystemName === "CDI"
@@ -371,54 +409,18 @@ exports.createDataflow = async (req, res) => {
                       new Date(),
                     ];
                     await DB.executeQuery(dataflow_aduit_query, audit_body);
+
                     newobj.timestamp = ts;
                     newobj.externalId = obj.externalID;
                     newobj.action = "column definition created successfully.";
                     el.colmunid = CDUid;
                     ResponseBody.column_definition.push(newobj);
                   }
-                } else {
-                  return apiResponse.successResponseWithData(
-                    res,
-                    "Data flow created successfully",
-                    ResponseBody
-                  );
                 }
-                // } else {
-                //   return apiResponse.ErrorResponse(
-                //     res,
-                //     "Data set Datakind is required"
-                //   );
-                // }
-                // } else {
-                //   return apiResponse.ErrorResponse(
-                //     res,
-                //     "Data set name and path is required"
-                //   );
-                // }
               }
-            } else {
-              return apiResponse.successResponseWithData(
-                res,
-                "Data flow created successfully",
-                ResponseBody
-              );
             }
-            // } else {
-            //   return apiResponse.ErrorResponse(
-            //     res,
-            //     "Data package name, type and path is required"
-            //   );
-            // }
           }
-        } else {
-          return apiResponse.successResponseWithData(
-            res,
-            "Data flow created successfully",
-            ResponseBody
-          );
         }
-        // }
       } else {
         return apiResponse.ErrorResponse(
           res,
@@ -426,6 +428,24 @@ exports.createDataflow = async (req, res) => {
         );
       }
     }
+
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_audit_log
+    ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+      [
+        uid,
+        null,
+        null,
+        null,
+        1,
+        "New Dataflow",
+        "",
+        "",
+        externalSystemName === "CDI" ? userId : externalSystemName,
+        new Date(),
+      ]
+    );
     let config_json = {
       dataFlowId: uid,
       vendorName: vendorName,
