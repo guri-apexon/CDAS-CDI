@@ -32,4 +32,32 @@ exports.getCurrentTime = () => {
   return moment().utc().format("YYYY-MM-DD HH:mm:ss");
 };
 
-exports;
+exports.readVaultData = async (vaultPath) => {
+  await vault.approleLogin({
+    role_id: roleId,
+    secret_id: secretId,
+  });
+  const { data } = await vault.read(vaultPath);
+  return data;
+};
+
+// { user: usr_nm, password: pswd }
+exports.writeVaultData = async (vaultPath, data) => {
+  await vault.approleLogin({
+    role_id: roleId,
+    secret_id: secretId,
+  });
+
+  await vault.write(vaultPath, data);
+  return true;
+};
+
+exports.deleteVaultData = async (vaultPath) => {
+  await vault.approleLogin({
+    role_id: roleId,
+    secret_id: secretId,
+  });
+
+  await vault.delete(vaultPath);
+  return true;
+};

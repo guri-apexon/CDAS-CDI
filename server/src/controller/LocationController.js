@@ -161,9 +161,7 @@ exports.getLocationById = function (req, res) {
     const id = req.params.location_id;
     const searchQuery = `SELECT src_loc_id,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm from ${schemaName}.source_location 
             WHERE src_loc_id = $1`;
-    Logger.info({
-      message: "locationList",
-    });
+    Logger.info({ message: "locationList" });
 
     DB.executeQuery(searchQuery, [id])
       .then((response) => {
@@ -260,13 +258,12 @@ exports.saveLocationData = async function (req, res) {
         "No duplicate locations are allowed"
       );
     }
+
     const body = [
       helper.generateUniqueID(),
       values.locationType || null,
       values.ipServer || null,
       values.port || null,
-      values.userName || null,
-      values.password || null,
       values.connURL || null,
       values.dataStructure || null,
       values.active == true ? 1 : 0,
@@ -276,10 +273,9 @@ exports.saveLocationData = async function (req, res) {
       new Date(),
       values.dbName || null,
     ];
-    const searchQuery = `INSERT into ${schemaName}.source_location (src_loc_id, loc_typ, ip_servr, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, insrt_tm, updt_tm, db_nm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`;
-    Logger.info({
-      message: "storeLocation",
-    });
+    const searchQuery = `INSERT into ${schemaName}.source_location (src_loc_id, loc_typ, ip_servr, port, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, insrt_tm, updt_tm, db_nm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+    Logger.info({ message: "storeLocation" });
+
     DB.executeQuery(searchQuery, body)
       .then((response) => {
         return apiResponse.successResponseWithData(
@@ -287,6 +283,13 @@ exports.saveLocationData = async function (req, res) {
           "Operation success",
           true
         );
+      })
+      .then(() => {
+        // const vaultData = {
+        //   usr_nm: values.userName || null,
+        //   pswd: values.password || null,
+        // };
+        // helper.writeVaultData( vaultData)
       })
       .catch((err) => {
         return apiResponse.ErrorResponse(res, err.message);
@@ -326,6 +329,7 @@ exports.getServiceOwnersList = function (req, res) {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+
 exports.statusUpdate = async (req, res) => {
   try {
     const { id, status } = req.body;
