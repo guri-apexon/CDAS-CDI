@@ -17,6 +17,9 @@
     .right_title {
       margin-right: 25px;
       align-items: center;
+      .datasetStatus:hover {
+        cursor: pointer;
+      }
     }
     svg#datasetRepicon {
       width: 16px;
@@ -74,6 +77,10 @@
         margin-top: 85px;
         margin-left: 40px;
         text-align: center;
+        a:hover {
+          text-decoration: none !important;
+          border-bottom: none;
+        }
       }
     }
     .records-with-issue-chart {
@@ -120,6 +127,18 @@
       text-align: center;
       margin: 0 auto;
       margin-top: 10px;
+    }
+  }
+  #filehistory-box {
+    border: 1px solid #e9e9e9;
+    border-radius: 4px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.04);
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
     }
   }
   #properties-box {
@@ -173,4 +192,15 @@
       }
     }
   }
+}
+
+.ingestionissueModal {
+  table tbody tr td:nth-child(2),
+  table thead tr th:last-child {
+    text-align: right;
+  }
+  table tbody tr td:nth-child(2) {
+    padding-right: 25px;
+  }
+  min-width: 441px;
 }

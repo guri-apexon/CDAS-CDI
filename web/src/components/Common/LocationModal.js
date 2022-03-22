@@ -314,7 +314,7 @@ const LocationModal = (props) => {
   if (!props.locationEditMode && !props.locationViewMode) {
     dispatch(change("AddLocationForm", "active", true));
     dispatch(change("AddLocationForm", "dataStructure", "tabular"));
-    dispatch(change("AddLocationForm", "locationType", "SFTP"));
+    // dispatch(change("AddLocationForm", "locationType", "SFTP"));
   }
   const generateUrl = (locType, selectedHost, selectedPort, selectedDB) => {
     const connurl = generateConnectionURL(
@@ -344,17 +344,22 @@ const LocationModal = (props) => {
       showLocationMessage("Please enter username and password to continue");
       return false;
     }
-    const reqBody = {
+    let reqBody = {
       username: userName || "",
       password: password || "",
       host: ipServer || "",
       endPoint: "/checkconnection/sftp",
-      // port: port || "",
     };
     if (locationType) {
       if (locationType !== "SFTP" && locationType !== "FTPS") {
-        reqBody.endPoint = "/checkconnection/jdbc";
-        reqBody.databaseName = dbName || "";
+        reqBody = {
+          ...reqBody,
+          endPoint: "/checkconnection/jdbc",
+          databaseName: dbName || "",
+          userId: "",
+          database: locationType.toUpperCase(),
+          port: port ? port : "",
+        };
       }
     }
     setLoadingConn(true);

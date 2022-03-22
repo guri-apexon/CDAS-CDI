@@ -308,6 +308,12 @@ const JDBCForm = forwardRef((props, ref) => {
     );
   };
 
+  const firstSyncHappened = () => {
+    messageContext.showErrorMessage(
+      `Custom SQL Query setting cannot be changed after the dataset has been sync'd`
+    );
+  };
+
   return (
     <form className="jdbc-form">
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>

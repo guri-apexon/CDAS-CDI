@@ -13,22 +13,93 @@ exports.getStudyDataflows = async (req, res) => {
   try {
     const { protocolId } = req.body;
     if (protocolId) {
-      const query = `select "studyId","dataFlowId","dsCount","dpCount","studyName","version","dataFlowName","type","dateCreated","vendorSource",description,adapter,status,"externalSourceSystem","locationType","lastModified","lastSyncDate"
-      from (select s.prot_id as "studyId", d.dataflowid as "dataFlowId",
-      row_number () over(partition by d.dataflowid,d.prot_id order by dh."version" desc) as rnk,
-      dsetcount.dsCount as "dsCount", dpackagecount.dpCount as "dpCount", s.prot_nbr as "studyName",
-      dh."version", d.name as "dataFlowName", d.testflag as "type", d.insrt_tm as "dateCreated",
-      vend_nm as "vendorSource", d.description, d.type as "adapter", d.active as "status",
-      d.externalsystemname as "externalSourceSystem", loc_typ as "locationType", d.updt_tm as "lastModified",
-      d.refreshtimestamp as "lastSyncDate" from ${schemaName}.dataflow d
-      inner join ${schemaName}.vendor v on d.vend_id = v.vend_id
-      inner join ${schemaName}.source_location sl on d.src_loc_id = sl.src_loc_id
-      inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
-      inner join ${schemaName}.study s on d.prot_id = s.prot_id
-      inner join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid =d.dataflowid
-      left join (select datapackageid, COUNT(DISTINCT datasetid) as dsCount FROM ${schemaName}.dataset d GROUP BY datapackageid) dsetcount on (d2.datapackageid=dsetcount.datapackageid)
-      left join (select dataflowid, COUNT(DISTINCT datapackageid) as dpCount FROM ${schemaName}.datapackage d GROUP BY dataflowid) dpackagecount on (d.dataflowid=dpackagecount.dataflowid)
-      where s.prot_id = $1) as df where df.rnk=1`;
+      const query = `select
+      "studyId",
+      "dataFlowId",
+      "dsCount",
+      "dpCount",
+      "studyName",
+      "version",
+      "dataFlowName",
+      "type",
+      "dateCreated",
+      "vendorSource",
+      description,
+      adapter,
+      status,
+      "externalSourceSystem",
+      "fsrStatus",
+      "locationType",
+      "lastModified",
+      "lastSyncDate"
+      from
+      (
+      select
+      s.prot_id as "studyId",
+      d.dataflowid as "dataFlowId",
+      row_number () over(partition by d.dataflowid,
+      d.prot_id
+      order by
+      dh."version" desc) as rnk,
+      dsetcount.dsCount as "dsCount",
+      dpackagecount.dpCount as "dpCount",
+      s.prot_nbr as "studyName",
+      dh."version",
+      d.name as "dataFlowName",
+      d.fsrstatus as "fsrStatus",
+      d.testflag as "type",
+      d.insrt_tm as "dateCreated",
+      vend_nm as "vendorSource",
+      d.description,
+      d.type as "adapter",
+      d.active as "status",
+      d.externalsystemname as "externalSourceSystem",
+      loc_typ as "locationType",
+      d.updt_tm as "lastModified",
+      d.refreshtimestamp as "lastSyncDate"
+      from
+      ${schemaName}.dataflow d
+      inner join ${schemaName}.vendor v on
+      d.vend_id = v.vend_id
+      inner join ${schemaName}.source_location sl on
+      d.src_loc_id = sl.src_loc_id
+      inner join ${schemaName}.datapackage d2 on
+      d.dataflowid = d2.dataflowid
+      inner join ${schemaName}.study s on
+      d.prot_id = s.prot_id
+      inner join (
+      select
+      dataflowid,
+      max("version") as "version"
+      from
+      ${schemaName}.dataflow_version dv
+      group by
+      dataflowid ) dh on
+      dh.dataflowid = d.dataflowid
+      left join (
+      select
+      datapackageid,
+      COUNT(distinct datasetid) as dsCount
+      from
+      ${schemaName}.dataset d
+      group by
+      datapackageid) dsetcount on
+      (d2.datapackageid = dsetcount.datapackageid)
+      left join (
+      select
+      dataflowid,
+      COUNT(distinct datapackageid) as dpCount
+      from
+      ${schemaName}.datapackage d
+      group by
+      dataflowid) dpackagecount on
+      (d.dataflowid = dpackagecount.dataflowid)
+      where
+      s.prot_id = $1
+      and coalesce (d.del_flg,0) != 1
+      ) as df
+      where
+      df.rnk = 1`;
 
       Logger.info({ message: "getStudyDataflows" });
       const $q1 = await DB.executeQuery(query, [protocolId]);
@@ -115,7 +186,8 @@ exports.createDataflow = async (req, res) => {
       configured,
     } = req.body;
     var ResponseBody = {};
-    if (vendorName !== "") {
+    if (!type && dataStructure) type = dataStructure;
+    if (vendorName && vendorName !== "") {
       //validation for dataflow metadata
       if (
         vendorName !== null &&
@@ -154,10 +226,10 @@ exports.createDataflow = async (req, res) => {
           externalSystemName === "CDI"
             ? src_loc_id
             : data[0].src_loc_id || null,
-          active || 0,
+          active === true ? 1 : 0,
           configured || 0,
           exptDtOfFirstProdFile || null,
-          testFlag,
+          testFlag === true ? 1 : 0,
           data_in_cdr || "N",
           connectionType || null,
           // externalSystemName === "CDI" ? connectiondriver || null : location || null,
@@ -170,8 +242,8 @@ exports.createDataflow = async (req, res) => {
         const query = `insert into ${schemaName}.dataflow 
           (dataflowid,name,vend_id,type,description,src_loc_id,active,configured,expt_fst_prd_dt,
             testflag,data_in_cdr,connectiontype,externalsystemname,externalid,
-            fsrstatus,prot_id,insrt_tm) VALUES 
-            ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`;
+            fsrstatus,prot_id,insrt_tm,updt_tm) VALUES 
+            ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17)`;
 
         let ts = new Date().toLocaleString();
         // insert dataflow schema into db
@@ -197,8 +269,8 @@ exports.createDataflow = async (req, res) => {
               each.name || null,
               each.path || null,
               each.password || null,
-              0,
-              each.noPackageConfig === "false" ? 0 : 1 || null,
+              each.active === false ? 0 : 1,
+              each.noPackageConfig === false ? 0 : 1 || null,
               each.externalID || null,
               new Date(),
               uid,
@@ -227,14 +299,15 @@ exports.createDataflow = async (req, res) => {
                   dataKind = checkDataKind.rows[0].datakindid;
                 }
                 const dsUid = createUniqueID();
-                let DSQuery = `insert into ${schemaName}.dataset(datasetid,datapackageid,datakindid,mnemonic,columncount,incremental,
+                let DSQuery = `insert into ${schemaName}.dataset(datasetid,datapackageid,datakindid,mnemonic,active,columncount,incremental,
                             offsetcolumn,type,path,ovrd_stale_alert,headerrownumber,footerrownumber,customsql,
-                            customsql_query,tbl_nm,externalid,insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`;
+                            customsql_yn,tbl_nm,externalid,insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`;
                 let body = [
                   dsUid,
                   dpUid,
                   dataKind || null,
                   obj.mnemonic || null,
+                  obj.active === true ? 1 : 0 || null,
                   obj.columncount || null,
                   obj.incremental === "NO" ? 0 : 1 || null,
                   obj.offsetColumn || null,
@@ -268,8 +341,8 @@ exports.createDataflow = async (req, res) => {
                       CDUid,
                       el.name || null,
                       el.dataType || null,
-                      el.primaryKey ? 1 : 0 || 0,
-                      el.required ? 1 : 0 || 0,
+                      el.primaryKey ? 1 : 0,
+                      el.required ? 1 : 0,
                       el.characterMin || 0,
                       el.characterMax || 0,
                       el.position || 0,
@@ -280,7 +353,7 @@ exports.createDataflow = async (req, res) => {
                     ];
                     await DB.executeQuery(CDQuery, body);
                     // dataflow audit
-                    let dataflow_aduit_query = `INSERT INTO cdascfg.dataflow_audit_log
+                    let dataflow_aduit_query = `INSERT INTO ${schemaName}.dataflow_audit_log
                     ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
                     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`;
                     let audit_body = [
@@ -372,7 +445,7 @@ exports.createDataflow = async (req, res) => {
     };
 
     //insert into dataflow version config log table
-    let dataflow_version_query = `INSERT INTO cdascfg.dataflow_version
+    let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
     ( dataflowid, "version", config_json, created_by, created_on)
     VALUES($1,$2,$3,$4,$5);`;
     let aduit_version_body = [
@@ -715,14 +788,12 @@ exports.syncDataFlow = async (req, res) => {
 exports.getDataflowDetail = async (req, res) => {
   try {
     const dataFlowId = req.params.dataFlowId;
-    const searchQuery = `SELECT dataflowTbl.active, dataflowTbl.name, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID
+    const searchQuery = `SELECT dataflowTbl.active, dataflowTbl.dataflowid, dataflowTbl.name, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID
     from ${schemaName}.dataflow as dataflowTbl 
     JOIN ${schemaName}.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id
     JOIN ${schemaName}.vendor v on (v.vend_id = dataflowTbl.vend_id)
     WHERE dataflowid = $1`;
-    Logger.info({
-      message: "datafloDetail",
-    });
+    Logger.info({ message: "dataflowDetail" });
     DB.executeQuery(searchQuery, [dataFlowId]).then((response) => {
       const dataflowDetail = response.rows[0] || null;
       return apiResponse.successResponseWithData(
@@ -734,7 +805,7 @@ exports.getDataflowDetail = async (req, res) => {
   } catch (err) {
     //throw error in json response with status 500.
     console.log(err);
-    Logger.error("catch :datafloDetail");
+    Logger.error("catch :dataflowDetail");
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
@@ -953,7 +1024,7 @@ exports.fetchdataflowDetails = async (req, res) => {
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
       inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
-      inner join cdas1d.cdascfg.columndefinition c on (c.datasetid =d3.datasetid)
+      inner join cdas1d.${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
       where d.dataflowid ='${dataflow_id}'`;
     Logger.info({
       message: "fetchdataflowDetails",
@@ -980,8 +1051,8 @@ exports.fetchdataflowDetails = async (req, res) => {
             let datasetObj = {
               columncount: el.columncount,
               externalID: el.externalid,
-              customQuery: el.customsql,
-              customSql: el.customsql_query,
+              customQuery: el.customsql_yn,
+              customSql: el.customsql,
               tableName: el.tbl_nm,
               incremental: el.incremental,
               offsetColumn: el.offsetcolumn,
@@ -1057,5 +1128,47 @@ exports.fetchdataflowDetails = async (req, res) => {
     Logger.error("catch :fetchdataflowDetails");
     Logger.error(error);
     return apiResponse.ErrorResponse(res, error);
+  }
+};
+
+exports.hardDeleteNew = async (req, res) => {
+  try {
+    const { dataFlowId, userId, version, studyId, dataFlowName, fsrStatus } =
+      req.body;
+    const curDate = helper.getCurrentTime();
+    const $q2 = `UPDATE ${schemaName}.dataflow SET updt_tm=$2, del_flg=$3 WHERE dataflowid=$1`;
+    const $q3 = `INSERT INTO ${schemaName}.dataflow_action (df_id, df_nm, action_typ, df_status, action_usr, insrt_tmstmp, prot_id, df_versn)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+    const $q4 = `INSERT INTO ${schemaName}.dataflow_audit_log (dataflowid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt) 
+    VALUES($1, $2, $3, $4, $5, $6, $7)`;
+
+    Logger.info({ message: "hardDeleteNew" });
+    const q2 = await DB.executeQuery($q2, [dataFlowId, curDate, 1]);
+    const q4 = await DB.executeQuery($q4, [
+      dataFlowId,
+      version,
+      "del_flg",
+      null,
+      1,
+      userId,
+      curDate,
+    ]);
+    const q3 = await DB.executeQuery($q3, [
+      dataFlowId,
+      dataFlowName,
+      "delete",
+      fsrStatus,
+      userId,
+      curDate,
+      studyId,
+      version,
+    ]);
+    return apiResponse.successResponseWithData(res, "Operation success", {
+      success: true,
+    });
+  } catch (err) {
+    Logger.error("catch :hardDeleteNew");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
   }
 };

@@ -118,7 +118,7 @@ const StatusCell = ({ row, column: { accessor } }) => {
       </div>
     );
   }
-  if (status?.toLowerCase() === "loaded with ingestion issues") {
+  if (status?.toLowerCase() === "loaded with issues") {
     return (
       <div>
         <div style={{ position: "relative" }}>
@@ -276,7 +276,7 @@ const generateColumns = (tableRows = []) => {
   ];
 };
 
-const TransferLog = ({ datasetProperties }) => {
+const TransferLog = ({ datasetProperties, transferLogFilter }) => {
   const dispatch = useDispatch();
   const params = useParams();
   const { transferLogs, loading } = useSelector(
@@ -295,8 +295,8 @@ const TransferLog = ({ datasetProperties }) => {
   };
 
   useEffect(() => {
-    if (datasetProperties?.LoadType.toLowerCase() === "incremental") {
-      setLoadType(datasetProperties?.LoadType);
+    if (datasetProperties?.loadType?.toLowerCase() === "incremental") {
+      setLoadType(datasetProperties?.loadType);
     } else {
       setLoadType("Cumulative");
     }
@@ -308,11 +308,29 @@ const TransferLog = ({ datasetProperties }) => {
   }, []);
 
   useEffect(() => {
-    setTableRows(transferLogs?.records ?? []);
+    const rows =
+      transferLogs?.records?.length > 0 && transferLogFilter
+        ? transferLogs?.records.filter((rec) => {
+            if (transferLogFilter === "ingestion_issues") {
+              return (
+                rec.FileTransferStatus?.toLowerCase() === "loaded with issues"
+              );
+            }
+            if (transferLogFilter === "failed") {
+              return (
+                rec.FileTransferStatus?.toLowerCase() === "failed" ||
+                rec.FileTransferStatus?.toLowerCase().includes("error")
+              );
+            }
+            return rec;
+          })
+        : transferLogs?.records;
+
+    setTableRows(rows ?? []);
     setTotalLog(transferLogs.totalSize ?? 0);
     const col = generateColumns(transferLogs?.records);
     setColumns([...col]);
-  }, [loading, transferLogs]);
+  }, [loading, transferLogs, transferLogFilter]);
 
   const CustomHeader = ({ toggleFilters }) => (
     <div>

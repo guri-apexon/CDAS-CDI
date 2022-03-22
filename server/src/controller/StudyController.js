@@ -10,8 +10,8 @@ exports.getUserStudyList = function (req, res) {
   try {
     const userId = req.params.userId;
     const newQuery = `SELECT prot_id, protocolnumber, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
-    FROM cdascfg.study_ingestion_dashboard
-    WHERE prot_id in (select prot_id from study_user where usr_id=$1)`;
+    FROM  ${schemaName}.study_ingestion_dashboard
+    WHERE prot_id in (select prot_id from study_user where usr_id=$1) order by "priorityCount" desc, "ingestionCount" desc, "staleFilesCount" desc, sponsorname asc, protocolnumber asc`;
 
     Logger.info({ message: `getUserStudyList` });
 
@@ -131,10 +131,9 @@ exports.searchStudyList = function (req, res) {
       searchParam,
     });
     // console.log("search", searchParam, userId);
-    const searchQuery = `SELECT s.prot_id, s.prot_nbr as protocolnumber, s3.usr_id, spnsr_nm as sponsorname, phase, prot_stat as protocolstatus, proj_cd as projectcode FROM ${schemaName}.study s 
-    INNER JOIN ${schemaName}.study_sponsor ss ON ss.prot_id = s.prot_id 
-    INNER JOIN ${schemaName}.sponsor s2 ON s2.spnsr_id = ss.spnsr_id 
-    INNER JOIN ${schemaName}.study_user s3 ON s.prot_id=s3.prot_id WHERE (s3.usr_id = $2) AND (LOWER(prot_nbr) LIKE $1 OR LOWER(spnsr_nm) LIKE $1 OR LOWER(proj_cd) LIKE $1) LIMIT 10`;
+    const searchQuery = `SELECT prot_id, protocolnumber, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
+    FROM  ${schemaName}.study_ingestion_dashboard
+    WHERE prot_id in (select prot_id from study_user where usr_id=$2) AND (LOWER(protocolnumber) LIKE $1 OR LOWER(sponsorname) LIKE $1 OR LOWER(projectcode) LIKE $1) LIMIT 10`;
 
     DB.executeQuery(searchQuery, [`%${searchParam}%`, userId]).then(
       (response) => {
@@ -154,242 +153,37 @@ exports.searchStudyList = function (req, res) {
   }
 };
 
-exports.getDatasetIngestionDashboardDetail = function (req, res) {
+exports.getDatasetIngestionDashboardDetail = async function (req, res) {
   try {
     const prot_id = req.params.protocolNumber;
     let where = "";
+    let datasetwhere = "";
     const testFlag = req.query.testFlag || null;
     const active = req.query.active || null;
     if (testFlag == 1 || testFlag == 0) {
-      where += ` and df.testflag in (${testFlag}) `;
+      where += ` and testdataflow in (${testFlag}) `;
     }
     if (active == 1 || active == 0) {
-      where += ` and ds.active in (${active}) `;
+      datasetwhere += ` and activedataset in (${active}) `;
     }
     Logger.info({
       message: "getDatasetIngestionDashboardDetail",
       prot_id,
     });
-    const searchQuery = `with protocol as (SELECT prot_id, dataflowid
-      FROM ${schemaName}.dataflow 
-     WHERE active = 1 --ONLY active dataflows
-  GROUP BY prot_id, dataflowid
-  ) 
-,cteTrnx AS -- get the latest process executionid 
-(
-SELECT *, 
-case when (downloadtrnx > 0 OR previous_downloadtrnx > 0) THEN  ((downloadtrnx - previous_downloadtrnx) / nullif(((downloadtrnx + previous_downloadtrnx) / 2), 0)) * 100
-when downloadtrnx = 0 and previous_downloadtrnx = 0 then 0
-else 0
-end as pct_cng  FROM
-(
-select prot_id, dataflowid, datapackageid, datasetid, executionid, externalid, downloadtrnx, latest, LEAD(downloadtrnx,1) OVER (
-ORDER BY latest ) previous_downloadtrnx, childstatus, errmsg from
-(SELECT
-prot.prot_id,
-prot.dataflowid,
-ts.datapackageid,
-ts.datasetid,
-ts.executionid,
-ts.externalid,
-COALESCE(ts.downloadtrnx,0) as downloadtrnx,
-cps.STATUS AS childstatus,
-cps.ERRMSG as errmsg,
-ROW_NUMBER () OVER (PARTITION BY ts.dataflowid, ts.datapackageid,ts.datasetid
-ORDER BY ts.executionid DESC) AS latest
-FROM protocol prot
-LEFT JOIN ${schemaName}.transaction_summary ts
-ON prot.dataflowid = TS.dataflowid
-LEFT JOIN ${schemaName}.child_processes_summary cps
-ON ts.externalid = cps.externalid )  ts1_latest
-where latest<=2 
-) x WHERE latest = 1 
-) 
-,checkSum as ( select dataflowid,datapackageid,executionid,lastmodifiedtime,latest,no_of_staledays, lastmodifiedtime as file_timestamp  from (select dc2.dataflowid,dc2.datapackageid, dc2.executionid ,lastmodifiedtime, 
-  row_number () over(partition by dc2.dataflowid,dc2.datapackageid, dc2.executionid order by lastmodifiedtime desc) as latest,
-  case when current_timestamp > to_timestamp(cast(lastmodifiedtime as numeric)/1000) 
-  then date_part('day',current_timestamp - to_timestamp(cast(lastmodifiedtime as numeric)/1000)) else -1
-  end as no_of_staledays from ${schemaName}.datapackage_checksum dc2 
-  inner join cteTrnx on cteTrnx.dataflowid = dc2.dataflowid 
-  and cteTrnx.datapackageid = dc2.datapackageid 
-  and cteTrnx.executionid = dc2.executionid order by lastmodifiedtime desc)  src where latest =1)
-,cteFile AS -- get the latest file name
-(
-SELECT * FROM
-  (
-  SELECT
-    dp.dataflowid,
-    dp.md5,
-    dp.executionid,
-    dp.datapackageid,
-    dp.packagename,
-    dpds.datasetid,
-    dpds.datasetname,
-    ds.datasetname ,
-    COALESCE (dpds.datasetname, ds.datasetname) as filename,
-    dp.stagetime filestagedate ,
-    ROW_NUMBER () OVER (PARTITION BY dp.dataflowid, dp.executionid, dp.datapackageid, dpds.datasetid 
-    ORDER BY dp.stagetime DESC) AS latest
-  FROM
-    ${schemaName}.datapackage_checksum dp
-  LEFT OUTER JOIN ${schemaName}.datapackage_dataset_mapping DPDS ON
-    dp.md5 = dpds."MD5" 
-  LEFT OUTER JOIN ${schemaName}.dataset_checksum ds ON
-    dp.md5 = ds.md5  
-  ) x 
-WHERE latest = 1 
-)
-,columnDef as ( select count(c.columnid) as columncount, c.datasetid from ${schemaName}.columndefinition c inner join cteTrnx on cteTrnx.datasetid = c.datasetid group by c.datasetid)
---select the data for a selected study  
-select 
-cteTrnx.externalid ,
-cteTrnx.executionid,
-cteTrnx.prot_id ,
-cteTrnx.dataflowid ,
-cteTrnx.datapackageid ,
-cteTrnx.datasetid ,
-cteTrnx.downloadtrnx,
-cteTrnx.previous_downloadtrnx,
-ts.datasettype AS dataset_type ,
-ds.mnemonic datasetname,
-df.type datastructure ,
-dp.type pacakagetype,
-dp.path packagepath,
-ts.datapackagename AS packagenamingconvention ,
-ds.datakindid AS ClinicalDataTypeId ,
-vn.name as clinicalDataTypeName,
-df.vend_id as vendorsourceid,
-vn1.vend_nm_stnd as vendorsource,
-ds.TYPE FileType,
-ds.PATH FilePath,
-ts.datasetname AS filenamingconvention ,
-ds.rowdecreaseallowed ,
-df.testflag AS testdataflow ,
-ds.staledays AS overridestalealert ,
-ts.mnemonicfile,
-ts.processtype,
-ts.downloadstatus,
-ts.downloadstarttime,
-ts.downloadendtime,
-ts.processstatus,
-ts.processstarttime,
-ts.processendtime,
-ts.processtrnx,
-ts.lastsucceeded,
-ts.lastattempted,
-ts.failurecat,
-ts.refreshtimestamp,
-ds.offsetcolumn,
-ds.offset_val, 
-cteTrnx.childstatus,
-cteTrnx.ERRMSG,
-CASE WHEN ts.downloadstatus = 'SUCCESSFUL' AND ts.processstatus = 'SUCCESSFUL' THEN 'LOADED WITHOUT ISSUES'
-WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'PROCESSED WITH ERRORS' THEN 'LOADED WITH INGESTION ISSUES'
-WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'IN PROGRESS' THEN 'IN PROGRESS'
-WHEN ts.downloadstatus  = 'IN PROGRESS' AND ts.processstatus  = '' THEN 'IN PROGRESS'
-WHEN ts.downloadstatus  = 'QUEUED' AND ts.processstatus  = '' THEN 'QUEUED FOR NEW FILE CHECK'
-WHEN ts.downloadstatus  = 'QUEUED' AND ts.processstatus  = 'SUCCESSFUL' THEN 'SUCCESSFUL'
-WHEN ts.downloadstatus  = 'IN PROGRESS' OR ts.processstatus  = 'IN PROGRESS' THEN 'IN PROGRESS'
-WHEN ts.downloadstatus  = 'ABORTED' OR ts.processstatus  = 'ABORTED' THEN 'FAILED'
-WHEN ts.downloadstatus  = 'SKIPPED' OR ts.processstatus  = 'SKIPPED' THEN 'SKIPPED'
-WHEN ts.downloadstatus  = 'FAILED' OR ts.processstatus = 'FAILED' AND ts.failurecat NOT IN ('INTERNAL ERROR', 'GENERAL ERROR','EDIT CHECK ERRORS','TO-DO','TO_DO','T0-DO') THEN ts.failurecat
-WHEN ts.downloadstatus  = 'FAILED' OR ts.processstatus   = 'FAILED' THEN 'FAILED'
-WHEN cteTrnx.ERRMSG = 'DUPLICATE FILE' THEN 'DUPLICATE FILE'
-WHEN cteTrnx.ERRMSG = 'NO RECORDS DOWNLOADED' THEN 'NO RECORDS DOWNLOADED'
-WHEN cteTrnx.ERRMSG = 'NO FILES IN SOURCE' THEN 'NO FILES IN SOURCE'
-ELSE 'FAILED' END AS datasetstatus,    -- NEEDS COMPLETE CASE STATEMENT
-CASE WHEN (dc.no_of_staledays > ds.staledays) THEN 'STALE'
-WHEN ds.active = 0 THEN 'INACTIVE'
-WHEN ts.downloadstatus = 'SUCCESSFUL' AND ts.processstatus = 'SUCCESSFUL' THEN 'UP-TO-DATE'
-WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'PROCESSED WITH ERRORS' THEN 'UP-TO-DATE'
-WHEN ts.downloadstatus  = 'SUCCESSFUL' AND ts.processstatus  = 'IN PROGRESS' THEN 'PROCESSING'
-WHEN ts.downloadstatus  = 'IN PROGRESS' AND ts.processstatus  = '' THEN 'PROCESSING'
-WHEN ts.downloadstatus  = 'QUEUED' AND ts.processstatus  = '' THEN 'QUEUED'
-WHEN ts.downloadstatus  = 'QUEUED' AND ts.processstatus  = 'SUCCESSFUL' THEN 'UP-TO-DATE'
-WHEN ts.downloadstatus  = 'IN PROGRESS' OR ts.processstatus  = 'IN PROGRESS' THEN 'PROCESSING'
-WHEN ts.downloadstatus  = 'SKIPPED' OR ts.processstatus  = 'SKIPPED' THEN 'SKIPPED'
-WHEN ts.downloadstatus  = 'FAILED' OR ts.processstatus = 'FAILED' THEN 'FAILED'
-ELSE 'FAILED' END AS jobstatus,    -- NEEDS COMPLETE CASE STATEMENT
-cteTrnx.pct_cng,
-case when cteTrnx.pct_cng > ds.rowdecreaseallowed then cteTrnx.pct_cng end as EXCEEDS_PCT_CNG, -- needs comparison logic to replace 'Y' for KPI
-case when dc.no_of_staledays > ds.staledays then 'yes' else 'no' end  as IS_STALE, --needs comparison logic to replace 'Y' for KPI,
-dc.file_timestamp,
-dc.no_of_staledays,
-cteTrnx.childstatus,
-cteTrnx.errmsg ,
-ctefile.filestagedate AS lastFileTransferred ,
-CASE WHEN dp.NOPACKAGECONFIG = 0 THEN cteFile.packagename END AS packagename ,
-CASE WHEN sl.loc_typ NOT IN ('SFTP','FTPS') THEN ds.name ELSE cteFile.filename END AS filename,
-case when (ds.incremental = 'true' or ds.incremental = 'Y') or columnDef.columncount > 0 then 'Incremental' else 'Full' end as loadType
-FROM protocol p
-INNER JOIN
-${schemaName}.dataflow df
-ON  df.dataflowid = p.dataflowid
-INNER JOIN ${schemaName}.datapackage dp
-ON df.dataflowid = dp.dataflowid
-INNER JOIN ${schemaName}.dataset ds
-ON dp.datapackageid = ds.datapackageid 
-INNER JOIN ${schemaName}.datakind vn
-ON vn.datakindid = ds.datakindid 
-INNER JOIN ${schemaName}.vendor vn1
-ON vn1.vend_id = df.vend_id 
-INNER JOIN cteTrnx 
-ON cteTrnx.dataflowid = df.dataflowid
-AND cteTrnx.datapackageid = dp.datapackageid
-AND cteTrnx.datasetid = ds.datasetid
-INNER JOIN ${schemaName}.transaction_summary ts 
-ON cteTrnx.executionid = ts.executionid
-AND cteTrnx.externalid = ts.externalid
-AND cteTrnx.dataflowid = ts.dataflowid
-AND cteTrnx.datapackageid = ts.datapackageid
-AND ctetrnx.datasetid = ts.datasetid
-left join checkSum dc 
-on cteTrnx.executionid = dc.executionid
-LEFT JOIN source_location sl ON df.dataflowid::text = sl.src_loc_id::text
-LEFT JOIN cteFile 
-  ON cteTrnx.dataflowid = cteFile.dataflowid
-  AND cteTrnx.executionid = cteFile.executionid
-  AND cteTrnx.datapackageid = cteFile.datapackageid
-  AND cteTrnx.datasetid = cteFile.datasetid
-LEFT JOIN columnDef 
-  ON cteTrnx.datasetid = columnDef.datasetid
-where p.prot_id = $1 ${where}`;
+    const countQuery = `select prot_id ,count(failedLoads) as failed_loads,sum(quarantinedFiles) as quarantined_files,
+    count(EXCEEDS_PCT_CNG) as files_exceeding,
+    count(filesWithIngestionIssues) as fileswith_issues,count(is_stale) as stale_datasets
+    from ${schemaName}.study_monitor_summary
+    where prot_id = $1 ${where}
+    group by prot_id;`;
+    const summaryCount = await DB.executeQuery(countQuery, [prot_id]);
+
+    const searchQuery = `select prot_id,datasetid,datasetname,vendorsource,jobstatus,filename,datasetstatus,exceeds_pct_cng,lastfiletransferred,packagename,mnemonicfile,clinicaldatatypename,loadtype,downloadtrnx,processtrnx,offset_val,errmsg  from ${schemaName}.study_monitor_summary where prot_id = $1 ${where} ${datasetwhere}`;
     DB.executeQuery(searchQuery, [prot_id]).then((response) => {
       const datasets = response.rows || [];
-      const failedStatus = ["FAILED", "ABORTED"];
-      let failed_loads = 0;
-      let quarantined_files = 0;
-      let files_exceeding = 0;
-      let fileswith_issues = 0;
-      let stale_datasets = 0;
-      datasets.forEach((dataset) => {
-        if (
-          failedStatus.indexOf(dataset.processstatus) !== -1 ||
-          failedStatus.indexOf(dataset.downloadstatus) !== -1
-        ) {
-          failed_loads += 1;
-        }
-        if (dataset.pct_cng > dataset.rowdecreaseallowed) {
-          files_exceeding += 1;
-        }
-        if (
-          dataset.downloadstatus == "SUCCESSFUL" &&
-          dataset.processstatus == "PROCESSED WITH ERRORS"
-        ) {
-          fileswith_issues += 1;
-        }
-        if (dataset.is_stale == "yes") {
-          stale_datasets += 1;
-        }
-      });
+      const summary = summaryCount.rows ? summaryCount.rows[0] : {};
       return apiResponse.successResponseWithData(res, "Operation success", {
-        summary: {
-          failed_loads,
-          quarantined_files,
-          files_exceeding,
-          fileswith_issues,
-          stale_datasets,
-        },
+        summary: summary,
         datasets: datasets,
         totalSize: response.rowCount,
       });

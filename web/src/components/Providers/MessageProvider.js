@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import { Success, Warning, Info, Error } from "../../constants";
+import { Success, Warning, Info, Err } from "../../constants";
 
 export const MessageContext = createContext();
 
@@ -9,6 +9,9 @@ const MessageProvider = ({ children }) => {
     messages: "",
     show: false,
   });
+  const [dataflowObj, setdataflowObj] = useState({
+    datasetSubmit: false,
+  });
 
   const bannerCloseHandle = () => {
     setErrorMessage({ show: false });
@@ -17,9 +20,9 @@ const MessageProvider = ({ children }) => {
   const showErrorMessage = (error) => {
     if (error && error.data) {
       const { message } = error.data;
-      setErrorMessage({ variant: Error, messages: message, show: true });
+      setErrorMessage({ variant: Err, messages: message, show: true });
     } else {
-      setErrorMessage({ variant: Error, messages: error, show: true });
+      setErrorMessage({ variant: Err, messages: error, show: true });
     }
     setTimeout(() => {
       setErrorMessage({ show: false });
@@ -46,7 +49,12 @@ const MessageProvider = ({ children }) => {
       setErrorMessage({ show: false });
     }, 5000);
   };
-
+  const setDataflow = (obj) => {
+    setdataflowObj({ ...dataflowObj, ...obj });
+  };
+  const resetDataflow = () => {
+    setdataflowObj({ datasetSubmit: false });
+  };
   return (
     <MessageContext.Provider
       value={{
@@ -56,6 +64,9 @@ const MessageProvider = ({ children }) => {
         showInfoMessage,
         showWarningMessage,
         showSuccessMessage,
+        setDataflow,
+        dataflowObj,
+        resetDataflow,
       }}
     >
       {children}

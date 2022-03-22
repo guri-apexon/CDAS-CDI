@@ -8,6 +8,7 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 const columnsMock = require("../../public/mock/listColumnsAPI.json");
 const tablesMock = require("../../public/mock/listTablesAPIResponse.json");
 const previewSQLMock = require("../../public/mock/responseBodyPreviewSQL.json");
+const CommonController = require("./CommonController");
 
 async function checkNameExists(
   name,
@@ -31,18 +32,19 @@ async function saveSQLDataset(req, res, values, datasetId) {
     const body = [
       datasetId,
       values.datasetName,
-      values.active == true ? 1 : 0,
+      values.active === true ? 1 : 0,
       values.clinicalDataType[0] ? values.clinicalDataType[0] : null,
       values.customSQLQuery,
       values.sQLQuery || null,
-      values.loadType == "Incremental" ? "Y" : "N" || null,
+      values.dataType == "Incremental" ? "Y" : "N" || null,
       values.tableName || null,
       values.offsetColumn || null,
+      values.filterCondition || null,
       new Date(),
       new Date(),
       values.datapackageid,
     ];
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, offset_val, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`;
     const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {
@@ -62,27 +64,31 @@ exports.saveDatasetData = async (req, res) => {
       values.datapackageid,
       values.dfTestFlag
     );
+
     if (isExist) {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
     }
+
     const datasetId = helper.generateUniqueID();
-    if (values.locationType === "JDBC") {
+    if (values.locationType.toLowerCase() === "jdbc") {
       return saveSQLDataset(req, res, values, datasetId);
     }
+
     Logger.info({ message: "create Dataset" });
     const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`;
+    const packageQuery = `select dataflowid from ${schemaName}.datapackage WHERE datapackageid = $1`;
 
     const body = [
       datasetId,
       values.datasetName,
-      values.fileType || null,
+      values.fileType,
       values.encoding || null,
       values.delimiter || null,
       values.escapeCharacter || null,
       values.quote || null,
       values.headerRowNumber || 0,
       values.footerRowNumber || 0,
-      values.active == true ? 1 : 0,
+      values.active === true ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
       values.clinicalDataType[0],
@@ -94,12 +100,40 @@ exports.saveDatasetData = async (req, res) => {
       values.datapackageid,
       values.loadType == "Incremental" ? "Y" : "N",
     ];
-    const inset = await DB.executeQuery(insertQuery, body);
-    return apiResponse.successResponseWithData(res, "Operation success", inset);
+
+    const jsonData = JSON.stringify(body);
+
+    const packageData = await DB.executeQuery(packageQuery, [
+      values.datapackageid,
+    ]);
+
+    // const historyVersion = await CommonController.addHistory(
+    //   datasetId,
+    //   user_id,
+    //   "New Entry"
+    // );
+    // if (!historyVersion) throw new Error("History not updated");
+
+    DB.executeQuery(insertQuery, body).then(async (response) => {
+      const package = response.rows[0] || [];
+      const historyVersion = await CommonController.addDatasetHistory(
+        values,
+        jsonData,
+        packageData.rows[0].dataflowid,
+        "New Entry"
+      );
+      if (!historyVersion) throw new Error("History not updated");
+      return apiResponse.successResponseWithData(
+        res,
+        "Created Successfully",
+        {}
+      );
+    });
+    // const inset = await DB.executeQuery(insertQuery, body);
+    // return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
     Logger.error("catch :storeDataset");
     Logger.error(err);
-    // console.log(err, "err");
     return apiResponse.ErrorResponse(res, err);
   }
 };
@@ -109,15 +143,18 @@ async function updateSQLDataset(req, res, values) {
     Logger.info({ message: "update SQL Dataset" });
     const body = [
       values.datasetName,
-      values.active == true ? 1 : 0,
+      values.active === true ? 1 : 0,
       values.clinicalDataType ? values.clinicalDataType[0] : null,
       values.customSQLQuery || null,
       values.sQLQuery || null,
       values.tableName || null,
+      values.filterCondition || null,
+      values.dataType == "Incremental" ? "Y" : "N" || null,
+      values.offsetColumn || null,
       new Date(),
       values.datasetid,
     ];
-    const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, updt_tm = $7 where datasetid = $8`;
+    const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, offset_val = $7, offsetcolumn = $8, incremental = $9, updt_tm = $10 where datasetid = $11`;
     const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {
@@ -131,6 +168,8 @@ async function updateSQLDataset(req, res, values) {
 exports.updateDatasetData = async (req, res) => {
   try {
     const values = req.body;
+    console.log(values);
+
     Logger.info({ message: "update Dataset" });
     const isExist = await checkNameExists(
       values.datasetName,
@@ -138,13 +177,68 @@ exports.updateDatasetData = async (req, res) => {
       values.dfTestFlag,
       values.datasetid
     );
-    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17 where datasetid = $18`;
+    const selectQuery = `select  mnemonic, type, charset, delimiter , escapecode, quote,
+                         headerrownumber, footerrownumber, active, naming_convention, path, 
+                         datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, 
+                         incremental from ${schemaName}.dataset where datasetid = $1`;
+
+    const packageQuery = `select dataflowid from ${schemaName}.datapackage WHERE datapackageid = $1`;
+
+    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $17, incremental = $16 where datasetid = $18`;
     if (isExist) {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
     }
 
-    if (values.locationType === "JDBC") {
+    if (values.locationType.toLowerCase() === "jdbc") {
       return updateSQLDataset(req, res, values);
+    }
+
+    const requestData = {
+      mnemonic: values.datasetName,
+      type: values.fileType,
+      charset: values.encoding,
+      delimiter: values.delimiter,
+      escapecode: values.escapeCharacter,
+      quote: values.quote,
+      headerrownumber: values.headerRowNumber,
+      footerrownumber: values.footerRowNumber,
+      active: true ? 1 : 0,
+      naming_convention: values.fileNamingConvention,
+      path: values.folderPath,
+      datakindid: values.clinicalDataType[0],
+      data_freq: values.transferFrequency,
+      ovrd_stale_alert: values.overrideStaleAlert,
+      rowdecreaseallowed: values.rowDecreaseAllowed,
+      incremental: "Incremental" ? "Y" : "N",
+    };
+    const jsonData = JSON.stringify(requestData);
+
+    const packageData = await DB.executeQuery(packageQuery, [
+      values.datapackageid,
+    ]);
+
+    const { rows: tempData } = await DB.executeQuery(selectQuery, [
+      values.datasetid,
+    ]);
+    const oldData = tempData[0];
+
+    const updatedColumn = {};
+    // Object.keys(requestData)
+
+    for (const key in requestData) {
+      if (`${requestData[key]}` != oldData[key]) {
+        if (oldData[key] != null) {
+          const historyVersion = await CommonController.addDatasetHistory(
+            values,
+            jsonData,
+            packageData.rows[0].dataflowid,
+            key,
+            oldData[key],
+            `${requestData[key]}`
+          );
+          if (!historyVersion) throw new Error("History not updated");
+        }
+      }
     }
 
     const body = [
@@ -159,17 +253,21 @@ exports.updateDatasetData = async (req, res) => {
       values.active == true ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
-      values.clinicalDataType,
+      // values.clinicalDataType,
+      values.clinicalDataType[0],
       values.transferFrequency || null,
       values.overrideStaleAlert || null,
       values.rowDecreaseAllowed || 0,
-      new Date(),
+      // new Date(),
       values.loadType == "Incremental" ? "Y" : "N",
     ];
+
     const inset = await DB.executeQuery(updateQuery, [
       ...body,
+      new Date(),
       values.datasetid,
     ]);
+
     return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
     //throw error in json response with status 500.

@@ -32,6 +32,7 @@ exports.saveDatasetColumns = async (req, res) => {
   try {
     const datasetid = req.params.datasetid;
     const values = req.body;
+    console.log(values);
     const insertQuery = `INSERT into ${schemaName}.columndefinition (columnid, "VARIABLE", datasetid, name, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, position, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
     const inserted = await values.map(async (value) => {
       const columnId = helper.generateUniqueID();

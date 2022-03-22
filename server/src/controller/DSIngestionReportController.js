@@ -113,7 +113,7 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
   try {
     const id = req.params.datasetid;
     const userId = req.headers["userid"];
-    const searchQuery = `SELECT "DatasetName", "Vendor", "TransferDate", "FileName", datasetname, "FileTransferStatus", "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords", "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate", "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue", "DownloadStart", "ProcessStart", "VendorContactInformation", "DateLastChecked", "DateofLastSuccessfulProcess", "ExpectedDateofNextTransfer", "ExpectedTransferFrequency", "SourceOrigin", "DataFlowName", "DataPackageNamingConvention", incincremental, postingestionissues, recordswithissues, total_records, incpostingestionissues, increcordswithissues, inctotal_records, inctotalincrementalfilestransferred, incfiles_not_ingested, incfileswithissues, inctotalfilesingested, fst_prd_file_recvd, dataflowid, datapackageid, datasetid from ${schemaName}.dataset_stat_current 
+    const searchQuery = `SELECT "DatasetName", "Vendor",vend_id, "TransferDate", "FileName", datasetname, "FileTransferStatus", "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords", "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate", "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue", "DownloadStart", "ProcessStart", "VendorContactInformation", "DateLastChecked", "DateofLastSuccessfulProcess", "ExpectedDateofNextTransfer", "ExpectedTransferFrequency", "SourceOrigin", "DataFlowName", "DataPackageNamingConvention", incincremental, postingestionissues, recordswithissues, total_records, incpostingestionissues, increcordswithissues, inctotal_records, inctotalincrementalfilestransferred, incfiles_not_ingested, incfileswithissues, inctotalfilesingested, fst_prd_file_recvd, dataflowid, datapackageid, datasetid, "DatasetStatus" from ${schemaName}.dataset_stat_current 
                 WHERE datasetid = $1`;
     Logger.info({
       message: "getDatasetIngestionReportMetrics",
@@ -128,12 +128,29 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
             loadType: records.LoadType,
             totalIncrementalFileTransferred:
               records.inctotalincrementalfilestransferred,
-            postIngestionIssues: records.postingestionissues,
-            recordsWithIssues: records.recordswithissues,
-            totalRecords: records.total_records,
+            postIngestionIssues: records.incpostingestionissues,
+            recordsWithIssues: records.increcordswithissues,
+            totalRecords: records.inctotal_records,
+            newRecords: records.NewRecords,
+            modifiedRecords: records.ModifiedRecords,
             filesNotIngested: records.incfiles_not_ingested,
             filesWithIssues: records.incfileswithissues,
             totalFileIngested: records.inctotalfilesingested,
+            vend_id: records.vend_id,
+            Vendor: records.Vendor,
+            VendorContactInformation: records.VendorContactInformation,
+            DateLastChecked: records.DateLastChecked,
+            DateofLastSuccessfulProcess: records.DateofLastSuccessfulProcess,
+            ExpectedDateofNextTransfer: records.ExpectedDateofNextTransfer,
+            ExpectedTransferFrequency: records.ExpectedTransferFrequency,
+            SourceOrigin: records.SourceOrigin,
+            dataflowid: records.dataflowid,
+            DataFlowName: records.DataFlowName,
+            datapackageid: records.datapackageid,
+            FileName: records.FileName,
+            DataPackageNamingConvention: records.DataPackageNamingConvention,
+            DatasetStatus: records.DatasetStatus,
+            DatasetName: records.DatasetName,
           };
         } else if (records && records.LoadType === "Full") {
           metrics = {
@@ -144,6 +161,21 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
             totalRecords: records.total_records,
             newRecords: records.NewRecords,
             modifiedRecords: records.ModifiedRecords,
+            vend_id: records.vend_id,
+            Vendor: records.Vendor,
+            VendorContactInformation: records.VendorContactInformation,
+            DateLastChecked: records.DateLastChecked,
+            DateofLastSuccessfulProcess: records.DateofLastSuccessfulProcess,
+            ExpectedDateofNextTransfer: records.ExpectedDateofNextTransfer,
+            ExpectedTransferFrequency: records.ExpectedTransferFrequency,
+            SourceOrigin: records.SourceOrigin,
+            dataflowid: records.dataflowid,
+            DataFlowName: records.DataFlowName,
+            datapackageid: records.datapackageid,
+            FileName: records.FileName,
+            DataPackageNamingConvention: records.DataPackageNamingConvention,
+            DatasetStatus: records.DatasetStatus,
+            DatasetName: records.DatasetName,
           };
         }
         await createTemporaryLog(
@@ -174,7 +206,7 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
 exports.getDatasetIssueTypes = (req, res) => {
   try {
     const id = req.params.datasetid;
-    const searchQuery = `SELECT incdatasetid as datasetid, incremental, "incIngestionIssueType" as "incrementalIssueType", "incTotalNoOfIssuess" as "incrementalTotalIssues", "cumIngestionIssueType" as "cummulativeIssueType", "cumTotalNoOfIssuess" as "cummulativeTotalIssues" from ${schemaName}.dataset_issue_summary 
+    const searchQuery = `SELECT incdatasetid as datasetid, incremental, "incIngestionIssueType" as "incrementalIssueType", "incTotalNoOfIssuess" as "incrementalTotalIssues", "cumIngestionIssueType" as "cummulativeIssueType", "cumTotalNoOfIssuess" as "cummulativeTotalIssues", ingestionissuetype from ${schemaName}.dataset_issue_summary 
                 WHERE incdatasetid = $1`;
     Logger.info({
       message: "getDatasetIssueTypes",
@@ -204,18 +236,20 @@ exports.getFileTransferHistory = (req, res) => {
   try {
     const id = req.params.datasetid;
     const dayFilter = req.query.dayFilter ?? "10";
-    const searchQuery = `SELECT dataflowid, executionid, "VERSION", datapackageid, datasetid, mnemonicfile, datapackagename, datasetname, datasettype, processtype, "user", downloadstatus, downloadstarttime, downloadendtime, processstatus, processstarttime, processendtime, downloadtrnx, processtrnx, filerpath, lastsucceeded, lastattempted, failurecat, refreshtimestamp, stage, fst_prd_file_recvd, deleted_records, modified_records, new_records from ${schemaName}.transaction_summary
-              WHERE datasetid = $1 and lastattempted BETWEEN NOW() - INTERVAL '${dayFilter} days' AND NOW()`;
+    const page = req.query.page ? req.query.page * 10 : 10;
+    const searchQuery = `SELECT count(datasetid) OVER() AS total_transfered, dataflowid, executionid, "VERSION", datapackageid, datasetid, mnemonicfile, datapackagename, datasetname, datasettype, processtype, "user", downloadstatus, downloadstarttime, downloadendtime, processstatus, processstarttime, processendtime, downloadtrnx, processtrnx, filerpath, lastsucceeded, lastattempted, failurecat, refreshtimestamp, stage, fst_prd_file_recvd, deleted_records, modified_records, new_records from ${schemaName}.transaction_summary
+              WHERE datasetid = $1 and lastsucceeded BETWEEN NOW() - INTERVAL '${dayFilter} days' AND NOW() order by lastsucceeded desc limit $2 `;
+    //  and lastattempted BETWEEN NOW() - INTERVAL '${dayFilter} days' AND NOW()
     Logger.info({
       message: "getFileTransferHistory",
     });
 
-    DB.executeQuery(searchQuery, [id])
+    DB.executeQuery(searchQuery, [id, page])
       .then((response) => {
         const records = response.rows || [];
         return apiResponse.successResponseWithData(res, "Operation success", {
           records,
-          totalSize: response.rowCount,
+          totalSize: records.length > 0 ? records[0]?.total_transfered : 0,
         });
       })
       .catch((err) => {

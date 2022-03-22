@@ -23,6 +23,15 @@
       margin-right: 48px;
       text-align: center;
       padding: 24px;
+
+      .disable-card {
+        color: #999999;
+        cursor: default;
+        opacity: 0.4;
+        pointer-events: none;
+        background-color: #f2f2f2;
+      }
+
       .upload-box {
         margin-top: 24px;
         text-align: center;
@@ -43,18 +52,33 @@
   padding: 16px;
 }
 
-.jdbc-form {
-  .like-fixedbar {
+label + div[class^="MuiInput-formControl"] {
+  min-width: 200px;
+}
+
+.like-fixedbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 72px;
+  .ds-status {
+    width: 232px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    height: 72px;
-    .ds-status {
-      width: 232px;
-      display: flex;
-      align-items: center;
-    }
   }
+}
+.smallSize_autocomplete {
+  width: 300px;
+  input {
+    height: 32px;
+    font-size: 14px;
+    line-height: 30px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+  }
+}
+
+.jdbc-form {
   .preview-table {
     margin-top: 20px;
   }
@@ -127,4 +151,13 @@
   font-size: 14px;
   line-height: 16px;
   font-weight: 400;
+}
+
+.vertical-line {
+  height: 100%;
+  margin: 0% 50%;
+  > div {
+    border-left: 1px solid #d9d9d9;
+    height: 100%;
+  }
 }

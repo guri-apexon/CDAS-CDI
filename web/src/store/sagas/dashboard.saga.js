@@ -9,6 +9,12 @@ import {
   GET_DATA_FLOW_LIST_FAILURE,
   GET_DATASET_INGESTION_SUMMARY_SUCCESS,
   GET_DATASET_INGESTION_SUMMARY_FAILURE,
+  STUDYLIST,
+  GET_STUDIES_LIST_SUCCESS,
+  GET_STUDIES_LIST_FAILURE,
+  PINNEDSTUDY,
+  GET_PINNED_LIST_SUCCESS,
+  GET_PINNED_LIST_FAILURE,
 } from "../../constants";
 
 export function* fetchFlowData(payload) {
@@ -55,5 +61,41 @@ export function* fetchDatasetIngestionSummaryData(payload) {
       type: GET_DATASET_INGESTION_SUMMARY_FAILURE,
       message: e.message,
     });
+  }
+}
+
+export function* fetchUserStudiesData(payload) {
+  // console.log("before", payload.protocolId);
+  try {
+    const fetchDBData = yield call(
+      axios.get,
+      `${baseURL}/${STUDYLIST}/${payload.userId}`
+    );
+
+    // console.log("study", fetchDBData);
+    yield put({
+      type: GET_STUDIES_LIST_SUCCESS,
+      userStudies: fetchDBData.data.data,
+    });
+  } catch (e) {
+    yield put({ type: GET_STUDIES_LIST_FAILURE, message: e.message });
+  }
+}
+
+export function* fetchPinnedStudies(payload) {
+  // console.log("before", payload.protocolId);
+  try {
+    const fetchDBData = yield call(
+      axios.get,
+      `${baseURL}/${PINNEDSTUDY}/${payload.userId}`
+    );
+
+    // console.log("study", fetchDBData);
+    yield put({
+      type: GET_PINNED_LIST_SUCCESS,
+      userPinnedStudies: fetchDBData.data.data,
+    });
+  } catch (e) {
+    yield put({ type: GET_PINNED_LIST_FAILURE, message: e.message });
   }
 }

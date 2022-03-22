@@ -11,7 +11,6 @@ import {
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
 import Divider from "apollo-react/components/Divider";
-import FixedBar from "apollo-react/components/FixedBar";
 import Status from "apollo-react/components/Status";
 import Radio from "apollo-react/components/Radio";
 import RadioError from "apollo-react-icons/RadioError";
@@ -33,53 +32,8 @@ const styles = {
   paper: {
     padding: "25px 16px",
   },
-  submit: {
-    margin: "16px 0",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
   section: {
     marginBottom: 32,
-  },
-  subsection: {
-    marginBottom: 8,
-  },
-  divider: {
-    marginBottom: 24,
-  },
-  locationBox: {
-    boxSizing: "border-box",
-    border: "1px solid #E9E9E9",
-    borderRadius: 4,
-    backgroundColor: "#FFFFFF",
-    padding: "10px 15px",
-  },
-  formLabel: {
-    color: "#444444",
-    fontSize: 14,
-    marginTop: "15px",
-    letterSpacing: 0,
-    lineHeight: "24px",
-  },
-  formText: {
-    color: "#000000",
-    fontSize: 14,
-    marginTop: 8,
-    marginLeft: 5,
-    letterSpacing: 0,
-    lineHeight: "24px",
-  },
-  formPass: {
-    color: "#000000",
-    fontSize: 30,
-    marginTop: 8,
-    marginLeft: 5,
-    textSecurity: "disc",
-    "-webkit-text-security": "disc",
-    "-moz-text-security": "disc",
-    letterSpacing: 5,
-    lineHeight: "24px",
   },
 };
 
@@ -141,30 +95,35 @@ const DataSetsFormBase = (props) => {
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
         <div className={classes.section}>
-          <FixedBar
-            title="Dataset Settings"
-            style={{ padding: 0, border: "none" }}
-          >
-            <ReduxFormSwitch
-              label="Dataset Active"
-              name="active"
-              className="MuiSwitch"
-              size="small"
-              labelPlacement="start"
-            />
-            <Status
-              variant="positive"
-              icon={RadioError}
-              size="small"
-              style={{ marginLeft: 35 }}
-              label={
-                // eslint-disable-next-line react/jsx-wrap-multilines
-                <Typography variant="body2" style={{ color: "#595959" }}>
-                  Ready
-                </Typography>
-              }
-            />
-          </FixedBar>
+          <div className="like-fixedbar">
+            <Typography variant="title1" gutterBottom>
+              Dataset Settings
+            </Typography>
+            <div className="ds-status">
+              <ReduxFormSwitch
+                label="Dataset Active"
+                name="active"
+                className="MuiSwitch"
+                size="small"
+                labelPlacement="start"
+              />
+              {formValues.active && (
+                <Status
+                  variant="positive"
+                  icon={RadioError}
+                  size="small"
+                  style={{ marginLeft: 35 }}
+                  label={
+                    // eslint-disable-next-line react/jsx-wrap-multilines
+                    <Typography variant="body2" style={{ color: "#595959" }}>
+                      Ready
+                    </Typography>
+                  }
+                />
+              )}
+            </div>
+          </div>
+
           <Grid container spacing={3}>
             <Grid item md={5}>
               <ReduxFormTextField
@@ -175,6 +134,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 30 }}
                 label="Data Set Name (Mnemonic)"
                 disabled={prodLock}
+                required
               />
               <ReduxFormSelect
                 name="fileType"
@@ -183,6 +143,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 onChange={setDefaultValues}
                 fullWidth
+                required
                 disabled={prodLock}
                 canDeselect={false}
               >
@@ -190,7 +151,7 @@ const DataSetsFormBase = (props) => {
                   <MenuItem value={type}>{type}</MenuItem>
                 ))}
               </ReduxFormSelect>
-              {formValues === "SAS" && (
+              {formValues.fileType === "SAS" && (
                 <ReduxFormRadioGroup
                   name="encoding"
                   id="encoding"
@@ -202,14 +163,15 @@ const DataSetsFormBase = (props) => {
                   <Radio value="UTF-8" label="UTF-8" />
                 </ReduxFormRadioGroup>
               )}
-              {(formValues === "SAS" || formValues === "Delimited") && (
+              {(formValues.fileType === "SAS" ||
+                formValues.fileType === "Delimited") && (
                 <>
                   <ReduxFormSelect
                     name="delimiter"
                     id="delimiter"
                     label="Delimiter"
                     size="small"
-                    disabled={formValues === "SAS"}
+                    disabled={formValues.fileType === "SAS"}
                     fullWidth
                     canDeselect={false}
                   >
@@ -221,7 +183,7 @@ const DataSetsFormBase = (props) => {
                     fullWidth
                     name="escapeCharacter"
                     id="escapeCharacter"
-                    disabled={formValues === "SAS"}
+                    disabled={formValues.fileType === "SAS"}
                     inputProps={{ maxLength: 255 }}
                     size="small"
                     label="Escape Character"
@@ -230,7 +192,7 @@ const DataSetsFormBase = (props) => {
                     fullWidth
                     name="quote"
                     id="quote"
-                    disabled={formValues === "SAS"}
+                    disabled={formValues.fileType === "SAS"}
                     size="small"
                     inputProps={{ maxLength: 255 }}
                     label="Quote"
@@ -241,7 +203,7 @@ const DataSetsFormBase = (props) => {
                 fullWidth
                 name="headerRowNumber"
                 id="headerRowNumber"
-                disabled={formValues === "SAS"}
+                disabled={formValues.fileType === "SAS"}
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="Header Row Number"
@@ -250,7 +212,7 @@ const DataSetsFormBase = (props) => {
                 fullWidth
                 name="footerRowNumber"
                 id="footerRowNumber"
-                disabled={formValues === "SAS"}
+                disabled={formValues.fileType === "SAS"}
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="Footer Row Number"
@@ -272,23 +234,26 @@ const DataSetsFormBase = (props) => {
               />
             </Grid>
             <Grid item md={1}>
-              <Divider orientation="vertical" variant="middle" />
+              <div className="vertical-line">
+                <div />
+              </div>
             </Grid>
-            <Grid item md={6}>
-              {selectedClinicalData.length ? (
-                <ReduxFormAutocomplete
-                  name="clinicalDataType"
-                  autoSelect
-                  id="clinicalDataType"
-                  label="Clinical Data Type"
-                  source={datakind}
-                  className="smallSize_autocomplete"
-                  variant="search"
-                  singleSelect
-                  fullWidth
-                  disabled={prodLock}
-                />
-              ) : null}
+            <Grid item md={5}>
+              {/* {selectedClinicalData.length ? ( */}
+              <ReduxFormAutocomplete
+                name="clinicalDataType"
+                autoSelect
+                id="clinicalDataType"
+                label="Clinical Data Type"
+                source={datakind}
+                className="smallSize_autocomplete"
+                variant="search"
+                singleSelect
+                fullWidth
+                required
+                disabled={prodLock}
+              />
+              {/* ) : null} */}
               <ReduxFormTextField
                 fullWidth
                 name="transferFrequency"
@@ -346,7 +311,7 @@ const selector = formValueSelector("DataSetsForm");
 const DataSetsForm = connect((state) => ({
   initialValues: state.dataSets.formData, // pull initial values from account reducer
   enableReinitialize: true,
-  formValues: selector(state, "fileType"),
+  formValues: selector(state, "fileType", "active"),
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
   defaultQuote: state.dataSets.defaultQuote,
@@ -354,7 +319,6 @@ const DataSetsForm = connect((state) => ({
   defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
   defaultLoadType: state.dataSets.defaultLoadType,
   datakind: state.dataSets.datakind?.records,
-  prodLock: state.dataFlow.prodLock,
 }))(ReduxForm);
 
 export default DataSetsForm;

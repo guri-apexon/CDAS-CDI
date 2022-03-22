@@ -18,7 +18,6 @@ import {
   compareStrings,
   createStringSearchFilter,
   numberSearchFilter,
-  dateFilterV2,
   compareNumbers,
 } from "apollo-react/components/Table";
 import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg";
@@ -286,22 +285,25 @@ const StatusCell = ({ row, column: { accessor } }) => {
       </div>
     );
   }
-  return (
-    <div>
-      <div style={{ position: "relative" }}>
-        <FailureIcon
-          style={{
-            position: "relative",
-            top: 4,
-            marginRight: 8,
-            width: "14px",
-            height: "17px",
-          }}
-        />
-        {status}
+  if (status) {
+    return (
+      <div>
+        <div style={{ position: "relative" }}>
+          <FailureIcon
+            style={{
+              position: "relative",
+              top: 4,
+              marginRight: 8,
+              width: "14px",
+              height: "17px",
+            }}
+          />
+          {status}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+  return null;
 };
 
 const exceedPerCell = ({ row, column: { accessor } }) => {
