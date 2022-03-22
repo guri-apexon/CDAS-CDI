@@ -26,7 +26,9 @@ const AuditLog = () => {
   const [rowsPerPageRecord, setRowPerPageRecord] = useState(10);
   const [pageNo, setPageNo] = useState(0);
   const auditLogs = useSelector((state) => state.auditLogs);
+  const dashboard = useSelector((state) => state.dashboard);
   const auditData = auditLogs.data;
+  const dataSetCount = dashboard?.selectedDataFlow?.dataSets;
   const [sortedColumnValue, setSortedColumnValue] = useState("user_name");
   const [sortOrderValue, setSortOrderValue] = useState("asc");
   const [inlineFilters, setInlineFilters] = useState([]);
@@ -200,9 +202,11 @@ const AuditLog = () => {
             </div>
             <div className="flex flex-center justify-between">
               <Typography variant="body2" className="b-font">
-                6 datasets
+                {dataSetCount && dataSetCount > 1
+                  ? `${dataSetCount} datasets`
+                  : `${dataSetCount} dataset`}
               </Typography>
-              <ButtonGroup
+              {/* <ButtonGroup
                 alignItems="right"
                 buttonProps={[
                   {
@@ -214,7 +218,7 @@ const AuditLog = () => {
                     size: "small",
                   },
                 ]}
-              />
+              /> */}
             </div>
           </>
         </Box>

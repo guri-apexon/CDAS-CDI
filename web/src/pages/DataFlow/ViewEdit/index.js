@@ -76,7 +76,19 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
   const [dataflowSource, setDataFlowSource] = useState({});
+  const [datasetCount, setDatasetCount] = useState("");
   const { dataflowId } = useParams();
+
+  useEffect(() => {
+    if (dashboard?.flowData?.length > 0 && dataflowId) {
+      const selectStudy = dashboard?.flowData?.filter((data) => {
+        return data?.dataFlowId === dataflowId;
+      });
+      if (selectStudy?.length > 0) {
+        setDatasetCount(selectStudy[0]?.dataSets);
+      }
+    }
+  }, []);
 
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
@@ -218,7 +230,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
                 breadcrumbItems={breadcrumbItems}
                 headerTitle={dataFlowdetail.name}
                 icon={<DataPackageIcon className={classes.contentIcon} />}
-                datasetsCount={6}
+                datasetsCount={datasetCount}
               />
             </div>
             <Divider />
