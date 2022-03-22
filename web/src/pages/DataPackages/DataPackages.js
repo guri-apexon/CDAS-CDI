@@ -61,6 +61,7 @@ const DataPackages = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const packageData = useSelector((state) => state.dataPackage);
   const dashboard = useSelector((state) => state.dashboard);
+  const dataFlow = useSelector((state) => state.dataFlow);
   const userInfo = getUserInfo();
 
   const { selectedDFId, selectedCard } = dashboard;
@@ -153,7 +154,7 @@ const DataPackages = () => {
         open={isPanelOpen}
         width={446}
       >
-        <LeftPanel />
+        <LeftPanel dataflowSource={dataFlow?.dataFlowdetail} />
       </Panel>
       <Panel
         className={
@@ -216,7 +217,6 @@ const DataPackages = () => {
                     <div className="package-form">
                       {/* <CreatepackageForm onSubmit={onSubmit} /> */}
                       <Select
-                        required
                         error={notMatchedType}
                         label="Package Compression Type"
                         value={compression}
@@ -233,7 +233,6 @@ const DataPackages = () => {
                       </Select>
                       <TextField
                         error={notMatchedType}
-                        required
                         className="mb-20"
                         label="Package Naming Convention"
                         placeholder=""
@@ -246,14 +245,14 @@ const DataPackages = () => {
                         defaultValue=""
                         size="small"
                         icon={false}
-                        label="Package Password (optional)"
+                        label="Package Password (Optional)"
                         className="mb-20"
                         style={{ width: "70%" }}
                         onChange={(e) => setPackagePassword(e.target.value)}
                       />
                       <TextField
                         className="mb-20"
-                        label="sFTP Folder Path (optional)"
+                        label="sFTP Folder Path (Optional)"
                         placeholder=""
                         size="small"
                         fullWidth

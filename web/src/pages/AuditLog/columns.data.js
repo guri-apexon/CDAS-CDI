@@ -43,7 +43,7 @@ const columns = [
     // customCell: VersionCell,
     filterFunction: createStringSearchFilter("log_version"),
     filterComponent: TextFieldFilter,
-    width: 70,
+    width: "max-content",
     align: "right",
   },
   {
@@ -52,7 +52,7 @@ const columns = [
     sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("column_name"),
     filterComponent: TextFieldFilter,
-    width: 120,
+    width: "max-content",
   },
   {
     header: "Update Date",
