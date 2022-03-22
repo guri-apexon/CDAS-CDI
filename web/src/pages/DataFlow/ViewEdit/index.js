@@ -70,25 +70,15 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const history = useHistory();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const dataFlowData = useSelector((state) => state.dataFlow);
+  const dashboard = useSelector((state) => state.dashboard);
+  const dataSetCount = dashboard?.selectedDataFlow?.dataSets;
   const { selectedLocation, createTriggered, error, loading, dataFlowdetail } =
     dataFlowData;
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
   const [dataflowSource, setDataFlowSource] = useState({});
-  const [datasetCount, setDatasetCount] = useState("");
   const { dataflowId } = useParams();
-
-  useEffect(() => {
-    if (dashboard?.flowData?.length > 0 && dataflowId) {
-      const selectStudy = dashboard?.flowData?.filter((data) => {
-        return data?.dataFlowId === dataflowId;
-      });
-      if (selectStudy?.length > 0) {
-        setDatasetCount(selectStudy[0]?.dataSets);
-      }
-    }
-  }, []);
 
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
@@ -230,7 +220,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
                 breadcrumbItems={breadcrumbItems}
                 headerTitle={dataFlowdetail.name}
                 icon={<DataPackageIcon className={classes.contentIcon} />}
-                datasetsCount={datasetCount}
+                datasetsCount={dataSetCount}
               />
             </div>
             <Divider />
