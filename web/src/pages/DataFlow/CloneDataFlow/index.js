@@ -178,7 +178,7 @@ const CloneDataFlow = ({
             </Box>
           ) : (
             <Table
-              columns={columns}
+              columns={studyColumns}
               rows={studies}
               rowId="prot_id"
               hidePagination
