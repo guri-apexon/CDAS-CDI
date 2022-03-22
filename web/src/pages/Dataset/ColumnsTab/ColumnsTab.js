@@ -114,12 +114,13 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
         const newData = formatData(importedData, protocolnumber);
+        // eslint-disable-next-line no-unused-expressions
         if (newData.length > 1) {
           setFormattedData(newData);
           setIsImportReady(true);
         } else {
           messageContext.showErrorMessage(
-            `Protocol Number in file does not match ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
           );
           handleDelete();
         }

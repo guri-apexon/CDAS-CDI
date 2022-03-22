@@ -1,3 +1,4 @@
+@import "./styles/customscroll.scss";
 .App {
   text-align: center;
 }
@@ -161,7 +162,11 @@ label.table-checkbox {
     }
   }
 }
-
+.scrollable-table {
+  div[class*=" Table-scrollRoot-"] {
+    @extend .customscroll;
+  }
+}
 .customScrollbar::-webkit-scrollbar {
   background-color: #fff;
   width: 16px;
