@@ -60,16 +60,19 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
         });
         return false;
       }
-      // const validated = validateFields(namingConvention, compression);
-      // setNotMatchedType(!validated);
-      // if (!validated) return false;
-      // if (namingConvention === "" || compression === "") {
-      //   toast.showErrorMessage("Please fill all fields to proceed", "error");
-      //   return false;
-      // }
+      if (namingConvention !== "") {
+        const validated = validateFields(namingConvention, compression);
+        setNotMatchedType(!validated);
+        if (!validated) return false;
+        if (namingConvention === "" || compression === "") {
+          toast.showErrorMessage("Please fill all fields to proceed", "error");
+          return false;
+        }
+      }
       const reqBody = {
         compression_type: compression,
-        naming_convention: namingConvention,
+        naming_convention:
+          namingConvention === "" ? "No package" : namingConvention,
         package_password: packagePassword,
         sftp_path: sftpPath,
       };
