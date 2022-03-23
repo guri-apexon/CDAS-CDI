@@ -55,6 +55,14 @@ export const createDatasetColumns = (values, datasetid) => {
   };
 };
 
+export const updateDatasetColumns = (values, datasetid) => {
+  return {
+    type: SAVE_DATASET_COLUMNS,
+    values,
+    datasetid,
+  };
+};
+
 export const getDataSetDetail = (datasetid) => {
   return {
     type: GET_DATASET_DETAIL,
