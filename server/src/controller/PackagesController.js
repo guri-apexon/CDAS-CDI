@@ -10,7 +10,7 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
-    const {dataflowId} = req.params;
+    const { dataflowId } = req.params;
     let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}';`;
     if (searchParam) {
       searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage 
@@ -60,20 +60,31 @@ exports.addPackage = function (req, res) {
       dataflow_id,
       user_id,
     } = req.body;
+    let passwordStatus;
     if (study_id == null || dataflow_id == null || user_id == null) {
       return apiResponse.ErrorResponse(res, "Study not found");
     }
+
+    if (package_password) {
+      passwordStatus = "Yes";
+      helper.writeVaultData(`${dataflow_id}/${packageID}`, {
+        password: package_password,
+      });
+    } else {
+      passwordStatus = "No";
+    }
+
     const insertValues = [
       packageID,
       dataflow_id,
       compression_type,
       naming_convention,
       sftp_path,
-      package_password,
+      passwordStatus,
       "1",
       "N",
     ];
-    const query = `INSERT INTO ${schemaName}.datapackage(datapackageid, dataflowid, type, name, path, password, active, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
+    const query = `INSERT INTO ${schemaName}.datapackage(datapackageid, dataflowid, type, name, path, active, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`;
 
     DB.executeQuery(query, insertValues).then(async (response) => {
       const package = response.rows[0] || [];
