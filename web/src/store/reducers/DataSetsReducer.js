@@ -38,6 +38,28 @@ import {
   RESET_JDBC_FORM,
 } from "../../constants";
 
+const defaultData = {
+  active: true,
+  locationType: "SFTP",
+  delimiter: "COMMA",
+  fileType: "SAS",
+  encoding: "UTF-8",
+  escapeCharacter: "\\",
+  quote: `''`,
+  headerRowNumber: 1,
+  footerRowNumber: "",
+  overrideStaleAlert: 3,
+  rowDecreaseAllowed: 0,
+  loadType: "Cumulative",
+};
+
+const defaultDataSQL = {
+  locationType: "JDBC",
+  active: true,
+  customSQLQuery: "Yes",
+  dataType: "Cumulative",
+};
+
 export const initialState = {
   loading: false,
   isDatasetCreated: false,
@@ -46,24 +68,10 @@ export const initialState = {
   datasetColumns: [],
   datasetDetail: {},
   formDataSQL: {
-    locationType: "JDBC",
-    active: true,
-    customSQLQuery: "Yes",
-    dataType: "Cumulative",
+    ...defaultDataSQL,
   },
   formData: {
-    active: true,
-    locationType: "SFTP",
-    delimiter: "COMMA",
-    fileType: "SAS",
-    encoding: "UTF-8",
-    escapeCharacter: "\\",
-    quote: `''`,
-    headerRowNumber: 1,
-    footerRowNumber: "",
-    overrideStaleAlert: 3,
-    rowDecreaseAllowed: 0,
-    loadType: "Cumulative",
+    ...defaultData,
   },
   selectedDataset: {},
   defaultDelimiter: "COMMA",
@@ -100,27 +108,13 @@ const DataFlowReducer = (state = initialState, action) =>
 
       case RESET_FTP_FORM:
         newState.formData = {
-          active: true,
-          locationType: "SFTP",
-          delimiter: "COMMA",
-          fileType: "SAS",
-          encoding: "UTF-8",
-          escapeCharacter: "\\",
-          quote: `''`,
-          headerRowNumber: 1,
-          footerRowNumber: "",
-          overrideStaleAlert: 3,
-          rowDecreaseAllowed: 0,
-          loadType: "Cumulative",
+          ...defaultData,
         };
         break;
 
       case RESET_JDBC_FORM:
         newState.formDataSQL = {
-          locationType: "JDBC",
-          active: true,
-          customSQLQuery: "Yes",
-          dataType: "Cumulative",
+          ...defaultDataSQL,
         };
         break;
 

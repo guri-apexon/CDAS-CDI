@@ -99,9 +99,10 @@ exports.updateColumns = async (req, res) => {
         value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
         new Date(),
       ];
-      const inserted = await DB.executeQuery(updateQuery, body);
-      return inserted;
+      const insrted = await DB.executeQuery(updateQuery, body);
+      return insrted;
     });
+
     Promise.all(inserted).then((response) => {
       if (response[0] == "SUCCESS") {
         return apiResponse.successResponseWithData(
@@ -115,6 +116,27 @@ exports.updateColumns = async (req, res) => {
     });
   } catch (err) {
     Logger.error("catch :update set columns");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.deleteColumns = async (req, res) => {
+  try {
+    const columnId = req.params.columnId;
+    Logger.info({ message: "deleteColumns" });
+    const updateQuery = `UPDATE ${schemaName}.columndefinition del_flg=1 WHERE columnid=$1`;
+
+    DB.executeQuery(updateQuery, [columnId]).then((response) => {
+      const datasetColumns = response.rows || null;
+      return apiResponse.successResponseWithData(
+        res,
+        "Operation success",
+        datasetColumns
+      );
+    });
+  } catch (err) {
+    Logger.error("catch: deleteColumns");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
