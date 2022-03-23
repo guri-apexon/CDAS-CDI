@@ -159,6 +159,47 @@ const CloneDataFlow = ({
     },
   ];
 
+  const ModalComponent = () => {
+    return (
+      <div style={{ minHeight: "413px" }}>
+        <>
+          <Typography variant="caption">Search for a study</Typography>
+          <Search
+            // onKeyDown={searchTrigger}
+            style={{ marginTop: "0px" }}
+            placeholder="Search"
+            value={searchTxt}
+            onChange={(e) => searchTrigger(e, "study")}
+            fullWidth
+          />
+          {loading ? (
+            <Box display="flex" className="loader-container">
+              <ApolloProgress />
+            </Box>
+          ) : (
+            <Table
+              columns={studyColumns}
+              rows={studies}
+              rowId="prot_id"
+              hidePagination
+              maxHeight="40vh"
+              emptyProps={{
+                text: searchTxt === "" && !loading ? "" : "No data to display",
+              }}
+            />
+          )}
+        </>
+
+        {/* <Button variant="secondary" size="small">
+          Cancel
+        </Button>
+        <Button variant="secondary" size="small">
+          Back
+        </Button> */}
+      </div>
+    );
+  };
+
   const ActionCell = ({ row }) => {
     return (
       <div style={{ width: 68 }}>
@@ -433,6 +474,7 @@ const CloneDataFlow = ({
         ) : (
           <>
             <Grid item xs={12}>
+              <Typography variant="body2">Study Information</Typography>
               <span className="selected-study-table">
                 <Table
                   columns={selectedStudyColumns}
@@ -521,6 +563,10 @@ const CloneDataFlow = ({
               },
               {
                 size: "small",
+                variant:
+                  selectedStudy.dataflow && selectedStudy.study
+                    ? "primary"
+                    : "secondary",
                 disabled:
                   loading ||
                   (selectedStudy.dataflow && !dataFlowSource?.length),
@@ -547,7 +593,12 @@ const CloneDataFlow = ({
           className={classes.modal}
           buttonProps={[
             { size: "small", className: "left-btn" },
-            { label: "Back", size: "small", onClick: () => handleBack() },
+            {
+              variant: "secondary",
+              label: "Back",
+              size: "small",
+              onClick: () => handleBack(),
+            },
           ]}
           id="studymodal"
         >
