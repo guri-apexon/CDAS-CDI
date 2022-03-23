@@ -159,7 +159,9 @@ export default function CDTList() {
   }, [loading, cdtList]);
 
   useEffect(() => {
-    if (cdtList.length < 1) getData();
+    if (cdtList.length < 1) {
+      getData();
+    }
   }, []);
 
   const handleStatusChange = async (e, dkId, currStatus) => {
@@ -170,7 +172,6 @@ export default function CDTList() {
     } else {
       const update = await inActivateDK(dkId, 0);
       if (update) {
-        // console.log(update.data);
         if (update.status === 0) {
           messageContext.showErrorMessage(update.data);
         } else {
