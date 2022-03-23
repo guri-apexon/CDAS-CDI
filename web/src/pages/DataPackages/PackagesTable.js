@@ -24,7 +24,7 @@ import { updateDSState } from "../../store/actions/DataFlowAction";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
-    <div style={{ width: 12 }}>
+    <div style={{ width: 12, marginLeft: "5px" }}>
       <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
         <IconButton
           id="expand"
@@ -86,7 +86,7 @@ const PackagesList = ({ data, userInfo }) => {
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
-        <span customtooltip="Add Dataset">
+        <span customtooltip="Add dataset" className="add-dataset">
           <RoundPlusSvg
             className="add-dataset-btn"
             onClick={() =>
@@ -204,7 +204,11 @@ const PackagesList = ({ data, userInfo }) => {
 
     return (
       <div className="flex">
-        <EllipsisVertical fontSize="small" onClick={openAction} />
+        <EllipsisVertical
+          fontSize="small"
+          onClick={openAction}
+          style={{ cursor: "pointer" }}
+        />
         <Menu
           id="tableMenu"
           anchorEl={anchorEl}
