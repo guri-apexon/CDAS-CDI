@@ -84,7 +84,7 @@ exports.addPackage = function (req, res) {
       "1",
       "N",
     ];
-    const query = `INSERT INTO ${schemaName}.datapackage(datapackageid, dataflowid, type, name, path, active, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`;
+    const query = `INSERT INTO ${schemaName}.datapackage(datapackageid, dataflowid, type, name, path, password, active, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
 
     DB.executeQuery(query, insertValues).then(async (response) => {
       const package = response.rows[0] || [];

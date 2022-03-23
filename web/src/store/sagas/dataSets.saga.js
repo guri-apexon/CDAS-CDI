@@ -164,9 +164,12 @@ export function* saveDatasetColumns(action) {
 export function* fetchDatasetDetail(action) {
   try {
     const fetchSBData = yield call(
-      axios.get,
+      axios.post,
       `${baseURL}/${DATASETAPI}/detail/${action.datasetid}`,
-      {}
+      {
+        selectedDFId: action.selectedDFId,
+        datapackageid: action.datapackageid,
+      }
     );
     yield put({
       type: FETCH_DATASET_DETAIL_SUCCESS,

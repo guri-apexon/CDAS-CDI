@@ -148,8 +148,8 @@ const Dataset = () => {
       dispatch(resetFTP());
       dispatch(resetJDBC());
     } else {
-      dispatch(getDataSetDetail(datasetid));
-      dispatch(getDatasetColumns(datasetid));
+      dispatch(getDataSetDetail(selectedDFId, datapackageid, datasetid));
+      dispatch(getDatasetColumns(selectedDFId, datapackageid, datasetid));
     }
   }, [datasetid]);
 
@@ -231,6 +231,7 @@ const Dataset = () => {
         ...formValue,
         datapackageid,
         dfTestFlag: testflag,
+        selectedDFId,
       };
       if (data.datasetid) {
         dispatch(updateDatasetData(data));
