@@ -22,7 +22,7 @@ import { getUserInfo, isSftp, validateFields } from "../../../../utils";
 //   getPackagesList,
 // } from "../../store/actions/DataPackageAction";
 
-const DataPackage = ({ payloadBack, toast, locType }, ref) => {
+const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
   const [showForm, setShowForm] = useState(true);
   const [configShow, setConfigShow] = useState(false);
   const [compression, setCompression] = useState("not_compressed");
@@ -52,19 +52,27 @@ const DataPackage = ({ payloadBack, toast, locType }, ref) => {
     // eslint-disable-next-line consistent-return
     submitForm: () => {
       if (disabled) {
-        payloadBack(null);
+        payloadBack({
+          compression_type: "",
+          naming_convention: "No package",
+          package_password: "",
+          sftp_path: "",
+        });
         return false;
       }
-      const validated = validateFields(namingConvention, compression);
-      setNotMatchedType(!validated);
-      if (!validated) return false;
-      if (namingConvention === "" || compression === "") {
-        toast.showErrorMessage("Please fill all fields to proceed", "error");
-        return false;
+      if (namingConvention !== "") {
+        const validated = validateFields(namingConvention, compression);
+        setNotMatchedType(!validated);
+        if (!validated) return false;
+        if (namingConvention === "" || compression === "") {
+          toast.showErrorMessage("Please fill all fields to proceed", "error");
+          return false;
+        }
       }
       const reqBody = {
         compression_type: compression,
-        naming_convention: namingConvention,
+        naming_convention:
+          namingConvention === "" ? "No package" : namingConvention,
         package_password: packagePassword,
         sftp_path: sftpPath,
       };
@@ -73,7 +81,7 @@ const DataPackage = ({ payloadBack, toast, locType }, ref) => {
   }));
 
   useEffect(() => {
-    // setDisabled(locType && !isSftp(locType));
+    setDisabled(locType && !isSftp(locType));
   }, [locType]);
   return (
     <div className="data-packages">

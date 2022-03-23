@@ -14,7 +14,7 @@ import Divider from "apollo-react/components/Divider";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import Header from "../../components/DataFlow/Header";
 import "./DataFlow.scss";
-import DataFlowForm from "./DataFlowForm";
+import DataFlowForm from "./ViewEdit/DataFlowForm";
 import {
   getVendorsData,
   updateSelectedLocation,
@@ -67,8 +67,11 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
+  const { dataflowId } = useParams();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const dataFlowData = useSelector((state) => state.dataFlow);
+  const dashboard = useSelector((state) => state.dashboard);
+  const dataSetCount = dashboard?.selectedDataFlow?.dataSets;
   const { selectedLocation, loading, error } = dataFlowData;
   const { createTriggered, upsertLoading } = useSelector(
     (state) => state.cdiadmin
@@ -207,7 +210,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
                 breadcrumbItems={breadcrumbItems}
                 headerTitle="Virologicclinic-IIBR12-001-Other"
                 icon={<DataPackageIcon className={classes.contentIcon} />}
-                datasetsCount={6}
+                datasetsCount={dataSetCount}
               />
             </div>
             <Divider />

@@ -40,6 +40,7 @@ import {
 } from "../../../services/ApiServices";
 import Clone from "../../DataFlow/CloneDataFlow";
 import {
+  SelectedDataflow,
   updateSelectedDataflow,
   updateSelectedStudy,
 } from "../../../store/actions/DashboardAction";
@@ -228,7 +229,8 @@ export default function DataflowTab({ updateData }) {
     setShowSyncNow(false);
   };
 
-  const viewAuditLogAction = (e) => {
+  const viewAuditLogAction = (e, selectedDataFlow) => {
+    dispatch(SelectedDataflow(selectedDataFlow));
     history.push(`/dashboard/audit-logs/${e}`);
   };
 
@@ -252,8 +254,9 @@ export default function DataflowTab({ updateData }) {
     }
   };
 
-  const handleLink = (dataFlowId) => {
+  const handleLink = (dataFlowId, dataFlow) => {
     dispatch(updateSelectedDataflow(dataFlowId));
+    dispatch(SelectedDataflow(dataFlow));
     history.push(`/dashboard/dataflow-management/${dataFlowId}`);
   };
 
@@ -261,7 +264,9 @@ export default function DataflowTab({ updateData }) {
     const rowValue = row[accessor];
     const { dataFlowId } = row;
     if (rowValue) {
-      return <Link onClick={() => handleLink(dataFlowId)}>{rowValue}</Link>;
+      return (
+        <Link onClick={() => handleLink(dataFlowId, row)}>{rowValue}</Link>
+      );
     }
     return <></>;
   };
@@ -275,7 +280,7 @@ export default function DataflowTab({ updateData }) {
     const menuItems = [
       {
         text: "View audit log",
-        onClick: () => viewAuditLogAction(dataFlowId),
+        onClick: () => viewAuditLogAction(dataFlowId, row),
       },
       {
         text: activeText,
