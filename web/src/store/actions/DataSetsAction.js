@@ -55,25 +55,21 @@ export const createDatasetColumns = (values, datasetid) => {
   };
 };
 
-export const updateDatasetColumns = (values, datasetid) => {
-  return {
-    type: SAVE_DATASET_COLUMNS,
-    values,
-    datasetid,
-  };
-};
-
-export const getDataSetDetail = (datasetid) => {
+export const getDataSetDetail = (dfId, dpId, dsId) => {
   return {
     type: GET_DATASET_DETAIL,
-    datasetid,
+    dsId,
+    dfId,
+    dpId,
   };
 };
 
-export const getDatasetColumns = (datasetid) => {
+export const getDatasetColumns = (dfId, dpId, dsId) => {
   return {
     type: GET_DATASET_COLUMNS,
-    datasetid,
+    dfId,
+    dpId,
+    dsId,
   };
 };
 

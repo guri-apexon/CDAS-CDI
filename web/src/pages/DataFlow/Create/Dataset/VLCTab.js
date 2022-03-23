@@ -127,7 +127,12 @@ export default function VLCTab() {
       >
         Filter
       </Button>
-      <IconMenuButton id="actions-2" menuItems={menuItems} size="small">
+      <IconMenuButton
+        style={{ marginLeft: "10px" }}
+        id="actions-2"
+        menuItems={menuItems}
+        size="small"
+      >
         <EllipsisVertical />
       </IconMenuButton>
     </div>

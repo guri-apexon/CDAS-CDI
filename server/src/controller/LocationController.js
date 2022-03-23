@@ -137,12 +137,16 @@ exports.getLocationList = function (req, res) {
     dbQuery
       .then((response) => {
         const locations = response.rows || [];
-        // const withCredentials = locations.map(async (d) => {
-        //   const credentials = await helper.readVaultData(d.src_loc_id);
-        //   d.usr_nm = credentials.user;
-        //   d.pswd = credentials.password;
-        //   return d;
-        // });
+        const withCredentials = locations.map((d) => {
+          // const credentials = await helper.readVaultData(d.src_loc_id);
+          // if (credentials) {
+          //   d.usr_nm = credentials.user;
+          //   d.pswd = credentials.password;
+          // }
+          d.usr_nm = "Dummy";
+          d.pswd = "DummyPassword";
+          return d;
+        });
         return apiResponse.successResponseWithData(res, "Operation success", {
           records: locations,
           totalSize: response.rowCount,
@@ -167,11 +171,11 @@ exports.getLocationById = async function (req, res) {
     Logger.info({ message: "locationList" });
     const response = await DB.executeQuery(searchQuery, [id]);
     if (response.rows[0]) {
-      // const credentials = await helper.readVaultData(id);
+      const credentials = await helper.readVaultData(id);
       return apiResponse.successResponseWithData(res, "Operation success", {
         ...response.rows[0],
-        // usr_nm: credentials.user,
-        // pswd: credentials.password,
+        usr_nm: credentials.user,
+        pswd: credentials.password,
       });
     }
     return apiResponse.successResponseWithData(res, "Operation success", null);
@@ -204,13 +208,11 @@ exports.updateLocationData = async function (req, res) {
       values.locationType || null,
       values.ipServer || null,
       values.port || null,
-
       values.dataStructure || null,
       values.active == true ? 1 : 0,
       values.externalSytemName,
       values.locationName || null,
       helper.getCurrentTime(),
-
       values.dbName || null,
       values.connURL || null,
       values.locationID,
@@ -279,11 +281,11 @@ exports.saveLocationData = async function (req, res) {
 
     DB.executeQuery(searchQuery, body)
       .then(async (response) => {
-        // const vaultData = {
-        //   user: values.userName || null,
-        //   password: values.password || null,
-        // };
-        // await helper.writeVaultData(newId, vaultData);
+        const vaultData = {
+          user: values.userName || null,
+          password: values.password || null,
+        };
+        await helper.writeVaultData(newId, vaultData);
 
         return apiResponse.successResponseWithData(
           res,
