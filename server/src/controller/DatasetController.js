@@ -246,19 +246,16 @@ exports.getVLCData = async (req, res) => {
 exports.getDatasetDetail = async (req, res) => {
   try {
     const datasetid = req.params.datasetid;
-    const { selectedDFId, datapackageid } = req.body;
-    Logger.info({ message: "getDatasetDetail" });
     const query = `SELECT * from ${schemaName}.dataset WHERE datasetid = $1`;
+    Logger.info({ message: "getDatasetDetail" });
     const datasetDetail = await DB.executeQuery(query, [datasetid]);
-    const ds = datasetDetail.rows[0];
-    if (ds.file_pwd === "Yes") {
-      ds.password = await helper.readVaultData(
-        `${selectedDFId}/${datapackageid}/${datasetid}`
-      );
-    }
-    return apiResponse.successResponseWithData(res, "Operation success", ds);
+
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      datasetDetail.rows[0]
+    );
   } catch (err) {
-    //throw error in json response with status 500.
     console.log(err);
     Logger.error("catch :getDatasetDetail");
     return apiResponse.ErrorResponse(res, err);

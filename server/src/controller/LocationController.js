@@ -110,7 +110,7 @@ exports.searchLocationList = function (req, res) {
 exports.getLocationList = function (req, res) {
   try {
     let type = req.query.type || null;
-    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
+    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label, usr_nm, pswd, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
     let searchQuery = `SELECT ${select} from ${schemaName}.source_location where active=1 order by label asc`;
     let dbQuery = DB.executeQuery(searchQuery);
     if (type) {
@@ -137,14 +137,14 @@ exports.getLocationList = function (req, res) {
     dbQuery
       .then((response) => {
         const locations = response.rows || [];
-        const withCredentials = locations.map(async (d) => {
-          const credentials = await helper.readVaultData(d.src_loc_id);
-          d.usr_nm = credentials.user;
-          d.pswd = credentials.password;
-          return d;
-        });
+        // const withCredentials = locations.map(async (d) => {
+        //   const credentials = await helper.readVaultData(d.src_loc_id);
+        //   d.usr_nm = credentials.user;
+        //   d.pswd = credentials.password;
+        //   return d;
+        // });
         return apiResponse.successResponseWithData(res, "Operation success", {
-          records: withCredentials,
+          records: locations,
           totalSize: response.rowCount,
         });
       })
@@ -220,11 +220,11 @@ exports.updateLocationData = async function (req, res) {
     DB.executeQuery(searchQuery, body)
       .then(async (response) => {
         await updateDataflowVersion(values.locationID, values, userId);
-        // const vaultData = {
-        //   user: values.userName || null,
-        //   password: values.password || null,
-        // };
-        // await helper.writeVaultData(values.locationID, vaultData);
+        const vaultData = {
+          user: values.userName || null,
+          password: values.password || null,
+        };
+        await helper.writeVaultData(values.locationID, vaultData);
         return apiResponse.successResponseWithData(
           res,
           "Operation success",
