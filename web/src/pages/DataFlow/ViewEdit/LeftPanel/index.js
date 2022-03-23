@@ -76,7 +76,7 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
   // const dataFlowData = useSelector((state) => state.dataFlow);
   const dashboard = useSelector((state) => state.dashboard);
   const { description, vendorname, testflag, active } = dataflowSource;
-  const { loading } = packageData;
+  const { loading, packagesList } = packageData;
   const userInfo = getUserInfo();
   const location = useLocation();
   const { selectedDFId, selectedCard } = dashboard;
@@ -200,14 +200,18 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
       <div className="packages-list customScrollbar">
         {packageData ? (
           <div className="list-container">
-            {loading ? (
+            {loading && (
               <Box display="flex" className="loader-container">
                 <ApolloProgress />
               </Box>
-            ) : (
+            )}
+            {!loading && (
               <>
                 <Typography variant="body2" style={{ marginLeft: 10 }}>
-                  {`${packageData.packagesList.length} Data Packages`}
+                  {packagesList.length === 1 &&
+                    `${packagesList.length}  Data Package`}
+                  {packagesList.length >= 1 &&
+                    `${packagesList.length} Data Packages`}
                 </Typography>
                 <PackagesList userInfo={userInfo} data={packageData} />
               </>

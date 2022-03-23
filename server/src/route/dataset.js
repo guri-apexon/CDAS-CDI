@@ -4,7 +4,7 @@ const DSIngestionReportController = require("../controller/DSIngestionReportCont
 
 var router = express.Router();
 
-router.get("/detail/:datasetid", DatasetController.getDatasetDetail);
+router.post("/detail/:datasetid", DatasetController.getDatasetDetail);
 router.post("/update", DatasetController.updateDatasetData);
 router.post("/create", DatasetController.saveDatasetData);
 router.post("/getVLCData", DatasetController.getVLCData);

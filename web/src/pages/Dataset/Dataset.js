@@ -149,8 +149,8 @@ const Dataset = () => {
       dispatch(resetFTP());
       dispatch(resetJDBC());
     } else {
-      dispatch(getDataSetDetail(datasetid));
-      dispatch(getDatasetColumns(datasetid));
+      dispatch(getDataSetDetail(selectedDFId, datapackageid, datasetid));
+      dispatch(getDatasetColumns(selectedDFId, datapackageid, datasetid));
     }
   }, [datasetid]);
 
@@ -304,40 +304,41 @@ const Dataset = () => {
                     : "Dataset name"}
                 </Typography>
               </div>
-              {(!value || value === 0) && (
-                <ButtonGroup
-                  alignItems="right"
-                  buttonProps={[
-                    {
-                      label: "Cancel",
-                      onClick: () => closeForm(),
-                    },
-                    {
-                      label: "Save",
-                      onClick: () => submitForm(),
-                    },
-                  ]}
-                />
-              )}
-              {dataSettabs && (
-                <Tabs
-                  value={value}
-                  onChange={handleChangeTab}
-                  size="small"
-                  style={{ marginBottom: "-19px" }}
-                  truncate
-                >
-                  {dataSettabs.map((tab) => (
-                    <Tab
-                      label={tab}
-                      disabled={!columnsActive && tab === "Dataset Columns"}
-                    />
-                  ))}
-                </Tabs>
-              )}
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                {dataSettabs && (
+                  <Tabs
+                    value={value}
+                    onChange={handleChangeTab}
+                    size="small"
+                    truncate
+                  >
+                    {dataSettabs.map((tab) => (
+                      <Tab
+                        label={tab}
+                        disabled={!columnsActive && tab === "Dataset Columns"}
+                      />
+                    ))}
+                  </Tabs>
+                )}
+                {(!value || value === 0) && (
+                  <ButtonGroup
+                    alignItems="right"
+                    buttonProps={[
+                      {
+                        label: "Cancel",
+                        onClick: () => closeForm(),
+                      },
+                      {
+                        label: "Save",
+                        onClick: () => submitForm(),
+                      },
+                    ]}
+                  />
+                )}
+              </div>
             </div>
 
-            <div style={{ padding: 20, marginTop: 20 }}>
+            <div style={{ padding: 20 }}>
               {value === 0 && (
                 <>
                   {console.log("ltype", locationType)}
