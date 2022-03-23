@@ -34,6 +34,7 @@ exports.saveDatasetColumns = async (req, res) => {
     const values = req.body;
     const insertQuery = `INSERT into ${schemaName}.columndefinition (columnid, "VARIABLE", datasetid, name, position, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
     Logger.info({ message: "storeDatasetColumns" });
+    const curDate = helper.getCurrentTime();
 
     const inserted = await values.map(async (value) => {
       const columnId = helper.generateUniqueID();
@@ -51,8 +52,8 @@ exports.saveDatasetColumns = async (req, res) => {
         value.maxLength.trim() || null,
         value.format.trim() || null,
         value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
-        helper.getCurrentTime(),
-        helper.getCurrentTime(),
+        curDate,
+        curDate,
       ];
       const insrted = await DB.executeQuery(insertQuery, body);
       return insrted;
