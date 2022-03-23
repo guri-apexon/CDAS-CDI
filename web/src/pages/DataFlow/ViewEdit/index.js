@@ -70,6 +70,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const history = useHistory();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const dataFlowData = useSelector((state) => state.dataFlow);
+  const dashboardData = useSelector((state) => state.dashboard);
+  const dataSetCount = dashboardData?.selectedDataFlow?.dataSets;
   const { selectedLocation, createTriggered, error, loading, dataFlowdetail } =
     dataFlowData;
   const [locType, setLocType] = useState("SFTP");
@@ -218,6 +220,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
                 breadcrumbItems={breadcrumbItems}
                 headerTitle={dataFlowdetail.name}
                 icon={<DataPackageIcon className={classes.contentIcon} />}
+                datasetsCount={dataSetCount}
               />
             </div>
             <Divider />
