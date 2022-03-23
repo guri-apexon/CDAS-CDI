@@ -165,10 +165,10 @@ export function* fetchDatasetDetail(action) {
   try {
     const fetchSBData = yield call(
       axios.post,
-      `${baseURL}/${DATASETAPI}/detail/${action.datasetid}`,
+      `${baseURL}/${DATASETAPI}/detail/${action.dsId}`,
       {
-        selectedDFId: action.selectedDFId,
-        datapackageid: action.datapackageid,
+        selectedDFId: action.dfId,
+        datapackageid: action.dpId,
       }
     );
     yield put({
