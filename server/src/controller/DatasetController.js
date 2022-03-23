@@ -101,7 +101,28 @@ exports.saveDatasetData = async (req, res) => {
       values.loadType == "Incremental" ? "Y" : "N",
     ];
 
-    const jsonData = JSON.stringify(body);
+    const conf_Data = {
+      datasetId: datasetId,
+      datapackageid: values.datapackageid,
+      mnemonic: values.datasetName,
+      type: values.fileType,
+      charset: values.encoding || null,
+      delimiter: values.delimiter || null,
+      escapecode: values.escapeCharacter || null,
+      quote: values.quote || null,
+      headerrownumber: values.headerRowNumber || 0,
+      footerrownumber: values.footerRowNumber || 0,
+      active: true ? 1 : 0,
+      naming_convention: values.fileNamingConvention || null,
+      path: values.folderPath || null,
+      datakindid: values.clinicalDataType[0],
+      data_freq: values.transferFrequency || null,
+      ovrd_stale_alert: values.overrideStaleAlert || null,
+      rowdecreaseallowed: values.rowDecreaseAllowed || 0,
+      incremental: "Incremental" ? "Y" : "N",
+    };
+
+    const jsonData = JSON.stringify(conf_Data);
 
     const packageData = await DB.executeQuery(packageQuery, [
       values.datapackageid,
@@ -168,7 +189,7 @@ async function updateSQLDataset(req, res, values) {
 exports.updateDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    console.log(values);
+    // console.log(values);
 
     Logger.info({ message: "update Dataset" });
     const isExist = await checkNameExists(
@@ -211,7 +232,21 @@ exports.updateDatasetData = async (req, res) => {
       rowdecreaseallowed: values.rowDecreaseAllowed,
       incremental: "Incremental" ? "Y" : "N",
     };
-    const jsonData = JSON.stringify(requestData);
+
+    const jsonObj = requestData;
+    jsonObj["datasetid"] = values.datasetid;
+    jsonObj["datapackageid"] = values.datapackageid;
+
+    // const confData2 = Object.entries(jsonObj);
+    // // const conData = confData2.reverse();
+    // const confData = Object.fromEntries(confData2.reverse());
+    const jsonData = JSON.stringify(jsonObj);
+    // {
+    //   datasetid: values.datasetid,
+    //   datapackageid: values.datapackageid,
+    // };
+
+    // const conf_data = dataSetId.jsonData.push();
 
     const packageData = await DB.executeQuery(packageQuery, [
       values.datapackageid,
