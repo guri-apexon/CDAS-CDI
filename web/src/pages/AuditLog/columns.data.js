@@ -47,10 +47,7 @@ const columns = [
     align: "right",
   },
   {
-    header: " ",
-  },
-  {
-    header: "Column Name",
+    header: <span style={{ marginLeft: 10 }}>Column Name</span>,
     accessor: "column_name",
     sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("column_name"),

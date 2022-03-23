@@ -86,7 +86,7 @@ const PackagesList = ({ data, userInfo }) => {
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
-        <span customtooltip="Add dataset">
+        <span customtooltip="Add dataset" className="add-dataset">
           <RoundPlusSvg
             className="add-dataset-btn"
             onClick={() =>
