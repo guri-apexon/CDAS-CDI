@@ -47,6 +47,9 @@ const columns = [
     align: "right",
   },
   {
+    header: " ",
+  },
+  {
     header: "Column Name",
     accessor: "column_name",
     sortFunction: compareStrings,
