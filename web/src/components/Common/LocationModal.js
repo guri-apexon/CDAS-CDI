@@ -1,7 +1,14 @@
+/* eslint-disable consistent-return */
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from "react";
-import { reduxForm, submit, change, formValueSelector } from "redux-form";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import {
+  reduxForm,
+  submit,
+  change,
+  formValueSelector,
+  getFormValues,
+} from "redux-form";
 import { useDispatch, connect, useSelector } from "react-redux";
 import compose from "@hypnosphi/recompose/compose";
 import makeStyles from "@material-ui/core/styles/makeStyles";
@@ -28,7 +35,10 @@ import {
   saveLocationData,
   removeErrMessage,
 } from "../../store/actions/CDIAdminAction";
-import { checkLocationExistsInDataFlow } from "../../services/ApiServices";
+import {
+  checkLocationExistsInDataFlow,
+  testConnectionFSR,
+} from "../../services/ApiServices";
 import { locationExistInDFMsg } from "../../constants";
 
 const styles = {
@@ -51,18 +61,16 @@ const useStyles = makeStyles(styles);
 
 const LocationForm = (props) => {
   const classes = useStyles();
-  const { locType, selectedHost, selectedPort, selectedDB, isActive } = props;
-  const genConnectionURL = () => {
-    const connurl = generateConnectionURL(
-      locType,
-      selectedHost,
-      selectedPort,
-      selectedDB
-    );
-    if (connurl) {
-      props.generateUrl(connurl);
-    }
-  };
+  const {
+    locType,
+    selectedHost,
+    selectedPort,
+    selectedDB,
+    isActive,
+    formState,
+    loading,
+  } = props;
+
   return (
     <form onSubmit={props.handleSubmit}>
       <div className={classes.section}>
@@ -72,6 +80,7 @@ const LocationForm = (props) => {
               fullWidth
               InputProps={{ readOnly: props.locationViewMode }}
               name="locationName"
+              size="small"
               label="Location Name (Alias)"
             />
           </Grid>
@@ -94,6 +103,8 @@ const LocationForm = (props) => {
               label="External System Name"
               InputProps={{ readOnly: props.locationViewMode }}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
+              canDeselect={false}
+              size="small"
               fullWidth
             >
               {extSysName?.map((type) => (
@@ -107,7 +118,9 @@ const LocationForm = (props) => {
             <ReduxFormSelect
               name="dataStructure"
               label="Data Structure"
+              size="small"
               InputProps={{ readOnly: props.locationViewMode }}
+              canDeselect={false}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
               fullWidth
             >
@@ -122,8 +135,17 @@ const LocationForm = (props) => {
             <ReduxFormSelect
               name="locationType"
               label="Location Type"
+              size="small"
               InputProps={{ readOnly: props.locationViewMode }}
-              onChange={() => genConnectionURL()}
+              canDeselect={false}
+              onChange={(v) =>
+                props.generateUrl(
+                  v.target.value,
+                  selectedHost,
+                  selectedPort,
+                  selectedDB
+                )
+              }
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
               fullWidth
             >
@@ -139,13 +161,21 @@ const LocationForm = (props) => {
           <Grid item md={5}>
             <ReduxFormTextField
               fullWidth
+              size="small"
               name="ipServer"
               label={
                 locType === "SFTP" || locType === "FTPS"
                   ? "IP Server"
                   : "Database Host Name"
               }
-              onBlur={() => genConnectionURL()}
+              onChange={(v) =>
+                props.generateUrl(
+                  locType,
+                  v.target.value,
+                  selectedPort,
+                  selectedDB
+                )
+              }
               InputProps={{ readOnly: props.locationViewMode }}
             />
           </Grid>
@@ -156,13 +186,21 @@ const LocationForm = (props) => {
               <Grid item md={5}>
                 <ReduxFormTextField
                   fullWidth
+                  size="small"
                   name="port"
                   label="Port"
                   inputProps={{
                     maxLength: 5,
                     readOnly: props.locationViewMode,
                   }}
-                  onBlur={() => genConnectionURL()}
+                  onChange={(v) =>
+                    props.generateUrl(
+                      locType,
+                      selectedHost,
+                      v.target.value,
+                      selectedDB
+                    )
+                  }
                 />
               </Grid>
             </Grid>
@@ -172,7 +210,15 @@ const LocationForm = (props) => {
                   fullWidth
                   name="dbName"
                   label="Database Name"
-                  onBlur={() => genConnectionURL()}
+                  size="small"
+                  onChange={(v) =>
+                    props.generateUrl(
+                      locType,
+                      selectedHost,
+                      selectedPort,
+                      v.target.value
+                    )
+                  }
                   InputProps={{ readOnly: props.locationViewMode }}
                 />
               </Grid>
@@ -184,6 +230,7 @@ const LocationForm = (props) => {
             <ReduxFormTextField
               fullWidth
               name="userName"
+              size="small"
               label="Username"
               InputProps={{ readOnly: props.locationViewMode }}
             />
@@ -191,6 +238,7 @@ const LocationForm = (props) => {
           <Grid item md={5}>
             <ReduxFormTextField
               type="password"
+              size="small"
               fullWidth
               name="password"
               label={
@@ -206,7 +254,12 @@ const LocationForm = (props) => {
           </Grid>
           {!props.locationViewMode && (
             <Grid item md={2} style={{ paddingTop: 54 }}>
-              <Button variant="secondary" size="small">
+              <Button
+                variant="secondary"
+                size="small"
+                disabled={loading}
+                onClick={() => props.testConnection(formState)}
+              >
                 Test Connection
               </Button>
             </Grid>
@@ -216,6 +269,7 @@ const LocationForm = (props) => {
           fullWidth
           name="connURL"
           label="Connection URL"
+          size="small"
           InputProps={{
             readOnly: true,
           }}
@@ -228,6 +282,10 @@ const LocationForm = (props) => {
 const LocationModal = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const locationForm = useRef();
+  const selector = formValueSelector("AddLocationForm");
+  const [connectionResponse, setConnectionResponse] = useState(null);
+  const [loadingConn, setLoadingConn] = useState(false);
   const { error, success, createTriggered } = useSelector(
     (state) => state.cdiadmin
   );
@@ -266,15 +324,76 @@ const LocationModal = (props) => {
   if (!props.locationEditMode && !props.locationViewMode) {
     dispatch(change("AddLocationForm", "active", true));
     dispatch(change("AddLocationForm", "dataStructure", "tabular"));
-    dispatch(change("AddLocationForm", "locationType", "SFTP"));
+    // dispatch(change("AddLocationForm", "locationType", "SFTP"));
   }
-  const generateUrl = (v) => {
-    if (v) {
-      dispatch(change("AddLocationForm", "connURL", v));
+  const generateUrl = (locType, selectedHost, selectedPort, selectedDB) => {
+    const connurl = generateConnectionURL(
+      locType,
+      selectedHost,
+      selectedPort,
+      selectedDB
+    );
+    if (connurl) {
+      dispatch(change("AddLocationForm", "connURL", connurl));
+    }
+  };
+  const showLocationMessage = (msg, type = "error") => {
+    const modalObj = {
+      text: msg,
+      type,
+    };
+    setConnectionResponse(modalObj);
+    setTimeout(() => {
+      setConnectionResponse(null);
+    }, 2500);
+  };
+  const testConnection = async (formState) => {
+    const { userName, password, ipServer, port, locationType, dbName } =
+      formState;
+    if (userName === "" || password === "") {
+      showLocationMessage("Please enter username and password to continue");
+      return false;
+    }
+    let reqBody = {
+      username: userName || "",
+      password: password || "",
+      host: ipServer || "",
+      endPoint: "/checkconnection/sftp",
+    };
+    if (locationType) {
+      if (locationType !== "SFTP" && locationType !== "FTPS") {
+        reqBody = {
+          ...reqBody,
+          endPoint: "/checkconnection/jdbc",
+          databaseName: dbName || "",
+          userId: "",
+          database: locationType.toUpperCase(),
+          port: port ? port : "",
+        };
+      }
+    }
+    setLoadingConn(true);
+    const result = await testConnectionFSR(reqBody);
+    console.log("result", result);
+    setLoadingConn(false);
+    if (result.status === "OK") {
+      showLocationMessage(
+        result.message || "Operation Successfully",
+        "success"
+      );
+    } else {
+      showLocationMessage(result.message || "Something went wrong");
     }
   };
   return (
     <>
+      {connectionResponse && (
+        <Banner
+          variant={connectionResponse.type}
+          open={true}
+          message={connectionResponse.text}
+        />
+      )}
       {(error || success || existErr) && (
         <Banner
           variant={success ? "success" : "error"}
@@ -307,17 +426,20 @@ const LocationModal = (props) => {
         message={
           // eslint-disable-next-line react/jsx-wrap-multilines
           <ReduxForm
+            ref={locationForm}
             onSubmit={onSubmit}
             locationViewMode={props.locationViewMode}
             locationEditMode={props.locationEditMode}
-            generateUrl={(v) => generateUrl(v)}
+            generateUrl={generateUrl}
+            testConnection={testConnection}
+            loading={loadingConn}
           />
         }
         className={classes.modal}
         buttonProps={[
-          { label: props.locationViewMode ? "" : "Cancel" },
+          { label: "Cancel" },
           {
-            label: props.locationViewMode ? "OK" : "Save",
+            label: props.locationViewMode ? "Edit" : "Save",
             onClick: () =>
               props.locationViewMode
                 ? props.changeLocationEditMode(true)
@@ -330,23 +452,21 @@ const LocationModal = (props) => {
   );
 };
 
-const form = compose(
+const selector = formValueSelector("AddLocationForm");
+const ReduxForm = compose(
   reduxForm({
     form: "AddLocationForm",
-    validate: locationModalValidate,
     enableReinitialize: true,
-  })
+    validate: locationModalValidate,
+  }),
+  connect((state) => ({
+    isActive: selector(state, "active"),
+    selectedHost: selector(state, "ipServer"),
+    selectedPort: selector(state, "port"),
+    selectedDB: selector(state, "dbName"),
+    locType: selector(state, "locationType"),
+    formState: getFormValues("AddLocationForm")(state),
+  }))
 )(LocationForm);
-
-const selector = formValueSelector("AddLocationForm");
-const ReduxForm = connect((state) => ({
-  enableReinitialize: true,
-  isActive: selector(state, "active"),
-  selectedHost: selector(state, "ipServer"),
-  selectedPort: selector(state, "port"),
-  selectedDB: selector(state, "dbName"),
-  locType: selector(state, "locationType"),
-  saveLocationData,
-}))(form);
 
 export default LocationModal;

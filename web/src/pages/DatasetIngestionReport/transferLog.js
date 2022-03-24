@@ -1,157 +1,306 @@
+/* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
+import { useParams } from "react-router";
+import moment from "moment";
 import Button from "apollo-react/components/Button";
 import Link from "apollo-react/components/Link";
-import PlusIcon from "apollo-react-icons/Plus";
+import DownloadIcon from "apollo-react-icons/Download";
 import FilterIcon from "apollo-react-icons/Filter";
+import FileIcon from "apollo-react-icons/File";
+import Check from "apollo-react-icons/Check";
+import FileZipIcon from "apollo-react-icons/FileZip";
+import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
 import Table, {
   createStringSearchFilter,
   compareStrings,
   compareNumbers,
+  compareDates,
 } from "apollo-react/components/Table";
-import Tooltip from "apollo-react/components/Tooltip";
-import Switch from "apollo-react/components/Switch";
-import LocationModal from "../../components/Common/LocationModal";
-import { getLocationsData } from "../../store/actions/CDIAdminAction";
+import Search from "apollo-react/components/Search";
+import { getTransferLog } from "../../store/actions/IngestionReportAction";
 import {
-  TextFieldFilter,
-  createAutocompleteFilter,
   createStringArraySearchFilter,
   createSourceFromKey,
-  createStatusArraySearchFilter,
+  createAutocompleteFilter,
+  secondsToHms,
+  DateFilter,
+  dateFilterCustom,
 } from "../../utils/index";
-import { statusUpdate } from "../../services/ApiServices";
 
-const LinkCell = ({ row, column: { accessor } }) => {
+import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
+import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
+
+const TimeCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
-  return <Link onClick={() => console.log("clicked")}>{value}</Link>;
+  const time = value ? secondsToHms(value) : "";
+  return <span>{time}</span>;
 };
 
-const StatusCell =
-  (handleStatusChange) =>
-  ({ row, column: { accessor } }) => {
-    const value = row[accessor];
-    return (
-      <Tooltip
-        title={`${value === 1 ? "Active" : "Inactive"}`}
-        disableFocusListener
-      >
-        <Switch
-          className="MuiSwitch"
-          checked={value === 1 ? true : false}
-          onChange={(e) => handleStatusChange(e, row.src_loc_id)}
-          size="small"
-        />
-      </Tooltip>
-    );
-  };
+const FileNameCell = ({ row, column: { accessor } }) => {
+  const value = row[accessor];
+  const packageName = row.PackageName;
+  return (
+    <>
+      <span>{value}</span>
+      {packageName && (
+        <>
+          <br />
+          <span style={{ display: "flex" }}>
+            {" "}
+            <FileZipIcon
+              fontSize="extraSmall"
+              style={{ color: "#999999", marginRight: 5 }}
+            />
+            {packageName}
+          </span>
+        </>
+      )}
+    </>
+  );
+};
 
-const generateColumns = (tableRows = [], handleStatusChange = null) => {
+const DateCell = ({ row, column: { accessor } }) => {
+  const rowValue = row[accessor];
+  const date =
+    rowValue && moment(rowValue, "YYYY-MM-DD HH:mm:ss").isValid()
+      ? moment(rowValue, "YYYY-MM-DD HH:mm:ss").format("DD-MMM-YYYY hh:mm A")
+      : rowValue;
+
+  return <span>{date}</span>;
+};
+
+const StatusCell = ({ row, column: { accessor } }) => {
+  const status = row[accessor] || "";
+  if (
+    status?.toLowerCase() === "loaded without issues" ||
+    status?.toLowerCase() === "successful" ||
+    status?.toLowerCase() === "in progress"
+  ) {
+    return (
+      <div>
+        <div style={{ position: "relative" }}>
+          <Check
+            style={{
+              position: "relative",
+              top: 4,
+              fontSize: 14,
+              color: "#00C221",
+              marginRight: 8,
+            }}
+          />
+          {status}
+        </div>
+      </div>
+    );
+  }
+  if (
+    status?.toLowerCase() === "quarantined" ||
+    status?.toLowerCase() === "queued for new file check" ||
+    status?.toLowerCase() === "skipped"
+  ) {
+    return (
+      <div>
+        <div style={{ position: "relative" }}>
+          <StatusNegativeIcon
+            style={{
+              position: "relative",
+              top: 4,
+              fontSize: 14,
+              color: "#e20000",
+              marginRight: 8,
+            }}
+          />
+          {status}
+        </div>
+      </div>
+    );
+  }
+  if (status?.toLowerCase() === "loaded with issues") {
+    return (
+      <div>
+        <div style={{ position: "relative" }}>
+          <IssueIcon
+            style={{
+              position: "relative",
+              top: 4,
+              marginRight: 8,
+              width: "14px",
+              height: "17px",
+            }}
+          />
+          {status}
+          <Link
+            onClick={() => console.log("link clicked")}
+            style={{ fontWeight: 500, marginLeft: 8 }}
+          >
+            View
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div>
+      <div style={{ position: "relative" }}>
+        <FailureIcon
+          style={{
+            position: "relative",
+            top: 4,
+            marginRight: 8,
+            width: "14px",
+            height: "17px",
+          }}
+        />
+        {status}
+      </div>
+    </div>
+  );
+};
+
+const SearchTextFieldFilter = ({ accessor, filters, updateFilterValue }) => {
+  return (
+    <Search
+      value={filters[accessor]}
+      name={accessor}
+      onChange={updateFilterValue}
+      fullWidth
+      margin="none"
+      size="small"
+    />
+  );
+};
+
+const generateColumns = (tableRows = []) => {
   return [
     {
-      header: "Location Name (Alias)",
-      accessor: "loc_alias_nm",
-      customCell: LinkCell,
-      sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("loc_alias_nm"),
-      filterComponent: TextFieldFilter,
+      header: "Transfer Date",
+      accessor: "TransferDate",
+      customCell: DateCell,
+      sortFunction: compareDates,
+      filterFunction: dateFilterCustom("TransferDate"),
+      filterComponent: DateFilter,
       frozen: true,
       width: 180,
     },
     {
-      header: "Connection URL",
-      accessor: "cnn_url",
+      header: "File Name",
+      accessor: "FileName",
+      customCell: FileNameCell,
       sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("cnn_url"),
-      filterComponent: TextFieldFilter,
+      filterFunction: createStringSearchFilter("FileName"),
+      filterComponent: SearchTextFieldFilter,
       frozen: true,
-      width: 150,
+      fixedWidth: false,
     },
     {
-      header: "Location Type",
-      accessor: "loc_typ",
-      frozen: true,
+      header: "File Transfer Status",
+      accessor: "FileTransferStatus",
+      customCell: StatusCell,
       sortFunction: compareStrings,
-      filterFunction: createStringArraySearchFilter("loc_typ"),
+      filterFunction: createStringArraySearchFilter("FileTransferStatus"),
       filterComponent: createAutocompleteFilter(
-        createSourceFromKey(tableRows, "loc_typ")
+        createSourceFromKey(tableRows, "FileTransferStatus")
       ),
+      width: 250,
     },
     {
-      header: "Data Structure",
-      accessor: "data_strc",
-      sortFunction: compareStrings,
-      filterFunction: createStringArraySearchFilter("data_strc"),
-      filterComponent: createAutocompleteFilter(
-        createSourceFromKey(tableRows, "data_strc")
-      ),
-    },
-    {
-      header: "Username",
-      accessor: "usr_nm",
-      sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("usr_nm"),
-      filterComponent: TextFieldFilter,
-    },
-    {
-      header: "External System",
-      accessor: "extrnl_sys_nm",
-      sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("extrnl_sys_nm"),
-      filterComponent: TextFieldFilter,
-    },
-    {
-      header: "Status",
-      accessor: "active",
-      customCell: StatusCell(handleStatusChange),
+      header: "Download Time",
+      accessor: "DownloadTime",
+      customCell: TimeCell,
       sortFunction: compareNumbers,
-      filterFunction: createStatusArraySearchFilter("active"),
-      filterComponent: createAutocompleteFilter(
-        [
-          {
-            label: "Active",
-          },
-          {
-            label: "Inactive",
-          },
-        ],
-        {
-          size: "small",
-          multiple: true,
-        }
-      ),
+    },
+    {
+      header: "Process Time",
+      accessor: "ProcessTime",
+      customCell: TimeCell,
+      sortFunction: compareNumbers,
+    },
+    {
+      header: "Download Transactions",
+      accessor: "DownloadTransactions",
+      sortFunction: compareNumbers,
+    },
+    {
+      header: "Process Transactions",
+      accessor: "ProcessTransactions",
+      sortFunction: compareNumbers,
+    },
+    {
+      header: "New Records",
+      accessor: "NewRecords",
+      sortFunction: compareNumbers,
+    },
+    {
+      header: "Modified Records",
+      accessor: "ModifiedRecords",
+      sortFunction: compareNumbers,
+    },
+    {
+      header: "Download Date",
+      accessor: "DownloadDate",
+      customCell: DateCell,
+      sortFunction: compareDates,
+      hidden: true,
+    },
+    {
+      header: "Process Date",
+      accessor: "ProcessDate",
+      customCell: DateCell,
+      sortFunction: compareDates,
+      hidden: true,
+    },
+    {
+      header: "Last Complete",
+      accessor: "LastCompleted",
+      customCell: DateCell,
+      sortFunction: compareDates,
+      hidden: true,
+    },
+    {
+      header: "Last Attempt",
+      accessor: "LastAttempted",
+      customCell: DateCell,
+      sortFunction: compareDates,
+      hidden: true,
+    },
+    {
+      header: "Last Loaded Date",
+      accessor: "LastLoadedDate",
+      customCell: DateCell,
+      sortFunction: compareDates,
+      hidden: true,
     },
   ];
 };
 
-const TransferLog = () => {
+const TransferLog = ({ datasetProperties, transferLogFilter }) => {
   const dispatch = useDispatch();
-  const { locations, loading } = useSelector((state) => state.locations);
-  const [statusUpdating, setStatusUpdating] = useState(false);
-  const [totalLocations, setTotalLocations] = useState(0);
+  const params = useParams();
+  const { transferLogs, loading } = useSelector(
+    (state) => state.ingestionReports
+  );
+  const [totalLog, setTotalLog] = useState(0);
   const [tableRows, setTableRows] = useState([]);
   const [, setHasUpdated] = useState(false);
   const columns = generateColumns(tableRows);
   const [columnsState, setColumns] = useState([...columns]);
-  const [locationOpen, setLocationOpen] = useState(false);
+  const [loadType, setLoadType] = useState("");
+  const { datasetId } = params;
 
   const getData = () => {
-    dispatch(getLocationsData("all"));
+    dispatch(getTransferLog(datasetId));
   };
 
-  const handleStatusChange = async (e, id) => {
-    e.preventDefault();
-    const value = e.target.checked;
-    setStatusUpdating(true);
-    const update = await statusUpdate(id, value);
-    if (update) {
-      getData();
+  useEffect(() => {
+    if (datasetProperties?.loadType?.toLowerCase() === "incremental") {
+      setLoadType(datasetProperties?.loadType);
+    } else {
+      setLoadType("Cumulative");
     }
-    setStatusUpdating(false);
-  };
+  }, [datasetProperties]);
 
   useEffect(() => {
     getData();
@@ -159,23 +308,32 @@ const TransferLog = () => {
   }, []);
 
   useEffect(() => {
-    setTableRows(locations?.records ?? []);
-    setTotalLocations(locations.totalSize ?? 0);
-    const col = generateColumns(locations?.records, handleStatusChange);
+    const rows =
+      transferLogs?.records?.length > 0 && transferLogFilter
+        ? transferLogs?.records.filter((rec) => {
+            if (transferLogFilter === "ingestion_issues") {
+              return (
+                rec.FileTransferStatus?.toLowerCase() === "loaded with issues"
+              );
+            }
+            if (transferLogFilter === "failed") {
+              return (
+                rec.FileTransferStatus?.toLowerCase() === "failed" ||
+                rec.FileTransferStatus?.toLowerCase().includes("error")
+              );
+            }
+            return rec;
+          })
+        : transferLogs?.records;
+
+    setTableRows(rows ?? []);
+    setTotalLog(transferLogs.totalSize ?? 0);
+    const col = generateColumns(transferLogs?.records);
     setColumns([...col]);
-  }, [loading, locations]);
+  }, [loading, transferLogs, transferLogFilter]);
 
   const CustomHeader = ({ toggleFilters }) => (
     <div>
-      <Button
-        id="addLocationBtn"
-        icon={<PlusIcon />}
-        onClick={() => setLocationOpen(true)}
-        size="small"
-        style={{ marginRight: 16 }}
-      >
-        Add Location
-      </Button>
       <Button
         size="small"
         id="filterBtn"
@@ -183,30 +341,42 @@ const TransferLog = () => {
         icon={FilterIcon}
         onClick={toggleFilters}
       >
-        Filter
+        Filters
+      </Button>
+      <Button
+        id="addLocationBtn"
+        icon={<DownloadIcon />}
+        size="small"
+        style={{ marginLeft: 16 }}
+      >
+        Download
       </Button>
     </div>
   );
 
   return (
-    <>
-      <LocationModal
-        locationModalOpen={locationOpen}
-        handleModalClose={() => setLocationOpen(false)}
-      />
+    <div style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24 }}>
       <Table
-        title="Locations"
-        isLoading={loading || statusUpdating}
-        subtitle={`${totalLocations} locations`}
+        title={`${loadType} File Transfer Log`}
+        subtitle={
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <FileIcon
+              style={{ width: 15, height: 17, color: "#999", marginRight: 8 }}
+            />
+            <span style={{ marginTop: 2, lineHeight: "24px" }}>
+              {`${totalLog} File Transfers`}
+            </span>
+          </div>
+        }
         columns={columnsState}
         rows={tableRows}
         rowId="src_loc_id"
-        initialSortedColumn="loc_alias_nm"
-        initialSortOrder="asc"
+        initialSortedColumn="TransferDate"
+        initialSortOrder="desc"
         rowsPerPageOptions={[10, 50, 100, "All"]}
         tablePaginationProps={{
           labelDisplayedRows: ({ from, to, count }) =>
-            `${count === 1 ? "Item" : "Items"} ${from}-${to} of ${count}`,
+            `${count === 1 ? "File" : "Files"} ${from}-${to} of ${count}`,
           truncate: true,
         }}
         CustomHeader={(props) => <CustomHeader {...props} />}
@@ -220,7 +390,7 @@ const TransferLog = () => {
           frozenColumnsEnabled: true,
         }}
       />
-    </>
+    </div>
   );
 };
 

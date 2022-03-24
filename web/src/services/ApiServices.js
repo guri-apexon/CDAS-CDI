@@ -17,6 +17,7 @@ import {
   DATAFLOW_SAVE,
   LOCATIONAPI,
   DATAKINDAPI,
+  COLUMNSAPI,
 } from "../constants";
 import { getCookie } from "../utils/index";
 
@@ -107,6 +108,19 @@ export const fetchDataFlowSource = async (dataflowId) => {
   }
 };
 
+export const testConnectionFSR = async (reqBody) => {
+  try {
+    const { endPoint, ...params } = reqBody;
+    const res = await axios.post(`${baseURL}/v1/api/fsr-connect`, {
+      params,
+      endPoint,
+    });
+    return res.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
 export const dataflowSave = async (payload) => {
   try {
     const res = await axios.post(`${baseURL}/${DATAFLOW_SAVE}`, {
@@ -119,10 +133,20 @@ export const dataflowSave = async (payload) => {
   }
 };
 
-export const hardDelete = async (dataFlowId) => {
+export const hardDelete = async (
+  dataFlowId,
+  dataFlowName,
+  version,
+  studyId,
+  fsrStatus
+) => {
   try {
     const res = await axios.post(`${baseURL}/${HARDDELETE}`, {
       dataFlowId,
+      dataFlowName,
+      version,
+      studyId,
+      fsrStatus,
       userId,
     });
     return res.data?.data || [];
@@ -253,15 +277,6 @@ export const updateDK = async (reqBody) => {
   }
 };
 
-export const getStudies = async () => {
-  try {
-    const res = await axios.get(`${baseURL}/${STUDYLIST}/${userId}`);
-    return res.data?.data || [];
-  } catch (err) {
-    return console.log("Error", err);
-  }
-};
-
 export const getENSList = async () => {
   try {
     const res = await axios.get(`${baseURL}/${DATAKINDAPI}/ens/list`);
@@ -295,6 +310,15 @@ export const unPinStudy = async (protocolId) => {
   }
 };
 
+export const getStudies = async () => {
+  try {
+    const res = await axios.get(`${baseURL}/${STUDYLIST}/${userId}`);
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
 export const getPinnedStudies = async () => {
   try {
     const res = await axios.get(`${baseURL}/${PINNEDSTUDY}/${userId}`);
@@ -303,8 +327,6 @@ export const getPinnedStudies = async () => {
     return console.log("Error", err);
   }
 };
-
-export default searchStudy;
 
 export const userLogOut = () => {
   return axios
@@ -316,3 +338,16 @@ export const userLogOut = () => {
       console.log(err);
     });
 };
+
+export const deleteCD = async (id) => {
+  try {
+    const res = await axios.post(`${baseURL}/${COLUMNSAPI}/delete/${id}`, {
+      userId,
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export default searchStudy;

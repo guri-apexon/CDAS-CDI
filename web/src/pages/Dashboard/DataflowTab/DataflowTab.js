@@ -10,6 +10,7 @@ import Table, {
   compareDates,
   compareNumbers,
   compareStrings,
+  createSelectFilterComponent,
 } from "apollo-react/components/Table";
 import { neutral7, neutral8 } from "apollo-react/colors";
 import Modal from "apollo-react/components/Modal";
@@ -39,12 +40,14 @@ import {
 } from "../../../services/ApiServices";
 import Clone from "../../DataFlow/CloneDataFlow";
 import {
+  SelectedDataflow,
   updateSelectedDataflow,
   updateSelectedStudy,
 } from "../../../store/actions/DashboardAction";
 
 import {
   createAutocompleteFilter,
+  createSourceFromKey,
   IntegerFilter,
   createStringArraySearchFilter,
   DateFilter,
@@ -53,9 +56,9 @@ import {
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
   const date =
-    rowValue && moment(rowValue, "DD-MMM-YYYY").isValid()
+    rowValue && moment(rowValue, "MM/DD/YYYY").isValid()
       ? moment(rowValue).format("DD-MMM-YYYY")
-      : moment(rowValue).format("DD-MMM-YYYY");
+      : "";
 
   return <span>{date}</span>;
 };
@@ -112,6 +115,31 @@ const DetailRow = ({ row }) => {
   );
 };
 
+const ExpandCell = ({ row: { dataFlowId, expanded } }, handleTR) => {
+  const iconButton = (
+    <IconButton id="expand" size="small" onClick={() => handleTR(dataFlowId)}>
+      {expanded ? <ChevronDown /> : <ChevronRight />}
+    </IconButton>
+  );
+
+  return (
+    <div
+      style={{
+        width: 32,
+        marginTop: 0,
+        marginLeft: 0,
+      }}
+    >
+      <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
+        {iconButton}
+      </Tooltip>
+    </div>
+  );
+};
+
+const statusList = ["Active", "Inactive"];
+// const typeList = ["Production", "Test"];
+
 export default function DataflowTab({ updateData }) {
   const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState(null);
@@ -128,6 +156,7 @@ export default function DataflowTab({ updateData }) {
   const history = useHistory();
   const dispatch = useDispatch();
   const dashboard = useSelector((state) => state.dashboard);
+  const [tableRows, setTableRows] = useState([...rowData]);
 
   const [expandedRows, setExpandedRows] = useState([]);
 
@@ -166,10 +195,22 @@ export default function DataflowTab({ updateData }) {
   };
 
   const handleHardDelete = async () => {
-    const { dataFlowId } = selectedFlow;
-    const deleteStatus = await hardDelete(dataFlowId);
-    if (deleteStatus.success) {
+    // console.log("delete", selectedFlow);
+    const { dataFlowId, dataFlowName, version, studyId, fsrStatus } =
+      selectedFlow;
+    const deleteStatus = await hardDelete(
+      dataFlowId,
+      dataFlowName,
+      version,
+      studyId,
+      fsrStatus
+    );
+    // console.log(deleteStatus);
+    if (deleteStatus?.success) {
+      messageContext.showSuccessMessage("Dataflow deleted Successfully");
       await updateData();
+    } else {
+      messageContext.showErrorMessage("Something went Wrong");
     }
     setShowHardDelete(false);
   };
@@ -188,7 +229,8 @@ export default function DataflowTab({ updateData }) {
     setShowSyncNow(false);
   };
 
-  const viewAuditLogAction = (e) => {
+  const viewAuditLogAction = (e, selectedDataFlow) => {
+    dispatch(SelectedDataflow(selectedDataFlow));
     history.push(`/dashboard/audit-logs/${e}`);
   };
 
@@ -212,16 +254,19 @@ export default function DataflowTab({ updateData }) {
     }
   };
 
-  const handleLink = (dataFlowId) => {
+  const handleLink = (dataFlowId, dataFlow) => {
     dispatch(updateSelectedDataflow(dataFlowId));
-    history.push("/dashboard/dataflow-management");
+    dispatch(SelectedDataflow(dataFlow));
+    history.push(`/dashboard/dataflow-management/${dataFlowId}`);
   };
 
   const LinkCell = ({ row, column: { accessor } }) => {
     const rowValue = row[accessor];
     const { dataFlowId } = row;
     if (rowValue) {
-      return <Link onClick={() => handleLink(dataFlowId)}>{rowValue}</Link>;
+      return (
+        <Link onClick={() => handleLink(dataFlowId, row)}>{rowValue}</Link>
+      );
     }
     return <></>;
   };
@@ -235,7 +280,7 @@ export default function DataflowTab({ updateData }) {
     const menuItems = [
       {
         text: "View audit log",
-        onClick: () => viewAuditLogAction(dataFlowId),
+        onClick: () => viewAuditLogAction(dataFlowId, row),
       },
       {
         text: activeText,
@@ -244,7 +289,7 @@ export default function DataflowTab({ updateData }) {
       {
         text: "Send sync request",
         onClick: () => sendSyncRequest(row),
-        disabled: !(status === "Active"),
+        disabled: status !== "Active",
       },
       {
         text: "Clone data flow",
@@ -262,32 +307,6 @@ export default function DataflowTab({ updateData }) {
           <IconMenuButton id="actions" menuItems={menuItems} size="small">
             <EllipsisVertical />
           </IconMenuButton>
-        </Tooltip>
-      </div>
-    );
-  };
-
-  const ExpandCell = ({ row: { dataFlowId, expanded } }) => {
-    const iconButton = (
-      <IconButton
-        id="expand"
-        size="small"
-        onClick={() => handleToggleRow(dataFlowId)}
-      >
-        {expanded ? <ChevronDown /> : <ChevronRight />}
-      </IconButton>
-    );
-
-    return (
-      <div
-        style={{
-          width: 32,
-          marginTop: 0,
-          marginLeft: 0,
-        }}
-      >
-        <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
-          {iconButton}
         </Tooltip>
       </div>
     );
@@ -355,7 +374,7 @@ export default function DataflowTab({ updateData }) {
   const columns = [
     {
       accessor: "expand",
-      customCell: ExpandCell,
+      customCell: (props) => ExpandCell(props, handleToggleRow),
     },
     {
       header: "Vendor Source",
@@ -418,26 +437,6 @@ export default function DataflowTab({ updateData }) {
       accessor: "type",
       frozen: true,
       sortFunction: compareStrings,
-      filterFunction: createStringArraySearchFilter("type"),
-      filterComponent: createAutocompleteFilter(
-        Array.from(
-          new Set(
-            rowData.map((r) => ({ label: r.type })).map((item) => item.label)
-          )
-        )
-          .map((label) => {
-            return { label };
-          })
-          .sort((a, b) => {
-            if (a.label < b.label) {
-              return -1;
-            }
-            if (a.label > b.label) {
-              return 1;
-            }
-            return 0;
-          })
-      ),
     },
     {
       header: "Status",
@@ -446,25 +445,10 @@ export default function DataflowTab({ updateData }) {
       customCell: StatusCell,
       sortFunction: compareStrings,
       filterFunction: createStringArraySearchFilter("status"),
-      filterComponent: createAutocompleteFilter(
-        Array.from(
-          new Set(
-            rowData.map((r) => ({ label: r.status })).map((item) => item.label)
-          )
-        )
-          .map((label) => {
-            return { label };
-          })
-          .sort((a, b) => {
-            if (a.label < b.label) {
-              return -1;
-            }
-            if (a.label > b.label) {
-              return 1;
-            }
-            return 0;
-          })
-      ),
+      filterComponent: createSelectFilterComponent(statusList, {
+        size: "small",
+        multiple: true,
+      }),
     },
     {
       header: "External Source System",
@@ -550,6 +534,9 @@ export default function DataflowTab({ updateData }) {
       filterFunction: numberSearchFilter("version"),
       filterComponent: IntegerFilter,
     },
+  ];
+
+  const ActionColumn = [
     {
       accessor: "action",
       customCell: ActionCell,
@@ -644,24 +631,16 @@ export default function DataflowTab({ updateData }) {
 
   const moreColumns = [
     columns[0],
-    ...columns
-      .slice(1)
-      .map((column) => ({ ...column, fixedWidth: false }))
-      .slice(0, -1),
+    ...columns.slice(1).map((column) => ({ ...column, fixedWidth: false })),
     ...columnsToAdd.map((column) => ({
       ...column,
       hidden: true,
       fixedWidth: false,
     })),
-    columns.slice(-1)[0],
+    ...ActionColumn,
   ];
 
-  const [tableRows, setTableRows] = useState([...rowData]);
   const [tableColumns, setTableColumns] = useState([...moreColumns]);
-
-  const toDataflowMgmt = async () => {
-    history.push("/dashboard/dataflow-management");
-  };
 
   useEffect(() => {
     setTableColumns([...moreColumns]);
@@ -734,7 +713,7 @@ export default function DataflowTab({ updateData }) {
             title={
               // eslint-disable-next-line react/jsx-wrap-multilines
               <>
-                {`${totalRows} ${totalRows >= 1 ? "Data Flows" : "Data Flow"}`}
+                {`${totalRows} ${totalRows > 1 ? "Data Flows" : "Data Flow"}`}
               </>
             }
             col
@@ -763,9 +742,7 @@ export default function DataflowTab({ updateData }) {
               frozenColumnsEnabled: true,
               defaultColumns: moreColumns,
             }}
-            CustomHeader={(props) => (
-              <CustomButtonHeader toDataflowMgmt={toDataflowMgmt} {...props} />
-            )}
+            CustomHeader={(props) => <CustomButtonHeader {...props} />}
             emptyProps={{
               content: <EmptyTableComponent />,
             }}

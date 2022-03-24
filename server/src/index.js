@@ -59,6 +59,7 @@ app.use("/public", express.static("public"));
 if (!fs.existsSync(dir)) {
   fs.mkdirSync(dir, { recursive: true });
 }
+
 app.listen(PORT, () => {
   console.log(`app started on port ${PORT}`);
   // Logger.info({ message: `app started on port ${PORT}` });

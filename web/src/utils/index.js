@@ -11,6 +11,14 @@ export const getCookie = (key) => {
   return b ? b.pop() : "";
 };
 
+export const secondsToHms = (d) => {
+  d = Number(d);
+  const h = Math.floor(d / 3600);
+  const m = Math.floor((d % 3600) / 60);
+  const s = Math.floor((d % 3600) % 60);
+  return `${h}h ${m}m ${s}s`;
+};
+
 // URL Related
 export function getQueryParams(query) {
   const queryStrings = query.substr(1).split("&");
@@ -83,7 +91,7 @@ export function getUserInfo() {
     fullName: `${getCookie("user.first_name")} ${getCookie("user.last_name")}`,
     userEmail: decodeURIComponent(getCookie("user.email")),
     lastLogin: getLastLogin(),
-    user_id: getCookie("user.id"),
+    userId: getCookie("user.id"),
   };
 }
 
@@ -218,7 +226,7 @@ export const createAutocompleteFilter =
       <div
         style={{
           minWidth: 160,
-          maxWidth: 200,
+          maxWidth: "100%",
           position: "relative",
           height,
         }}
@@ -405,7 +413,8 @@ export const formatData = (incomingData, protNo) => {
 };
 
 export const Capitalize = (str) => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  // console.log(str, "stt");
+  return str && str.charAt(0).toUpperCase() + str.slice(1);
 };
 
 export const createSourceFromKey = (tableRows, key) => {
@@ -493,33 +502,82 @@ export const truncateString = (str, length) => {
 };
 
 export const generateConnectionURL = (locType, hostName, port, dbName) => {
+  if (!locType || !hostName) {
+    return "";
+  }
   if (locType != "" && (locType === "SFTP" || locType === "FTPS")) {
     return hostName;
   }
   if (locType === "Hive CDP" || locType === "Hive CDH") {
     if (locType === "Hive CDP") {
-      return `jdbc:hive2://${hostName}:${port}/${hive2CDP}`;
+      return port && hive2CDP
+        ? `jdbc:hive2://${hostName}:${port}/${hive2CDP}`
+        : "";
     }
-    return `jdbc:hive2://${hostName}:${port}/${hive2CDH}`;
+    return port && hive2CDH
+      ? `jdbc:hive2://${hostName}:${port}/${hive2CDH}`
+      : "";
   }
   if (locType === "Oracle") {
-    return `jdbc:${locType}${oracle}${hostName}:${port}:${dbName}`;
+    return port && dbName
+      ? `jdbc:${locType}${oracle}${hostName}:${port}:${dbName}`
+      : "";
   }
   if (locType === "MySQL") {
-    return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
+    return port && dbName
+      ? `jdbc:${locType}://${hostName}:${port}/${dbName}`
+      : "";
   }
   if (locType === "SQL Server") {
-    return `jdbc:${locType}://${hostName}:${port};${SQLServer}=${dbName}`;
+    return port && dbName
+      ? `jdbc:${locType}://${hostName}:${port};${SQLServer}=${dbName}`
+      : "";
   }
   if (locType === "PostgreSQL") {
-    return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
+    return port && dbName
+      ? `jdbc:${locType}://${hostName}:${port}/${dbName}`
+      : "";
   }
   if (locType === "Impala") {
-    return `jdbc:${locType}://${hostName}:${port}/${impala}`;
+    return port ? `jdbc:${locType}://${hostName}:${port}/${impala}` : "";
   }
   if (locType && hostName && port && dbName) {
     return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
   }
 
   return "";
+};
+
+export const dateFilterCustom = (accessor) => (row, filters) => {
+  if (!filters[accessor]) {
+    return true;
+  }
+
+  if (!row[accessor]) {
+    return false;
+  }
+
+  const date = moment(row[accessor], "YYYY-MM-DD");
+
+  const fromDate = moment(filters[accessor][0], "YYYY-MM-DD");
+
+  const toDate = moment(filters[accessor][1], "YYYY-MM-DD");
+
+  return (
+    (!fromDate.isValid() || date.isAfter(fromDate)) &&
+    (!toDate.isValid() || date.isBefore(toDate))
+  );
+};
+
+export const isSftp = (str) => {
+  return ["SFTP", "FTPS"].includes(str.toUpperCase());
+};
+
+export const validateFields = (name, ext) => {
+  const nameArr = name.split(".");
+  if (ext === nameArr[1]) {
+    console.log("nameArr[1]", nameArr[1], ext);
+    return true;
+  }
+  return false;
 };

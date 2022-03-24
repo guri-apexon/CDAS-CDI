@@ -228,13 +228,13 @@ POST http://localhost:4001/v1/api/datakind/update HTTP/1.1
 content-type: application/json
 
 {
-    "dkId": "10",
-    "dkName": "Body_Kinetic_data",
+    "dkId": 1,
+    "dkName": "Gene_Expression_Profiling",
     "dkDesc": "test test",
-    "dkExternalId": " 1447",
+    "dkExternalId": 2,
     "dkStatus": 1,
     "dkESName": "GDMPM-DAS",
-    "dkExternalId": 10,
+    "userId": "u1105372"
 }
 
 ### Create Vendor 
@@ -320,6 +320,20 @@ content-type: application/json
 "action": "SYNC"
 }
 
+### hard delete DataFlow
+
+POST http://localhost:4001/v1/api/dataflow/hardDeleteNew HTTP/1.1
+content-type: application/json
+
+{
+"dataFlowId": "a0A0E000004k7m3UAA",
+"userId": "u1105372",
+"version": 2,
+"studyId": "",
+"dataFlowName": "",
+"fsrStatus": "Success"
+}
+
 ### Get VLC Data
 
 POST http://localhost:4001/v1/api/dataset/getVLCData HTTP/1.1
@@ -355,29 +369,49 @@ content-type: application/json
   "query": "string"
 }
 
-### create dataset
+### create sftp dataset
 
 POST http://localhost:4001/v1/api/dataset/create HTTP/1.1
 content-type: application/json
 
 {
-  "datapackageid": "",
-  "datasetId": "string",
-  "datasetName": "",
-  "active": 1,
-  "fileType": "",
-  "encoding": "",
-  "delimiter": "",
+  "datapackageid": "Zn2Jyi7zMUbuULOL",
+  "datasetName": "asdfasdfsda_Asdfads",
+  "active": true,
+  "fileType": "SAS",
+  "encoding": "UTF-8",
+  "delimiter": "COMMA",
+  "dfTestFlag": 1,
   "escapeCharacter": "",
   "quote": "",
-  "headerRowNumber": "",
+  "headerRowNumber": 1,
   "footerRowNumber": "",
-  "fileNamingConvention": "",
-  "folderPath": "",
-  "clinicalDataType": "",
+  "fileNamingConvention": "asdfadsfsa.sas7bdat",
+  "folderPath": "asdfsdasfasd",
+  "loadType": "Cumulative",
+  "clinicalDataType": [1],
   "transferFrequency": "",
   "overrideStaleAlert": "",
   "rowDecreaseAllowed": "",
+  "insrt_tm": "",
+  "updt_tm": "",
+}
+
+### create jdbc dataset
+
+POST http://localhost:4001/v1/api/dataset/create HTTP/1.1
+content-type: application/json
+
+{
+  "datapackageid": "Zn2Jyi7zMUbuULOL",
+  "datasetName": "asdfasdfsda_Asdfads",
+  "active": true,
+  "customSQLQuery": "",
+  "clinicalDataType": [1],
+  "customSQLQuery": "Yes",
+  "sQLQuery": "select * from data",
+  "tableName": "I2.TOAD_PLAN_TABLE",
+
   "insrt_tm": "",
   "updt_tm": "",
 }
@@ -434,4 +468,105 @@ content-type: application/json
 
 {
   "query": "string"
+}
+
+
+### update dataset
+
+POST http://localhost:4001/v1/api/dataflow/create HTTP/1.1
+content-type: application/json
+
+{
+	"sponsorNameStandard": null,
+	"sponsorName": "",
+	"externalVersion": 5951,
+	"protocolNumberStandard": "AL07",
+	"vendorName": "IQVIA Connected Devices",
+	"protocolNumber": "a020E000005SwQmQAK",
+	"type": "Tabular",
+	"name": "TST-ALMAC-AL07-IntD495",
+	"externalID": 495,
+	"externalSystemName": "GDMPM-DAS",
+	"connectionType": "Hive CDH",
+	"location": "sftp://secure-transfer-ftp.solutions.iqvia.com/Home/IQVIA/000108/",
+	"exptDtOfFirstProdFile": "2019-10-14 00:00:00",
+	"testFlag": true,
+	"prodFlag": true,
+	"description": "IntD495",
+	"dataPackage": [{
+		"externalID": 4950,
+		"externalSystemName": "GDMPM-DAS",
+		"type": "ngl",
+		"sasXptMethod": "",
+		"path": "sql",
+		"password": "",
+		"noPackageConfig": true,
+		"name": "yolo new",
+		"dataSet": [{
+      "columncount": 45,
+			"externalID": 4950,
+			"customQuery": "NO",
+			"customSql": "",
+			"tableName": "dflowTable",
+			"conditionalExpression": "where id !=null",
+			"incremental": true,
+			"offsetColumn": "CreatedDate",
+			"type": "",
+			"dataTransferFrequency": 0,
+			"OverrideStaleAlert": 0,
+			"rowDecreaseAllowed": 0,
+			"quote": "",
+			"path": "/foldername",
+			"name": "myfolder",
+			"mnemonic": "TestMenmonic4950",
+			"headerRowNumber": 0,
+			"footerRowNumber": 0,
+			"escapeCode": "",
+			"delimiter": "",
+			"externalSystemName": "GDMPM-DAS",
+			"dataKind": "Cardiac_Safety_Data",
+      "naming_convention": "yolo",
+			"columnDefinition": [{
+				"includeFlag": true,
+				"unique": true,
+				"required": true,
+				"primaryKey": true,
+				"position": null,
+				"name": "VID1",
+				"lov": "",
+				"format": "X",
+				"dataType": "Alphanumeric",
+				"characterMin": 0,
+				"characterMax": 0
+			}],
+			"columnCount": 1,
+			"active": false
+		}],
+		"active": false
+	}],
+	"active": false
+}
+
+
+### get location detail
+
+GET http://localhost:4001/v1/api/location/list/a139214c-bf90-4d HTTP/1.1
+content-type: application/json
+
+
+### update dataset
+
+POST http://localhost:4001/v1/api/dataset/update HTTP/1.1
+content-type: application/json
+
+{
+    "src_loc_id": "a139214c-bf90-4d",
+    "loc_typ": "SFTP",
+    "ip_servr": "DB ",
+    "port": null,
+    "cnn_url": null,
+    "data_strc": "tabular",
+    "active": 0,
+    "extrnl_sys_nm": "Externalsyst",
+    "loc_alias_nm": "LocationName"
 }

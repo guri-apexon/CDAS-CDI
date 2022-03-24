@@ -1,28 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import classNames from "classnames";
-import { neutral1, neutral7 } from "apollo-react/colors";
-import Card from "apollo-react/components/Card";
-import CardContent from "apollo-react/components/CardContent";
+import { useSelector, useDispatch } from "react-redux";
+import { neutral7 } from "apollo-react/colors";
 import Divider from "apollo-react/components/Divider";
 import Typography from "apollo-react/components/Typography";
 import Search from "apollo-react/components/Search";
 import { makeStyles } from "@material-ui/core/styles";
 import _ from "lodash";
-import { ReactComponent as PriorityIcon } from "../../components/Icons/Priority.svg";
-import { ReactComponent as IngestionIcon } from "../../components/Icons/Issue.svg";
-import { ReactComponent as StaleFilesIcon } from "../../components/Icons/Stale.svg";
-import { ReactComponent as PinnedIcon } from "../../components/Icons/Pin.svg";
-import { ReactComponent as UnPinnedIcon } from "../../components/Icons/UnPin.svg";
 import Progress from "../../components/Common/Progress/Progress";
-import { debounceFunction } from "../../utils";
-import searchStudy, {
-  getPinnedStudies,
-  getStudies,
-  unPinStudy,
-  pinStudy,
-} from "../../services/ApiServices";
-import { updateSelectedStudy } from "../../store/actions/DashboardAction";
+import { debounceFunction, getUserInfo } from "../../utils";
+import searchStudy, { unPinStudy, pinStudy } from "../../services/ApiServices";
+import {
+  updateSelectedStudy,
+  getPinnedData,
+  getStudiesData,
+} from "../../store/actions/DashboardAction";
+import CustomCard from "./CustomCard";
 
 const styles = {
   panelTitle: {
@@ -55,6 +47,7 @@ const styles = {
   },
   cardHighlight: {
     border: "1px solid #0768FD",
+    cursor: "auto",
     boxShadow: "0px 8px 16px 0px rgba(0,0,0,0.08)",
   },
   cardProtocolNo: {
@@ -80,97 +73,11 @@ const styles = {
   },
 };
 
-const CustomCard = ({
-  data,
-  index,
-  isPinned,
-  unPinningStudy,
-  pinningStudy,
-  setSelectedStudy,
-  selectedStudy,
-  classes,
-}) => {
-  const {
-    prot_id: protId,
-    protocolnumber,
-    sponsorname,
-    projectcode,
-    phase,
-    staleFilesCount,
-    ingestionCount,
-    priorityCount,
-  } = data;
-
-  return (
-    <Card
-      color="dark"
-      key={index}
-      interactive
-      className={classNames(
-        classes.card,
-        protId === selectedStudy && classes.cardHighlight
-      )}
-      onClick={() => setSelectedStudy(protId)}
-    >
-      {/* {console.log("data", data)} */}
-      <CardContent>
-        <div className="cardTopBar">
-          <div className="cardLeft">
-            {priorityCount && (
-              <span className="priority">
-                <PriorityIcon />
-                {priorityCount}
-              </span>
-            )}
-            {ingestionCount && (
-              <span>
-                <IngestionIcon />
-                {ingestionCount}
-              </span>
-            )}
-            {staleFilesCount && (
-              <span>
-                <StaleFilesIcon />
-                {staleFilesCount}
-              </span>
-            )}
-          </div>
-          <div className="cardRight">
-            {isPinned ? (
-              <PinnedIcon onClick={() => unPinningStudy(protId)} />
-            ) : (
-              <UnPinnedIcon onClick={() => pinningStudy(protId)} />
-            )}
-          </div>
-        </div>
-        <Typography className={classes.bold}>{protocolnumber}</Typography>
-        <Typography className={classes.cardSponsor} variant="caption">
-          {sponsorname}
-        </Typography>
-        <div className="cardBottom">
-          <div className="cardPC">
-            <Typography className={classes.bold}>Project Code</Typography>
-            <Typography className={classes.cardProjectCode} variant="caption">
-              {projectcode}
-            </Typography>
-          </div>
-          <div className="cardP">
-            <Typography className={classes.bold}>Phase</Typography>
-            <Typography className={classes.cardPhase} variant="caption">
-              {phase}
-            </Typography>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
 const LeftPanel = () => {
   const useStyles = makeStyles(styles);
   const classes = useStyles();
   const dispatch = useDispatch();
-
+  const dashboard = useSelector((state) => state.dashboard);
   const [selectedStudy, setSelectedStudy] = useState(null);
   const [loading, setLoading] = useState(false);
   const [studyList, setStudyList] = useState([]);
@@ -178,23 +85,40 @@ const LeftPanel = () => {
   const [unPinnedStudies, setUnPinnedStudies] = useState([]);
   const [pinnedStudies, setPinnedStudies] = useState([]);
   const [pinned, setPinned] = useState([]);
+  const { loading: isLoading, userStudies, userPinnedStudies } = dashboard;
+  const userInfo = getUserInfo();
 
   const updateList = async () => {
+    // const newStudies = await getStudies();
+    // const newPinned = await getPinnedStudies();
+    // if (newStudies !== undefined && newStudies.length) {
+    //   setStudyList([...newStudies]);
+    // }
+    // if (newStudies !== undefined && newStudies.length) {
+    //   setPinned([...newPinned]);
+    // }
     setLoading(true);
-    const newStudies = await getStudies();
-    const newPinned = await getPinnedStudies();
-    // console.log("event", newPinned, newStudies);
-    if (newStudies !== undefined && newStudies.length) {
-      setStudyList([...newStudies]);
-    }
-    if (newStudies !== undefined && newStudies.length) {
-      setPinned([...newPinned]);
-    }
+    dispatch(getStudiesData(userInfo.userId));
+    dispatch(getPinnedData(userInfo.userId));
     setLoading(false);
   };
 
+  // useEffect(() => {
+  //   setLoading(isLoading);
+  // }, [isLoading]);
+
   useEffect(() => {
-    updateList();
+    setStudyList([...userStudies]);
+  }, [userStudies]);
+
+  useEffect(() => {
+    setPinned([...userPinnedStudies]);
+  }, [userPinnedStudies]);
+
+  useEffect(() => {
+    if (userStudies.length === 0) {
+      updateList();
+    }
   }, []);
 
   const searchTrigger = (e) => {
@@ -203,7 +127,6 @@ const LeftPanel = () => {
     debounceFunction(async () => {
       setLoading(true);
       const newStudies = await searchStudy(newValue);
-      // console.log("event", newValue, newStudies);
       // eslint-disable-next-line no-unused-expressions
       newStudies && newStudies.studies
         ? setUnPinnedStudies([...newStudies.studies])
@@ -227,30 +150,8 @@ const LeftPanel = () => {
   useEffect(() => {
     const pinnedstudy = studyList.filter((e) => pinned.includes(e.prot_id));
     const unPinnedStudy = studyList.filter((e) => !pinned.includes(e.prot_id));
-    const pinnedList = _.orderBy(
-      pinnedstudy,
-      [
-        "priorityCount",
-        "ingestionCount",
-        "staleFilesCount",
-        "sponsorname",
-        "protocolnumber",
-      ],
-      ["asc", "asc", "asc"]
-    );
-    const unpinnedList = _.orderBy(
-      unPinnedStudy,
-      [
-        "priorityCount",
-        "ingestionCount",
-        "staleFilesCount",
-        "sponsorname",
-        "protocolnumber",
-      ],
-      ["desc", "desc", "desc"]
-    );
-    setPinnedStudies([...pinnedList]);
-    setUnPinnedStudies([...unpinnedList]);
+    setPinnedStudies([...pinnedstudy]);
+    setUnPinnedStudies([...unPinnedStudy]);
     // console.log("unpinned", unPinningStudy);
   }, [studyList, pinned]);
 
@@ -259,11 +160,16 @@ const LeftPanel = () => {
       const clicked = studyList.filter((e) => e.prot_id === selectedStudy)[0];
       dispatch(updateSelectedStudy(clicked));
     }
-    // console.log("selected", selectedStudy, clicked);
   }, [selectedStudy]);
 
   return (
-    <div className="leftPanel">
+    <div
+      style={{
+        maxHeight: "calc( 100vh - 120px)",
+        overflow: "hidden",
+      }}
+      className="leftPanel"
+    >
       <div className="searchBox">
         <Typography
           variant="title1"

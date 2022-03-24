@@ -22,6 +22,9 @@ import {
   UPDATE_DATASET_SUCCESS,
   UPDATE_DATASET_FAILURE,
   UPDATE_DATASET_DATA,
+  UPDATE_COLUMNS_DATA,
+  UPDATE_COLUMNS_FAILURE,
+  UPDATE_COLUMNS_SUCCESS,
   GET_VLC_RULES,
   FETCH_VLC_RULES_SUCCESS,
   FETCH_VLC_RULES_FAILURE,
@@ -34,39 +37,49 @@ import {
   GET_PREVIEW_SQL,
   FETCH_PREVIEW_SQL_SUCCESS,
   FETCH_PREVIEW_SQL_FAILURE,
+  RESET_FTP_FORM,
+  RESET_JDBC_FORM,
 } from "../../constants";
+
+const defaultData = {
+  active: true,
+  locationType: "SFTP",
+  delimiter: "COMMA",
+  fileType: "SAS",
+  encoding: "UTF-8",
+  escapeCharacter: "\\",
+  quote: `''`,
+  headerRowNumber: 1,
+  footerRowNumber: "",
+  overrideStaleAlert: 3,
+  rowDecreaseAllowed: 0,
+  loadType: "Cumulative",
+};
+
+const defaultDataSQL = {
+  locationType: "JDBC",
+  active: true,
+  customSQLQuery: "Yes",
+  dataType: "Cumulative",
+};
 
 export const initialState = {
   loading: false,
   isDatasetCreated: false,
   isColumnsConfigured: false,
+
   datasetColumns: [],
   datasetDetail: {},
   formDataSQL: {
-    locationType: "JDBC",
-    active: true,
-    customSQLQuery: "Yes",
-    dataType: "Cumulative",
-    offsetColumn: "Disabled",
+    ...defaultDataSQL,
   },
   formData: {
-    active: true,
-    locationType: "SFTP",
-    delimiter: "COMMA",
-    fileType: "SAS",
-    encoding: "UTF-8",
-    escapeCharacter: "\\",
-    quote: `""`,
-    headerRowNumber: 1,
-    footerRowNumber: "",
-    overrideStaleAlert: 3,
-    rowDecreaseAllowed: 0,
-    loadType: "Cumulative",
+    ...defaultData,
   },
   selectedDataset: {},
   defaultDelimiter: "COMMA",
   defaultEscapeCharacter: "\\",
-  defaultQuote: `""`,
+  defaultQuote: `''`,
   defaultHeaderRowNumber: 1,
   defaultFooterRowNumber: "",
   defaultLoadType: "Cumulative",
@@ -95,6 +108,19 @@ const DataFlowReducer = (state = initialState, action) =>
       case SAVE_DATASET_DATA:
         newState.loading = true;
         break;
+
+      case RESET_FTP_FORM:
+        newState.formData = {
+          ...defaultData,
+        };
+        break;
+
+      case RESET_JDBC_FORM:
+        newState.formDataSQL = {
+          ...defaultDataSQL,
+        };
+        break;
+
       case STORE_DATASET_SUCCESS:
         newState.loading = false;
         newState.isDatasetCreated = !state.isDatasetCreated;
@@ -144,6 +170,16 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.sucessMsg = null;
         newState.error = action.message;
         break;
+      case UPDATE_COLUMNS_SUCCESS:
+        newState.loading = false;
+        newState.error = null;
+        newState.sucessMsg = "Column Defination updated succesfully";
+        break;
+      case UPDATE_COLUMNS_FAILURE:
+        newState.loading = false;
+        newState.sucessMsg = null;
+        newState.error = action.message;
+        break;
       case GET_VLC_RULES:
         newState.loading = true;
         break;
@@ -175,7 +211,7 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case FETCH_PREVIEW_SQL_SUCCESS:
         newState.loading = false;
-        newState.previewSQL = action.previewSQL;
+        newState.previewSQL = action.previewSQL.flat();
         break;
       case GET_SQL_COLUMNS:
         newState.loading = true;
@@ -186,12 +222,15 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case FETCH_SQL_COLUMNS_SUCCESS:
         newState.loading = false;
-        newState.sqlTables = action.sqlTables;
+        newState.sqlColumns = action.sqlColumns;
         break;
       case GET_DATASET_DETAIL:
         newState.loading = true;
         break;
       case UPDATE_DATASET_DATA:
+        newState.loading = true;
+        break;
+      case UPDATE_COLUMNS_DATA:
         newState.loading = true;
         break;
       case FETCH_DATASET_DETAIL_FAILURE:
@@ -219,6 +258,11 @@ const DataFlowReducer = (state = initialState, action) =>
           rowdecreaseallowed,
           incremental,
           datasetid,
+          customsql_yn,
+          customsql,
+          offsetcolumn,
+          offsetvalues,
+          tbl_nm,
         } = datasetDetail;
         if (type) {
           newState.formData.fileType = type;
@@ -240,7 +284,18 @@ const DataFlowReducer = (state = initialState, action) =>
             incremental === "Y" ? "Incremental" : "Cumulative";
           newState.formData.datasetid = datasetid;
         }
-        newState.dataFlowdetail = action.datasetDetail;
+        if (customsql_yn) {
+          newState.formDataSQL.active = active === 1 ? true : false;
+          newState.formData.clinicalDataType = [datakindid];
+          newState.formDataSQL.datasetName = mnemonic;
+          newState.formDataSQL.customSQLQuery = customsql_yn;
+          newState.formDataSQL.sQLQuery = customsql;
+          newState.formDataSQL.offsetColumn = offsetcolumn;
+          newState.formDataSQL.tableName = tbl_nm;
+          newState.formDataSQL.filterCondition = offsetvalues;
+          newState.formData.dataType =
+            incremental === "Y" ? "Incremental" : "Cumulative";
+        }
         newState.selectedDataset = action.datasetDetail;
         break;
       case GET_DATASET_COLUMNS:

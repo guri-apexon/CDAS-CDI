@@ -1,6 +1,7 @@
+/* eslint-disable no-constant-condition */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-script-url */
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,8 +24,9 @@ import {
   updateDatasetData,
   getDataSetDetail,
   getDatasetColumns,
+  resetFTP,
+  resetJDBC,
 } from "../../store/actions/DataSetsAction";
-import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
@@ -86,9 +88,8 @@ const styles = {
 const Dataset = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(0);
-  const [locationType, setLocationType] = useState("sftp");
+  const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
-  const [customSql, setCustomSql] = useState("no");
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
@@ -97,12 +98,20 @@ const Dataset = () => {
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
-  const { selectedDFId } = dashboard;
-  const { datasetid } = selectedDSDetails;
-  const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
-    dataSets;
-  const { dataFlowdetail } = dataFlow;
-  const { datasetId } = useParams();
+  const { dfId } = dashboard;
+  const { datapackageid, datapackageName, datasetid, datasetName } =
+    selectedDSDetails;
+  const {
+    loading,
+    error,
+    sucessMsg,
+    isDatasetCreated,
+    selectedDataset,
+    formDataSQL,
+  } = dataSets;
+  const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
+  const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
+  const { locationType: newLT, customSQLQuery } = selectedDataset;
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -118,108 +127,100 @@ const Dataset = () => {
   const handleChangeTab = (event, v) => {
     setValue(v);
   };
+
   const getDataSetType = (type) => {
-    if (type?.toLowerCase() === "sftp" || type?.toLowerCase() === "ftps") {
+    if (type?.toLowerCase() === ("sftp" || "ftps")) {
       return "sftp";
     }
     return "jdbc";
   };
 
-  const onChangeSql = (val) => {
-    setColumnsActive(val === "No");
-    setCustomSql(val);
-  };
-
   useEffect(() => {
-    if (!datasetId) {
-      dispatch(reset("DataSetsForm"));
-      dispatch(reset("DataSetsFormSQL"));
-    }
-  }, [datasetId]);
-
-  useEffect(() => {
-    console.log(selectedDataset, "selectedDataset");
-    if (isDatasetCreated) {
-      setValue(1);
-    }
-  }, [isDatasetCreated]);
-
-  useEffect(() => {
-    if (selectedDFId === "") {
+    if (dfId === "") {
       history.push("/dashboard");
     }
     dispatch(getDataKindData());
   }, []);
 
   useEffect(() => {
-    if (selectedDFId) {
-      dispatch(getDataFlowDetail(selectedDFId));
-    }
-  }, [selectedDFId]);
-
-  useEffect(() => {
-    if (datasetid) {
+    if (datasetid === null) {
+      dispatch(resetFTP());
+      dispatch(resetJDBC());
+    } else {
       dispatch(getDataSetDetail(datasetid));
       dispatch(getDatasetColumns(datasetid));
     }
   }, [datasetid]);
 
   useEffect(() => {
-    if (dataFlowdetail?.loc_typ) {
-      setLocationType(dataFlowdetail?.loc_typ);
-      if (getDataSetType(dataFlowdetail?.loc_typ) === "sftp") {
+    if (isDatasetCreated) {
+      if (getDataSetType(loctyp) === ("sftp" || "ftps")) {
+        messageContext.showSuccessMessage("Dataset Created Successfully");
+        setValue(1);
+      } else {
+        messageContext.showSuccessMessage("Dataset Created Successfully");
+      }
+    }
+  }, [isDatasetCreated, loctyp]);
+
+  useEffect(() => {
+    if (loctyp) {
+      setLocationType(getDataSetType(loctyp));
+      if (getDataSetType(loctyp) === ("sftp" || "ftps")) {
         setColumnsActive(true);
       }
     }
-  }, [dataFlowdetail]);
+  }, [loctyp]);
+
+  useEffect(() => {
+    if (newLT === "JDBC") {
+      if (customSQLQuery === "No") {
+        setColumnsActive(true);
+      }
+    }
+    if (formDataSQL?.customSQLQuery === "No") {
+      setColumnsActive(true);
+    }
+  }, [newLT, customSQLQuery, formDataSQL]);
 
   const goToDataflow = () => {
-    if (selectedDSDetails.dataflowid) {
-      history.push("/dashboard/dataflow-management");
+    if (dfId) {
+      history.push(`/dashboard/dataflow-management/${dfId}`);
     }
-    history.push("/dashboard/dataflow-management");
   };
 
-  const goToPackage = () => {
-    if (selectedDSDetails.dataflowid) {
-      history.push("/dashboard/dataflow-management");
-    }
-    history.push("/dashboard/dataflow-management");
-  };
-
-  const gotoDataflow = () => {
-    if (selectedDSDetails.dataflowid) {
+  const gotoDataPackage = () => {
+    if (datapackageid) {
       history.push("/dashboard/data-packages");
     }
-    history.push("/dashboard/data-packages");
   };
 
   const breadcrumbItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
       href: "javascript:void(0)",
-      title: selectedDSDetails.dataflowid ?? "Dataflow Name",
+      title: dataflowName ?? "Dataflow Name",
       onClick: goToDataflow,
     },
     {
       href: "javascript:void(0)",
-      title: selectedDSDetails.datapackageName ?? "Datapackage Name",
-      onClick: gotoDataflow,
+      title: datapackageName ?? "Datapackage Name",
+      onClick: gotoDataPackage,
     },
     {
       href: "#",
-      title: selectedDSDetails.datasetName ?? "Create Dataset",
+      title: datasetName ?? "Create Dataset",
     },
   ];
 
+  const jdbcRef = useRef();
+
   const submitForm = () => {
-    if (
-      locationType?.toLowerCase() === "sftp" ||
-      locationType?.toLowerCase() === "ftps"
-    ) {
+    if (locationType === ("sftp" || "ftps")) {
       dispatch(submit("DataSetsForm"));
     } else {
       dispatch(submit("DataSetsFormSQL"));
+      // jdbcRef.current.handleSubmit();
     }
   };
 
@@ -227,7 +228,9 @@ const Dataset = () => {
     setTimeout(() => {
       const data = {
         ...formValue,
-        datapackageid: selectedDSDetails?.datapackageid,
+        datapackageid,
+        dfTestFlag: testflag,
+        dfId,
       };
       if (data.datasetid) {
         dispatch(updateDatasetData(data));
@@ -238,13 +241,10 @@ const Dataset = () => {
   };
 
   const closeForm = async () => {
-    if (
-      locationType?.toLowerCase() === "sftp" ||
-      locationType?.toLowerCase() === "ftps"
-    ) {
+    if (locationType === ("sftp" || "ftps")) {
       await dispatch(reset("DataSetsForm"));
     } else {
-      await dispatch(reset("DataSetsFormSQL"));
+      jdbcRef.current.handleCancel();
     }
     history.push("/dashboard");
   };
@@ -252,27 +252,11 @@ const Dataset = () => {
   const getLeftPanel = React.useMemo(
     () => (
       <>
-        <LeftPanel />
+        <LeftPanel dataflowSource={dataFlowdetail} />
       </>
     ),
-    []
+    [dataFlowdetail]
   );
-
-  const locationChange = () => {
-    messageContext.showErrorMessage(
-      `No Tables Returned. Pls reach out to admins`
-    );
-  };
-
-  const queryCompilationError = () => {
-    messageContext.showErrorMessage(
-      `Query Compilation Error, check query syntax.`
-    );
-  };
-
-  const noRecordsFound = () => {
-    messageContext.showErrorMessage(`No records found.`);
-  };
 
   return (
     <>
@@ -311,71 +295,88 @@ const Dataset = () => {
               <div style={{ display: "flex", paddingLeft: 11 }}>
                 <DatasetsIcon />
                 <Typography className={classes.cTitle}>
-                  {selectedDSDetails.datasetName
-                    ? selectedDSDetails.datasetName
+                  {datasetName
+                    ? datasetName
                     : selectedDataset.datasetName
                     ? selectedDataset.datasetName
                     : "Dataset name"}
                 </Typography>
               </div>
-              {/* {datasetsCount && (
-                <Typography className={classes.contentSubTitle}>
-                  {`${props.datasetsCount} datasets`}
-                </Typography>
-              )} */}
-              {(!value || value === 0) && (
-                <ButtonGroup
-                  alignItems="right"
-                  buttonProps={[
-                    {
-                      label: "Cancel",
-                      onClick: () => closeForm(),
-                    },
-                    {
-                      label: "Save",
-                      onClick: () => submitForm(),
-                    },
-                  ]}
-                />
-              )}
-              {dataSettabs && (
-                <Tabs
-                  value={value}
-                  onChange={handleChangeTab}
-                  size="small"
-                  style={{ marginBottom: "-19px" }}
-                  truncate
-                >
-                  {dataSettabs.map((tab) => (
-                    <Tab
-                      label={tab}
-                      disabled={!columnsActive && tab === "Dataset Columns"}
-                    />
-                  ))}
-                </Tabs>
-              )}
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                {dataSettabs && (
+                  <Tabs
+                    value={value}
+                    onChange={handleChangeTab}
+                    size="small"
+                    truncate
+                  >
+                    {dataSettabs.map((tab) => (
+                      <Tab
+                        label={tab}
+                        disabled={!columnsActive && tab === "Dataset Columns"}
+                      />
+                    ))}
+                  </Tabs>
+                )}
+                {(!value || value === 0) && (
+                  <ButtonGroup
+                    alignItems="right"
+                    buttonProps={[
+                      {
+                        label: "Cancel",
+                        onClick: () => closeForm(),
+                      },
+                      {
+                        label: "Save",
+                        onClick: () => submitForm(),
+                      },
+                    ]}
+                  />
+                )}
+              </div>
             </div>
 
-            <div style={{ padding: 20, marginTop: 20 }}>
-              {value === 0 &&
-                (locationType?.toLowerCase() === "sftp" ||
-                  locationType?.toLowerCase() === "ftps") && (
-                  <DataSetsForm loading={loading} onSubmit={onSubmit} />
-                )}
-              {value === 0 &&
-                locationType?.toLowerCase() !== "sftp" &&
-                locationType?.toLowerCase() !== "ftps" && (
-                  <DataSetsFormSQL
-                    onChange={onChangeSql}
-                    defaultFields={{
-                      sql: customSql,
-                    }}
-                    loading={loading}
-                    onSubmit={onSubmit}
-                  />
-                  // <JDBCForm />
-                )}
-              {value === 1 && <ColumnsTab locationType={locationType} />}
+            <div style={{ padding: 20 }}>
+              {value === 0 && (
+                <>
+                  {console.log("ltype", locationType)}
+                  {locationType === ("sftp" || "ftps") ? (
+                    <DataSetsForm
+                      loading={loading}
+                      onSubmit={onSubmit}
+                      prodLock={dsProdLock}
+                    />
+                  ) : (
+                    <DataSetsFormSQL
+                      onSubmit={onSubmit}
+                      prodLock={dsProdLock}
+                      testLock={dsTestLock}
+                      testProdLock={dsTestProdLock}
+                    />
+                  )}
+                </>
+              )}
+
+              {
+                // <JDBCForm
+                //   datapackageid={datapackageid}
+                //   dataflowid={dfId}
+                //   datasetId={datasetid}
+                //   isDatasetCreated={isDatasetCreated}
+                //   selectedDataset={selectedDataset}
+                //   dfTestFlag={testflag}
+                //   onChangeSql={onChangeSql}
+                //   ref={jdbcRef}
+                // />
+              }
+
+              {value === 1 && (
+                <ColumnsTab
+                  locationType={locationType}
+                  prodLock={dsProdLock}
+                  testLock={dsTestLock}
+                />
+              )}
               {value === 2 && <VLCTab />}
             </div>
           </main>

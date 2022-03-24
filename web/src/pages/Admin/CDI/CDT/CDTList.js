@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Table, {
+  createSelectFilterComponent,
   createStringSearchFilter,
   compareStrings,
   compareNumbers,
@@ -25,7 +26,7 @@ import {
   createAutocompleteFilter,
   createStatusArraySearchFilter,
   createStringArraySearchFilter,
-  inputAlphaNumericWithUnderScore,
+  getCookie,
 } from "../../../../utils/index";
 import { getCDTList } from "../../../../store/actions/CDIAdminAction";
 import {
@@ -37,6 +38,8 @@ import {
 } from "../../../../services/ApiServices";
 
 import "./CDTList.scss";
+
+const statusList = ["Active", "Inactive"];
 
 const StatusCell =
   (handleStatusChange) =>
@@ -105,20 +108,10 @@ const generateColumns = (
       customCell: StatusCell(handleStatusChange),
       sortFunction: compareNumbers,
       filterFunction: createStatusArraySearchFilter("dkStatus"),
-      filterComponent: createAutocompleteFilter(
-        [
-          {
-            label: "Active",
-          },
-          {
-            label: "Inactive",
-          },
-        ],
-        {
-          size: "small",
-          multiple: true,
-        }
-      ),
+      filterComponent: createSelectFilterComponent(statusList, {
+        size: "small",
+        multiple: true,
+      }),
       width: 120,
     },
   ];
@@ -135,6 +128,8 @@ export default function CDTList() {
   const [desc, setDesc] = useState("");
   const [selectedRow, setSelectedRow] = useState(null);
   const [nameError, setNameError] = useState(false);
+  const [reqNameError, setReqNameError] = useState(false);
+  const [reqENSError, setReqENSError] = useState(false);
   const columns = generateColumns(tableRows);
   const [columnsState, setColumns] = useState([...columns]);
   const dispatch = useDispatch();
@@ -154,6 +149,8 @@ export default function CDTList() {
       setStatus(true);
       setDesc("");
       setNameError(false);
+      setReqENSError(false);
+      setReqNameError(false);
     }, 500);
   };
 
@@ -162,7 +159,9 @@ export default function CDTList() {
   }, [loading, cdtList]);
 
   useEffect(() => {
-    getData();
+    if (cdtList.length < 1) {
+      getData();
+    }
   }, []);
 
   const handleStatusChange = async (e, dkId, currStatus) => {
@@ -173,7 +172,6 @@ export default function CDTList() {
     } else {
       const update = await inActivateDK(dkId, 0);
       if (update) {
-        // console.log(update.data);
         if (update.status === 0) {
           messageContext.showErrorMessage(update.data);
         } else {
@@ -229,9 +227,6 @@ export default function CDTList() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "name") {
-      // inputAlphaNumericWithUnderScore(e, (v) => {
-      //   setCName(v);
-      // });
       setCName(value);
     } else if (name === "desc") {
       setDesc(value);
@@ -244,28 +239,35 @@ export default function CDTList() {
 
   // eslint-disable-next-line consistent-return
   const handleSave = async () => {
-    if (cName === "") {
-      messageContext.showErrorMessage("Data Type Name shouldn't be empty");
-      hideViewData();
-      return false;
-    }
-    if (ens === "") {
-      messageContext.showErrorMessage("External System shouldn't be empty");
-      hideViewData();
-      return false;
-    }
     const regexp = /^[a-zA-Z0-9-_]+$/;
+    const userId = getCookie("user.id");
+
+    if (cName === "") {
+      setReqNameError(true);
+      if (ens === "") {
+        setReqENSError(true);
+      }
+      return false;
+    }
 
     if (cName && cName.search(regexp) === -1) {
       setNameError(true);
-      console.log("tes");
       return false;
     }
 
+    setReqNameError(false);
     setNameError(false);
+
+    if (ens === "") {
+      setReqENSError(true);
+      return false;
+    }
+
+    setReqENSError(false);
 
     if (selectedRow) {
       // console.log("update", cName, selectedRow, status, desc, ensId, ens);
+
       updateDK({
         dkId: selectedRow,
         dkName: cName,
@@ -273,6 +275,7 @@ export default function CDTList() {
         dkExternalId: ensId,
         dkESName: ens,
         dkStatus: status === true ? 1 : 0,
+        userId,
       }).then((res) => {
         if (res.status === 1) {
           hideViewData();
@@ -390,23 +393,26 @@ export default function CDTList() {
                     required
                     fullWidth
                     helperText={
-                      nameError && "Only Alphanumeric and '_' are allowed"
+                      (nameError && "Only Alphanumeric and '_' are allowed") ||
+                      (reqNameError && "Data Type Name shouldn't be empty")
                     }
-                    error={nameError}
+                    error={nameError || reqNameError}
                   />
                 </div>
-                <div style={{ display: "flex" }}>
-                  <div className="switch-label">Active</div>
-                  <div className="switch">
-                    <Switch
-                      className="MuiSwitch"
-                      checked={status}
-                      name="status"
-                      onChange={handleStatusUpdate}
-                      size="small"
-                    />
+                {!selectedRow && (
+                  <div style={{ display: "flex" }}>
+                    <div className="switch-label">Active</div>
+                    <div className="switch">
+                      <Switch
+                        className="MuiSwitch"
+                        checked={status}
+                        name="status"
+                        onChange={handleStatusUpdate}
+                        size="small"
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
               <div style={{ display: "flex" }}>
                 <div className="esn-box">
@@ -418,6 +424,10 @@ export default function CDTList() {
                     placeholder="Select system name"
                     fullWidth
                     required
+                    helperText={
+                      reqENSError && "External System shouldn't be empty"
+                    }
+                    error={reqENSError}
                   >
                     {ensList.map((option) => (
                       <MenuItem key={option.value} value={option.label}>

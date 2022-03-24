@@ -75,6 +75,51 @@ export const makeEditableSelectCell =
     );
   };
 
+export const editableSelectCell =
+  (options) =>
+  ({ row, column: { accessor: key } }) => {
+    const errorText = checkRequiredValue(row[key], key, row.primary);
+
+    // eslint-disable-next-line consistent-return
+    const checkDisabled = () => {
+      if (row.locationType === "jdbc") {
+        if (row.testLock || row.prodLock) {
+          return true;
+        }
+      }
+      if (row.locationType === "sftp") {
+        if (row.prodLock) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    return row.editMode ? (
+      <Select
+        size="small"
+        fullWidth
+        canDeselect={false}
+        value={row[key]}
+        error={!row.isInitLoad && errorText ? true : false}
+        helperText={!row.isInitLoad ? errorText : ""}
+        onChange={(e) =>
+          row.editRow(row.uniqueId, key, e.target.value, errorText)
+        }
+        {...fieldStyles}
+        disabled={checkDisabled}
+      >
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </Select>
+    ) : (
+      row[key]
+    );
+  };
+
 export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   const errorText =
     checkNumeric(row[key]) ||
@@ -113,6 +158,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       error={!row.isInitLoad && errorText ? true : false}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
+      disabled={row.prodLock}
     />
   ) : (
     row[key]
@@ -221,6 +267,7 @@ export const columns = [
     header: "Variable Label",
     accessor: "variableLabel",
     customCell: EditableCell,
+    sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("variableLabel"),
     filterComponent: TextFieldFilter,
   },
@@ -234,11 +281,14 @@ export const columns = [
     header: "Position",
     accessor: "position",
     customCell: EditableCell,
+    sortFunction: compareStrings,
+    hidden: true,
   },
   {
     header: "Format",
     accessor: "format",
     customCell: FormatCell,
+    sortFunction: compareStrings,
   },
   {
     header: "Data Type",
@@ -249,7 +299,7 @@ export const columns = [
   {
     header: "Primary?",
     accessor: "primary",
-    customCell: makeEditableSelectCell(["Yes", "No"]),
+    customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
   },
   {
@@ -261,7 +311,7 @@ export const columns = [
   {
     header: "Required?",
     accessor: "required",
-    customCell: makeEditableSelectCell(["Yes", "No"]),
+    customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
   },
   {
@@ -305,6 +355,8 @@ export const CustomHeader = ({
   cancelMulti,
   newRows,
   disableSaveAll,
+  testLock,
+  prodLock,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -325,17 +377,19 @@ export const CustomHeader = ({
       )}
       {!isMultiAdd && (
         <>
-          <Tooltip title="Add rows" disableFocusListener>
-            <IconMenuButton
-              id="actions-1"
-              menuItems={addMenuItems}
-              size="small"
-              disabled={isEditAll}
-            >
-              <Plus />
-            </IconMenuButton>
-          </Tooltip>
-          <Tooltip title="Edit all" disableFocusListener>
+          {locationType === ("sftp" || "ftps") && (
+            <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
+              <IconMenuButton
+                id="actions-1"
+                menuItems={addMenuItems}
+                size="small"
+                disabled={isEditAll}
+              >
+                <Plus />
+              </IconMenuButton>
+            </Tooltip>
+          )}
+          <Tooltip title={!isEditAll && "Edit all"} disableFocusListener>
             <IconButton color="primary" size="small" disabled={isEditAll}>
               <Pencil onClick={onEditAll} />
             </IconButton>
@@ -345,7 +399,7 @@ export const CustomHeader = ({
       {isMultiAdd && (
         <>
           <TextField
-            placeholder="# of rows"
+            placeholder="# of columns"
             type="number"
             min="1"
             max="499"
@@ -366,10 +420,19 @@ export const CustomHeader = ({
           </Button>
         </>
       )}
-      {(locationType?.toLowerCase() === "sftp" ||
-        locationType?.toLowerCase() === "ftps") && (
-        <Tooltip title="Import dataset column settings" disableFocusListener>
-          <IconButton color="primary" size="small" disabled={isEditAll}>
+      {locationType === ("sftp" || "ftps") && (
+        <Tooltip
+          title={
+            (!isEditAll || !prodLock || !testLock) &&
+            "Import dataset column settings"
+          }
+          disableFocusListener
+        >
+          <IconButton
+            color="primary"
+            size="small"
+            disabled={isEditAll || prodLock || testLock}
+          >
             <Upload />
           </IconButton>
         </Tooltip>

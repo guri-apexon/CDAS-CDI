@@ -10,6 +10,13 @@ import {
   GET_DATASET_INGESTION_SUMMARY,
   GET_DATASET_INGESTION_SUMMARY_SUCCESS,
   GET_DATASET_INGESTION_SUMMARY_FAILURE,
+  GET_STUDIES_LIST,
+  GET_STUDIES_LIST_SUCCESS,
+  GET_STUDIES_LIST_FAILURE,
+  GET_PINNED_LIST,
+  GET_PINNED_LIST_SUCCESS,
+  GET_PINNED_LIST_FAILURE,
+  SELECTED_DATAFLOW,
 } from "../../constants";
 
 export const initialState = {
@@ -29,7 +36,10 @@ export const initialState = {
     dfCount: "",
     dsCount: "",
   },
-  selectedDFId: "",
+  dfId: "",
+  userStudies: [],
+  selectedDataFlow: "",
+  userPinnedStudies: [],
 };
 
 const DashboardReducer = (state = initialState, action) =>
@@ -40,7 +50,7 @@ const DashboardReducer = (state = initialState, action) =>
         break;
 
       case SELECT_DATAFLOW:
-        newState.selectedDFId = action.dataflowId;
+        newState.dfId = action.dataflowId;
         break;
 
       case GET_DATA_FLOW_LIST:
@@ -56,6 +66,32 @@ const DashboardReducer = (state = initialState, action) =>
         newState.loading = false;
         break;
 
+      case GET_STUDIES_LIST:
+        newState.loading = true;
+        break;
+
+      case GET_STUDIES_LIST_SUCCESS:
+        newState.loading = false;
+        newState.userStudies = action.userStudies;
+        break;
+
+      case GET_STUDIES_LIST_FAILURE:
+        newState.loading = false;
+        break;
+
+      case GET_PINNED_LIST:
+        newState.loading = true;
+        break;
+
+      case GET_PINNED_LIST_SUCCESS:
+        newState.loading = false;
+        newState.userPinnedStudies = action.userPinnedStudies;
+        break;
+
+      case GET_PINNED_LIST_FAILURE:
+        newState.loading = false;
+        break;
+
       case GET_DATASET_INGESTION_SUMMARY:
         newState.summaryLoading = true;
         break;
@@ -67,6 +103,10 @@ const DashboardReducer = (state = initialState, action) =>
 
       case GET_DATASET_INGESTION_SUMMARY_FAILURE:
         newState.summaryLoading = false;
+        break;
+
+      case SELECTED_DATAFLOW:
+        newState.selectedDataFlow = action.dataflow;
         break;
 
       default:

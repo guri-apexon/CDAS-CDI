@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect } from "react-redux";
 import { reduxForm, getFormValues } from "redux-form";
@@ -37,9 +37,6 @@ const styles = {
   },
   section: {
     marginBottom: 32,
-  },
-  subsection: {
-    marginBottom: 8,
   },
   divider: {
     marginBottom: 24,
@@ -94,7 +91,8 @@ const DataFlowFormBase = (props) => {
     changeFormField,
     changeLocationType,
     connLink,
-    dataflowSource,
+    testLock,
+    prodLock,
   } = props;
   const onChangeServiceOwner = (values) => {
     change("serviceOwnerValue", values);
@@ -158,6 +156,7 @@ const DataFlowFormBase = (props) => {
                 id="dataStructure"
                 label="Data Structure"
                 fullWidth
+                canDeselect={false}
               >
                 {dataStruct?.map((type) => (
                   <MenuItem key={type.value} value={type.value}>
@@ -170,6 +169,7 @@ const DataFlowFormBase = (props) => {
                 label="Location Type"
                 onChange={(e) => changeLocationType(e.target.value)}
                 fullWidth
+                canDeselect={false}
               >
                 {locationTypes?.map((type) => (
                   <MenuItem key={type} value={type}>
@@ -252,6 +252,9 @@ const DataFlowForm = connect((state) => ({
   locations: state.dataFlow.locations?.records,
   vendors: state.dataFlow.vendors?.records,
   serviceOwners: state.dataFlow.serviceOwners?.records,
+  testLock: state.dataFlow.testLock,
+  prodLock: state.dataFlow.prodLock,
+  testProdLock: state.dataFlow.testProdLock,
 }))(ReduxForm);
 
 export default DataFlowForm;

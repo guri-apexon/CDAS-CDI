@@ -6,6 +6,7 @@ import DataFlowReducer from "./DataFlowReducer";
 import DataSetsReducer from "./DataSetsReducer";
 import AuditLogsReducer from "./AuditLogsReducer";
 import CDIAdminReducer from "./CDIAdminReducer";
+import IngestionReportReducer from "./IngestionReportReducer";
 
 // eslint-disable-next-line import/prefer-default-export
 export const appReducer = combineReducers({
@@ -17,4 +18,5 @@ export const appReducer = combineReducers({
   auditLogs: AuditLogsReducer,
   dataSets: DataSetsReducer,
   cdiadmin: CDIAdminReducer,
+  ingestionReports: IngestionReportReducer,
 });

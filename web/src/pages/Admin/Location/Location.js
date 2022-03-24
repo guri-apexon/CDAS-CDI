@@ -12,6 +12,7 @@ import Table, {
   createStringSearchFilter,
   compareStrings,
   compareNumbers,
+  createSelectFilterComponent,
 } from "apollo-react/components/Table";
 import Tooltip from "apollo-react/components/Tooltip";
 import Switch from "apollo-react/components/Switch";
@@ -32,6 +33,7 @@ import {
   statusUpdate,
 } from "../../../services/ApiServices";
 import { locationExistInDFMsg } from "../../../constants";
+import "./Location.scss";
 
 const LinkCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
@@ -69,6 +71,7 @@ const StatusCell =
     );
   };
 
+const statusList = ["Active", "Inactive"];
 const generateColumns = (tableRows = [], handleStatusChange = null) => {
   return [
     {
@@ -82,7 +85,7 @@ const generateColumns = (tableRows = [], handleStatusChange = null) => {
       width: 180,
     },
     {
-      header: "Connection URL",
+      header: "IP Server/Connection URL",
       accessor: "cnn_url",
       customCell: ConnCell,
       sortFunction: compareStrings,
@@ -132,20 +135,10 @@ const generateColumns = (tableRows = [], handleStatusChange = null) => {
       sortFunction: compareNumbers,
       width: 13,
       filterFunction: createStatusArraySearchFilter("active"),
-      filterComponent: createAutocompleteFilter(
-        [
-          {
-            label: "Active",
-          },
-          {
-            label: "Inactive",
-          },
-        ],
-        {
-          size: "small",
-          multiple: true,
-        }
-      ),
+      filterComponent: createSelectFilterComponent(statusList, {
+        size: "small",
+        multiple: true,
+      }),
     },
   ];
 };

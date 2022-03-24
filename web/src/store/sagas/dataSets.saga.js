@@ -15,6 +15,8 @@ import {
   FETCH_DATASET_DETAIL_SUCCESS,
   UPDATE_DATASET_SUCCESS,
   UPDATE_DATASET_FAILURE,
+  UPDATE_COLUMNS_SUCCESS,
+  UPDATE_COLUMNS_FAILURE,
   FETCH_DATASET_COLUMNS_SUCCESS,
   FETCH_DATASET_COLUMNS_FAILURE,
   VLCDATAAPI,
@@ -74,7 +76,7 @@ export function* fetchSQLTables() {
       `${baseURL}/${SQLTABLESAPI}`,
       {}
     );
-    console.log("fetchSQLTables", fetchSQLTables);
+    // console.log("fetchSQLTables", fetchSQLTables);
     yield put({
       type: FETCH_SQL_TABLES_SUCCESS,
       sqlTables: fetchSQLTable.data.data,
@@ -106,7 +108,7 @@ export function* fetchPreviewSQL(action) {
       `${baseURL}/${PREVIEWSQLAPI}`,
       { query: action.query }
     );
-    console.log("fetchPreviewSQLData", fetchPreviewSQLData);
+    // console.log("fetchPreviewSQLData", fetchPreviewSQLData);
     yield put({
       type: FETCH_PREVIEW_SQL_SUCCESS,
       previewSQL: fetchPreviewSQLData.data.data,
@@ -116,16 +118,52 @@ export function* fetchPreviewSQL(action) {
   }
 }
 
-export function* saveDataset(action) {
+export function* fetchDatasetDetail(action) {
   try {
     const fetchSBData = yield call(
       axios.post,
-      `${baseURL}/${DATASETAPI}/create`,
-      action.values
+      `${baseURL}/${DATASETAPI}/detail/${action.dsId}`,
+      { datasetid: action.dsId }
     );
     yield put({
+      type: FETCH_DATASET_DETAIL_SUCCESS,
+      datasetDetail: fetchSBData.data.data,
+    });
+  } catch (e) {
+    const errText = e.response?.data?.message
+      ? e.response.data.message
+      : e.message;
+    yield put({ type: FETCH_DATASET_DETAIL_FAILURE, message: errText });
+  }
+}
+
+export function* fetchDatasetColumns(action) {
+  try {
+    const fetchSBData = yield call(
+      axios.post,
+      `${baseURL}/${COLUMNSAPI}/list`,
+      { datasetid: action.dsId }
+    );
+    yield put({
+      type: FETCH_DATASET_COLUMNS_SUCCESS,
+      datasetColumns: fetchSBData.data.data,
+    });
+  } catch (e) {
+    const errText = e.response?.data?.message
+      ? e.response.data.message
+      : e.message;
+    yield put({ type: FETCH_DATASET_COLUMNS_FAILURE, message: errText });
+  }
+}
+
+export function* saveDataset(action) {
+  try {
+    const saveData = yield call(axios.post, `${baseURL}/${DATASETAPI}/create`, {
+      ...action,
+    });
+    yield put({
       type: STORE_DATASET_SUCCESS,
-      dataset: fetchSBData.data.data,
+      dataset: saveData.data.data,
       values: action.values,
     });
   } catch (e) {
@@ -141,55 +179,16 @@ export function* saveDataset(action) {
   }
 }
 
-export function* saveDatasetColumns(action) {
-  try {
-    const fetchSBData = yield call(
-      axios.post,
-      `${baseURL}/${COLUMNSAPI}/create/${action.datasetid}`,
-      action.values
-    );
-    // console.log("study", fetchSBData);
-    yield put({
-      type: STORE_DATASET_COLUMNS_SUCCESS,
-      datasetColumns: fetchSBData.data.data,
-    });
-  } catch (e) {
-    const errText = e.response?.data?.message
-      ? e.response.data.message
-      : e.message;
-    yield put({ type: STORE_DATASET_COLUMNS_FAILURE, message: errText });
-  }
-}
-
-export function* fetchDatasetDetail(action) {
-  try {
-    const fetchSBData = yield call(
-      axios.get,
-      `${baseURL}/${DATASETAPI}/detail/${action.datasetid}`,
-      {}
-    );
-    yield put({
-      type: FETCH_DATASET_DETAIL_SUCCESS,
-      datasetDetail: fetchSBData.data.data,
-    });
-  } catch (e) {
-    const errText = e.response?.data?.message
-      ? e.response.data.message
-      : e.message;
-    yield put({ type: FETCH_DATASET_DETAIL_FAILURE, message: errText });
-  }
-}
-
 export function* updateDataset(action) {
   try {
-    const fetchSBData = yield call(
+    const saveData = yield call(
       axios.post,
       `${baseURL}/${DATASETAPI}/update`,
       action.values
     );
     yield put({
       type: UPDATE_DATASET_SUCCESS,
-      update: fetchSBData.data.data,
+      update: saveData.data.data,
       values: action.values,
     });
   } catch (e) {
@@ -204,23 +203,45 @@ export function* updateDataset(action) {
   }
 }
 
-export function* fetchDatasetColumns(action) {
+export function* saveDatasetColumns(action) {
   try {
-    const fetchSBData = yield call(
+    const saveData = yield call(
       axios.post,
-      `${baseURL}/${COLUMNSAPI}/list`,
-      {
-        datasetid: action.datasetid,
-      }
+      `${baseURL}/${COLUMNSAPI}/create/${action.dsId}`,
+      { ...action }
     );
     yield put({
-      type: FETCH_DATASET_COLUMNS_SUCCESS,
-      datasetColumns: fetchSBData.data.data,
+      type: STORE_DATASET_COLUMNS_SUCCESS,
+      datasetColumns: saveData.data.data,
     });
   } catch (e) {
     const errText = e.response?.data?.message
       ? e.response.data.message
       : e.message;
-    yield put({ type: FETCH_DATASET_COLUMNS_FAILURE, message: errText });
+    yield put({ type: STORE_DATASET_COLUMNS_FAILURE, message: errText });
+  }
+}
+
+export function* updateDatasetColumns(action) {
+  try {
+    const saveData = yield call(
+      axios.post,
+      `${baseURL}/${COLUMNSAPI}/update/${action.dsId}`,
+      { ...action }
+    );
+    yield put({
+      type: UPDATE_COLUMNS_SUCCESS,
+      update: saveData.data.data,
+      values: action.values,
+    });
+  } catch (e) {
+    const errText = e.response?.data?.message
+      ? e.response.data.message
+      : e.message;
+    yield put({
+      type: UPDATE_COLUMNS_FAILURE,
+      message: errText,
+      values: action.values,
+    });
   }
 }

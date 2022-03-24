@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-wrap-multilines */
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
@@ -67,31 +68,26 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LeftPanel = () => {
+const LeftPanel = ({ dataflowSource }) => {
   const classes = useStyles();
   const history = useHistory();
   const dispatch = useDispatch();
   const [searchTxt, setSearchTxt] = useState("");
   const packageData = useSelector((state) => state.dataPackage);
-  const dataFlowData = useSelector((state) => state.dataFlow);
-  const dashboard = useSelector((state) => state.dashboard);
-  const { description, selectedVendor, dataflowType, loading } = dataFlowData;
+  const { description, dataflowid, vendorname, name, testflag, active } =
+    dataflowSource;
+  const { loading, packagesList } = packageData;
   const userInfo = getUserInfo();
   const location = useLocation();
-  const { selectedDFId, selectedCard } = dashboard;
   const viewAuditLog = () => {
     history.push("/dashboard/audit-logs");
   };
-  const getPackages = (query = "") => {
-    if (selectedDFId) {
-      dispatch(getPackagesList(selectedDFId, query));
-    } else {
-      // history.push("dashboard");
+  const getPackages = (dfid, query = "") => {
+    if (dfid) {
+      dispatch(getPackagesList(dfid, query));
     }
   };
-  useEffect(() => {
-    getPackages();
-  }, []);
+
   const searchTrigger = (e) => {
     const newValue = e.target.value;
     setSearchTxt(newValue);
@@ -135,7 +131,13 @@ const LeftPanel = () => {
           <FormControlLabel
             style={{ fontSize: 14 }}
             value="true"
-            control={<Switch color="primary" size="small" />}
+            control={
+              <Switch
+                color="primary"
+                size="small"
+                checked={active === 0 ? false : true}
+              />
+            }
             label="Active"
             labelPlacement="start"
           />
@@ -145,16 +147,12 @@ const LeftPanel = () => {
       <Divider />
       <Box className="sidebar-content">
         <Tag
-          label={dataflowType}
+          label={testflag === 1 ? "Test" : "Production"}
           variant="grey"
           style={{ textTransform: "capitalize", marginBottom: 20 }}
         />
-        <Typography className={classes.LeftTitle}>
-          Virologicclinic-IIBR12-001-Other
-        </Typography>
-        <Typography className={classes.LeftSubTitle}>
-          {selectedVendor?.label}
-        </Typography>
+        <Typography className={classes.LeftTitle}>{name}</Typography>
+        <Typography className={classes.LeftSubTitle}>{vendorname}</Typography>
         <Typography className={classes.description}>
           {/* <ArrowRight className={classes.icon} /> */}
           {description}
@@ -196,14 +194,18 @@ const LeftPanel = () => {
       <div className="packages-list customScrollbar">
         {packageData ? (
           <div className="list-container">
-            {loading ? (
+            {loading && (
               <Box display="flex" className="loader-container">
                 <ApolloProgress />
               </Box>
-            ) : (
+            )}
+            {!loading && (
               <>
                 <Typography variant="body2" style={{ marginLeft: 10 }}>
-                  {`${packageData.packagesList.length} Data Packages`}
+                  {packagesList.length === 1 &&
+                    `${packagesList.length}  Data Package`}
+                  {packagesList.length >= 1 &&
+                    `${packagesList.length} Data Packages`}
                 </Typography>
                 <PackagesList userInfo={userInfo} data={packageData} />
               </>

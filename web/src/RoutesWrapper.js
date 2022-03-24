@@ -13,7 +13,7 @@ import PageHeader from "./components/Common/PageHeader";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
-const DataFlowCreate = lazy(() => import("./pages/DataFlow/DataFlow"));
+const DataFlowCreate = lazy(() => import("./pages/DataFlow/Create"));
 
 // const DataSets = lazy(() => import("./pages/DataSets/DataSets"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
@@ -54,20 +54,16 @@ const WithPageHeader = () => {
           render={() => <DataFlowCreate />}
         />
         <Route
-          path={`${match.path}/datasets-management`}
-          exact
-          render={() => <Dataset />}
-        />
-        <Route
           path={`${match.path}/dataset/:datasetId`}
           exact
           render={() => <Dataset />}
         />
         <Route
-          path="/ingestion-report/:datasetId"
+          path={`${match.path}/ingestion-report/:datasetId`}
           exact
           render={() => <DatasetIngestionReport />}
         />
+        <Redirect from="*" to="/dashboard" />
       </Switch>
     </>
   );
@@ -79,8 +75,8 @@ const WithOutPageHeader = () => {
     <>
       <Switch>
         <Route path={`${match.path}/cdi`} exact render={() => <CDIAdmin />} />
-        {/* <Route path={`${match.path}/jdbc`} exact render={() => <JDBCForm />} />
-        <Route
+        {/* <Route path={`${match.path}/jdbc`} exact render={() => <JDBCForm />} />  */}
+        {/* <Route
           path={`${match.path}/columns`}
           exact
           render={() => <ColumnsTab />}
@@ -133,8 +129,8 @@ const CDIWrapper = () => {
           <Switch>
             <Route path="/dashboard" render={() => <WithPageHeader />} />
             <Route path="/admin" render={() => <WithOutPageHeader />} />
+            <Route path="*" render={() => <WithPageHeader />} />
           </Switch>
-          <Redirect from="/" to="/dashboard" />
         </div>
       ) : (
         <Switch>

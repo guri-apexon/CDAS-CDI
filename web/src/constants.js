@@ -1,7 +1,7 @@
 export const Success = "success";
 export const Warning = "warning";
 export const Info = "info";
-export const Error = "error";
+export const Err = "error";
 
 export const LOGIN_REQUEST = "LOGIN_REQUEST";
 export const LOGOUT_REQUEST = "LOGOUT_REQUEST";
@@ -10,6 +10,7 @@ export const LOGOUT_SUCCESS = "LOGOUT_SUCCESS";
 export const AUTH_SUCCESS = "AUTH_SUCCESS";
 export const AUTH_FAILURE = "AUTH_FAILURE";
 
+export const SELECTED_DATAFLOW = "SELECTED_DATAFLOW";
 export const DASHBOARD_DATA = "DASHBOARD_DATA";
 export const DASHBOARD_FETCH_SUCCESS = "DASHBOARD_FETCH_SUCCESS";
 export const DASHBOARD_FETCH_FAILUR = "DASHBOARD_FETCH_FAILUR";
@@ -19,11 +20,22 @@ export const FETCH_DASHBOARD_STUDY_SUCCESS = "FETCH_DASHBOARD_STUDY_SUCCESS";
 export const FETCH_DASHBOARD_STUDY_FAILUR = "FETCH_DASHBOARD_STUDY_FAILUR";
 
 export const PAGEHEADER_UPDATE = "PAGEHEADER_UPDATE";
+export const UPDATE_DS = "UPDATE_DS";
+export const RESET_FTP_FORM = "RESET_FTP_FORM";
+export const RESET_JDBC_FORM = "RESET_JDBC_FORM";
 export const SELECT_DATAFLOW = "SELECT_DATAFLOW";
 
 export const GET_DATA_FLOW_LIST = "GET_DATA_FLOW_LIST";
 export const GET_DATA_FLOW_LIST_SUCCESS = "GET_DATA_FLOW_LIST_SUCCESS";
 export const GET_DATA_FLOW_LIST_FAILURE = "GET_DATA_FLOW_LIST_FAILURE";
+
+export const GET_STUDIES_LIST = "GET_STUDIES_LIST";
+export const GET_STUDIES_LIST_SUCCESS = "GET_STUDIES_LIST_SUCCESS";
+export const GET_STUDIES_LIST_FAILURE = "GET_STUDIES_LIST_FAILURE";
+
+export const GET_PINNED_LIST = "GET_PINNED_LIST";
+export const GET_PINNED_LIST_SUCCESS = "GET_PINNED_LIST_SUCCESS";
+export const GET_PINNED_LIST_FAILURE = "GET_PINNED_LIST_FAILURE";
 
 export const ADD_DATAFLOW = "ADD_DATAFLOW";
 export const ADD_DATAFLOW_SUCCESS = "ADD_DATAFLOW_SUCCESS";
@@ -72,6 +84,8 @@ export const FETCH_SERVICE_OWNERS_FAILURE = "FETCH_SERVICE_OWNERS_FAILURE";
 export const GET_DATAFLOW_DETAIL = "GET_DATAFLOW_DETAIL";
 export const FETCH_DATAFLOW_DETAIL_SUCCESS = "FETCH_DATAFLOW_DETAIL_SUCCESS";
 export const FETCH_DATAFLOW_DETAIL_FAILURE = "FETCH_DATAFLOW_DETAIL_FAILURE";
+export const FETCH_DATAFLOW_LOCAL_DETAIL = "FETCH_DATAFLOW_LOCAL_DETAIL";
+export const SAVE_DATAFLOW_LOCAL_DETAIL = "SAVE_DATAFLOW_LOCAL_DETAIL";
 
 export const GET_DATASET_DETAIL = "GET_DATASET_DETAIL";
 export const FETCH_DATASET_DETAIL_SUCCESS = "FETCH_DATASET_DETAIL_SUCCESS";
@@ -99,6 +113,10 @@ export const STORE_DATASET_COLUMNS_FAILURE = "STORE_DATASET_COLUMNS_FAILURE";
 
 export const UPDATE_DATASET_SUCCESS = "UPDATE_DATASET_SUCCESS";
 export const UPDATE_DATASET_FAILURE = "UPDATE_DATASET_FAILURE";
+
+export const UPDATE_COLUMNS_DATA = "UPDATE_COLUMNS_DATA";
+export const UPDATE_COLUMNS_SUCCESS = "UPDATE_COLUMNS_SUCCESS";
+export const UPDATE_COLUMNS_FAILURE = "UPDATE_COLUMNS_FAILURE";
 
 export const GET_DATASET_COLUMNS = "GET_DATASET_COLUMNS";
 export const FETCH_DATASET_COLUMNS_SUCCESS = "FETCH_DATASET_COLUMNS_SUCCESS";
@@ -130,12 +148,47 @@ export const GET_DATASET_INGESTION_SUMMARY_SUCCESS =
 export const GET_DATASET_INGESTION_SUMMARY_FAILURE =
   "GET_DATASET_INGESTION_SUMMARY_FAILURE";
 
+export const FETCH_SETTINGS_DATA = "FETCH_SETTINGS_DATA";
+export const CREARE_SETTINGS_DATA = "CREARE_SETTINGS_DATA";
+export const UPDATE_SETTINGS_DATA = "UPDATE_SETTINGS_DATA";
+export const SEARCH_SETTINGS_DATA = "SEARCH_SETTINGS_DATA";
+
+export const FETCH_SETTINGS_SUCCESS = "FETCH_SETTINGS_SUCCESS";
+export const FETCH_SETTINGS_FAILURE = "FETCH_SETTINGS_FAILURE";
+export const CREARE_SETTINGS_SUCCESS = "CREARE_SETTINGS_SUCCESS";
+export const CREARE_SETTINGS_FAILURE = "CREARE_SETTINGS_FAILURE";
+export const UPDATE_SETTINGS_SUCCESS = "UPDATE_SETTINGS_SUCCESS";
+export const UPDATE_SETTINGS_FAILURE = "UPDATE_SETTINGS_FAILURE";
+
+export const GET_TRANSFER_LOG = "GET_TRANSFER_LOG";
+export const FETCH_TRANSFER_LOG_SUCCESS = "FETCH_TRANSFER_LOG_SUCCESS";
+export const FETCH_TRANSFER_LOG_FAILURE = "FETCH_TRANSFER_LOG_FAILURE";
+
+export const GET_DATASET_PROPERTIES = "GET_DATASET_PROPERTIES";
+export const FETCH_DATASET_PROPERTIES_SUCCESS =
+  "FETCH_DATASET_PROPERTIES_SUCCESS";
+export const FETCH_DATASET_PROPERTIES_FAILURE =
+  "FETCH_DATASET_PROPERTIES_FAILURE";
+
+export const GET_DATASET_INGESTION_ISSUE_TYPES =
+  "GET_DATASET_INGESTION_ISSUE_TYPES";
+export const FETCH_DATASET_INGESTION_ISSUE_TYPES_SUCCESS =
+  "FETCH_DATASET_INGESTION_ISSUE_TYPES_SUCCESS";
+export const FETCH_DATASET_INGESTION_ISSUE_TYPES_FAILURE =
+  "FETCH_DATASET_INGESTION_ISSUE_TYPES_FAILURE";
+
+export const GET_DATASET_INGESTION_FILE_HISTORY =
+  "GET_DATASET_INGESTION_FILE_HISTORY";
+export const FETCH_DATASET_INGESTION_FILE_HISTORY_SUCCESS =
+  "FETCH_DATASET_INGESTION_FILE_HISTORY_SUCCESS";
+export const FETCH_DATASET_INGESTION_FILE_HISTORY_FAILURE =
+  "FETCH_DATASET_INGESTION_FILE_HISTORY_FAILURE";
 // API URLS
 
-export const FLOW_DATA_FETCH = "v1/api/dataflow/studyDataflowList";
+export const GETSTUDYDF = "v1/api/dataflow/studyDataflowList";
 export const STUDYSEARCH = "v1/api/study/search-study";
 export const STUDYAPI = "v1/api/study";
-export const HARDDELETE = "v1/api/dataflow/hardDelete";
+export const HARDDELETE = "v1/api/dataflow/hardDeleteNew";
 export const SYNCNOW = "v1/api/dataflow/syncNow";
 export const ACTIVATEDF = "v1/api/dataflow/activate";
 export const INACTIVATE = "v1/api/dataflow/inActivate";
@@ -165,6 +218,8 @@ export const VLCDATAAPI = "v1/api/dataset/getVLCData";
 export const SQLTABLESAPI = "v1/api/dataset/getTables";
 export const SQLCOLUMNSAPI = "v1/api/dataset/getColumns";
 export const PREVIEWSQLAPI = "v1/api/dataset/previewSQL";
+export const SETTINGAPI = "v1/api/system-settings";
+export const INGESTIONREPORTAPI = "v1/api/dataset/ingestion-report";
 
 export const baseURL = process.env.REACT_APP_API_URL;
 
@@ -175,10 +230,11 @@ export const allowedTypes = [
   "csv",
 ];
 
-export const hive2CDP = "test.com";
-export const hive2CDH = "test.com";
-export const oracle = "oracle.com";
-export const SQLServer = "sqlserver.com";
-export const impala = "impala.com";
+export const hive2CDP = "com.cloudera.hive.jdbc41.HS2Driver";
+export const hive2CDH = "com.cloudera.hive.jdbc41.HS2Driver";
+export const oracle = "oracle.jdbc.driver.OracleDriver";
+export const SQLServer = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+export const impala = "com.cloudera.impala.jdbc41.Driver";
+export const PostgreSQL = "org.postgresql.Driver";
 export const locationExistInDFMsg =
   "IP Server or DB Hostname cannot be inactivated until removed from all data flows using this location.";

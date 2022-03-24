@@ -1,23 +1,28 @@
-.audit-logs-wrapper{
-    .top-content{
-        padding: 15px 35px;
-        ol{
-            padding: 0;
-            margin-left: -8px;
-            margin-bottom: 20px;
-            margin-top: 6px;
-        }
-        .title{
-            margin-bottom: 12px;
-            svg{
-                margin-right: 10px;
-            }
-        }
+.audit-logs-wrapper {
+  .top-content {
+    padding: 15px 35px;
+    ol {
+      padding: 0;
+      margin-left: -8px;
+      margin-bottom: 20px;
+      margin-top: 6px;
     }
-    tr{
-        height: 0 !important;
+    .title {
+      margin-bottom: 12px;
+      svg {
+        margin-right: 10px;
+      }
     }
-    tr[class*=" MuiTableRow-hover-"]{
-        height: 48px !important;
+  }
+  tr {
+    height: 0 !important;
+  }
+  tr[class*=" MuiTableRow-hover-"] {
+    height: 48px !important;
+  }
+  .MuiToolbar-root {
+    h3 {
+      font-size: 24px !important;
     }
+  }
 }

@@ -12,9 +12,12 @@ import {
   SAVE_DATASET_DATA,
   SAVE_DATASET_COLUMNS,
   GET_DATA_FLOW_LIST,
+  GET_STUDIES_LIST,
+  GET_PINNED_LIST,
   GET_DATAFLOW_DETAIL,
   GET_DATASET_DETAIL,
   UPDATE_DATASET_DATA,
+  UPDATE_COLUMNS_DATA,
   GET_DATASET_COLUMNS,
   ADD_DATAFLOW,
   GET_VLC_RULES,
@@ -25,6 +28,13 @@ import {
   GET_PREVIEW_SQL,
   GET_SQL_TABLES,
   GET_SQL_COLUMNS,
+  CREARE_SETTINGS_DATA,
+  UPDATE_SETTINGS_DATA,
+  FETCH_SETTINGS_DATA,
+  GET_TRANSFER_LOG,
+  GET_DATASET_PROPERTIES,
+  GET_DATASET_INGESTION_ISSUE_TYPES,
+  GET_DATASET_INGESTION_FILE_HISTORY,
 } from "../../constants";
 
 import {
@@ -36,6 +46,8 @@ import {
 import {
   fetchFlowData,
   fetchDatasetIngestionSummaryData,
+  fetchUserStudiesData,
+  fetchPinnedStudies,
 } from "./dashboard.saga";
 import {
   fetchDataKindData,
@@ -48,6 +60,7 @@ import {
   fetchSQLColumns,
   fetchPreviewSQL,
   fetchVLCData,
+  updateDatasetColumns,
 } from "./dataSets.saga";
 
 import {
@@ -64,10 +77,21 @@ import {
   fetchCDTList,
   updateLocationData,
   saveLocationData,
+  createSettingsData,
+  updateSettingsData,
+  fetchSettingsList,
 } from "./cdiAdmin.saga";
+import {
+  fetchDatasetIngestionFileHistory,
+  fetchDatasetIngestionIssueTypes,
+  fetchProperties,
+  fetchTransferLog,
+} from "./IngestionReport.saga";
 
 function* cdasCoreSaga() {
   yield takeEvery(GET_DATA_FLOW_LIST, fetchFlowData);
+  yield takeEvery(GET_STUDIES_LIST, fetchUserStudiesData);
+  yield takeEvery(GET_PINNED_LIST, fetchPinnedStudies);
   yield takeLatest(
     GET_DATASET_INGESTION_SUMMARY,
     fetchDatasetIngestionSummaryData
@@ -87,6 +111,7 @@ function* cdasCoreSaga() {
   yield takeLatest(GET_DATAFLOW_DETAIL, fetchDataflowDetail);
   yield takeLatest(GET_DATASET_DETAIL, fetchDatasetDetail);
   yield takeLatest(UPDATE_DATASET_DATA, updateDataset);
+  yield takeLatest(UPDATE_COLUMNS_DATA, updateDatasetColumns);
   yield takeLatest(GET_DATASET_COLUMNS, fetchDatasetColumns);
   yield takeLatest(GET_VLC_RULES, fetchVLCData);
   yield takeLatest(GET_LOCATIONS_ADMIN, fetchLocationsData);
@@ -95,6 +120,19 @@ function* cdasCoreSaga() {
   yield takeLatest(GET_PREVIEW_SQL, fetchPreviewSQL);
   yield takeLatest(GET_SQL_TABLES, fetchSQLTables);
   yield takeLatest(GET_SQL_COLUMNS, fetchSQLColumns);
+  yield takeLatest(FETCH_SETTINGS_DATA, fetchSettingsList);
+  yield takeLatest(CREARE_SETTINGS_DATA, createSettingsData);
+  yield takeLatest(UPDATE_SETTINGS_DATA, updateSettingsData);
+  yield takeLatest(GET_TRANSFER_LOG, fetchTransferLog);
+  yield takeLatest(GET_DATASET_PROPERTIES, fetchProperties);
+  yield takeLatest(
+    GET_DATASET_INGESTION_ISSUE_TYPES,
+    fetchDatasetIngestionIssueTypes
+  );
+  yield takeLatest(
+    GET_DATASET_INGESTION_FILE_HISTORY,
+    fetchDatasetIngestionFileHistory
+  );
 }
 
 export default cdasCoreSaga;

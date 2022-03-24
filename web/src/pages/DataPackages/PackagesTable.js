@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { reset } from "redux-form";
 import Typography from "apollo-react/components/Typography";
 import Tooltip from "apollo-react/components/Tooltip";
 import IconButton from "apollo-react/components/IconButton";
@@ -21,10 +20,11 @@ import {
   redirectToDataSet,
   updateStatus,
 } from "../../store/actions/DataPackageAction";
+import { updateDSState } from "../../store/actions/DataFlowAction";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
-    <div style={{ width: 12 }}>
+    <div style={{ width: 12, marginLeft: "5px" }}>
       <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
         <IconButton
           id="expand"
@@ -48,7 +48,7 @@ const NameCustomCell = ({ row, column: { accessor } }) => {
   const title = row[accessor] || row.datapackageid;
   return (
     <div className="flex package-name-td">
-      <PackageIcon style={{ width: 15, margin: "0px 8px" }} />
+      <PackageIcon style={{ width: 15, margin: "0px 10px" }} />
       <span className="b-font">{title}</span>
     </div>
   );
@@ -74,9 +74,8 @@ const PackagesList = ({ data, userInfo }) => {
 
   const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
-    dispatch(reset("DataSetsForm"));
-    dispatch(reset("DataSetsFormSQL"));
-    history.push("/dashboard/datasets-management");
+    dispatch(updateDSState(true));
+    history.push("/dashboard/dataset/new");
   };
 
   const DataSetsCell = ({ row, column: { accessor } }) => {
@@ -87,7 +86,7 @@ const PackagesList = ({ data, userInfo }) => {
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
-        <span customtooltip="Add Dataset">
+        <span customtooltip="Add dataset" className="add-dataset">
           <RoundPlusSvg
             className="add-dataset-btn"
             onClick={() =>
@@ -101,6 +100,7 @@ const PackagesList = ({ data, userInfo }) => {
 
   const goToDataSet = (dfId, dfName, dpId, dpName, dsId, dsName) => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
+    dispatch(updateDSState(false));
     history.push(`/dashboard/dataset/${dsId}`);
   };
 
@@ -167,7 +167,7 @@ const PackagesList = ({ data, userInfo }) => {
           updateStatus({
             package_id: packageId,
             active: status === 1 ? "0" : "1",
-            user_id: userInfo.user_id,
+            user_id: userInfo.userId,
           })
         );
       }
@@ -175,7 +175,7 @@ const PackagesList = ({ data, userInfo }) => {
     const deleteAction = () => {
       if (packageId) {
         dispatch(
-          deletePackage({ package_id: packageId, user_id: userInfo.user_id })
+          deletePackage({ package_id: packageId, user_id: userInfo.userId })
         );
       }
     };
@@ -204,7 +204,11 @@ const PackagesList = ({ data, userInfo }) => {
 
     return (
       <div className="flex">
-        <EllipsisVertical fontSize="small" onClick={openAction} />
+        <EllipsisVertical
+          fontSize="small"
+          onClick={openAction}
+          style={{ cursor: "pointer" }}
+        />
         <Menu
           id="tableMenu"
           anchorEl={anchorEl}

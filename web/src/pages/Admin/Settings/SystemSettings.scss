@@ -1,0 +1,41 @@
+.setting-card {
+  padding: 10px;
+  margin: 10px 18px;
+}
+.system-table {
+  thead {
+    display: none;
+  }
+  tbody tr {
+    border: 0;
+    height: auto !important;
+    td {
+      padding-right: 0 !important;
+      padding-left: 0 !important;
+    }
+  }
+  tbody tr:nth-last-child(-n + 2) {
+    .setting-card {
+      margin-bottom: 35px;
+    }
+  }
+}
+.setting-name {
+  color: #000000;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 17px;
+  margin-bottom: 6px;
+}
+
+.setting-value {
+  color: #000000;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 17px;
+  font-weight: 600;
+}
+
+input#settingSearch:focus {
+  border-color: #d9d9d9;
+}
