@@ -363,7 +363,8 @@ exports.getVLCData = async (req, res) => {
 
 exports.getDatasetDetail = async (req, res) => {
   try {
-    const datasetid = req.params.datasetid;
+    // const datasetid = req.params.datasetid;
+    const { datasetid } = req.body;
     const query = `SELECT * from ${schemaName}.dataset WHERE datasetid = $1`;
     Logger.info({ message: "getDatasetDetail" });
     const datasetDetail = await DB.executeQuery(query, [datasetid]);

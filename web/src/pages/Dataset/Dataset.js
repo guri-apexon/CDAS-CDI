@@ -148,8 +148,8 @@ const Dataset = () => {
       dispatch(resetFTP());
       dispatch(resetJDBC());
     } else {
-      dispatch(getDataSetDetail(dfId, datapackageid, datasetid));
-      dispatch(getDatasetColumns(dfId, datapackageid, datasetid));
+      dispatch(getDataSetDetail(datasetid));
+      dispatch(getDatasetColumns(datasetid));
     }
   }, [datasetid]);
 
