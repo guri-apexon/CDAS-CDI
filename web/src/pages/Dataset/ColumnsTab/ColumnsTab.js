@@ -87,6 +87,7 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
               values: column.lov || "",
               isInitLoad: true,
               isHavingError: false,
+              isHavingColumnName: true,
             };
             return newObj;
           })

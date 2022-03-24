@@ -11,6 +11,7 @@ import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../utils/downloadData";
 import { createDatasetColumns } from "../../../store/actions/DataSetsAction";
+import { deleteCD } from "../../../services/ApiServices";
 
 export default function DSColumnTable({
   numberOfRows,
@@ -59,22 +60,25 @@ export default function DSColumnTable({
   const [isMultiAdd, setIsMultiAdd] = useState(false);
   const [newRows, setNewRows] = useState("");
   const [disableSaveAll, setDisableSaveAll] = useState(true);
-  // const [isAdding, setIsAdding] = useState(true);
 
   useEffect(() => {
     const initRows = initialRows.map((e) => e.uniqueId);
-    if (dataOrigin === "fileUpload") {
-      setSelectedRows([...initRows]);
-      setEditedRows(formattedData);
-    } else if (dataOrigin === "fromDB") {
-      const newData = formattedData.map((e, index) => {
-        e.uniqueId = `u${index}`;
-        return e;
-      });
-      setRows([...newData]);
-    } else if (dataOrigin === "manually") {
+    // if (dataOrigin === "fileUpload") {
+    //   // setEditedRows(formattedData);
+    // } else if (dataOrigin === "fromDB") {
+    //   // const newData = formattedData.map((e, index) => {
+    //   //   e.uniqueId = `u${index}`;
+    //   //   return e;
+    //   // });
+    //   // console.log("taData", newData);
+    //   // setRows([...newData]);
+    // } else
+    if (dataOrigin === "manually") {
       setSelectedRows([...initRows]);
       setEditedRows(initialRows);
+    } else {
+      setEditedRows(formattedData);
+      setRows(formattedData);
     }
   }, [dataOrigin]);
 
@@ -344,7 +348,12 @@ export default function DSColumnTable({
     setEditedRows(rows);
   };
 
-  const onRowDelete = (uniqueId) => {
+  const onRowDelete = async (uniqueId) => {
+    const isInDB = rows.find((row) => row.uniqueId === uniqueId);
+    if (isInDB) {
+      const id = isInDB.dbColumnId;
+      await deleteCD(id);
+    }
     setRows(rows.filter((row) => row.uniqueId !== uniqueId));
     setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
   };
@@ -403,6 +412,7 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
+        {console.log("data", rows, editedRows, formattedData, dataOrigin)}
         <Table
           title="Dataset Column Settings"
           subtitle={`${

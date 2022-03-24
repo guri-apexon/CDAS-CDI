@@ -126,9 +126,9 @@ exports.updateColumns = async (req, res) => {
 
 exports.deleteColumns = async (req, res) => {
   try {
-    const columnId = req.params.columnId;
+    const { columnId } = req.body;
     Logger.info({ message: "deleteColumns" });
-    const updateQuery = `UPDATE ${schemaName}.columndefinition del_flg=1 WHERE columnid=$1`;
+    const updateQuery = `update ${schemaName}.columndefinition set del_flg = 1 where columnid = $1`;
     DB.executeQuery(updateQuery, [columnId]).then((response) => {
       const datasetColumns = response.rows || null;
       return apiResponse.successResponseWithData(
