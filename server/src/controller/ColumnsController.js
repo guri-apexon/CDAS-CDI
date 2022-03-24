@@ -33,7 +33,7 @@ exports.saveDatasetColumns = async (req, res) => {
     const datasetid = req.params.datasetid;
     const values = req.body;
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, name, "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable, del_flg, insrt_tm, updt_tm)
-     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
+     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`;
     Logger.info({ message: "storeDatasetColumns" });
     const curDate = helper.getCurrentTime();
 
@@ -46,14 +46,14 @@ exports.saveDatasetColumns = async (req, res) => {
         value.dataType.trim() || null,
         value.primary == "Yes" ? 1 : 0,
         value.required == "Yes" ? 1 : 0,
-        value.minLength.trim() || null,
-        value.maxLength.trim() || null,
-        value.position.trim() || null,
+        value.minLength.trim() || 0,
+        value.maxLength.trim() || 0,
+        value.position.trim() || 0,
         value.format.trim() || null,
         value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
         value.unique == "Yes" ? 1 : 0,
         value.variableLabel.trim() || null,
-        "N",
+        0,
         curDate,
         curDate,
       ];
