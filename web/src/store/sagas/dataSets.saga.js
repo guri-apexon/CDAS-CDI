@@ -123,7 +123,7 @@ export function* fetchDatasetDetail(action) {
     const fetchSBData = yield call(
       axios.post,
       `${baseURL}/${DATASETAPI}/detail/${action.dsId}`,
-      { ...action }
+      { datasetid: action.dsId }
     );
     yield put({
       type: FETCH_DATASET_DETAIL_SUCCESS,
@@ -142,7 +142,7 @@ export function* fetchDatasetColumns(action) {
     const fetchSBData = yield call(
       axios.post,
       `${baseURL}/${COLUMNSAPI}/list`,
-      { ...action }
+      { datasetid: action.dsId }
     );
     yield put({
       type: FETCH_DATASET_COLUMNS_SUCCESS,
