@@ -1,5 +1,6 @@
 /* eslint-disable eqeqeq */
 import produce from "immer";
+import moment from "moment";
 import {
   GET_VENDORS_DATA,
   GET_LOCATIONS_DATA,
@@ -172,7 +173,7 @@ const DataFlowReducer = (state = initialState, action) =>
         // eslint-disable-next-line no-case-declarations
         const formData = {};
         formData.description = description;
-        formData.firstFileDate = exptfstprddt;
+        formData.firstFileDate = moment(exptfstprddt);
         formData.locationType = loctyp;
         formData.name = name;
         formData.dataflowType = testflag === 1 ? "test" : "production";
