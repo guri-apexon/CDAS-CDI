@@ -257,7 +257,6 @@ const DataSetsFormBase = (props) => {
               {formValues.fileType === "Excel" && (
                 <ReduxFormTextField
                   fullWidth
-                  maxLength="30"
                   name="filePwd"
                   size="small"
                   type="password"
