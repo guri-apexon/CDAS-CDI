@@ -282,7 +282,6 @@ export const columns = [
     accessor: "position",
     customCell: EditableCell,
     sortFunction: compareStrings,
-    hidden: true,
   },
   {
     header: "Format",
