@@ -275,7 +275,7 @@ const DataSetsFormBase = (props) => {
                 singleSelect
                 fullWidth
               />
-              {formValues.fileType === "Excel" && (
+              {formValues === "Excel" && (
                 <ReduxFormTextField
                   fullWidth
                   name="filePwd"
