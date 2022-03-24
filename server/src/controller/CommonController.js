@@ -226,13 +226,14 @@ module.exports = {
     new_val = ""
   ) {
     return new Promise((resolve, reject) => {
-      if (!package) resolve(false);
+      if (!dfId) resolve(false);
       const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
       DB.executeQuery(
         `SELECT version from ${constants.DB_SCHEMA_NAME}.dataflow_version
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`
       ).then(async (response) => {
         const historyVersion = response.rows[0]?.version || 0;
+
         const version = Number(historyVersion) + 1;
         const uniqueId = helper.createUniqueID();
         const addHistoryQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;

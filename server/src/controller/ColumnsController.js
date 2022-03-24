@@ -33,8 +33,6 @@ exports.saveDatasetColumns = async (req, res) => {
   try {
     const datasetid = req.params.datasetid;
     const values = req.body;
-    console.log("test", values.dsId);
-    // console.log("test2", dsId);
 
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, name, "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable, del_flg, insrt_tm, updt_tm)
      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`;
@@ -110,8 +108,8 @@ exports.updateColumns = async (req, res) => {
     Logger.info({ message: "update set columns" });
     const updateQuery = `UPDATE ${schemaName}.columndefinition "variable"=$2, datasetid=$3, name=$4, datatype=$5, primarykey=$6, required=$7, "unique"=$8, charactermin=$9, charactermax=$10, position=$11, "format"=$12, lov=$13, updt_tm=$14 WHERE columnid=$1`;
     const selectQuery = `select variable, name, datatype, primarykey, required, unique, 
-                          charactermin, charactermax, position, format
-                          from ${schemaName}.columndefinition where WHERE columnid=$1`;
+                          charactermin, charactermax, position, format,lov
+                          from ${schemaName}.columndefinition where columnid=$1`;
 
     const inserted = await values.map(async (value) => {
       const body = [
@@ -144,13 +142,14 @@ exports.updateColumns = async (req, res) => {
         charactermax: value.maxLength.trim() || null,
         position: value.position.trim() || null,
         format: value.format.trim() || null,
+        lov: value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
       };
       const jsonObj = requestData;
 
       jsonObj["dataflowid"] = values.dfId;
       jsonObj["datapackageid"] = values.dpId;
       jsonObj["datasetid"] = datasetid;
-      jsonObj["columnId"] = columnId;
+      jsonObj["columnId"] = value.columnId.trim();
       const config_json = JSON.stringify(jsonObj);
 
       const { rows: tempData } = await DB.executeQuery(selectQuery, [
@@ -162,7 +161,7 @@ exports.updateColumns = async (req, res) => {
         if (`${requestData[key]}` != oldData[key]) {
           if (oldData[key] != null) {
             const historyVersion = await CommonController.addColumnHistory(
-              columnId,
+              value.columnId.trim(),
               datasetid,
               values.dfId,
               values.dpId,
@@ -209,7 +208,7 @@ exports.deleteColumns = async (req, res) => {
 
       const historyVersion = await CommonController.addColumnHistory(
         columnId,
-        datasetid,
+        values.datasetid,
         values.dfId,
         values.dpId,
         values.userId,
@@ -228,6 +227,48 @@ exports.deleteColumns = async (req, res) => {
     });
   } catch (err) {
     Logger.error("catch: deleteColumns");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.lovUpdate = async (req, res) => {
+  try {
+    const columnId = req.params.columnId;
+    const values = req.body;
+
+    Logger.info({ message: "lovUpdate" });
+    const selectQuery = `SELECT  "lov" from ${schemaName}.columndefinition WHERE columnid = $1`;
+    const updateQuery = `UPDATE ${schemaName}.columndefinition set lov=$2,updt_tm=$3 WHERE columnid=$1`;
+
+    const lovData = await DB.executeQuery(selectQuery, [columnId]);
+
+    DB.executeQuery(updateQuery, [columnId, values.lov, new Date()]).then(
+      async (response) => {
+        const datasetColumns = response.rows || null;
+
+        const historyVersion = await CommonController.addColumnHistory(
+          columnId,
+          values.datasetid,
+          values.dfId,
+          values.dpId,
+          values.userId,
+          null,
+          "lov",
+          lovData.rows[0].lov,
+          values.lov
+        );
+        if (!historyVersion) throw new Error("History not updated");
+
+        return apiResponse.successResponseWithData(
+          res,
+          "Operation success",
+          datasetColumns
+        );
+      }
+    );
+  } catch (err) {
+    Logger.error("catch: lovUpdate");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
