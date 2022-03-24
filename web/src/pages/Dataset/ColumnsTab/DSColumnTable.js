@@ -10,7 +10,10 @@ import Modal from "apollo-react/components/Modal";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../utils/downloadData";
-import { createDatasetColumns } from "../../../store/actions/DataSetsAction";
+import {
+  createDatasetColumns,
+  updateDatasetColumns,
+} from "../../../store/actions/DataSetsAction";
 import { deleteCD } from "../../../services/ApiServices";
 
 export default function DSColumnTable({
@@ -51,7 +54,6 @@ export default function DSColumnTable({
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [editMode, setEditMode] = useState(false);
-  const [rowErr, setRowErr] = useState({});
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -63,16 +65,6 @@ export default function DSColumnTable({
 
   useEffect(() => {
     const initRows = initialRows.map((e) => e.uniqueId);
-    // if (dataOrigin === "fileUpload") {
-    //   // setEditedRows(formattedData);
-    // } else if (dataOrigin === "fromDB") {
-    //   // const newData = formattedData.map((e, index) => {
-    //   //   e.uniqueId = `u${index}`;
-    //   //   return e;
-    //   // });
-    //   // console.log("taData", newData);
-    //   // setRows([...newData]);
-    // } else
     if (dataOrigin === "manually") {
       setSelectedRows([...initRows]);
       setEditedRows(initialRows);
@@ -80,7 +72,7 @@ export default function DSColumnTable({
       setEditedRows(formattedData);
       setRows(formattedData);
     }
-  }, [dataOrigin]);
+  }, []);
 
   useEffect(() => {
     const allColumns = editedRows.map((e) => e.isHavingColumnName);
@@ -182,28 +174,25 @@ export default function DSColumnTable({
 
   const addMulti = () => {
     setIsMultiAdd(false);
-    if (parseInt(newRows, 10) > 0) {
-      const multiRows = Array.from(
-        { length: parseInt(newRows, 10) },
-        (i, index) => ({
-          uniqueId: `u${rows.length + index}`,
-          columnId: rows.length + index + 1,
-          variableLabel: "",
-          columnName: "",
-          position: "",
-          format: "",
-          dataType: "",
-          primary: "No",
-          unique: "No",
-          required: "No",
-          minLength: "",
-          maxLength: "",
-          values: "",
-          isInitLoad: true,
-          isHavingError: false,
-          isHavingColumnName: false,
-        })
-      );
+    if (newRows > 0) {
+      const multiRows = Array.from({ length: newRows }, (i, index) => ({
+        uniqueId: `u${rows.length + index}`,
+        columnId: rows.length + index + 1,
+        variableLabel: "",
+        columnName: "",
+        position: "",
+        format: "",
+        dataType: "",
+        primary: "No",
+        unique: "No",
+        required: "No",
+        minLength: "",
+        maxLength: "",
+        values: "",
+        isInitLoad: true,
+        isHavingError: false,
+        isHavingColumnName: false,
+      }));
       const moreRows = multiRows.map((e) => e.uniqueId);
       setSelectedRows([...moreRows]);
       setEditedRows([...editedRows, ...multiRows]);
@@ -218,7 +207,7 @@ export default function DSColumnTable({
   const addNewRows = (value) => {
     const total = parseInt(rows.length, 10) + parseInt(value, 10);
     if (total < 500) {
-      setNewRows(value);
+      setNewRows(parseInt(value, 10));
     } else if (total) {
       messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
     }
@@ -338,6 +327,11 @@ export default function DSColumnTable({
       })
       .find((e) => e.uniqueId === uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
+    if (editedRowData?.dbColumnId) {
+      dispatch(updateDatasetColumns([editedRowData], datasetid));
+    } else {
+      dispatch(createDatasetColumns([editedRowData], datasetid));
+    }
     setRows([...removeExistingRowData, editedRowData]);
     setEditedRows([...removeEdited]);
     setSelectedRows([...removeRow]);

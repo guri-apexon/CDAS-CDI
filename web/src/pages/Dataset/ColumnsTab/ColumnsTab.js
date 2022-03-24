@@ -69,7 +69,7 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
 
   const formatDBColumns = (datacolumns) => {
     const newData =
-      datacolumns.length > 1
+      datacolumns.length > 0
         ? datacolumns.map((column, i) => {
             const newObj = {
               columnId: i + 1,
