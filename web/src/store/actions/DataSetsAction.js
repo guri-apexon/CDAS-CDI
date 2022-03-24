@@ -12,6 +12,7 @@ import {
   GET_PREVIEW_SQL,
   RESET_FTP_FORM,
   RESET_JDBC_FORM,
+  UPDATE_COLUMNS_DATA,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -47,28 +48,38 @@ export const updateDatasetData = (values) => {
   };
 };
 
-export const createDatasetColumns = (values, datasetid) => {
+export const createDatasetColumns = (values, dsId, dfId, dpId, userId) => {
   return {
     type: SAVE_DATASET_COLUMNS,
     values,
-    datasetid,
-  };
-};
-
-export const getDataSetDetail = (dfId, dpId, dsId) => {
-  return {
-    type: GET_DATASET_DETAIL,
     dsId,
     dfId,
     dpId,
+    userId,
   };
 };
 
-export const getDatasetColumns = (dfId, dpId, dsId) => {
+export const updateDatasetColumns = (values, dsId, dfId, dpId, userId) => {
   return {
-    type: GET_DATASET_COLUMNS,
+    type: UPDATE_COLUMNS_DATA,
+    values,
+    dsId,
     dfId,
     dpId,
+    userId,
+  };
+};
+
+export const getDataSetDetail = (dsId) => {
+  return {
+    type: GET_DATASET_DETAIL,
+    dsId,
+  };
+};
+
+export const getDatasetColumns = (dsId) => {
+  return {
+    type: GET_DATASET_COLUMNS,
     dsId,
   };
 };
