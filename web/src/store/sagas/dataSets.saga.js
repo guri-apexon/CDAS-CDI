@@ -167,7 +167,7 @@ export function* fetchDatasetDetail(action) {
       axios.post,
       `${baseURL}/${DATASETAPI}/detail/${action.dsId}`,
       {
-        selectedDFId: action.dfId,
+        dfId: action.dfId,
         datapackageid: action.dpId,
       }
     );

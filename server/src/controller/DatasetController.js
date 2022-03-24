@@ -58,7 +58,7 @@ async function saveSQLDataset(req, res, values, datasetId) {
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    const { datapackageid, selectedDFId, filePwd } = req.body;
+    const { datapackageid, dfId, filePwd } = req.body;
     const isExist = await checkNameExists(
       values.datasetName,
       datapackageid,
@@ -78,12 +78,9 @@ exports.saveDatasetData = async (req, res) => {
 
     if (filePwd) {
       passwordStatus = "Yes";
-      await helper.writeVaultData(
-        `${selectedDFId}/${datapackageid}/${datasetId}`,
-        {
-          password: filePwd,
-        }
-      );
+      await helper.writeVaultData(`${dfId}/${datapackageid}/${datasetId}`, {
+        password: filePwd,
+      });
     } else {
       passwordStatus = "No";
     }
@@ -154,7 +151,7 @@ exports.updateDatasetData = async (req, res) => {
   try {
     const values = req.body;
     Logger.info({ message: "update Dataset" });
-    const { selectedDFId, datapackageid, datasetid, filePwd } = req.body;
+    const { dfId, datapackageid, datasetid, filePwd } = req.body;
     const isExist = await checkNameExists(
       values.datasetName,
       datapackageid,
@@ -173,12 +170,9 @@ exports.updateDatasetData = async (req, res) => {
 
     if (filePwd) {
       passwordStatus = "Yes";
-      await helper.writeVaultData(
-        `${selectedDFId}/${datapackageid}/${datasetid}`,
-        {
-          password: filePwd,
-        }
-      );
+      await helper.writeVaultData(`${dfId}/${datapackageid}/${datasetid}`, {
+        password: filePwd,
+      });
     } else {
       passwordStatus = "No";
     }

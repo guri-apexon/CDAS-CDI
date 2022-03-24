@@ -64,7 +64,7 @@ const DataPackages = () => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const userInfo = getUserInfo();
 
-  const { selectedDFId, selectedCard } = dashboard;
+  const { dfId, selectedCard } = dashboard;
 
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -132,7 +132,7 @@ const DataPackages = () => {
       package_password: packagePassword,
       sftp_path: sftpPath,
       study_id: selectedCard.prot_id,
-      dataflow_id: selectedDFId,
+      dataflow_id: dfId,
       user_id: userInfo.userId,
     };
     dispatch(addDataPackage(reqBody));

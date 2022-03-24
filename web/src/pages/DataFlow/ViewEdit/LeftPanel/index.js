@@ -73,13 +73,11 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
   const dispatch = useDispatch();
   const [searchTxt, setSearchTxt] = useState("");
   const packageData = useSelector((state) => state.dataPackage);
-  // const dataFlowData = useSelector((state) => state.dataFlow);
   const dashboard = useSelector((state) => state.dashboard);
   const { description, vendorname, testflag, active } = dataflowSource;
   const { loading, packagesList } = packageData;
   const userInfo = getUserInfo();
   const location = useLocation();
-  const { selectedDFId, selectedCard } = dashboard;
   const viewAuditLog = () => {
     history.push("/audit-logs");
   };
