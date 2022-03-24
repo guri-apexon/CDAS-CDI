@@ -215,9 +215,12 @@ module.exports = {
     });
   },
   addColumnHistory: function (
-    package,
+    columnId,
+    datasetid,
+    dfId,
+    dpId,
+    userId,
     config_json,
-    dataflowid,
     column,
     old_val = "",
     new_val = ""
@@ -227,30 +230,25 @@ module.exports = {
       const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
       DB.executeQuery(
         `SELECT version from ${constants.DB_SCHEMA_NAME}.dataflow_version
-      WHERE dataflowid = '${dataflowid}' order by version DESC limit 1`
+      WHERE dataflowid = '${dfId}' order by version DESC limit 1`
       ).then(async (response) => {
         const historyVersion = response.rows[0]?.version || 0;
         const version = Number(historyVersion) + 1;
         const uniqueId = helper.createUniqueID();
         const addHistoryQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
-        const values = [
-          dataflowid,
-          version,
-          config_json,
-          package.userId,
-          currentTime,
-        ];
+        const values = [dfId, version, config_json, userId, currentTime];
         DB.executeQuery(addHistoryQuery, values).then(async (response) => {
-          const addAuditLogQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_audit_log(dataflowid, datapackageid,datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8,$9)`;
+          const addAuditLogQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_audit_log(dataflowid, datapackageid,datasetid,columnid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8,$9,$10)`;
           const auditValues = [
-            dataflowid,
-            package.datapackageid,
-            package.datasetid,
+            dfId,
+            dpId,
+            datasetid,
+            columnId,
             version,
             column,
             old_val,
             new_val,
-            package.userId,
+            userId,
             currentTime,
           ];
           DB.executeQuery(addAuditLogQuery, auditValues)
