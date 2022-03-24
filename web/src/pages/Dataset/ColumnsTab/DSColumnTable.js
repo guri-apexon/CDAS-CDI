@@ -67,7 +67,11 @@ export default function DSColumnTable({
       setSelectedRows([...initRows]);
       setEditedRows(formattedData);
     } else if (dataOrigin === "fromDB") {
-      setRows([...formattedData]);
+      const newData = formattedData.map((e, index) => {
+        e.uniqueId = `u${index}`;
+        return e;
+      });
+      setRows([...newData]);
     } else if (dataOrigin === "manually") {
       setSelectedRows([...initRows]);
       setEditedRows(initialRows);
