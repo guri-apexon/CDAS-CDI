@@ -1,5 +1,5 @@
 var express = require("express");
-const dbadaptorController = require("../controller/dbadaptorController");
+const dbadaptorController = require("../controller/DbadaptorController");
 
 var router = express.Router();
 
