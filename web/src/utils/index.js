@@ -413,7 +413,7 @@ export const formatData = (incomingData, protNo) => {
 };
 
 export const Capitalize = (str) => {
-  console.log(str, "stt");
+  // console.log(str, "stt");
   return str && str.charAt(0).toUpperCase() + str.slice(1);
 };
 
