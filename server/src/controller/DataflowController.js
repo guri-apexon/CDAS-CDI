@@ -781,8 +781,8 @@ exports.syncDataFlow = async (req, res) => {
   try {
     let { version, userId, dataFlowId } = req.body;
     let q = `INSERT INTO ${schemaName}.cdr_ta_queue
-    (dataflowid, datapackageid, datasetid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
-    VALUES($1, '', '', 'SYNC', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0)`;
+    (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+    VALUES($1, 'SYNC', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0)`;
     await DB.executeQuery(q, [dataFlowId, userId, version]);
     return apiResponse.successResponse(
       res,
