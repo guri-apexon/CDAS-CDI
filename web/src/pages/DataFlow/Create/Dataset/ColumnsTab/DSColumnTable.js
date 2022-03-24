@@ -43,6 +43,7 @@ export default function DSColumnTable({
   }));
 
   const [rows, setRows] = useState([]);
+  const [filteredRows, setFilteredRows] = useState([]);
   const [editedRows, setEditedRows] = useState(initialRows);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState("");
@@ -74,6 +75,12 @@ export default function DSColumnTable({
       // setIsAdding(true);
     }
   }, [dataOrigin]);
+
+  useEffect(() => {
+    if (rows.length) {
+      setFilteredRows(rows);
+    }
+  }, [rows]);
 
   useEffect(() => {
     const allColumns = editedRows.map((e) => e.isHavingColumnName);
@@ -116,7 +123,7 @@ export default function DSColumnTable({
     // eslint-disable-next-line prefer-destructuring
     setSearchValue(e.target.value);
     const value = e.target.value?.toLowerCase();
-    const filteredRows = rows?.filter((rw) => {
+    const filteredRowsTemp = rows?.filter((rw) => {
       return (
         rw?.variableLabel?.toLowerCase().includes(value) ||
         rw?.columnName?.toLowerCase().includes(value) ||
@@ -131,8 +138,8 @@ export default function DSColumnTable({
         rw?.values?.toLowerCase().includes(value)
       );
     });
-    console.log(filteredRows, "filteredRows");
-    // setFilteredRows([...filteredRows]);
+    // console.log(filteredRowsTemp, "filteredRowsTemp");
+    setFilteredRows([...filteredRowsTemp]);
   };
 
   const addSingleRow = (obj) => {
@@ -420,7 +427,7 @@ export default function DSColumnTable({
       addMulti(previewSQL);
     }
   }, []);
-
+  console.log(filteredRows, "rows");
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
@@ -437,7 +444,7 @@ export default function DSColumnTable({
           initialSortOrder="asc"
           rowId="uniqueId"
           hasScroll={true}
-          rows={(editMode ? editedRows : rows).map((row, i) => ({
+          rows={(editMode ? editedRows : filteredRows).map((row, i) => ({
             ...row,
             onRowDelete,
             editRow,

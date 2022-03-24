@@ -80,6 +80,7 @@ const LocationForm = (props) => {
               fullWidth
               InputProps={{ readOnly: props.locationViewMode }}
               name="locationName"
+              size="small"
               label="Location Name (Alias)"
             />
           </Grid>
@@ -103,6 +104,7 @@ const LocationForm = (props) => {
               InputProps={{ readOnly: props.locationViewMode }}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
               canDeselect={false}
+              size="small"
               fullWidth
             >
               {extSysName?.map((type) => (
@@ -116,6 +118,7 @@ const LocationForm = (props) => {
             <ReduxFormSelect
               name="dataStructure"
               label="Data Structure"
+              size="small"
               InputProps={{ readOnly: props.locationViewMode }}
               canDeselect={false}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
@@ -132,6 +135,7 @@ const LocationForm = (props) => {
             <ReduxFormSelect
               name="locationType"
               label="Location Type"
+              size="small"
               InputProps={{ readOnly: props.locationViewMode }}
               canDeselect={false}
               onChange={(v) =>
@@ -157,6 +161,7 @@ const LocationForm = (props) => {
           <Grid item md={5}>
             <ReduxFormTextField
               fullWidth
+              size="small"
               name="ipServer"
               label={
                 locType === "SFTP" || locType === "FTPS"
@@ -181,6 +186,7 @@ const LocationForm = (props) => {
               <Grid item md={5}>
                 <ReduxFormTextField
                   fullWidth
+                  size="small"
                   name="port"
                   label="Port"
                   inputProps={{
@@ -204,6 +210,7 @@ const LocationForm = (props) => {
                   fullWidth
                   name="dbName"
                   label="Database Name"
+                  size="small"
                   onChange={(v) =>
                     props.generateUrl(
                       locType,
@@ -223,6 +230,7 @@ const LocationForm = (props) => {
             <ReduxFormTextField
               fullWidth
               name="userName"
+              size="small"
               label="Username"
               InputProps={{ readOnly: props.locationViewMode }}
             />
@@ -230,6 +238,7 @@ const LocationForm = (props) => {
           <Grid item md={5}>
             <ReduxFormTextField
               type="password"
+              size="small"
               fullWidth
               name="password"
               label={
@@ -260,6 +269,7 @@ const LocationForm = (props) => {
           fullWidth
           name="connURL"
           label="Connection URL"
+          size="small"
           InputProps={{
             readOnly: true,
           }}
