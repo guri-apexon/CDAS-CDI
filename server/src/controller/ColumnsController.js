@@ -9,7 +9,7 @@ exports.getColumnsSet = async (req, res) => {
   try {
     const { datasetid } = req.body;
     Logger.info({ message: "getColumnsSet" });
-    const searchQuery = `SELECT "columnid", variable, "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", format, "lov", "unique" from ${schemaName}.columndefinition WHERE datasetid = $1`;
+    const searchQuery = `SELECT "columnid", variable, "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", format, "lov", "unique" from ${schemaName}.columndefinition WHERE del_flg != 1 AND datasetid = $1`;
     DB.executeQuery(searchQuery, [datasetid]).then((response) => {
       const datasetColumns = response.rows || null;
       return apiResponse.successResponseWithData(
@@ -32,27 +32,30 @@ exports.saveDatasetColumns = async (req, res) => {
   try {
     const datasetid = req.params.datasetid;
     const values = req.body;
-    const insertQuery = `INSERT into ${schemaName}.columndefinition (columnid, "VARIABLE", datasetid, name, position, datatype, primarykey, required, "UNIQUE", charactermin, charactermax, "FORMAT", lov, insrt_tm, updt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
+    const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, name, "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable, del_flg, insrt_tm, updt_tm)
+     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
     Logger.info({ message: "storeDatasetColumns" });
+    const curDate = helper.getCurrentTime();
 
     const inserted = await values.map(async (value) => {
       const columnId = helper.generateUniqueID();
       const body = [
-        columnId,
-        value.variableLabel.trim() || null,
         datasetid,
+        columnId,
         value.columnName.trim() || null,
-        value.position.trim() || null,
         value.dataType.trim() || null,
         value.primary == "Yes" ? 1 : 0,
         value.required == "Yes" ? 1 : 0,
-        value.unique == "Yes" ? 1 : 0,
         value.minLength.trim() || null,
         value.maxLength.trim() || null,
+        value.position.trim() || null,
         value.format.trim() || null,
         value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
-        helper.getCurrentTime(),
-        helper.getCurrentTime(),
+        value.unique == "Yes" ? 1 : 0,
+        value.variableLabel.trim() || null,
+        "N",
+        curDate,
+        curDate,
       ];
       const insrted = await DB.executeQuery(insertQuery, body);
       return insrted;

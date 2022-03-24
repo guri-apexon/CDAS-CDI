@@ -94,7 +94,6 @@ const Dataset = (props, ref) => {
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
-  //   const { selectedDFId } = dashboard;
   const { dataflowName, datapackageName, datasetName } = selectedDSDetails;
   const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
     dataSets;
