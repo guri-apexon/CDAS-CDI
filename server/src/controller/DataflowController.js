@@ -260,16 +260,30 @@ exports.createDataflow = async (req, res) => {
           for (let each of dataPackage) {
             let newObj = {};
             const dpUid = createUniqueID();
+
             // if (each.name !== "" && each.path !== "" && each.type !== "") {
             let DPQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(datapackageid, type, name, path, 
                   password, active,nopackageconfig,externalid, insrt_tm, dataflowid)
-                  VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`;
+                  VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`;
+
+            let passwordStatus;
+            let { password } = each;
+
+            if (password) {
+              passwordStatus = "Yes";
+              helper.writeVaultData(`${uid}/${dpUid}`, {
+                password,
+              });
+            } else {
+              passwordStatus = "No";
+            }
+
             let body = [
               dpUid,
               each.type || null,
               each.name || null,
               each.path || null,
-              each.password || null,
+              passwordStatus || "No",
               each.active === false ? 0 : 1,
               each.noPackageConfig === false ? 0 : 1 || null,
               each.externalID || null,
@@ -320,7 +334,17 @@ exports.createDataflow = async (req, res) => {
                 const dsUid = createUniqueID();
                 let DSQuery = `insert into ${schemaName}.dataset(datasetid,datapackageid,datakindid,mnemonic,active,columncount,incremental,
                             offsetcolumn,type,path,ovrd_stale_alert,headerrownumber,footerrownumber,customsql,
-                            customsql_yn,tbl_nm,externalid,insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18);`;
+                            customsql_yn,tbl_nm,externalid,file_pwd,insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)`;
+                let dsPasswordStatus;
+                if (obj.filePwd) {
+                  let { filePwd } = obj;
+                  dsPasswordStatus = "Yes";
+                  helper.writeVaultData(`${uid}/${dpUid}/${dsUid}`, {
+                    password: filePwd,
+                  });
+                } else {
+                  dsPasswordStatus = "No";
+                }
                 let body = [
                   dsUid,
                   dpUid,
@@ -339,6 +363,7 @@ exports.createDataflow = async (req, res) => {
                   obj.customQuery || null,
                   obj.tableName || null,
                   obj.externalID || null,
+                  dsPasswordStatus || "No",
                   new Date(),
                 ];
                 let createDS = await DB.executeQuery(DSQuery, body);
