@@ -90,7 +90,6 @@ const Dataset = () => {
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
-  const [customSql, setCustomSql] = useState("Yes");
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
@@ -99,7 +98,7 @@ const Dataset = () => {
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
-  const { selectedDFId } = dashboard;
+  const { dfId } = dashboard;
   const { datapackageid, datapackageName, datasetid, datasetName } =
     selectedDSDetails;
   const {
@@ -137,7 +136,7 @@ const Dataset = () => {
   };
 
   useEffect(() => {
-    if (selectedDFId === "") {
+    if (dfId === "") {
       history.push("/dashboard");
     }
     dispatch(getDataKindData());
@@ -148,8 +147,8 @@ const Dataset = () => {
       dispatch(resetFTP());
       dispatch(resetJDBC());
     } else {
-      dispatch(getDataSetDetail(selectedDFId, datapackageid, datasetid));
-      dispatch(getDatasetColumns(selectedDFId, datapackageid, datasetid));
+      dispatch(getDataSetDetail(datasetid));
+      dispatch(getDatasetColumns(datasetid));
     }
   }, [datasetid]);
 
@@ -185,8 +184,8 @@ const Dataset = () => {
   }, [newLT, customSQLQuery, formDataSQL]);
 
   const goToDataflow = () => {
-    if (selectedDFId) {
-      history.push(`/dashboard/dataflow-management/${selectedDFId}`);
+    if (dfId) {
+      history.push(`/dashboard/dataflow-management/${dfId}`);
     }
   };
 
@@ -231,7 +230,7 @@ const Dataset = () => {
         ...formValue,
         datapackageid,
         dfTestFlag: testflag,
-        selectedDFId,
+        dfId,
       };
       if (data.datasetid) {
         dispatch(updateDatasetData(data));
@@ -361,7 +360,7 @@ const Dataset = () => {
               {
                 // <JDBCForm
                 //   datapackageid={datapackageid}
-                //   dataflowid={selectedDFId}
+                //   dataflowid={dfId}
                 //   datasetId={datasetid}
                 //   isDatasetCreated={isDatasetCreated}
                 //   selectedDataset={selectedDataset}

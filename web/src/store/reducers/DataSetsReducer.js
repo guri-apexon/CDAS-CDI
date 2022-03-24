@@ -22,6 +22,9 @@ import {
   UPDATE_DATASET_SUCCESS,
   UPDATE_DATASET_FAILURE,
   UPDATE_DATASET_DATA,
+  UPDATE_COLUMNS_DATA,
+  UPDATE_COLUMNS_FAILURE,
+  UPDATE_COLUMNS_SUCCESS,
   GET_VLC_RULES,
   FETCH_VLC_RULES_SUCCESS,
   FETCH_VLC_RULES_FAILURE,
@@ -167,6 +170,16 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.sucessMsg = null;
         newState.error = action.message;
         break;
+      case UPDATE_COLUMNS_SUCCESS:
+        newState.loading = false;
+        newState.error = null;
+        newState.sucessMsg = "Column Defination updated succesfully";
+        break;
+      case UPDATE_COLUMNS_FAILURE:
+        newState.loading = false;
+        newState.sucessMsg = null;
+        newState.error = action.message;
+        break;
       case GET_VLC_RULES:
         newState.loading = true;
         break;
@@ -215,6 +228,9 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = true;
         break;
       case UPDATE_DATASET_DATA:
+        newState.loading = true;
+        break;
+      case UPDATE_COLUMNS_DATA:
         newState.loading = true;
         break;
       case FETCH_DATASET_DETAIL_FAILURE:

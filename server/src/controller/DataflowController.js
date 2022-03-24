@@ -1,5 +1,4 @@
 const DB = require("../config/db");
-const oracleDB = require("../config/oracleDB");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const moment = require("moment");
@@ -476,6 +475,16 @@ exports.createDataflow = async (req, res) => {
       new Date(),
     ];
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
+
+    let q = `INSERT INTO ${schemaName}.cdr_ta_queue
+    (dataflowid, datapackageid, datasetid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+    VALUES($1, '', '', 'CONFIG', , 'QUEUE', NOW(),NOW(), '', 1, '', 1, '', 0)`;
+
+    await DB.executeQuery(q, [
+      uid,
+      externalSystemName === "CDI" ? userId : externalSystemName,
+    ]);
+
     return apiResponse.successResponseWithData(
       res,
       "Data flow created successfully.",
@@ -770,19 +779,11 @@ exports.inActivateDataFlow = async (req, res) => {
 
 exports.syncDataFlow = async (req, res) => {
   try {
-    let { version, userId, dataFlowId, action } = req.body;
-    var dbconnection = await oracleDB();
-    Logger.info({ message: "syncDataFlow" });
-    let sequenceIdQ = `SELECT MAX(CDR_TA_QUEUE_ID) FROM IDP.CDR_TA_QUEUE`;
-    const { rows } = await dbconnection.execute(sequenceIdQ);
-    let SeqID;
-    if (rows.length > 0) {
-      SeqID = rows[0]["MAX(CDR_TA_QUEUE_ID)"] + 1;
-    } else {
-      SeqID = 1;
-    }
-    let q = `insert into IDP.CDR_TA_QUEUE(cdr_ta_queue_id,version,dataflowid,action_user,action,STATUS,INSERTTIMESTAMP) values (${SeqID},${version},'${dataFlowId}','${userId}','${action}','QUEUE',CURRENT_TIMESTAMP)`;
-    const result = await dbconnection.execute(q);
+    let { version, userId, dataFlowId } = req.body;
+    let q = `INSERT INTO ${schemaName}.cdr_ta_queue
+    (dataflowid, datapackageid, datasetid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+    VALUES($1, '', '', 'SYNC', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0)`;
+    await DB.executeQuery(q, [dataFlowId, userId, version]);
     return apiResponse.successResponse(
       res,
       "Sync Pipeline configs successfully written to Kafka",
@@ -793,15 +794,6 @@ exports.syncDataFlow = async (req, res) => {
   } catch (error) {
     Logger.error("catch :syncDataFlow");
     return apiResponse.ErrorResponse(res, error);
-  } finally {
-    // await doRelease(dbconnection);
-    if (dbconnection) {
-      try {
-        await dbconnection.close();
-      } catch (err) {
-        console.error(err);
-      }
-    }
   }
 };
 

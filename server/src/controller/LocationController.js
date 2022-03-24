@@ -110,7 +110,7 @@ exports.searchLocationList = function (req, res) {
 exports.getLocationList = function (req, res) {
   try {
     let type = req.query.type || null;
-    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
+    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label, usr_nm, pswd, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
     let searchQuery = `SELECT ${select} from ${schemaName}.source_location where active=1 order by label asc`;
     let dbQuery = DB.executeQuery(searchQuery);
     if (type) {
@@ -148,7 +148,7 @@ exports.getLocationList = function (req, res) {
           return d;
         });
         return apiResponse.successResponseWithData(res, "Operation success", {
-          records: withCredentials,
+          records: locations,
           totalSize: response.rowCount,
         });
       })
