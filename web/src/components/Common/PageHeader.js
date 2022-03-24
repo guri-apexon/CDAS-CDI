@@ -22,7 +22,7 @@ const PageHeader = ({ height = 120 }) => {
       { label: "Datasets", value: selectedCard?.dsCount },
     ];
     setStateMenuItems([...updateData]);
-  }, [dashboard]);
+  }, [selectedCard]);
 
   useEffect(() => {
     if (location.pathname !== "/dashboard") {
