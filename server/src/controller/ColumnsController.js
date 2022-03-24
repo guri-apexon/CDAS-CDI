@@ -5,12 +5,13 @@ const helper = require("../helpers/customFunctions");
 const CommonController = require("./CommonController");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
+const curDate = helper.getCurrentTime();
 
 exports.getColumnsSet = async (req, res) => {
   try {
     const { datasetid } = req.body;
     Logger.info({ message: "getColumnsSet" });
-    const searchQuery = `SELECT "columnid", variable, "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", format, "lov", "unique" from ${schemaName}.columndefinition WHERE datasetid = $1`;
+    const searchQuery = `SELECT "columnid", variable, "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", format, "lov", "unique" from ${schemaName}.columndefinition WHERE coalesce (del_flg,0) != 1 AND datasetid = $1`;
     DB.executeQuery(searchQuery, [datasetid]).then((response) => {
       const datasetColumns = response.rows || null;
       return apiResponse.successResponseWithData(
@@ -37,7 +38,6 @@ exports.saveDatasetColumns = async (req, res) => {
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, name, "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable, del_flg, insrt_tm, updt_tm)
      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`;
     Logger.info({ message: "storeDatasetColumns" });
-    const curDate = helper.getCurrentTime();
 
     const inserted = await values.map(async (value) => {
       const columnId = helper.generateUniqueID();
@@ -126,7 +126,7 @@ exports.updateColumns = async (req, res) => {
         value.position.trim() || null,
         value.format.trim() || null,
         value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
-        new Date(),
+        curDate,
       ];
 
       const insrted = await DB.executeQuery(updateQuery, body);
@@ -199,9 +199,9 @@ exports.updateColumns = async (req, res) => {
 
 exports.deleteColumns = async (req, res) => {
   try {
-    const columnId = req.params.columnId;
+    const { columnId } = req.body;
     Logger.info({ message: "deleteColumns" });
-    const updateQuery = `UPDATE ${schemaName}.columndefinition del_flg=1 WHERE columnid=$1`;
+    const updateQuery = `update ${schemaName}.columndefinition set del_flg = 1 where columnid = $1`;
 
     DB.executeQuery(updateQuery, [columnId]).then(async (response) => {
       const datasetColumns = response.rows || null;

@@ -17,6 +17,7 @@ import {
   DATAFLOW_SAVE,
   LOCATIONAPI,
   DATAKINDAPI,
+  COLUMNSAPI,
 } from "../constants";
 import { getCookie } from "../utils/index";
 
@@ -327,8 +328,6 @@ export const getPinnedStudies = async () => {
   }
 };
 
-export default searchStudy;
-
 export const userLogOut = () => {
   return axios
     .get(`${baseURL}/logout`)
@@ -339,3 +338,16 @@ export const userLogOut = () => {
       console.log(err);
     });
 };
+
+export const deleteCD = async (id) => {
+  try {
+    const res = await axios.post(`${baseURL}/${COLUMNSAPI}/delete/${id}`, {
+      userId,
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export default searchStudy;

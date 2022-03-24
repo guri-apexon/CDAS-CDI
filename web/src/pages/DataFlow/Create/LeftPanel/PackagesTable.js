@@ -225,7 +225,7 @@ const PackagesList = ({ data, userInfo }) => {
     {
       accessor: "expand",
       customCell: ExpandCell,
-      width: 20,
+      width: "fit-content",
     },
     {
       header: "Package Name",

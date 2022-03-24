@@ -7,12 +7,15 @@ import {
   checkAlphaNumericFileName,
   checkValidQuery,
   checkfilterCondition,
+  checkExecptSpace,
+  checkMinLength,
 } from "./validators";
 
 const dataSetsValidation = ({
   datasetName,
   clinicalDataType,
   fileType,
+  filePwd,
   transferFrequency,
   fileNamingConvention,
   rowDecreaseAllowed,
@@ -28,6 +31,7 @@ const dataSetsValidation = ({
     datasetName: checkRequired(datasetName) || checkAlphaNumeric(datasetName),
     clinicalDataType: checkRequired(clinicalDataType),
     fileType: checkRequired(fileType),
+    filePwd: checkExecptSpace(filePwd) || checkMinLength(filePwd),
     transferFrequency:
       checkRequired(transferFrequency) || checkNumbers(transferFrequency),
     fileNamingConvention:
