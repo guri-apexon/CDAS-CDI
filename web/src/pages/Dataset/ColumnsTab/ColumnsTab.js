@@ -18,7 +18,6 @@ import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatData } from "../../../utils/index";
 
 const ColumnsTab = ({ locationType, testLock, prodLock }) => {
-  // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
