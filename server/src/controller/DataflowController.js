@@ -475,6 +475,16 @@ exports.createDataflow = async (req, res) => {
       new Date(),
     ];
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
+
+    let q = `INSERT INTO ${schemaName}.cdr_ta_queue
+    (dataflowid, datapackageid, datasetid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+    VALUES($1, '', '', 'CONFIG', , 'QUEUE', NOW(),NOW(), '', 1, '', 1, '', 0)`;
+
+    await DB.executeQuery(q, [
+      uid,
+      externalSystemName === "CDI" ? userId : externalSystemName,
+    ]);
+
     return apiResponse.successResponseWithData(
       res,
       "Data flow created successfully.",
@@ -770,10 +780,10 @@ exports.inActivateDataFlow = async (req, res) => {
 exports.syncDataFlow = async (req, res) => {
   try {
     let { version, userId, dataFlowId } = req.body;
-    let q = `INSERT INTO cdascfg.cdr_ta_queue
+    let q = `INSERT INTO ${schemaName}.cdr_ta_queue
     (dataflowid, datapackageid, datasetid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
-    VALUES($1, '', '', 'SYNC', $3, 'QUEUE', NOW(),NOW(), '', $4, '', 1, '', 0)`;
-    const result = await DB.executeQuery(q, [dataFlowId, userId, version]);
+    VALUES($1, '', '', 'SYNC', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0)`;
+    await DB.executeQuery(q, [dataFlowId, userId, version]);
     return apiResponse.successResponse(
       res,
       "Sync Pipeline configs successfully written to Kafka",
