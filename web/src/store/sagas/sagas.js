@@ -17,6 +17,7 @@ import {
   GET_DATAFLOW_DETAIL,
   GET_DATASET_DETAIL,
   UPDATE_DATASET_DATA,
+  UPDATE_COLUMNS_DATA,
   GET_DATASET_COLUMNS,
   ADD_DATAFLOW,
   GET_VLC_RULES,
@@ -59,6 +60,7 @@ import {
   fetchSQLColumns,
   fetchPreviewSQL,
   fetchVLCData,
+  updateDatasetColumns,
 } from "./dataSets.saga";
 
 import {
@@ -109,6 +111,7 @@ function* cdasCoreSaga() {
   yield takeLatest(GET_DATAFLOW_DETAIL, fetchDataflowDetail);
   yield takeLatest(GET_DATASET_DETAIL, fetchDatasetDetail);
   yield takeLatest(UPDATE_DATASET_DATA, updateDataset);
+  yield takeLatest(UPDATE_COLUMNS_DATA, updateDatasetColumns);
   yield takeLatest(GET_DATASET_COLUMNS, fetchDatasetColumns);
   yield takeLatest(GET_VLC_RULES, fetchVLCData);
   yield takeLatest(GET_LOCATIONS_ADMIN, fetchLocationsData);

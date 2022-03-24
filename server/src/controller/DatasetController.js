@@ -59,7 +59,7 @@ async function saveSQLDataset(req, res, values, datasetId) {
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    const { datapackageid, selectedDFId, filePwd } = req.body;
+    const { datapackageid, dfId, filePwd } = req.body;
     const isExist = await checkNameExists(
       values.datasetName,
       datapackageid,
@@ -79,12 +79,9 @@ exports.saveDatasetData = async (req, res) => {
 
     if (filePwd) {
       passwordStatus = "Yes";
-      await helper.writeVaultData(
-        `${selectedDFId}/${datapackageid}/${datasetId}`,
-        {
-          password: filePwd,
-        }
-      );
+      await helper.writeVaultData(`${dfId}/${datapackageid}/${datasetId}`, {
+        password: filePwd,
+      });
     } else {
       passwordStatus = "No";
     }
@@ -208,7 +205,7 @@ exports.updateDatasetData = async (req, res) => {
     // console.log(values);
 
     Logger.info({ message: "update Dataset" });
-    const { selectedDFId, datapackageid, datasetid, filePwd } = req.body;
+    const { dfId, datapackageid, datasetid, filePwd } = req.body;
     const isExist = await checkNameExists(
       values.datasetName,
       datapackageid,
@@ -294,12 +291,9 @@ exports.updateDatasetData = async (req, res) => {
     }
     if (filePwd) {
       passwordStatus = "Yes";
-      await helper.writeVaultData(
-        `${selectedDFId}/${datapackageid}/${datasetid}`,
-        {
-          password: filePwd,
-        }
-      );
+      await helper.writeVaultData(`${dfId}/${datapackageid}/${datasetid}`, {
+        password: filePwd,
+      });
     } else {
       passwordStatus = "No";
     }
@@ -370,19 +364,16 @@ exports.getVLCData = async (req, res) => {
 exports.getDatasetDetail = async (req, res) => {
   try {
     const datasetid = req.params.datasetid;
-    const { selectedDFId, datapackageid } = req.body;
-    Logger.info({ message: "getDatasetDetail" });
     const query = `SELECT * from ${schemaName}.dataset WHERE datasetid = $1`;
+    Logger.info({ message: "getDatasetDetail" });
     const datasetDetail = await DB.executeQuery(query, [datasetid]);
-    const ds = datasetDetail.rows[0];
-    if (ds.file_pwd === "Yes") {
-      ds.password = await helper.readVaultData(
-        `${selectedDFId}/${datapackageid}/${datasetid}`
-      );
-    }
-    return apiResponse.successResponseWithData(res, "Operation success", ds);
+
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      datasetDetail.rows[0]
+    );
   } catch (err) {
-    //throw error in json response with status 500.
     console.log(err);
     Logger.error("catch :getDatasetDetail");
     return apiResponse.ErrorResponse(res, err);
