@@ -67,6 +67,7 @@ module.exports = async (
               } else {
                 //Execute a query
                 statement.executeQuery(query, function (err, resultset) {
+                  console.log("err", err);
                   if (err) {
                     res.status(500).json({
                       status: 0,
