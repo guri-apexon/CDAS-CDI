@@ -11,11 +11,23 @@ const vault = require("node-vault")({
 const roleId = process.env.ROLE_ID;
 const secretId = process.env.SECRET_ID;
 
+const getAlphaNumeric = () => {
+  const characters = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  const charactersLength = characters.length;
+  for (var i = 0; i < 16; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
+
 exports.generateUniqueID = function () {
+  return getAlphaNumeric();
   const unique_id = uuid();
   return unique_id.slice(0, 16);
 };
 exports.createUniqueID = () => {
+  return getAlphaNumeric();
   return crypto.randomBytes(3 * 4).toString("base64");
 };
 exports.getCurrentTime = () => {
