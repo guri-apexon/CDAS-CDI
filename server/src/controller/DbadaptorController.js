@@ -15,9 +15,15 @@ exports.listtables = async (res, req) => {
     } = req.req.body;
     //get connection
     let dbname = connectionUrl.split("/")[3];
-    //let q = `select table_name as tableName from information_schema.tables where table_schema = 'cdascfg'`;
-    //let q = "SELECT table_name as tableName FROM information_schema.tables;";
-    let q = "SELECT table_name as tableName FROM all_tables";
+    let q;
+    switch (locationType?.toLowerCase()) {
+      case "oracle":
+        q = "SELECT table_name as tableName FROM all_tables";
+        break;
+      default:
+        q = "SELECT table_name as tableName FROM information_schema.tables;";
+        break;
+    }
 
     let newConn = await jdbc(
       connectionUserName,
