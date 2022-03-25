@@ -224,7 +224,7 @@ exports.createDataflow = async (req, res) => {
           description || null,
           externalSystemName === "CDI"
             ? src_loc_id
-            : data[0].src_loc_id || null,
+            : data[0]?.src_loc_id || null,
           helper.stringToBoolean(active) ? 1 : 0,
           configured || 0,
           exptDtOfFirstProdFile || null,
@@ -401,7 +401,7 @@ exports.createDataflow = async (req, res) => {
                     let body = [
                       dsUid,
                       CDUid,
-                      el.name || null,
+                      el.name || el.columnName || null,
                       el.dataType || null,
                       el.primaryKey ? 1 : 0,
                       el.required ? 1 : 0,
