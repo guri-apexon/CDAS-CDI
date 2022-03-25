@@ -24,7 +24,7 @@ import { updateDSState } from "../../store/actions/DataFlowAction";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
-    <div style={{ width: 12, marginLeft: "5px" }}>
+    <div style={{ width: 12, marginLeft: "1px" }}>
       <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
         <IconButton
           id="expand"
