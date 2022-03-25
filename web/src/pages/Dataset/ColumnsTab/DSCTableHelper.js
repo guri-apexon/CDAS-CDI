@@ -395,6 +395,7 @@ export const CustomHeader = ({
   disableSaveAll,
   testLock,
   prodLock,
+  toggleFilters,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -494,6 +495,7 @@ export const CustomHeader = ({
         variant="secondary"
         icon={Filter}
         disabled={isEditAll}
+        onClick={toggleFilters}
       >
         Filter
       </Button>
