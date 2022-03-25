@@ -142,3 +142,8 @@
     top: -8px;
   }
 }
+#actions {
+  div[class*="MuiPopover-paper-"] {
+    max-height: none !important;
+  }
+}

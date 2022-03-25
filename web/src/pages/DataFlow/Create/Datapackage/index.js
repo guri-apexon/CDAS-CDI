@@ -53,10 +53,10 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
     submitForm: () => {
       if (disabled) {
         payloadBack({
-          compression_type: "",
-          naming_convention: "No package",
-          package_password: "",
-          sftp_path: "",
+          type: "",
+          name: "No package",
+          password: "",
+          path: "",
         });
         return false;
       }
@@ -70,11 +70,10 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
         }
       }
       const reqBody = {
-        compression_type: compression,
-        naming_convention:
-          namingConvention === "" ? "No package" : namingConvention,
-        package_password: packagePassword,
-        sftp_path: sftpPath,
+        type: compression,
+        name: namingConvention === "" ? "No package" : namingConvention,
+        password: packagePassword,
+        path: sftpPath,
       };
       payloadBack(reqBody);
     },
