@@ -144,15 +144,14 @@ const DataFlow = ({ FormValues, dashboard }) => {
     // console.log("FormValues?", FormValues);
     // console.log("protId", protId);
     if (
-      FormValues.vendor &&
+      FormValues.vendors &&
       FormValues.locationName &&
-      FormValues.firstFileDate &&
       FormValues.serviceOwnerValue &&
       FormValues.description !== "" &&
       protId !== ""
     ) {
       const payload = {
-        vendorID: FormValues.vendor[0],
+        vendorID: FormValues.vendors[0],
         locationName: FormValues.locationName[0],
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.dataflowType,
