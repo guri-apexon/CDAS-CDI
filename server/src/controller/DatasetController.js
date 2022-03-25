@@ -313,25 +313,33 @@ exports.previewSql = async (req, res) => {
       customSql,
       driverName,
     } = req.body;
-    if (locationType === _locationType) {
-      if (customQuery === "YES") {
-        //get connection
-        let q = `${customSql} LIMIT ${recordsCount}`;
-        await jdbc(
-          connectionUserName,
-          connectionPassword,
-          connectionUrl,
-          driverName,
-          q,
-          "query executed successfully.",
-          res
-        );
-      } else {
-        return apiResponse.ErrorResponse(res, "Custom query is not true");
+    // if (locationType === _locationType) {
+    if (customQuery === "YES") {
+      //get connection
+      let q = customSql;
+      switch (locationType?.toLowerCase()) {
+        case "oracle":
+          q = `${q} FETCH FIRST ${recordsCount} ROWS ONLY`;
+          break;
+        default:
+          q = `${q} LIMIT ${recordsCount};`;
+          break;
       }
+      await jdbc(
+        connectionUserName,
+        connectionPassword,
+        connectionUrl,
+        driverName,
+        q,
+        "query executed successfully.",
+        res
+      );
     } else {
-      return apiResponse.ErrorResponse(res, "Dataset location type is not SQL");
+      return apiResponse.ErrorResponse(res, "Custom query is not true");
     }
+    // } else {
+    //   return apiResponse.ErrorResponse(res, "Dataset location type is not SQL");
+    // }
   } catch (error) {
     console.log(err);
     Logger.error("catch :datasetpreviewSql");

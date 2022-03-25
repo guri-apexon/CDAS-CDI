@@ -15,11 +15,21 @@ const postgresqlDriver = path.join(
   "postgresql-42.3.2.jar"
 );
 
+const sqlServerDriver = path.join(
+  __dirname,
+  "Drivers",
+  "mssql-jdbc-9.4.1.jre8"
+);
+
 if (!jinst.isJvmCreated()) {
   jinst.addOption("-Xrs");
-  jinst.setupClasspath([mysqlDriver, oracleDriver, postgresqlDriver]);
+  jinst.setupClasspath([
+    mysqlDriver,
+    oracleDriver,
+    postgresqlDriver,
+    sqlServerDriver,
+  ]);
 }
-
 module.exports = async (
   username,
   pass,
