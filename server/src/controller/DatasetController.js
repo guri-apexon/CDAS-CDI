@@ -8,22 +8,7 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 const columnsMock = require("../../public/mock/listColumnsAPI.json");
 const tablesMock = require("../../public/mock/listTablesAPIResponse.json");
 const previewSQLMock = require("../../public/mock/responseBodyPreviewSQL.json");
-
-async function checkNameExists(
-  name,
-  datapackageid,
-  testflag,
-  datasetid = null
-) {
-  let searchQuery = `select d3.mnemonic from ${schemaName}.study s right join ${schemaName}.dataflow d on s.prot_id = d.prot_id right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2`;
-  let dep = [datapackageid, testflag];
-  if (datasetid) {
-    searchQuery = `select d3.mnemonic from ${schemaName}.study s right join ${schemaName}.dataflow d on s.prot_id = d.prot_id right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2 and d3.datasetid !=$3`;
-    dep = [datapackageid, testflag, datasetid];
-  }
-  const res = await DB.executeQuery(searchQuery, dep);
-  return res.rows.includes(name);
-}
+const CommonController = require("./CommonController");
 
 async function saveSQLDataset(req, res, values, datasetId) {
   try {
@@ -58,11 +43,11 @@ async function saveSQLDataset(req, res, values, datasetId) {
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    const { datapackageid, dfId, filePwd } = req.body;
-    const isExist = await checkNameExists(
+    const { datapackageid, dfId, filePwd, testFlag } = req.body;
+    const isExist = await CommonController.checkMnemonicExists(
       values.datasetName,
       datapackageid,
-      values.dfTestFlag
+      testFlag
     );
 
     if (isExist) {
@@ -151,13 +136,14 @@ exports.updateDatasetData = async (req, res) => {
   try {
     const values = req.body;
     Logger.info({ message: "update Dataset" });
-    const { dfId, datapackageid, datasetid, filePwd } = req.body;
-    const isExist = await checkNameExists(
+    const { dfId, datapackageid, testFlag, datasetid, filePwd } = req.body;
+    const isExist = await CommonController.checkMnemonicExists(
       values.datasetName,
       datapackageid,
-      values.dfTestFlag,
+      testFlag,
       datasetid
     );
+
     let passwordStatus;
     const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $19`;
     if (isExist) {
@@ -239,7 +225,6 @@ exports.getVLCData = async (req, res) => {
 
 exports.getDatasetDetail = async (req, res) => {
   try {
-    // const datasetid = req.params.datasetid;
     const { datasetid } = req.body;
     const query = `SELECT * from ${schemaName}.dataset WHERE datasetid = $1`;
     Logger.info({ message: "getDatasetDetail" });

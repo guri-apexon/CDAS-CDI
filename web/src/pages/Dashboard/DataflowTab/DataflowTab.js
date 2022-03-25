@@ -280,24 +280,29 @@ export default function DataflowTab({ updateData }) {
     const menuItems = [
       {
         text: "View audit log",
+        id: 1,
         onClick: () => viewAuditLogAction(dataFlowId, row),
       },
       {
         text: activeText,
+        id: 2,
         onClick: () => changeStatusAction({ dataFlowId, status, version }),
       },
       {
         text: "Send sync request",
+        id: 3,
         onClick: () => sendSyncRequest(row),
         disabled: status !== "Active",
       },
       {
         text: "Clone data flow",
+        id: 4,
         onClick: () => cloneDataFlowAction(dataFlowId),
         disabled: true,
       },
       {
         text: "Hard delete data flow",
+        id: 5,
         onClick: () => hardDeleteAction(row),
       },
     ];
