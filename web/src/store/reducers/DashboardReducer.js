@@ -36,7 +36,7 @@ export const initialState = {
     dfCount: "",
     dsCount: "",
   },
-  selectedDFId: "",
+  dfId: "",
   userStudies: [],
   selectedDataFlow: "",
   userPinnedStudies: [],
@@ -50,7 +50,7 @@ const DashboardReducer = (state = initialState, action) =>
         break;
 
       case SELECT_DATAFLOW:
-        newState.selectedDFId = action.dataflowId;
+        newState.dfId = action.dataflowId;
         break;
 
       case GET_DATA_FLOW_LIST:

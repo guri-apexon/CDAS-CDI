@@ -9,7 +9,7 @@ const PageHeader = ({ height = 120 }) => {
   const location = useLocation();
 
   const dashboard = useSelector((state) => state.dashboard);
-  const { selectedCard, selectedDFId } = dashboard;
+  const { selectedCard, dfId } = dashboard;
 
   useEffect(() => {
     const updateData = [
@@ -22,7 +22,7 @@ const PageHeader = ({ height = 120 }) => {
       { label: "Datasets", value: selectedCard?.dsCount },
     ];
     setStateMenuItems([...updateData]);
-  }, [dashboard]);
+  }, [selectedCard]);
 
   useEffect(() => {
     if (location.pathname !== "/dashboard") {

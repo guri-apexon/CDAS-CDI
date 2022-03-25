@@ -95,6 +95,7 @@ const DataFlow = ({
   const [submitting, setSubmitting] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [FormType, setFormType] = useState("dataflow");
+  const [createdDataflow, setCreatedDataflow] = useState(null);
   const [currentStep, setCurrentStep] = useReducer((state, action) => {
     if (action?.step) return action.step;
     return action?.prev ? state - 1 : state + 1;
@@ -254,11 +255,14 @@ const DataFlow = ({
     };
     setSubmitting(true);
     const result = await dataflowSave(reqBody);
-    console.log("submitFinalForm", result);
+    if (result?.dataflowId) setCreatedDataflow(result.dataflowId);
     if (result) {
       setSaveSuccess(true);
     }
     setSubmitting(false);
+  };
+  const redirectToDataflow = () => {
+    history.push(`/dashboard/dataflow-management/${createdDataflow}`);
   };
   const nextStep = async () => {
     console.log("datasetFormValues?", datasetFormValues, currentStep);
@@ -468,7 +472,11 @@ const DataFlow = ({
         title="Data Flow saved successfully"
         message="Data Flow saved successfully"
         buttonProps={[
-          { label: "Continue editing data flow", variant: "primary" },
+          {
+            label: "Continue editing data flow",
+            variant: "primary",
+            onClick: () => redirectToDataflow(),
+          },
           { label: "Exit", onClick: () => closeForm() },
         ]}
         id="success"

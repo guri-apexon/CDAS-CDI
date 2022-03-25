@@ -1,5 +1,4 @@
 const DB = require("../config/db");
-const oracleDB = require("../config/oracleDB");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const moment = require("moment");
@@ -199,7 +198,7 @@ exports.createDataflow = async (req, res) => {
           DFTestname = "TST-" + DFTestname;
         }
         //check for dataflowname && sequence logic
-        const checkDFQuery = `select name from ${schemaName}.dataflow where name LIKE '${DFTestname}%'`;
+        const checkDFQuery = `select name from ${schemaName}.dataflow where name LIKE '${DFTestname}%';`;
         const executeCheckDf = await DB.executeQuery(checkDFQuery);
         if (executeCheckDf.rows.length > 0) {
           let splittedVal =
@@ -212,9 +211,9 @@ exports.createDataflow = async (req, res) => {
             DFTestname = DFTestname + "-1";
           }
         }
-        let q = `select vend_id from ${schemaName}.vendor where vend_nm='${vendorName}'`;
+        let q = `select vend_id from ${schemaName}.vendor where vend_nm='${vendorName}';`;
         let { rows } = await DB.executeQuery(q);
-        let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${location}'`;
+        let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${location}';`;
         let { rows: data } = await DB.executeQuery(q1);
         // if (rows.length > 0 && data.length > 0) {
         body = [
@@ -243,7 +242,7 @@ exports.createDataflow = async (req, res) => {
           (dataflowid,name,vend_id,type,description,src_loc_id,active,configured,expt_fst_prd_dt,
             testflag,data_in_cdr,connectiontype,externalsystemname,externalid,
             fsrstatus,prot_id,insrt_tm,updt_tm) VALUES 
-            ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17)`;
+            ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17);`;
 
         let ts = new Date().toLocaleString();
         // insert dataflow schema into db
@@ -261,16 +260,30 @@ exports.createDataflow = async (req, res) => {
           for (let each of dataPackage) {
             let newObj = {};
             const dpUid = createUniqueID();
+
             // if (each.name !== "" && each.path !== "" && each.type !== "") {
             let DPQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(datapackageid, type, name, path, 
                   password, active,nopackageconfig,externalid, insrt_tm, dataflowid)
                   VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`;
+
+            let passwordStatus;
+            let { password } = each;
+
+            if (password) {
+              passwordStatus = "Yes";
+              helper.writeVaultData(`${uid}/${dpUid}`, {
+                password,
+              });
+            } else {
+              passwordStatus = "No";
+            }
+
             let body = [
               dpUid,
               each.type || null,
               each.name || null,
               each.path || null,
-              each.password || null,
+              passwordStatus || "No",
               each.active === false ? 0 : 1,
               each.noPackageConfig === false ? 0 : 1 || null,
               each.externalID || null,
@@ -313,7 +326,7 @@ exports.createDataflow = async (req, res) => {
                 // ) {
                 let dataKind = obj.dataKind;
                 if (externalSystemName !== "CDI") {
-                  let dataKindQ = `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}'`;
+                  let dataKindQ = `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`;
                   let checkDataKind = await DB.executeQuery(dataKindQ);
                   // if (checkDataKind.rows.length > 0) {
                   dataKind = checkDataKind.rows[0].datakindid;
@@ -321,7 +334,17 @@ exports.createDataflow = async (req, res) => {
                 const dsUid = createUniqueID();
                 let DSQuery = `insert into ${schemaName}.dataset(datasetid,datapackageid,datakindid,mnemonic,active,columncount,incremental,
                             offsetcolumn,type,path,ovrd_stale_alert,headerrownumber,footerrownumber,customsql,
-                            customsql_yn,tbl_nm,externalid,insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`;
+                            customsql_yn,tbl_nm,externalid,file_pwd,insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)`;
+                let dsPasswordStatus;
+                if (obj.filePwd) {
+                  let { filePwd } = obj;
+                  dsPasswordStatus = "Yes";
+                  helper.writeVaultData(`${uid}/${dpUid}/${dsUid}`, {
+                    password: filePwd,
+                  });
+                } else {
+                  dsPasswordStatus = "No";
+                }
                 let body = [
                   dsUid,
                   dpUid,
@@ -340,6 +363,7 @@ exports.createDataflow = async (req, res) => {
                   obj.customQuery || null,
                   obj.tableName || null,
                   obj.externalID || null,
+                  dsPasswordStatus || "No",
                   new Date(),
                 ];
                 let createDS = await DB.executeQuery(DSQuery, body);
@@ -373,7 +397,7 @@ exports.createDataflow = async (req, res) => {
                     const CDUid = createUniqueID();
                     let CDQuery = `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
                                 primarykey,required,charactermin,charactermax,position,format,lov,requiredfield,
-                                insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`;
+                                insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13);`;
                     let body = [
                       dsUid,
                       CDUid,
@@ -476,6 +500,16 @@ exports.createDataflow = async (req, res) => {
       new Date(),
     ];
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
+
+    let q = `INSERT INTO ${schemaName}.cdr_ta_queue
+    (dataflowid, datapackageid, datasetid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+    VALUES($1, '', '', 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', 1, '', 1, '', 0)`;
+
+    await DB.executeQuery(q, [
+      uid,
+      externalSystemName === "CDI" ? userId : externalSystemName,
+    ]);
+
     return apiResponse.successResponseWithData(
       res,
       "Data flow created successfully.",
@@ -770,19 +804,11 @@ exports.inActivateDataFlow = async (req, res) => {
 
 exports.syncDataFlow = async (req, res) => {
   try {
-    let { version, userId, dataFlowId, action } = req.body;
-    var dbconnection = await oracleDB();
-    Logger.info({ message: "syncDataFlow" });
-    let sequenceIdQ = `SELECT MAX(CDR_TA_QUEUE_ID) FROM IDP.CDR_TA_QUEUE`;
-    const { rows } = await dbconnection.execute(sequenceIdQ);
-    let SeqID;
-    if (rows.length > 0) {
-      SeqID = rows[0]["MAX(CDR_TA_QUEUE_ID)"] + 1;
-    } else {
-      SeqID = 1;
-    }
-    let q = `insert into IDP.CDR_TA_QUEUE(cdr_ta_queue_id,version,dataflowid,action_user,action,STATUS,INSERTTIMESTAMP) values (${SeqID},${version},'${dataFlowId}','${userId}','${action}','QUEUE',CURRENT_TIMESTAMP)`;
-    const result = await dbconnection.execute(q);
+    let { version, userId, dataFlowId } = req.body;
+    let q = `INSERT INTO ${schemaName}.cdr_ta_queue
+    (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+    VALUES($1, 'SYNC', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0)`;
+    await DB.executeQuery(q, [dataFlowId, userId, version]);
     return apiResponse.successResponse(
       res,
       "Sync Pipeline configs successfully written to Kafka",
@@ -793,15 +819,6 @@ exports.syncDataFlow = async (req, res) => {
   } catch (error) {
     Logger.error("catch :syncDataFlow");
     return apiResponse.ErrorResponse(res, error);
-  } finally {
-    // await doRelease(dbconnection);
-    if (dbconnection) {
-      try {
-        await dbconnection.close();
-      } catch (err) {
-        console.error(err);
-      }
-    }
   }
 };
 

@@ -39,8 +39,8 @@ async function saveSQLDataset(req, res, values, datasetId) {
       values.tableName || null,
       values.offsetColumn || null,
       values.filterCondition || null,
-      new Date(),
-      new Date(),
+      helper.getCurrentTime(),
+      helper.getCurrentTime(),
       values.datapackageid,
     ];
     const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, offset_val, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`;
@@ -58,9 +58,10 @@ async function saveSQLDataset(req, res, values, datasetId) {
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
+    const { datapackageid, dfId, filePwd } = req.body;
     const isExist = await checkNameExists(
       values.datasetName,
-      values.datapackageid,
+      datapackageid,
       values.dfTestFlag
     );
 
@@ -73,8 +74,19 @@ exports.saveDatasetData = async (req, res) => {
       return saveSQLDataset(req, res, values, datasetId);
     }
 
+    let passwordStatus;
+
+    if (filePwd) {
+      passwordStatus = "Yes";
+      await helper.writeVaultData(`${dfId}/${datapackageid}/${datasetId}`, {
+        password: filePwd,
+      });
+    } else {
+      passwordStatus = "No";
+    }
+
     Logger.info({ message: "create Dataset" });
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
 
     const body = [
       datasetId,
@@ -89,12 +101,13 @@ exports.saveDatasetData = async (req, res) => {
       values.active === true ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
+      passwordStatus,
       values.clinicalDataType[0],
       values.transferFrequency || null,
       values.overrideStaleAlert || null,
       values.rowDecreaseAllowed || 0,
-      new Date(),
-      new Date(),
+      helper.getCurrentTime(),
+      helper.getCurrentTime(),
       values.datapackageid,
       values.loadType == "Incremental" ? "Y" : "N",
     ];
@@ -138,19 +151,30 @@ exports.updateDatasetData = async (req, res) => {
   try {
     const values = req.body;
     Logger.info({ message: "update Dataset" });
+    const { dfId, datapackageid, datasetid, filePwd } = req.body;
     const isExist = await checkNameExists(
       values.datasetName,
-      values.datapackageid,
+      datapackageid,
       values.dfTestFlag,
-      values.datasetid
+      datasetid
     );
-    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17 where datasetid = $18`;
+    let passwordStatus;
+    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $19`;
     if (isExist) {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
     }
 
     if (values.locationType.toLowerCase() === "jdbc") {
       return updateSQLDataset(req, res, values);
+    }
+
+    if (filePwd) {
+      passwordStatus = "Yes";
+      await helper.writeVaultData(`${dfId}/${datapackageid}/${datasetid}`, {
+        password: filePwd,
+      });
+    } else {
+      passwordStatus = "No";
     }
 
     const body = [
@@ -171,6 +195,7 @@ exports.updateDatasetData = async (req, res) => {
       values.rowDecreaseAllowed || 0,
       new Date(),
       values.loadType == "Incremental" ? "Y" : "N",
+      passwordStatus,
     ];
     const inset = await DB.executeQuery(updateQuery, [
       ...body,
@@ -214,17 +239,18 @@ exports.getVLCData = async (req, res) => {
 
 exports.getDatasetDetail = async (req, res) => {
   try {
-    const datasetid = req.params.datasetid;
+    // const datasetid = req.params.datasetid;
+    const { datasetid } = req.body;
     const query = `SELECT * from ${schemaName}.dataset WHERE datasetid = $1`;
     Logger.info({ message: "getDatasetDetail" });
     const datasetDetail = await DB.executeQuery(query, [datasetid]);
+
     return apiResponse.successResponseWithData(
       res,
       "Operation success",
       datasetDetail.rows[0]
     );
   } catch (err) {
-    //throw error in json response with status 500.
     console.log(err);
     Logger.error("catch :getDatasetDetail");
     return apiResponse.ErrorResponse(res, err);

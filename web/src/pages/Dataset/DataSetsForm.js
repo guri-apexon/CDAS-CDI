@@ -254,6 +254,17 @@ const DataSetsFormBase = (props) => {
                 disabled={prodLock}
               />
               {/* ) : null} */}
+              {formValues.fileType === "Excel" && (
+                <ReduxFormTextField
+                  fullWidth
+                  name="filePwd"
+                  size="small"
+                  type="password"
+                  inputProps={{ minLength: 8, maxLength: 30 }}
+                  label="File Password"
+                  disabled={prodLock}
+                />
+              )}
               <ReduxFormTextField
                 fullWidth
                 name="transferFrequency"

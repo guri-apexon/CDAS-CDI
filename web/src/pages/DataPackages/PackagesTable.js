@@ -45,7 +45,7 @@ const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
 //   />
 // );
 const NameCustomCell = ({ row, column: { accessor } }) => {
-  const title = row[accessor] || row.datapackageid;
+  const title = row[accessor] || "No Package";
   return (
     <div className="flex package-name-td">
       <PackageIcon style={{ width: 15, margin: "0px 10px" }} />
@@ -289,11 +289,6 @@ const PackagesList = ({ data, userInfo }) => {
       }))}
       rowProps={{ hover: false }}
       hidePagination={true}
-      // tablePaginationProps={{
-      //   labelDisplayedRows: ({ from, to, count }) =>
-      //     `${count === 1 ? "Package" : "Packages"} ${from}-${to} of ${count}`,
-      //   truncate: true,
-      // }}
       ExpandableComponent={DetailRow}
     />
   );

@@ -88,6 +88,14 @@ export const checkAlphaNumericFileName = (value) => {
   return false;
 };
 
+export const checkExecptSpace = (value) => {
+  const regexp = /^[A-Za-z0-9_<.>@#/|$%&*()+]+$/;
+  if (value && value.search(regexp) === -1) {
+    return "Space is not allowed";
+  }
+  return false;
+};
+
 export const checkRequiredValue = (value, key = "", primary = "") => {
   return (
     value &&
@@ -134,6 +142,13 @@ export const checkFormat = (value, key = "", dataType = "") => {
         "Only Date format (YYYYMMDD) values are allowed for Date Data Type "
       );
     }
+  }
+  return false;
+};
+
+export const checkMinLength = (value) => {
+  if (value && value.length < 8) {
+    return `Minimum 8 characters are required`;
   }
   return false;
 };

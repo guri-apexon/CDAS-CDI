@@ -22,6 +22,9 @@ import {
   UPDATE_DATASET_SUCCESS,
   UPDATE_DATASET_FAILURE,
   UPDATE_DATASET_DATA,
+  UPDATE_COLUMNS_DATA,
+  UPDATE_COLUMNS_FAILURE,
+  UPDATE_COLUMNS_SUCCESS,
   GET_VLC_RULES,
   FETCH_VLC_RULES_SUCCESS,
   FETCH_VLC_RULES_FAILURE,
@@ -38,6 +41,28 @@ import {
   RESET_JDBC_FORM,
 } from "../../constants";
 
+const defaultData = {
+  active: true,
+  locationType: "SFTP",
+  delimiter: "COMMA",
+  fileType: "SAS",
+  encoding: "UTF-8",
+  escapeCharacter: "\\",
+  quote: `''`,
+  headerRowNumber: 1,
+  footerRowNumber: "",
+  overrideStaleAlert: 3,
+  rowDecreaseAllowed: 0,
+  loadType: "Cumulative",
+};
+
+const defaultDataSQL = {
+  locationType: "JDBC",
+  active: true,
+  customSQLQuery: "Yes",
+  dataType: "Cumulative",
+};
+
 export const initialState = {
   loading: false,
   isDatasetCreated: false,
@@ -46,24 +71,10 @@ export const initialState = {
   datasetColumns: [],
   datasetDetail: {},
   formDataSQL: {
-    locationType: "JDBC",
-    active: true,
-    customSQLQuery: "Yes",
-    dataType: "Cumulative",
+    ...defaultDataSQL,
   },
   formData: {
-    active: true,
-    locationType: "SFTP",
-    delimiter: "COMMA",
-    fileType: "SAS",
-    encoding: "UTF-8",
-    escapeCharacter: "\\",
-    quote: `''`,
-    headerRowNumber: 1,
-    footerRowNumber: "",
-    overrideStaleAlert: 3,
-    rowDecreaseAllowed: 0,
-    loadType: "Cumulative",
+    ...defaultData,
   },
   selectedDataset: {},
   defaultDelimiter: "COMMA",
@@ -100,27 +111,13 @@ const DataFlowReducer = (state = initialState, action) =>
 
       case RESET_FTP_FORM:
         newState.formData = {
-          active: true,
-          locationType: "SFTP",
-          delimiter: "COMMA",
-          fileType: "SAS",
-          encoding: "UTF-8",
-          escapeCharacter: "\\",
-          quote: `''`,
-          headerRowNumber: 1,
-          footerRowNumber: "",
-          overrideStaleAlert: 3,
-          rowDecreaseAllowed: 0,
-          loadType: "Cumulative",
+          ...defaultData,
         };
         break;
 
       case RESET_JDBC_FORM:
         newState.formDataSQL = {
-          locationType: "JDBC",
-          active: true,
-          customSQLQuery: "Yes",
-          dataType: "Cumulative",
+          ...defaultDataSQL,
         };
         break;
 
@@ -173,6 +170,16 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.sucessMsg = null;
         newState.error = action.message;
         break;
+      case UPDATE_COLUMNS_SUCCESS:
+        newState.loading = false;
+        newState.error = null;
+        newState.sucessMsg = "Column Defination updated succesfully";
+        break;
+      case UPDATE_COLUMNS_FAILURE:
+        newState.loading = false;
+        newState.sucessMsg = null;
+        newState.error = action.message;
+        break;
       case GET_VLC_RULES:
         newState.loading = true;
         break;
@@ -221,6 +228,9 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = true;
         break;
       case UPDATE_DATASET_DATA:
+        newState.loading = true;
+        break;
+      case UPDATE_COLUMNS_DATA:
         newState.loading = true;
         break;
       case FETCH_DATASET_DETAIL_FAILURE:

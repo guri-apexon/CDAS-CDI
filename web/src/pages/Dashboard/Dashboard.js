@@ -21,6 +21,10 @@ import DataflowTab from "./DataflowTab/DataflowTab";
 import MonitorTab from "./MonitorTab/MonitorTab";
 
 const styles = {
+  pageRootInnerWrapper: {
+    maxHeight: "calc( 100vh - 120px)",
+    overflow: "hidden",
+  },
   rightPanel: {
     maxWidth: "calc(100vw - 425px)",
     width: "calc(100vw - 425px)",

@@ -18,7 +18,6 @@ import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatData } from "../../../utils/index";
 
 const ColumnsTab = ({ locationType, testLock, prodLock }) => {
-  // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
@@ -70,7 +69,7 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
 
   const formatDBColumns = (datacolumns) => {
     const newData =
-      datacolumns.length > 1
+      datacolumns.length > 0
         ? datacolumns.map((column, i) => {
             const newObj = {
               columnId: i + 1,
@@ -88,6 +87,7 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
               values: column.lov || "",
               isInitLoad: true,
               isHavingError: false,
+              isHavingColumnName: true,
             };
             return newObj;
           })
