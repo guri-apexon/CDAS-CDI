@@ -255,7 +255,7 @@ const CloneDataFlow = ({
       {
         header: "Datapackage Name",
         accessor: "datapackagename",
-        width: "34%",
+        width: "35%",
         customCell: ({ row, column: { accessor } }) => {
           return (
             <>{row[accessor] ? row[accessor] : "-----------------------"}</>
@@ -265,7 +265,7 @@ const CloneDataFlow = ({
       {
         header: "Dataset Name",
         accessor: "datasetname",
-        width: "41%",
+        width: "40%",
         customCell: ({ row, column: { accessor } }) => {
           return (
             <>{row[accessor] ? row[accessor] : "-----------------------"}</>
