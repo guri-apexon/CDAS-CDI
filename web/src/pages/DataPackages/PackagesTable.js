@@ -86,13 +86,15 @@ const PackagesList = ({ data, userInfo }) => {
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
-        <span customtooltip="Add dataset" className="add-dataset">
-          <RoundPlusSvg
-            className="add-dataset-btn"
-            onClick={() =>
-              addDataSet(row.dataflowid, "", row.datapackageid, row.name)
-            }
-          />
+        <span className="add-dataset">
+          <Tooltip title="Add dataset" disableFocusListener>
+            <RoundPlusSvg
+              className="add-dataset-btn"
+              onClick={() =>
+                addDataSet(row.dataflowid, "", row.datapackageid, row.name)
+              }
+            />
+          </Tooltip>
         </span>
       </div>
     );
