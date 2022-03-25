@@ -164,6 +164,7 @@ const DataSetsFormBase = (props) => {
                 name="datasetName"
                 size="small"
                 inputProps={{ maxLength: 30 }}
+                required
                 label="Data Set Name (Mnemonic)"
               />
               <ReduxFormSelect
@@ -173,6 +174,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 onChange={setDefaultValues}
                 fullWidth
+                required
               >
                 {fileTypes?.map((type) => (
                   <MenuItem value={type}>{type}</MenuItem>
@@ -274,8 +276,9 @@ const DataSetsFormBase = (props) => {
                 variant="search"
                 singleSelect
                 fullWidth
+                required
               />
-              {formValues.fileType === "Excel" && (
+              {formValues === "Excel" && (
                 <ReduxFormTextField
                   fullWidth
                   name="filePwd"
