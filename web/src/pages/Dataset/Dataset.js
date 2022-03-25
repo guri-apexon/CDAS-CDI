@@ -88,7 +88,7 @@ const styles = {
 const Dataset = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(0);
-  const [locationType, setLocationType] = useState("jdbc");
+  const [locationType, setLocationType] = useState("sftp");
   const [columnsActive, setColumnsActive] = useState(false);
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
@@ -229,7 +229,7 @@ const Dataset = () => {
       const data = {
         ...formValue,
         datapackageid,
-        dfTestFlag: testflag,
+        testFlag: testflag,
         dfId,
       };
       if (data.datasetid) {

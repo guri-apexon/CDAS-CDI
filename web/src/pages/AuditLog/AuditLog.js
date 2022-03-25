@@ -195,7 +195,6 @@ const AuditLog = () => {
           <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />
           <>
             <div className="flex title">
-              <DataPackageIcon />
               <Typography className="b-font" variant="title">
                 ACUSPHERE-NP-1998-CXA27260
               </Typography>

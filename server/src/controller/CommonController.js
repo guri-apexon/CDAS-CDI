@@ -20,6 +20,7 @@ module.exports = {
   createUniqueID: () => {
     return crypto.randomBytes(3 * 4).toString("base64");
   },
+
   addAuditLog: function () {
     return new Promise((resolve, reject) => {
       DB.executeQuery(query).then((response) => {
@@ -27,6 +28,7 @@ module.exports = {
       });
     });
   },
+
   addHistory: function (package, user_id, column, old_val = "", new_val = "") {
     return new Promise((resolve, reject) => {
       if (!package) resolve(false);
@@ -69,6 +71,7 @@ module.exports = {
       });
     });
   },
+
   addPackageHistory: function (package, user_id, column, old_val, new_val) {
     return new Promise((resolve, reject) => {
       if (!package) resolve(false);
@@ -135,6 +138,7 @@ module.exports = {
       });
     });
   },
+
   fsrConnect: (req, res) => {
     try {
       const { params, endPoint } = req.body;
@@ -163,5 +167,16 @@ module.exports = {
       console.log("err:", err);
       return apiResponse.ErrorResponse(res, err);
     }
+  },
+
+  checkMnemonicExists: async function (name, dpId, testFlag, dsId = null) {
+    let searchQuery = `select d3.mnemonic from ${schemaName}.study s right join ${schemaName}.dataflow d on s.prot_id = d.prot_id right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2`;
+    let dep = [dpId, testFlag];
+    if (dsId) {
+      searchQuery = `select d3.mnemonic from ${schemaName}.study s right join ${schemaName}.dataflow d on s.prot_id = d.prot_id right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2 and d3.datasetid !=$3`;
+      dep = [dpId, testFlag, dsId];
+    }
+    const res = await DB.executeQuery(searchQuery, dep);
+    return res.rows.includes(name);
   },
 };

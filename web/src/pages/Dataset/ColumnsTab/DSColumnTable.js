@@ -28,7 +28,8 @@ export default function DSColumnTable({
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const { selectedDataset } = dataSets;
-  const { fileType, datasetid } = selectedDataset;
+  const { fileType, datasetid, headerrownumber, headerRowNumber } =
+    selectedDataset;
 
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     uniqueId: `u${index}`,
@@ -63,6 +64,7 @@ export default function DSColumnTable({
   const [isMultiAdd, setIsMultiAdd] = useState(false);
   const [newRows, setNewRows] = useState("");
   const [disableSaveAll, setDisableSaveAll] = useState(true);
+  const [moreColumns, setMoreColumns] = useState([...columns]);
 
   useEffect(() => {
     const initRows = initialRows.map((e) => e.uniqueId);
@@ -250,11 +252,31 @@ export default function DSColumnTable({
     },
   ];
 
-  const moreColumns = [
+  const allColumns = [
     ...columns.map((column) => ({ ...column })).slice(0, -1),
     ...columnsToAdd.map((column) => ({ ...column })),
     columns.slice(-1)[0],
   ];
+
+  useEffect(() => {
+    if (headerrownumber > 0 || headerRowNumber > 0) {
+      const data = allColumns.map((e) => {
+        if (e.accessor === "position") {
+          e.hidden = true;
+        }
+        return e;
+      });
+      setMoreColumns(data);
+    } else {
+      const data = allColumns.map((e) => {
+        if (e.accessor === "columnName") {
+          e.hidden = true;
+        }
+        return e;
+      });
+      setMoreColumns(data);
+    }
+  }, []);
 
   const onEditAll = () => {
     if (rows.length > 0) {
@@ -413,7 +435,14 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {console.log("data", rows, editedRows, formattedData, dataOrigin)}
+        {console.log(
+          "data",
+          rows,
+          editedRows,
+          formattedData,
+          dataOrigin,
+          moreColumns
+        )}
         <Table
           title="Dataset Column Settings"
           subtitle={`${
