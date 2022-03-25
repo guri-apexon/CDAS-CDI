@@ -229,7 +229,7 @@ const Dataset = () => {
       const data = {
         ...formValue,
         datapackageid,
-        dfTestFlag: testflag,
+        testFlag: testflag,
         dfId,
       };
       if (data.datasetid) {

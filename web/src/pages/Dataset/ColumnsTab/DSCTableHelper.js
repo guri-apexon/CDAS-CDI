@@ -16,12 +16,16 @@ import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Tooltip from "apollo-react/components/Tooltip";
 import {
   createStringSearchFilter,
+  createSelectFilterComponent,
   compareNumbers,
   compareStrings,
 } from "apollo-react/components/Table";
 
 import { ReactComponent as Plus } from "../../../components/Icons/roundPlusBlue.svg";
-import { TextFieldFilter } from "../../../utils/index";
+import {
+  TextFieldFilter,
+  createStringArraySearchFilter,
+} from "../../../utils/index";
 
 import {
   checkNumeric,
@@ -276,60 +280,95 @@ export const columns = [
     accessor: "columnName",
     customCell: ColumnNameCell,
     sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("columnName"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Position",
     accessor: "position",
     customCell: EditableCell,
     sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("position"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Format",
     accessor: "format",
     customCell: FormatCell,
     sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("format"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Data Type",
     accessor: "dataType",
     customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("dataType"),
+    filterComponent: createSelectFilterComponent(
+      ["Alphanumeric", "Numeric", "Date"],
+      {
+        size: "small",
+        multiple: true,
+      }
+    ),
   },
   {
     header: "Primary?",
     accessor: "primary",
     customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("primary"),
+    filterComponent: createSelectFilterComponent(["Yes", "No"], {
+      size: "small",
+      multiple: true,
+    }),
   },
   {
     header: "Unique?",
     accessor: "unique",
     customCell: makeEditableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("unique"),
+    filterComponent: createSelectFilterComponent(["Yes", "No"], {
+      size: "small",
+      multiple: true,
+    }),
   },
   {
     header: "Required?",
     accessor: "required",
     customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("required"),
+    filterComponent: createSelectFilterComponent(["Yes", "No"], {
+      size: "small",
+      multiple: true,
+    }),
   },
   {
     header: "Min length",
     accessor: "minLength",
     customCell: NumericEditableCell,
     sortFunction: compareNumbers,
+    filterFunction: createStringSearchFilter("minLength"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Max length",
     accessor: "maxLength",
     customCell: NumericEditableCell,
     sortFunction: compareNumbers,
+    filterFunction: createStringSearchFilter("maxLength"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "List of values",
     accessor: "values",
     customCell: EditableCell,
     sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("values"),
+    filterComponent: TextFieldFilter,
   },
   {
     accessor: "action",
