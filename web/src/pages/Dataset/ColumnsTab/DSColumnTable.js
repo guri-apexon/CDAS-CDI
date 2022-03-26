@@ -390,7 +390,7 @@ export default function DSColumnTable({
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
-          if (key === "columnName") {
+          if (key === "columnName" || key === "position") {
             if (value.length >= 1) {
               return {
                 ...row,
