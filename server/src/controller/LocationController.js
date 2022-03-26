@@ -113,6 +113,7 @@ exports.getLocationList = function (req, res) {
     let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label, usr_nm, pswd, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
     let searchQuery = `SELECT ${select} from ${schemaName}.source_location where active=1 order by label asc`;
     let dbQuery = DB.executeQuery(searchQuery);
+    Logger.info({ message: "locationList" });
     if (type) {
       switch (type) {
         case "rdbms_only":
@@ -132,23 +133,23 @@ exports.getLocationList = function (req, res) {
           dbQuery = DB.executeQuery(searchQuery, [type]);
       }
     }
-    Logger.info({ message: "locationList" });
 
     dbQuery
-      .then((response) => {
+      .then(async (response) => {
         const locations = response.rows || [];
         const withCredentials = locations.map((d) => {
-          // const credentials = await helper.readVaultData(d.src_loc_id);
-          // if (credentials) {
-          //   d.usr_nm = credentials.user;
-          //   d.pswd = credentials.password;
-          // }
-          d.usr_nm = "Dummy";
-          d.pswd = "DummyPassword";
+          const credentials = helper.readVaultData(d.src_loc_id);
+          if (credentials) {
+            d.usr_nm = credentials.user;
+            d.pswd = credentials.password;
+          } else {
+            d.usr_nm = "Dummy";
+            d.pswd = "DummyPassword";
+          }
           return d;
         });
         return apiResponse.successResponseWithData(res, "Operation success", {
-          records: locations,
+          records: withCredentials,
           totalSize: response.rowCount,
         });
       })

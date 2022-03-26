@@ -136,12 +136,15 @@ const DataFlowFormBase = (props) => {
               onChange={(v) => changeFormField(v, "description")}
               label="Description"
             />
-            <ReduxFormDatePickerV2
-              name="firstFileDate"
-              dateFormat="DD MMM YYYY"
-              placeholder="DD MMM YYYY"
-              label="Expected First File Date"
-            />
+            <div className="expected-date">
+              <ReduxFormDatePickerV2
+                name="firstFileDate"
+                dateFormat="DD MMM YYYY"
+                placeholder="DD MMM YYYY"
+                label="Expected First File Date"
+              />
+            </div>
+
             <ReduxFormRadioGroup
               name="dataflowType"
               onChange={(v) => changeFormField(v, "dataflowType")}
@@ -224,7 +227,7 @@ const DataFlowFormBase = (props) => {
         <Divider className={classes.divider} />
         <div className={classes.section}>
           <Typography variant="title1">Others</Typography>
-          <div style={{ width: "50%" }}>
+          <div style={{ width: "50%" }} className="service-owner">
             <ReduxFormAutocompleteV2
               name="serviceOwner"
               label="Service Owners (Optional)"

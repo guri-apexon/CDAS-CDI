@@ -89,7 +89,7 @@ const styles = {
 const Dataset = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(0);
-  const [locationType, setLocationType] = useState("jdbc");
+  const [locationType, setLocationType] = useState("sftp");
   const [columnsActive, setColumnsActive] = useState(false);
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
@@ -99,7 +99,7 @@ const Dataset = () => {
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
-  const { dfId } = dashboard;
+  const { dfId, selectedCard } = dashboard;
   const { datapackageid, datapackageName, datasetid, datasetName } =
     selectedDSDetails;
   const {
@@ -110,6 +110,7 @@ const Dataset = () => {
     selectedDataset,
     formDataSQL,
   } = dataSets;
+  const { prot_id: studyId } = selectedCard;
   const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
   const { locationType: newLT, customSQLQuery } = selectedDataset;
@@ -230,9 +231,10 @@ const Dataset = () => {
       const data = {
         ...formValue,
         datapackageid,
-        dfTestFlag: testflag,
         userId: getUserInfo().userId,
+        testFlag: testflag,
         dfId,
+        studyId,
       };
       if (data.datasetid) {
         dispatch(updateDatasetData(data));

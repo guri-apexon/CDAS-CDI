@@ -185,7 +185,7 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
           </Button>
         </div>
 
-        <div style={{ maxWidth: 400 }}>
+        <div style={{ maxWidth: 400 }} className="search-package">
           <Search
             placeholder="Search"
             size="small"

@@ -20,6 +20,7 @@ module.exports = {
   createUniqueID: () => {
     return crypto.randomBytes(3 * 4).toString("base64");
   },
+
   addAuditLog: function () {
     return new Promise((resolve, reject) => {
       DB.executeQuery(query).then((response) => {
@@ -27,6 +28,7 @@ module.exports = {
       });
     });
   },
+
   addHistory: function (package, user_id, column, old_val = "", new_val = "") {
     return new Promise((resolve, reject) => {
       if (!package) resolve(false);
@@ -69,6 +71,7 @@ module.exports = {
       });
     });
   },
+
   addPackageHistory: function (package, user_id, column, old_val, new_val) {
     return new Promise((resolve, reject) => {
       if (!package) resolve(false);
@@ -135,6 +138,7 @@ module.exports = {
       });
     });
   },
+
   fsrConnect: (req, res) => {
     try {
       const { params, endPoint } = req.body;
@@ -164,6 +168,7 @@ module.exports = {
       return apiResponse.ErrorResponse(res, err);
     }
   },
+
   addDatasetHistory: function (
     package,
     config_json,
@@ -214,6 +219,7 @@ module.exports = {
       });
     });
   },
+
   addColumnHistory: function (
     columnId,
     datasetid,
