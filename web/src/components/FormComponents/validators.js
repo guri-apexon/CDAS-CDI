@@ -70,7 +70,7 @@ export const checkExceSupport = (value, fileType) => {
 };
 
 export const checkAlphaNumeric = (value, key = "") => {
-  const regexp = key === "values" ? /^[a-zA-Z0-9~_]+$/ : /^[a-zA-Z0-9-_]+$/;
+  const regexp = key === "values" ? /^[a-zA-Z0-9~_]+$/ : /\w+$/;
   if (key === "format") {
     return false;
   }
