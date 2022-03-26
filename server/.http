@@ -378,7 +378,7 @@ content-type: application/json
   "datapackageid": "a0C0E000009rG4bUAE",
   "dfId": "a0A0E000004SCt1UAG",
   "studyId": "a020E000005Szl0QAC",
-  "datasetName": "asdfasdfsda09Asdfads",
+  "datasetName": "data007checklist",
   "active": true,
   "fileType": "SAS",
   "encoding": "UTF-8",
@@ -411,10 +411,7 @@ content-type: application/json
   "clinicalDataType": [1],
   "customSQLQuery": "Yes",
   "sQLQuery": "select * from data",
-  "tableName": "I2.TOAD_PLAN_TABLE",
-
-  "insrt_tm": "",
-  "updt_tm": "",
+  "tableName": "I2.TOAD_PLAN_TABLE"
 }
 
 ### dataset details

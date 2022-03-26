@@ -10,6 +10,18 @@ const tablesMock = require("../../public/mock/listTablesAPIResponse.json");
 const previewSQLMock = require("../../public/mock/responseBodyPreviewSQL.json");
 const CommonController = require("./CommonController");
 
+async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
+  let searchQuery = `select distinct d3.mnemonic from ${schemaName}.study s left join ${schemaName}.dataflow d on s.prot_id = d.prot_id left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid left join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where s.prot_id=$1 and d.testflag=$2`;
+  let dep = [studyId, testFlag];
+  if (dsId) {
+    searchQuery = `select d3.mnemonic from ${schemaName}.study s left join ${schemaName}.dataflow d on s.prot_id = d.prot_id left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid left join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where s.prot_id=$1 and d.testflag=$2 and d3.datasetid != $3`;
+    dep = [studyId, testFlag, dsId];
+  }
+  const { rows } = await DB.executeQuery(searchQuery, dep);
+  const result = await rows.map((e) => e.mnemonic).includes(name);
+  return result;
+}
+
 async function saveSQLDataset(req, res, values, datasetId) {
   try {
     Logger.info({ message: "create SQL Dataset" });
@@ -44,12 +56,11 @@ exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
     const { datapackageid, studyId, dfId, testFlag } = req.body;
-    const isExist = await CommonController.checkMnemonicExists(
+    const isExist = await checkMnemonicExists(
       values.datasetName,
       studyId,
       testFlag
     );
-    console.log("v", values);
     if (isExist) {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
     }
