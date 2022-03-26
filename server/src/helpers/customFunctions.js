@@ -2,14 +2,14 @@ const uuid = require("uuid");
 const crypto = require("crypto");
 const moment = require("moment");
 
+const endpoint = process.env.VAULT_END_POINT;
+const token = process.env.ROOT_TOKEN;
+
 const vault = require("node-vault")({
   apiVersion: "v1",
-  endpoint: "http://ca2updb249vd:8200",
-  token: "s.LJQBC0xwKO83u4cxHbBYH05z",
+  endpoint: endpoint,
+  token: token,
 });
-
-const roleId = process.env.ROLE_ID;
-const secretId = process.env.SECRET_ID;
 
 const getAlphaNumeric = () => {
   const characters = "abcdefghijklmnopqrstuvwxyz0123456789";

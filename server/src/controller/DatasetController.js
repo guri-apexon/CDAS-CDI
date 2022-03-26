@@ -10,6 +10,18 @@ const tablesMock = require("../../public/mock/listTablesAPIResponse.json");
 const previewSQLMock = require("../../public/mock/responseBodyPreviewSQL.json");
 const CommonController = require("./CommonController");
 
+async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
+  let searchQuery = `select distinct d3.mnemonic from ${schemaName}.study s left join ${schemaName}.dataflow d on s.prot_id = d.prot_id left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid left join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where s.prot_id=$1 and d.testflag=$2`;
+  let dep = [studyId, testFlag];
+  if (dsId) {
+    searchQuery = `select d3.mnemonic from ${schemaName}.study s left join ${schemaName}.dataflow d on s.prot_id = d.prot_id left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid left join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where s.prot_id=$1 and d.testflag=$2 and d3.datasetid != $3`;
+    dep = [studyId, testFlag, dsId];
+  }
+  const { rows } = await DB.executeQuery(searchQuery, dep);
+  const result = await rows.map((e) => e.mnemonic).includes(name);
+  return result;
+}
+
 async function saveSQLDataset(req, res, values, datasetId) {
   try {
     Logger.info({ message: "create SQL Dataset" });
@@ -43,13 +55,12 @@ async function saveSQLDataset(req, res, values, datasetId) {
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    const { datapackageid, dfId, filePwd, testFlag } = req.body;
-    const isExist = await CommonController.checkMnemonicExists(
+    const { datapackageid, studyId, dfId, testFlag } = req.body;
+    const isExist = await checkMnemonicExists(
       values.datasetName,
-      datapackageid,
+      studyId,
       testFlag
     );
-
     if (isExist) {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
     }
@@ -61,7 +72,7 @@ exports.saveDatasetData = async (req, res) => {
 
     let passwordStatus;
 
-    if (filePwd) {
+    if (values.filePwd) {
       passwordStatus = "Yes";
       await helper.writeVaultData(`${dfId}/${datapackageid}/${datasetId}`, {
         password: filePwd,
@@ -186,13 +197,12 @@ async function updateSQLDataset(req, res, values) {
 exports.updateDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    // console.log(values);
 
     Logger.info({ message: "update Dataset" });
-    const { dfId, datapackageid, testFlag, datasetid, filePwd } = req.body;
-    const isExist = await CommonController.checkMnemonicExists(
+    const { dfId, studyId, datapackageid, testFlag, datasetid } = req.body;
+    const isExist = await checkMnemonicExists(
       values.datasetName,
-      datapackageid,
+      studyId,
       testFlag,
       datasetid
     );
@@ -203,7 +213,6 @@ exports.updateDatasetData = async (req, res) => {
 
     const packageQuery = `select dataflowid from ${schemaName}.datapackage WHERE datapackageid = $1`;
 
-    let passwordStatus;
     const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $19`;
     if (isExist) {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
@@ -233,8 +242,8 @@ exports.updateDatasetData = async (req, res) => {
     };
 
     const jsonObj = requestData;
-    jsonObj["datasetid"] = values.datasetid;
-    jsonObj["datapackageid"] = values.datapackageid;
+    jsonObj["datasetid"] = datasetid;
+    jsonObj["datapackageid"] = datapackageid;
 
     // const confData2 = Object.entries(jsonObj);
     // // const conData = confData2.reverse();
@@ -274,10 +283,12 @@ exports.updateDatasetData = async (req, res) => {
         }
       }
     }
-    if (filePwd) {
+
+    let passwordStatus;
+    if (values.filePwd) {
       passwordStatus = "Yes";
       await helper.writeVaultData(`${dfId}/${datapackageid}/${datasetid}`, {
-        password: filePwd,
+        password: values.filePwd,
       });
     } else {
       passwordStatus = "No";
@@ -292,7 +303,7 @@ exports.updateDatasetData = async (req, res) => {
       values.quote || null,
       values.headerRowNumber || 0,
       values.footerRowNumber || 0,
-      values.active == true ? 1 : 0,
+      values.active === true ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
       values.clinicalDataType[0],
@@ -306,7 +317,6 @@ exports.updateDatasetData = async (req, res) => {
 
     const inset = await DB.executeQuery(updateQuery, [
       ...body,
-
       values.datasetid,
     ]);
 

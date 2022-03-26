@@ -158,9 +158,11 @@ export function* fetchDatasetColumns(action) {
 
 export function* saveDataset(action) {
   try {
-    const saveData = yield call(axios.post, `${baseURL}/${DATASETAPI}/create`, {
-      ...action,
-    });
+    const saveData = yield call(
+      axios.post,
+      `${baseURL}/${DATASETAPI}/create`,
+      action.values
+    );
     yield put({
       type: STORE_DATASET_SUCCESS,
       dataset: saveData.data.data,
