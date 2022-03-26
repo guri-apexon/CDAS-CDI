@@ -71,7 +71,8 @@ exports.saveDatasetData = async (req, res) => {
     }
 
     Logger.info({ message: "create Dataset" });
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path, file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path,file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
+    const packageQuery = `select dataflowid from ${schemaName}.datapackage WHERE datapackageid = $1`;
 
     const body = [
       datasetId,
@@ -96,8 +97,58 @@ exports.saveDatasetData = async (req, res) => {
       values.datapackageid,
       values.loadType == "Incremental" ? "Y" : "N",
     ];
-    const inset = await DB.executeQuery(insertQuery, body);
-    return apiResponse.successResponseWithData(res, "Operation success", inset);
+
+    const conf_Data = {
+      datasetId: datasetId,
+      datapackageid: values.datapackageid,
+      mnemonic: values.datasetName,
+      type: values.fileType,
+      charset: values.encoding || null,
+      delimiter: values.delimiter || null,
+      escapecode: values.escapeCharacter || null,
+      quote: values.quote || null,
+      headerrownumber: values.headerRowNumber || 0,
+      footerrownumber: values.footerRowNumber || 0,
+      active: true ? 1 : 0,
+      naming_convention: values.fileNamingConvention || null,
+      path: values.folderPath || null,
+      datakindid: values.clinicalDataType[0],
+      data_freq: values.transferFrequency || null,
+      ovrd_stale_alert: values.overrideStaleAlert || null,
+      rowdecreaseallowed: values.rowDecreaseAllowed || 0,
+      incremental: "Incremental" ? "Y" : "N",
+    };
+
+    const jsonData = JSON.stringify(conf_Data);
+
+    const packageData = await DB.executeQuery(packageQuery, [
+      values.datapackageid,
+    ]);
+
+    // const historyVersion = await CommonController.addHistory(
+    //   datasetId,
+    //   user_id,
+    //   "New Entry"
+    // );
+    // if (!historyVersion) throw new Error("History not updated");
+
+    DB.executeQuery(insertQuery, body).then(async (response) => {
+      const package = response.rows[0] || [];
+      const historyVersion = await CommonController.addDatasetHistory(
+        values,
+        jsonData,
+        packageData.rows[0].dataflowid,
+        "New Entry"
+      );
+      if (!historyVersion) throw new Error("History not updated");
+      return apiResponse.successResponseWithData(
+        res,
+        "Created Successfully",
+        {}
+      );
+    });
+    // const inset = await DB.executeQuery(insertQuery, body);
+    // return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
     Logger.error("catch :storeDataset");
     Logger.error(err);
@@ -135,6 +186,8 @@ async function updateSQLDataset(req, res, values) {
 exports.updateDatasetData = async (req, res) => {
   try {
     const values = req.body;
+    // console.log(values);
+
     Logger.info({ message: "update Dataset" });
     const { dfId, datapackageid, testFlag, datasetid, filePwd } = req.body;
     const isExist = await CommonController.checkMnemonicExists(
@@ -143,6 +196,12 @@ exports.updateDatasetData = async (req, res) => {
       testFlag,
       datasetid
     );
+    const selectQuery = `select  mnemonic, type, charset, delimiter , escapecode, quote,
+                         headerrownumber, footerrownumber, active, naming_convention, path, 
+                         datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, 
+                         incremental from ${schemaName}.dataset where datasetid = $1`;
+
+    const packageQuery = `select dataflowid from ${schemaName}.datapackage WHERE datapackageid = $1`;
 
     let passwordStatus;
     const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $19`;
@@ -154,6 +213,67 @@ exports.updateDatasetData = async (req, res) => {
       return updateSQLDataset(req, res, values);
     }
 
+    const requestData = {
+      mnemonic: values.datasetName,
+      type: values.fileType,
+      charset: values.encoding,
+      delimiter: values.delimiter,
+      escapecode: values.escapeCharacter,
+      quote: values.quote,
+      headerrownumber: values.headerRowNumber,
+      footerrownumber: values.footerRowNumber,
+      active: true ? 1 : 0,
+      naming_convention: values.fileNamingConvention,
+      path: values.folderPath,
+      datakindid: values.clinicalDataType[0],
+      data_freq: values.transferFrequency,
+      ovrd_stale_alert: values.overrideStaleAlert,
+      rowdecreaseallowed: values.rowDecreaseAllowed,
+      incremental: "Incremental" ? "Y" : "N",
+    };
+
+    const jsonObj = requestData;
+    jsonObj["datasetid"] = values.datasetid;
+    jsonObj["datapackageid"] = values.datapackageid;
+
+    // const confData2 = Object.entries(jsonObj);
+    // // const conData = confData2.reverse();
+    // const confData = Object.fromEntries(confData2.reverse());
+    const jsonData = JSON.stringify(jsonObj);
+    // {
+    //   datasetid: values.datasetid,
+    //   datapackageid: values.datapackageid,
+    // };
+
+    // const conf_data = dataSetId.jsonData.push();
+
+    const packageData = await DB.executeQuery(packageQuery, [
+      values.datapackageid,
+    ]);
+
+    const { rows: tempData } = await DB.executeQuery(selectQuery, [
+      values.datasetid,
+    ]);
+    const oldData = tempData[0];
+
+    const updatedColumn = {};
+    // Object.keys(requestData)
+
+    for (const key in requestData) {
+      if (`${requestData[key]}` != oldData[key]) {
+        if (oldData[key] != null) {
+          const historyVersion = await CommonController.addDatasetHistory(
+            values,
+            jsonData,
+            packageData.rows[0].dataflowid,
+            key,
+            oldData[key],
+            `${requestData[key]}`
+          );
+          if (!historyVersion) throw new Error("History not updated");
+        }
+      }
+    }
     if (filePwd) {
       passwordStatus = "Yes";
       await helper.writeVaultData(`${dfId}/${datapackageid}/${datasetid}`, {
@@ -175,7 +295,7 @@ exports.updateDatasetData = async (req, res) => {
       values.active == true ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
-      values.clinicalDataType,
+      values.clinicalDataType[0],
       values.transferFrequency || null,
       values.overrideStaleAlert || null,
       values.rowDecreaseAllowed || 0,
@@ -183,10 +303,13 @@ exports.updateDatasetData = async (req, res) => {
       values.loadType == "Incremental" ? "Y" : "N",
       passwordStatus,
     ];
+
     const inset = await DB.executeQuery(updateQuery, [
       ...body,
+
       values.datasetid,
     ]);
+
     return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
     //throw error in json response with status 500.
