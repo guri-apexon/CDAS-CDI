@@ -43,13 +43,13 @@ async function saveSQLDataset(req, res, values, datasetId) {
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    const { datapackageid, dfId, filePwd, testFlag } = req.body;
+    const { datapackageid, studyId, dfId, testFlag } = req.body;
     const isExist = await CommonController.checkMnemonicExists(
       values.datasetName,
-      datapackageid,
+      studyId,
       testFlag
     );
-
+    console.log("v", values);
     if (isExist) {
       return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
     }
@@ -61,7 +61,7 @@ exports.saveDatasetData = async (req, res) => {
 
     let passwordStatus;
 
-    if (filePwd) {
+    if (values.filePwd) {
       passwordStatus = "Yes";
       await helper.writeVaultData(`${dfId}/${datapackageid}/${datasetId}`, {
         password: filePwd,

@@ -375,15 +375,18 @@ POST http://localhost:4001/v1/api/dataset/create HTTP/1.1
 content-type: application/json
 
 {
-  "datapackageid": "Zn2Jyi7zMUbuULOL",
-  "datasetName": "asdfasdfsda_Asdfads",
+  "datapackageid": "a0C0E000009rG4bUAE",
+  "dfId": "a0A0E000004SCt1UAG",
+  "studyId": "a020E000005Szl0QAC",
+  "datasetName": "asdfasdfsda09Asdfads",
   "active": true,
   "fileType": "SAS",
   "encoding": "UTF-8",
   "delimiter": "COMMA",
-  "dfTestFlag": 1,
+  "testFlag": 1,
   "escapeCharacter": "",
   "quote": "",
+  "filePwd": "",
   "headerRowNumber": 1,
   "footerRowNumber": "",
   "fileNamingConvention": "asdfadsfsa.sas7bdat",
@@ -392,9 +395,7 @@ content-type: application/json
   "clinicalDataType": [1],
   "transferFrequency": "",
   "overrideStaleAlert": "",
-  "rowDecreaseAllowed": "",
-  "insrt_tm": "",
-  "updt_tm": "",
+  "rowDecreaseAllowed": ""
 }
 
 ### create jdbc dataset

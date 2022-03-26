@@ -169,14 +169,16 @@ module.exports = {
     }
   },
 
-  checkMnemonicExists: async function (name, dpId, testFlag, dsId = null) {
-    let searchQuery = `select d3.mnemonic from ${schemaName}.study s right join ${schemaName}.dataflow d on s.prot_id = d.prot_id right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2`;
-    let dep = [dpId, testFlag];
+  checkMnemonicExists: async function (name, studyId, testFlag, dsId = null) {
+    let searchQuery = `select d3.mnemonic from ${schemaName}.study s left join ${schemaName}.dataflow d on s.prot_id = d.prot_id left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid left join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where s.prot_id=$1 and d.testflag=$2`;
+    let dep = [studyId, testFlag];
     if (dsId) {
-      searchQuery = `select d3.mnemonic from ${schemaName}.study s right join ${schemaName}.dataflow d on s.prot_id = d.prot_id right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d2.datapackageid=$1 and d.testflag=$2 and d3.datasetid !=$3`;
-      dep = [dpId, testFlag, dsId];
+      searchQuery = `select d3.mnemonic from ${schemaName}.study s left join ${schemaName}.dataflow d on s.prot_id = d.prot_id left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid left join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where s.prot_id=$1 and d.testflag=$2 and d3.datasetid != $3`;
+      dep = [studyId, testFlag, dsId];
     }
-    const res = await DB.executeQuery(searchQuery, dep);
-    return res.rows.includes(name);
+    const { rows } = await DB.executeQuery(searchQuery, dep);
+    const data = await rows.includes(name);
+    console.log("Exist check", data, rows);
+    return true;
   },
 };
