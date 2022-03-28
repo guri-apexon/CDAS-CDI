@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react/button-has-type */
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Table from "apollo-react/components/Table";
 import TextField from "apollo-react/components/TextField";
@@ -57,6 +57,8 @@ export default function DSColumnTable({
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [editMode, setEditMode] = useState(false);
+  const [selectedFile, setSelectedFile] = useState();
+  const [isFilePicked, setIsFilePicked] = useState(false);
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -121,6 +123,19 @@ export default function DSColumnTable({
       });
     }
   };
+
+  const inputFile = useRef(null);
+
+  const changeHandler = () => {
+    inputFile.current.click();
+  };
+
+  const handleFileUpdate = (event) => {
+    setSelectedFile(event.target.files[0]);
+    setIsFilePicked(true);
+  };
+
+  const handleSubmission = () => {};
 
   const onChangeLOV = (e) => {
     const newValues = e.target.value;
@@ -463,6 +478,13 @@ export default function DSColumnTable({
           dataOrigin,
           moreColumns
         )}
+        <input
+          type="file"
+          id="file"
+          ref={inputFile}
+          onChange={handleFileUpdate}
+          style={{ display: "none" }}
+        />
         <Table
           title="Dataset Column Settings"
           subtitle={`${
@@ -517,6 +539,7 @@ export default function DSColumnTable({
             disableSaveAll,
             testLock,
             prodLock,
+            changeHandler,
           }}
         />
       </div>
