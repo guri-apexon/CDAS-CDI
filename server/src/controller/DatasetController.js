@@ -61,7 +61,10 @@ exports.saveDatasetData = async (req, res) => {
       testFlag
     );
     if (isExist) {
-      return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
+      return apiResponse.ErrorResponse(
+        res,
+        `Mnemonic ${values.datasetName} is not unique.`
+      );
     }
 
     const datasetId = helper.generateUniqueID();
