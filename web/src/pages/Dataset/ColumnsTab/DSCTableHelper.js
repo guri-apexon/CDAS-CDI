@@ -61,6 +61,32 @@ export const makeEditableSelectCell =
         fullWidth
         canDeselect={false}
         value={row[key]}
+        onChange={(e) =>
+          row.editRow(row.uniqueId, key, e.target.value, errorText)
+        }
+        {...fieldStyles}
+      >
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </Select>
+    ) : (
+      row[key]
+    );
+  };
+
+export const DataTypeEditableSelectCell =
+  (options) =>
+  ({ row, column: { accessor: key } }) => {
+    const errorText = checkRequired(row[key], key);
+    return row.editMode ? (
+      <Select
+        size="small"
+        fullWidth
+        canDeselect={false}
+        value={row[key]}
         error={!row.isInitLoad && errorText ? true : false}
         helperText={!row.isInitLoad ? errorText : ""}
         onChange={(e) =>
@@ -302,7 +328,7 @@ export const columns = [
   {
     header: "Data Type",
     accessor: "dataType",
-    customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
+    customCell: DataTypeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("dataType"),
     filterComponent: createSelectFilterComponent(
