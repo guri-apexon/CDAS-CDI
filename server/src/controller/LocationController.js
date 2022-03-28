@@ -204,7 +204,7 @@ exports.updateLocationData = async function (req, res) {
         "No duplicate locations are allowed"
       );
     }
-    var userId = req.headers["userid"];
+    var userId = values.userId || req.headers["userid"];
     const body = [
       values.locationType || null,
       values.ipServer || null,
@@ -335,7 +335,7 @@ exports.getServiceOwnersList = function (req, res) {
 
 exports.statusUpdate = async (req, res) => {
   try {
-    const { id, status } = req.body;
+    const { id, status, userId } = req.body;
     const curDate = helper.getCurrentTime();
     Logger.info({
       message: "statusUpdate",
@@ -346,8 +346,8 @@ exports.statusUpdate = async (req, res) => {
       curDate,
       id,
     ]);
-    var userId = req.headers["userid"];
-    await updateDataflowVersion(id, { active: status == true ? 1 : 0 }, userId);
+    var userid = userId || req.headers["userid"];
+    await updateDataflowVersion(id, { active: status == true ? 1 : 0 }, userid);
     return apiResponse.successResponseWithData(
       res,
       "Operation success",
