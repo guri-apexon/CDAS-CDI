@@ -22,7 +22,15 @@ async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
   return result;
 }
 
-async function saveSQLDataset(req, res, values, datasetId) {
+async function saveSQLDataset(
+  req,
+  res,
+  values,
+  datasetId,
+  datapackageid,
+  userId,
+  dfId
+) {
   try {
     Logger.info({ message: "create SQL Dataset" });
     const body = [
@@ -55,7 +63,7 @@ async function saveSQLDataset(req, res, values, datasetId) {
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    const { datapackageid, studyId, dfId, testFlag } = req.body;
+    const { datapackageid, studyId, dfId, testFlag, userId } = req.body;
     const isExist = await checkMnemonicExists(
       values.datasetName,
       studyId,
@@ -67,7 +75,15 @@ exports.saveDatasetData = async (req, res) => {
 
     const datasetId = helper.generateUniqueID();
     if (values.locationType.toLowerCase() === "jdbc") {
-      return saveSQLDataset(req, res, values, datasetId);
+      return saveSQLDataset(
+        req,
+        res,
+        values,
+        datasetId,
+        datapackageid,
+        userId,
+        dfId
+      );
     }
 
     let passwordStatus;
@@ -149,6 +165,7 @@ exports.saveDatasetData = async (req, res) => {
         values,
         jsonData,
         dfId,
+        userId,
         "New Entry"
       );
       if (!historyVersion) throw new Error("History not updated");
@@ -167,7 +184,15 @@ exports.saveDatasetData = async (req, res) => {
   }
 };
 
-async function updateSQLDataset(req, res, values) {
+async function updateSQLDataset(
+  req,
+  res,
+  values,
+  dfId,
+  userId,
+  datapackageid,
+  datasetid
+) {
   try {
     Logger.info({ message: "update SQL Dataset" });
     const body = [
@@ -199,7 +224,8 @@ exports.updateDatasetData = async (req, res) => {
     const values = req.body;
 
     Logger.info({ message: "update Dataset" });
-    const { dfId, studyId, datapackageid, testFlag, datasetid } = req.body;
+    const { dfId, studyId, datapackageid, testFlag, datasetid, userId } =
+      req.body;
     const isExist = await checkMnemonicExists(
       values.datasetName,
       studyId,
@@ -219,7 +245,15 @@ exports.updateDatasetData = async (req, res) => {
     }
 
     if (values.locationType.toLowerCase() === "jdbc") {
-      return updateSQLDataset(req, res, values);
+      return updateSQLDataset(
+        req,
+        res,
+        values,
+        dfId,
+        userId,
+        datapackageid,
+        datasetid
+      );
     }
 
     const requestData = {
@@ -275,6 +309,7 @@ exports.updateDatasetData = async (req, res) => {
             values,
             jsonData,
             dfId,
+            userId,
             key,
             oldData[key],
             `${requestData[key]}`

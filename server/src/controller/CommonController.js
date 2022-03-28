@@ -170,15 +170,16 @@ module.exports = {
   },
 
   addDatasetHistory: function (
-    package,
+    dateset,
     config_json,
     dataflowid,
+    userId,
     column,
     old_val = "",
     new_val = ""
   ) {
     return new Promise((resolve, reject) => {
-      if (!package) resolve(false);
+      if (!dateset) resolve(false);
       const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
       DB.executeQuery(
         `SELECT version from ${constants.DB_SCHEMA_NAME}.dataflow_version
@@ -188,24 +189,18 @@ module.exports = {
         const version = Number(historyVersion) + 1;
         const uniqueId = helper.createUniqueID();
         const addHistoryQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
-        const values = [
-          dataflowid,
-          version,
-          config_json,
-          package.userId,
-          currentTime,
-        ];
+        const values = [dataflowid, version, config_json, userId, currentTime];
         DB.executeQuery(addHistoryQuery, values).then(async (response) => {
           const addAuditLogQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_audit_log(dataflowid, datapackageid,datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8,$9)`;
           const auditValues = [
             dataflowid,
-            package.datapackageid,
-            package.datasetid,
+            dateset.datapackageid,
+            dateset.datasetid,
             version,
             column,
             old_val,
             new_val,
-            package.userId,
+            userId,
             currentTime,
           ];
           DB.executeQuery(addAuditLogQuery, auditValues)
