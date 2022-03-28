@@ -234,8 +234,7 @@ exports.deleteColumns = async (req, res) => {
 
 exports.lovUpdate = async (req, res) => {
   try {
-    const columnId = req.params.columnId;
-    const values = req.body;
+    const { columnId, dsId, dpId, dfId, userId, lov } = req.body;
 
     Logger.info({ message: "lovUpdate" });
     const selectQuery = `SELECT  "lov" from ${schemaName}.columndefinition WHERE columnid = $1`;
@@ -243,20 +242,20 @@ exports.lovUpdate = async (req, res) => {
 
     const lovData = await DB.executeQuery(selectQuery, [columnId]);
 
-    DB.executeQuery(updateQuery, [columnId, values.lov, new Date()]).then(
+    DB.executeQuery(updateQuery, [columnId, lov, new Date()]).then(
       async (response) => {
         const datasetColumns = response.rows || null;
 
         const historyVersion = await CommonController.addColumnHistory(
           columnId,
-          values.datasetid,
-          values.dfId,
-          values.dpId,
-          values.userId,
+          dsId,
+          dfId,
+          dpId,
+          userId,
           null,
           "lov",
           lovData.rows[0].lov,
-          values.lov
+          lov
         );
         if (!historyVersion) throw new Error("History not updated");
 

@@ -107,6 +107,13 @@ export default function DSColumnTable({
     setSelectedRow(row);
   };
 
+  const handleSaveLOV = () => {};
+
+  const onChangeLOV = (e) => {
+    const newValues = e.target.value;
+    setSelectedRow({ ...selectedRow, values: newValues });
+  };
+
   const hideViewLOVs = () => {
     setShowViewLOVs(false);
     setIsEditLOVs(false);
@@ -334,7 +341,7 @@ export default function DSColumnTable({
     return formatted;
   };
 
-  const onRowSave = (uniqueId) => {
+  const onRowSave = async (uniqueId) => {
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     const removeEdited = editedRows.filter((e) => e !== uniqueId);
     const editedRowData = editedRows
