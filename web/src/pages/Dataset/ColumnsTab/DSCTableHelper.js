@@ -422,6 +422,7 @@ export const CustomHeader = ({
   testLock,
   prodLock,
   toggleFilters,
+  changeHandler,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -497,6 +498,7 @@ export const CustomHeader = ({
             color="primary"
             size="small"
             disabled={isEditAll || prodLock || testLock}
+            onClick={changeHandler}
           >
             <Upload />
           </IconButton>
