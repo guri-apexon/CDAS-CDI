@@ -32,6 +32,7 @@ import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
+import { getUserInfo } from "../../utils";
 
 const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
 
@@ -98,7 +99,7 @@ const Dataset = () => {
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
-  const { dfId } = dashboard;
+  const { dfId, selectedCard } = dashboard;
   const { datapackageid, datapackageName, datasetid, datasetName } =
     selectedDSDetails;
   const {
@@ -109,9 +110,11 @@ const Dataset = () => {
     selectedDataset,
     formDataSQL,
   } = dataSets;
+  const { prot_id: studyId } = selectedCard;
   const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
   const { locationType: newLT, customSQLQuery } = selectedDataset;
+  const userInfo = getUserInfo();
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -229,8 +232,10 @@ const Dataset = () => {
       const data = {
         ...formValue,
         datapackageid,
+        userId: userInfo.userId,
         testFlag: testflag,
         dfId,
+        studyId,
       };
       if (data.datasetid) {
         dispatch(updateDatasetData(data));

@@ -14,7 +14,8 @@ import {
   createDatasetColumns,
   updateDatasetColumns,
 } from "../../../store/actions/DataSetsAction";
-import { deleteCD } from "../../../services/ApiServices";
+import { deleteCD, updateLOV } from "../../../services/ApiServices";
+import { getUserInfo } from "../../../utils/index";
 
 export default function DSColumnTable({
   numberOfRows,
@@ -65,6 +66,7 @@ export default function DSColumnTable({
   const [newRows, setNewRows] = useState("");
   const [disableSaveAll, setDisableSaveAll] = useState(true);
   const [moreColumns, setMoreColumns] = useState([...columns]);
+  const userInfo = getUserInfo();
 
   useEffect(() => {
     const initRows = initialRows.map((e) => e.uniqueId);
@@ -105,6 +107,24 @@ export default function DSColumnTable({
   const handleViewLOV = (row) => {
     setShowViewLOVs(true);
     setSelectedRow(row);
+  };
+
+  const handleSaveLOV = () => {
+    if (selectedRow.dbColumnId) {
+      updateLOV({
+        userId: userInfo.userId,
+        columnId: selectedRow.dbColumnId,
+        dsId: datasetid,
+        dpId: "",
+        dfId: "",
+        lov: selectedRow.values,
+      });
+    }
+  };
+
+  const onChangeLOV = (e) => {
+    const newValues = e.target.value;
+    setSelectedRow({ ...selectedRow, values: newValues });
   };
 
   const hideViewLOVs = () => {
@@ -334,7 +354,7 @@ export default function DSColumnTable({
     return formatted;
   };
 
-  const onRowSave = (uniqueId) => {
+  const onRowSave = async (uniqueId) => {
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     const removeEdited = editedRows.filter((e) => e !== uniqueId);
     const editedRowData = editedRows
@@ -390,7 +410,7 @@ export default function DSColumnTable({
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
-          if (key === "columnName") {
+          if (key === "columnName" || key === "position") {
             if (value.length >= 1) {
               return {
                 ...row,
@@ -524,6 +544,7 @@ export default function DSColumnTable({
                 <div className="lov-edit-mode">
                   <TextField
                     value={selectedRow.values}
+                    onChange={(e) => onChangeLOV(e)}
                     sizeAdjustable
                     minWidth={300}
                     minHeight={278}

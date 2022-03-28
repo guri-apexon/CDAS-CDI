@@ -70,7 +70,7 @@ export const checkExceSupport = (value, fileType) => {
 };
 
 export const checkAlphaNumeric = (value, key = "") => {
-  const regexp = key === "values" ? /^[a-zA-Z0-9~_]+$/ : /^[a-zA-Z0-9-_]+$/;
+  const regexp = key === "values" ? /^[a-zA-Z0-9~_]+$/ : /\w+$/;
   if (key === "format") {
     return false;
   }
@@ -135,7 +135,7 @@ export const checkFormat = (value, key = "", dataType = "") => {
     }
   }
   if (dataType === "Date") {
-    const regexp = /^\d{8}$/;
+    const regexp = /^[Y]{4}[M]{2}[D]{2}$/;
     if (value !== "" && !regexp.test(value)) {
       return (
         key === "format" &&
