@@ -114,6 +114,7 @@ const Dataset = () => {
   const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
   const { locationType: newLT, customSQLQuery } = selectedDataset;
+  const userInfo = getUserInfo();
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -231,7 +232,7 @@ const Dataset = () => {
       const data = {
         ...formValue,
         datapackageid,
-        userId: getUserInfo().userId,
+        userId: userInfo.userId,
         testFlag: testflag,
         dfId,
         studyId,

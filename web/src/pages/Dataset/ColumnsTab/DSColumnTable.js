@@ -14,7 +14,8 @@ import {
   createDatasetColumns,
   updateDatasetColumns,
 } from "../../../store/actions/DataSetsAction";
-import { deleteCD } from "../../../services/ApiServices";
+import { deleteCD, updateLOV } from "../../../services/ApiServices";
+import { getUserInfo } from "../../../utils/index";
 
 export default function DSColumnTable({
   numberOfRows,
@@ -65,6 +66,7 @@ export default function DSColumnTable({
   const [newRows, setNewRows] = useState("");
   const [disableSaveAll, setDisableSaveAll] = useState(true);
   const [moreColumns, setMoreColumns] = useState([...columns]);
+  const userInfo = getUserInfo();
 
   useEffect(() => {
     const initRows = initialRows.map((e) => e.uniqueId);
@@ -107,7 +109,18 @@ export default function DSColumnTable({
     setSelectedRow(row);
   };
 
-  const handleSaveLOV = () => {};
+  const handleSaveLOV = () => {
+    if (selectedRow.dbColumnId) {
+      updateLOV({
+        userId: userInfo.userId,
+        columnId: selectedRow.dbColumnId,
+        dsId: datasetid,
+        dpId: "",
+        dfId: "",
+        lov: selectedRow.values,
+      });
+    }
+  };
 
   const onChangeLOV = (e) => {
     const newValues = e.target.value;
@@ -531,6 +544,7 @@ export default function DSColumnTable({
                 <div className="lov-edit-mode">
                   <TextField
                     value={selectedRow.values}
+                    onChange={(e) => onChangeLOV(e)}
                     sizeAdjustable
                     minWidth={300}
                     minHeight={278}
