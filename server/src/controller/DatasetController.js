@@ -1,5 +1,4 @@
 const DB = require("../config/db");
-const oracleDB = require("../config/oracleDB");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
