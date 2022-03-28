@@ -21,7 +21,15 @@ async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
   return result;
 }
 
-async function saveSQLDataset(req, res, values, datasetId) {
+async function saveSQLDataset(
+  req,
+  res,
+  values,
+  datasetId,
+  datapackageid,
+  userId,
+  dfId
+) {
   try {
     Logger.info({ message: "create SQL Dataset" });
     const body = [
@@ -39,8 +47,38 @@ async function saveSQLDataset(req, res, values, datasetId) {
       helper.getCurrentTime(),
       values.datapackageid,
     ];
+
+    const conf_Data = {
+      datasetId: datasetId,
+      datapackageid: datapackageid,
+      mnemonic: values.datasetName,
+      active: values.active === true ? 1 : 0,
+      datakindid: values.clinicalDataType[0]
+        ? values.clinicalDataType[0]
+        : null,
+      customsql_yn: values.customSQLQuery,
+      customsql: values.sQLQuery || null,
+      incremental: values.dataType == "Incremental" ? "Y" : "N" || null,
+      tbl_nm: values.tableName || null,
+      offsetcolumn: values.offsetColumn || null,
+      offset_val: values.filterCondition || null,
+    };
+
+    const jsonData = JSON.stringify(conf_Data);
+
     const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, offset_val, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`;
     const data = await DB.executeQuery(insertQuery, body);
+
+    const historyVersion = await CommonController.addDatasetHistory(
+      dfId,
+      userId,
+      datapackageid,
+      datasetId,
+      jsonData,
+      "New Entry"
+    );
+    if (!historyVersion) throw new Error("History not updated");
+
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {
     //throw error in json response with status 500.
@@ -54,7 +92,7 @@ async function saveSQLDataset(req, res, values, datasetId) {
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    const { datapackageid, studyId, dfId, testFlag } = req.body;
+    const { datapackageid, studyId, dfId, testFlag, userId } = req.body;
     const isExist = await checkMnemonicExists(
       values.datasetName,
       studyId,
@@ -69,7 +107,15 @@ exports.saveDatasetData = async (req, res) => {
 
     const datasetId = helper.generateUniqueID();
     if (values.locationType.toLowerCase() === "jdbc") {
-      return saveSQLDataset(req, res, values, datasetId);
+      return saveSQLDataset(
+        req,
+        res,
+        values,
+        datasetId,
+        datapackageid,
+        userId,
+        dfId
+      );
     }
 
     let passwordStatus;
@@ -134,23 +180,14 @@ exports.saveDatasetData = async (req, res) => {
 
     const jsonData = JSON.stringify(conf_Data);
 
-    // const packageData = await DB.executeQuery(packageQuery, [
-    //   values.datapackageid,
-    // ]);
-
-    // const historyVersion = await CommonController.addHistory(
-    //   datasetId,
-    //   user_id,
-    //   "New Entry"
-    // );
-    // if (!historyVersion) throw new Error("History not updated");
-
     DB.executeQuery(insertQuery, body).then(async (response) => {
       const package = response.rows[0] || [];
       const historyVersion = await CommonController.addDatasetHistory(
-        values,
-        jsonData,
         dfId,
+        userId,
+        datapackageid,
+        datasetId,
+        jsonData,
         "New Entry"
       );
       if (!historyVersion) throw new Error("History not updated");
@@ -160,8 +197,6 @@ exports.saveDatasetData = async (req, res) => {
         {}
       );
     });
-    // const inset = await DB.executeQuery(insertQuery, body);
-    // return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
     Logger.error("catch :storeDataset");
     Logger.error(err);
@@ -169,7 +204,15 @@ exports.saveDatasetData = async (req, res) => {
   }
 };
 
-async function updateSQLDataset(req, res, values) {
+async function updateSQLDataset(
+  req,
+  res,
+  values,
+  dfId,
+  userId,
+  datapackageid,
+  datasetid
+) {
   try {
     Logger.info({ message: "update SQL Dataset" });
     const body = [
@@ -185,7 +228,56 @@ async function updateSQLDataset(req, res, values) {
       new Date(),
       values.datasetid,
     ];
+    const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
+                          offset_val, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
+
     const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, offset_val = $7, offsetcolumn = $8, incremental = $9, updt_tm = $10 where datasetid = $11`;
+
+    const requestData = {
+      datasetid: datasetid,
+      datapackageid: datapackageid,
+      mnemonic: values.datasetName,
+      active: true ? 1 : 0,
+      datakindid: values.clinicalDataType ? values.clinicalDataType[0] : null,
+      customsql_yn: values.customSQLQuery || null,
+      customsql: values.sQLQuery || null,
+      tbl_nm: values.tableName || null,
+      offset_val: values.filterCondition || null,
+      offsetcolumn: values.offsetColumn || null,
+      incremental: values.dataType == "Incremental" ? "Y" : "N" || null,
+    };
+
+    // const jsonObj = {
+    //   datasetid: datasetid,
+    //   datapackageid: datapackageid,
+    //   updatedData: requestData,
+    // };
+
+    const jsonData = JSON.stringify(requestData);
+
+    const { rows: tempData } = await DB.executeQuery(selectQuery, [
+      values.datasetid,
+    ]);
+    const oldData = tempData[0];
+
+    for (const key in requestData) {
+      if (`${requestData[key]}` != oldData[key]) {
+        if (oldData[key] != null) {
+          const historyVersion = await CommonController.addDatasetHistory(
+            dfId,
+            userId,
+            datapackageid,
+            datasetid,
+            jsonData,
+            key,
+            oldData[key],
+            `${requestData[key]}`
+          );
+          if (!historyVersion) throw new Error("History not updated");
+        }
+      }
+    }
+
     const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {
@@ -201,14 +293,15 @@ exports.updateDatasetData = async (req, res) => {
     const values = req.body;
 
     Logger.info({ message: "update Dataset" });
-    const { dfId, studyId, datapackageid, testFlag, datasetid } = req.body;
+    const { dfId, studyId, datapackageid, testFlag, datasetid, userId } =
+      req.body;
     const isExist = await checkMnemonicExists(
       values.datasetName,
       studyId,
       testFlag,
       datasetid
     );
-    const selectQuery = `select  mnemonic, type, charset, delimiter , escapecode, quote,
+    const selectQuery = `select datasetid, datapackageid, mnemonic, type, charset, delimiter , escapecode, quote,
                          headerrownumber, footerrownumber, active, naming_convention, path, 
                          datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, 
                          incremental from ${schemaName}.dataset where datasetid = $1`;
@@ -221,62 +314,63 @@ exports.updateDatasetData = async (req, res) => {
     }
 
     if (values.locationType.toLowerCase() === "jdbc") {
-      return updateSQLDataset(req, res, values);
+      return updateSQLDataset(
+        req,
+        res,
+        values,
+        dfId,
+        userId,
+        datapackageid,
+        datasetid
+      );
     }
 
-    const requestData = {
+    var requestData = {
+      datasetid: datasetid,
+      datapackageid: datapackageid,
       mnemonic: values.datasetName,
-      type: values.fileType,
-      charset: values.encoding,
-      delimiter: values.delimiter,
-      escapecode: values.escapeCharacter,
-      quote: values.quote,
-      headerrownumber: values.headerRowNumber,
-      footerrownumber: values.footerRowNumber,
+      type: values.fileType || null,
+      charset: values.encoding || null,
+      delimiter: values.delimiter || null,
+      escapecode: values.escapeCharacter || null,
+      quote: values.quote || null,
+      headerrownumber: values.headerRowNumber || 0,
+      footerrownumber: values.footerRowNumber || 0,
       active: true ? 1 : 0,
-      naming_convention: values.fileNamingConvention,
-      path: values.folderPath,
+      naming_convention: values.fileNamingConvention || null,
+      path: values.folderPath || null,
       datakindid: values.clinicalDataType[0],
-      data_freq: values.transferFrequency,
-      ovrd_stale_alert: values.overrideStaleAlert,
-      rowdecreaseallowed: values.rowDecreaseAllowed,
+      data_freq: values.transferFrequency || null,
+      ovrd_stale_alert: values.overrideStaleAlert || null,
+      rowdecreaseallowed: values.rowDecreaseAllowed || 0,
       incremental: "Incremental" ? "Y" : "N",
     };
 
-    const jsonObj = requestData;
-    jsonObj["datasetid"] = datasetid;
-    jsonObj["datapackageid"] = datapackageid;
-
-    // const confData2 = Object.entries(jsonObj);
-    // // const conData = confData2.reverse();
-    // const confData = Object.fromEntries(confData2.reverse());
-    const jsonData = JSON.stringify(jsonObj);
-    // {
-    //   datasetid: values.datasetid,
-    //   datapackageid: values.datapackageid,
+    // const jsonObj = {
+    //   datasetid: datasetid,
+    //   datapackageid: datapackageid,
+    //   updatedData: requestData,
     // };
 
-    // const conf_data = dataSetId.jsonData.push();
-
-    // const packageData = await DB.executeQuery(packageQuery, [
-    //   values.datapackageid,
-    // ]);
+    const jsonData = JSON.stringify(requestData);
 
     const { rows: tempData } = await DB.executeQuery(selectQuery, [
       values.datasetid,
     ]);
     const oldData = tempData[0];
 
-    const updatedColumn = {};
-    // Object.keys(requestData)
-
+    // console.log("request Data", requestData, "old_data", oldData);
     for (const key in requestData) {
+      // console.log(key);
       if (`${requestData[key]}` != oldData[key]) {
+        // console.log("unmatch key =", key);
         if (oldData[key] != null) {
           const historyVersion = await CommonController.addDatasetHistory(
-            values,
-            jsonData,
             dfId,
+            userId,
+            datapackageid,
+            datasetid,
+            jsonData,
             key,
             oldData[key],
             `${requestData[key]}`

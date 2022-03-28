@@ -63,8 +63,6 @@ exports.saveDatasetColumns = async (req, res) => {
 
       const jsonObj = value;
 
-      jsonObj["dataflowid"] = values.dfId;
-      jsonObj["datapackageid"] = values.dpId;
       jsonObj["datasetid"] = datasetid;
       jsonObj["columnId"] = columnId;
 
@@ -107,7 +105,7 @@ exports.updateColumns = async (req, res) => {
     const values = req.body;
     Logger.info({ message: "update set columns" });
     const updateQuery = `UPDATE ${schemaName}.columndefinition "variable"=$2, datasetid=$3, name=$4, datatype=$5, primarykey=$6, required=$7, "unique"=$8, charactermin=$9, charactermax=$10, position=$11, "format"=$12, lov=$13, updt_tm=$14 WHERE columnid=$1`;
-    const selectQuery = `select variable, name, datatype, primarykey, required, unique, 
+    const selectQuery = `select datasetid,columnid, variable, name, datatype, primarykey, required, unique, 
                           charactermin, charactermax, position, format,lov
                           from ${schemaName}.columndefinition where columnid=$1`;
 
@@ -132,6 +130,8 @@ exports.updateColumns = async (req, res) => {
       const insrted = await DB.executeQuery(updateQuery, body);
 
       const requestData = {
+        datasetid: datasetid,
+        columnid: value.columnId.trim(),
         variable: value.variableLabel.trim() || null,
         name: value.columnName.trim() || null,
         datatype: value.dataType.trim() || null,
@@ -144,13 +144,8 @@ exports.updateColumns = async (req, res) => {
         format: value.format.trim() || null,
         lov: value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
       };
-      const jsonObj = requestData;
 
-      jsonObj["dataflowid"] = values.dfId;
-      jsonObj["datapackageid"] = values.dpId;
-      jsonObj["datasetid"] = datasetid;
-      jsonObj["columnId"] = value.columnId.trim();
-      const config_json = JSON.stringify(jsonObj);
+      const config_json = JSON.stringify(requestData);
 
       const { rows: tempData } = await DB.executeQuery(selectQuery, [
         value.columnId.trim(),
