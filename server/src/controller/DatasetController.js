@@ -83,7 +83,7 @@ exports.saveDatasetData = async (req, res) => {
 
     Logger.info({ message: "create Dataset" });
     const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path,file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
-    const packageQuery = `select dataflowid from ${schemaName}.datapackage WHERE datapackageid = $1`;
+    // const packageQuery = `select dataflowid from ${schemaName}.datapackage WHERE datapackageid = $1`;
 
     const body = [
       datasetId,
@@ -132,9 +132,9 @@ exports.saveDatasetData = async (req, res) => {
 
     const jsonData = JSON.stringify(conf_Data);
 
-    const packageData = await DB.executeQuery(packageQuery, [
-      values.datapackageid,
-    ]);
+    // const packageData = await DB.executeQuery(packageQuery, [
+    //   values.datapackageid,
+    // ]);
 
     // const historyVersion = await CommonController.addHistory(
     //   datasetId,
@@ -148,7 +148,7 @@ exports.saveDatasetData = async (req, res) => {
       const historyVersion = await CommonController.addDatasetHistory(
         values,
         jsonData,
-        packageData.rows[0].dataflowid,
+        dfId,
         "New Entry"
       );
       if (!historyVersion) throw new Error("History not updated");
@@ -211,7 +211,7 @@ exports.updateDatasetData = async (req, res) => {
                          datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, 
                          incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const packageQuery = `select dataflowid from ${schemaName}.datapackage WHERE datapackageid = $1`;
+    // const packageQuery = `select dataflowid from ${schemaName}.datapackage WHERE datapackageid = $1`;
 
     const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, naming_convention = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $19`;
     if (isExist) {
@@ -256,9 +256,9 @@ exports.updateDatasetData = async (req, res) => {
 
     // const conf_data = dataSetId.jsonData.push();
 
-    const packageData = await DB.executeQuery(packageQuery, [
-      values.datapackageid,
-    ]);
+    // const packageData = await DB.executeQuery(packageQuery, [
+    //   values.datapackageid,
+    // ]);
 
     const { rows: tempData } = await DB.executeQuery(selectQuery, [
       values.datasetid,
@@ -274,7 +274,7 @@ exports.updateDatasetData = async (req, res) => {
           const historyVersion = await CommonController.addDatasetHistory(
             values,
             jsonData,
-            packageData.rows[0].dataflowid,
+            dfId,
             key,
             oldData[key],
             `${requestData[key]}`
