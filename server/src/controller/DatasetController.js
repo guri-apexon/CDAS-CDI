@@ -1,5 +1,4 @@
 const DB = require("../config/db");
-const oracleDB = require("../config/oracleDB");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
@@ -332,14 +331,10 @@ exports.updateDatasetData = async (req, res) => {
 
 exports.getVLCData = async (req, res) => {
   try {
-    Logger.info({
-      message: "getVLCData",
-    });
-    const dbconnection = await oracleDB();
-    const q1 = `SELECT VERSION as "versionNo", EXT_RULEID as "ruleId", QC_TYPE as "type", RULEEXPR AS "ruleExp", RULESEQ as "ruleSeq", 
-    "ACTION" as "action", ERRORCODE as "emCode", ERRORMESSAGE as "errMsg",
-    CASE WHEN active_yn='Y' AND curr_rec_yn ='Y' THEN 'Active' ELSE 'Inactive' END as "status" FROM IDP.DATASET_QC_RULES`;
-    const { rows } = await dbconnection.execute(q1);
+    Logger.info({ message: "getVLCData" });
+    const q1 = `SELECT dv.df_vers_id as "versionNo", ext_ruleid as "ruleId", qc_type as "type", ruleexpr AS "ruleExp", ruleseq as "ruleSeq", "action", errorcode as "emCode", errormessage as "errMsg",
+    CASE WHEN active_yn='Y' AND curr_rec_yn ='Y' THEN 'Active' ELSE 'Inactive' END as "status" FROM ${schemaName}.dataset_qc_rules dqr inner join ${schemaName}.dataflow_version dv on dqr.dataflowid = dv.dataflowid`;
+    const { rows } = await DB.executeQuery(q1);
     const uniqueIdAdded = rows.map((e, i) => {
       e.id = `id${i + 1}`;
       return e;

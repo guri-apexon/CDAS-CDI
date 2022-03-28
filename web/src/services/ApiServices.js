@@ -350,4 +350,16 @@ export const deleteCD = async (id) => {
   }
 };
 
+export const updateLOV = async (reqBody) => {
+  try {
+    const res = await axios.post(
+      `${baseURL}/${COLUMNSAPI}/lov-update`,
+      reqBody
+    );
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
 export default searchStudy;
