@@ -604,7 +604,7 @@ export default function DSColumnTable({
         buttonProps={
           isEditLOVs
             ? [
-                { label: "Save", onClick: hideViewLOVs },
+                { label: "Save", onClick: handleSaveLOV },
                 { label: "Cancel", onClick: () => setIsEditLOVs(false) },
               ]
             : [
