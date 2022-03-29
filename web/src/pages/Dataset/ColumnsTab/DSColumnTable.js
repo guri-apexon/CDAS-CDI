@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react/button-has-type */
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Table from "apollo-react/components/Table";
 import TextField from "apollo-react/components/TextField";
@@ -14,7 +14,8 @@ import {
   createDatasetColumns,
   updateDatasetColumns,
 } from "../../../store/actions/DataSetsAction";
-import { deleteCD } from "../../../services/ApiServices";
+import { deleteCD, updateLOV } from "../../../services/ApiServices";
+import { getUserInfo } from "../../../utils/index";
 
 export default function DSColumnTable({
   numberOfRows,
@@ -28,7 +29,8 @@ export default function DSColumnTable({
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const { selectedDataset } = dataSets;
-  const { fileType, datasetid } = selectedDataset;
+  const { fileType, datasetid, headerrownumber, headerRowNumber } =
+    selectedDataset;
 
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     uniqueId: `u${index}`,
@@ -55,6 +57,8 @@ export default function DSColumnTable({
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [editMode, setEditMode] = useState(false);
+  const [selectedFile, setSelectedFile] = useState();
+  const [isFilePicked, setIsFilePicked] = useState(false);
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -63,6 +67,8 @@ export default function DSColumnTable({
   const [isMultiAdd, setIsMultiAdd] = useState(false);
   const [newRows, setNewRows] = useState("");
   const [disableSaveAll, setDisableSaveAll] = useState(true);
+  const [moreColumns, setMoreColumns] = useState([...columns]);
+  const userInfo = getUserInfo();
 
   useEffect(() => {
     const initRows = initialRows.map((e) => e.uniqueId);
@@ -103,6 +109,37 @@ export default function DSColumnTable({
   const handleViewLOV = (row) => {
     setShowViewLOVs(true);
     setSelectedRow(row);
+  };
+
+  const handleSaveLOV = () => {
+    if (selectedRow.dbColumnId) {
+      updateLOV({
+        userId: userInfo.userId,
+        columnId: selectedRow.dbColumnId,
+        dsId: datasetid,
+        dpId: "",
+        dfId: "",
+        lov: selectedRow.values,
+      });
+    }
+  };
+
+  const inputFile = useRef(null);
+
+  const changeHandler = () => {
+    inputFile.current.click();
+  };
+
+  const handleFileUpdate = (event) => {
+    setSelectedFile(event.target.files[0]);
+    setIsFilePicked(true);
+  };
+
+  const handleSubmission = () => {};
+
+  const onChangeLOV = (e) => {
+    const newValues = e.target.value;
+    setSelectedRow({ ...selectedRow, values: newValues });
   };
 
   const hideViewLOVs = () => {
@@ -250,11 +287,31 @@ export default function DSColumnTable({
     },
   ];
 
-  const moreColumns = [
+  const allColumns = [
     ...columns.map((column) => ({ ...column })).slice(0, -1),
     ...columnsToAdd.map((column) => ({ ...column })),
     columns.slice(-1)[0],
   ];
+
+  useEffect(() => {
+    if (headerrownumber > 0 || headerRowNumber > 0) {
+      const data = allColumns.map((e) => {
+        if (e.accessor === "position") {
+          e.hidden = true;
+        }
+        return e;
+      });
+      setMoreColumns(data);
+    } else {
+      const data = allColumns.map((e) => {
+        if (e.accessor === "columnName") {
+          e.hidden = true;
+        }
+        return e;
+      });
+      setMoreColumns(data);
+    }
+  }, []);
 
   const onEditAll = () => {
     if (rows.length > 0) {
@@ -312,7 +369,7 @@ export default function DSColumnTable({
     return formatted;
   };
 
-  const onRowSave = (uniqueId) => {
+  const onRowSave = async (uniqueId) => {
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     const removeEdited = editedRows.filter((e) => e !== uniqueId);
     const editedRowData = editedRows
@@ -368,7 +425,7 @@ export default function DSColumnTable({
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
-          if (key === "columnName") {
+          if (key === "columnName" || key === "position") {
             if (value.length >= 1) {
               return {
                 ...row,
@@ -413,7 +470,21 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {console.log("data", rows, editedRows, formattedData, dataOrigin)}
+        {console.log(
+          "data",
+          rows,
+          editedRows,
+          formattedData,
+          dataOrigin,
+          moreColumns
+        )}
+        <input
+          type="file"
+          id="file"
+          ref={inputFile}
+          onChange={handleFileUpdate}
+          style={{ display: "none" }}
+        />
         <Table
           title="Dataset Column Settings"
           subtitle={`${
@@ -468,6 +539,7 @@ export default function DSColumnTable({
             disableSaveAll,
             testLock,
             prodLock,
+            changeHandler,
           }}
         />
       </div>
@@ -495,6 +567,7 @@ export default function DSColumnTable({
                 <div className="lov-edit-mode">
                   <TextField
                     value={selectedRow.values}
+                    onChange={(e) => onChangeLOV(e)}
                     sizeAdjustable
                     minWidth={300}
                     minHeight={278}

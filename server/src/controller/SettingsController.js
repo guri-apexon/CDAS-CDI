@@ -89,7 +89,7 @@ exports.searchSettingsList = function (req, res) {
 exports.updateSettingsData = async function (req, res) {
   try {
     const values = req.body;
-    const userId = req.headers["userid"];
+    const userId = values.userId || req.headers["userid"];
     const tenantId = await getTenantId(userId);
     const isExist = await checkSettingsExists(
       values.name,
@@ -136,7 +136,7 @@ exports.updateSettingsData = async function (req, res) {
 exports.saveSettingsData = async function (req, res) {
   try {
     const values = req.body;
-    const userId = req.headers["userid"];
+    const userId = values.userId || req.headers["userid"];
     const tenantId = await getTenantId(userId);
     const isExist = await checkSettingsExists(values.name, tenantId);
     if (isExist > 0) {

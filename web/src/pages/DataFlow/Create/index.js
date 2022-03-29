@@ -163,7 +163,6 @@ const DataFlow = ({
       FormValues &&
       FormValues.vendor &&
       FormValues.locationName &&
-      FormValues.firstFileDate &&
       FormValues.description !== "" &&
       selectedCard.prot_id !== ""
     ) {

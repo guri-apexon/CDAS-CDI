@@ -11,6 +11,7 @@ import Table, {
   compareNumbers,
   compareStrings,
   createSelectFilterComponent,
+  createStringSearchFilter,
 } from "apollo-react/components/Table";
 import { neutral7, neutral8 } from "apollo-react/colors";
 import Modal from "apollo-react/components/Modal";
@@ -51,6 +52,7 @@ import {
   IntegerFilter,
   createStringArraySearchFilter,
   DateFilter,
+  TextFieldFilter,
 } from "../../../utils/index";
 
 const DateCell = ({ row, column: { accessor } }) => {
@@ -280,24 +282,29 @@ export default function DataflowTab({ updateData }) {
     const menuItems = [
       {
         text: "View audit log",
+        id: 1,
         onClick: () => viewAuditLogAction(dataFlowId, row),
       },
       {
         text: activeText,
+        id: 2,
         onClick: () => changeStatusAction({ dataFlowId, status, version }),
       },
       {
         text: "Send sync request",
+        id: 3,
         onClick: () => sendSyncRequest(row),
         disabled: status !== "Active",
       },
       {
         text: "Clone data flow",
+        id: 4,
         onClick: () => cloneDataFlowAction(dataFlowId),
         disabled: true,
       },
       {
         text: "Hard delete data flow",
+        id: 5,
         onClick: () => hardDeleteAction(row),
       },
     ];
@@ -409,28 +416,30 @@ export default function DataflowTab({ updateData }) {
       accessor: "description",
       frozen: true,
       sortFunction: compareStrings,
-      filterFunction: createStringArraySearchFilter("description"),
-      filterComponent: createAutocompleteFilter(
-        Array.from(
-          new Set(
-            rowData
-              .map((r) => ({ label: r.description }))
-              .map((item) => item.label)
-          )
-        )
-          .map((label) => {
-            return { label };
-          })
-          .sort((a, b) => {
-            if (a.label < b.label) {
-              return -1;
-            }
-            if (a.label > b.label) {
-              return 1;
-            }
-            return 0;
-          })
-      ),
+      filterFunction: createStringSearchFilter("description"),
+      filterComponent: TextFieldFilter,
+      // filterFunction: createStringArraySearchFilter("description"),
+      // filterComponent: createAutocompleteFilter(
+      //   Array.from(
+      //     new Set(
+      //       rowData
+      //         .map((r) => ({ label: r.description }))
+      //         .map((item) => item.label)
+      //     )
+      //   )
+      //     .map((label) => {
+      //       return { label };
+      //     })
+      //     .sort((a, b) => {
+      //       if (a.label < b.label) {
+      //         return -1;
+      //       }
+      //       if (a.label > b.label) {
+      //         return 1;
+      //       }
+      //       return 0;
+      //     })
+      // ),
     },
     {
       header: "Type",
@@ -455,28 +464,30 @@ export default function DataflowTab({ updateData }) {
       accessor: "externalSourceSystem",
       frozen: false,
       sortFunction: compareStrings,
-      filterFunction: createStringArraySearchFilter("externalSourceSystem"),
-      filterComponent: createAutocompleteFilter(
-        Array.from(
-          new Set(
-            rowData
-              .map((r) => ({ label: r.externalSourceSystem }))
-              .map((item) => item.label)
-          )
-        )
-          .map((label) => {
-            return { label };
-          })
-          .sort((a, b) => {
-            if (a.label < b.label) {
-              return -1;
-            }
-            if (a.label > b.label) {
-              return 1;
-            }
-            return 0;
-          })
-      ),
+      filterFunction: createStringSearchFilter("externalSourceSystem"),
+      filterComponent: TextFieldFilter,
+      // filterFunction: createStringArraySearchFilter("externalSourceSystem"),
+      // filterComponent: createAutocompleteFilter(
+      //   Array.from(
+      //     new Set(
+      //       rowData
+      //         .map((r) => ({ label: r.externalSourceSystem }))
+      //         .map((item) => item.label)
+      //     )
+      //   )
+      //     .map((label) => {
+      //       return { label };
+      //     })
+      //     .sort((a, b) => {
+      //       if (a.label < b.label) {
+      //         return -1;
+      //       }
+      //       if (a.label > b.label) {
+      //         return 1;
+      //       }
+      //       return 0;
+      //     })
+      // ),
     },
     {
       header: "Location Type",

@@ -367,7 +367,7 @@ export const checkHeaders = (data) => {
   const validation =
     header.includes("Protocol") &&
     header.includes("Variable Label") &&
-    header.includes("Column Name") &&
+    header.includes("Column Name/Designator") &&
     header.includes("Format") &&
     header.includes("Data Type") &&
     header.includes("Primary(Y/N)") &&

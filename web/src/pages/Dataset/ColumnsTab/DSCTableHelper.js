@@ -16,12 +16,16 @@ import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Tooltip from "apollo-react/components/Tooltip";
 import {
   createStringSearchFilter,
+  createSelectFilterComponent,
   compareNumbers,
   compareStrings,
 } from "apollo-react/components/Table";
 
 import { ReactComponent as Plus } from "../../../components/Icons/roundPlusBlue.svg";
-import { TextFieldFilter } from "../../../utils/index";
+import {
+  TextFieldFilter,
+  createStringArraySearchFilter,
+} from "../../../utils/index";
 
 import {
   checkNumeric,
@@ -51,6 +55,32 @@ export const makeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
     const errorText = checkRequiredValue(row[key], key, row.primary);
+    return row.editMode ? (
+      <Select
+        size="small"
+        fullWidth
+        canDeselect={false}
+        value={row[key]}
+        onChange={(e) =>
+          row.editRow(row.uniqueId, key, e.target.value, errorText)
+        }
+        {...fieldStyles}
+      >
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </Select>
+    ) : (
+      row[key]
+    );
+  };
+
+export const DataTypeEditableSelectCell =
+  (options) =>
+  ({ row, column: { accessor: key } }) => {
+    const errorText = checkRequired(row[key], key);
     return row.editMode ? (
       <Select
         size="small"
@@ -276,61 +306,95 @@ export const columns = [
     accessor: "columnName",
     customCell: ColumnNameCell,
     sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("columnName"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Position",
     accessor: "position",
     customCell: EditableCell,
     sortFunction: compareStrings,
-    hidden: true,
+    filterFunction: createStringSearchFilter("position"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Format",
     accessor: "format",
     customCell: FormatCell,
     sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("format"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Data Type",
     accessor: "dataType",
-    customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
+    customCell: DataTypeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("dataType"),
+    filterComponent: createSelectFilterComponent(
+      ["Alphanumeric", "Numeric", "Date"],
+      {
+        size: "small",
+        multiple: true,
+      }
+    ),
   },
   {
     header: "Primary?",
     accessor: "primary",
     customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("primary"),
+    filterComponent: createSelectFilterComponent(["Yes", "No"], {
+      size: "small",
+      multiple: true,
+    }),
   },
   {
     header: "Unique?",
     accessor: "unique",
     customCell: makeEditableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("unique"),
+    filterComponent: createSelectFilterComponent(["Yes", "No"], {
+      size: "small",
+      multiple: true,
+    }),
   },
   {
     header: "Required?",
     accessor: "required",
     customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("required"),
+    filterComponent: createSelectFilterComponent(["Yes", "No"], {
+      size: "small",
+      multiple: true,
+    }),
   },
   {
     header: "Min length",
     accessor: "minLength",
     customCell: NumericEditableCell,
     sortFunction: compareNumbers,
+    filterFunction: createStringSearchFilter("minLength"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Max length",
     accessor: "maxLength",
     customCell: NumericEditableCell,
     sortFunction: compareNumbers,
+    filterFunction: createStringSearchFilter("maxLength"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "List of values",
     accessor: "values",
     customCell: EditableCell,
     sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("values"),
+    filterComponent: TextFieldFilter,
   },
   {
     accessor: "action",
@@ -357,6 +421,8 @@ export const CustomHeader = ({
   disableSaveAll,
   testLock,
   prodLock,
+  toggleFilters,
+  changeHandler,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -432,6 +498,7 @@ export const CustomHeader = ({
             color="primary"
             size="small"
             disabled={isEditAll || prodLock || testLock}
+            onClick={changeHandler}
           >
             <Upload />
           </IconButton>
@@ -456,6 +523,7 @@ export const CustomHeader = ({
         variant="secondary"
         icon={Filter}
         disabled={isEditAll}
+        onClick={toggleFilters}
       >
         Filter
       </Button>

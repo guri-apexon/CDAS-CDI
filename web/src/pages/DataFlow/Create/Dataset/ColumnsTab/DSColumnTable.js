@@ -149,7 +149,7 @@ export default function DSColumnTable({
           uniqueId: `u${rows.length}`,
           columnId: rows.length + 1,
           variableLabel: "",
-          columnName: obj.column || "",
+          columnName: obj?.column || "",
           position: "",
           format: "",
           dataType: "",
@@ -158,7 +158,7 @@ export default function DSColumnTable({
           required: "No",
           minLength: "",
           maxLength: "",
-          values: obj.value || "",
+          values: obj?.value || "",
           isInitLoad: true,
           isHavingError: false,
           isHavingColumnName: false,
@@ -374,12 +374,15 @@ export default function DSColumnTable({
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
-          if (key === "columnName") {
+          if (key === "columnName" || key === "dataType") {
             if (value.length >= 1) {
               return {
                 ...row,
                 [key]: value,
-                isHavingColumnName: true,
+                isHavingColumnName:
+                  key === "columnName"
+                    ? row.dataType !== ""
+                    : row.columnName !== "",
               };
             }
             // showColumnNameRequried();

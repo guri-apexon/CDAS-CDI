@@ -382,6 +382,7 @@ const columns = [
     filterFunction: createStringSearchFilter("datasetname"),
     filterComponent: TextFieldFilter,
     customCell: DatasetCell,
+    frozen: true,
   },
   {
     header: "Vendor Source",
@@ -398,6 +399,7 @@ const columns = [
     filterFunction: createStringArraySearchFilter("jobstatus"),
     filterComponent: createAutocompleteFilter("jobstatus"),
     customCell: JobstatusCell,
+    frozen: true,
   },
   {
     header: "Last File Transferred",
@@ -487,10 +489,6 @@ const moreColumnsWithFrozen = [
   ...columns.map((column) => ({ ...column })),
   ...columnsToAdd.map((column) => ({ ...column, hidden: true })),
 ];
-
-moreColumnsWithFrozen[0].frozen = true;
-moreColumnsWithFrozen[1].frozen = true;
-moreColumnsWithFrozen[2].frozen = true;
 
 export { moreColumnsWithFrozen };
 
