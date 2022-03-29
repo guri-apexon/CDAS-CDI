@@ -24,6 +24,8 @@ export default function DSColumnTable({
   locationType,
   testLock,
   prodLock,
+  dfId,
+  dpId,
 }) {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
@@ -348,7 +350,9 @@ export default function DSColumnTable({
     setRows([...removeSpaces]);
     setSelectedRows([]);
     setEditedRows(rows);
-    dispatch(createDatasetColumns(rows, datasetid));
+    dispatch(
+      createDatasetColumns(rows, datasetid, dfId, dpId, userInfo.userId)
+    );
   };
 
   const onCancelAll = () => {
@@ -392,9 +396,25 @@ export default function DSColumnTable({
       .find((e) => e.uniqueId === uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
     if (editedRowData?.dbColumnId) {
-      dispatch(updateDatasetColumns([editedRowData], datasetid));
+      dispatch(
+        updateDatasetColumns(
+          [editedRowData],
+          datasetid,
+          dfId,
+          dpId,
+          userInfo.userId
+        )
+      );
     } else {
-      dispatch(createDatasetColumns([editedRowData], datasetid));
+      dispatch(
+        createDatasetColumns(
+          [editedRowData],
+          datasetid,
+          dfId,
+          dpId,
+          userInfo.userId
+        )
+      );
     }
     setRows([...removeExistingRowData, editedRowData]);
     setEditedRows([...removeEdited]);

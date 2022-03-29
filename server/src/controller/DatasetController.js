@@ -450,11 +450,15 @@ exports.getVLCData = async (req, res) => {
 
 exports.getDatasetDetail = async (req, res) => {
   try {
-    const { datasetid } = req.body;
+    const { dfId, dpId, dsId } = req.body;
     const query = `SELECT * from ${schemaName}.dataset WHERE datasetid = $1`;
     Logger.info({ message: "getDatasetDetail" });
-    const datasetDetail = await DB.executeQuery(query, [datasetid]);
+    const datasetDetail = await DB.executeQuery(query, [dsId]);
 
+    if (datasetDetail.rows[0].file_pwd === "Yes") {
+      const filePwd = helper.readVaultData(`${dfId}/${dpId}/${dsId}`);
+      datasetDetail.rows[0].file_pwd = filePwd;
+    }
     return apiResponse.successResponseWithData(
       res,
       "Operation success",
