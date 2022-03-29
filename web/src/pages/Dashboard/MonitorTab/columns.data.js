@@ -20,6 +20,7 @@ import {
   numberSearchFilter,
   compareNumbers,
 } from "apollo-react/components/Table";
+import Tooltip from "apollo-react/components/Tooltip";
 import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg";
 import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
 import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
@@ -150,6 +151,15 @@ const DatasetCell = ({ row, column: { accessor } }) => {
     >
       {dataset}
     </Link>
+  );
+};
+
+const VendorCell = ({ row, column: { accessor } }) => {
+  const vendorsource = row[accessor];
+  return (
+    <Tooltip title={vendorsource}>
+      <span>{vendorsource}</span>
+    </Tooltip>
   );
 };
 
@@ -379,6 +389,7 @@ const columns = [
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("vendorsource"),
     filterComponent: createAutocompleteFilter("vendorsource"),
+    customCell: VendorCell,
   },
   {
     header: "Dataset Status",

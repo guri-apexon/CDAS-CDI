@@ -181,7 +181,7 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
             size="small"
             onClick={redirectDataPackage}
           >
-            Add Data Package
+            Add data package
           </Button>
         </div>
 

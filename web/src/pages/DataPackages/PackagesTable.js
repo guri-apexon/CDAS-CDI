@@ -47,9 +47,11 @@ const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
 const NameCustomCell = ({ row, column: { accessor } }) => {
   const title = row[accessor] || "No Package";
   return (
-    <div className="flex package-name-td">
+    <div className="flex package-name-td align-center">
       <PackageIcon style={{ width: 15, margin: "0px 10px" }} />
-      <span className="b-font">{title}</span>
+      <span className="b-font" style={{ marginTop: "2px" }}>
+        {title}
+      </span>
     </div>
   );
 };

@@ -196,7 +196,7 @@ const LeftPanel = ({ protId, packages, setFormType, myform }) => {
             size="small"
             onClick={redirectDataPackage}
           >
-            Add Data Package
+            Add data package
           </Button>
         </div>
 

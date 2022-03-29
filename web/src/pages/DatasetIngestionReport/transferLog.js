@@ -231,11 +231,13 @@ const generateColumns = (tableRows = []) => {
     {
       header: "New Records",
       accessor: "NewRecords",
+      align: "right",
       sortFunction: compareNumbers,
     },
     {
       header: "Modified Records",
       accessor: "ModifiedRecords",
+      align: "right",
       sortFunction: compareNumbers,
     },
     {
@@ -376,7 +378,7 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
         rowsPerPageOptions={[10, 50, 100, "All"]}
         tablePaginationProps={{
           labelDisplayedRows: ({ from, to, count }) =>
-            `${count === 1 ? "File" : "Files"} ${from}-${to} of ${count}`,
+            `${count === 1 ? "Item" : "Items"} ${from}-${to} of ${count}`,
           truncate: true,
         }}
         CustomHeader={(props) => <CustomHeader {...props} />}
