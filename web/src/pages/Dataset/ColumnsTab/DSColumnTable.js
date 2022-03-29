@@ -22,17 +22,17 @@ export default function DSColumnTable({
   dataOrigin,
   formattedData,
   locationType,
-  testLock,
-  prodLock,
   dfId,
   dpId,
 }) {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
+  const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDataset } = dataSets;
   const { fileType, datasetid, headerrownumber, headerRowNumber } =
     selectedDataset;
+  const { dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
 
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     uniqueId: `u${index}`,
@@ -528,8 +528,8 @@ export default function DSColumnTable({
             isEditAll,
             onRowCancel,
             onRowEdit,
-            testLock,
-            prodLock,
+            dsTestLock,
+            dsProdLock,
             locationType,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
@@ -557,8 +557,8 @@ export default function DSColumnTable({
             cancelMulti,
             newRows,
             disableSaveAll,
-            testLock,
-            prodLock,
+            dsTestLock,
+            dsProdLock,
             changeHandler,
           }}
         />

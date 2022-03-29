@@ -113,12 +113,12 @@ export const editableSelectCell =
     // eslint-disable-next-line consistent-return
     const checkDisabled = () => {
       if (row.locationType === "jdbc") {
-        if (row.testLock || row.prodLock) {
+        if (row.dsTestLock || row.dsProdLock) {
           return true;
         }
       }
       if (row.locationType === "sftp") {
-        if (row.prodLock) {
+        if (row.dsProdLock) {
           return true;
         }
       }
@@ -188,7 +188,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       error={!row.isInitLoad && errorText ? true : false}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
-      disabled={row.prodLock}
+      disabled={row.dsProdLock}
     />
   ) : (
     row[key]
@@ -419,8 +419,8 @@ export const CustomHeader = ({
   cancelMulti,
   newRows,
   disableSaveAll,
-  testLock,
-  prodLock,
+  dsTestLock,
+  dsProdLock,
   toggleFilters,
   changeHandler,
 }) => (
@@ -489,7 +489,7 @@ export const CustomHeader = ({
       {locationType === ("sftp" || "ftps") && (
         <Tooltip
           title={
-            (!isEditAll || !prodLock || !testLock) &&
+            (!isEditAll || !dsProdLock || !dsTestLock) &&
             "Import dataset column settings"
           }
           disableFocusListener
@@ -497,7 +497,7 @@ export const CustomHeader = ({
           <IconButton
             color="primary"
             size="small"
-            disabled={isEditAll || prodLock || testLock}
+            disabled={isEditAll || dsProdLock || dsTestLock}
             onClick={changeHandler}
           >
             <Upload />

@@ -17,10 +17,12 @@ import DSColumnTable from "./DSColumnTable";
 import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatData } from "../../../utils/index";
 
-const ColumnsTab = ({ locationType, testLock, prodLock }) => {
+const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
+  const dataFlow = useSelector((state) => state.dataFlow);
+  const { dsProdLock, dsTestLock } = dataFlow;
   const { datasetColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
@@ -159,8 +161,8 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}
-          testLock={testLock}
-          prodLock={prodLock}
+          dfId={dfId}
+          dpId={dpId}
         />
       </>
     );
@@ -179,7 +181,7 @@ const ColumnsTab = ({ locationType, testLock, prodLock }) => {
                 selectedMethod === "fileUpload" ? "active card" : "card"
               }
             >
-              <div className={testLock || prodLock ? "disable-card" : ""}>
+              <div className={dsTestLock || dsProdLock ? "disable-card" : ""}>
                 <Radio
                   value="fileUpload"
                   label="Upload dataset column settings"
