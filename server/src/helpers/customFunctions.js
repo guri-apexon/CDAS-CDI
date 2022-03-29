@@ -23,12 +23,12 @@ const getAlphaNumeric = () => {
 
 exports.generateUniqueID = function () {
   return getAlphaNumeric();
-  const unique_id = uuid();
-  return unique_id.slice(0, 16);
+  // const unique_id = uuid();
+  // return unique_id.slice(0, 16);
 };
 exports.createUniqueID = () => {
   return getAlphaNumeric();
-  return crypto.randomBytes(3 * 4).toString("base64");
+  // return crypto.randomBytes(3 * 4).toString("base64");
 };
 exports.getCurrentTime = () => {
   return moment().utc().format("YYYY-MM-DD HH:mm:ss");

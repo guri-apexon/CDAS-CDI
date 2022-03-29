@@ -374,12 +374,15 @@ export default function DSColumnTable({
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
-          if (key === "columnName") {
+          if (key === "columnName" || key === "dataType") {
             if (value.length >= 1) {
               return {
                 ...row,
                 [key]: value,
-                isHavingColumnName: true,
+                isHavingColumnName:
+                  key === "columnName"
+                    ? row.dataType !== ""
+                    : row.columnName !== "",
               };
             }
             // showColumnNameRequried();
