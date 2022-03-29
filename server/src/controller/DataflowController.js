@@ -349,7 +349,7 @@ exports.createDataflow = async (req, res) => {
                   dsUid,
                   dpUid,
                   dataKind || null,
-                  obj.mnemonic || null,
+                  obj.mnemonic || obj.datasetName || null,
                   obj.active === true ? 1 : 0 || null,
                   typeof obj.columncount != "undefined" ? obj.columncount : 0,
                   obj.incremental === "NO" ? 0 : 1 || null,
