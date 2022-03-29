@@ -349,7 +349,7 @@ exports.createDataflow = async (req, res) => {
                   dsUid,
                   dpUid,
                   dataKind || null,
-                  obj.mnemonic || null,
+                  obj.mnemonic || obj.datasetName || null,
                   obj.active === true ? 1 : 0 || null,
                   typeof obj.columncount != "undefined" ? obj.columncount : 0,
                   obj.incremental === "NO" ? 0 : 1 || null,
@@ -500,7 +500,7 @@ exports.createDataflow = async (req, res) => {
       new Date(),
     ];
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
-
+    console.log("ResponseBody", ResponseBody);
     let q = `INSERT INTO ${schemaName}.cdr_ta_queue
     (dataflowid, datapackageid, datasetid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
     VALUES($1, '', '', 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', 1, '', 1, '', 0)`;
