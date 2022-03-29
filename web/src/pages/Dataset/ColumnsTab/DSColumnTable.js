@@ -119,8 +119,8 @@ export default function DSColumnTable({
         userId: userInfo.userId,
         columnId: selectedRow.dbColumnId,
         dsId: datasetid,
-        dpId: "",
-        dfId: "",
+        dpId,
+        dfId,
         lov: selectedRow.values,
       });
     }

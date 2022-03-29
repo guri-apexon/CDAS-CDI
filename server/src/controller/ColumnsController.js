@@ -32,8 +32,8 @@ exports.getColumnsSet = async (req, res) => {
 
 exports.saveDatasetColumns = async (req, res) => {
   try {
-    const datasetid = req.params.datasetid;
-    const values = req.body;
+    // const datasetid = req.params.datasetid;
+    const { dsId, dpId, dfId, userId, values } = req.body;
 
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, name, "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable, del_flg, insrt_tm, updt_tm)
      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`;
@@ -42,7 +42,7 @@ exports.saveDatasetColumns = async (req, res) => {
     const inserted = await values.map(async (value) => {
       const columnId = helper.generateUniqueID();
       const body = [
-        datasetid,
+        dsId,
         columnId,
         value.columnName.trim() || null,
         value.dataType.trim() || null,
@@ -63,7 +63,7 @@ exports.saveDatasetColumns = async (req, res) => {
 
       const jsonObj = value;
 
-      jsonObj["datasetid"] = datasetid;
+      jsonObj["datasetid"] = dsId;
       jsonObj["columnId"] = columnId;
 
       const config_json = JSON.stringify(jsonObj);
@@ -71,9 +71,9 @@ exports.saveDatasetColumns = async (req, res) => {
       const CommonController = await CommonController.addColumnHistory(
         columnId,
         datasetid,
-        values.dfId,
-        values.dpId,
-        values.userId,
+        dfId,
+        dpId,
+        userId,
         config_json,
         "New Entry "
       );
@@ -101,8 +101,9 @@ exports.saveDatasetColumns = async (req, res) => {
 
 exports.updateColumns = async (req, res) => {
   try {
-    const datasetid = req.params.datasetid;
-    const values = req.body;
+    // const datasetid = req.params.datasetid;
+    const { dsId, dpId, dfId, userId, values } = req.body;
+
     Logger.info({ message: "update set columns" });
     const updateQuery = `UPDATE ${schemaName}.columndefinition "variable"=$2, datasetid=$3, name=$4, datatype=$5, primarykey=$6, required=$7, "unique"=$8, charactermin=$9, charactermax=$10, position=$11, "format"=$12, lov=$13, updt_tm=$14 WHERE columnid=$1`;
     const selectQuery = `select datasetid,columnid, variable, name, datatype, primarykey, required, unique, 
@@ -113,7 +114,7 @@ exports.updateColumns = async (req, res) => {
       const body = [
         value.columnId.trim(),
         value.variableLabel.trim() || null,
-        datasetid,
+        dsId,
         value.columnName.trim() || null,
         value.dataType.trim() || null,
         value.primary == "Yes" ? 1 : 0,
@@ -130,7 +131,7 @@ exports.updateColumns = async (req, res) => {
       const insrted = await DB.executeQuery(updateQuery, body);
 
       const requestData = {
-        datasetid: datasetid,
+        datasetid: dsId,
         columnid: value.columnId.trim(),
         variable: value.variableLabel.trim() || null,
         name: value.columnName.trim() || null,
@@ -157,10 +158,10 @@ exports.updateColumns = async (req, res) => {
           if (oldData[key] != null) {
             const historyVersion = await CommonController.addColumnHistory(
               value.columnId.trim(),
-              datasetid,
-              values.dfId,
-              values.dpId,
-              values.userId,
+              dsId,
+              dfId,
+              dpId,
+              userId,
               config_json,
               key,
               oldData[key],
@@ -194,7 +195,7 @@ exports.updateColumns = async (req, res) => {
 
 exports.deleteColumns = async (req, res) => {
   try {
-    const { columnId } = req.body;
+    const { columnId, dsId, dfId, dpId, userId } = req.body;
     Logger.info({ message: "deleteColumns" });
     const updateQuery = `update ${schemaName}.columndefinition set del_flg = 1 where columnid = $1`;
 
@@ -203,10 +204,10 @@ exports.deleteColumns = async (req, res) => {
 
       const historyVersion = await CommonController.addColumnHistory(
         columnId,
-        values.datasetid,
-        values.dfId,
-        values.dpId,
-        values.userId,
+        dsId,
+        dfId,
+        dpId,
+        userId,
         null,
         "del_flg ",
         0,
