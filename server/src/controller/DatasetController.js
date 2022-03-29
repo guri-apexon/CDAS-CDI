@@ -457,7 +457,9 @@ exports.getDatasetDetail = async (req, res) => {
 
     if (datasetDetail.rows[0].file_pwd === "Yes") {
       const filePwd = helper.readVaultData(`${dfId}/${dpId}/${dsId}`);
-      datasetDetail.rows[0].file_pwd = filePwd;
+      if (filePwd) {
+        datasetDetail.rows[0].file_pwd = filePwd.password;
+      }
     }
     return apiResponse.successResponseWithData(
       res,
