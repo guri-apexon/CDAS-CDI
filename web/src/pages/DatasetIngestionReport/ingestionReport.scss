@@ -58,11 +58,13 @@
       line-height: 24px;
     }
   }
+  .file-transfer-kpi {
+    padding: 18px 20px;
+  }
   .summary-body {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding-bottom: 70px;
     .barchart-records {
       text {
         color: #fff;

@@ -21,7 +21,7 @@ const IncrementalSummary = ({
   const filesWithIssuesPer =
     totalFileIngested > 0 ? (filesWithIssues * 100) / totalFileIngested : 0;
   return (
-    <div className="summary-body" style={{ marginTop: 40 }}>
+    <div className="summary-body" style={{ marginTop: 28 }}>
       <div className="post-ingestion-issues">
         <Typography variant="h2" gutterBottom darkMode>
           {postIngestionIssues}

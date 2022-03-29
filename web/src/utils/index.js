@@ -270,7 +270,7 @@ export const createAutocompleteFilter =
           clearOnBlur={false}
           disableCloseOnSelect
           matchFrom="any"
-          showSelectAll
+          showSelectAll={false}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           ref={ref}

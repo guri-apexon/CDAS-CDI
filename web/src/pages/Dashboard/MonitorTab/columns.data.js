@@ -390,6 +390,7 @@ const columns = [
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("vendorsource"),
     filterComponent: createAutocompleteFilter("vendorsource"),
+    frozen: true,
     customCell: VendorCell,
   },
   {
