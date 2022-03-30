@@ -224,7 +224,11 @@ const DataFlow = ({
 
   const AddDatasetData = (datasetObj) => {
     console.log("AddDatasetData", selectedDatapackage, datasetObj);
-    if (datasetObj.datasetName === "" || datasetObj.clinicalDataType === null) {
+    if (
+      datasetObj.datasetName === "" ||
+      datasetObj.clinicalDataType === null ||
+      !datasetObj.clinicalDataType?.length
+    ) {
       messageContext.showErrorMessage("Please fill required fields to proceed");
       return false;
     }
@@ -466,7 +470,7 @@ const DataFlow = ({
       <Modal
         open={saveSuccess}
         variant="success"
-        onClose={() => setSaveSuccess(false)}
+        onClose={() => closeForm()}
         title="Data Flow saved successfully"
         message="Data Flow saved successfully"
         buttonProps={[
