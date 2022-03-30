@@ -26,12 +26,16 @@ const IncrementalSummary = ({
         <Typography variant="h2" gutterBottom darkMode>
           {postIngestionIssues}
         </Typography>
-        <Typography gutterBottom darkMode style={{ marginBottom: 32 }}>
+        <Typography
+          gutterBottom
+          darkMode
+          style={{ marginBottom: 24, fontWeight: 300 }}
+        >
           Post Ingestion Issues
         </Typography>
         <Link
           onClick={() => setModalOpen(true)}
-          style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
+          style={{ color: "#fff", fontSize: 14, fontWeight: 400 }}
         >
           View issue types
         </Link>
@@ -72,6 +76,7 @@ const IncrementalSummary = ({
                   top: 28,
                   right: "-32px",
                   width: 97,
+                  fontWeight: 300,
                 }}
               >
                 Records with Issues
@@ -80,12 +85,12 @@ const IncrementalSummary = ({
           }
         />
         <div className="right-se">
-          <Typography gutterBottom darkMode style={{ marginBottom: 14 }}>
+          <Typography gutterBottom darkMode style={{ fontWeight: 300 }}>
             {`${totalRecords} Total Records`}
           </Typography>
           <Link
             onClick={() => console.log("link clicked")}
-            style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
+            style={{ color: "#fff", fontSize: 14, fontWeight: 400 }}
           >
             View ingestion issue report
           </Link>
@@ -100,12 +105,16 @@ const IncrementalSummary = ({
         <Typography variant="h2" gutterBottom darkMode>
           {datasetProperties?.filesNotIngested || 0}
         </Typography>
-        <Typography gutterBottom darkMode style={{ marginBottom: 32 }}>
+        <Typography
+          gutterBottom
+          darkMode
+          style={{ marginBottom: 24, fontWeight: 300 }}
+        >
           Files not ingested
         </Typography>
         <Link
           onClick={() => handleChangeTab("failed")}
-          style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
+          style={{ color: "#fff", fontSize: 14, fontWeight: 400 }}
         >
           View files with fatal issues
         </Link>
@@ -150,6 +159,7 @@ const IncrementalSummary = ({
                   top: 28,
                   right: "-32px",
                   width: 97,
+                  fontWeight: 300,
                 }}
               >
                 Files with Issues
@@ -158,12 +168,12 @@ const IncrementalSummary = ({
           }
         />
         <div className="right-se">
-          <Typography gutterBottom darkMode style={{ marginBottom: 14 }}>
+          <Typography gutterBottom darkMode style={{ fontWeight: 300 }}>
             {`${totalFileIngested} Total files ingested`}
           </Typography>
           <Link
             onClick={() => handleChangeTab("ingestion_issues")}
-            style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
+            style={{ color: "#fff", fontSize: 14, fontWeight: 400 }}
           >
             View files with issues
           </Link>

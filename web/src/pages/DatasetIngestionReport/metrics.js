@@ -114,7 +114,7 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
     if (datasetProperties?.loadType?.toLowerCase() === "incremental") {
       return (
         <>
-          <Typography darkMode style={{ lineHeight: "24px" }}>
+          <Typography darkMode style={{ lineHeight: "24px", fontWeight: 300 }}>
             {`${datasetProperties?.totalIncrementalFileTransferred} Total incremental files transfered`}
           </Typography>
         </>
