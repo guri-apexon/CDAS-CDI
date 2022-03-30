@@ -265,25 +265,34 @@ content-type: application/json
 
 ### Create Dataset columns 
 
-POST http://localhost:4001/v1/api/vendor/update HTTP/1.1
+POST http://localhost:4001/v1/api/columnset/create/ HTTP/1.1
 content-type: application/json
 
 {
-  "columns": [
-    {
-    "protocol": "16",
-    "variableLabel": "IQVIA-CBEX",
-    "columnName": "IQVIA-CBEXCDR Vendor test",
-    "format": 1,
-    "dataType": "GDMPM-DAS",
-    "primary": "GDMPM-DAS",
-    "unique": "",
-    "required": "",
-    "minLen": "",
-    "maxLen": "",
-    "listOfValues": ""
-    }
-  ]
+  "values": [
+        {
+            "uniqueId": "u2",
+            "columnId": 3,
+            "variableLabel": "testlable",
+            "columnName": "testname",
+            "position": "",
+            "format": "testformat",
+            "dataType": "Alphanumeric",
+            "primary": "No",
+            "unique": "No",
+            "required": "No",
+            "minLength": "1",
+            "maxLength": "10",
+            "values": "testlov",
+            "isInitLoad": false,
+            "isHavingError": true,
+            "isHavingColumnName": true
+        }
+    ],
+    "dsId": "abbbd1d9-e95b-42",
+    "dfId": "a0A0E000002o5kwUAA",
+    "dpId": "a0C0E000004Mvr0UAC",
+    "userId": "u1105372"
 }
 
 ### Activate DataFlow

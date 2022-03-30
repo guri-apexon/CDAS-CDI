@@ -22,15 +22,17 @@ export default function DSColumnTable({
   dataOrigin,
   formattedData,
   locationType,
-  testLock,
-  prodLock,
+  dfId,
+  dpId,
 }) {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
+  const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDataset } = dataSets;
   const { fileType, datasetid, headerrownumber, headerRowNumber } =
     selectedDataset;
+  const { dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
 
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     uniqueId: `u${index}`,
@@ -117,8 +119,8 @@ export default function DSColumnTable({
         userId: userInfo.userId,
         columnId: selectedRow.dbColumnId,
         dsId: datasetid,
-        dpId: "",
-        dfId: "",
+        dpId,
+        dfId,
         lov: selectedRow.values,
       });
     }
@@ -348,7 +350,9 @@ export default function DSColumnTable({
     setRows([...removeSpaces]);
     setSelectedRows([]);
     setEditedRows(rows);
-    dispatch(createDatasetColumns(rows, datasetid));
+    dispatch(
+      createDatasetColumns(rows, datasetid, dfId, dpId, userInfo.userId)
+    );
   };
 
   const onCancelAll = () => {
@@ -392,9 +396,25 @@ export default function DSColumnTable({
       .find((e) => e.uniqueId === uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
     if (editedRowData?.dbColumnId) {
-      dispatch(updateDatasetColumns([editedRowData], datasetid));
+      dispatch(
+        updateDatasetColumns(
+          [editedRowData],
+          datasetid,
+          dfId,
+          dpId,
+          userInfo.userId
+        )
+      );
     } else {
-      dispatch(createDatasetColumns([editedRowData], datasetid));
+      dispatch(
+        createDatasetColumns(
+          [editedRowData],
+          datasetid,
+          dfId,
+          dpId,
+          userInfo.userId
+        )
+      );
     }
     setRows([...removeExistingRowData, editedRowData]);
     setEditedRows([...removeEdited]);
@@ -508,8 +528,8 @@ export default function DSColumnTable({
             isEditAll,
             onRowCancel,
             onRowEdit,
-            testLock,
-            prodLock,
+            dsTestLock,
+            dsProdLock,
             locationType,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
@@ -537,8 +557,8 @@ export default function DSColumnTable({
             cancelMulti,
             newRows,
             disableSaveAll,
-            testLock,
-            prodLock,
+            dsTestLock,
+            dsProdLock,
             changeHandler,
           }}
         />
@@ -584,7 +604,7 @@ export default function DSColumnTable({
         buttonProps={
           isEditLOVs
             ? [
-                { label: "Save", onClick: hideViewLOVs },
+                { label: "Save", onClick: handleSaveLOV },
                 { label: "Cancel", onClick: () => setIsEditLOVs(false) },
               ]
             : [

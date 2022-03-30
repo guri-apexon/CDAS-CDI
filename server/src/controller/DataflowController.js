@@ -503,8 +503,8 @@ exports.createDataflow = async (req, res) => {
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
 
     let q = `INSERT INTO ${schemaName}.cdr_ta_queue
-    (dataflowid, datapackageid, datasetid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
-    VALUES($1, '', '', 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', 1, '', 1, '', 0)`;
+    (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+    VALUES($1, 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', 1, '', 1, '', 0)`;
 
     await DB.executeQuery(q, [
       uid,

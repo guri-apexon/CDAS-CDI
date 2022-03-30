@@ -100,8 +100,12 @@ const Dataset = () => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
   const { dfId, selectedCard } = dashboard;
-  const { datapackageid, datapackageName, datasetid, datasetName } =
-    selectedDSDetails;
+  const {
+    datapackageid: dpId,
+    datapackageName,
+    datasetid,
+    datasetName,
+  } = selectedDSDetails;
   const {
     loading,
     error,
@@ -150,7 +154,7 @@ const Dataset = () => {
       dispatch(resetFTP());
       dispatch(resetJDBC());
     } else {
-      dispatch(getDataSetDetail(datasetid));
+      dispatch(getDataSetDetail(datasetid, dfId, dpId));
       dispatch(getDatasetColumns(datasetid));
     }
   }, [datasetid]);
@@ -193,7 +197,7 @@ const Dataset = () => {
   };
 
   const gotoDataPackage = () => {
-    if (datapackageid) {
+    if (dpId) {
       history.push("/dashboard/data-packages");
     }
   };
@@ -231,7 +235,7 @@ const Dataset = () => {
     setTimeout(() => {
       const data = {
         ...formValue,
-        datapackageid,
+        dpId,
         userId: userInfo.userId,
         testFlag: testflag,
         dfId,
@@ -364,7 +368,7 @@ const Dataset = () => {
 
               {
                 // <JDBCForm
-                //   datapackageid={datapackageid}
+                //   dpId={dpId}
                 //   dataflowid={dfId}
                 //   datasetId={datasetid}
                 //   isDatasetCreated={isDatasetCreated}
@@ -378,8 +382,8 @@ const Dataset = () => {
               {value === 1 && (
                 <ColumnsTab
                   locationType={locationType}
-                  prodLock={dsProdLock}
-                  testLock={dsTestLock}
+                  dfId={dfId}
+                  dpId={dpId}
                 />
               )}
               {value === 2 && <VLCTab />}
