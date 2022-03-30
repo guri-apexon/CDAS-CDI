@@ -172,7 +172,7 @@ const SearchTextFieldFilter = ({ accessor, filters, updateFilterValue }) => {
     />
   );
 };
-
+const showSelectAll = false;
 const generateColumns = (tableRows = []) => {
   return [
     {
@@ -202,7 +202,8 @@ const generateColumns = (tableRows = []) => {
       sortFunction: compareStrings,
       filterFunction: createStringArraySearchFilter("FileTransferStatus"),
       filterComponent: createAutocompleteFilter(
-        createSourceFromKey(tableRows, "FileTransferStatus")
+        createSourceFromKey(tableRows, "FileTransferStatus"),
+        showSelectAll
       ),
       width: 250,
     },

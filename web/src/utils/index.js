@@ -208,7 +208,7 @@ export const inputAlphaNumericWithUnderScore = (e, callback) => {
 };
 
 export const createAutocompleteFilter =
-  (source) =>
+  (source, showSelectAll) =>
   ({ accessor, filters, updateFilterValue }) => {
     const ref = React.useRef();
     const [height, setHeight] = React.useState(0);
@@ -270,7 +270,7 @@ export const createAutocompleteFilter =
           clearOnBlur={false}
           disableCloseOnSelect
           matchFrom="any"
-          showSelectAll={false}
+          showSelectAll={showSelectAll !== undefined ? showSelectAll : true}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           ref={ref}
