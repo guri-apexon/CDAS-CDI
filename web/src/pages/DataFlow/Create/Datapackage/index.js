@@ -14,7 +14,7 @@ import TextField from "apollo-react/components/TextField";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import { ReactComponent as DataPackageIcon } from "../../../../components/Icons/datapackage.svg";
-import "./DataPackages.scss";
+import "./index.scss";
 // import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, isSftp, validateFields } from "../../../../utils";
 // import {

@@ -50,7 +50,7 @@ const fieldStylesNo = {
 export const makeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText = checkRequiredValue(row[key], key, row.primary);
+    const errorText = checkRequiredValue(row[key], key, row.primaryKey);
     return row.editMode ? (
       <Select
         size="small"
@@ -248,7 +248,7 @@ export const columns = [
   },
   {
     header: "Primary?",
-    accessor: "primary",
+    accessor: "primaryKey",
     customCell: makeEditableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
   },

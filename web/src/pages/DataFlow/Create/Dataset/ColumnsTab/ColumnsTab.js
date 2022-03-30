@@ -81,7 +81,7 @@ const ColumnsTab = ({ locationType }) => {
               position: column.position || "",
               format: column.FORMAT || "",
               dataType: column.datatype || "",
-              primary: column.primarykey === 1 ? "Yes" : "No",
+              primaryKey: column.primaryKey === 1 ? "Yes" : "No",
               unique: column.UNIQUE === 1 ? "Yes" : "No",
               required: column.required === 1 ? "Yes" : "No",
               minLength: column.charactermin || "",

@@ -37,6 +37,7 @@ const DataPackageReducer = (state = initialState, action) =>
         newState.packagesList = action.packagesData.data;
         newState.response = null;
         newState.openAddPackage = false;
+        newState.refreshData = false;
         break;
 
       case PACKAGES_LIST_FAILURE:
