@@ -21,15 +21,7 @@ async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
   return result;
 }
 
-async function saveSQLDataset(
-  req,
-  res,
-  values,
-  datasetId,
-  datapackageid,
-  userId,
-  dfId
-) {
+async function saveSQLDataset(req, res, values, datasetId, dpId, userId, dfId) {
   try {
     Logger.info({ message: "create SQL Dataset" });
     const body = [
@@ -45,12 +37,12 @@ async function saveSQLDataset(
       values.filterCondition || null,
       helper.getCurrentTime(),
       helper.getCurrentTime(),
-      values.datapackageid,
+      dpId,
     ];
 
     const conf_Data = {
       datasetId: datasetId,
-      datapackageid: datapackageid,
+      datapackageid: dpId,
       mnemonic: values.datasetName,
       active: values.active === true ? 1 : 0,
       datakindid: values.clinicalDataType[0]
@@ -72,7 +64,7 @@ async function saveSQLDataset(
     const historyVersion = await CommonController.addDatasetHistory(
       dfId,
       userId,
-      datapackageid,
+      dpId,
       datasetId,
       jsonData,
       "New Entry"
@@ -120,7 +112,7 @@ exports.saveDatasetData = async (req, res) => {
     }
 
     Logger.info({ message: "create Dataset" });
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path,file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path,file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, Now(), Now(), $18, $19)`;
 
     const body = [
       datasetId,
@@ -140,7 +132,6 @@ exports.saveDatasetData = async (req, res) => {
       values.transferFrequency || null,
       values.overrideStaleAlert || null,
       values.rowDecreaseAllowed || 0,
-
       values.datapackageid,
       values.loadType == "Incremental" ? "Y" : "N",
     ];
