@@ -90,6 +90,9 @@ exports.saveDatasetData = async (req, res) => {
       studyId,
       testFlag
     );
+
+    console.log(req.body);
+
     if (isExist) {
       return apiResponse.ErrorResponse(
         res,
@@ -132,13 +135,13 @@ exports.saveDatasetData = async (req, res) => {
       values.transferFrequency || null,
       values.overrideStaleAlert || null,
       values.rowDecreaseAllowed || 0,
-      values.datapackageid,
+      dpId,
       values.loadType == "Incremental" ? "Y" : "N",
     ];
 
     const conf_Data = {
       datasetId: datasetId,
-      datapackageid: values.dpId,
+      datapackageid: dpId,
       mnemonic: values.datasetName,
       type: values.fileType,
       charset: values.encoding || null,
@@ -226,17 +229,9 @@ async function updateSQLDataset(
       incremental: values.dataType == "Incremental" ? "Y" : "N" || null,
     };
 
-    // const jsonObj = {
-    //   datasetid: datasetid,
-    //   datapackageid: datapackageid,
-    //   updatedData: requestData,
-    // };
-
     const jsonData = JSON.stringify(requestData);
 
-    const { rows: tempData } = await DB.executeQuery(selectQuery, [
-      values.datasetid,
-    ]);
+    const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
     const oldData = tempData[0];
 
     for (const key in requestData) {
