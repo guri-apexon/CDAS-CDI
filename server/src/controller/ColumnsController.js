@@ -34,6 +34,8 @@ exports.saveDatasetColumns = async (req, res) => {
   try {
     const { dsId, dpId, dfId, userId, values } = req.body;
 
+    console.log(req.body);
+
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, "name", "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable, del_flg, insrt_tm, updt_tm)
      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, Now(), Now());`;
 
