@@ -76,6 +76,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
             const newObj = {
               columnId: i + 1,
               dbColumnId: column.columnid,
+              uniqueId: `u${i}`,
               variableLabel: column.VARIABLE || "",
               columnName: column.name || "",
               position: column.position || "",
