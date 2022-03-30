@@ -70,10 +70,12 @@ export const updateDatasetColumns = (values, dsId, dfId, dpId, userId) => {
   };
 };
 
-export const getDataSetDetail = (dsId) => {
+export const getDataSetDetail = (dsId, dfId, dpId) => {
   return {
     type: GET_DATASET_DETAIL,
     dsId,
+    dfId,
+    dpId,
   };
 };
 
