@@ -34,8 +34,9 @@ exports.saveDatasetColumns = async (req, res) => {
   try {
     const { dsId, dpId, dfId, userId, values } = req.body;
 
-    const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, name, "datatype", primarykey, required, charactermin, charactermax, "position", "format", lov, "unique", "variable", del_flg, insrt_tm, updt_tm)
+    const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, "name", "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable, del_flg, insrt_tm, updt_tm)
      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, Now(), Now());`;
+
     Logger.info({ message: "storeDatasetColumns" });
 
     if (values && values.length > 0) {
@@ -59,7 +60,7 @@ exports.saveDatasetColumns = async (req, res) => {
         ];
 
         await DB.executeQuery(insertQuery, body);
-        console.log("inserted");
+
         const jsonObj = { datasetid: dsId, columnId, ...value };
         const config_json = JSON.stringify(jsonObj);
         await CommonController.addColumnHistory(
@@ -73,10 +74,9 @@ exports.saveDatasetColumns = async (req, res) => {
         );
       }
 
-      return apiResponse.successResponseWithData(
+      return apiResponse.successResponse(
         res,
-        "Column Defination created Successfully",
-        ResponseBody
+        "Column Defination created Successfully"
       );
     }
 
