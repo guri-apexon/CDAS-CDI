@@ -91,8 +91,6 @@ exports.saveDatasetData = async (req, res) => {
       testFlag
     );
 
-    console.log(req.body);
-
     if (isExist) {
       return apiResponse.ErrorResponse(
         res,
