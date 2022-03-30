@@ -396,20 +396,21 @@ exports.createDataflow = async (req, res) => {
                     let newobj = {};
                     const CDUid = createUniqueID();
                     let CDQuery = `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
-                                primarykey,required,charactermin,charactermax,position,format,lov,requiredfield,
-                                insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13);`;
+                                primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
+                                insrt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14);`;
                     let body = [
                       dsUid,
                       CDUid,
                       el.name || el.columnName || null,
                       el.dataType || null,
-                      el.primaryKey ? 1 : 0,
-                      el.required ? 1 : 0,
+                      helper.stringToBoolean(el.primaryKey) ? 1 : 0,
+                      helper.stringToBoolean(el.required) ? 1 : 0,
                       el.characterMin || 0,
                       el.characterMax || 0,
                       el.position || 0,
                       el.format || null,
-                      el.lov || null,
+                      el.lov || el.values || null,
+                      helper.stringToBoolean(el.unique) ? 1 : 0,
                       el.requiredfield || null,
                       new Date(),
                     ];

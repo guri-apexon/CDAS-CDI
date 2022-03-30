@@ -99,10 +99,10 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
     }, 1000);
   };
   const redirectDataPackage = () => {
-    if (location.pathname === "/data-packages") {
+    if (location.pathname === "/dashboard/data-packages") {
       dispatch(addPackageBtnAction());
     } else {
-      history.push("/data-packages");
+      history.push("/dashboard/data-packages");
     }
   };
   const menuItems = [
