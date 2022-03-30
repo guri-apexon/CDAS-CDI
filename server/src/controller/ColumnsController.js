@@ -32,14 +32,13 @@ exports.getColumnsSet = async (req, res) => {
 
 exports.saveDatasetColumns = async (req, res) => {
   try {
-    // const datasetid = req.params.datasetid;
     const { dsId, dpId, dfId, userId, values } = req.body;
 
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, name, "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable, del_flg, insrt_tm, updt_tm)
      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`;
     Logger.info({ message: "storeDatasetColumns" });
 
-    const inserted = await values.map(async (value) => {
+    const inserted = await values.forEach(async (value) => {
       const columnId = helper.generateUniqueID();
       const body = [
         dsId,
@@ -68,15 +67,15 @@ exports.saveDatasetColumns = async (req, res) => {
 
       const config_json = JSON.stringify(jsonObj);
 
-      const CommonController = await CommonController.addColumnHistory(
-        columnId,
-        datasetid,
-        dfId,
-        dpId,
-        userId,
-        config_json,
-        "New Entry "
-      );
+      // await CommonController.addColumnHistory(
+      //   columnId,
+      //   datasetid,
+      //   dfId,
+      //   dpId,
+      //   userId,
+      //   config_json,
+      //   "New Entry "
+      // );
 
       return insrted;
     });
