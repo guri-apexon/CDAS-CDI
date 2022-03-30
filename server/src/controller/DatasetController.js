@@ -58,7 +58,7 @@ async function saveSQLDataset(req, res, values, datasetId, dpId, userId, dfId) {
 
     const jsonData = JSON.stringify(conf_Data);
 
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, offset_val, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, offset_val, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning *`;
     const data = await DB.executeQuery(insertQuery, body);
 
     const historyVersion = await CommonController.addDatasetHistory(
@@ -71,7 +71,11 @@ async function saveSQLDataset(req, res, values, datasetId, dpId, userId, dfId) {
     );
     if (!historyVersion) throw new Error("History not updated");
 
-    return apiResponse.successResponseWithData(res, "Operation success", data);
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      data.rows[0]
+    );
   } catch (err) {
     //throw error in json response with status 500.
     console.log(err, "err");
@@ -90,8 +94,6 @@ exports.saveDatasetData = async (req, res) => {
       studyId,
       testFlag
     );
-
-    console.log(req.body);
 
     if (isExist) {
       return apiResponse.ErrorResponse(
@@ -115,7 +117,7 @@ exports.saveDatasetData = async (req, res) => {
     }
 
     Logger.info({ message: "create Dataset" });
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path,file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, Now(), Now(), $18, $19)`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, naming_convention, path,file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, Now(), Now(), $18, $19) returning *`;
 
     const body = [
       datasetId,
@@ -163,7 +165,6 @@ exports.saveDatasetData = async (req, res) => {
     const jsonData = JSON.stringify(conf_Data);
 
     DB.executeQuery(insertQuery, body).then(async (response) => {
-      const package = response.rows[0] || [];
       const historyVersion = await CommonController.addDatasetHistory(
         dfId,
         userId,
@@ -176,7 +177,7 @@ exports.saveDatasetData = async (req, res) => {
       return apiResponse.successResponseWithData(
         res,
         "Created Successfully",
-        {}
+        response.rows[0]
       );
     });
   } catch (err) {

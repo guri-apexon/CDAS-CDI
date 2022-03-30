@@ -124,7 +124,10 @@ const DataFlowReducer = (state = initialState, action) =>
       case STORE_DATASET_SUCCESS:
         newState.loading = false;
         newState.isDatasetCreated = !state.isDatasetCreated;
-        newState.selectedDataset = action.values;
+        newState.selectedDataset = {
+          ...action.values,
+          datasetid: action.dataset.datasetid,
+        };
         if (action.values.fileType) {
           newState.formData = action.values;
         } else {
