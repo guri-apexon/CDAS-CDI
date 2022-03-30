@@ -35,62 +35,61 @@ exports.saveDatasetColumns = async (req, res) => {
     const { dsId, dpId, dfId, userId, values } = req.body;
 
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, name, "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable, del_flg, insrt_tm, updt_tm)
-     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`;
+     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16);`;
     Logger.info({ message: "storeDatasetColumns" });
 
-    const inserted = await values.forEach(async (value) => {
-      const columnId = helper.generateUniqueID();
-      const body = [
-        dsId,
-        columnId,
-        value.columnName.trim() || null,
-        value.dataType.trim() || null,
-        value.primary == "Yes" ? 1 : 0,
-        value.required == "Yes" ? 1 : 0,
-        value.minLength.trim() || 0,
-        value.maxLength.trim() || 0,
-        value.position.trim() || 0,
-        value.format.trim() || null,
-        value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
-        value.unique == "Yes" ? 1 : 0,
-        value.variableLabel.trim() || null,
-        0,
-        curDate,
-        curDate,
-      ];
-      const insrted = await DB.executeQuery(insertQuery, body);
+    if (values && values.length > 0) {
+      ResponseBody.column_definition = [];
+      for (let value of values) {
+        const columnId = helper.generateUniqueID();
+        const body = [
+          dsId,
+          columnId,
+          value.columnName.trim() || null,
+          value.dataType.trim() || null,
+          value.primary == "Yes" ? 1 : 0,
+          value.required == "Yes" ? 1 : 0,
+          value.minLength.trim() || 0,
+          value.maxLength.trim() || 0,
+          value.position.trim() || 0,
+          value.format.trim() || null,
+          value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
+          value.unique == "Yes" ? 1 : 0,
+          value.variableLabel.trim() || null,
+          0,
+          curDate,
+          curDate,
+        ];
 
-      const jsonObj = value;
+        await DB.executeQuery(insertQuery, body);
 
-      jsonObj["datasetid"] = dsId;
-      jsonObj["columnId"] = columnId;
-
-      const config_json = JSON.stringify(jsonObj);
-
-      // await CommonController.addColumnHistory(
-      //   columnId,
-      //   datasetid,
-      //   dfId,
-      //   dpId,
-      //   userId,
-      //   config_json,
-      //   "New Entry "
-      // );
-
-      return insrted;
-    });
-
-    Promise.all(inserted).then((response) => {
-      if (response[0] == "SUCCESS") {
-        return apiResponse.successResponseWithData(
-          res,
-          "Operation success",
-          values
+        const jsonObj = value;
+        jsonObj["datasetid"] = dsId;
+        jsonObj["columnId"] = columnId;
+        const config_json = JSON.stringify(jsonObj);
+        await CommonController.addColumnHistory(
+          columnId,
+          dsId,
+          dfId,
+          dpId,
+          userId,
+          config_json,
+          "New Entry "
         );
-      } else {
-        return apiResponse.ErrorResponse(res, response[0]);
+
+        newobj.action = "column definition created successfully.";
+        el.colmunid = columnId;
+        ResponseBody.column_definition.push(newobj);
       }
-    });
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Column Defination created Successfully",
+        ResponseBody
+      );
+    }
+
+    return apiResponse.ErrorResponse(res, "Something went wrong");
   } catch (err) {
     Logger.error("catch :storeDatasetColumns");
     Logger.error(err);
@@ -100,7 +99,6 @@ exports.saveDatasetColumns = async (req, res) => {
 
 exports.updateColumns = async (req, res) => {
   try {
-    // const datasetid = req.params.datasetid;
     const { dsId, dpId, dfId, userId, values } = req.body;
 
     Logger.info({ message: "update set columns" });
