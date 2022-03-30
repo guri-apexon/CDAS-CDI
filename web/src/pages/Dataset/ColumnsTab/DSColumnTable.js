@@ -328,7 +328,7 @@ export default function DSColumnTable({
     }
   };
 
-  const onSaveAll = () => {
+  const onSaveAll = async () => {
     const removeSpaces = editedRows
       .map((e) => {
         e.values = e.values.trim();
@@ -346,13 +346,22 @@ export default function DSColumnTable({
         }
         return e;
       });
-    // console.log("save all edited, rows", editedRows, rows);
     setRows([...removeSpaces]);
     setSelectedRows([]);
     setEditedRows(rows);
-    dispatch(
-      createDatasetColumns(rows, datasetid, dfId, dpId, userInfo.userId)
-    );
+    const existingCD = await removeSpaces.filter((e) => e.dbColumnId);
+    const newCD = await removeSpaces.filter((e) => !e.dbColumnId);
+    if (newCD && newCD.length > 0) {
+      dispatch(
+        createDatasetColumns(newCD, datasetid, dfId, dpId, userInfo.userId)
+      );
+    }
+
+    // if (existingCD && existingCD.length > 0) {
+    //   dispatch(
+    //     updateDatasetColumns(existingCD, datasetid, dfId, dpId, userInfo.userId)
+    //   );
+    // }
   };
 
   const onCancelAll = () => {
