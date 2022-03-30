@@ -76,15 +76,15 @@ const LeftPanel = ({ dataflowSource }) => {
   const packageData = useSelector((state) => state.dataPackage);
   const { description, dataflowid, vendorname, name, testflag, active } =
     dataflowSource;
-  const { loading, packagesList } = packageData;
+  const { loading, packagesList, refreshData } = packageData;
   const userInfo = getUserInfo();
   const location = useLocation();
   const viewAuditLog = () => {
     history.push("/dashboard/audit-logs");
   };
-  const getPackages = (dfid, query = "") => {
-    if (dfid) {
-      dispatch(getPackagesList(dfid, query));
+  const getPackages = (query = "") => {
+    if (dataflowid) {
+      dispatch(getPackagesList(dataflowid, query));
     }
   };
 
@@ -107,6 +107,9 @@ const LeftPanel = ({ dataflowSource }) => {
     { text: "Clone data flow" },
     { text: "Hard delete data flow" },
   ];
+  useEffect(() => {
+    getPackages();
+  }, [dataflowid, refreshData]);
   const ContextMenu = () => {
     return (
       <>
@@ -203,7 +206,7 @@ const LeftPanel = ({ dataflowSource }) => {
               <>
                 <Typography variant="body2" style={{ marginLeft: 10 }}>
                   {packagesList.length}
-                  {packagesList.length > 1 ? "Data Packages" : "Data Package"}
+                  {packagesList.length > 1 ? " Data Packages" : " Data Package"}
                 </Typography>
                 <PackagesList userInfo={userInfo} data={packageData} />
               </>

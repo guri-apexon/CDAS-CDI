@@ -6,7 +6,7 @@
     min-height: 80vh;
     .add-btn-container {
       margin-top: 100px;
-      img.head-icon {
+      .head-icon {
         width: 4.5em;
         height: 4.5em;
         margin-bottom: 20px;
@@ -37,7 +37,7 @@
       min-height: 155px;
       padding: 20px 35px;
       .title {
-        img {
+        svg {
           margin-right: 7px;
         }
       }
