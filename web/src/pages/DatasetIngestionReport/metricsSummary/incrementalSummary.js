@@ -167,8 +167,12 @@ const IncrementalSummary = ({
             </>
           }
         />
-        <div className="right-se">
-          <Typography gutterBottom darkMode style={{ fontWeight: 300 }}>
+        <div className="right-se total-file">
+          <Typography
+            gutterBottom
+            darkMode
+            style={{ fontWeight: 300, marginBottom: 24 }}
+          >
             {`${totalFileIngested} Total files ingested`}
           </Typography>
           <Link

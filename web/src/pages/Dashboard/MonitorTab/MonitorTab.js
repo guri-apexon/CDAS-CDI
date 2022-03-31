@@ -273,26 +273,26 @@ export default function MonitorTab({ fetchLatestData, protId }) {
               />
             </div>
           </div>
-          <Peek
-            open={open}
-            followCursor
-            placement="bottom"
-            content={
-              <div style={{ maxWidth: 400 }}>
-                <Typography
-                  variant="title2"
-                  gutterBottom
-                  style={{ fontWeight: 600 }}
-                >
-                  {curRow.name}
-                </Typography>
-                <Typography variant="body2" style={{ color: neutral8 }}>
-                  {curRow.description}
-                </Typography>
-              </div>
-            }
-          />
         </div>
+        <Peek
+          open={open}
+          followCursor
+          placement="bottom"
+          content={
+            <div style={{ maxWidth: 400 }}>
+              <Typography
+                variant="title2"
+                gutterBottom
+                style={{ fontWeight: 600 }}
+              >
+                {curRow.name}
+              </Typography>
+              <Typography variant="body2" style={{ color: neutral8 }}>
+                {curRow.description}
+              </Typography>
+            </div>
+          }
+        />
       </Hero>
       <Grid
         container
