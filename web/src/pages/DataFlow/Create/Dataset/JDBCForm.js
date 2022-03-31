@@ -175,7 +175,7 @@ const JDBCForm = forwardRef((props, ref) => {
     const data = {
       datasetName,
       active: dsActive,
-      incremental: dataType,
+      incremental: dataType === "Incremental" ? 1 : 0,
       clinicalDataType,
       customSQLQuery: isCustomSQL,
       sQLQuery,

@@ -271,7 +271,7 @@ exports.createDataflow = async (req, res) => {
             });
           }
 
-          let body = [
+          let dPBody = [
             dpUid,
             each.type || null,
             each.name || null,
@@ -285,10 +285,9 @@ exports.createDataflow = async (req, res) => {
             uid,
           ];
           let createDP = await DB.executeQuery(
-            `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(datapackageid, type, name, path, 
-            password, active, nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid)
-            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$9,$10)`,
-            body
+            `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(datapackageid, type, name, path, sasxptmethod, password, active, nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10, $11)`,
+            dPBody
           );
           newObj.timestamp = ts;
           newObj.externalId = each.externalID;
@@ -348,9 +347,9 @@ exports.createDataflow = async (req, res) => {
                 dataKind || null,
                 obj.mnemonic || obj.datasetName || null,
                 obj.fileNamingConvention || "",
-                obj.active === true ? 1 : 0 || null,
-                typeof obj.columncount != "undefined" ? obj.columncount : 0,
-                helper.stringToBoolean(obj.incremental) ? 1 : 0,
+                helper.stringToBoolean(obj.active) ? 1 : 0,
+                typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
+                helper.stringToBoolean(obj.incremental) ? "Y" : "N",
                 obj.offsetColumn || null,
                 obj.type || obj.fileType || null,
                 obj.path || null,
@@ -367,7 +366,7 @@ exports.createDataflow = async (req, res) => {
                 new Date(),
                 obj.delimiter || "",
                 helper.convertEscapeChar(
-                  obj.escapecode || obj.escapeCharacter
+                  obj.escapeCode || obj.escapeCharacter
                 ) || "",
                 obj.quote || "",
                 obj.rowDecreaseAllowed || 0,
