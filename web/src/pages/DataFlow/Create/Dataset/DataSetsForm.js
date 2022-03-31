@@ -98,7 +98,7 @@ const DataSetsFormBase = (props) => {
     defaultLoadType,
     values,
   } = props;
-  const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
+  // const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
 
   const setDefaultValues = (e) => {
     const fileValue = e.target.value;
@@ -122,23 +122,24 @@ const DataSetsFormBase = (props) => {
     // handleSubmit();
   };
 
-  useEffect(() => {
-    if (values?.clinicalDataType) {
-      const filteredDK = datakind?.filter(
-        (e) => e.value === values.clinicalDataType[0]
-      );
-      if (filteredDK?.length) {
-        SetSelectedClinicalData([]);
-        setTimeout(() => {
-          SetSelectedClinicalData([filteredDK[0].value]);
-        });
-        // change("CreateDataSetsForm", "clinicalDataType");
-      }
-    }
-    if (!values) {
-      SetSelectedClinicalData(["1"]);
-    }
-  }, [values]);
+  // useEffect(() => {
+  //   console.log("values", values);
+  //   if (values?.clinicalDataType) {
+  //     const filteredDK = datakind?.filter(
+  //       (e) => e.value === values.clinicalDataType[0]
+  //     );
+  //     if (filteredDK?.length) {
+  //       SetSelectedClinicalData([]);
+  //       setTimeout(() => {
+  //         SetSelectedClinicalData([filteredDK[0].value]);
+  //       });
+  //       // change("CreateDataSetsForm", "clinicalDataType");
+  //     }
+  //   }
+  //   if (!values) {
+  //     SetSelectedClinicalData(["1"]);
+  //   }
+  // }, [values]);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -254,8 +255,8 @@ const DataSetsFormBase = (props) => {
               />
               <ReduxFormTextField
                 fullWidth
-                name="folderPath"
-                id="folderPath"
+                name="path"
+                id="path"
                 size="small"
                 label="sFTP Folder Path"
               />

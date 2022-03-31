@@ -112,7 +112,7 @@ const JDBCForm = forwardRef((props, ref) => {
   const { datakind, selectedDataset, previewSQL, sqlTables, sqlColumns } =
     dataSets;
 
-  const { datasetId, datapackageid, dfTestFlag, onSubmit, moveNext } = props;
+  const { datasetId, dfTestFlag, onSubmit, moveNext } = props;
 
   const setDefaultValues = () => {
     setDsActive(true);
@@ -173,7 +173,6 @@ const JDBCForm = forwardRef((props, ref) => {
 
   const submitJDBCForm = () => {
     const data = {
-      datapackageid,
       datasetName,
       active: dsActive,
       incremental: dataType,

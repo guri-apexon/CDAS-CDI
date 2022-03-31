@@ -73,3 +73,7 @@ exports.stringToBoolean = (string) => {
       return Boolean(string);
   }
 };
+
+exports.convertEscapeChar = (str) => {
+  return String.raw`${str}`.replace(/\\/g, "\\\\");
+};

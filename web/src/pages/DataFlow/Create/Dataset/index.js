@@ -81,8 +81,7 @@ const styles = {
   },
 };
 const Dataset = (props, ref) => {
-  const { datapackageid, currentStep, updateStep, messageContext, submitData } =
-    props;
+  const { currentStep, updateStep, messageContext, submitData } = props;
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
@@ -176,7 +175,6 @@ const Dataset = (props, ref) => {
   const onSubmit = (formValue) => {
     const data = {
       ...formValue,
-      datapackageid,
       dfTestFlag: dataFlowdetail.testflag,
     };
     submitData(data);
@@ -237,7 +235,6 @@ const Dataset = (props, ref) => {
             locationType?.toLowerCase() !== "sftp" &&
             locationType?.toLowerCase() !== "ftps" && (
               <JDBCForm
-                datapackageid={datapackageid}
                 dataflowid="123abc"
                 datasetId={datasetId}
                 dfTestFlag={dataFlowdetail.testflag}
