@@ -372,7 +372,6 @@ exports.createDataflow = async (req, res) => {
                 obj.rowDecreaseAllowed || 0,
                 obj.dataTransferFrequency || "",
               ];
-              console.log("DSBody", DSBody);
               let createDS = await DB.executeQuery(
                 `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
                 offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,

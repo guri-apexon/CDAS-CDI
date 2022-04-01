@@ -361,11 +361,6 @@ export default function DSColumnTable({
   };
 
   const onRowDelete = (uniqueId) => {
-    console.log(
-      "uniqueId",
-      rows.filter((row) => row.uniqueId !== uniqueId),
-      editedRows.filter((row) => row.uniqueId !== uniqueId)
-    );
     setRows(rows.filter((row) => row.uniqueId !== uniqueId));
     setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
   };
