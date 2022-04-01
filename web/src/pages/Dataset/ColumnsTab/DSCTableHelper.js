@@ -25,6 +25,7 @@ import { ReactComponent as Plus } from "../../../components/Icons/roundPlusBlue.
 import {
   TextFieldFilter,
   createStringArraySearchFilter,
+  isSftp,
 } from "../../../utils/index";
 
 import {
@@ -443,7 +444,7 @@ export const CustomHeader = ({
       )}
       {!isMultiAdd && (
         <>
-          {locationType === ("sftp" || "ftps") && (
+          {isSftp(locationType) && (
             <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
               <IconMenuButton
                 id="actions-1"
@@ -486,7 +487,7 @@ export const CustomHeader = ({
           </Button>
         </>
       )}
-      {locationType === ("sftp" || "ftps") && (
+      {isSftp(locationType) && (
         <Tooltip
           title={
             (!isEditAll || !dsProdLock || !dsTestLock) &&
