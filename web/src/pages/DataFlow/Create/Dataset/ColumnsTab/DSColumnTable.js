@@ -361,6 +361,11 @@ export default function DSColumnTable({
   };
 
   const onRowDelete = (uniqueId) => {
+    console.log(
+      "uniqueId",
+      rows.filter((row) => row.uniqueId !== uniqueId),
+      editedRows.filter((row) => row.uniqueId !== uniqueId)
+    );
     setRows(rows.filter((row) => row.uniqueId !== uniqueId));
     setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
   };
@@ -426,11 +431,11 @@ export default function DSColumnTable({
   }, [rows]);
 
   useEffect(() => {
+    console.log(filteredRows, "rows");
     if (previewSQL?.length) {
       addMulti(previewSQL);
     }
   }, []);
-  console.log(filteredRows, "rows");
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
