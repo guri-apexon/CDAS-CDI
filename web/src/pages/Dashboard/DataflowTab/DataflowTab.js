@@ -345,12 +345,8 @@ export default function DataflowTab({ updateData }) {
             onChange={(event, value) => setSelectedFilter(value)}
           >
             <SegmentedControl value="all">All</SegmentedControl>
-            <SegmentedControl disabled={!(totalRows >= 1)} value="Production">
-              Production
-            </SegmentedControl>
-            <SegmentedControl disabled={!(totalRows >= 1)} value="Test">
-              Test
-            </SegmentedControl>
+            <SegmentedControl value="Production">Production</SegmentedControl>
+            <SegmentedControl value="Test">Test</SegmentedControl>
           </SegmentedControlGroup>
         </div>
         <div>

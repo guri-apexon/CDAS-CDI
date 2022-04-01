@@ -57,7 +57,8 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
           name: "No package",
           password: "",
           path: "",
-          noPackageConfig: 0,
+          noPackageConfig: 1,
+          active: 1,
         });
         return false;
       }
@@ -75,7 +76,8 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
         name: namingConvention === "" ? "No package" : namingConvention,
         password: packagePassword,
         path: sftpPath,
-        noPackageConfig: configShow ? 1 : 0,
+        noPackageConfig: configShow ? 0 : 1,
+        active: 1,
       };
       payloadBack(reqBody);
     },
