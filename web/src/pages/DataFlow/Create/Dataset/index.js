@@ -117,7 +117,7 @@ const Dataset = (props, ref) => {
     }
   };
   const getDataSetType = (type) => {
-    if (type?.toLowerCase() === ("sftp" || "ftps")) {
+    if (isSftp(type)) {
       return "sftp";
     }
     return "jdbc";
@@ -146,7 +146,7 @@ const Dataset = (props, ref) => {
   useEffect(() => {
     if (dataFlowdetail?.locationType) {
       setLocationType(dataFlowdetail?.locationType);
-      if (getDataSetType(dataFlowdetail?.locationType) === ("sftp" || "ftps")) {
+      if (isSftp(dataFlowdetail?.locationType)) {
         setColumnsActive(true);
       }
     }
@@ -181,7 +181,7 @@ const Dataset = (props, ref) => {
   };
 
   const closeForm = async () => {
-    if (locationType?.toLowerCase() === ("sftp" || "ftps")) {
+    if (isSftp(locationType)) {
       await dispatch(reset("CreateDataSetsForm"));
     } else {
       jdbcRef.current.handleCancel();

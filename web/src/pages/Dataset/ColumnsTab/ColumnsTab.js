@@ -15,7 +15,7 @@ import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
 
 import { downloadTemplate } from "../../../utils/downloadData";
-import { checkHeaders, formatData } from "../../../utils/index";
+import { checkHeaders, formatData, isSftp } from "../../../utils/index";
 
 const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const messageContext = useContext(MessageContext);
@@ -145,7 +145,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   }, [datasetColumns]);
 
   useEffect(() => {
-    if (locationType !== ("sftp" || "ftps")) {
+    if (!isSftp(locationType)) {
       setShowColumns(true);
     }
   }, [locationType]);
