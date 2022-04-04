@@ -117,7 +117,7 @@ const Dataset = () => {
   const { prot_id: studyId } = selectedCard;
   const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
-  const { locationType: newLT, customSQLQuery } = selectedDataset;
+  const { locationType: newLT, isCustomSQL } = selectedDataset;
   const userInfo = getUserInfo();
 
   const useStyles = makeStyles(styles);
@@ -181,14 +181,14 @@ const Dataset = () => {
 
   useEffect(() => {
     if (newLT === "JDBC") {
-      if (customSQLQuery === "No") {
+      if (isCustomSQL === "No") {
         setColumnsActive(true);
       }
     }
-    if (formDataSQL?.customSQLQuery === "No") {
+    if (formDataSQL?.isCustomSQL === "No") {
       setColumnsActive(true);
     }
-  }, [newLT, customSQLQuery, formDataSQL]);
+  }, [newLT, isCustomSQL, formDataSQL]);
 
   const goToDataflow = () => {
     if (dfId) {
@@ -348,7 +348,7 @@ const Dataset = () => {
             <div style={{ padding: 20 }}>
               {value === 0 && (
                 <>
-                  {console.log("ltype", locationType)}
+                  {/* {console.log("ltype", locationType)} */}
                   {isSftp(locationType) ? (
                     <DataSetsForm
                       loading={loading}

@@ -71,11 +71,11 @@ const DataSetsFormBase = (props) => {
     if (formValues && ["Yes", "No"].includes(formValues)) {
       onChange(formValues);
     }
-    if (formValues.customSQLQuery === "No") {
+    if (formValues.isCustomSQL === "No") {
       dispatch(getSQLTables("test"));
       setShowPreview(false);
     }
-  }, [formValues.customSQLQuery]);
+  }, [formValues.isCustomSQL]);
 
   useEffect(() => {}, [showPreview]);
 
@@ -170,8 +170,8 @@ const DataSetsFormBase = (props) => {
             </Grid>
           </Grid>
           <ReduxFormSelect
-            name="customSQLQuery"
-            id="customSQLQuery"
+            name="isCustomSQL"
+            id="isCustomSQL"
             size="small"
             label="Custom SQL Query"
             required
@@ -182,7 +182,7 @@ const DataSetsFormBase = (props) => {
               <MenuItem value={type}>{type}</MenuItem>
             ))}
           </ReduxFormSelect>
-          {formValues.customSQLQuery === "Yes" && (
+          {formValues.isCustomSQL === "Yes" && (
             <div style={{ display: "flex", alignItems: "flex-end" }}>
               <ReduxFormTextField
                 fullWidth
@@ -206,7 +206,7 @@ const DataSetsFormBase = (props) => {
               </Button>
             </div>
           )}
-          {formValues.customSQLQuery === "No" && (
+          {formValues.isCustomSQL === "No" && (
             <>
               <ReduxFormSelect
                 name="tableName"
@@ -296,7 +296,7 @@ const DataSetsFormSQL = connect((state) => ({
   formValues: selector(
     state,
     "active",
-    "customSQLQuery",
+    "isCustomSQL",
     "sQLQuery",
     "tableName",
     "dataType",

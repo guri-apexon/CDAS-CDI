@@ -449,9 +449,8 @@ content-type: application/json
   "datapackageid": "Zn2Jyi7zMUbuULOL",
   "datasetName": "asdfasdfsda_Asdfads",
   "active": true,
-  "customSQLQuery": "",
   "clinicalDataType": [1],
-  "customSQLQuery": "Yes",
+  "isCustomSQL": "Yes",
   "sQLQuery": "select * from data",
   "tableName": "I2.TOAD_PLAN_TABLE"
 }

@@ -59,7 +59,7 @@ const defaultData = {
 const defaultDataSQL = {
   locationType: "JDBC",
   active: true,
-  customSQLQuery: "Yes",
+  isCustomSQL: "Yes",
   dataType: "Cumulative",
 };
 
@@ -291,7 +291,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL.active = active === 1 ? true : false;
           newState.formData.clinicalDataType = [datakindid];
           newState.formDataSQL.datasetName = mnemonic;
-          newState.formDataSQL.customSQLQuery = customsql_yn;
+          newState.formDataSQL.isCustomSQL = customsql_yn;
           newState.formDataSQL.sQLQuery = customsql;
           newState.formDataSQL.offsetColumn = offsetcolumn;
           newState.formDataSQL.tableName = tbl_nm;
