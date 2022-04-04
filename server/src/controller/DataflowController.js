@@ -344,13 +344,19 @@ exports.createDataflow = async (req, res) => {
 
               let sqlQuery = "";
               if (obj.customQuery === "No") {
-                if (values.filterCondition) {
-                  sqlQuery = `Select from ${obj.tableName} ${values.conditionalExpression}`;
+                if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                  const cList = obj.columnDefinition
+                    .map((el) => el.name || el.columnName)
+                    .join(", ");
+
+                  sqlQuery = `Select from ${obj.tableName} ${cList} ${obj.conditionalExpression}`;
+                } else if (obj.conditionalExpression) {
+                  sqlQuery = `Select from ${obj.tableName} ${obj.conditionalExpression}`;
                 } else {
                   sqlQuery = `Select from ${obj.tableName} where 1=1`;
                 }
               } else {
-                sqlQuery = values.customSql;
+                sqlQuery = obj.customSql;
               }
 
               let DSBody = [

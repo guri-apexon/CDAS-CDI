@@ -17,6 +17,7 @@ import DSColumnTable from "./DSColumnTable";
 
 import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
+import { getSQLColumns } from "../../../../../store/actions/DataSetsAction";
 
 const ColumnsTab = ({ locationType }) => {
   // const history = useHistory();
@@ -141,6 +142,14 @@ const ColumnsTab = ({ locationType }) => {
       setShowColumns(false);
     }
   }, [datasetColumns]);
+
+  // useEffect(() => {
+  //   if (!isSftp(locationType)) {
+  //     if (customQuery) {
+  //       dispatch(getSQLColumns(tableName));
+  //     }
+  //   }
+  // }, [locationType]);
 
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
