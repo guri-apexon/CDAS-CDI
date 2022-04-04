@@ -39,6 +39,7 @@ import {
   FETCH_PREVIEW_SQL_FAILURE,
   RESET_FTP_FORM,
   RESET_JDBC_FORM,
+  UPDATE_DS_STATUS,
 } from "../../constants";
 
 const defaultData = {
@@ -119,6 +120,10 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.formDataSQL = {
           ...defaultDataSQL,
         };
+        break;
+
+      case UPDATE_DS_STATUS:
+        newState.isDatasetCreated = action.isDatasetCreated;
         break;
 
       case STORE_DATASET_SUCCESS:
