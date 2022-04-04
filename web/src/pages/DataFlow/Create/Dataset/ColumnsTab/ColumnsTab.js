@@ -18,8 +18,6 @@ import DSColumnTable from "./DSColumnTable";
 import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 
-// const DSColumnTable = lazy(() => import("./DSColumnTable"));
-
 const ColumnsTab = ({ locationType }) => {
   // const history = useHistory();
   const messageContext = useContext(MessageContext);
