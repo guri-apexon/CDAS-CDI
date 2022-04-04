@@ -4,35 +4,35 @@
   "columnInfo": [
     {
       "columnName": "pk1",
-      "dataType": "string",
+      "dataType": "Alphanumeric",
       "required": false,
       "primaryKey": false,
       "unique": false
     },
     {
       "columnName": "pk2",
-      "dataType": "string",
+      "dataType": "Alphanumeric",
       "required": false,
       "primaryKey": false,
       "unique": false
     },
     {
       "columnName": "pk3",
-      "dataType": "string",
+      "dataType": "Alphanumeric",
       "required": false,
       "primaryKey": false,
       "unique": false
     },
     {
       "columnName": "rec1",
-      "dataType": "string",
+      "dataType": "Alphanumeric",
       "required": false,
       "primaryKey": false,
       "unique": false
     },
     {
       "columnName": "rec2",
-      "dataType": "string",
+      "dataType": "Alphanumeric",
       "required": false,
       "primaryKey": false,
       "unique": false

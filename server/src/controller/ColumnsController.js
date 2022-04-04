@@ -32,12 +32,12 @@ exports.getColumnsSet = async (req, res) => {
 
 exports.saveDatasetColumns = async (req, res) => {
   try {
-    const { dsId, dpId, dfId, isUpdateQuery, newQuery, userId, values } =
+    const { dsId, dpId, dfId, isUpdateQuery, nQuery, userId, values } =
       req.body;
 
     if (isUpdateQuery) {
       const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=Now() where datasetid=$1`;
-      await DB.executeQuery(update, [dsId, newQuery]);
+      await DB.executeQuery(update, [dsId, nQuery]);
     }
 
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, "name", "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable, del_flg, insrt_tm, updt_tm)
@@ -96,12 +96,12 @@ exports.saveDatasetColumns = async (req, res) => {
 
 exports.updateColumns = async (req, res) => {
   try {
-    const { dsId, dpId, dfId, isUpdateQuery, newQuery, userId, values } =
+    const { dsId, dpId, dfId, isUpdateQuery, nQuery, userId, values } =
       req.body;
 
     if (isUpdateQuery) {
       const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=Now() where datasetid=$1`;
-      await DB.executeQuery(update, [dsId, newQuery]);
+      await DB.executeQuery(update, [dsId, nQuery]);
     }
 
     Logger.info({ message: "update set columns" });
@@ -188,7 +188,7 @@ exports.updateColumns = async (req, res) => {
 
 exports.deleteColumns = async (req, res) => {
   try {
-    const { columnId, dsId, dfId, dpId, isUpdateQuery, newQuery, userId } =
+    const { columnId, dsId, dfId, dpId, isUpdateQuery, nQuery, userId } =
       req.body;
 
     Logger.info({ message: "deleteColumns" });
@@ -196,7 +196,7 @@ exports.deleteColumns = async (req, res) => {
 
     if (isUpdateQuery) {
       const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=Now() where datasetid=$1`;
-      await DB.executeQuery(update, [dsId, newQuery]);
+      await DB.executeQuery(update, [dsId, nQuery]);
     }
 
     DB.executeQuery(updateQuery, [columnId]).then(async (response) => {

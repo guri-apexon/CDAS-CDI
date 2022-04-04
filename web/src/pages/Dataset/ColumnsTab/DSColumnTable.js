@@ -37,6 +37,7 @@ export default function DSColumnTable({
     headerRowNumber,
     customsql,
     customsql_yn: customQuery,
+    tbl_nm: tableName,
   } = selectedDataset;
   const { dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
 
@@ -302,17 +303,27 @@ export default function DSColumnTable({
   ];
 
   useEffect(() => {
-    if (headerrownumber > 0 || headerRowNumber > 0) {
-      const data = allColumns.map((e) => {
-        if (e.accessor === "position") {
-          e.hidden = true;
-        }
-        return e;
-      });
-      setMoreColumns(data);
+    if (isSftp(locationType)) {
+      if (headerrownumber > 0 || headerRowNumber > 0) {
+        const data = allColumns.map((e) => {
+          if (e.accessor === "position") {
+            e.hidden = true;
+          }
+          return e;
+        });
+        setMoreColumns(data);
+      } else {
+        const data = allColumns.map((e) => {
+          if (e.accessor === "columnName") {
+            e.hidden = true;
+          }
+          return e;
+        });
+        setMoreColumns(data);
+      }
     } else {
       const data = allColumns.map((e) => {
-        if (e.accessor === "columnName") {
+        if (e.accessor === "position") {
           e.hidden = true;
         }
         return e;
@@ -361,7 +372,9 @@ export default function DSColumnTable({
     if (customQuery === "No") {
       const columnList = removeSpaces.map((e) => e.columnName).join(", ");
       const wherePart = customsql.indexOf("where");
-      newQuery = `select ${columnList} ${customsql.slice(wherePart + 1)}`;
+      newQuery = `select ${columnList} from ${tableName} ${customsql.slice(
+        wherePart
+      )}`;
     }
 
     if (newCD && newCD.length > 0) {
