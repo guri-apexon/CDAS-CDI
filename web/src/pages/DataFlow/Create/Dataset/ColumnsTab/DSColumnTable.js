@@ -426,11 +426,11 @@ export default function DSColumnTable({
   }, [rows]);
 
   useEffect(() => {
+    console.log(filteredRows, "rows");
     if (previewSQL?.length) {
       addMulti(previewSQL);
     }
   }, []);
-  console.log(filteredRows, "rows");
   return (
     <div>
       <div style={{ marginBottom: 32 }}>

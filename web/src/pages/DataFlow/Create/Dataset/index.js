@@ -81,8 +81,7 @@ const styles = {
   },
 };
 const Dataset = (props, ref) => {
-  const { datapackageid, currentStep, updateStep, messageContext, submitData } =
-    props;
+  const { currentStep, updateStep, messageContext, submitData } = props;
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
@@ -118,7 +117,7 @@ const Dataset = (props, ref) => {
     }
   };
   const getDataSetType = (type) => {
-    if (type?.toLowerCase() === ("sftp" || "ftps")) {
+    if (isSftp(type)) {
       return "sftp";
     }
     return "jdbc";
@@ -147,7 +146,7 @@ const Dataset = (props, ref) => {
   useEffect(() => {
     if (dataFlowdetail?.locationType) {
       setLocationType(dataFlowdetail?.locationType);
-      if (getDataSetType(dataFlowdetail?.locationType) === ("sftp" || "ftps")) {
+      if (isSftp(dataFlowdetail?.locationType)) {
         setColumnsActive(true);
       }
     }
@@ -176,14 +175,13 @@ const Dataset = (props, ref) => {
   const onSubmit = (formValue) => {
     const data = {
       ...formValue,
-      datapackageid,
       dfTestFlag: dataFlowdetail.testflag,
     };
     submitData(data);
   };
 
   const closeForm = async () => {
-    if (locationType?.toLowerCase() === ("sftp" || "ftps")) {
+    if (isSftp(locationType)) {
       await dispatch(reset("CreateDataSetsForm"));
     } else {
       jdbcRef.current.handleCancel();
@@ -237,7 +235,6 @@ const Dataset = (props, ref) => {
             locationType?.toLowerCase() !== "sftp" &&
             locationType?.toLowerCase() !== "ftps" && (
               <JDBCForm
-                datapackageid={datapackageid}
                 dataflowid="123abc"
                 datasetId={datasetId}
                 dfTestFlag={dataFlowdetail.testflag}

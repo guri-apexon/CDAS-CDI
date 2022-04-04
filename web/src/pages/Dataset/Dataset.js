@@ -32,7 +32,7 @@ import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
-import { getUserInfo } from "../../utils";
+import { getUserInfo, isSftp } from "../../utils";
 
 const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
 
@@ -136,7 +136,7 @@ const Dataset = () => {
   };
 
   const getDataSetType = (type) => {
-    if (type?.toLowerCase() === ("sftp" || "ftps")) {
+    if (isSftp(type)) {
       return "sftp";
     }
     return "jdbc";
@@ -161,7 +161,7 @@ const Dataset = () => {
 
   useEffect(() => {
     if (isDatasetCreated) {
-      if (getDataSetType(loctyp) === ("sftp" || "ftps")) {
+      if (isSftp(loctyp)) {
         messageContext.showSuccessMessage("Dataset Created Successfully");
         setValue(1);
       } else {
@@ -173,7 +173,7 @@ const Dataset = () => {
   useEffect(() => {
     if (loctyp) {
       setLocationType(getDataSetType(loctyp));
-      if (getDataSetType(loctyp) === ("sftp" || "ftps")) {
+      if (isSftp(loctyp)) {
         setColumnsActive(true);
       }
     }
@@ -223,7 +223,7 @@ const Dataset = () => {
   const jdbcRef = useRef();
 
   const submitForm = () => {
-    if (locationType === ("sftp" || "ftps")) {
+    if (isSftp(locationType)) {
       dispatch(submit("DataSetsForm"));
     } else {
       dispatch(submit("DataSetsFormSQL"));
@@ -250,7 +250,7 @@ const Dataset = () => {
   };
 
   const closeForm = async () => {
-    if (locationType === ("sftp" || "ftps")) {
+    if (isSftp(locationType)) {
       await dispatch(reset("DataSetsForm"));
     } else {
       jdbcRef.current.handleCancel();
@@ -349,7 +349,7 @@ const Dataset = () => {
               {value === 0 && (
                 <>
                   {console.log("ltype", locationType)}
-                  {locationType === ("sftp" || "ftps") ? (
+                  {isSftp(locationType) ? (
                     <DataSetsForm
                       loading={loading}
                       onSubmit={onSubmit}
