@@ -349,7 +349,7 @@ exports.createDataflow = async (req, res) => {
                     .map((el) => el.name || el.columnName)
                     .join(", ");
 
-                  sqlQuery = `Select from ${obj.tableName} ${cList} ${obj.conditionalExpression}`;
+                  sqlQuery = `Select ${cList} from ${obj.tableName} ${obj.conditionalExpression}`;
                 } else if (obj.conditionalExpression) {
                   sqlQuery = `Select from ${obj.tableName} ${obj.conditionalExpression}`;
                 } else {

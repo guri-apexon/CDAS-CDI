@@ -128,6 +128,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
           })
         : [];
     setFormattedData([...newData]);
+    setSelectedMethod("fromDB");
   };
 
   const handleDelete = () => {
