@@ -349,11 +349,17 @@ exports.createDataflow = async (req, res) => {
                     .map((el) => el.name || el.columnName)
                     .join(", ");
 
-                  sqlQuery = `Select ${cList} from ${obj.tableName} ${obj.conditionalExpression}`;
-                } else if (obj.conditionalExpression) {
-                  sqlQuery = `Select from ${obj.tableName} ${obj.conditionalExpression}`;
+                  sqlQuery = `Select ${cList} from ${obj.tableName} ${
+                    obj.conditionalExpression
+                      ? obj.conditionalExpression
+                      : "where 1=1"
+                  }`;
                 } else {
-                  sqlQuery = `Select from ${obj.tableName} where 1=1`;
+                  sqlQuery = `Select from ${obj.tableName} ${
+                    obj.conditionalExpression
+                      ? obj.conditionalExpression
+                      : "where 1=1"
+                  }`;
                 }
               } else {
                 sqlQuery = obj.customSql;
