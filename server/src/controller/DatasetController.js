@@ -21,22 +21,32 @@ async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
   return result;
 }
 
-async function saveSQLDataset(req, res, values, datasetId, dpId, userId, dfId) {
+async function saveSQLDataset(req, res, values, dpId, userId, dfId) {
   try {
     Logger.info({ message: "create SQL Dataset" });
+    const datasetId = helper.generateUniqueID();
+    let sqlQuery = "";
+    if (values.isCustomSQL === "No") {
+      if (values.filterCondition) {
+        sqlQuery = `Select from ${values.tableName} ${values.filterCondition}`;
+      } else {
+        sqlQuery = `Select from ${values.tableName} where 1=1`;
+      }
+    } else {
+      sqlQuery = values.sQLQuery;
+    }
+
     const body = [
       datasetId,
       values.datasetName,
       values.active === true ? 1 : 0,
       values.clinicalDataType[0] ? values.clinicalDataType[0] : null,
       values.isCustomSQL,
-      values.sQLQuery || null,
+      sqlQuery,
       values.dataType == "Incremental" ? "Y" : "N" || null,
       values.tableName || null,
       values.offsetColumn || null,
       values.filterCondition || null,
-      helper.getCurrentTime(),
-      helper.getCurrentTime(),
       dpId,
     ];
 
@@ -58,7 +68,7 @@ async function saveSQLDataset(req, res, values, datasetId, dpId, userId, dfId) {
 
     const jsonData = JSON.stringify(conf_Data);
 
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning *`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, Now(), Now(), $11) returning *`;
     const data = await DB.executeQuery(insertQuery, body);
 
     const historyVersion = await CommonController.addDatasetHistory(
@@ -102,10 +112,11 @@ exports.saveDatasetData = async (req, res) => {
       );
     }
 
-    const datasetId = helper.generateUniqueID();
     if (values.locationType.toLowerCase() === "jdbc") {
-      return saveSQLDataset(req, res, values, datasetId, dpId, userId, dfId);
+      return saveSQLDataset(req, res, values, dpId, userId, dfId);
     }
+
+    const datasetId = helper.generateUniqueID();
 
     let passwordStatus = "No";
 
@@ -198,12 +209,24 @@ async function updateSQLDataset(
 ) {
   try {
     Logger.info({ message: "update SQL Dataset" });
+
+    let sqlQuery = "";
+    if (values.isCustomSQL === "No") {
+      if (values.filterCondition) {
+        sqlQuery = `Select from ${values.tableName} ${values.filterCondition}`;
+      } else {
+        sqlQuery = `Select from ${values.tableName} where 1=1`;
+      }
+    } else {
+      sqlQuery = values.sQLQuery;
+    }
+
     const body = [
       values.datasetName,
       values.active === true ? 1 : 0,
       values.clinicalDataType ? values.clinicalDataType[0] : null,
-      values.isCustomSQL || null,
-      values.sQLQuery || null,
+      values.isCustomSQL,
+      sqlQuery,
       values.tableName || null,
       values.filterCondition || null,
       values.dataType == "Incremental" ? "Y" : "N" || null,
