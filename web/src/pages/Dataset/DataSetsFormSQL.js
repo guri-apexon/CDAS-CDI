@@ -293,6 +293,7 @@ const ReduxForm = compose(
 const selector = formValueSelector("DataSetsFormSQL");
 const DataSetsFormSQL = connect((state) => ({
   initialValues: state.dataSets.formDataSQL, // pull initial values from account reducer
+  enableReinitialize: true,
   formValues: selector(
     state,
     "active",

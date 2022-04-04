@@ -115,7 +115,13 @@ const Dataset = () => {
     formDataSQL,
   } = dataSets;
   const { prot_id: studyId } = selectedCard;
-  const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
+  const {
+    dataFlowdetail,
+    dsProdLock,
+    dsTestLock,
+    dsTestProdLock,
+    isDatasetCreation,
+  } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
   const { locationType: newLT, isCustomSQL } = selectedDataset;
   const userInfo = getUserInfo();
@@ -353,6 +359,7 @@ const Dataset = () => {
                       loading={loading}
                       onSubmit={onSubmit}
                       prodLock={dsProdLock}
+                      isDatasetCreation={isDatasetCreation}
                     />
                   ) : (
                     <DataSetsFormSQL
@@ -360,6 +367,7 @@ const Dataset = () => {
                       prodLock={dsProdLock}
                       testLock={dsTestLock}
                       testProdLock={dsTestProdLock}
+                      isDatasetCreation={isDatasetCreation}
                     />
                   )}
                 </>
