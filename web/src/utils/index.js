@@ -509,37 +509,33 @@ export const generateConnectionURL = (locType, hostName, port, dbName) => {
     return hostName;
   }
   if (locType === "Hive CDP" || locType === "Hive CDH") {
-    if (locType === "Hive CDP") {
-      return port && hive2CDP
-        ? `jdbc:hive2://${hostName}:${port}/${hive2CDP}`
-        : "";
-    }
-    return port && hive2CDH
-      ? `jdbc:hive2://${hostName}:${port}/${hive2CDH}`
+    const transportMode = locType === "Hive CDP" ? "http" : "https";
+    return port && dbName
+      ? `jdbc:hive2://${hostName}:${port}/${dbName};transportMode=${transportMode};httpPath=cliservice;ssl=1;AllowSelfSignedCerts=1;AuthMech=3`
       : "";
   }
   if (locType === "Oracle") {
     return port && dbName
-      ? `jdbc:${locType}${oracle}${hostName}:${port}:${dbName}`
+      ? `jdbc:oracle:thin:@${hostName}:${port}:${dbName}`
       : "";
   }
   if (locType === "MySQL") {
-    return port && dbName
-      ? `jdbc:${locType}://${hostName}:${port}/${dbName}`
-      : "";
+    return port && dbName ? `jdbc:mysql://${hostName}:${port}/${dbName}` : "";
   }
   if (locType === "SQL Server") {
     return port && dbName
-      ? `jdbc:${locType}://${hostName}:${port};${SQLServer}=${dbName}`
+      ? `jdbc:sqlserver://${hostName}:${port};databaseName=${dbName}`
       : "";
   }
   if (locType === "PostgreSQL") {
     return port && dbName
-      ? `jdbc:${locType}://${hostName}:${port}/${dbName}`
+      ? `jdbc:postgresql://${hostName}:${port}/${dbName}`
       : "";
   }
   if (locType === "Impala") {
-    return port ? `jdbc:${locType}://${hostName}:${port}/${impala}` : "";
+    return port
+      ? `jdbc:impala://${hostName}:${port}/${impala};ssl=1;AllowSelfSignedCerts=1;AuthMech=3`
+      : "";
   }
   if (locType && hostName && port && dbName) {
     return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
