@@ -208,7 +208,7 @@ const DataSetsFormBase = (props) => {
           )}
           {formValues.isCustomSQL === "No" && (
             <>
-              <ReduxFormSelect
+              {/* <ReduxFormSelect
                 name="tableName"
                 id="tableName"
                 label="Table Name"
@@ -220,7 +220,18 @@ const DataSetsFormBase = (props) => {
                 {sqlTables?.map((e) => (
                   <MenuItem value={e.tableName}>{e.tableName}</MenuItem>
                 ))}
-              </ReduxFormSelect>
+              </ReduxFormSelect> */}
+              <ReduxFormTextField
+                fullWidth
+                name="tableName"
+                id="tableName"
+                style={{ width: "70%", display: "flex" }}
+                size="small"
+                minHeight={32}
+                singleline
+                inputProps={{ maxLength: 255 }}
+                label="Table Name"
+              />
               <ReduxFormTextField
                 fullWidth
                 name="filterCondition"
@@ -244,18 +255,29 @@ const DataSetsFormBase = (props) => {
                 <Radio value="Incremental" label="Incremental" />
               </ReduxFormRadioGroup>
               {formValues.dataType === "Incremental" && (
-                <ReduxFormMultiSelect
+                // <ReduxFormMultiSelect
+                //   name="offsetColumn"
+                //   id="offsetColumn"
+                //   label="Offset Column"
+                //   size="small"
+                //   canDeselect={true}
+                //   disabled={prodLock}
+                // >
+                //   {sqlColumns?.map((e) => (
+                //     <MenuItem value={e.columnName}>{e.columnName}</MenuItem>
+                //   ))}
+                // </ReduxFormMultiSelect>
+                <ReduxFormTextField
+                  fullWidth
                   name="offsetColumn"
                   id="offsetColumn"
-                  label="Offset Column"
+                  style={{ width: "70%", display: "flex" }}
                   size="small"
-                  canDeselect={true}
-                  disabled={prodLock}
-                >
-                  {sqlColumns?.map((e) => (
-                    <MenuItem value={e.columnName}>{e.columnName}</MenuItem>
-                  ))}
-                </ReduxFormMultiSelect>
+                  minHeight={32}
+                  singleline
+                  inputProps={{ maxLength: 255 }}
+                  label="Offset Column"
+                />
               )}
             </>
           )}
