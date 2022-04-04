@@ -371,11 +371,11 @@ export const checkHeaders = (data) => {
     header.includes("Format") &&
     header.includes("Data Type") &&
     header.includes("Primary(Y/N)") &&
-    header.includes("Required(Y/N)") &&
     header.includes("Unique(Y/N)") &&
-    header.includes("Min Length") &&
-    header.includes("Max Length") &&
-    header.includes("List of Values");
+    header.includes("Required(Y/N)") &&
+    header.includes("Min length") &&
+    header.includes("Max length") &&
+    header.includes("List of values");
   return validation;
 };
 
