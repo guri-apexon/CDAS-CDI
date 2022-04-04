@@ -179,8 +179,8 @@ const JDBCForm = forwardRef((props, ref) => {
       clinicalDataType,
       customSQLQuery: isCustomSQL,
       sQLQuery,
-      tableName: tableName[0] || "",
-      offsetColumn: offsetColumn[0] || "",
+      tableName: tableName?.length ? tableName[0] : "",
+      offsetColumn: offsetColumn?.length ? offsetColumn[0] : "",
       dfTestFlag,
     };
     onSubmit(data);

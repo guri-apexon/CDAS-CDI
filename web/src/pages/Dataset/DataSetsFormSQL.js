@@ -193,7 +193,6 @@ const DataSetsFormBase = (props) => {
                 multiline
                 sizeAdjustable
                 disabled={prodLock}
-                inputProps={{ maxLength: 255 }}
                 label="SQL Query"
               />
               <Button
