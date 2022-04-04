@@ -3,7 +3,7 @@
 /* eslint-disable no-script-url */
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
 import Banner from "apollo-react/components/Banner";
@@ -348,7 +348,6 @@ const Dataset = () => {
             <div style={{ padding: 20 }}>
               {value === 0 && (
                 <>
-                  {/* {console.log("ltype", locationType)} */}
                   {isSftp(locationType) ? (
                     <DataSetsForm
                       loading={loading}
