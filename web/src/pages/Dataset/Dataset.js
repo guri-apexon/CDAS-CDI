@@ -27,6 +27,7 @@ import {
   resetFTP,
   resetJDBC,
 } from "../../store/actions/DataSetsAction";
+import { updatePanel } from "../../store/actions/DataPackageAction";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
@@ -35,6 +36,7 @@ import VLCTab from "./VLCTab";
 import { getUserInfo, isSftp } from "../../utils";
 
 const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
+const userInfo = getUserInfo();
 
 const styles = {
   rightPanel: {
@@ -124,7 +126,6 @@ const Dataset = () => {
   } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
   const { locationType: newLT, isCustomSQL } = selectedDataset;
-  const userInfo = getUserInfo();
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -166,15 +167,16 @@ const Dataset = () => {
   }, [datasetid]);
 
   useEffect(() => {
+    if (isDatasetCreated && isDatasetCreation) {
+      messageContext.showSuccessMessage("Dataset Created Successfully");
+      dispatch(updatePanel());
+    }
     if (isDatasetCreated) {
       if (isSftp(loctyp)) {
-        messageContext.showSuccessMessage("Dataset Created Successfully");
         setValue(1);
-      } else {
-        messageContext.showSuccessMessage("Dataset Created Successfully");
       }
     }
-  }, [isDatasetCreated, loctyp]);
+  }, [isDatasetCreated, isDatasetCreation, loctyp]);
 
   useEffect(() => {
     if (loctyp) {
@@ -267,10 +269,10 @@ const Dataset = () => {
   const getLeftPanel = React.useMemo(
     () => (
       <>
-        <LeftPanel dataflowSource={dataFlowdetail} />
+        <LeftPanel />
       </>
     ),
-    [dataFlowdetail]
+    []
   );
 
   return (
@@ -359,7 +361,6 @@ const Dataset = () => {
                       loading={loading}
                       onSubmit={onSubmit}
                       prodLock={dsProdLock}
-                      isDatasetCreation={isDatasetCreation}
                     />
                   ) : (
                     <DataSetsFormSQL
@@ -367,7 +368,6 @@ const Dataset = () => {
                       prodLock={dsProdLock}
                       testLock={dsTestLock}
                       testProdLock={dsTestProdLock}
-                      isDatasetCreation={isDatasetCreation}
                     />
                   )}
                 </>

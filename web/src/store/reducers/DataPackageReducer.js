@@ -11,6 +11,7 @@ import {
   REDIRECT_TO_DATASET,
   UPDATE_DATA_PACKAGE_FAILURE,
   ADD_PACKAGE_BTN,
+  UPDATE_LEFT_PANEL,
 } from "../../constants";
 
 export const initialState = {
@@ -52,6 +53,11 @@ const DataPackageReducer = (state = initialState, action) =>
       case ADD_PACKAGE_SUCCESS:
         newState.loading = false;
         newState.refreshData = action.refreshData;
+        break;
+
+      case UPDATE_LEFT_PANEL:
+        newState.loading = true;
+        newState.refreshData = true;
         break;
 
       case UPDATE_DATA_PACKAGE:
