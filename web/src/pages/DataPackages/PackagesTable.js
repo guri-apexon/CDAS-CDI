@@ -21,6 +21,7 @@ import {
   updateStatus,
 } from "../../store/actions/DataPackageAction";
 import { updateDSState } from "../../store/actions/DataFlowAction";
+import { updateDSStatus } from "../../store/actions/DataSetsAction";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
@@ -75,6 +76,7 @@ const PackagesList = ({ data, userInfo }) => {
   const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
     dispatch(updateDSState(true));
+    dispatch(updateDSStatus(false));
     history.push("/dashboard/dataset/new");
   };
 
