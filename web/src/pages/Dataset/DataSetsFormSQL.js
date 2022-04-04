@@ -251,8 +251,6 @@ const DataSetsFormBase = (props) => {
                   size="small"
                   canDeselect={true}
                   disabled={prodLock}
-                  // eslint-disable-next-line react/jsx-no-bind
-                  // onChange={onColumnChange}
                 >
                   {sqlColumns?.map((e) => (
                     <MenuItem value={e.columnName}>{e.columnName}</MenuItem>
@@ -303,11 +301,6 @@ const DataSetsFormSQL = connect((state) => ({
     "dataType",
     "offsetColumn"
   ),
-  defaultDelimiter: state.dataSets.defaultDelimiter,
-  defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
-  defaultQuote: state.dataSets.defaultQuote,
-  defaultHeaderRowNumber: state.dataSets.defaultHeaderRowNumber,
-  defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
   datakind: state.dataSets.datakind?.records,
   sqlTables: state.dataSets.sqlTables,
   sqlColumns: state.dataSets.sqlColumns,
