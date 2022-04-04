@@ -53,12 +53,12 @@ async function saveSQLDataset(req, res, values, datasetId, dpId, userId, dfId) {
       incremental: values.dataType == "Incremental" ? "Y" : "N" || null,
       tbl_nm: values.tableName || null,
       offsetcolumn: values.offsetColumn || null,
-      offset_val: values.filterCondition || null,
+      dataset_fltr: values.filterCondition || null,
     };
 
     const jsonData = JSON.stringify(conf_Data);
 
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, offset_val, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning *`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning *`;
     const data = await DB.executeQuery(insertQuery, body);
 
     const historyVersion = await CommonController.addDatasetHistory(
@@ -212,7 +212,7 @@ async function updateSQLDataset(
       values.datasetid,
     ];
     const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
-                          offset_val, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
+    dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
 
     const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, offset_val = $7, offsetcolumn = $8, incremental = $9, updt_tm = $10 where datasetid = $11`;
 
@@ -225,7 +225,7 @@ async function updateSQLDataset(
       customsql_yn: values.isCustomSQL || null,
       customsql: values.sQLQuery || null,
       tbl_nm: values.tableName || null,
-      offset_val: values.filterCondition || null,
+      dataset_fltr: values.filterCondition || null,
       offsetcolumn: values.offsetColumn || null,
       incremental: values.dataType == "Incremental" ? "Y" : "N" || null,
     };

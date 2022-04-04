@@ -269,7 +269,7 @@ const DataFlowReducer = (state = initialState, action) =>
           customsql_yn,
           customsql,
           offsetcolumn,
-          offset_val,
+          dataset_fltr,
           tbl_nm,
         } = datasetDetail;
         if (type) {
@@ -300,7 +300,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL.sQLQuery = customsql;
           newState.formDataSQL.offsetColumn = offsetcolumn;
           newState.formDataSQL.tableName = tbl_nm;
-          newState.formDataSQL.filterCondition = offset_val;
+          newState.formDataSQL.filterCondition = dataset_fltr;
           newState.formDataSQL.dataType =
             incremental === "N" ? "Cumulative" : "Incremental";
         }
