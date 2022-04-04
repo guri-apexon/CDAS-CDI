@@ -2,7 +2,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-nested-ternary */
 import React, { useState, useContext, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import * as XLSX from "xlsx";
 import FileUpload from "apollo-react/components/FileUpload";
 import Card from "apollo-react/components/Card";
@@ -14,16 +14,20 @@ import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
 
+import { getSQLColumns } from "../../../store/actions/DataSetsAction";
+
 import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../utils/index";
 
 const ColumnsTab = ({ locationType, dfId, dpId }) => {
+  const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
-  const { datasetColumns } = dataSets;
+  const { selectedDataset, datasetColumns, sqlColumns } = dataSets;
+  const { tbl_nm: tableName, customsql_yn: customQuery } = selectedDataset;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
   const [showColumns, setShowColumns] = useState(false);
@@ -77,13 +81,41 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               columnId: i + 1,
               dbColumnId: column.columnid,
               uniqueId: `u${i}`,
-              variableLabel: column.VARIABLE || "",
+              variableLabel: column.variable || "",
               columnName: column.name || "",
               position: column.position || "",
-              format: column.FORMAT || "",
+              format: column.format || "",
               dataType: column.datatype || "",
               primary: column.primarykey === 1 ? "Yes" : "No",
-              unique: column.UNIQUE === 1 ? "Yes" : "No",
+              unique: column.unique === 1 ? "Yes" : "No",
+              required: column.required === 1 ? "Yes" : "No",
+              minLength: column.charactermin || "",
+              maxLength: column.charactermax || "",
+              values: column.lov || "",
+              isInitLoad: true,
+              isHavingError: false,
+              isHavingColumnName: true,
+            };
+            return newObj;
+          })
+        : [];
+    setFormattedData([...newData]);
+  };
+
+  const formatJDBCColumns = (arr) => {
+    const newData =
+      arr.length > 0
+        ? arr.map((column, i) => {
+            const newObj = {
+              columnId: i + 1,
+              dbColumnId: column.columnid || "",
+              uniqueId: `u${i}`,
+              variableLabel: column.varable || "",
+              columnName: column.columnName || "",
+              format: column.format || "",
+              dataType: column.dataType || "",
+              primary: column.primarykey === 1 ? "Yes" : "No",
+              unique: column.unique === 1 ? "Yes" : "No",
               required: column.required === 1 ? "Yes" : "No",
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
@@ -147,8 +179,15 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   useEffect(() => {
     if (!isSftp(locationType)) {
       setShowColumns(true);
+      if (customQuery) {
+        dispatch(getSQLColumns(tableName));
+      }
     }
   }, [locationType]);
+
+  useEffect(() => {
+    formatJDBCColumns(sqlColumns);
+  }, [sqlColumns]);
 
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);

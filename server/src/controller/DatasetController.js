@@ -88,7 +88,6 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     );
   } catch (err) {
     //throw error in json response with status 500.
-    console.log(err, "err");
     Logger.error("catch :storeDataset");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);

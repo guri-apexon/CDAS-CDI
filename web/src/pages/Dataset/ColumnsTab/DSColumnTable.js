@@ -15,7 +15,7 @@ import {
   updateDatasetColumns,
 } from "../../../store/actions/DataSetsAction";
 import { deleteCD, updateLOV } from "../../../services/ApiServices";
-import { getUserInfo } from "../../../utils/index";
+import { getUserInfo, isSftp } from "../../../utils/index";
 
 export default function DSColumnTable({
   numberOfRows,
@@ -30,8 +30,14 @@ export default function DSColumnTable({
   const dataSets = useSelector((state) => state.dataSets);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDataset } = dataSets;
-  const { fileType, datasetid, headerrownumber, headerRowNumber } =
-    selectedDataset;
+  const {
+    fileType,
+    datasetid,
+    headerrownumber,
+    headerRowNumber,
+    customsql,
+    customsql_yn: customQuery,
+  } = selectedDataset;
   const { dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
 
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
@@ -351,15 +357,30 @@ export default function DSColumnTable({
     setEditedRows(rows);
     const existingCD = await removeSpaces.filter((e) => e.dbColumnId);
     const newCD = await removeSpaces.filter((e) => !e.dbColumnId);
+    let newQuery = "";
+    if (customQuery === "No") {
+      const columnList = removeSpaces.map((e) => e.columnName).join(", ");
+      const wherePart = customsql.indexOf("where");
+      newQuery = `select ${columnList} ${customsql.slice(wherePart + 1)}`;
+    }
+
     if (newCD && newCD.length > 0) {
       dispatch(
-        createDatasetColumns(newCD, datasetid, dfId, dpId, userInfo.userId)
+        createDatasetColumns(
+          newCD,
+          datasetid,
+          dfId,
+          dpId,
+          userInfo.userId,
+          true,
+          newQuery
+        )
       );
     }
 
     // if (existingCD && existingCD.length > 0) {
     //   dispatch(
-    //     updateDatasetColumns(existingCD, datasetid, dfId, dpId, userInfo.userId)
+    //     updateDatasetColumns(existingCD, datasetid, dfId, dpId, userInfo.userId, true, newQuery)
     //   );
     // }
   };
@@ -380,6 +401,10 @@ export default function DSColumnTable({
   const formatSave = (inArray) => {
     const formatted = inArray;
     return formatted;
+  };
+
+  const generateColumn = (arr) => {
+    const cName = arr.map((e) => e.columnName).join(", ");
   };
 
   const onRowSave = async (uniqueId) => {
@@ -404,6 +429,14 @@ export default function DSColumnTable({
       })
       .find((e) => e.uniqueId === uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
+
+    let newQuery = "";
+    if (customQuery === "No") {
+      const columnList = editedRowData.columnName;
+      const splitted = customsql.split("where");
+      newQuery = `select ${splitted[0]} ${columnList} ${splitted[1]}`;
+    }
+
     if (editedRowData?.dbColumnId) {
       dispatch(
         updateDatasetColumns(
@@ -411,7 +444,9 @@ export default function DSColumnTable({
           datasetid,
           dfId,
           dpId,
-          userInfo.userId
+          userInfo.userId,
+          true,
+          newQuery
         )
       );
     } else {
@@ -421,7 +456,9 @@ export default function DSColumnTable({
           datasetid,
           dfId,
           dpId,
-          userInfo.userId
+          userInfo.userId,
+          true,
+          newQuery
         )
       );
     }
