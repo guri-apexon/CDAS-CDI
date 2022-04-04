@@ -341,6 +341,30 @@ exports.createDataflow = async (req, res) => {
               } else {
                 dsPasswordStatus = "No";
               }
+
+              let sqlQuery = "";
+              if (obj.customQuery === "No") {
+                if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                  const cList = obj.columnDefinition
+                    .map((el) => el.name || el.columnName)
+                    .join(", ");
+
+                  sqlQuery = `Select ${cList} from ${obj.tableName} ${
+                    obj.conditionalExpression
+                      ? obj.conditionalExpression
+                      : "where 1=1"
+                  }`;
+                } else {
+                  sqlQuery = `Select from ${obj.tableName} ${
+                    obj.conditionalExpression
+                      ? obj.conditionalExpression
+                      : "where 1=1"
+                  }`;
+                }
+              } else {
+                sqlQuery = obj.customSql;
+              }
+
               let DSBody = [
                 dsUid,
                 dpUid,
@@ -358,7 +382,7 @@ exports.createDataflow = async (req, res) => {
                 obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
                 obj.headerRowNumber || 0,
                 obj.footerRowNumber || 0,
-                obj.customSql || null,
+                sqlQuery || null,
                 obj.customQuery || null,
                 obj.tableName || null,
                 externalID || null,

@@ -32,9 +32,13 @@ exports.getColumnsSet = async (req, res) => {
 
 exports.saveDatasetColumns = async (req, res) => {
   try {
-    const { dsId, dpId, dfId, userId, values } = req.body;
+    const { dsId, dpId, dfId, isUpdateQuery, nQuery, userId, values } =
+      req.body;
 
-    console.log(req.body);
+    if (isUpdateQuery) {
+      const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=Now() where datasetid=$1`;
+      await DB.executeQuery(update, [dsId, nQuery]);
+    }
 
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, "name", "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable, del_flg, insrt_tm, updt_tm)
      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, Now(), Now());`;
@@ -92,7 +96,13 @@ exports.saveDatasetColumns = async (req, res) => {
 
 exports.updateColumns = async (req, res) => {
   try {
-    const { dsId, dpId, dfId, userId, values } = req.body;
+    const { dsId, dpId, dfId, isUpdateQuery, nQuery, userId, values } =
+      req.body;
+
+    if (isUpdateQuery) {
+      const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=Now() where datasetid=$1`;
+      await DB.executeQuery(update, [dsId, nQuery]);
+    }
 
     Logger.info({ message: "update set columns" });
     const updateQuery = `UPDATE ${schemaName}.columndefinition SET "variable"=$2, datasetid=$3, name=$4, datatype=$5, primarykey=$6, required=$7, "unique"=$8, charactermin=$9, charactermax=$10, "position"=$11, "format"=$12, lov=$13, updt_tm=$14 WHERE columnid=$1`;
@@ -120,47 +130,47 @@ exports.updateColumns = async (req, res) => {
 
         await DB.executeQuery(updateQuery, body);
 
-        // const requestData = {
-        //   datasetid: dsId,
-        //   columnid: value.columnId.trim(),
-        //   variable: value.variableLabel.trim() || null,
-        //   name: value.columnName.trim() || null,
-        //   datatype: value.dataType.trim() || null,
-        //   primarykey: value.primary == "Yes" ? 1 : 0,
-        //   required: value.required == "Yes" ? 1 : 0,
-        //   unique: value.unique == "Yes" ? 1 : 0,
-        //   charactermin: value.minLength.trim() || null,
-        //   charactermax: value.maxLength.trim() || null,
-        //   position: value.position.trim() || null,
-        //   format: value.format.trim() || null,
-        //   lov: value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
-        // };
+        const requestData = {
+          datasetid: dsId,
+          columnid: value.columnId.trim(),
+          variable: value.variableLabel.trim() || null,
+          name: value.columnName.trim() || null,
+          datatype: value.dataType.trim() || null,
+          primarykey: value.primary == "Yes" ? 1 : 0,
+          required: value.required == "Yes" ? 1 : 0,
+          unique: value.unique == "Yes" ? 1 : 0,
+          charactermin: value.minLength.trim() || null,
+          charactermax: value.maxLength.trim() || null,
+          position: value.position.trim() || null,
+          format: value.format.trim() || null,
+          lov: value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
+        };
 
-        // const config_json = JSON.stringify(requestData);
+        const config_json = JSON.stringify(requestData);
 
-        // const { rows: tempData } = await DB.executeQuery(selectQuery, [
-        //   value.columnId.trim(),
-        // ]);
-        // const oldData = tempData[0];
+        const { rows: tempData } = await DB.executeQuery(selectQuery, [
+          value.columnId.trim(),
+        ]);
+        const oldData = tempData[0];
 
-        // for (const key in requestData) {
-        //   if (`${requestData[key]}` != oldData[key]) {
-        //     if (oldData[key] != null) {
-        //       const historyVersion = await CommonController.addColumnHistory(
-        //         value.columnId.trim(),
-        //         dsId,
-        //         dfId,
-        //         dpId,
-        //         userId,
-        //         config_json,
-        //         key,
-        //         oldData[key],
-        //         `${requestData[key]}`
-        //       );
-        //       if (!historyVersion) throw new Error("History not updated");
-        //     }
-        //   }
-        // }
+        for (const key in requestData) {
+          if (`${requestData[key]}` != oldData[key]) {
+            if (oldData[key] != null) {
+              const historyVersion = await CommonController.addColumnHistory(
+                value.columnId.trim(),
+                dsId,
+                dfId,
+                dpId,
+                userId,
+                config_json,
+                key,
+                oldData[key],
+                `${requestData[key]}`
+              );
+              if (!historyVersion) throw new Error("History not updated");
+            }
+          }
+        }
       }
       return apiResponse.successResponseWithData(
         res,
@@ -178,9 +188,16 @@ exports.updateColumns = async (req, res) => {
 
 exports.deleteColumns = async (req, res) => {
   try {
-    const { columnId, dsId, dfId, dpId, userId } = req.body;
+    const { columnId, dsId, dfId, dpId, isUpdateQuery, nQuery, userId } =
+      req.body;
+
     Logger.info({ message: "deleteColumns" });
     const updateQuery = `update ${schemaName}.columndefinition set del_flg = 1 where columnid = $1`;
+
+    if (isUpdateQuery) {
+      const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=Now() where datasetid=$1`;
+      await DB.executeQuery(update, [dsId, nQuery]);
+    }
 
     DB.executeQuery(updateQuery, [columnId]).then(async (response) => {
       const datasetColumns = response.rows || null;

@@ -21,7 +21,7 @@ async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
   return result;
 }
 
-async function saveSQLDataset(req, res, values, dpId, userId, dfId) {
+async function saveSQLDataset(res, values, dpId, userId, dfId) {
   try {
     Logger.info({ message: "create SQL Dataset" });
     const datasetId = helper.generateUniqueID();
@@ -88,7 +88,6 @@ async function saveSQLDataset(req, res, values, dpId, userId, dfId) {
     );
   } catch (err) {
     //throw error in json response with status 500.
-    console.log(err, "err");
     Logger.error("catch :storeDataset");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
@@ -113,7 +112,7 @@ exports.saveDatasetData = async (req, res) => {
     }
 
     if (values.locationType.toLowerCase() === "jdbc") {
-      return saveSQLDataset(req, res, values, dpId, userId, dfId);
+      return saveSQLDataset(res, values, dpId, userId, dfId);
     }
 
     const datasetId = helper.generateUniqueID();
@@ -198,15 +197,7 @@ exports.saveDatasetData = async (req, res) => {
   }
 };
 
-async function updateSQLDataset(
-  req,
-  res,
-  values,
-  dfId,
-  userId,
-  dpId,
-  datasetid
-) {
+async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
   try {
     Logger.info({ message: "update SQL Dataset" });
 
@@ -309,7 +300,7 @@ exports.updateDatasetData = async (req, res) => {
     }
 
     if (values.locationType.toLowerCase() === "jdbc") {
-      return updateSQLDataset(req, res, values, dfId, userId, dpId, datasetid);
+      return updateSQLDataset(res, values, dfId, userId, dpId, datasetid);
     }
 
     var requestData = {

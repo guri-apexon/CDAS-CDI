@@ -63,9 +63,9 @@ const DataSetsFormBase = (props) => {
     dispatch(getPreviewSQL(formValues.sQLQuery));
   };
 
-  useEffect(() => {
-    dispatch(getSQLColumns(formValues.tableName));
-  }, [formValues.tableName]);
+  // useEffect(() => {
+  //   dispatch(getSQLColumns(formValues.tableName));
+  // }, [formValues.tableName]);
 
   useEffect(() => {
     if (formValues && ["Yes", "No"].includes(formValues)) {
