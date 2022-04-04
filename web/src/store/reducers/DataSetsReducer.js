@@ -123,7 +123,7 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
 
       case UPDATE_DS_STATUS:
-        newState.isDatasetCreated = action.isDatasetCreated;
+        newState.isDatasetCreated = action.status;
         break;
 
       case STORE_DATASET_SUCCESS:
@@ -269,7 +269,7 @@ const DataFlowReducer = (state = initialState, action) =>
           customsql_yn,
           customsql,
           offsetcolumn,
-          offsetvalues,
+          offset_val,
           tbl_nm,
         } = datasetDetail;
         if (type) {
@@ -300,9 +300,9 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL.sQLQuery = customsql;
           newState.formDataSQL.offsetColumn = offsetcolumn;
           newState.formDataSQL.tableName = tbl_nm;
-          newState.formDataSQL.filterCondition = offsetvalues;
-          newState.formData.dataType =
-            incremental === "Y" ? "Incremental" : "Cumulative";
+          newState.formDataSQL.filterCondition = offset_val;
+          newState.formDataSQL.dataType =
+            incremental === "N" ? "Cumulative" : "Incremental";
         }
         newState.selectedDataset = action.datasetDetail;
         break;
