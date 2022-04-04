@@ -71,11 +71,11 @@ const DataSetsFormBase = (props) => {
     if (formValues && ["Yes", "No"].includes(formValues)) {
       onChange(formValues);
     }
-    if (formValues.customSQLQuery === "No") {
+    if (formValues.isCustomSQL === "No") {
       dispatch(getSQLTables("test"));
       setShowPreview(false);
     }
-  }, [formValues.customSQLQuery]);
+  }, [formValues.isCustomSQL]);
 
   useEffect(() => {}, [showPreview]);
 
@@ -170,8 +170,8 @@ const DataSetsFormBase = (props) => {
             </Grid>
           </Grid>
           <ReduxFormSelect
-            name="customSQLQuery"
-            id="customSQLQuery"
+            name="isCustomSQL"
+            id="isCustomSQL"
             size="small"
             label="Custom SQL Query"
             required
@@ -182,7 +182,7 @@ const DataSetsFormBase = (props) => {
               <MenuItem value={type}>{type}</MenuItem>
             ))}
           </ReduxFormSelect>
-          {formValues.customSQLQuery === "Yes" && (
+          {formValues.isCustomSQL === "Yes" && (
             <div style={{ display: "flex", alignItems: "flex-end" }}>
               <ReduxFormTextField
                 fullWidth
@@ -205,9 +205,9 @@ const DataSetsFormBase = (props) => {
               </Button>
             </div>
           )}
-          {formValues.customSQLQuery === "No" && (
+          {formValues.isCustomSQL === "No" && (
             <>
-              <ReduxFormSelect
+              {/* <ReduxFormSelect
                 name="tableName"
                 id="tableName"
                 label="Table Name"
@@ -219,7 +219,18 @@ const DataSetsFormBase = (props) => {
                 {sqlTables?.map((e) => (
                   <MenuItem value={e.tableName}>{e.tableName}</MenuItem>
                 ))}
-              </ReduxFormSelect>
+              </ReduxFormSelect> */}
+              <ReduxFormTextField
+                fullWidth
+                name="tableName"
+                id="tableName"
+                style={{ width: "70%", display: "flex" }}
+                size="small"
+                minHeight={32}
+                singleline
+                inputProps={{ maxLength: 255 }}
+                label="Table Name"
+              />
               <ReduxFormTextField
                 fullWidth
                 name="filterCondition"
@@ -243,20 +254,29 @@ const DataSetsFormBase = (props) => {
                 <Radio value="Incremental" label="Incremental" />
               </ReduxFormRadioGroup>
               {formValues.dataType === "Incremental" && (
-                <ReduxFormMultiSelect
+                // <ReduxFormMultiSelect
+                //   name="offsetColumn"
+                //   id="offsetColumn"
+                //   label="Offset Column"
+                //   size="small"
+                //   canDeselect={true}
+                //   disabled={prodLock}
+                // >
+                //   {sqlColumns?.map((e) => (
+                //     <MenuItem value={e.columnName}>{e.columnName}</MenuItem>
+                //   ))}
+                // </ReduxFormMultiSelect>
+                <ReduxFormTextField
+                  fullWidth
                   name="offsetColumn"
                   id="offsetColumn"
-                  label="Offset Column"
+                  style={{ width: "70%", display: "flex" }}
                   size="small"
-                  canDeselect={true}
-                  disabled={prodLock}
-                  // eslint-disable-next-line react/jsx-no-bind
-                  // onChange={onColumnChange}
-                >
-                  {sqlColumns?.map((e) => (
-                    <MenuItem value={e.columnName}>{e.columnName}</MenuItem>
-                  ))}
-                </ReduxFormMultiSelect>
+                  minHeight={32}
+                  singleline
+                  inputProps={{ maxLength: 255 }}
+                  label="Offset Column"
+                />
               )}
             </>
           )}
@@ -292,20 +312,16 @@ const ReduxForm = compose(
 const selector = formValueSelector("DataSetsFormSQL");
 const DataSetsFormSQL = connect((state) => ({
   initialValues: state.dataSets.formDataSQL, // pull initial values from account reducer
+  enableReinitialize: true,
   formValues: selector(
     state,
     "active",
-    "customSQLQuery",
+    "isCustomSQL",
     "sQLQuery",
     "tableName",
     "dataType",
     "offsetColumn"
   ),
-  defaultDelimiter: state.dataSets.defaultDelimiter,
-  defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
-  defaultQuote: state.dataSets.defaultQuote,
-  defaultHeaderRowNumber: state.dataSets.defaultHeaderRowNumber,
-  defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
   datakind: state.dataSets.datakind?.records,
   sqlTables: state.dataSets.sqlTables,
   sqlColumns: state.dataSets.sqlColumns,

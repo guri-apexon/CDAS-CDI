@@ -3,7 +3,7 @@
 /* eslint-disable no-script-url */
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
 import Banner from "apollo-react/components/Banner";
@@ -115,9 +115,15 @@ const Dataset = () => {
     formDataSQL,
   } = dataSets;
   const { prot_id: studyId } = selectedCard;
-  const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
+  const {
+    dataFlowdetail,
+    dsProdLock,
+    dsTestLock,
+    dsTestProdLock,
+    isDatasetCreation,
+  } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
-  const { locationType: newLT, customSQLQuery } = selectedDataset;
+  const { locationType: newLT, isCustomSQL } = selectedDataset;
   const userInfo = getUserInfo();
 
   const useStyles = makeStyles(styles);
@@ -181,14 +187,14 @@ const Dataset = () => {
 
   useEffect(() => {
     if (newLT === "JDBC") {
-      if (customSQLQuery === "No") {
+      if (isCustomSQL === "No") {
         setColumnsActive(true);
       }
     }
-    if (formDataSQL?.customSQLQuery === "No") {
+    if (formDataSQL?.isCustomSQL === "No") {
       setColumnsActive(true);
     }
-  }, [newLT, customSQLQuery, formDataSQL]);
+  }, [newLT, isCustomSQL, formDataSQL]);
 
   const goToDataflow = () => {
     if (dfId) {
@@ -348,12 +354,12 @@ const Dataset = () => {
             <div style={{ padding: 20 }}>
               {value === 0 && (
                 <>
-                  {console.log("ltype", locationType)}
                   {isSftp(locationType) ? (
                     <DataSetsForm
                       loading={loading}
                       onSubmit={onSubmit}
                       prodLock={dsProdLock}
+                      isDatasetCreation={isDatasetCreation}
                     />
                   ) : (
                     <DataSetsFormSQL
@@ -361,6 +367,7 @@ const Dataset = () => {
                       prodLock={dsProdLock}
                       testLock={dsTestLock}
                       testProdLock={dsTestProdLock}
+                      isDatasetCreation={isDatasetCreation}
                     />
                   )}
                 </>

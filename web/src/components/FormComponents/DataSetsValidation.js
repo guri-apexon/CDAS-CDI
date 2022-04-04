@@ -23,7 +23,7 @@ const dataSetsValidation = ({
   delimiter,
   headerRowNumber,
   footerRowNumber,
-  customSQLQuery,
+  isCustomSQL,
   sQLQuery,
   filterCondition,
 }) =>
@@ -46,7 +46,7 @@ const dataSetsValidation = ({
       checkRequired(delimiter) && fileType?.toLowerCase() === "delimited"
         ? "Required"
         : "",
-    customSQLQuery: checkRequired(customSQLQuery),
+    isCustomSQL: checkRequired(isCustomSQL),
     sQLQuery: checkValidQuery(sQLQuery),
     filterCondition: checkfilterCondition(filterCondition),
   });
