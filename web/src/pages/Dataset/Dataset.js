@@ -3,7 +3,7 @@
 /* eslint-disable no-script-url */
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
 import Banner from "apollo-react/components/Banner";
@@ -27,6 +27,7 @@ import {
   resetFTP,
   resetJDBC,
 } from "../../store/actions/DataSetsAction";
+import { updatePanel } from "../../store/actions/DataPackageAction";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
@@ -35,6 +36,7 @@ import VLCTab from "./VLCTab";
 import { getUserInfo, isSftp } from "../../utils";
 
 const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
+const userInfo = getUserInfo();
 
 const styles = {
   rightPanel: {
@@ -115,10 +117,15 @@ const Dataset = () => {
     formDataSQL,
   } = dataSets;
   const { prot_id: studyId } = selectedCard;
-  const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
+  const {
+    dataFlowdetail,
+    dsProdLock,
+    dsTestLock,
+    dsTestProdLock,
+    isDatasetCreation,
+  } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
-  const { locationType: newLT, customSQLQuery } = selectedDataset;
-  const userInfo = getUserInfo();
+  const { locationType: newLT, isCustomSQL } = selectedDataset;
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -160,15 +167,16 @@ const Dataset = () => {
   }, [datasetid]);
 
   useEffect(() => {
+    if (isDatasetCreated && isDatasetCreation) {
+      messageContext.showSuccessMessage("Dataset Created Successfully");
+      dispatch(updatePanel());
+    }
     if (isDatasetCreated) {
       if (isSftp(loctyp)) {
-        messageContext.showSuccessMessage("Dataset Created Successfully");
         setValue(1);
-      } else {
-        messageContext.showSuccessMessage("Dataset Created Successfully");
       }
     }
-  }, [isDatasetCreated, loctyp]);
+  }, [isDatasetCreated, isDatasetCreation, loctyp]);
 
   useEffect(() => {
     if (loctyp) {
@@ -181,14 +189,14 @@ const Dataset = () => {
 
   useEffect(() => {
     if (newLT === "JDBC") {
-      if (customSQLQuery === "No") {
+      if (isCustomSQL === "No") {
         setColumnsActive(true);
       }
     }
-    if (formDataSQL?.customSQLQuery === "No") {
+    if (formDataSQL?.isCustomSQL === "No") {
       setColumnsActive(true);
     }
-  }, [newLT, customSQLQuery, formDataSQL]);
+  }, [newLT, isCustomSQL, formDataSQL]);
 
   const goToDataflow = () => {
     if (dfId) {
@@ -261,10 +269,10 @@ const Dataset = () => {
   const getLeftPanel = React.useMemo(
     () => (
       <>
-        <LeftPanel dataflowSource={dataFlowdetail} />
+        <LeftPanel />
       </>
     ),
-    [dataFlowdetail]
+    []
   );
 
   return (
@@ -348,7 +356,6 @@ const Dataset = () => {
             <div style={{ padding: 20 }}>
               {value === 0 && (
                 <>
-                  {console.log("ltype", locationType)}
                   {isSftp(locationType) ? (
                     <DataSetsForm
                       loading={loading}

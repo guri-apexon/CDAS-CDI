@@ -4,6 +4,7 @@ import {
   PACKAGES_LIST,
   REDIRECT_TO_DATASET,
   UPDATE_DATA_PACKAGE,
+  UPDATE_LEFT_PANEL,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -51,5 +52,11 @@ export const redirectToDataSet = (dfId, dfName, dpId, dpName, dsId, dsName) => {
     dpName,
     dsId,
     dsName,
+  };
+};
+
+export const updatePanel = () => {
+  return {
+    type: UPDATE_LEFT_PANEL,
   };
 };

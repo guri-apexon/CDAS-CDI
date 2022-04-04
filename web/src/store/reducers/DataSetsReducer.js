@@ -39,6 +39,7 @@ import {
   FETCH_PREVIEW_SQL_FAILURE,
   RESET_FTP_FORM,
   RESET_JDBC_FORM,
+  UPDATE_DS_STATUS,
 } from "../../constants";
 
 const defaultData = {
@@ -59,7 +60,7 @@ const defaultData = {
 const defaultDataSQL = {
   locationType: "JDBC",
   active: true,
-  customSQLQuery: "Yes",
+  isCustomSQL: "Yes",
   dataType: "Cumulative",
 };
 
@@ -119,6 +120,10 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.formDataSQL = {
           ...defaultDataSQL,
         };
+        break;
+
+      case UPDATE_DS_STATUS:
+        newState.isDatasetCreated = action.isDatasetCreated;
         break;
 
       case STORE_DATASET_SUCCESS:
@@ -291,7 +296,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL.active = active === 1 ? true : false;
           newState.formData.clinicalDataType = [datakindid];
           newState.formDataSQL.datasetName = mnemonic;
-          newState.formDataSQL.customSQLQuery = customsql_yn;
+          newState.formDataSQL.isCustomSQL = customsql_yn;
           newState.formDataSQL.sQLQuery = customsql;
           newState.formDataSQL.offsetColumn = offsetcolumn;
           newState.formDataSQL.tableName = tbl_nm;
