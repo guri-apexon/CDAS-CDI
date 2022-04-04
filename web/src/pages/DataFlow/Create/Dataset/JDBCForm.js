@@ -182,6 +182,7 @@ const JDBCForm = forwardRef((props, ref) => {
       tableName: tableName?.length ? tableName[0] : "",
       offsetColumn: offsetColumn?.length ? offsetColumn[0] : "",
       dfTestFlag,
+      conditionalExpression: filterCondition || "",
     };
     onSubmit(data);
   };
