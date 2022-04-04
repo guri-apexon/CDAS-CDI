@@ -113,12 +113,12 @@ export const editableSelectCell =
 
     // eslint-disable-next-line consistent-return
     const checkDisabled = () => {
-      if (row.locationType === "jdbc") {
+      if (!isSftp(row.locationType)) {
         if (row.dsTestLock || row.dsProdLock) {
           return true;
         }
       }
-      if (row.locationType === "sftp") {
+      if (isSftp(row.locationType)) {
         if (row.dsProdLock) {
           return true;
         }
