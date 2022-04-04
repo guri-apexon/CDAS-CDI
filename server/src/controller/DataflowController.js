@@ -341,6 +341,18 @@ exports.createDataflow = async (req, res) => {
               } else {
                 dsPasswordStatus = "No";
               }
+
+              let sqlQuery = "";
+              if (obj.customQuery === "No") {
+                if (values.filterCondition) {
+                  sqlQuery = `Select from ${obj.tableName} ${values.conditionalExpression}`;
+                } else {
+                  sqlQuery = `Select from ${obj.tableName} where 1=1`;
+                }
+              } else {
+                sqlQuery = values.customSql;
+              }
+
               let DSBody = [
                 dsUid,
                 dpUid,
@@ -358,7 +370,7 @@ exports.createDataflow = async (req, res) => {
                 obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
                 obj.headerRowNumber || 0,
                 obj.footerRowNumber || 0,
-                obj.customSql || null,
+                sqlQuery || null,
                 obj.customQuery || null,
                 obj.tableName || null,
                 externalID || null,
