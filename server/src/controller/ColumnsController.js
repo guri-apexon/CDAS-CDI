@@ -80,9 +80,12 @@ exports.saveDatasetColumns = async (req, res) => {
         );
       }
 
-      return apiResponse.successResponse(
+      const datasetColumns = values;
+
+      return apiResponse.successResponseWithData(
         res,
-        "Column Defination created Successfully"
+        "Column Defination created Successfully",
+        datasetColumns
       );
     }
 
@@ -109,7 +112,6 @@ exports.updateColumns = async (req, res) => {
     const selectQuery = `select datasetid,columnid, variable, name, datatype, primarykey, required, unique, charactermin, charactermax, position, format, lov from ${schemaName}.columndefinition where columnid=$1`;
 
     if (values && values.length > 0) {
-      ResponseBody.column_definition = [];
       for (let value of values) {
         const body = [
           value.dbColumnId,
@@ -172,10 +174,12 @@ exports.updateColumns = async (req, res) => {
           }
         }
       }
+
+      const datasetColumns = values;
       return apiResponse.successResponseWithData(
         res,
         "Operation success",
-        ResponseBody
+        datasetColumns
       );
     }
     return apiResponse.ErrorResponse(res, "Something went wrong");
