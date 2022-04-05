@@ -105,7 +105,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       fullWidth
       value={row[key]}
       inputProps={{
-        maxLength: row.fileType === "SAS" && key === "columnName" ? 32 : null,
+        maxLength: row.fileType === "SAS" ? 32 : null,
       }}
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
