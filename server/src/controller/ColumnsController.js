@@ -40,7 +40,7 @@ exports.saveDatasetColumns = async (req, res) => {
       await DB.executeQuery(update, [dsId, nQuery]);
     }
 
-    const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, "name", "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable, del_flg, insrt_tm, updt_tm)
+    const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, "name", "datatype", primarykey, required, "unique", charactermin, charactermax, "position", format, lov, variable, del_flg, insrt_tm, updt_tm)
      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, Now(), Now());`;
 
     Logger.info({ message: "storeDatasetColumns" });
@@ -53,14 +53,14 @@ exports.saveDatasetColumns = async (req, res) => {
           columnId,
           value.columnName.trim() || null,
           value.dataType.trim() || null,
-          value.primary === "Yes" ? 1 : 0,
+          value.primaryKey === "Yes" ? 1 : 0,
           value.required === "Yes" ? 1 : 0,
+          value.unique === "Yes" ? 1 : 0,
           value.minLength || 0,
           value.maxLength || 0,
           value.position || 0,
           value.format || null,
           value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
-          value.unique === "Yes" ? 1 : 0,
           value.variableLabel.trim() || null,
           0,
         ];
@@ -117,7 +117,7 @@ exports.updateColumns = async (req, res) => {
           dsId,
           value.columnName.trim() || null,
           value.dataType.trim(),
-          value.primary === "Yes" ? 1 : 0,
+          value.primaryKey === "Yes" ? 1 : 0,
           value.required === "Yes" ? 1 : 0,
           value.unique === "Yes" ? 1 : 0,
           value.minLength,
@@ -136,7 +136,7 @@ exports.updateColumns = async (req, res) => {
           variable: value.variableLabel.trim() || null,
           name: value.columnName.trim() || null,
           datatype: value.dataType.trim() || null,
-          primarykey: value.primary == "Yes" ? 1 : 0,
+          primarykey: value.primaryKey == "Yes" ? 1 : 0,
           required: value.required == "Yes" ? 1 : 0,
           unique: value.unique == "Yes" ? 1 : 0,
           charactermin: value.minLength.trim() || null,

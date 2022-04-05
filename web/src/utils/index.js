@@ -381,7 +381,13 @@ export const checkHeaders = (data) => {
 
 export const formatData = (incomingData, protNo) => {
   const data = incomingData.slice(1); // removing header
-  const isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
+  let isAllDataMatch = false;
+  if (data.length === 1) {
+    isAllDataMatch = data[0][0] === protNo;
+    console.log("In single line", data[0][0]);
+  } else {
+    isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
+  }
   const setYN = (d) => (d === "Y" ? "Yes" : "No");
   if (isAllDataMatch) {
     const newData =

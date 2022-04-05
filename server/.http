@@ -278,7 +278,7 @@ content-type: application/json
             "position": "",
             "format": "testformat",
             "dataType": "Alphanumeric",
-            "primary": "No",
+            "primaryKey": "No",
             "unique": "No",
             "required": "No",
             "minLength": "1",
@@ -292,7 +292,9 @@ content-type: application/json
     "dsId": "abbbd1d9-e95b-42",
     "dfId": "a0A0E000002o5kwUAA",
     "dpId": "a0C0E000004Mvr0UAC",
-    "userId": "u1105372"
+    "userId": "u1105372",
+    "isUpdateQuery": false,
+    "nQuery": ""
 }
 
 ### Update Column Defination 

@@ -39,8 +39,7 @@ export default function DSColumnTable({
     customsql_yn: customQuery,
     tbl_nm: tableName,
   } = selectedDataset;
-  const { dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
-
+  const { dsProdLock, dsTestLock } = dataFlow;
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     uniqueId: `u${index}`,
     columnId: index + 1,
@@ -49,7 +48,7 @@ export default function DSColumnTable({
     position: "",
     format: "",
     dataType: "",
-    primary: "No",
+    primaryKey: "No",
     unique: "No",
     required: "No",
     minLength: "",
@@ -85,8 +84,9 @@ export default function DSColumnTable({
       setSelectedRows([...initRows]);
       setEditedRows(initialRows);
     } else {
+      const forImport = formattedData.map((e) => e.uniqueId);
+      setSelectedRows(forImport);
       setEditedRows(formattedData);
-      setRows(formattedData);
     }
   }, []);
 
@@ -132,6 +132,13 @@ export default function DSColumnTable({
       });
     }
   };
+
+  // const handleNoHeaders = () => {
+  //   messageContext.showErrorMessage(
+  //     `Import is not available for files with no header row.`
+  //   );
+  //   handleDelete();
+  // };
 
   const inputFile = useRef(null);
 
