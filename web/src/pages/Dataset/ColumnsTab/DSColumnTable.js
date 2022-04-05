@@ -183,7 +183,7 @@ export default function DSColumnTable({
         rw?.position?.toLowerCase().includes(value) ||
         rw?.format?.toLowerCase().includes(value) ||
         rw?.dataType?.toLowerCase().includes(value) ||
-        rw?.primary?.toLowerCase().includes(value) ||
+        rw?.primaryKey?.toLowerCase().includes(value) ||
         rw?.unique?.toLowerCase().includes(value) ||
         rw?.required?.toLowerCase().includes(value) ||
         rw?.minLength?.toString().includes(value) ||
