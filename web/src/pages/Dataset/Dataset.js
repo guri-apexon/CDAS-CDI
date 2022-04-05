@@ -26,14 +26,15 @@ import {
   getDatasetColumns,
   resetFTP,
   resetJDBC,
+  getSQLColumns,
 } from "../../store/actions/DataSetsAction";
 import { updatePanel } from "../../store/actions/DataPackageAction";
+import { getUserInfo, isSftp } from "../../utils";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
-import { getUserInfo, isSftp } from "../../utils";
 
 const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
 const userInfo = getUserInfo();
@@ -125,7 +126,13 @@ const Dataset = () => {
     isDatasetCreation,
   } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
-  const { locationType: newLT, isCustomSQL } = selectedDataset;
+  const {
+    locationType: newLT,
+    tbl_nm: tName,
+    tableName,
+    isCustomSQL,
+    customsql_yn: customQuery,
+  } = selectedDataset;
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -171,9 +178,15 @@ const Dataset = () => {
       messageContext.showSuccessMessage("Dataset Created Successfully");
       dispatch(updatePanel());
     }
+
     if (isDatasetCreated) {
       if (isSftp(loctyp)) {
         setValue(1);
+      }
+      if (!isSftp(loctyp)) {
+        if (customQuery || isCustomSQL) {
+          dispatch(getSQLColumns(tName || tableName));
+        }
       }
     }
   }, [isDatasetCreated, isDatasetCreation, loctyp]);
