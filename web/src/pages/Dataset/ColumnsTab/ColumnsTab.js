@@ -180,15 +180,16 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
+    } else if (!isSftp(locationType)) {
+      if (customQuery || isCustomSQL) {
+        dispatch(getSQLColumns(tName || tableName));
+      }
     }
-  }, [datasetColumns]);
+  }, [datasetColumns, locationType]);
 
   useEffect(() => {
     if (!isSftp(locationType)) {
       setShowColumns(true);
-      if (customQuery || isCustomSQL) {
-        dispatch(getSQLColumns(tName || tableName));
-      }
     }
   }, [locationType]);
 
