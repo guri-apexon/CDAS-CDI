@@ -15,7 +15,6 @@ import DSColumnTable from "./DSColumnTable";
 
 import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../utils/index";
-import { getSQLColumns } from "../../../store/actions/DataSetsAction";
 
 const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const dispatch = useDispatch();
@@ -24,13 +23,8 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
-  const { selectedDataset, datasetColumns, sqlColumns } = dataSets;
-  const {
-    tbl_nm: tName,
-    tableName,
-    customsql_yn: customQuery,
-    isCustomSQL,
-  } = selectedDataset;
+  const { datasetColumns, sqlColumns } = dataSets;
+
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
   const [showColumns, setShowColumns] = useState(false);
@@ -131,7 +125,6 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
           })
         : [];
     setFormattedData([...newData]);
-    setSelectedMethod("fromDB");
   };
 
   const handleDelete = () => {
@@ -170,22 +163,19 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
-    } else if (!isSftp(locationType)) {
-      if (customQuery || isCustomSQL) {
-        dispatch(getSQLColumns(tName || tableName));
-      }
     }
-  }, [datasetColumns, locationType]);
+    if (sqlColumns.length > 0) {
+      setShowColumns(true);
+      formatJDBCColumns(sqlColumns);
+      setSelectedMethod("fromDB");
+    }
+  }, [datasetColumns, sqlColumns]);
 
   useEffect(() => {
     if (!isSftp(locationType)) {
       setShowColumns(true);
     }
   }, [locationType]);
-
-  useEffect(() => {
-    formatJDBCColumns(sqlColumns);
-  }, [sqlColumns]);
 
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);

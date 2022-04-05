@@ -57,6 +57,7 @@ export default function DSColumnTable({
     isInitLoad: true,
     isHavingError: false,
     isHavingColumnName: false,
+    isHavingDataType: false,
   }));
 
   const [rows, setRows] = useState([]);
@@ -85,8 +86,10 @@ export default function DSColumnTable({
       setEditedRows(initialRows);
     } else {
       const forImport = formattedData.map((e) => e.uniqueId);
+      setRows(formattedData);
       setSelectedRows(forImport);
       setEditedRows(formattedData);
+      setDisableSaveAll(true);
     }
   }, []);
 
@@ -97,8 +100,12 @@ export default function DSColumnTable({
   }, [rows]);
 
   useEffect(() => {
-    const allColumns = editedRows.map((e) => e.isHavingColumnName);
-    if (allColumns.every((e) => e === true)) {
+    const allColumnNames = editedRows.map((e) => e.isHavingColumnName);
+    const allDataTypes = editedRows.map((e) => e.isHavingDataType);
+    if (
+      allColumnNames.every((e) => e === true) &&
+      allDataTypes.every((e) => e === true)
+    ) {
       setDisableSaveAll(false);
     } else {
       setDisableSaveAll(true);
@@ -182,7 +189,7 @@ export default function DSColumnTable({
         rw?.position?.toLowerCase().includes(value) ||
         rw?.format?.toLowerCase().includes(value) ||
         rw?.dataType?.toLowerCase().includes(value) ||
-        rw?.primary?.toLowerCase().includes(value) ||
+        rw?.primaryKey?.toLowerCase().includes(value) ||
         rw?.unique?.toLowerCase().includes(value) ||
         rw?.required?.toLowerCase().includes(value) ||
         rw?.minLength?.toString().includes(value) ||
@@ -214,6 +221,7 @@ export default function DSColumnTable({
           isInitLoad: true,
           isHavingError: false,
           isHavingColumnName: false,
+          isHavingDataType: false,
         },
       ];
       setSelectedRows([...selectedRows, `u${rows.length}`]);
@@ -252,6 +260,7 @@ export default function DSColumnTable({
         isInitLoad: true,
         isHavingError: false,
         isHavingColumnName: false,
+        isHavingDataType: false,
       }));
       const moreRows = multiRows.map((e) => e.uniqueId);
       setSelectedRows([...moreRows]);
@@ -519,11 +528,24 @@ export default function DSColumnTable({
                 isHavingColumnName: true,
               };
             }
-            // showColumnNameRequried();
             return {
               ...row,
               [key]: value,
               isHavingColumnName: false,
+            };
+          }
+          if (key === "dataType") {
+            if (value.length >= 1) {
+              return {
+                ...row,
+                [key]: value,
+                isHavingDataType: true,
+              };
+            }
+            return {
+              ...row,
+              [key]: value,
+              isHavingDataType: false,
             };
           }
           if (row.isInitLoad) {

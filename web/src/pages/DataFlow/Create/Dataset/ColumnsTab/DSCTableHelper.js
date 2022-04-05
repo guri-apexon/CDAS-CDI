@@ -16,12 +16,17 @@ import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Tooltip from "apollo-react/components/Tooltip";
 import {
   createStringSearchFilter,
+  createSelectFilterComponent,
   compareNumbers,
   compareStrings,
 } from "apollo-react/components/Table";
 
 import { ReactComponent as Plus } from "../../../../../components/Icons/roundPlusBlue.svg";
-import { TextFieldFilter } from "../../../../../utils/index";
+import {
+  TextFieldFilter,
+  createStringArraySearchFilter,
+  isSftp,
+} from "../../../../../utils/index";
 
 import {
   checkNumeric,
@@ -50,7 +55,62 @@ const fieldStylesNo = {
 export const makeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText = checkRequiredValue(row[key], key, row.primaryKey);
+    const errorText = checkRequiredValue(row[key], key, row.primary);
+    return row.editMode ? (
+      <Select
+        size="small"
+        fullWidth
+        canDeselect={false}
+        value={row[key]}
+        onChange={(e) =>
+          row.editRow(row.uniqueId, key, e.target.value, errorText)
+        }
+        {...fieldStyles}
+      >
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </Select>
+    ) : (
+      row[key]
+    );
+  };
+
+export const DataTypeEditableSelectCell =
+  (options) =>
+  ({ row, column: { accessor: key } }) => {
+    const errorText = checkRequired(row[key], key);
+    return row.editMode ? (
+      <Select
+        size="small"
+        fullWidth
+        canDeselect={false}
+        value={row[key]}
+        error={!row.isInitLoad && errorText ? true : false}
+        helperText={!row.isInitLoad ? errorText : ""}
+        onChange={(e) =>
+          row.editRow(row.uniqueId, key, e.target.value, errorText)
+        }
+        {...fieldStyles}
+      >
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </Select>
+    ) : (
+      row[key]
+    );
+  };
+
+export const editableSelectCell =
+  (options) =>
+  ({ row, column: { accessor: key } }) => {
+    const errorText = checkRequiredValue(row[key], key, row.primary);
+
     return row.editMode ? (
       <Select
         size="small"
@@ -221,6 +281,7 @@ export const columns = [
     header: "Variable Label",
     accessor: "variableLabel",
     customCell: EditableCell,
+    sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("variableLabel"),
     filterComponent: TextFieldFilter,
   },
@@ -229,58 +290,95 @@ export const columns = [
     accessor: "columnName",
     customCell: ColumnNameCell,
     sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("columnName"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Position",
     accessor: "position",
     customCell: EditableCell,
+    sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("position"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Format",
     accessor: "format",
     customCell: FormatCell,
+    sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("format"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Data Type",
     accessor: "dataType",
-    customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
+    customCell: DataTypeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("dataType"),
+    filterComponent: createSelectFilterComponent(
+      ["Alphanumeric", "Numeric", "Date"],
+      {
+        size: "small",
+        multiple: true,
+      }
+    ),
   },
   {
     header: "Primary?",
-    accessor: "primaryKey",
-    customCell: makeEditableSelectCell(["Yes", "No"]),
+    accessor: "primary",
+    customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("primary"),
+    filterComponent: createSelectFilterComponent(["Yes", "No"], {
+      size: "small",
+      multiple: true,
+    }),
   },
   {
     header: "Unique?",
     accessor: "unique",
     customCell: makeEditableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("unique"),
+    filterComponent: createSelectFilterComponent(["Yes", "No"], {
+      size: "small",
+      multiple: true,
+    }),
   },
   {
     header: "Required?",
     accessor: "required",
-    customCell: makeEditableSelectCell(["Yes", "No"]),
+    customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("required"),
+    filterComponent: createSelectFilterComponent(["Yes", "No"], {
+      size: "small",
+      multiple: true,
+    }),
   },
   {
     header: "Min length",
     accessor: "minLength",
     customCell: NumericEditableCell,
     sortFunction: compareNumbers,
+    filterFunction: createStringSearchFilter("minLength"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Max length",
     accessor: "maxLength",
     customCell: NumericEditableCell,
     sortFunction: compareNumbers,
+    filterFunction: createStringSearchFilter("maxLength"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "List of values",
     accessor: "values",
     customCell: EditableCell,
     sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("values"),
+    filterComponent: TextFieldFilter,
   },
   {
     accessor: "action",
@@ -305,6 +403,8 @@ export const CustomHeader = ({
   cancelMulti,
   newRows,
   disableSaveAll,
+  toggleFilters,
+  changeHandler,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -325,16 +425,18 @@ export const CustomHeader = ({
       )}
       {!isMultiAdd && (
         <>
-          <Tooltip title={!isEditAll && "Add rows"} disableFocusListener>
-            <IconMenuButton
-              id="actions-1"
-              menuItems={addMenuItems}
-              size="small"
-              disabled={isEditAll}
-            >
-              <Plus />
-            </IconMenuButton>
-          </Tooltip>
+          {isSftp(locationType) && (
+            <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
+              <IconMenuButton
+                id="actions-1"
+                menuItems={addMenuItems}
+                size="small"
+                disabled={isEditAll}
+              >
+                <Plus />
+              </IconMenuButton>
+            </Tooltip>
+          )}
           <Tooltip title={!isEditAll && "Edit all"} disableFocusListener>
             <IconButton color="primary" size="small" disabled={isEditAll}>
               <Pencil onClick={onEditAll} />
@@ -345,7 +447,7 @@ export const CustomHeader = ({
       {isMultiAdd && (
         <>
           <TextField
-            placeholder="# of rows"
+            placeholder="# of columns"
             type="number"
             min="1"
             max="499"
@@ -366,13 +468,17 @@ export const CustomHeader = ({
           </Button>
         </>
       )}
-      {(locationType?.toLowerCase() === "sftp" ||
-        locationType?.toLowerCase() === "ftps") && (
+      {isSftp(locationType) && (
         <Tooltip
           title={!isEditAll && "Import dataset column settings"}
           disableFocusListener
         >
-          <IconButton color="primary" size="small" disabled={isEditAll}>
+          <IconButton
+            color="primary"
+            size="small"
+            disabled={isEditAll}
+            onClick={changeHandler}
+          >
             <Upload />
           </IconButton>
         </Tooltip>
@@ -396,6 +502,7 @@ export const CustomHeader = ({
         variant="secondary"
         icon={Filter}
         disabled={isEditAll}
+        onClick={toggleFilters}
       >
         Filter
       </Button>
