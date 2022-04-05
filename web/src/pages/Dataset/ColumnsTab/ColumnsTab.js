@@ -26,8 +26,14 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
-  const { selectedDataset, datasetColumns, sqlColumns } = dataSets;
-  const { tbl_nm: tableName, customsql_yn: customQuery } = selectedDataset;
+  const { selectedDataset, datasetColumns, sqlColumns, isDatasetCreated } =
+    dataSets;
+  const {
+    tbl_nm: tName,
+    tableName,
+    customsql_yn: customQuery,
+    isCustomSQL,
+  } = selectedDataset;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
   const [showColumns, setShowColumns] = useState(false);
@@ -174,15 +180,16 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
+    } else if (!isSftp(locationType)) {
+      if (customQuery || isCustomSQL) {
+        dispatch(getSQLColumns(tName || tableName));
+      }
     }
-  }, [datasetColumns]);
+  }, [datasetColumns, locationType]);
 
   useEffect(() => {
     if (!isSftp(locationType)) {
       setShowColumns(true);
-      if (customQuery) {
-        dispatch(getSQLColumns(tableName));
-      }
     }
   }, [locationType]);
 
