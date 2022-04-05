@@ -186,6 +186,9 @@ const Dataset = () => {
       if (!isSftp(loctyp)) {
         if (customQuery || isCustomSQL) {
           dispatch(getSQLColumns(tName || tableName));
+          setTimeout(() => {
+            setValue(1);
+          }, 500);
         }
       }
     }
