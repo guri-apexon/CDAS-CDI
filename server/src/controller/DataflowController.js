@@ -739,7 +739,6 @@ exports.hardDelete = async (req, res) => {
 
 exports.activateDataFlow = async (req, res) => {
   try {
-    const dataflowAuditlogId = createUniqueID();
     const { dataFlowId, userId, versionNo } = req.body;
     const curDate = new Date();
     const newVersion = versionNo + 1;
@@ -754,7 +753,7 @@ exports.activateDataFlow = async (req, res) => {
       // const q1 = `SELECT "version" FROM ${schemaName}.dataflow_version WHERE dataflowid=$1 ORDER BY created_on DESC LIMIT 1`;
       const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1`;
       const q3 = `INSERT INTO ${schemaName}.dataflow_audit_log
-      (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
+      (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
       VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
       const q4 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
       VALUES($1, $2, $3, $4)`;
@@ -763,7 +762,6 @@ exports.activateDataFlow = async (req, res) => {
       // const newVersion = currVersion + 1;
       const $q2 = await DB.executeQuery(q2, [dataFlowId]);
       const $q3 = await DB.executeQuery(q3, [
-        dataflowAuditlogId,
         dataFlowId,
         newVersion,
         curDate,
