@@ -85,6 +85,7 @@ export default function DSColumnTable({
       setEditedRows(initialRows);
     } else {
       const forImport = formattedData.map((e) => e.uniqueId);
+      setRows(formattedData);
       setSelectedRows(forImport);
       setEditedRows(formattedData);
     }
