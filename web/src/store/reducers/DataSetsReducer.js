@@ -161,6 +161,7 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.isColumnsConfigured =
           action.datasetColumns.length > 0 ? true : false;
         newState.error = null;
+        newState.sucessMsg = "Column Defination created Successfully";
         break;
       case STORE_DATASET_COLUMNS_FAILURE:
         newState.loading = false;
