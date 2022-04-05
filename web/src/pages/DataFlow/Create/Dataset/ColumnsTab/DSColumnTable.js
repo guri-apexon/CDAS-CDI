@@ -10,7 +10,7 @@ import Modal from "apollo-react/components/Modal";
 import { MessageContext } from "../../../../../components/Providers/MessageProvider";
 import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../../../utils/downloadData";
-import { createDatasetColumns } from "../../../../../store/actions/DataSetsAction";
+import { isSftp } from "../../../../../utils/index";
 
 export default function DSColumnTable({
   numberOfRows,
@@ -57,24 +57,23 @@ export default function DSColumnTable({
   const [isMultiAdd, setIsMultiAdd] = useState(false);
   const [newRows, setNewRows] = useState("");
   const [disableSaveAll, setDisableSaveAll] = useState(true);
+  const [moreColumns, setMoreColumns] = useState([...columns]);
   // const [isAdding, setIsAdding] = useState(true);
 
   useEffect(() => {
     const initRows = initialRows.map((e) => e.uniqueId);
+    const formatRows = formattedData.map((e) => e.uniqueId);
     if (dataOrigin === "fileUpload") {
-      // setRows([...formattedData]);
-      setSelectedRows([...initRows]);
+      setSelectedRows(formatRows);
       setEditedRows(formattedData);
-      // setIsAdding(false);
     } else if (dataOrigin === "fromDB") {
+      // setSelectedRows(formatRows);
       setRows([...formattedData]);
-      // setIsAdding(false);
     } else if (dataOrigin === "manually") {
       setSelectedRows([...initRows]);
       setEditedRows(initialRows);
-      // setIsAdding(true);
     }
-  }, [dataOrigin]);
+  }, []);
 
   useEffect(() => {
     if (rows.length) {
@@ -106,17 +105,68 @@ export default function DSColumnTable({
     setSelectedRow(row);
   };
 
-  const hideViewLOVs = () => {
-    setShowViewLOVs(false);
-    setIsEditLOVs(false);
-    setSelectedRow(null);
-  };
-
   const LinkCell = ({ row }) => {
     if (row.editMode) {
       return <></>;
     }
     return <Link onClick={() => handleViewLOV(row)}>View LOVs</Link>;
+  };
+
+  const columnsToAdd = [
+    {
+      header: "",
+      accessor: "uniqueId",
+      customCell: LinkCell,
+    },
+  ];
+
+  const allColumns = [
+    ...columns.map((column) => ({ ...column })).slice(0, -1),
+    ...columnsToAdd.map((column) => ({ ...column })),
+    columns.slice(-1)[0],
+  ];
+
+  useEffect(() => {
+    if (isSftp(locationType)) {
+      // if (headerrownumber > 0 || headerRowNumber > 0) {
+      //   const data = allColumns.map((e) => {
+      //     if (e.accessor === "position") {
+      //       e.hidden = true;
+      //     }
+      //     return e;
+      //   });
+      //   setMoreColumns(data);
+      // } else {
+      const data = allColumns.map((e) => {
+        if (e.accessor === "columnName") {
+          e.hidden = true;
+        }
+        return e;
+      });
+      setMoreColumns(data);
+      // }
+    } else {
+      const data = allColumns.map((e) => {
+        if (e.accessor === "position") {
+          e.hidden = true;
+        }
+        return e;
+      });
+      setMoreColumns(data);
+    }
+  }, []);
+
+  // const handleNoHeaders = () => {
+  //   messageContext.showErrorMessage(
+  //     `Import is not available for files with no header row.`
+  //   );
+  //   handleDelete();
+  // };
+
+  const hideViewLOVs = () => {
+    setShowViewLOVs(false);
+    setIsEditLOVs(false);
+    setSelectedRow(null);
   };
 
   const searchRows = (e) => {
@@ -138,7 +188,6 @@ export default function DSColumnTable({
         rw?.values?.toLowerCase().includes(value)
       );
     });
-    // console.log(filteredRowsTemp, "filteredRowsTemp");
     setFilteredRows([...filteredRowsTemp]);
   };
 
@@ -257,20 +306,6 @@ export default function DSColumnTable({
     },
   ];
 
-  const columnsToAdd = [
-    {
-      header: "",
-      accessor: "uniqueId",
-      customCell: LinkCell,
-    },
-  ];
-
-  const moreColumns = [
-    ...columns.map((column) => ({ ...column })).slice(0, -1),
-    ...columnsToAdd.map((column) => ({ ...column })),
-    columns.slice(-1)[0],
-  ];
-
   const onEditAll = () => {
     if (rows.length > 0) {
       const allRows = rows.map((e) => e.uniqueId);
@@ -302,11 +337,10 @@ export default function DSColumnTable({
         }
         return e;
       });
-    // console.log("save all edited, rows", editedRows, rows);
     setRows([...removeSpaces]);
     setSelectedRows([]);
     setEditedRows(rows);
-    console.log("datasetid", datasetid, rows);
+
     // dispatch(createDatasetColumns(rows, datasetid));
   };
 
@@ -318,7 +352,6 @@ export default function DSColumnTable({
   const onRowCancel = (uniqueId) => {
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
-    // console.log("row cancel", uniqueId, removeRow, removeEdited);
     setEditedRows(removeEdited);
     setSelectedRows([...removeRow]);
   };
@@ -370,7 +403,6 @@ export default function DSColumnTable({
   // };
 
   const editRow = (uniqueId, key, value, errorTxt) => {
-    // console.log(uniqueId, "ColumdId");
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
@@ -426,7 +458,6 @@ export default function DSColumnTable({
   }, [rows]);
 
   useEffect(() => {
-    console.log(filteredRows, "rows");
     if (previewSQL?.length) {
       addMulti(previewSQL);
     }
@@ -434,7 +465,6 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {/* {console.log(editMode, selectedRows, editedRows, rows)} */}
         <Table
           title="Dataset Column Settings"
           subtitle={`${

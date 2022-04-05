@@ -8,16 +8,14 @@ import FileUpload from "apollo-react/components/FileUpload";
 import Card from "apollo-react/components/Card";
 import Radio from "apollo-react/components/Radio";
 import Link from "apollo-react/components/Link";
-
 import Button from "apollo-react/components/Button";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
 
-import { getSQLColumns } from "../../../store/actions/DataSetsAction";
-
 import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../utils/index";
+import { getSQLColumns } from "../../../store/actions/DataSetsAction";
 
 const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const dispatch = useDispatch();
@@ -26,8 +24,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
-  const { selectedDataset, datasetColumns, sqlColumns, isDatasetCreated } =
-    dataSets;
+  const { selectedDataset, datasetColumns, sqlColumns } = dataSets;
   const {
     tbl_nm: tName,
     tableName,
@@ -42,8 +39,8 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const [formattedData, setFormattedData] = useState([]);
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
-  const numberOfRows = 1;
 
+  const numberOfRows = 1;
   const maxSize = 150000;
 
   const handleUpload = (selected) => {
@@ -92,7 +89,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               position: column.position || "",
               format: column.format || "",
               dataType: column.datatype || "",
-              primary: column.primarykey === 1 ? "Yes" : "No",
+              primaryKey: column.primarykey === 1 ? "Yes" : "No",
               unique: column.unique === 1 ? "Yes" : "No",
               required: column.required === 1 ? "Yes" : "No",
               minLength: column.charactermin || "",
@@ -143,13 +140,6 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
     setFormattedData([]);
     setIsImportReady(false);
   };
-
-  // const handleNoHeaders = () => {
-  //   messageContext.showErrorMessage(
-  //     `Import is not available for files with no header row.`
-  //   );
-  //   handleDelete();
-  // };
 
   useEffect(() => {
     if (importedData.length > 1) {

@@ -1,15 +1,12 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-nested-ternary */
 import React, { useState, useContext, useEffect, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import * as XLSX from "xlsx";
 import FileUpload from "apollo-react/components/FileUpload";
 import Card from "apollo-react/components/Card";
 import Radio from "apollo-react/components/Radio";
 import Link from "apollo-react/components/Link";
-// import { useHistory } from "react-router-dom";
-// import Pencil from "apollo-react-icons/Pencil";
-// import TextField from "apollo-react/components/TextField";
 import Button from "apollo-react/components/Button";
 import { MessageContext } from "../../../../../components/Providers/MessageProvider";
 import { allowedTypes } from "../../../../../constants";
@@ -20,6 +17,7 @@ import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 import { getSQLColumns } from "../../../../../store/actions/DataSetsAction";
 
 const ColumnsTab = ({ locationType }) => {
+  const dispatch = useDispatch();
   // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -27,12 +25,14 @@ const ColumnsTab = ({ locationType }) => {
   const { datasetColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
-  const [numberOfRows, setNumberOfRows] = useState(1);
   const [showColumns, setShowColumns] = useState(false);
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
   const [formattedData, setFormattedData] = useState([]);
+  const { selectedCard } = dashboard;
+  const { protocolnumber } = selectedCard;
 
+  const numberOfRows = 1;
   const maxSize = 150000;
 
   const handleUpload = (selected) => {
@@ -75,25 +75,56 @@ const ColumnsTab = ({ locationType }) => {
             const newObj = {
               columnId: i + 1,
               dbColumnId: column.columnid,
-              variableLabel: column.VARIABLE || "",
+              uniqueId: `u${i}`,
+              variableLabel: column.variable || "",
               columnName: column.name || "",
               position: column.position || "",
-              format: column.FORMAT || "",
+              format: column.format || "",
               dataType: column.datatype || "",
-              primaryKey: column.primaryKey === 1 ? "Yes" : "No",
-              unique: column.UNIQUE === 1 ? "Yes" : "No",
+              primaryKey: column.primarykey === 1 ? "Yes" : "No",
+              unique: column.unique === 1 ? "Yes" : "No",
               required: column.required === 1 ? "Yes" : "No",
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
               values: column.lov || "",
               isInitLoad: true,
               isHavingError: false,
+              isHavingColumnName: true,
             };
             return newObj;
           })
         : [];
     setFormattedData([...newData]);
   };
+
+  // const formatJDBCColumns = (arr) => {
+  //   const newData =
+  //     arr.length > 0
+  //       ? arr.map((column, i) => {
+  //           const newObj = {
+  //             columnId: i + 1,
+  //             dbColumnId: column.columnid || "",
+  //             uniqueId: `u${i}`,
+  //             variableLabel: column.varable || "",
+  //             columnName: column.columnName || "",
+  //             format: column.format || "",
+  //             dataType: column.dataType || "",
+  //             primary: column.primarykey === true ? "Yes" : "No",
+  //             unique: column.unique === true ? "Yes" : "No",
+  //             required: column.required === true ? "Yes" : "No",
+  //             minLength: column.charactermin || "",
+  //             maxLength: column.charactermax || "",
+  //             values: column.lov || "",
+  //             isInitLoad: true,
+  //             isHavingError: false,
+  //             isHavingColumnName: true,
+  //           };
+  //           return newObj;
+  //         })
+  //       : [];
+  //   setFormattedData([...newData]);
+  //   setSelectedMethod("fromDB");
+  // };
 
   const handleDelete = () => {
     setSelectedFile([]);
@@ -102,28 +133,21 @@ const ColumnsTab = ({ locationType }) => {
     setIsImportReady(false);
   };
 
-  // const handleNoHeaders = () => {
-  //   messageContext.showErrorMessage(
-  //     `Import is not available for files with no header row.`
-  //   );
-  //   handleDelete();
-  // };
-
   useEffect(() => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        const newData = formatData(
-          importedData,
-          dashboard?.selectedCard?.protocolnumber
-        );
+        const newData = formatData(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
-        newData.length > 1
-          ? (setFormattedData(newData), setIsImportReady(true))
-          : (messageContext.showErrorMessage(
-              `Protocol Number in file does not match protocol number ‘${dashboard?.selectedCard?.protocolnumber}’ for this data flow. Please make sure these match and try again`
-            ),
-            handleDelete());
+        if (newData.length > 1) {
+          setFormattedData(newData);
+          setIsImportReady(true);
+        } else {
+          messageContext.showErrorMessage(
+            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+          );
+          handleDelete();
+        }
       } else {
         messageContext.showErrorMessage(
           `The Selected File Does Not Match the Template`
@@ -151,6 +175,10 @@ const ColumnsTab = ({ locationType }) => {
   //   }
   // }, [locationType]);
 
+  // useEffect(() => {
+  //   formatJDBCColumns(sqlColumns);
+  // }, [sqlColumns]);
+
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
   };
@@ -159,7 +187,7 @@ const ColumnsTab = ({ locationType }) => {
     return (
       <>
         <DSColumnTable
-          numberOfRows={numberOfRows || 1}
+          numberOfRows={numberOfRows}
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}
@@ -207,17 +235,6 @@ const ColumnsTab = ({ locationType }) => {
                 onClick={handleChange}
                 checked={selectedMethod === "manually"}
               />
-              {/* <div className="center">
-                <Pencil />
-              </div> */}
-              {/* <TextField
-                label="Number of rows"
-                type="number"
-                max="500"
-                min="1"
-                onChange={(e) => setNumberOfRows(e.target.value)}
-                defaultValue={numberOfRows}
-              /> */}
             </Card>
           </div>
           <div style={{ display: "flex", justifyContent: "end" }}>
@@ -227,7 +244,7 @@ const ColumnsTab = ({ locationType }) => {
               onClick={() => setShowColumns(true)}
               disabled={
                 !(
-                  (selectedMethod === "manually" && numberOfRows >= 1) ||
+                  selectedMethod === "manually" ||
                   (selectedMethod === "fileUpload" && isImportReady)
                 )
               }
