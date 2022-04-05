@@ -89,6 +89,7 @@ export default function DSColumnTable({
       setRows(formattedData);
       setSelectedRows(forImport);
       setEditedRows(formattedData);
+      setDisableSaveAll(true);
     }
   }, []);
 
