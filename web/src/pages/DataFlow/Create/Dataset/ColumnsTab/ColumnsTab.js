@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-nested-ternary */
 import React, { useState, useContext, useEffect, useCallback } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import * as XLSX from "xlsx";
 import FileUpload from "apollo-react/components/FileUpload";
 import Card from "apollo-react/components/Card";
@@ -14,15 +14,13 @@ import DSColumnTable from "./DSColumnTable";
 
 import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
-import { getSQLColumns } from "../../../../../store/actions/DataSetsAction";
 
-const ColumnsTab = ({ locationType }) => {
-  const dispatch = useDispatch();
+const ColumnsTab = ({ locationType, headerValue }) => {
   // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
-  const { datasetColumns } = dataSets;
+  const { datasetColumns, sqlColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
   const [showColumns, setShowColumns] = useState(false);
@@ -97,34 +95,34 @@ const ColumnsTab = ({ locationType }) => {
     setFormattedData([...newData]);
   };
 
-  // const formatJDBCColumns = (arr) => {
-  //   const newData =
-  //     arr.length > 0
-  //       ? arr.map((column, i) => {
-  //           const newObj = {
-  //             columnId: i + 1,
-  //             dbColumnId: column.columnid || "",
-  //             uniqueId: `u${i}`,
-  //             variableLabel: column.varable || "",
-  //             columnName: column.columnName || "",
-  //             format: column.format || "",
-  //             dataType: column.dataType || "",
-  //             primary: column.primarykey === true ? "Yes" : "No",
-  //             unique: column.unique === true ? "Yes" : "No",
-  //             required: column.required === true ? "Yes" : "No",
-  //             minLength: column.charactermin || "",
-  //             maxLength: column.charactermax || "",
-  //             values: column.lov || "",
-  //             isInitLoad: true,
-  //             isHavingError: false,
-  //             isHavingColumnName: true,
-  //           };
-  //           return newObj;
-  //         })
-  //       : [];
-  //   setFormattedData([...newData]);
-  //   setSelectedMethod("fromDB");
-  // };
+  const formatJDBCColumns = (arr) => {
+    const newData =
+      arr.length > 0
+        ? arr.map((column, i) => {
+            const newObj = {
+              columnId: i + 1,
+              dbColumnId: column.columnid || "",
+              uniqueId: `u${i}`,
+              variableLabel: column.varable || "",
+              columnName: column.columnName || "",
+              format: column.format || "",
+              dataType: column.dataType || "",
+              primary: column.primarykey === true ? "Yes" : "No",
+              unique: column.unique === true ? "Yes" : "No",
+              required: column.required === true ? "Yes" : "No",
+              minLength: column.charactermin || "",
+              maxLength: column.charactermax || "",
+              position: 0,
+              values: column.lov || "",
+              isInitLoad: true,
+              isHavingError: false,
+              isHavingColumnName: true,
+            };
+            return newObj;
+          })
+        : [];
+    setFormattedData([...newData]);
+  };
 
   const handleDelete = () => {
     setSelectedFile([]);
@@ -167,17 +165,9 @@ const ColumnsTab = ({ locationType }) => {
     }
   }, [datasetColumns]);
 
-  // useEffect(() => {
-  //   if (!isSftp(locationType)) {
-  //     if (customQuery) {
-  //       dispatch(getSQLColumns(tableName));
-  //     }
-  //   }
-  // }, [locationType]);
-
-  // useEffect(() => {
-  //   formatJDBCColumns(sqlColumns);
-  // }, [sqlColumns]);
+  useEffect(() => {
+    formatJDBCColumns(sqlColumns);
+  }, [sqlColumns]);
 
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
@@ -191,6 +181,7 @@ const ColumnsTab = ({ locationType }) => {
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}
+          headerValue={headerValue}
         />
       </>
     );

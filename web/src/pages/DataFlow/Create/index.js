@@ -36,6 +36,7 @@ import {
   addDataFlow,
   setDataflowLocal,
 } from "../../../store/actions/DataFlowAction";
+import { getSQLColumns } from "../../../store/actions/DataSetsAction";
 import DataPackages from "./Datapackage";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
@@ -96,6 +97,7 @@ const DataFlow = ({
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [FormType, setFormType] = useState("dataflow");
   const [createdDataflow, setCreatedDataflow] = useState(null);
+  const [headerValue, setHeaderValue] = useState(1);
   const [currentStep, setCurrentStep] = useReducer((state, action) => {
     if (action?.step) return action.step;
     return action?.prev ? state - 1 : state + 1;
@@ -245,6 +247,12 @@ const DataFlow = ({
       datasetObj.OverrideStaleAlert = datasetObj.overrideStaleAlert;
       delete datasetObj.overrideStaleAlert;
     }
+    if (datasetObj.customQuery === "No" && datasetObj.tableName) {
+      dispatch(getSQLColumns(datasetObj.tableName));
+    }
+    if (datasetObj.headerRowNumber) {
+      setHeaderValue(datasetObj.headerRowNumber);
+    }
 
     newForm.dataPackage[0].dataSet[0] = datasetObj;
     setForm(newForm);
@@ -350,6 +358,7 @@ const DataFlow = ({
             submitData={AddDatasetData}
             updateStep={(step) => setCurrentStep({ step })}
             getDataSetValue={getDataSetValue}
+            headerValue={headerValue}
           />
         </div>
       </>
