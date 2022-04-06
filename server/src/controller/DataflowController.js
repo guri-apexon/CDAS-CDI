@@ -240,7 +240,7 @@ exports.createDataflow = async (req, res) => {
       (dataflowid,name,vend_id,type,description,src_loc_id,active,configured,expt_fst_prd_dt,
         testflag,data_in_cdr,connectiontype,externalsystemname,externalid,
         fsrstatus,prot_id,insrt_tm,updt_tm, refreshtimestamp) VALUES 
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17);`,
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17) returning dataflowid as "dataFlowId", name as "dataFlowName", type as adapter, description, active as status, testflag, connectiontype as "locationType", fsrstatus as "fsrStatus", prot_id as "studyId", externalsystemname as "externalSourceSystem";`,
         DFBody
       );
       let ts = new Date().toLocaleString();
@@ -250,7 +250,9 @@ exports.createDataflow = async (req, res) => {
         : "Inactive";
       ResponseBody.timestamp = ts;
       ResponseBody.version = 1;
-      ResponseBody.dataflowId = uid;
+      ResponseBody.dataflowDetails = createDF.rows?.length
+        ? createDF?.rows[0]
+        : null;
       if (dataPackage && dataPackage.length > 0) {
         ResponseBody.data_packages = [];
         // if datapackage exists

@@ -103,7 +103,10 @@ const Dataset = () => {
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
-  const { selectedCard } = dashboard;
+  const {
+    selectedCard,
+    selectedDataFlow: { dataFlowId: dfId },
+  } = dashboard;
   const {
     datapackageid: dpId,
     datapackageName,
@@ -126,12 +129,7 @@ const Dataset = () => {
     dsTestProdLock,
     isDatasetCreation,
   } = dataFlow;
-  const {
-    name: dataflowName,
-    loctyp,
-    testflag,
-    dataflowid: dfId,
-  } = dataFlowdetail;
+  const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
   const {
     locationType: newLT,
     tbl_nm: tName,
@@ -163,6 +161,7 @@ const Dataset = () => {
   };
 
   useEffect(() => {
+    console.log("selectedDataFlow", dfId);
     if (dfId === "") {
       history.push("/dashboard");
     }

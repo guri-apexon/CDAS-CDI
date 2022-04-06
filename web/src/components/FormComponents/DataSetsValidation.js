@@ -49,7 +49,7 @@ const dataSetsValidation = ({
         : "",
     isCustomSQL: checkRequired(isCustomSQL),
     sQLQuery: checkValidQuery(sQLQuery),
-    filterCondition: checkfilterCondition(filterCondition),
+    // filterCondition: checkfilterCondition(filterCondition),
     tableName: checkRequired(tableName),
   });
 
