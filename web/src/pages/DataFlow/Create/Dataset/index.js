@@ -1,16 +1,14 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-script-url */
 import React, {
-  Fragment,
   useState,
-  useContext,
   useEffect,
   useRef,
   forwardRef,
   useImperativeHandle,
 } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { useHistory, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
 import Panel from "apollo-react/components/Panel/Panel";
@@ -80,7 +78,7 @@ const styles = {
   },
 };
 const Dataset = (props, ref) => {
-  const { currentStep, updateStep, messageContext, submitData } = props;
+  const { currentStep, updateStep, submitData } = props;
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
