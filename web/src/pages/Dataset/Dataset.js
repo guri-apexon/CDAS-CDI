@@ -261,6 +261,7 @@ const Dataset = () => {
         ...formValue,
         dpId,
         userId: userInfo.userId,
+        locationType: loctyp,
         testFlag: testflag,
         dfId,
         studyId,
