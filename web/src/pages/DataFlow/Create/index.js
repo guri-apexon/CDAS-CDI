@@ -247,7 +247,7 @@ const DataFlow = ({
       datasetObj.OverrideStaleAlert = datasetObj.overrideStaleAlert;
       delete datasetObj.overrideStaleAlert;
     }
-    if (datasetObj.isCustomSQL === "No" && datasetObj.tableName) {
+    if (datasetObj.customQuery === "No" && datasetObj.tableName) {
       dispatch(getSQLColumns(datasetObj.tableName));
     }
     if (datasetObj.headerRowNumber) {
