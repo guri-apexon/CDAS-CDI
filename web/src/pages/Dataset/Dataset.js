@@ -3,7 +3,7 @@
 /* eslint-disable no-script-url */
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
 import Banner from "apollo-react/components/Banner";
@@ -95,6 +95,7 @@ const Dataset = () => {
   const [locationType, setLocationType] = useState("sftp");
   const [columnsActive, setColumnsActive] = useState(false);
   const dispatch = useDispatch();
+  const params = useParams();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
@@ -102,7 +103,7 @@ const Dataset = () => {
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
-  const { dfId, selectedCard } = dashboard;
+  const { selectedCard } = dashboard;
   const {
     datapackageid: dpId,
     datapackageName,
@@ -125,7 +126,12 @@ const Dataset = () => {
     dsTestProdLock,
     isDatasetCreation,
   } = dataFlow;
-  const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
+  const {
+    name: dataflowName,
+    loctyp,
+    testflag,
+    dataflowid: dfId,
+  } = dataFlowdetail;
   const {
     locationType: newLT,
     tbl_nm: tName,
@@ -162,6 +168,10 @@ const Dataset = () => {
     }
     dispatch(getDataKindData());
   }, []);
+
+  useEffect(() => {
+    setValue(0);
+  }, [params]);
 
   useEffect(() => {
     if (datasetid === null) {
