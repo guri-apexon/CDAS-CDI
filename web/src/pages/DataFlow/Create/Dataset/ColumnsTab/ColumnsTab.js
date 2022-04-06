@@ -14,6 +14,7 @@ import DSColumnTable from "./DSColumnTable";
 
 import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
+import Progress from "../../../../../components/Common/Progress/Progress";
 
 const ColumnsTab = ({ locationType, headerValue }) => {
   // const history = useHistory();
@@ -29,6 +30,7 @@ const ColumnsTab = ({ locationType, headerValue }) => {
   const [formattedData, setFormattedData] = useState([]);
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
+  const [loading, setLoading] = useState(false);
 
   const numberOfRows = 1;
   const maxSize = 150000;
@@ -93,6 +95,7 @@ const ColumnsTab = ({ locationType, headerValue }) => {
           })
         : [];
     setFormattedData([...newData]);
+    setLoading(false);
   };
 
   const formatJDBCColumns = (arr) => {
@@ -122,6 +125,7 @@ const ColumnsTab = ({ locationType, headerValue }) => {
           })
         : [];
     setFormattedData([...newData]);
+    setLoading(false);
   };
 
   const handleDelete = () => {
@@ -157,17 +161,20 @@ const ColumnsTab = ({ locationType, headerValue }) => {
 
   useEffect(() => {
     if (!isSftp(locationType)) {
+      setLoading(true);
+      if (datasetColumns.length > 0) {
+        formatDBColumns(datasetColumns);
+        setSelectedMethod("fromDB");
+      } else if (sqlColumns.length > 0) {
+        formatJDBCColumns(sqlColumns);
+        setSelectedMethod("fromDB");
+      }
       setShowColumns(true);
-      formatDBColumns(datasetColumns);
-      setSelectedMethod("fromDB");
     } else {
       setShowColumns(false);
+      setLoading(false);
     }
-  }, [datasetColumns]);
-
-  useEffect(() => {
-    formatJDBCColumns(sqlColumns);
-  }, [sqlColumns]);
+  }, [datasetColumns, sqlColumns]);
 
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
@@ -185,10 +192,11 @@ const ColumnsTab = ({ locationType, headerValue }) => {
         />
       </>
     );
-  }, [showColumns]);
+  }, [showColumns, loading]);
 
   return (
     <>
+      {loading && <Progress />}
       {!showColumns && (
         <div className="tab colums-tab">
           <p className="title">Configure Dataset Column Settings</p>
@@ -245,7 +253,7 @@ const ColumnsTab = ({ locationType, headerValue }) => {
           </div>
         </div>
       )}
-      {showColumns && <>{showTable}</>}
+      {showColumns && !loading && <>{showTable}</>}
     </>
   );
 };
