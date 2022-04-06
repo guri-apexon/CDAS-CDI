@@ -259,7 +259,7 @@ const DataFlowReducer = (state = initialState, action) =>
           quote,
           headerrownumber,
           footerrownumber,
-          naming_convention,
+          name,
           path,
           datakindid,
           data_freq,
@@ -283,7 +283,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.quote = quote;
           newState.formData.headerRowNumber = headerrownumber;
           newState.formData.footerRowNumber = footerrownumber;
-          newState.formData.fileNamingConvention = naming_convention;
+          newState.formData.fileNamingConvention = name;
           newState.formData.folderPath = path;
           newState.formData.clinicalDataType = [datakindid];
           newState.formData.transferFrequency = data_freq;

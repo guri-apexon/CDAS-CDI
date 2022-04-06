@@ -84,12 +84,15 @@ export default function DSColumnTable({
     if (dataOrigin === "manually") {
       setSelectedRows([...initRows]);
       setEditedRows(initialRows);
+    } else if (dataOrigin === "fromDB") {
+      setRows(formattedData);
+      setEditedRows(formattedData);
+      // setDisableSaveAll(false);
     } else {
       const forImport = formattedData.map((e) => e.uniqueId);
-      setRows(formattedData);
       setSelectedRows(forImport);
       setEditedRows(formattedData);
-      setDisableSaveAll(true);
+      // setDisableSaveAll(false);
     }
   }, []);
 
