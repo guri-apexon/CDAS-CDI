@@ -13,7 +13,10 @@ export const checkValidQuery = (value) => {
 };
 
 export const checkfilterCondition = (value) => {
-  if (value !== "" && !value?.toLowerCase().trim().includes("where")) {
+  if (!value?.toLowerCase().trim().startsWith("where")) {
+    if (value === "" || value === undefined) {
+      return false;
+    }
     return "Filter condition should start with WHERE";
   }
   return false;

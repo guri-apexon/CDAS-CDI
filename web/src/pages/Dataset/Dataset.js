@@ -150,7 +150,7 @@ const Dataset = () => {
   };
 
   const getDataSetType = (type) => {
-    if (isSftp(type)) {
+    if (type === "SFTP" || type === "FTPS") {
       return "sftp";
     }
     return "jdbc";
@@ -204,7 +204,7 @@ const Dataset = () => {
   }, [loctyp]);
 
   useEffect(() => {
-    if (newLT === "JDBC") {
+    if (getDataSetType(newLT) === "jdbc") {
       if (isCustomSQL === "No") {
         setColumnsActive(true);
       }
@@ -261,6 +261,7 @@ const Dataset = () => {
         ...formValue,
         dpId,
         userId: userInfo.userId,
+        locationType: getDataSetType(loctyp),
         testFlag: testflag,
         dfId,
         studyId,
