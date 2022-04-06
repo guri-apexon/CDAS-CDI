@@ -166,7 +166,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
     if (sqlColumns.length > 0) {
       setShowColumns(true);
       formatJDBCColumns(sqlColumns);
-      setSelectedMethod("fromDB");
+      setSelectedMethod("fromAPICall");
     }
   }, [datasetColumns, sqlColumns]);
 
