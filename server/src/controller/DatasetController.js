@@ -192,7 +192,7 @@ exports.saveDatasetData = async (req, res) => {
     });
   } catch (err) {
     Logger.error("catch :storeDataset");
-    Logger.error(err);
+    console.log(err);
     return apiResponse.ErrorResponse(res, err);
   }
 };

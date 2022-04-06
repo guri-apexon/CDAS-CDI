@@ -42,6 +42,7 @@ import { ReactComponent as DataPackageIcon } from "../../../components/Icons/dat
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import DataSet from "./Dataset";
 import { dataflowSave } from "../../../services/ApiServices";
+import { SelectedDataflow } from "../../../store/actions/DashboardAction";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -273,14 +274,17 @@ const DataFlow = ({
     };
     setSubmitting(true);
     const result = await dataflowSave(reqBody);
-    if (result?.dataflowId) setCreatedDataflow(result.dataflowId);
+    if (result?.dataflowDetails) setCreatedDataflow(result.dataflowDetails);
     if (result) {
       setSaveSuccess(true);
     }
     setSubmitting(false);
   };
   const redirectToDataflow = () => {
-    history.push(`/dashboard/dataflow-management/${createdDataflow}`);
+    dispatch(SelectedDataflow(createdDataflow));
+    history.push(
+      `/dashboard/dataflow-management/${createdDataflow?.dataFlowId}`
+    );
   };
   const nextStep = async () => {
     console.log("datasetFormValues?", datasetFormValues, currentStep);
