@@ -11,7 +11,7 @@ exports.getColumnsSet = async (req, res) => {
   try {
     const { datasetid } = req.body;
     Logger.info({ message: "getColumnsSet" });
-    const searchQuery = `SELECT "columnid", variable, "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", format, "lov", "unique" from ${schemaName}.columndefinition WHERE coalesce (del_flg,0) != 1 AND datasetid = $1`;
+    const searchQuery = `SELECT "columnid", "variable", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "format", "lov", "unique" from ${schemaName}.columndefinition WHERE coalesce (del_flg,0) != 1 AND datasetid = $1`;
     DB.executeQuery(searchQuery, [datasetid]).then((response) => {
       const datasetColumns = response.rows || null;
       return apiResponse.successResponseWithData(
@@ -40,7 +40,7 @@ exports.saveDatasetColumns = async (req, res) => {
       await DB.executeQuery(update, [dsId, nQuery]);
     }
 
-    const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, "name", "datatype", primarykey, required, "unique", charactermin, charactermax, "position", format, lov, variable, del_flg, insrt_tm, updt_tm)
+    const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, "name", "datatype", primarykey, "required", "unique", charactermin, charactermax, "position", "format", lov, "variable", del_flg, insrt_tm, updt_tm)
      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, Now(), Now());`;
 
     Logger.info({ message: "storeDatasetColumns" });
@@ -108,8 +108,8 @@ exports.updateColumns = async (req, res) => {
     }
 
     Logger.info({ message: "update set columns" });
-    const updateQuery = `UPDATE ${schemaName}.columndefinition SET "variable"=$2, datasetid=$3, name=$4, datatype=$5, primarykey=$6, required=$7, "unique"=$8, charactermin=$9, charactermax=$10, "position"=$11, "format"=$12, lov=$13, updt_tm=$14 WHERE columnid=$1`;
-    const selectQuery = `select datasetid,columnid, variable, name, datatype, primarykey, required, unique, charactermin, charactermax, position, format, lov from ${schemaName}.columndefinition where columnid=$1`;
+    const updateQuery = `UPDATE ${schemaName}.columndefinition SET "variable"=$2, datasetid=$3, "nam"e=$4, "datatype"=$5, primarykey=$6, "required"=$7, "unique"=$8, charactermin=$9, charactermax=$10, "position"=$11, "format"=$12, lov=$13, updt_tm=$14 WHERE columnid=$1`;
+    const selectQuery = `select datasetid, columnid, "variable", "name", "datatype", primarykey, "required", "unique", charactermin, charactermax, "position", "format", lov from ${schemaName}.columndefinition where columnid=$1`;
 
     if (values && values.length > 0) {
       for (let value of values) {
