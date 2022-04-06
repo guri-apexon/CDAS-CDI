@@ -166,7 +166,7 @@ const Dataset = (props, ref) => {
     } else if (currentStep === 4) {
       setValue(1);
       if (!isSftp(locationType)) {
-        dispatch(getSQLColumns();
+        dispatch(getSQLColumns("tableName"));
       }
     } else if (currentStep === 3) {
       setValue(0);
