@@ -15,7 +15,7 @@ import DSColumnTable from "./DSColumnTable";
 import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 
-const ColumnsTab = ({ locationType }) => {
+const ColumnsTab = ({ locationType, headerValue }) => {
   // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -112,6 +112,7 @@ const ColumnsTab = ({ locationType }) => {
               required: column.required === true ? "Yes" : "No",
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
+              position: 0,
               values: column.lov || "",
               isInitLoad: true,
               isHavingError: false,
@@ -180,6 +181,7 @@ const ColumnsTab = ({ locationType }) => {
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}
+          headerValue={headerValue}
         />
       </>
     );

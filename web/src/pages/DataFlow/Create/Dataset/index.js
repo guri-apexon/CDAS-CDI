@@ -15,10 +15,7 @@ import Panel from "apollo-react/components/Panel/Panel";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import "./Dataset.scss";
-import {
-  getDataKindData,
-  getSQLColumns,
-} from "../../../../store/actions/DataSetsAction";
+import { getDataKindData } from "../../../../store/actions/DataSetsAction";
 import CreateDataSetsForm from "./DataSetsForm";
 // import DataSetsFormSQL from "./DataSetsFormSQL";
 import JDBCForm from "./JDBCForm";
@@ -78,7 +75,7 @@ const styles = {
   },
 };
 const Dataset = (props, ref) => {
-  const { currentStep, updateStep, submitData } = props;
+  const { currentStep, updateStep, submitData, headerValue } = props;
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
@@ -165,9 +162,6 @@ const Dataset = (props, ref) => {
       setValue(2);
     } else if (currentStep === 4) {
       setValue(1);
-      if (!isSftp(locationType)) {
-        dispatch(getSQLColumns("tableName"));
-      }
     } else if (currentStep === 3) {
       setValue(0);
     }
@@ -214,7 +208,9 @@ const Dataset = (props, ref) => {
                 moveNext={() => setValue(1)}
               />
             )}
-          {value === 1 && <ColumnsTab locationType={locationType} />}
+          {value === 1 && (
+            <ColumnsTab locationType={locationType} headerValue={headerValue} />
+          )}
           {value === 2 && <VLCTab />}
         </div>
       </main>

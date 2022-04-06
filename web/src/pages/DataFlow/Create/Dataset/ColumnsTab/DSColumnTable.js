@@ -17,6 +17,7 @@ export default function DSColumnTable({
   dataOrigin,
   formattedData,
   locationType,
+  headerValue,
 }) {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
@@ -295,9 +296,9 @@ export default function DSColumnTable({
 
   useEffect(() => {
     if (isSftp(locationType)) {
-      if (headerrownumber > 0 || headerRowNumber > 0) {
+      if (headerValue) {
         const data = allColumns.map((e) => {
-          if (e.accessor === "position") {
+          if (e.accessor === "columnName" && headerValue === 0) {
             e.hidden = true;
           }
           return e;
@@ -305,7 +306,7 @@ export default function DSColumnTable({
         setMoreColumns(data);
       } else {
         const data = allColumns.map((e) => {
-          if (e.accessor === "columnName") {
+          if (e.accessor === "position") {
             e.hidden = true;
           }
           return e;
