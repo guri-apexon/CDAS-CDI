@@ -19,8 +19,7 @@ import Tabs from "apollo-react/components/Tabs";
 import "./Dataset.scss";
 import {
   getDataKindData,
-  saveDatasetData,
-  updateDatasetData,
+  getSQLColumns,
 } from "../../../../store/actions/DataSetsAction";
 import CreateDataSetsForm from "./DataSetsForm";
 // import DataSetsFormSQL from "./DataSetsFormSQL";
@@ -87,15 +86,9 @@ const Dataset = (props, ref) => {
   const [columnsActive, setColumnsActive] = useState(false);
   const [customSql, setCustomSql] = useState("no");
   const dispatch = useDispatch();
-  const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
-  const dashboard = useSelector((state) => state.dashboard);
-  const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
-  const { selectedDSDetails } = packageData;
-  const { dataflowName, datapackageName, datasetName } = selectedDSDetails;
-  const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
-    dataSets;
+  const { loading, isDatasetCreated } = dataSets;
   const { dataFlowdetail } = dataFlow;
   const { datasetId } = useParams();
 
@@ -115,12 +108,6 @@ const Dataset = (props, ref) => {
         updateStep(3);
         break;
     }
-  };
-  const getDataSetType = (type) => {
-    if (isSftp(type)) {
-      return "sftp";
-    }
-    return "jdbc";
   };
 
   const onChangeSql = (val) => {
@@ -165,12 +152,6 @@ const Dataset = (props, ref) => {
       }
     },
   }));
-  // useEffect(() => {
-  //   if (messageContext?.dataflowObj?.dataset) {
-  //     const datasetObj = messageContext?.dataflowObj?.dataset || {};
-  //     submitData(datasetObj);
-  //   }
-  // }, [messageContext?.dataflowObj?.dataset]);
 
   const onSubmit = (formValue) => {
     const data = {
@@ -180,23 +161,19 @@ const Dataset = (props, ref) => {
     submitData(data);
   };
 
-  const closeForm = async () => {
-    if (isSftp(locationType)) {
-      await dispatch(reset("CreateDataSetsForm"));
-    } else {
-      jdbcRef.current.handleCancel();
-    }
-    history.push("/dashboard");
-  };
   useEffect(() => {
     console.log("currentStep", currentStep);
     if (currentStep === 5) {
       setValue(2);
     } else if (currentStep === 4) {
-      // if (columnsActive) {
       setValue(1);
-      // } else {
-      //   setValue(value === 2 ? 0 : 2);
+      // if (!isSftp(type)) {
+      //   if (customQuery || isCustomSQL) {
+      //     dispatch(getSQLColumns(tName || tableName));
+      //     setTimeout(() => {
+      //       setValue(1);
+      //     }, 500);
+      //   }
       // }
     } else if (currentStep === 3) {
       setValue(0);
