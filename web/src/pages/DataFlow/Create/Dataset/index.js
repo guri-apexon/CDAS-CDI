@@ -165,14 +165,9 @@ const Dataset = (props, ref) => {
       setValue(2);
     } else if (currentStep === 4) {
       setValue(1);
-      // if (!isSftp(type)) {
-      //   if (customQuery || isCustomSQL) {
-      //     dispatch(getSQLColumns(tName || tableName));
-      //     setTimeout(() => {
-      //       setValue(1);
-      //     }, 500);
-      //   }
-      // }
+      if (!isSftp(locationType)) {
+        dispatch(getSQLColumns();
+      }
     } else if (currentStep === 3) {
       setValue(0);
     }
