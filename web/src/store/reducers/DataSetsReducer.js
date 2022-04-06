@@ -132,6 +132,12 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.selectedDataset = {
           ...action.values,
           datasetid: action.dataset.datasetid,
+          customsql_yn: action.dataset.customsql_yn,
+          customsql: action.dataset.customsql,
+          fileType: action.dataset.type,
+          headerrownumber: action.dataset.headerrownumber,
+          tbl_nm: action.dataset.tbl_nm,
+          dataset_fltr: action.dataset.dataset_fltr,
         };
         if (action.values.fileType) {
           newState.formData = action.values;
@@ -158,6 +164,10 @@ const DataFlowReducer = (state = initialState, action) =>
       case STORE_DATASET_COLUMNS_SUCCESS:
         newState.loading = false;
         newState.datasetColumns = action.datasetColumns;
+        newState.selectedDataset = {
+          ...state.selectedDataset,
+          customsql: action.nQuery,
+        };
         newState.isColumnsConfigured =
           action.datasetColumns.length > 0 ? true : false;
         newState.error = null;

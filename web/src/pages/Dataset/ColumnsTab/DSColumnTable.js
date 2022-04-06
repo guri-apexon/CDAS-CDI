@@ -77,6 +77,7 @@ export default function DSColumnTable({
   const [newRows, setNewRows] = useState("");
   const [disableSaveAll, setDisableSaveAll] = useState(true);
   const [moreColumns, setMoreColumns] = useState([...columns]);
+  const [selectedCN, setSelectedCN] = useState([]);
   const userInfo = getUserInfo();
 
   useEffect(() => {
@@ -92,7 +93,7 @@ export default function DSColumnTable({
       const forImport = formattedData.map((e) => e.uniqueId);
       setSelectedRows(forImport);
       setEditedRows(formattedData);
-      // setDisableSaveAll(false);
+      setDisableSaveAll(false);
     }
   }, []);
 
@@ -391,7 +392,7 @@ export default function DSColumnTable({
     if (customQuery === "No") {
       const columnList = removeSpaces.map((e) => e.columnName).join(", ");
       const wherePart = customsql.indexOf("where");
-      newQuery = `select ${columnList} from ${tableName} ${customsql.slice(
+      newQuery = `Select ${columnList} from ${tableName} ${customsql.slice(
         wherePart
       )}`;
     }
@@ -464,9 +465,12 @@ export default function DSColumnTable({
 
     let newQuery = "";
     if (customQuery === "No") {
-      const columnList = editedRowData.columnName;
+      const selectedList = [...selectedCN, editedRowData?.columnName];
+      setSelectedCN(selectedList);
       const splitted = customsql.split("where");
-      newQuery = `select ${splitted[0]} ${columnList} ${splitted[1]}`;
+      newQuery = `Select ${selectedList.join(
+        ", "
+      )} from ${tableName} where ${splitted[1].trim()}`;
     }
 
     if (editedRowData?.dbColumnId) {
@@ -581,14 +585,14 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {console.log(
+        {/* {console.log(
           "data",
           rows,
           editedRows,
           formattedData,
           dataOrigin,
           moreColumns
-        )}
+        )} */}
         <input
           type="file"
           id="file"
