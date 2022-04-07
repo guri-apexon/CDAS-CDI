@@ -299,7 +299,6 @@ const DataSetsFormSQL = connect((state) => ({
   enableReinitialize: true,
   formValues: selector(
     state,
-    "active",
     "isCustomSQL",
     "sQLQuery",
     "tableName",
