@@ -113,6 +113,7 @@ exports.getLocationList = function (req, res) {
     let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label, usr_nm, pswd, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
     let searchQuery = `SELECT ${select} from ${schemaName}.source_location where active=1 order by label asc`;
     let dbQuery = DB.executeQuery(searchQuery);
+    Logger.info({ message: "locationList" });
     if (type) {
       switch (type) {
         case "rdbms_only":
@@ -132,23 +133,23 @@ exports.getLocationList = function (req, res) {
           dbQuery = DB.executeQuery(searchQuery, [type]);
       }
     }
-    Logger.info({ message: "locationList" });
 
     dbQuery
-      .then((response) => {
+      .then(async (response) => {
         const locations = response.rows || [];
         const withCredentials = locations.map((d) => {
-          // const credentials = await helper.readVaultData(d.src_loc_id);
-          // if (credentials) {
-          //   d.usr_nm = credentials.user;
-          //   d.pswd = credentials.password;
-          // }
-          d.usr_nm = "Dummy";
-          d.pswd = "DummyPassword";
+          const credentials = helper.readVaultData(d.src_loc_id);
+          if (credentials) {
+            d.usr_nm = credentials.user;
+            d.pswd = credentials.password;
+          } else {
+            d.usr_nm = "Dummy";
+            d.pswd = "DummyPassword";
+          }
           return d;
         });
         return apiResponse.successResponseWithData(res, "Operation success", {
-          records: locations,
+          records: withCredentials,
           totalSize: response.rowCount,
         });
       })
@@ -203,7 +204,7 @@ exports.updateLocationData = async function (req, res) {
         "No duplicate locations are allowed"
       );
     }
-    var userId = req.headers["userid"];
+    var userId = values.userId || req.headers["userid"];
     const body = [
       values.locationType || null,
       values.ipServer || null,
@@ -215,9 +216,11 @@ exports.updateLocationData = async function (req, res) {
       helper.getCurrentTime(),
       values.dbName || null,
       values.connURL || null,
+      values.userName,
+      values.password ? "Yes" : "No",
       values.locationID,
     ];
-    const searchQuery = `UPDATE ${schemaName}.source_location set loc_typ=$1, ip_servr=$2, port=$3, data_strc=$4, active=$5, extrnl_sys_nm=$6, loc_alias_nm=$7, updt_tm=$8, db_nm=$9, cnn_url=$10 where src_loc_id=$11`;
+    const searchQuery = `UPDATE ${schemaName}.source_location set loc_typ=$1, ip_servr=$2, port=$3, data_strc=$4, active=$5, extrnl_sys_nm=$6, loc_alias_nm=$7, updt_tm=$8, db_nm=$9, cnn_url=$10, usr_nm=$11, pswd=$12  where src_loc_id=$13`;
     Logger.info({ message: "updateLocation" });
     DB.executeQuery(searchQuery, body)
       .then(async (response) => {
@@ -272,11 +275,11 @@ exports.saveLocationData = async function (req, res) {
       values.active == true ? 1 : 0,
       values.externalSytemName || null,
       values.locationName || null,
-      helper.getCurrentTime(),
-      helper.getCurrentTime(),
+      values.userName,
+      values.password ? "Yes" : "No",
       values.dbName || null,
     ];
-    const searchQuery = `INSERT into ${schemaName}.source_location (src_loc_id, loc_typ, ip_servr, port, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, insrt_tm, updt_tm, db_nm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+    const searchQuery = `INSERT into ${schemaName}.source_location (src_loc_id, loc_typ, ip_servr, port, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, usr_nm, pswd, insrt_tm, updt_tm, db_nm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, Now(), Now(), $12)`;
     Logger.info({ message: "storeLocation" });
 
     DB.executeQuery(searchQuery, body)
@@ -334,7 +337,7 @@ exports.getServiceOwnersList = function (req, res) {
 
 exports.statusUpdate = async (req, res) => {
   try {
-    const { id, status } = req.body;
+    const { id, status, userId } = req.body;
     const curDate = helper.getCurrentTime();
     Logger.info({
       message: "statusUpdate",
@@ -345,8 +348,8 @@ exports.statusUpdate = async (req, res) => {
       curDate,
       id,
     ]);
-    var userId = req.headers["userid"];
-    await updateDataflowVersion(id, { active: status == true ? 1 : 0 }, userId);
+    var userid = userId || req.headers["userid"];
+    await updateDataflowVersion(id, { active: status == true ? 1 : 0 }, userid);
     return apiResponse.successResponseWithData(
       res,
       "Operation success",

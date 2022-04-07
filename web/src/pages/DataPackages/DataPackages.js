@@ -19,6 +19,7 @@ import { makeStyles } from "@material-ui/core/styles";
 // import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
+import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import "./DataPackages.scss";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, toast } from "../../utils";
@@ -95,13 +96,13 @@ const DataPackages = () => {
     }
     return false;
   };
-  const getPackages = (query = "") => {
-    dispatch(getPackagesList(query));
-  };
+  // const getPackages = (query = "") => {
+  //   dispatch(getPackagesList(query));
+  // };
 
   useEffect(() => {
     if (packageData && packageData.refreshData) {
-      getPackages();
+      // getPackages();
       resetForm();
     }
   }, [packageData.refreshData]);
@@ -109,20 +110,15 @@ const DataPackages = () => {
     if (packageData.openAddPackage) setShowForm(true);
   }, [packageData.openAddPackage]);
 
-  useEffect(() => {
-    getPackages();
-  }, []);
+  // useEffect(() => {
+  //   getPackages();
+  // }, []);
   // eslint-disable-next-line consistent-return
   const submitPackage = () => {
     const validated = validateFields();
     setNotMatchedType(!validated);
     if (!validated) return false;
-    if (
-      namingConvention === "" ||
-      compression === "" ||
-      packagePassword === "" ||
-      sftpPath === ""
-    ) {
+    if (namingConvention === "" || compression === "") {
       toast("Please fill all fields to proceed", "error");
       return false;
     }
@@ -136,6 +132,7 @@ const DataPackages = () => {
       user_id: userInfo.userId,
     };
     dispatch(addDataPackage(reqBody));
+    resetForm();
   };
 
   const handleClose = () => {
@@ -170,7 +167,7 @@ const DataPackages = () => {
               {showForm && (
                 <>
                   <div className="flex title">
-                    <img src="assets/svg/datapackage.svg" alt="datapackage" />
+                    <DataPackageIcon />
                     <Typography className="b-font">
                       Creating New Package
                     </Typography>
@@ -264,11 +261,7 @@ const DataPackages = () => {
               ) : (
                 <>
                   <Box className="h-v-center flex-column add-btn-container">
-                    <img
-                      src="assets/svg/datapackage.svg"
-                      className="head-icon"
-                      alt="datapackage"
-                    />
+                    <DataPackageIcon className="head-icon" />
                     <Typography variant="title1">
                       No Data Package or Datasets Added
                     </Typography>

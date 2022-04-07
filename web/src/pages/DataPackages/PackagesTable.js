@@ -21,10 +21,11 @@ import {
   updateStatus,
 } from "../../store/actions/DataPackageAction";
 import { updateDSState } from "../../store/actions/DataFlowAction";
+import { updateDSStatus } from "../../store/actions/DataSetsAction";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
-    <div style={{ width: 12, marginLeft: "5px" }}>
+    <div style={{ width: 12, marginLeft: "1px" }}>
       <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
         <IconButton
           id="expand"
@@ -75,6 +76,7 @@ const PackagesList = ({ data, userInfo }) => {
   const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
     dispatch(updateDSState(true));
+    dispatch(updateDSStatus(false));
     history.push("/dashboard/dataset/new");
   };
 
@@ -86,13 +88,15 @@ const PackagesList = ({ data, userInfo }) => {
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
-        <span customtooltip="Add dataset" className="add-dataset">
-          <RoundPlusSvg
-            className="add-dataset-btn"
-            onClick={() =>
-              addDataSet(row.dataflowid, "", row.datapackageid, row.name)
-            }
-          />
+        <span className="add-dataset">
+          <Tooltip title="Add dataset" disableFocusListener>
+            <RoundPlusSvg
+              className="add-dataset-btn"
+              onClick={() =>
+                addDataSet(row.dataflowid, "", row.datapackageid, row.name)
+              }
+            />
+          </Tooltip>
         </span>
       </div>
     );

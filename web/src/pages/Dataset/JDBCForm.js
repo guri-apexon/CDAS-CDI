@@ -256,7 +256,7 @@ const JDBCForm = forwardRef((props, ref) => {
             active: dsActive,
             incremental: dataType,
             clinicalDataType,
-            customSQLQuery: isCustomSQL,
+            isCustomSQL,
             sQLQuery,
             tableName,
             offsetColumn,
@@ -272,7 +272,7 @@ const JDBCForm = forwardRef((props, ref) => {
             active: dsActive,
             incremental: dataType,
             clinicalDataType,
-            customSQLQuery: isCustomSQL,
+            isCustomSQL,
             sQLQuery,
             tableName,
             offsetColumn,
@@ -405,7 +405,6 @@ const JDBCForm = forwardRef((props, ref) => {
                 minHeight={32}
                 multiline
                 sizeAdjustable
-                inputProps={{ maxLength: 255 }}
                 label="SQL Query"
                 disabled={prodLock}
               />

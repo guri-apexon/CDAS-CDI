@@ -23,6 +23,9 @@
     .package-form {
       width: 480px;
       margin-top: 28px;
+      .Mui-error div[aria-haspopup="listbox"] {
+        height: auto !important;
+      }
     }
   }
   .right-content {

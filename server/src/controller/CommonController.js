@@ -18,8 +18,9 @@ cron.schedule("*/30 * * * *", () => {
 
 module.exports = {
   createUniqueID: () => {
-    return crypto.randomBytes(3 * 4).toString("base64");
+    return helper.generateUniqueID();
   },
+
   addAuditLog: function () {
     return new Promise((resolve, reject) => {
       DB.executeQuery(query).then((response) => {
@@ -27,13 +28,14 @@ module.exports = {
       });
     });
   },
+
   addHistory: function (package, user_id, column, old_val = "", new_val = "") {
     return new Promise((resolve, reject) => {
       if (!package) resolve(false);
       const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
       DB.executeQuery(
         `SELECT version from ${constants.DB_SCHEMA_NAME}.dataflow_version
-      WHERE dataflowid = '${package.datapackageid}' order by version DESC limit 1`
+      WHERE dataflowid = '${package.dataflowid}' order by version DESC limit 1`
       ).then(async (response) => {
         const historyVersion = response.rows[0]?.version || 0;
         const version = Number(historyVersion) + 1;
@@ -69,6 +71,7 @@ module.exports = {
       });
     });
   },
+
   addPackageHistory: function (package, user_id, column, old_val, new_val) {
     return new Promise((resolve, reject) => {
       if (!package) resolve(false);
@@ -135,6 +138,7 @@ module.exports = {
       });
     });
   },
+
   fsrConnect: (req, res) => {
     try {
       const { params, endPoint } = req.body;
@@ -163,5 +167,102 @@ module.exports = {
       console.log("err:", err);
       return apiResponse.ErrorResponse(res, err);
     }
+  },
+
+  addDatasetHistory: function (
+    dfId,
+    userId,
+    datapackageid,
+    datasetid,
+    config_json,
+    column,
+    old_val = "",
+    new_val = ""
+  ) {
+    return new Promise((resolve, reject) => {
+      if (!dfId) resolve(false);
+      const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+      DB.executeQuery(
+        `SELECT version from ${constants.DB_SCHEMA_NAME}.dataflow_version
+      WHERE dataflowid = '${dfId}' order by version DESC limit 1`
+      ).then(async (response) => {
+        const historyVersion = response.rows[0]?.version || 0;
+        const version = Number(historyVersion) + 1;
+        const uniqueId = helper.createUniqueID();
+        const addHistoryQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
+        const values = [dfId, version, config_json, userId, currentTime];
+        DB.executeQuery(addHistoryQuery, values).then(async (response) => {
+          const addAuditLogQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_audit_log(dataflowid, datapackageid,datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8,$9)`;
+          const auditValues = [
+            dfId,
+            datapackageid,
+            datasetid,
+            version,
+            column,
+            old_val,
+            new_val,
+            userId,
+            currentTime,
+          ];
+          DB.executeQuery(addAuditLogQuery, auditValues)
+            .then(async (response) => {
+              resolve(version);
+            })
+            .catch((err) => {
+              resolve(version);
+            });
+        });
+      });
+    });
+  },
+
+  addColumnHistory: function (
+    columnId,
+    datasetid,
+    dfId,
+    dpId,
+    userId,
+    config_json,
+    column,
+    old_val = "",
+    new_val = ""
+  ) {
+    return new Promise((resolve, reject) => {
+      if (!dfId) resolve(false);
+      const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+      DB.executeQuery(
+        `SELECT version from ${constants.DB_SCHEMA_NAME}.dataflow_version
+      WHERE dataflowid = '${dfId}' order by version DESC limit 1`
+      ).then(async (response) => {
+        const historyVersion = response.rows[0]?.version || 0;
+
+        const version = Number(historyVersion) + 1;
+        const uniqueId = helper.createUniqueID();
+        const addHistoryQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
+        const values = [dfId, version, config_json, userId, currentTime];
+        DB.executeQuery(addHistoryQuery, values).then(async (response) => {
+          const addAuditLogQuery = `INSERT INTO ${constants.DB_SCHEMA_NAME}.dataflow_audit_log(dataflowid, datapackageid,datasetid,columnid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8,$9,$10)`;
+          const auditValues = [
+            dfId,
+            dpId,
+            datasetid,
+            columnId,
+            version,
+            column,
+            old_val,
+            new_val,
+            userId,
+            currentTime,
+          ];
+          DB.executeQuery(addAuditLogQuery, auditValues)
+            .then(async (response) => {
+              resolve(version);
+            })
+            .catch((err) => {
+              resolve(version);
+            });
+        });
+      });
+    });
   },
 };

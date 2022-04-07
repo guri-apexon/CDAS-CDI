@@ -303,7 +303,6 @@ export default function MonitorTab({ fetchLatestData, protId }) {
           <Table
             key="studyDatasets"
             title="Study Datasets"
-            // subtitle={`${totalCount} datasets`}
             subtitle={
               <div style={{ position: "relative" }}>
                 <DatasetsIcon

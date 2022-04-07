@@ -265,25 +265,70 @@ content-type: application/json
 
 ### Create Dataset columns 
 
-POST http://localhost:4001/v1/api/vendor/update HTTP/1.1
+POST http://localhost:4001/v1/api/columnset/create HTTP/1.1
 content-type: application/json
 
 {
-  "columns": [
-    {
-    "protocol": "16",
-    "variableLabel": "IQVIA-CBEX",
-    "columnName": "IQVIA-CBEXCDR Vendor test",
-    "format": 1,
-    "dataType": "GDMPM-DAS",
-    "primary": "GDMPM-DAS",
-    "unique": "",
-    "required": "",
-    "minLen": "",
-    "maxLen": "",
-    "listOfValues": ""
-    }
-  ]
+  "values": [
+        {
+            "uniqueId": "u2",
+            "columnId": 3,
+            "variableLabel": "testlable",
+            "columnName": "testname",
+            "position": "",
+            "format": "testformat",
+            "dataType": "Alphanumeric",
+            "primaryKey": "No",
+            "unique": "No",
+            "required": "No",
+            "minLength": "1",
+            "maxLength": "10",
+            "values": "testlov",
+            "isInitLoad": false,
+            "isHavingError": true,
+            "isHavingColumnName": true
+        }
+    ],
+    "dsId": "abbbd1d9-e95b-42",
+    "dfId": "a0A0E000002o5kwUAA",
+    "dpId": "a0C0E000004Mvr0UAC",
+    "userId": "u1105372",
+    "isUpdateQuery": false,
+    "nQuery": ""
+}
+
+### Update Column Defination 
+
+POST http://localhost:4001/v1/api/columnset/update HTTP/1.1
+content-type: application/json
+
+{
+  "values": [
+        {
+            "uniqueId": "u2",
+            "columnId": 3,
+            "variableLabel": "testlable",
+            "columnName": "testname",
+            "position": "",
+            "format": "testformat",
+            "dataType": "Alphanumeric",
+            "primary": "No",
+            "unique": "No",
+            "required": "No",
+            "minLength": "1",
+            "maxLength": "10",
+            "values": "testlov",
+            "isInitLoad": false,
+            "isHavingError": true,
+            "isHavingColumnName": true
+        }
+    ],
+    "dsId": "abbbd1d9-e95b-42",
+    "dfId": "a0A0E000002o5kwUAA",
+    "dpId": "a0C0E000004Mvr0UAC",
+    "userId": "u1105372",
+    "isUpdateQuery": false,
+    "nQuery": ""
 }
 
 ### Activate DataFlow
@@ -375,26 +420,28 @@ POST http://localhost:4001/v1/api/dataset/create HTTP/1.1
 content-type: application/json
 
 {
-  "datapackageid": "Zn2Jyi7zMUbuULOL",
-  "datasetName": "asdfasdfsda_Asdfads",
-  "active": true,
-  "fileType": "SAS",
-  "encoding": "UTF-8",
-  "delimiter": "COMMA",
-  "dfTestFlag": 1,
-  "escapeCharacter": "",
-  "quote": "",
-  "headerRowNumber": 1,
-  "footerRowNumber": "",
-  "fileNamingConvention": "asdfadsfsa.sas7bdat",
-  "folderPath": "asdfsdasfasd",
-  "loadType": "Cumulative",
-  "clinicalDataType": [1],
-  "transferFrequency": "",
-  "overrideStaleAlert": "",
-  "rowDecreaseAllowed": "",
-  "insrt_tm": "",
-  "updt_tm": "",
+    "active": true,
+    "locationType": "SFTP",
+    "delimiter": "COMMA",
+    "fileType": "SAS",
+    "encoding": "UTF-8",
+    "escapeCharacter": "\\",
+    "quote": "''",
+    "headerRowNumber": 1,
+    "footerRowNumber": "",
+    "overrideStaleAlert": 3,
+    "rowDecreaseAllowed": 0,
+    "loadType": "Cumulative",
+    "datasetName": "dsdfs",
+    "clinicalDataType": [962],
+    "fileNamingConvention": "asfsad.sas7bdat",
+    "folderPath": "asfadssa",
+    "transferFrequency": "5",
+    "dpId": "k3v6cax0bw9c8of3",
+    "userId": "u1105372",
+    "testFlag": 0,
+    "dfId": "a0A0E000002o5kwUAA",
+    "studyId": "a020E000005Szl0QAC"
 }
 
 ### create jdbc dataset
@@ -403,18 +450,19 @@ POST http://localhost:4001/v1/api/dataset/create HTTP/1.1
 content-type: application/json
 
 {
-  "datapackageid": "Zn2Jyi7zMUbuULOL",
-  "datasetName": "asdfasdfsda_Asdfads",
-  "active": true,
-  "customSQLQuery": "",
-  "clinicalDataType": [1],
-  "customSQLQuery": "Yes",
-  "sQLQuery": "select * from data",
-  "tableName": "I2.TOAD_PLAN_TABLE",
-
-  "insrt_tm": "",
-  "updt_tm": "",
+    "datasetName": "adsfsadASFD_ADS",
+    "clinicalDataType": [269],
+    "isCustomSQL": "No",
+    "tableName": "sadfads",
+    "dataType": "Cumulative",
+    "locationType": "jdbc",
+    "dpId": "lzppvxq5thdawxxf",
+    "userId": "u1105372",
+    "testFlag": 1,
+    "dfId": "w2pujq36gmeux5od",
+    "studyId": "a020E000005Szl0QAC"
 }
+
 
 ### dataset details
 
@@ -461,13 +509,36 @@ content-type: application/json
 #     "insrt_tm": null
 #   }
 
-### update dataset
+### update dataset SFTP
 
 POST http://localhost:4001/v1/api/dataset/update HTTP/1.1
 content-type: application/json
 
 {
-  "query": "string"
+    "active": true,
+    "locationType": "SFTP",
+    "delimiter": "COMMA",
+    "fileType": "Excel",
+    "encoding": "UTF-8",
+    "escapeCharacter": "\\",
+    "quote": "''",
+    "headerRowNumber": "0",
+    "footerRowNumber": 0,
+    "overrideStaleAlert": "3",
+    "rowDecreaseAllowed": 0,
+    "loadType": "Cumulative",
+    "datasetName": "PKV2",
+    "fileNamingConvention": "dsadsad.xlsx",
+    "folderPath": null,
+    "clinicalDataType": [256],
+    "transferFrequency": "1",
+    "datasetid": "813dcc8c-7879-40",
+    "filePwd": "kffkfkkkkkkkkkkkkk",
+    "datapackageid": "a0C0E000004Mvr0UAC",
+    "userId": "u1105372",
+    "testFlag": 0,
+    "dfId": "a0A0E000002o5kwUAA",
+    "studyId": "a020E000005Szl0QAC"
 }
 
 

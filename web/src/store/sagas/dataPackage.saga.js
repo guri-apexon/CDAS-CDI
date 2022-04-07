@@ -15,6 +15,7 @@ import {
 // eslint-disable-next-line import/prefer-default-export
 export function* fetchPackagesData(params) {
   try {
+    console.log("fetchPackagesData:", params.dfId);
     const fetchData = yield call(
       axios.get,
       `${baseURL}/${PACKAGES_SEARCH}/${params.dfId}/${params.searchQuery}`,

@@ -14,7 +14,7 @@ import TextField from "apollo-react/components/TextField";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import { ReactComponent as DataPackageIcon } from "../../../../components/Icons/datapackage.svg";
-import "./DataPackages.scss";
+import "./index.scss";
 // import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, isSftp, validateFields } from "../../../../utils";
 // import {
@@ -57,6 +57,8 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
           name: "No package",
           password: "",
           path: "",
+          noPackageConfig: 1,
+          active: 1,
         });
         return false;
       }
@@ -74,6 +76,8 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
         name: namingConvention === "" ? "No package" : namingConvention,
         password: packagePassword,
         path: sftpPath,
+        noPackageConfig: configShow ? 0 : 1,
+        active: 1,
       };
       payloadBack(reqBody);
     },

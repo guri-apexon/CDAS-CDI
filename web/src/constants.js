@@ -57,6 +57,8 @@ export const UPDATE_DATA_PACKAGE_SUCCESS = "UPDATE_DATA_PACKAGE_SUCCESS";
 export const UPDATE_DATA_PACKAGE_FAILURE = "UPDATE_DATA_PACKAGE_FAILURE";
 
 export const GET_LOCATIONS_DATA = "GET_LOCATIONS_DATA";
+export const UPDATE_LEFT_PANEL = "UPDATE_LEFT_PANEL";
+export const UPDATE_DS_STATUS = "UPDATE_DS_STATUS";
 
 export const GET_DATA_KIND = "GET_DATA_KIND";
 export const FETCH_DATAKIND_SUCCESS = "FETCH_DATAKIND_SUCCESS";
@@ -188,7 +190,7 @@ export const FETCH_DATASET_INGESTION_FILE_HISTORY_FAILURE =
 export const GETSTUDYDF = "v1/api/dataflow/studyDataflowList";
 export const STUDYSEARCH = "v1/api/study/search-study";
 export const STUDYAPI = "v1/api/study";
-export const HARDDELETE = "v1/api/dataflow/hardDeleteNew";
+export const HARDDELETE = "v1/api/dataflow/hard-delete";
 export const SYNCNOW = "v1/api/dataflow/syncNow";
 export const ACTIVATEDF = "v1/api/dataflow/activate";
 export const INACTIVATE = "v1/api/dataflow/inActivate";
