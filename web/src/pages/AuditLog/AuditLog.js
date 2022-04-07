@@ -29,6 +29,7 @@ const AuditLog = () => {
   const dashboard = useSelector((state) => state.dashboard);
   const auditData = auditLogs.data;
   const dataSetCount = dashboard?.selectedDataFlow?.dataSets;
+  const dataflowName = dashboard?.selectedDataFlow?.dataFlowName || "";
   const [sortedColumnValue, setSortedColumnValue] = useState("user_name");
   const [sortOrderValue, setSortOrderValue] = useState("asc");
   const [inlineFilters, setInlineFilters] = useState([]);
@@ -68,7 +69,7 @@ const AuditLog = () => {
             column.sortFunction(sortedColumnValue, sortOrderValue)
           );
         }
-        console.log("filteredRows", filteredRows);
+        //  console.log("filteredRows", filteredRows);
       }
     });
     return filteredRows;
@@ -87,16 +88,21 @@ const AuditLog = () => {
 
   const downloadFileMethod = async (e) => {
     const fileExtension = ".xlsx";
-    const fileName = `AuditLog_${moment(new Date()).format("DDMMYYYY")}`;
+    const fileName = `${dataflowName}_AuditLog_${moment(new Date()).format(
+      "DDMMYYYY"
+    )}`;
     // console.log("inDown", exportHeader);
+    const exportRows = exportDataRows();
     const tempObj = {};
+    console.log(tableColumns);
     const temp = tableColumns
-      .filter((d) => d.hidden !== true)
+      .filter((d) => d.hidden !== true && d.ignore !== true)
       .map((d) => {
         tempObj[d.accessor] = d.header;
         return d;
       });
-    const newData = exportTableRows.map((obj) => {
+    console.log({ tempObj });
+    const newData = exportRows.map((obj) => {
       const newObj = pick(obj, Object.keys(tempObj));
       return newObj;
     });
@@ -108,7 +114,7 @@ const AuditLog = () => {
       pageNo,
       rowsPerPageRecord
     );
-    const exportRows = exportDataRows();
+
     if (exportRows.length <= 0) {
       e.preventDefault();
       const message = `There is no data on the screen to download because of which an empty file has been downloaded.`;
@@ -196,7 +202,7 @@ const AuditLog = () => {
           <>
             <div className="flex title">
               <Typography className="b-font" variant="title">
-                ACUSPHERE-NP-1998-CXA27260
+                {dataflowName}
               </Typography>
             </div>
             <div className="flex flex-center justify-between">
@@ -205,19 +211,17 @@ const AuditLog = () => {
                   ? `${dataSetCount} datasets`
                   : `${dataSetCount} dataset`}
               </Typography>
-              {/* <ButtonGroup
+
+              <ButtonGroup
                 alignItems="right"
                 buttonProps={[
                   {
-                    label: "Cancel",
+                    label: "Back",
                     size: "small",
-                  },
-                  {
-                    label: "Save",
-                    size: "small",
+                    onClick: () => history.push("/dashboard"),
                   },
                 ]}
-              /> */}
+              />
             </div>
           </>
         </Box>
