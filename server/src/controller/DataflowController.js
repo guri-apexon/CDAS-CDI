@@ -228,7 +228,7 @@ exports.createDataflow = async (req, res) => {
             : data[0].src_loc_id || null,
           helper.stringToBoolean(active) ? 1 : 0,
           configured || 0,
-          exptDtOfFirstProdFile || null,
+          firstFileDate || null,
           helper.stringToBoolean(testFlag) ? 1 : 0,
           data_in_cdr || "N",
           connectionType || null,
@@ -239,6 +239,7 @@ exports.createDataflow = async (req, res) => {
           protocolNumber,
           new Date(),
         ];
+        Logger.error(">>>", body);
         const query = `insert into ${schemaName}.dataflow 
           (dataflowid,name,vend_id,type,description,src_loc_id,active,configured,expt_fst_prd_dt,
             testflag,data_in_cdr,connectiontype,externalsystemname,externalid,

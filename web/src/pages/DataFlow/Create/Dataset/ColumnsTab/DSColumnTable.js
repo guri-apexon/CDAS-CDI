@@ -142,7 +142,7 @@ export default function DSColumnTable({
           uniqueId: `u${rows.length}`,
           columnId: rows.length + 1,
           variableLabel: "",
-          columnName: obj.column || "",
+          columnName: (obj && obj.column) || "",
           position: "",
           format: "",
           dataType: "",

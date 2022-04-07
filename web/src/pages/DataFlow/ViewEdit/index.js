@@ -23,6 +23,7 @@ import {
   hideErrorMessage,
   getLocationByType,
   addDataFlow,
+  updateDataFlow,
   getDataFlowDetail,
 } from "../../../store/actions/DataFlowAction";
 
@@ -141,19 +142,16 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
-    // console.log("FormValues?", FormValues);
-    // console.log("protId", protId);
     if (
-      FormValues.vendor &&
-      FormValues.locationName &&
+      FormValues.vendors &&
+      selectedLocation &&
       FormValues.firstFileDate &&
-      FormValues.serviceOwnerValue &&
       FormValues.description !== "" &&
       protId !== ""
     ) {
       const payload = {
-        vendorID: FormValues.vendor[0],
-        locationName: FormValues.locationName[0],
+        vendorID: FormValues.vendors[0],
+        src_loc_id: selectedLocation.value,
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.dataflowType,
         testFlag: FormValues.dataflowType === "test" ? "true" : "false",
@@ -161,11 +159,15 @@ const DataFlow = ({ FormValues, dashboard }) => {
         description: FormValues.description,
         firstFileDate: FormValues.firstFileDate,
         locationType: FormValues.locationType,
-        serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
+        serviceOwnerValue:
+          (FormValues.serviceOwnerValue &&
+            FormValues.serviceOwnerValue[0].label) ||
+          null,
         protocolNumberStandard: protId,
         externalSystemName: "CDI",
       };
-      await dispatch(addDataFlow(payload));
+      // await dispatch(addDataFlow(payload));
+      await dispatch(updateDataFlow(payload));
       history.push("/dashboard");
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");

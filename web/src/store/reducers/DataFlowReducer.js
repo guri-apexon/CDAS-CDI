@@ -17,6 +17,7 @@ import {
   FETCH_DATAFLOW_DETAIL_FAILURE,
   FETCH_DATAFLOW_DETAIL_SUCCESS,
   ADD_DATAFLOW_SUCCESS,
+  UPDATE_DATAFLOW_SUCCESS,
   SAVE_DATAFLOW_LOCAL_DETAIL,
   UPDATE_DS,
 } from "../../constants";
@@ -75,6 +76,10 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
 
       case ADD_DATAFLOW_SUCCESS:
+        newState.selectedDataFlow = action.dataflow;
+        break;
+
+      case UPDATE_DATAFLOW_SUCCESS:
         newState.selectedDataFlow = action.dataflow;
         break;
 
@@ -154,12 +159,12 @@ const DataFlowReducer = (state = initialState, action) =>
           exptfstprddt,
           loctyp,
           name,
-          srclocID,
+          srclocid,
           type,
           vendorid,
           vendorname,
           testflag,
-          locationName,
+          locationname,
           isSync,
         } = dataflowDetail;
 
@@ -177,7 +182,7 @@ const DataFlowReducer = (state = initialState, action) =>
         formData.locationType = loctyp;
         formData.name = name;
         formData.dataflowType = testflag === 1 ? "test" : "production";
-        formData.locations = [{ value: srclocID, label: locationName }];
+        formData.locations = [{ value: srclocid, label: locationname }];
         formData.dataStructure = type;
         formData.vendors = [vendorid];
         formData.vendorname = vendorname;
