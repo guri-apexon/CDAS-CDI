@@ -1,9 +1,5 @@
 const DB = require("../config/db");
-<<<<<<< HEAD
-const oracleDB = require("../config/oracleDB");
 const jdbc = require("../config/JDBC");
-=======
->>>>>>> f95777a2304853389694f1495f632146c2f8a427
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
