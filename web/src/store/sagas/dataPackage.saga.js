@@ -15,7 +15,6 @@ import {
 // eslint-disable-next-line import/prefer-default-export
 export function* fetchPackagesData(params) {
   try {
-    console.log("fetchPackagesData:", params.dfId);
     const fetchData = yield call(
       axios.get,
       `${baseURL}/${PACKAGES_SEARCH}/${params.dfId}/${params.searchQuery}`,
@@ -24,23 +23,6 @@ export function* fetchPackagesData(params) {
     yield put({
       type: PACKAGES_LIST_SUCCESS,
       packagesData: fetchData.data.data,
-    });
-  } catch (e) {
-    yield put({ type: PACKAGES_LIST_FAILURE, message: e.message });
-  }
-}
-
-export function* addDataPackage(params) {
-  try {
-    const fetchData = yield call(
-      axios.post,
-      `${baseURL}/${ADD_PACKAGE}`,
-      params.packageData
-    );
-
-    yield put({
-      type: ADD_PACKAGE_SUCCESS,
-      refreshData: true,
     });
   } catch (e) {
     yield put({ type: PACKAGES_LIST_FAILURE, message: e.message });
