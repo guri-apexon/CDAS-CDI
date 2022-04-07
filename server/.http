@@ -625,19 +625,22 @@ GET http://localhost:4001/v1/api/location/list/a139214c-bf90-4d HTTP/1.1
 content-type: application/json
 
 
-### update dataset
+### create location
 
-POST http://localhost:4001/v1/api/dataset/update HTTP/1.1
+POST http://localhost:4001/v1/api/location/create HTTP/1.1
 content-type: application/json
 
 {
-    "src_loc_id": "a139214c-bf90-4d",
-    "loc_typ": "SFTP",
-    "ip_servr": "DB ",
-    "port": null,
-    "cnn_url": null,
-    "data_strc": "tabular",
-    "active": 0,
-    "extrnl_sys_nm": "Externalsyst",
-    "loc_alias_nm": "LocationName"
+    "active": true,
+    "dataStructure": "tabular",
+    "locationName": "testLocation_123_vaithe",
+    "externalSytemName": "IQB",
+    "locationType": "Hive CDH",
+    "password": "Iqvia@123",
+    "userName": "ycdrssd",
+    "ipServer": "cdtdev-hive.quintiles.net",
+    "port": "10001",
+    "connURL": "jdbc:hive2://cdtdev-hive.quintiles.net:10001/db_hats0301;transportMode=https;httpPath=cliservice;ssl=1;AllowSelfSignedCerts=1;AuthMech=3",
+    "dbName": "db_hats0301",
+    "userId": "u1105372"
 }

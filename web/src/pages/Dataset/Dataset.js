@@ -129,7 +129,7 @@ const Dataset = () => {
     dsTestProdLock,
     isDatasetCreation,
   } = dataFlow;
-  const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
+  const { name: dataflowName, loctyp, testflag, srclocid } = dataFlowdetail;
   const {
     locationType: newLT,
     tbl_nm: tName,
