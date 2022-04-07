@@ -110,7 +110,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               columnName: column.columnName || "",
               format: column.format || "",
               dataType: column.dataType || "",
-              primary: column.primarykey === true ? "Yes" : "No",
+              primaryKey: column.primarykey === true ? "Yes" : "No",
               unique: column.unique === true ? "Yes" : "No",
               required: column.required === true ? "Yes" : "No",
               minLength: column.charactermin || "",
@@ -139,7 +139,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       if (correctHeader) {
         const newData = formatData(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
-        if (newData.length > 1) {
+        if (newData.length > 0) {
           setFormattedData(newData);
           setIsImportReady(true);
         } else {
@@ -162,8 +162,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
-    }
-    if (sqlColumns.length > 0) {
+    } else if (sqlColumns.length > 0) {
       setShowColumns(true);
       formatJDBCColumns(sqlColumns);
       setSelectedMethod("fromAPICall");
