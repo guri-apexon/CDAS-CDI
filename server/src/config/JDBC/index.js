@@ -18,8 +18,9 @@ const postgresqlDriver = path.join(
 const sqlServerDriver = path.join(
   __dirname,
   "Drivers",
-  "mssql-jdbc-9.4.1.jre8"
+  "mssql-jdbc-9.2.0.jre8.jar"
 );
+const hiveCDHServerDriver = path.join(__dirname, "Drivers", "HiveJDBC41.jar");
 
 if (!jinst.isJvmCreated()) {
   jinst.addOption("-Xrs");
@@ -28,6 +29,7 @@ if (!jinst.isJvmCreated()) {
     oracleDriver,
     postgresqlDriver,
     sqlServerDriver,
+    hiveCDHServerDriver,
   ]);
 }
 module.exports = async (
@@ -72,7 +74,7 @@ module.exports = async (
                 res.status(500).json({
                   status: 0,
                   message: "",
-                  error: err,
+                  error: err.message,
                 });
               } else {
                 //Execute a query
