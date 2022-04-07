@@ -342,10 +342,10 @@ export const columns = [
   },
   {
     header: "Primary?",
-    accessor: "primary",
+    accessor: "primaryKey",
     customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("primary"),
+    filterFunction: createStringArraySearchFilter("primaryKey"),
     filterComponent: createSelectFilterComponent(["Yes", "No"], {
       size: "small",
       multiple: true,
