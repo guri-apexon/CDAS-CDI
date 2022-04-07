@@ -1,7 +1,7 @@
 /* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/no-array-index-key */
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import Paper from "apollo-react/components/Paper";
@@ -23,10 +23,12 @@ import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapa
 import "./DataPackages.scss";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, toast } from "../../utils";
+import { submitDataPackage } from "../../services/ApiServices";
 import {
   addDataPackage,
   getPackagesList,
 } from "../../store/actions/DataPackageAction";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 // import CreatepackageForm from "./CreatePackageForm";
 
 const compressionTypes = [
@@ -64,6 +66,7 @@ const DataPackages = () => {
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
   const userInfo = getUserInfo();
+  const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
 
   const { dfId, selectedCard } = dashboard;
 
@@ -111,10 +114,10 @@ const DataPackages = () => {
   }, [packageData.openAddPackage]);
 
   // useEffect(() => {
-  //   getPackages();
-  // }, []);
+  //   console.log("packageData", packageData);
+  // }, [packageData]);
   // eslint-disable-next-line consistent-return
-  const submitPackage = () => {
+  const submitPackage = async () => {
     const validated = validateFields();
     setNotMatchedType(!validated);
     if (!validated) return false;
@@ -131,7 +134,13 @@ const DataPackages = () => {
       dataflow_id: dfId,
       user_id: userInfo.userId,
     };
-    dispatch(addDataPackage(reqBody));
+    const result = await submitDataPackage(reqBody);
+    if (result.status === 1) {
+      showSuccessMessage(result.message);
+      dispatch(addDataPackage());
+    } else {
+      showErrorMessage(result.message);
+    }
     resetForm();
   };
 
