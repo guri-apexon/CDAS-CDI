@@ -437,6 +437,8 @@ export default function DataflowTab({ updateData }) {
       accessor: "type",
       frozen: true,
       sortFunction: compareStrings,
+      filterFunction: createStringSearchFilter("type"),
+      filterComponent: TextFieldFilter,
     },
     {
       header: "Status",

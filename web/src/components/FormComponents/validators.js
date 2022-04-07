@@ -28,7 +28,7 @@ export const checkNumbers = (value) => {
 };
 
 export const checkNumeric = (value) => {
-  const regexp = /^[0-9.]+$/;
+  const regexp = /^[0-9]+$/;
   if (value !== "" && !regexp.test(value)) {
     return "Only numeric values are allowed";
   }
