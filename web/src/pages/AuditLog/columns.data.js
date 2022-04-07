@@ -37,22 +37,21 @@ const columns = [
     frozen: true,
   },
   {
-    header: "Audit Version",
+    header: "Audit Version    ",
     accessor: "log_version",
     sortFunction: compareStrings,
     // customCell: VersionCell,
     filterFunction: createStringSearchFilter("log_version"),
     filterComponent: TextFieldFilter,
-    width: "max-content",
-    align: "right",
+    align: "center",
   },
   {
-    header: <span style={{ marginLeft: 10 }}>Column Name</span>,
+    header: "Column Name",
     accessor: "column_name",
     sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("column_name"),
     filterComponent: TextFieldFilter,
-    width: "max-content",
+    align: "center",
   },
   {
     header: "Update Date",
@@ -61,6 +60,7 @@ const columns = [
     customCell: DateCell,
     filterFunction: dateFilterV2("update_dt"),
     filterComponent: DateFilter,
+    align: "center",
   },
   {
     header: "User",
@@ -68,6 +68,7 @@ const columns = [
     sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("user_name"),
     filterComponent: TextFieldFilter,
+    align: "center",
   },
   {
     header: "Attribute",
@@ -75,6 +76,7 @@ const columns = [
     sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("attribute"),
     filterComponent: TextFieldFilter,
+    align: "center",
   },
   {
     header: "Old Value",
@@ -82,6 +84,7 @@ const columns = [
     sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("old_val"),
     filterComponent: TextFieldFilter,
+    align: "center",
     width: 120,
   },
   {
@@ -91,6 +94,7 @@ const columns = [
     filterFunction: createStringSearchFilter("new_val"),
     filterComponent: TextFieldFilter,
     width: 150,
+    align: "center",
   },
 ];
 
