@@ -60,7 +60,7 @@ exports.listtables = async (res, req) => {
         q = `SELECT table_name as tableName FROM information_schema.tables`;
         break;
       default:
-        q = `show tables`;
+        q = "SELECT table_name as tableName FROM information_schema.tables;";
         break;
     }
 
