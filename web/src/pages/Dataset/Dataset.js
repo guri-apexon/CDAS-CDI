@@ -167,6 +167,7 @@ const Dataset = () => {
       history.push("/dashboard");
     }
     dispatch(getDataKindData());
+    dispatch(getLocationDetails(srclocid));
   }, []);
 
   useEffect(() => {
@@ -217,7 +218,6 @@ const Dataset = () => {
     if (getDataSetType(newLT) === "jdbc") {
       if (isCustomSQL === "No") {
         setColumnsActive(true);
-        getLocationDetails(srclocid);
       }
     }
     if (formDataSQL?.isCustomSQL === "No") {

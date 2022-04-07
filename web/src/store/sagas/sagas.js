@@ -35,6 +35,7 @@ import {
   GET_DATASET_PROPERTIES,
   GET_DATASET_INGESTION_ISSUE_TYPES,
   GET_DATASET_INGESTION_FILE_HISTORY,
+  GET_LOCATION_DETAIL,
 } from "../../constants";
 
 import {
@@ -61,6 +62,7 @@ import {
   fetchPreviewSQL,
   fetchVLCData,
   updateDatasetColumns,
+  getLocationDetails,
 } from "./dataSets.saga";
 
 import {
@@ -125,6 +127,7 @@ function* cdasCoreSaga() {
   yield takeLatest(UPDATE_SETTINGS_DATA, updateSettingsData);
   yield takeLatest(GET_TRANSFER_LOG, fetchTransferLog);
   yield takeLatest(GET_DATASET_PROPERTIES, fetchProperties);
+  yield takeLatest(GET_LOCATION_DETAIL, getLocationDetails);
   yield takeLatest(
     GET_DATASET_INGESTION_ISSUE_TYPES,
     fetchDatasetIngestionIssueTypes
