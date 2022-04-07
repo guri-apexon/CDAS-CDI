@@ -92,15 +92,17 @@ const AuditLog = () => {
       "DDMMYYYY"
     )}`;
     // console.log("inDown", exportHeader);
+    const exportRows = exportDataRows();
     const tempObj = {};
     console.log(tableColumns);
     const temp = tableColumns
-      .filter((d) => d.hidden !== true)
+      .filter((d) => d.hidden !== true && d.ignore !== true)
       .map((d) => {
         tempObj[d.accessor] = d.header;
         return d;
       });
-    const newData = exportTableRows.map((obj) => {
+    console.log({ tempObj });
+    const newData = exportRows.map((obj) => {
       const newObj = pick(obj, Object.keys(tempObj));
       return newObj;
     });
@@ -112,7 +114,7 @@ const AuditLog = () => {
       pageNo,
       rowsPerPageRecord
     );
-    const exportRows = exportDataRows();
+
     if (exportRows.length <= 0) {
       e.preventDefault();
       const message = `There is no data on the screen to download because of which an empty file has been downloaded.`;
