@@ -94,6 +94,7 @@ export const initialState = {
   sqlColumns: [],
   sqlTables: [],
   previewSQL: [],
+  locationDetail: {},
 };
 
 const DataFlowReducer = (state = initialState, action) =>
