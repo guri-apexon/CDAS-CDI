@@ -31,7 +31,7 @@ export const checkNumbers = (value) => {
 };
 
 export const checkNumeric = (value) => {
-  const regexp = /^[0-9.]+$/;
+  const regexp = /^[0-9]+$/;
   if (value !== "" && !regexp.test(value)) {
     return "Only numeric values are allowed";
   }
@@ -73,7 +73,7 @@ export const checkExceSupport = (value, fileType) => {
 };
 
 export const checkAlphaNumeric = (value, key = "") => {
-  const regexp = key === "values" ? /^[a-zA-Z0-9~_]+$/ : /\w+$/;
+  const regexp = key === "values" ? /^[a-zA-Z0-9~_\s]+$/ : /\w+$/;
   if (key === "format") {
     return false;
   }

@@ -216,7 +216,7 @@ export default function DSColumnTable({
           position: "",
           format: "",
           dataType: "",
-          primary: "No",
+          primaryKey: "No",
           unique: "No",
           required: "No",
           minLength: "",
@@ -255,7 +255,7 @@ export default function DSColumnTable({
         position: "",
         format: "",
         dataType: "",
-        primary: "No",
+        primaryKey: "No",
         unique: "No",
         required: "No",
         minLength: "",
@@ -585,14 +585,14 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {/* {console.log(
+        {console.log(
           "data",
           rows,
           editedRows,
           formattedData,
           dataOrigin,
           moreColumns
-        )} */}
+        )}
         <input
           type="file"
           id="file"
