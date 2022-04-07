@@ -384,14 +384,13 @@ export const formatData = (incomingData, protNo) => {
   let isAllDataMatch = false;
   if (data.length === 1) {
     isAllDataMatch = data[0][0] === protNo;
-    console.log("In single line", data[0][0]);
   } else {
     isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
   }
   const setYN = (d) => (d === "Y" ? "Yes" : "No");
   if (isAllDataMatch) {
     const newData =
-      data.length > 1
+      data.length > 0
         ? data.map((e, i) => {
             const newObj = {
               uniqueId: `u${i}`,

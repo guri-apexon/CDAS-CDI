@@ -338,11 +338,7 @@ const Dataset = () => {
               <div style={{ display: "flex", paddingLeft: 11 }}>
                 <DatasetsIcon />
                 <Typography className={classes.cTitle}>
-                  {datasetName
-                    ? datasetName
-                    : selectedDataset.datasetName
-                    ? selectedDataset.datasetName
-                    : "Dataset name"}
+                  {datasetName ?? selectedDataset.datasetName ?? "Dataset name"}
                 </Typography>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
