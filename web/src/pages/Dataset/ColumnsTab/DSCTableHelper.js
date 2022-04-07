@@ -25,6 +25,7 @@ import { ReactComponent as Plus } from "../../../components/Icons/roundPlusBlue.
 import {
   TextFieldFilter,
   createStringArraySearchFilter,
+  isSftp,
 } from "../../../utils/index";
 
 import {
@@ -112,13 +113,13 @@ export const editableSelectCell =
 
     // eslint-disable-next-line consistent-return
     const checkDisabled = () => {
-      if (row.locationType === "jdbc") {
-        if (row.testLock || row.prodLock) {
+      if (!isSftp(row.locationType)) {
+        if (row.dsTestLock || row.dsProdLock) {
           return true;
         }
       }
-      if (row.locationType === "sftp") {
-        if (row.prodLock) {
+      if (isSftp(row.locationType)) {
+        if (row.dsProdLock) {
           return true;
         }
       }
@@ -180,7 +181,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       fullWidth
       value={row[key]}
       inputProps={{
-        maxLength: row.fileType === "SAS" && key === "columnName" ? 32 : null,
+        maxLength: row.fileType === "SAS" ? 32 : null,
       }}
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
@@ -188,7 +189,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       error={!row.isInitLoad && errorText ? true : false}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
-      disabled={row.prodLock}
+      disabled={row.dsProdLock}
     />
   ) : (
     row[key]
@@ -419,8 +420,8 @@ export const CustomHeader = ({
   cancelMulti,
   newRows,
   disableSaveAll,
-  testLock,
-  prodLock,
+  dsTestLock,
+  dsProdLock,
   toggleFilters,
   changeHandler,
 }) => (
@@ -443,7 +444,7 @@ export const CustomHeader = ({
       )}
       {!isMultiAdd && (
         <>
-          {locationType === ("sftp" || "ftps") && (
+          {isSftp(locationType) && (
             <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
               <IconMenuButton
                 id="actions-1"
@@ -486,10 +487,10 @@ export const CustomHeader = ({
           </Button>
         </>
       )}
-      {locationType === ("sftp" || "ftps") && (
+      {isSftp(locationType) && (
         <Tooltip
           title={
-            (!isEditAll || !prodLock || !testLock) &&
+            (!isEditAll || !dsProdLock || !dsTestLock) &&
             "Import dataset column settings"
           }
           disableFocusListener
@@ -497,7 +498,7 @@ export const CustomHeader = ({
           <IconButton
             color="primary"
             size="small"
-            disabled={isEditAll || prodLock || testLock}
+            disabled={isEditAll || dsProdLock || dsTestLock}
             onClick={changeHandler}
           >
             <Upload />

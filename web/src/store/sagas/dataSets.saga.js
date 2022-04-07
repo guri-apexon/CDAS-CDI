@@ -123,7 +123,7 @@ export function* fetchDatasetDetail(action) {
     const fetchSBData = yield call(
       axios.post,
       `${baseURL}/${DATASETAPI}/detail/${action.dsId}`,
-      { datasetid: action.dsId }
+      { ...action }
     );
     yield put({
       type: FETCH_DATASET_DETAIL_SUCCESS,
@@ -163,6 +163,7 @@ export function* saveDataset(action) {
       `${baseURL}/${DATASETAPI}/create`,
       action.values
     );
+    console.log("resp", saveData);
     yield put({
       type: STORE_DATASET_SUCCESS,
       dataset: saveData.data.data,
@@ -207,14 +208,14 @@ export function* updateDataset(action) {
 
 export function* saveDatasetColumns(action) {
   try {
-    const saveData = yield call(
-      axios.post,
-      `${baseURL}/${COLUMNSAPI}/create/${action.dsId}`,
-      { ...action }
-    );
+    const saveData = yield call(axios.post, `${baseURL}/${COLUMNSAPI}/create`, {
+      ...action,
+    });
+
     yield put({
       type: STORE_DATASET_COLUMNS_SUCCESS,
       datasetColumns: saveData.data.data,
+      nQuery: action.nQuery,
     });
   } catch (e) {
     const errText = e.response?.data?.message
@@ -226,11 +227,9 @@ export function* saveDatasetColumns(action) {
 
 export function* updateDatasetColumns(action) {
   try {
-    const saveData = yield call(
-      axios.post,
-      `${baseURL}/${COLUMNSAPI}/update/${action.dsId}`,
-      { ...action }
-    );
+    const saveData = yield call(axios.post, `${baseURL}/${COLUMNSAPI}/update`, {
+      ...action,
+    });
     yield put({
       type: UPDATE_COLUMNS_SUCCESS,
       update: saveData.data.data,

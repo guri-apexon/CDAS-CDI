@@ -36,11 +36,13 @@ import {
   addDataFlow,
   setDataflowLocal,
 } from "../../../store/actions/DataFlowAction";
+import { getSQLColumns } from "../../../store/actions/DataSetsAction";
 import DataPackages from "./Datapackage";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import DataSet from "./Dataset";
 import { dataflowSave } from "../../../services/ApiServices";
+import { SelectedDataflow } from "../../../store/actions/DashboardAction";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -96,12 +98,15 @@ const DataFlow = ({
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [FormType, setFormType] = useState("dataflow");
   const [createdDataflow, setCreatedDataflow] = useState(null);
+  const [headerValue, setHeaderValue] = useState(1);
   const [currentStep, setCurrentStep] = useReducer((state, action) => {
     if (action?.step) return action.step;
     return action?.prev ? state - 1 : state + 1;
   }, 1);
-  const [selectedDatapackage, setselectedDatapackage] = useState("");
   const dataFlowData = useSelector((state) => state.dataFlow);
+  const {
+    datakind: { records: datakindArr },
+  } = useSelector((state) => state.dataSets);
   const { selectedLocation, loading, error } = dataFlowData;
   const { createTriggered, upsertLoading } = useSelector(
     (state) => state.cdiadmin
@@ -167,14 +172,12 @@ const DataFlow = ({
       selectedCard.prot_id !== ""
     ) {
       const payload = {
-        id: uuidv4(),
         vend_id: FormValues.vendor[0],
         src_loc_id: FormValues.locationName[0],
         dataStructure: FormValues.dataStructure,
-        connectionType: FormValues.dataflowType,
-        testFlag: FormValues.dataflowType === "test" ? true : false,
+        testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
-        firstFileDate: FormValues.firstFileDate,
+        exptDtOfFirstProdFile: FormValues.firstFileDate,
         locationType: FormValues.locationType,
         // serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
         // protocolNumberStandard: selectedCard.prot_id,
@@ -187,10 +190,6 @@ const DataFlow = ({
       setForm(payload);
       setFormType("datapackage");
       setCurrentStep();
-      console.log(
-        "FormValues?.locationType?.toUpperCase()",
-        FormValues?.locationType?.toUpperCase()
-      );
       dispatch(setDataflowLocal(FormValues));
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
@@ -209,10 +208,7 @@ const DataFlow = ({
   const AddDatapackage = (payload) => {
     const newForm = { ...myform };
     if (payload) {
-      const datapckageId = uuidv4();
-      setselectedDatapackage(datapckageId);
       const obj = {
-        id: datapckageId,
         dataSet: [],
         ...payload,
       };
@@ -224,23 +220,47 @@ const DataFlow = ({
   };
 
   const AddDatasetData = (datasetObj) => {
-    console.log("AddDatasetData", selectedDatapackage, datasetObj);
-    if (datasetObj.datasetName === "" || datasetObj.clinicalDataType === null) {
+    console.log("datasetObj", datasetObj);
+    if (
+      datasetObj.datasetName === "" ||
+      datasetObj.clinicalDataType === null ||
+      !datasetObj.clinicalDataType?.length
+    ) {
       messageContext.showErrorMessage("Please fill required fields to proceed");
       return false;
     }
     const newForm = { ...myform };
-    const datasetID = uuidv4();
-    const packageIndex = newForm.dataPackage.findIndex(
-      (r) => r.id === selectedDatapackage
-    );
-    newForm.dataPackage[0].dataSet[0] = { ...datasetObj, datasetID };
+    if (datasetObj.loadType) {
+      datasetObj.incremental = datasetObj.loadType === "Incremental" ? 1 : 0;
+    }
+    if (datasetObj.clinicalDataType) {
+      const datakindObj = datakindArr.find((x) => {
+        return x.value === datasetObj.clinicalDataType[0];
+      });
+      delete datasetObj.clinicalDataType;
+      datasetObj.dataKind = datakindObj?.name;
+    }
+    if (datasetObj.transferFrequency) {
+      datasetObj.dataTransferFrequency = datasetObj.transferFrequency;
+      delete datasetObj.transferFrequency;
+    }
+    if (datasetObj.overrideStaleAlert) {
+      datasetObj.OverrideStaleAlert = datasetObj.overrideStaleAlert;
+      delete datasetObj.overrideStaleAlert;
+    }
+    if (datasetObj.customQuery === "No" && datasetObj.tableName) {
+      dispatch(getSQLColumns(datasetObj.tableName));
+    }
+    if (datasetObj.headerRowNumber) {
+      setHeaderValue(datasetObj.headerRowNumber);
+    }
+
+    newForm.dataPackage[0].dataSet[0] = datasetObj;
     setForm(newForm);
     setCurrentStep();
   };
 
   const AddColumnDefinitions = (rows) => {
-    console.log("AddColumnDefinitions");
     const newForm = { ...myform };
     if (newForm.dataPackage[0].dataSet[0]) {
       newForm.dataPackage[0].dataSet[0].columncount = rows.length;
@@ -254,14 +274,17 @@ const DataFlow = ({
     };
     setSubmitting(true);
     const result = await dataflowSave(reqBody);
-    if (result?.dataflowId) setCreatedDataflow(result.dataflowId);
+    if (result?.dataflowDetails) setCreatedDataflow(result.dataflowDetails);
     if (result) {
       setSaveSuccess(true);
     }
     setSubmitting(false);
   };
   const redirectToDataflow = () => {
-    history.push(`/dashboard/dataflow-management/${createdDataflow}`);
+    dispatch(SelectedDataflow(createdDataflow));
+    history.push(
+      `/dashboard/dataflow-management/${createdDataflow?.dataFlowId}`
+    );
   };
   const nextStep = async () => {
     console.log("datasetFormValues?", datasetFormValues, currentStep);
@@ -338,8 +361,8 @@ const DataFlow = ({
             messageContext={messageContext}
             submitData={AddDatasetData}
             updateStep={(step) => setCurrentStep({ step })}
-            datapackageid={selectedDatapackage}
             getDataSetValue={getDataSetValue}
+            headerValue={headerValue}
           />
         </div>
       </>
@@ -467,7 +490,7 @@ const DataFlow = ({
       <Modal
         open={saveSuccess}
         variant="success"
-        onClose={() => setSaveSuccess(false)}
+        onClose={() => closeForm()}
         title="Data Flow saved successfully"
         message="Data Flow saved successfully"
         buttonProps={[

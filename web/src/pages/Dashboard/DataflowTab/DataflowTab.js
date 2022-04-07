@@ -263,14 +263,9 @@ export default function DataflowTab({ updateData }) {
   };
 
   const LinkCell = ({ row, column: { accessor } }) => {
-    const rowValue = row[accessor];
+    const rowValue = row[accessor] || 0;
     const { dataFlowId } = row;
-    if (rowValue) {
-      return (
-        <Link onClick={() => handleLink(dataFlowId, row)}>{rowValue}</Link>
-      );
-    }
-    return <></>;
+    return <Link onClick={() => handleLink(dataFlowId, row)}>{rowValue}</Link>;
   };
 
   const ActionCell = ({ row }) => {
@@ -350,12 +345,8 @@ export default function DataflowTab({ updateData }) {
             onChange={(event, value) => setSelectedFilter(value)}
           >
             <SegmentedControl value="all">All</SegmentedControl>
-            <SegmentedControl disabled={!(totalRows >= 1)} value="Production">
-              Production
-            </SegmentedControl>
-            <SegmentedControl disabled={!(totalRows >= 1)} value="Test">
-              Test
-            </SegmentedControl>
+            <SegmentedControl value="Production">Production</SegmentedControl>
+            <SegmentedControl value="Test">Test</SegmentedControl>
           </SegmentedControlGroup>
         </div>
         <div>

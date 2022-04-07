@@ -371,17 +371,23 @@ export const checkHeaders = (data) => {
     header.includes("Format") &&
     header.includes("Data Type") &&
     header.includes("Primary(Y/N)") &&
-    header.includes("Required(Y/N)") &&
     header.includes("Unique(Y/N)") &&
-    header.includes("Min Length") &&
-    header.includes("Max Length") &&
-    header.includes("List of Values");
+    header.includes("Required(Y/N)") &&
+    header.includes("Min length") &&
+    header.includes("Max length") &&
+    header.includes("List of values");
   return validation;
 };
 
 export const formatData = (incomingData, protNo) => {
   const data = incomingData.slice(1); // removing header
-  const isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
+  let isAllDataMatch = false;
+  if (data.length === 1) {
+    isAllDataMatch = data[0][0] === protNo;
+    console.log("In single line", data[0][0]);
+  } else {
+    isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
+  }
   const setYN = (d) => (d === "Y" ? "Yes" : "No");
   if (isAllDataMatch) {
     const newData =
@@ -509,37 +515,33 @@ export const generateConnectionURL = (locType, hostName, port, dbName) => {
     return hostName;
   }
   if (locType === "Hive CDP" || locType === "Hive CDH") {
-    if (locType === "Hive CDP") {
-      return port && hive2CDP
-        ? `jdbc:hive2://${hostName}:${port}/${hive2CDP}`
-        : "";
-    }
-    return port && hive2CDH
-      ? `jdbc:hive2://${hostName}:${port}/${hive2CDH}`
+    const transportMode = locType === "Hive CDP" ? "http" : "https";
+    return port && dbName
+      ? `jdbc:hive2://${hostName}:${port}/${dbName};transportMode=${transportMode};httpPath=cliservice;ssl=1;AllowSelfSignedCerts=1;AuthMech=3`
       : "";
   }
   if (locType === "Oracle") {
     return port && dbName
-      ? `jdbc:${locType}${oracle}${hostName}:${port}:${dbName}`
+      ? `jdbc:oracle:thin:@${hostName}:${port}:${dbName}`
       : "";
   }
   if (locType === "MySQL") {
-    return port && dbName
-      ? `jdbc:${locType}://${hostName}:${port}/${dbName}`
-      : "";
+    return port && dbName ? `jdbc:mysql://${hostName}:${port}/${dbName}` : "";
   }
   if (locType === "SQL Server") {
     return port && dbName
-      ? `jdbc:${locType}://${hostName}:${port};${SQLServer}=${dbName}`
+      ? `jdbc:sqlserver://${hostName}:${port};databaseName=${dbName}`
       : "";
   }
   if (locType === "PostgreSQL") {
     return port && dbName
-      ? `jdbc:${locType}://${hostName}:${port}/${dbName}`
+      ? `jdbc:postgresql://${hostName}:${port}/${dbName}`
       : "";
   }
   if (locType === "Impala") {
-    return port ? `jdbc:${locType}://${hostName}:${port}/${impala}` : "";
+    return port
+      ? `jdbc:impala://${hostName}:${port}/${dbName};ssl=1;AllowSelfSignedCerts=1;AuthMech=3`
+      : "";
   }
   if (locType && hostName && port && dbName) {
     return `jdbc:${locType}://${hostName}:${port}/${dbName}`;

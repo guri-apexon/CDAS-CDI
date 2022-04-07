@@ -26,15 +26,18 @@ import {
   getDatasetColumns,
   resetFTP,
   resetJDBC,
+  getSQLColumns,
 } from "../../store/actions/DataSetsAction";
+import { updatePanel } from "../../store/actions/DataPackageAction";
+import { getUserInfo, isSftp } from "../../utils";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
-import { getUserInfo } from "../../utils";
 
 const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
+const userInfo = getUserInfo();
 
 const styles = {
   rightPanel: {
@@ -92,6 +95,7 @@ const Dataset = () => {
   const [locationType, setLocationType] = useState("sftp");
   const [columnsActive, setColumnsActive] = useState(false);
   const dispatch = useDispatch();
+  const params = useParams();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
@@ -99,9 +103,16 @@ const Dataset = () => {
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
-  const { dfId, selectedCard } = dashboard;
-  const { datapackageid, datapackageName, datasetid, datasetName } =
-    selectedDSDetails;
+  const {
+    selectedCard,
+    selectedDataFlow: { dataFlowId: dfId },
+  } = dashboard;
+  const {
+    datapackageid: dpId,
+    datapackageName,
+    datasetid,
+    datasetName,
+  } = selectedDSDetails;
   const {
     loading,
     error,
@@ -111,10 +122,21 @@ const Dataset = () => {
     formDataSQL,
   } = dataSets;
   const { prot_id: studyId } = selectedCard;
-  const { dataFlowdetail, dsProdLock, dsTestLock, dsTestProdLock } = dataFlow;
+  const {
+    dataFlowdetail,
+    dsProdLock,
+    dsTestLock,
+    dsTestProdLock,
+    isDatasetCreation,
+  } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
-  const { locationType: newLT, customSQLQuery } = selectedDataset;
-  const userInfo = getUserInfo();
+  const {
+    locationType: newLT,
+    tbl_nm: tName,
+    tableName,
+    isCustomSQL,
+    customsql_yn: customQuery,
+  } = selectedDataset;
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -132,13 +154,14 @@ const Dataset = () => {
   };
 
   const getDataSetType = (type) => {
-    if (type?.toLowerCase() === ("sftp" || "ftps")) {
+    if (type === "SFTP" || type === "FTPS") {
       return "sftp";
     }
     return "jdbc";
   };
 
   useEffect(() => {
+    console.log("selectedDataFlow", dfId);
     if (dfId === "") {
       history.push("/dashboard");
     }
@@ -146,45 +169,59 @@ const Dataset = () => {
   }, []);
 
   useEffect(() => {
+    setValue(0);
+  }, [params]);
+
+  useEffect(() => {
     if (datasetid === null) {
       dispatch(resetFTP());
       dispatch(resetJDBC());
     } else {
-      dispatch(getDataSetDetail(datasetid));
+      dispatch(getDataSetDetail(datasetid, dfId, dpId));
       dispatch(getDatasetColumns(datasetid));
     }
   }, [datasetid]);
 
   useEffect(() => {
+    if (isDatasetCreated && isDatasetCreation) {
+      messageContext.showSuccessMessage("Dataset Created Successfully");
+      dispatch(updatePanel());
+    }
+
     if (isDatasetCreated) {
-      if (getDataSetType(loctyp) === ("sftp" || "ftps")) {
-        messageContext.showSuccessMessage("Dataset Created Successfully");
+      if (isSftp(loctyp)) {
         setValue(1);
-      } else {
-        messageContext.showSuccessMessage("Dataset Created Successfully");
+      }
+      if (!isSftp(loctyp)) {
+        if (customQuery || isCustomSQL) {
+          dispatch(getSQLColumns(tName || tableName));
+          setTimeout(() => {
+            setValue(1);
+          }, 500);
+        }
       }
     }
-  }, [isDatasetCreated, loctyp]);
+  }, [isDatasetCreated, isDatasetCreation, loctyp]);
 
   useEffect(() => {
     if (loctyp) {
       setLocationType(getDataSetType(loctyp));
-      if (getDataSetType(loctyp) === ("sftp" || "ftps")) {
+      if (isSftp(loctyp)) {
         setColumnsActive(true);
       }
     }
   }, [loctyp]);
 
   useEffect(() => {
-    if (newLT === "JDBC") {
-      if (customSQLQuery === "No") {
+    if (getDataSetType(newLT) === "jdbc") {
+      if (isCustomSQL === "No") {
         setColumnsActive(true);
       }
     }
-    if (formDataSQL?.customSQLQuery === "No") {
+    if (formDataSQL?.isCustomSQL === "No") {
       setColumnsActive(true);
     }
-  }, [newLT, customSQLQuery, formDataSQL]);
+  }, [newLT, isCustomSQL, formDataSQL]);
 
   const goToDataflow = () => {
     if (dfId) {
@@ -193,7 +230,7 @@ const Dataset = () => {
   };
 
   const gotoDataPackage = () => {
-    if (datapackageid) {
+    if (dpId) {
       history.push("/dashboard/data-packages");
     }
   };
@@ -219,7 +256,7 @@ const Dataset = () => {
   const jdbcRef = useRef();
 
   const submitForm = () => {
-    if (locationType === ("sftp" || "ftps")) {
+    if (isSftp(locationType)) {
       dispatch(submit("DataSetsForm"));
     } else {
       dispatch(submit("DataSetsFormSQL"));
@@ -231,8 +268,9 @@ const Dataset = () => {
     setTimeout(() => {
       const data = {
         ...formValue,
-        datapackageid,
+        dpId,
         userId: userInfo.userId,
+        locationType: getDataSetType(loctyp),
         testFlag: testflag,
         dfId,
         studyId,
@@ -246,7 +284,7 @@ const Dataset = () => {
   };
 
   const closeForm = async () => {
-    if (locationType === ("sftp" || "ftps")) {
+    if (isSftp(locationType)) {
       await dispatch(reset("DataSetsForm"));
     } else {
       jdbcRef.current.handleCancel();
@@ -257,10 +295,10 @@ const Dataset = () => {
   const getLeftPanel = React.useMemo(
     () => (
       <>
-        <LeftPanel dataflowSource={dataFlowdetail} />
+        <LeftPanel />
       </>
     ),
-    [dataFlowdetail]
+    []
   );
 
   return (
@@ -344,8 +382,7 @@ const Dataset = () => {
             <div style={{ padding: 20 }}>
               {value === 0 && (
                 <>
-                  {console.log("ltype", locationType)}
-                  {locationType === ("sftp" || "ftps") ? (
+                  {isSftp(locationType) ? (
                     <DataSetsForm
                       loading={loading}
                       onSubmit={onSubmit}
@@ -364,7 +401,7 @@ const Dataset = () => {
 
               {
                 // <JDBCForm
-                //   datapackageid={datapackageid}
+                //   dpId={dpId}
                 //   dataflowid={dfId}
                 //   datasetId={datasetid}
                 //   isDatasetCreated={isDatasetCreated}
@@ -378,8 +415,8 @@ const Dataset = () => {
               {value === 1 && (
                 <ColumnsTab
                   locationType={locationType}
-                  prodLock={dsProdLock}
-                  testLock={dsTestLock}
+                  dfId={dfId}
+                  dpId={dpId}
                 />
               )}
               {value === 2 && <VLCTab />}

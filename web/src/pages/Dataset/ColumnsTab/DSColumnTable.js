@@ -15,23 +15,31 @@ import {
   updateDatasetColumns,
 } from "../../../store/actions/DataSetsAction";
 import { deleteCD, updateLOV } from "../../../services/ApiServices";
-import { getUserInfo } from "../../../utils/index";
+import { getUserInfo, isSftp } from "../../../utils/index";
 
 export default function DSColumnTable({
   numberOfRows,
   dataOrigin,
   formattedData,
   locationType,
-  testLock,
-  prodLock,
+  dfId,
+  dpId,
 }) {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
+  const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDataset } = dataSets;
-  const { fileType, datasetid, headerrownumber, headerRowNumber } =
-    selectedDataset;
-
+  const {
+    fileType,
+    datasetid,
+    headerrownumber,
+    headerRowNumber,
+    customsql,
+    customsql_yn: customQuery,
+    tbl_nm: tableName,
+  } = selectedDataset;
+  const { dsProdLock, dsTestLock } = dataFlow;
   const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
     uniqueId: `u${index}`,
     columnId: index + 1,
@@ -40,7 +48,7 @@ export default function DSColumnTable({
     position: "",
     format: "",
     dataType: "",
-    primary: "No",
+    primaryKey: "No",
     unique: "No",
     required: "No",
     minLength: "",
@@ -49,6 +57,7 @@ export default function DSColumnTable({
     isInitLoad: true,
     isHavingError: false,
     isHavingColumnName: false,
+    isHavingDataType: false,
   }));
 
   const [rows, setRows] = useState([]);
@@ -68,6 +77,7 @@ export default function DSColumnTable({
   const [newRows, setNewRows] = useState("");
   const [disableSaveAll, setDisableSaveAll] = useState(true);
   const [moreColumns, setMoreColumns] = useState([...columns]);
+  const [selectedCN, setSelectedCN] = useState([]);
   const userInfo = getUserInfo();
 
   useEffect(() => {
@@ -75,9 +85,15 @@ export default function DSColumnTable({
     if (dataOrigin === "manually") {
       setSelectedRows([...initRows]);
       setEditedRows(initialRows);
-    } else {
-      setEditedRows(formattedData);
+    } else if (dataOrigin === "fromDB") {
       setRows(formattedData);
+      setEditedRows(formattedData);
+      // setDisableSaveAll(false);
+    } else {
+      const forImport = formattedData.map((e) => e.uniqueId);
+      setSelectedRows(forImport);
+      setEditedRows(formattedData);
+      setDisableSaveAll(false);
     }
   }, []);
 
@@ -88,8 +104,12 @@ export default function DSColumnTable({
   }, [rows]);
 
   useEffect(() => {
-    const allColumns = editedRows.map((e) => e.isHavingColumnName);
-    if (allColumns.every((e) => e === true)) {
+    const allColumnNames = editedRows.map((e) => e.isHavingColumnName);
+    const allDataTypes = editedRows.map((e) => e.isHavingDataType);
+    if (
+      allColumnNames.every((e) => e === true) &&
+      allDataTypes.every((e) => e === true)
+    ) {
       setDisableSaveAll(false);
     } else {
       setDisableSaveAll(true);
@@ -117,12 +137,19 @@ export default function DSColumnTable({
         userId: userInfo.userId,
         columnId: selectedRow.dbColumnId,
         dsId: datasetid,
-        dpId: "",
-        dfId: "",
+        dpId,
+        dfId,
         lov: selectedRow.values,
       });
     }
   };
+
+  // const handleNoHeaders = () => {
+  //   messageContext.showErrorMessage(
+  //     `Import is not available for files with no header row.`
+  //   );
+  //   handleDelete();
+  // };
 
   const inputFile = useRef(null);
 
@@ -166,7 +193,7 @@ export default function DSColumnTable({
         rw?.position?.toLowerCase().includes(value) ||
         rw?.format?.toLowerCase().includes(value) ||
         rw?.dataType?.toLowerCase().includes(value) ||
-        rw?.primary?.toLowerCase().includes(value) ||
+        rw?.primaryKey?.toLowerCase().includes(value) ||
         rw?.unique?.toLowerCase().includes(value) ||
         rw?.required?.toLowerCase().includes(value) ||
         rw?.minLength?.toString().includes(value) ||
@@ -198,6 +225,7 @@ export default function DSColumnTable({
           isInitLoad: true,
           isHavingError: false,
           isHavingColumnName: false,
+          isHavingDataType: false,
         },
       ];
       setSelectedRows([...selectedRows, `u${rows.length}`]);
@@ -236,6 +264,7 @@ export default function DSColumnTable({
         isInitLoad: true,
         isHavingError: false,
         isHavingColumnName: false,
+        isHavingDataType: false,
       }));
       const moreRows = multiRows.map((e) => e.uniqueId);
       setSelectedRows([...moreRows]);
@@ -294,17 +323,27 @@ export default function DSColumnTable({
   ];
 
   useEffect(() => {
-    if (headerrownumber > 0 || headerRowNumber > 0) {
-      const data = allColumns.map((e) => {
-        if (e.accessor === "position") {
-          e.hidden = true;
-        }
-        return e;
-      });
-      setMoreColumns(data);
+    if (isSftp(locationType)) {
+      if (headerrownumber > 0 || headerRowNumber > 0) {
+        const data = allColumns.map((e) => {
+          if (e.accessor === "position") {
+            e.hidden = true;
+          }
+          return e;
+        });
+        setMoreColumns(data);
+      } else {
+        const data = allColumns.map((e) => {
+          if (e.accessor === "columnName") {
+            e.hidden = true;
+          }
+          return e;
+        });
+        setMoreColumns(data);
+      }
     } else {
       const data = allColumns.map((e) => {
-        if (e.accessor === "columnName") {
+        if (e.accessor === "position") {
           e.hidden = true;
         }
         return e;
@@ -326,7 +365,7 @@ export default function DSColumnTable({
     }
   };
 
-  const onSaveAll = () => {
+  const onSaveAll = async () => {
     const removeSpaces = editedRows
       .map((e) => {
         e.values = e.values.trim();
@@ -344,11 +383,39 @@ export default function DSColumnTable({
         }
         return e;
       });
-    // console.log("save all edited, rows", editedRows, rows);
     setRows([...removeSpaces]);
     setSelectedRows([]);
     setEditedRows(rows);
-    dispatch(createDatasetColumns(rows, datasetid));
+    const existingCD = await removeSpaces.filter((e) => e.dbColumnId);
+    const newCD = await removeSpaces.filter((e) => !e.dbColumnId);
+    let newQuery = "";
+    if (customQuery === "No") {
+      const columnList = removeSpaces.map((e) => e.columnName).join(", ");
+      const wherePart = customsql.indexOf("where");
+      newQuery = `Select ${columnList} from ${tableName} ${customsql.slice(
+        wherePart
+      )}`;
+    }
+
+    if (newCD && newCD.length > 0) {
+      dispatch(
+        createDatasetColumns(
+          newCD,
+          datasetid,
+          dfId,
+          dpId,
+          userInfo.userId,
+          true,
+          newQuery
+        )
+      );
+    }
+
+    // if (existingCD && existingCD.length > 0) {
+    //   dispatch(
+    //     updateDatasetColumns(existingCD, datasetid, dfId, dpId, userInfo.userId, true, newQuery)
+    //   );
+    // }
   };
 
   const onCancelAll = () => {
@@ -367,6 +434,10 @@ export default function DSColumnTable({
   const formatSave = (inArray) => {
     const formatted = inArray;
     return formatted;
+  };
+
+  const generateColumn = (arr) => {
+    const cName = arr.map((e) => e.columnName).join(", ");
   };
 
   const onRowSave = async (uniqueId) => {
@@ -391,10 +462,41 @@ export default function DSColumnTable({
       })
       .find((e) => e.uniqueId === uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
+
+    let newQuery = "";
+    if (customQuery === "No") {
+      const selectedList = [...selectedCN, editedRowData?.columnName];
+      setSelectedCN(selectedList);
+      const splitted = customsql.split("where");
+      newQuery = `Select ${selectedList.join(
+        ", "
+      )} from ${tableName} where ${splitted[1].trim()}`;
+    }
+
     if (editedRowData?.dbColumnId) {
-      dispatch(updateDatasetColumns([editedRowData], datasetid));
+      dispatch(
+        updateDatasetColumns(
+          [editedRowData],
+          datasetid,
+          dfId,
+          dpId,
+          userInfo.userId,
+          true,
+          newQuery
+        )
+      );
     } else {
-      dispatch(createDatasetColumns([editedRowData], datasetid));
+      dispatch(
+        createDatasetColumns(
+          [editedRowData],
+          datasetid,
+          dfId,
+          dpId,
+          userInfo.userId,
+          true,
+          newQuery
+        )
+      );
     }
     setRows([...removeExistingRowData, editedRowData]);
     setEditedRows([...removeEdited]);
@@ -433,11 +535,24 @@ export default function DSColumnTable({
                 isHavingColumnName: true,
               };
             }
-            // showColumnNameRequried();
             return {
               ...row,
               [key]: value,
               isHavingColumnName: false,
+            };
+          }
+          if (key === "dataType") {
+            if (value.length >= 1) {
+              return {
+                ...row,
+                [key]: value,
+                isHavingDataType: true,
+              };
+            }
+            return {
+              ...row,
+              [key]: value,
+              isHavingDataType: false,
             };
           }
           if (row.isInitLoad) {
@@ -470,14 +585,14 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {console.log(
+        {/* {console.log(
           "data",
           rows,
           editedRows,
           formattedData,
           dataOrigin,
           moreColumns
-        )}
+        )} */}
         <input
           type="file"
           id="file"
@@ -508,8 +623,8 @@ export default function DSColumnTable({
             isEditAll,
             onRowCancel,
             onRowEdit,
-            testLock,
-            prodLock,
+            dsTestLock,
+            dsProdLock,
             locationType,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
@@ -537,8 +652,8 @@ export default function DSColumnTable({
             cancelMulti,
             newRows,
             disableSaveAll,
-            testLock,
-            prodLock,
+            dsTestLock,
+            dsProdLock,
             changeHandler,
           }}
         />
@@ -584,7 +699,7 @@ export default function DSColumnTable({
         buttonProps={
           isEditLOVs
             ? [
-                { label: "Save", onClick: hideViewLOVs },
+                { label: "Save", onClick: handleSaveLOV },
                 { label: "Cancel", onClick: () => setIsEditLOVs(false) },
               ]
             : [

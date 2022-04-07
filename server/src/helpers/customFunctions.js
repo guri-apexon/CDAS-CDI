@@ -23,20 +23,28 @@ const getAlphaNumeric = () => {
 
 exports.generateUniqueID = function () {
   return getAlphaNumeric();
-  const unique_id = uuid();
-  return unique_id.slice(0, 16);
+  // const unique_id = uuid();
+  // return unique_id.slice(0, 16);
 };
 exports.createUniqueID = () => {
   return getAlphaNumeric();
-  return crypto.randomBytes(3 * 4).toString("base64");
+  // return crypto.randomBytes(3 * 4).toString("base64");
 };
 exports.getCurrentTime = () => {
   return moment().utc().format("YYYY-MM-DD HH:mm:ss");
 };
 
 exports.readVaultData = async (vaultPath) => {
-  const { data } = await vault.read(`kv/${vaultPath}`);
-  return data;
+  vault
+    .read(`kv/${vaultPath}`)
+    .then((res) => {
+      // console.log(res.data);
+      return res.data;
+    })
+    .catch((err) => {
+      // console.log("err", err);
+      return null;
+    });
 };
 
 // { user: usr_nm, password: pswd }
@@ -64,4 +72,8 @@ exports.stringToBoolean = (string) => {
     default:
       return Boolean(string);
   }
+};
+
+exports.convertEscapeChar = (str) => {
+  return str ? String.raw`${str}`.replace(/\\/g, "\\\\") : "";
 };
