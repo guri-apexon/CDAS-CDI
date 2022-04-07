@@ -88,7 +88,7 @@ export const DataTypeEditableSelectCell =
         fullWidth
         canDeselect={false}
         value={row[key]}
-        error={!row.isInitLoad && errorText ? true : false}
+        error={!row.isInitLoad && errorText}
         helperText={!row.isInitLoad ? errorText : ""}
         onChange={(e) =>
           row.editRow(row.uniqueId, key, e.target.value, errorText)
@@ -132,7 +132,7 @@ export const editableSelectCell =
         fullWidth
         canDeselect={false}
         value={row[key]}
-        error={!row.isInitLoad && errorText ? true : false}
+        error={!row.isInitLoad && errorText}
         helperText={!row.isInitLoad ? errorText : ""}
         onChange={(e) =>
           row.editRow(row.uniqueId, key, e.target.value, errorText)
@@ -163,7 +163,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
+      error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStylesNo}
     />
@@ -186,7 +186,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
+      error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
       disabled={row.dsProdLock}
@@ -207,7 +207,7 @@ export const FormatCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
+      error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
     />
@@ -227,7 +227,7 @@ export const EditableCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
+      error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
     />
@@ -313,7 +313,7 @@ export const columns = [
   {
     header: "Position",
     accessor: "position",
-    customCell: EditableCell,
+    customCell: NumericEditableCell,
     sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("position"),
     filterComponent: TextFieldFilter,
