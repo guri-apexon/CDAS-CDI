@@ -14,6 +14,7 @@ import {
   RESET_JDBC_FORM,
   UPDATE_COLUMNS_DATA,
   UPDATE_DS_STATUS,
+  GET_LOCATION_DETAIL,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -143,5 +144,12 @@ export const updateDSStatus = (status) => {
   return {
     type: UPDATE_DS_STATUS,
     status,
+  };
+};
+
+export const getLocationDetails = (id) => {
+  return {
+    type: GET_LOCATION_DETAIL,
+    id,
   };
 };

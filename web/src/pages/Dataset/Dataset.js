@@ -27,6 +27,7 @@ import {
   resetFTP,
   resetJDBC,
   getSQLColumns,
+  getLocationDetails,
 } from "../../store/actions/DataSetsAction";
 import { updatePanel } from "../../store/actions/DataPackageAction";
 import { getUserInfo, isSftp } from "../../utils";
@@ -216,6 +217,7 @@ const Dataset = () => {
     if (getDataSetType(newLT) === "jdbc") {
       if (isCustomSQL === "No") {
         setColumnsActive(true);
+        getLocationDetails(srclocid);
       }
     }
     if (formDataSQL?.isCustomSQL === "No") {

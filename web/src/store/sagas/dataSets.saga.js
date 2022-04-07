@@ -32,6 +32,9 @@ import {
   FETCH_PREVIEW_SQL_FAILURE,
   FETCH_PREVIEW_SQL_SUCCESS,
   COLUMNSAPI,
+  LOCATIONAPI,
+  FETCH_LOCATION_DETAIL_FAILURE,
+  FETCH_LOCATION_DETAIL_SUCCESS,
 } from "../../constants";
 
 export function* fetchDataKindData(action = null) {
@@ -243,6 +246,27 @@ export function* updateDatasetColumns(action) {
       type: UPDATE_COLUMNS_FAILURE,
       message: errText,
       values: action.values,
+    });
+  }
+}
+
+export function* getLocationDetails(action) {
+  try {
+    const getData = yield call(
+      axios.get,
+      `${baseURL}/${LOCATIONAPI}/detail/${action.id}`
+    );
+    yield put({
+      type: FETCH_LOCATION_DETAIL_SUCCESS,
+      locationDetail: getData.data.data,
+    });
+  } catch (e) {
+    const errText = e.response?.data?.message
+      ? e.response.data.message
+      : e.message;
+    yield put({
+      type: FETCH_LOCATION_DETAIL_FAILURE,
+      message: errText,
     });
   }
 }

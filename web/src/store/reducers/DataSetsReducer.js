@@ -40,6 +40,9 @@ import {
   RESET_FTP_FORM,
   RESET_JDBC_FORM,
   UPDATE_DS_STATUS,
+  GET_LOCATION_DETAIL,
+  FETCH_LOCATION_DETAIL_FAILURE,
+  FETCH_LOCATION_DETAIL_SUCCESS,
 } from "../../constants";
 
 const defaultData = {
@@ -328,6 +331,19 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = false;
         newState.error = action.message;
         break;
+
+      case GET_LOCATION_DETAIL:
+        newState.loading = true;
+        break;
+      case FETCH_LOCATION_DETAIL_SUCCESS:
+        newState.loading = false;
+        newState.locationDetail = action.locationDetail;
+        break;
+      case FETCH_LOCATION_DETAIL_FAILURE:
+        newState.loading = false;
+        newState.error = action.message;
+        break;
+
       default:
         newState.loading = false;
         break;

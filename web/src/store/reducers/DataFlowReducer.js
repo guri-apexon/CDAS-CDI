@@ -38,7 +38,6 @@ export const initialState = {
   dataStructure: "tabular",
   selectedVendor: {},
   dataFlowdetail: {},
-  locationDetails: {},
   testProdLock: false,
   prodLock: false,
   testLock: false,
