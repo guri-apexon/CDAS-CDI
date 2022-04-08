@@ -151,7 +151,7 @@ export default function DSColumnTable({
           required: "No",
           minLength: "",
           maxLength: "",
-          values: obj.value || "",
+          values: (obj && obj.column) || "",
           isInitLoad: true,
           isHavingError: false,
           isHavingColumnName: false,
