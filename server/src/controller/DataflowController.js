@@ -6,6 +6,7 @@ const _ = require("lodash");
 const { createUniqueID } = require("../helpers/customFunctions");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
+const { addDataflowHistory } = require("./CommonController");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 exports.getStudyDataflows = async (req, res) => {
@@ -1090,23 +1091,28 @@ exports.fetchdataflowSource = async (req, res) => {
 
 exports.fetchdataflowDetails = async (req, res) => {
   try {
-    let dataflow_id = req.params.id;
+    let { id: dataflow_id } = req.params;
     let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
-    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
-      inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    inner join ${schemaName}.datakind dk on (dk.datakindid=d3.datakindid)
       inner join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
       where d.dataflowid ='${dataflow_id}'`;
-    console.log(q);
     Logger.info({
       message: "fetchdataflowDetails",
       dataflow_id,
     });
     let { rows } = await DB.executeQuery(q);
-    console.log(rows);
+    if (!rows.length) {
+      return apiResponse.ErrorResponse(
+        res,
+        "There is no dataflow exist with this id"
+      );
+    }
     let response = rows;
     let tempDP = _.uniqBy(response, "datapackageid");
     let tempDS = _.uniqBy(response, "datasetid");
@@ -1145,7 +1151,7 @@ exports.fetchdataflowDetails = async (req, res) => {
               footerRowNumber: el.footerrownumber,
               escapeCode: el.escapecode,
               delimiter: el.delimiter,
-              dataKind: el.datakindid,
+              dataKind: el.datakind,
               naming_convention: el.naming_convention,
               columnDefinition: [],
             };
@@ -1247,6 +1253,82 @@ exports.hardDeleteNew = async (req, res) => {
     });
   } catch (err) {
     Logger.error("catch :hardDeleteNew");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.updateDataflowConfig = async (req, res) => {
+  try {
+    let {
+      connectionType,
+      dataStructure,
+      description,
+      externalSystemName,
+      firstFileDate,
+      locationName,
+      locationType,
+      protocolNumberStandard,
+      serviceOwnerValue,
+      testFlag,
+      vendorID,
+      dataflowId,
+      userId,
+    } = req.body;
+
+    if (
+      vendorID !== null &&
+      protocolNumberStandard !== null &&
+      description !== "" &&
+      dataflowId &&
+      userId
+    ) {
+      const dFTimestamp = helper.getCurrentTime();
+      const dFBody = [
+        vendorID,
+        dataStructure,
+        description,
+        locationName,
+        helper.stringToBoolean(testFlag) ? 1 : 0,
+        connectionType,
+        externalSystemName,
+        dFTimestamp,
+        dataflowId,
+      ];
+      // insert dataflow schema into db
+      const updatedDF = await DB.executeQuery(
+        `update ${schemaName}.dataflow set vend_id=$1, type=$2, description=$3, src_loc_id=$4, testflag=$5, connectiontype=$6, externalsystemname=$7, updt_tm=$8 WHERE dataflowid=$9 returning *;`,
+        dFBody
+      );
+      if (!updatedDF?.rowCount) {
+        return apiResponse.ErrorResponse(res, "Something went wrong on update");
+      }
+      const dataflowObj = updatedDF.rows[0];
+      const updatedLogs = await addDataflowHistory({
+        dataflowId,
+        externalSystemName,
+        userId,
+        config_json: dataflowObj,
+      });
+
+      if (updatedLogs) {
+        return apiResponse.successResponseWithData(
+          res,
+          "Dataflow config updated successfully.",
+          { ...dataflowObj, version: updatedLogs }
+        );
+      }
+    } else {
+      return apiResponse.ErrorResponse(
+        res,
+        "Vendor name , protocol number and description is required"
+      );
+    }
+    return apiResponse.ErrorResponse(res, "Something went wrong");
+  } catch (err) {
+    console.log(err);
+    //throw error in json response with status 500.
+    Logger.error("catch :createDataflow");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }

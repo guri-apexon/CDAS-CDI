@@ -214,6 +214,7 @@ const DataSetsFormBase = (props) => {
                 singleline
                 inputProps={{ maxLength: 255 }}
                 label="Table Name"
+                disabled={prodLock}
               />
               <ReduxFormTextField
                 fullWidth
@@ -260,6 +261,7 @@ const DataSetsFormBase = (props) => {
                   singleline
                   inputProps={{ maxLength: 255 }}
                   label="Offset Column"
+                  disabled={prodLock}
                 />
               )}
             </>

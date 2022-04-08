@@ -79,7 +79,7 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
   const userInfo = getUserInfo();
   const location = useLocation();
   const viewAuditLog = () => {
-    history.push("/audit-logs");
+    history.push(`/dashboard/audit-logs/${dataflowId}`);
   };
   const getPackages = (dfid, query = "") => {
     if (dfid) {

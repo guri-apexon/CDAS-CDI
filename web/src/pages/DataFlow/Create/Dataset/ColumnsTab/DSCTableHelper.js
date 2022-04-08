@@ -35,6 +35,7 @@ import {
   checkFormat,
   checkRequiredValue,
   checkCharacterLength,
+  checkMaxLength,
 } from "../../../../../components/FormComponents/validators";
 
 const fieldStyles = {
@@ -158,7 +159,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
   const { editMode } = row;
-  const errorText = checkRequired(row[key]);
+  const errorText = checkRequired(row[key]) && checkMaxLength(row[key], 32);
   return editMode ? (
     <TextField
       size="small"

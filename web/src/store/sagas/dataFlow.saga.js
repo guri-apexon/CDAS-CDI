@@ -14,7 +14,7 @@ import {
   DATAFLOWAPI,
   FETCH_DATAFLOW_DETAIL_FAILURE,
   FETCH_DATAFLOW_DETAIL_SUCCESS,
-  DATAFLOW_SAVE,
+  DATAFLOW_UPDATE_API,
   ADD_DATAFLOW_SUCCESS,
   ADD_DATAFLOW_FAILURE,
 } from "../../constants";
@@ -23,7 +23,7 @@ export function* addDataFlow(params) {
   try {
     const fetchData = yield call(
       axios.post,
-      `${baseURL}/${DATAFLOW_SAVE}`,
+      `${baseURL}/${DATAFLOW_UPDATE_API}`,
       params.dataflow
     );
 

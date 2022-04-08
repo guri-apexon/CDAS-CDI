@@ -162,7 +162,7 @@ const Dataset = () => {
   };
 
   useEffect(() => {
-    console.log("selectedDataFlow", dfId);
+    console.log("datsetRender");
     if (dfId === "") {
       history.push("/dashboard");
     }

@@ -38,11 +38,7 @@ import {
   GET_LOCATION_DETAIL,
 } from "../../constants";
 
-import {
-  addDataPackage,
-  fetchPackagesData,
-  updateDataPackage,
-} from "./dataPackage.saga";
+import { fetchPackagesData, updateDataPackage } from "./dataPackage.saga";
 
 import {
   fetchFlowData,
@@ -100,7 +96,6 @@ function* cdasCoreSaga() {
   );
   yield takeLatest(ADD_DATAFLOW, addDataFlow);
   yield takeLatest(PACKAGES_LIST, fetchPackagesData);
-  yield takeLatest(ADD_DATA_PACKAGE, addDataPackage);
   yield takeLatest(UPDATE_DATA_PACKAGE, updateDataPackage);
   yield takeLatest(GET_VENDORS_DATA, fetchVendorsData);
   yield takeLatest(GET_LOCATIONS_DATA, fetchLocationsData);
