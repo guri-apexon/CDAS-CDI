@@ -104,7 +104,6 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
             </div>
             {configShow && !disabled && (
               <div className="package-form">
-                {/* <CreatepackageForm onSubmit={onSubmit} /> */}
                 <Select
                   required
                   error={notMatchedType}

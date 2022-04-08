@@ -32,6 +32,7 @@ import searchStudy, {
 } from "../../../services/ApiServices";
 import "./index.scss";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
+import { SelectedDataflow } from "../../../store/actions/DashboardAction";
 
 const styles = {
   paper: {
@@ -516,18 +517,29 @@ const CloneDataFlow = ({
     );
   });
 
+  // eslint-disable-next-line consistent-return
   const handleClone = async () => {
     try {
       setLoading(true);
       const res = await getDataFlowDetails(selectedStudy.dataflow.dataflowid);
-      console.log("res", res);
+      if (!res) {
+        messageContext.showErrorMessage(`Something went wrong`);
+        return false;
+      }
       res.externalSystemName = "CDI";
-      const data = await dataflowSave(res);
+      const { dataflowDetails } = await dataflowSave(res);
       setLoading(false);
-      messageContext.showSuccessMessage(
-        `Selected Dataflow has been cloned to this study.`
-      );
-      history.push(`/dashboard/dataflow-management/${data.dataflowId}`);
+      if (dataflowDetails) {
+        dispatch(SelectedDataflow(dataflowDetails));
+        messageContext.showSuccessMessage(
+          `Selected Dataflow has been cloned to this study.`
+        );
+        history.push(
+          `/dashboard/dataflow-management/${dataflowDetails?.dataFlowId}`
+        );
+      } else {
+        messageContext.showErrorMessage(`Something wrong with clone`);
+      }
     } catch (error) {
       console.log(error);
       setLoading(false);
