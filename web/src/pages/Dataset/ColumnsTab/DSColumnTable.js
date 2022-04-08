@@ -6,7 +6,6 @@ import Table from "apollo-react/components/Table";
 import TextField from "apollo-react/components/TextField";
 import Link from "apollo-react/components/Link";
 import Modal from "apollo-react/components/Modal";
-
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../utils/downloadData";
@@ -32,7 +31,7 @@ export default function DSColumnTable({
   const { selectedDataset } = dataSets;
   const {
     fileType,
-    datasetid,
+    datasetid: dsId,
     headerrownumber,
     headerRowNumber,
     customsql,
@@ -131,13 +130,23 @@ export default function DSColumnTable({
     setSelectedRow(row);
   };
 
-  const handleSaveLOV = () => {
+  const handleSaveLOV = async () => {
+    // let newValue;
+    // const { values } = selectedRow;
+    // const isFirst = (await values.trim().charAt(0)) === "~";
+    // const isLast = (await values.trim().charAt(values.length - 1)) === "~";
+    // if (isFirst) {
+    //   newValue = await values.substring(1);
+    // }
+    // if (isLast) {
+    //   newValue = await values.slice(0, -1);
+    // }
     if (selectedRow.dbColumnId) {
       const newQuery = "";
       dispatch(
         updateDatasetColumns(
-          [selectedRow],
-          datasetid,
+          [{ ...selectedRow }],
+          dsId,
           dfId,
           dpId,
           userInfo.userId,
@@ -148,7 +157,7 @@ export default function DSColumnTable({
       // updateLOV({
       //   userId: userInfo.userId,
       //   columnId: selectedRow.dbColumnId,
-      //   dsId: datasetid,
+      //   dsId,
       //   dpId,
       //   dfId,
       //   lov: selectedRow.values,
@@ -202,7 +211,7 @@ export default function DSColumnTable({
       return (
         rw?.variableLabel?.toLowerCase().includes(value) ||
         rw?.columnName?.toLowerCase().includes(value) ||
-        rw?.position?.toLowerCase().includes(value) ||
+        rw?.position?.toString().includes(value) ||
         rw?.format?.toLowerCase().includes(value) ||
         rw?.dataType?.toLowerCase().includes(value) ||
         rw?.primaryKey?.toLowerCase().includes(value) ||
@@ -413,7 +422,7 @@ export default function DSColumnTable({
       dispatch(
         createDatasetColumns(
           newCD,
-          datasetid,
+          dsId,
           dfId,
           dpId,
           userInfo.userId,
@@ -425,7 +434,7 @@ export default function DSColumnTable({
 
     // if (existingCD && existingCD.length > 0) {
     //   dispatch(
-    //     updateDatasetColumns(existingCD, datasetid, dfId, dpId, userInfo.userId, true, newQuery)
+    //     updateDatasetColumns(existingCD, dsId, dfId, dpId, userInfo.userId, true, newQuery)
     //   );
     // }
   };
@@ -479,7 +488,7 @@ export default function DSColumnTable({
       dispatch(
         updateDatasetColumns(
           [editedRowData],
-          datasetid,
+          dsId,
           dfId,
           dpId,
           userInfo.userId,
@@ -491,7 +500,7 @@ export default function DSColumnTable({
       dispatch(
         createDatasetColumns(
           [editedRowData],
-          datasetid,
+          dsId,
           dfId,
           dpId,
           userInfo.userId,
