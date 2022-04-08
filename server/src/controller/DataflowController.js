@@ -6,6 +6,7 @@ const _ = require("lodash");
 const { createUniqueID } = require("../helpers/customFunctions");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
+const { push } = require("../config/logger");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 exports.getStudyDataflows = async (req, res) => {
@@ -157,7 +158,9 @@ exports.getStudyDataflows = async (req, res) => {
   }
 };
 
-exports.createDataflow = async (req, res) => {
+const commonInsertFunction = async (req, res) => {
+  // console.log("Test Success , before  ");
+  // }
   try {
     const uid = createUniqueID();
     let {
@@ -536,6 +539,136 @@ exports.createDataflow = async (req, res) => {
   }
 };
 
+exports.createDataflow = async (req, res) => {
+  // return; // this return need to delete
+  try {
+    const Data = [
+      {
+        key: "protocolNumberStandard",
+        value: req.body.protocolNumber,
+        type: "string",
+      },
+      { key: "vendorName", value: req.body.vendorName, type: "string" },
+      { key: "type", value: req.body.dataStructure, type: "string" },
+      { key: "name", value: req.body.description, type: "string" },
+      // externalID: req.body.externalID,
+      {
+        key: "externalSystemName",
+        value: req.body.externalSystemName,
+        type: "string",
+      },
+      { key: "location", value: req.body.locationType, type: "string" },
+      {
+        key: "testFlag",
+        value: helper.stringToBoolean(req.body.testFlag) ? true : false,
+        type: "boolean",
+      },
+      { key: "description", value: req.body.description, type: "string" },
+      {
+        key: "active",
+        value: helper.stringToBoolean(req.body.active) ? true : false,
+        type: "boolean",
+      },
+    ];
+    var validate = [];
+
+    // Validation Function call for dataFlow
+    let dataRes = helper.validation(Data);
+    if (dataRes.length > 0) {
+      validate.push(dataRes);
+    } else {
+      if (req.body.dataPackage && req.body.dataPackage.length > 0) {
+        for (let each of req.body.dataPackage) {
+          // console.log("data package data", each);
+
+          if (each.dataSet && each.dataSet.length > 0) {
+            for (let obj of each.dataSet) {
+              const dsArray = [
+                { key: "mnemonic", value: obj.datasetName, type: "string" },
+                { key: "dataKind", value: obj.dataKind, type: "string" },
+              ];
+
+              // Validation Function call for data set
+              let dsRes = helper.validation(dsArray);
+              if (dsRes.length > 0) {
+                validate.push(dsRes);
+              } else {
+                // console.log("data set data", dsData);
+
+                if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                  for (let el of obj.columnDefinition) {
+                    const clArray = [
+                      { key: "clName", value: el.columnName, type: "string" },
+                      { key: "cldataType", value: el.dataType, type: "string" },
+                      {
+                        key: "primaryKey",
+                        value: helper.stringToBoolean(el.primaryKey)
+                          ? true
+                          : false,
+                        type: "boolean",
+                      },
+                      {
+                        key: "required",
+                        value: helper.stringToBoolean(el.required)
+                          ? true
+                          : false,
+                        type: "boolean",
+                      },
+                      {
+                        key: "unique",
+                        value: helper.stringToBoolean(el.required)
+                          ? true
+                          : false,
+                        type: "boolean",
+                      },
+                    ];
+
+                    // Validation Function call for column defination
+                    let clRes = helper.validation(clArray);
+                    if (clRes.length > 0) {
+                      validate.push(clRes);
+                    }
+                  }
+
+                  // If Column is not = 0 then Column Comunt is not null
+                  dsArray.push({
+                    key: "columnCount",
+                    value: obj.columncount,
+                    type: "number",
+                  });
+
+                  // Validation Function call for column Number fields
+                  let cnRes = helper.validation(dsArray);
+                  if (cnRes.length > 0) {
+                    validate.push(cnRes);
+                  }
+
+                  // console.log("column data", Data);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // console.log("data flow data", Data);
+
+    if (validate.length > 0) {
+      console.log("testt 245");
+      // return apiResponse.ErrorResponse(res, validate);
+    } else {
+      commonInsertFunction(req, res);
+    }
+  } catch (err) {
+    console.log(err);
+    //throw error in json response with status 500.
+    Logger.error("catch :createDataflow");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
 const hardDeleteTrigger = async (dataflowId, user) => {
   const values = [dataflowId];
   let result, dataFlow;
@@ -863,6 +996,133 @@ exports.getDataflowDetail = async (req, res) => {
 
 exports.updateDataFlow = async (req, res) => {
   try {
+    const Data = [
+      {
+        key: "protocolNumberStandard",
+        value: req.body.protocolNumber,
+        type: "string",
+      },
+      { key: "vendorName", value: req.body.vendorName, type: "string" },
+      { key: "type", value: req.body.dataStructure, type: "string" },
+      { key: "name", value: req.body.description, type: "string" },
+      // externalID: req.body.externalID,
+      {
+        key: "externalSystemName",
+        value: req.body.externalSystemName,
+        type: "string",
+      },
+      { key: "location", value: req.body.locationType, type: "string" },
+      {
+        key: "testFlag",
+        value: req.body.testFlag,
+        type: "boolean",
+      },
+      { key: "description", value: req.body.description, type: "string" },
+      {
+        key: "active",
+        value: req.body.active,
+        type: "boolean",
+      },
+    ];
+    var validate = [];
+
+    // Validation Function call for dataFlow
+    let dataRes = helper.validation(Data);
+    if (dataRes.length > 0) {
+      validate.push(dataRes);
+    } else {
+      if (req.body.dataPackage && req.body.dataPackage.length > 0) {
+        for (let each of req.body.dataPackage) {
+          // console.log("data package data", each);
+
+          if (each.dataSet && each.dataSet.length > 0) {
+            for (let obj of each.dataSet) {
+              const dsArray = [
+                { key: "mnemonic", value: obj.datasetName, type: "string" },
+                { key: "dataKind", value: obj.dataKind, type: "string" },
+              ];
+
+              // Validation Function call for data set
+              let dsRes = helper.validation(dsArray);
+              if (dsRes.length > 0) {
+                validate.push(dsRes);
+              } else {
+                // console.log("data set data", dsData);
+
+                if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                  for (let el of obj.columnDefinition) {
+                    const clArray = [
+                      { key: "clName", value: el.columnName, type: "string" },
+                      { key: "cldataType", value: el.dataType, type: "string" },
+                      {
+                        key: "primaryKey",
+                        value: el.primaryKey,
+                        type: "boolean",
+                      },
+                      {
+                        key: "required",
+                        value: el.required,
+                        type: "boolean",
+                      },
+                      {
+                        key: "unique",
+                        value: el.required,
+                        type: "boolean",
+                      },
+                    ];
+
+                    // Validation Function call for column defination
+                    let clRes = helper.validation(clArray);
+                    if (clRes.length > 0) {
+                      validate.push(clRes);
+                    }
+                  }
+
+                  // If Column is not = 0 then Column Comunt is not null
+                  dsArray.push({
+                    key: "columnCount",
+                    value: obj.columncount,
+                    type: "number",
+                  });
+
+                  // Validation Function call for column Number fields
+                  let cnRes = helper.validation(dsArray);
+                  if (cnRes.length > 0) {
+                    validate.push(cnRes);
+                  }
+
+                  // console.log("column data", Data);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // console.log("data flow data", Data);
+
+    if (validate.length > 0) {
+      console.log("Validation Failed 1112");
+      return apiResponse.ErrorResponse(res, validate);
+    } else {
+      console.log("Validation Success 1115");
+      const externalID = req.body.externalID;
+
+      let selectDataFlow = `select * from ${schemaName}.dataflow where externalid='${externalID}'`;
+      let { rows } = await DB.executeQuery(selectDataFlow);
+
+      // console.log(rows);
+      if (rows.length > 0) {
+        console.log("Update Query");
+        return apiResponse.successResponseWithData(res, "Success", rows);
+      } else {
+        // commonInsertFunction(req, res);
+        console.log("insert Query");
+      }
+    }
+
+    return;
     let {
       active,
       connectionType,

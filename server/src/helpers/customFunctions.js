@@ -1,6 +1,9 @@
 const uuid = require("uuid");
 const crypto = require("crypto");
 const moment = require("moment");
+const { forEach } = require("lodash");
+
+// const joi = require("joi");
 
 const endpoint = process.env.VAULT_END_POINT;
 const token = process.env.ROOT_TOKEN;
@@ -76,4 +79,31 @@ exports.stringToBoolean = (string) => {
 
 exports.convertEscapeChar = (str) => {
   return str ? String.raw`${str}`.replace(/\\/g, "\\\\") : "";
+};
+
+exports.validation = (data) => {
+  // console.log(data);
+  let msg = [];
+
+  data.forEach((val) => {
+    // console.log(val.key);
+    if (val.type == "boolean") {
+      val.value = stringToBoolean(val.value);
+    }
+    if (
+      val.value !== null &&
+      val.value !== "" &&
+      val.value !== undefined &&
+      typeof val.value === val.type
+    ) {
+      // console.log(val.key);
+    } else {
+      msg.push({
+        text: `this ${val.key} field is required and data type should be ${val.type} `,
+        status: false,
+      });
+    }
+  });
+  console.log(msg);
+  return msg;
 };
