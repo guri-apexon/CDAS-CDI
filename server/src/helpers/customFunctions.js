@@ -35,11 +35,15 @@ exports.getCurrentTime = () => {
 };
 
 exports.readVaultData = async (vaultPath) => {
-  const res = await vault.read(`kv/${vaultPath}`);
-  if (res.data) {
-    return res.data;
+  try {
+    const res = await vault.read(`kv/${vaultPath}`);
+    if (res.data) {
+      return res.data;
+    }
+    return null;
+  } catch (error) {
+    return null;
   }
-  return null;
 };
 
 // { user: usr_nm, password: pswd }
