@@ -1,4 +1,5 @@
 const DB = require("../config/db");
+const jdbc = require("../config/JDBC");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
@@ -438,25 +439,25 @@ exports.getDatasetDetail = async (req, res) => {
   }
 };
 
-exports.previewSQL = async (req, res) => {
-  try {
-    Logger.info({ message: "previewSQL" });
+// exports.previewSQL = async (req, res) => {
+//   try {
+//     Logger.info({ message: "previewSQL" });
 
-    const queryData = previewSQLMock.queryData;
-    return apiResponse.successResponseWithData(
-      res,
-      "Operation success",
-      queryData
-    );
-  } catch (err) {
-    //throw error in json response with status 500.
-    console.log(err);
-    Logger.error("catch :previewSQL");
-    Logger.error(err);
+//     const queryData = previewSQLMock.queryData;
+//     return apiResponse.successResponseWithData(
+//       res,
+//       "Operation success",
+//       queryData
+//     );
+//   } catch (err) {
+//     //throw error in json response with status 500.
+//     console.log(err);
+//     Logger.error("catch :previewSQL");
+//     Logger.error(err);
 
-    return apiResponse.ErrorResponse(res, err);
-  }
-};
+//     return apiResponse.ErrorResponse(res, err);
+//   }
+// };
 
 exports.getTables = async (req, res) => {
   try {
@@ -474,6 +475,56 @@ exports.getTables = async (req, res) => {
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.previewSql = async (req, res) => {
+  try {
+    let _locationType = "MySQL";
+    let responseBody = {};
+    let recordsCount = 10;
+    let {
+      locationType,
+      customQuery,
+      tableName,
+      columnCount,
+      connectionPassword,
+      connectionUserName,
+      connectionUrl,
+      customSql,
+      driverName,
+    } = req.body;
+    // if (locationType === _locationType) {
+    if (customQuery === "YES") {
+      //get connection
+      let q = customSql;
+      switch (locationType?.toLowerCase()) {
+        case "oracle":
+          q = `${q} FETCH FIRST ${recordsCount} ROWS ONLY`;
+          break;
+        default:
+          q = `${q} LIMIT ${recordsCount};`;
+          break;
+      }
+      await jdbc(
+        connectionUserName,
+        connectionPassword,
+        connectionUrl,
+        driverName,
+        q,
+        "query executed successfully.",
+        res
+      );
+    } else {
+      return apiResponse.ErrorResponse(res, "Custom query is not true");
+    }
+    // } else {
+    //   return apiResponse.ErrorResponse(res, "Dataset location type is not SQL");
+    // }
+  } catch (error) {
+    console.log(err);
+    Logger.error("catch :datasetpreviewSql");
+    Logger.error(err);
   }
 };
 
