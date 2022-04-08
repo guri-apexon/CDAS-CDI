@@ -90,7 +90,7 @@ exports.addPackage = function (req, res) {
 
     DB.executeQuery(query, insertValues).then(async (response) => {
       const package = response.rows[0] || [];
-      const historyVersion = await CommonController.addHistory(
+      const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
         "New Package"
@@ -98,7 +98,7 @@ exports.addPackage = function (req, res) {
       if (!historyVersion) throw new Error("History not updated");
       return apiResponse.successResponseWithData(
         res,
-        "Created Successfully",
+        "Datapackage created successfully",
         {}
       );
     });
@@ -117,7 +117,7 @@ exports.changeStatus = function (req, res) {
     DB.executeQuery(query).then(async (response) => {
       const package = response.rows[0] || [];
       const oldActive = Number(active) == 1 ? "0" : "1";
-      const historyVersion = await CommonController.addHistory(
+      const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
         "active",
@@ -149,7 +149,7 @@ exports.deletePackage = function (req, res) {
 
     DB.executeQuery(query).then(async (response) => {
       const package = response.rows[0] || [];
-      const historyVersion = await CommonController.addHistory(
+      const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
         "del_flg",

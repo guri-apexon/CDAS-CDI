@@ -39,6 +39,7 @@ import {
   FETCH_PREVIEW_SQL_FAILURE,
   RESET_FTP_FORM,
   RESET_JDBC_FORM,
+  UPDATE_DS_STATUS,
 } from "../../constants";
 
 const defaultData = {
@@ -48,7 +49,7 @@ const defaultData = {
   fileType: "SAS",
   encoding: "UTF-8",
   escapeCharacter: "\\",
-  quote: `''`,
+  quote: `'`,
   headerRowNumber: 1,
   footerRowNumber: "",
   overrideStaleAlert: 3,
@@ -59,7 +60,7 @@ const defaultData = {
 const defaultDataSQL = {
   locationType: "JDBC",
   active: true,
-  customSQLQuery: "Yes",
+  isCustomSQL: "Yes",
   dataType: "Cumulative",
 };
 
@@ -79,7 +80,7 @@ export const initialState = {
   selectedDataset: {},
   defaultDelimiter: "COMMA",
   defaultEscapeCharacter: "\\",
-  defaultQuote: `''`,
+  defaultQuote: `'`,
   defaultHeaderRowNumber: 1,
   defaultFooterRowNumber: "",
   defaultLoadType: "Cumulative",
@@ -121,12 +122,22 @@ const DataFlowReducer = (state = initialState, action) =>
         };
         break;
 
+      case UPDATE_DS_STATUS:
+        newState.isDatasetCreated = action.status;
+        break;
+
       case STORE_DATASET_SUCCESS:
         newState.loading = false;
         newState.isDatasetCreated = !state.isDatasetCreated;
         newState.selectedDataset = {
           ...action.values,
           datasetid: action.dataset.datasetid,
+          customsql_yn: action.dataset.customsql_yn,
+          customsql: action.dataset.customsql,
+          fileType: action.dataset.type,
+          headerrownumber: action.dataset.headerrownumber,
+          tbl_nm: action.dataset.tbl_nm,
+          dataset_fltr: action.dataset.dataset_fltr,
         };
         if (action.values.fileType) {
           newState.formData = action.values;
@@ -153,9 +164,14 @@ const DataFlowReducer = (state = initialState, action) =>
       case STORE_DATASET_COLUMNS_SUCCESS:
         newState.loading = false;
         newState.datasetColumns = action.datasetColumns;
+        newState.selectedDataset = {
+          ...state.selectedDataset,
+          customsql: action.nQuery,
+        };
         newState.isColumnsConfigured =
           action.datasetColumns.length > 0 ? true : false;
         newState.error = null;
+        newState.sucessMsg = "Column Defination created Successfully";
         break;
       case STORE_DATASET_COLUMNS_FAILURE:
         newState.loading = false;
@@ -253,7 +269,7 @@ const DataFlowReducer = (state = initialState, action) =>
           quote,
           headerrownumber,
           footerrownumber,
-          naming_convention,
+          name,
           path,
           datakindid,
           data_freq,
@@ -264,7 +280,7 @@ const DataFlowReducer = (state = initialState, action) =>
           customsql_yn,
           customsql,
           offsetcolumn,
-          offsetvalues,
+          dataset_fltr,
           tbl_nm,
         } = datasetDetail;
         if (type) {
@@ -277,7 +293,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.quote = quote;
           newState.formData.headerRowNumber = headerrownumber;
           newState.formData.footerRowNumber = footerrownumber;
-          newState.formData.fileNamingConvention = naming_convention;
+          newState.formData.fileNamingConvention = name;
           newState.formData.folderPath = path;
           newState.formData.clinicalDataType = [datakindid];
           newState.formData.transferFrequency = data_freq;
@@ -291,13 +307,13 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL.active = active === 1 ? true : false;
           newState.formData.clinicalDataType = [datakindid];
           newState.formDataSQL.datasetName = mnemonic;
-          newState.formDataSQL.customSQLQuery = customsql_yn;
+          newState.formDataSQL.isCustomSQL = customsql_yn;
           newState.formDataSQL.sQLQuery = customsql;
           newState.formDataSQL.offsetColumn = offsetcolumn;
           newState.formDataSQL.tableName = tbl_nm;
-          newState.formDataSQL.filterCondition = offsetvalues;
-          newState.formData.dataType =
-            incremental === "Y" ? "Incremental" : "Cumulative";
+          newState.formDataSQL.filterCondition = dataset_fltr;
+          newState.formDataSQL.dataType =
+            incremental === "N" ? "Cumulative" : "Incremental";
         }
         newState.selectedDataset = action.datasetDetail;
         break;

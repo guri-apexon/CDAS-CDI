@@ -278,7 +278,7 @@ content-type: application/json
             "position": "",
             "format": "testformat",
             "dataType": "Alphanumeric",
-            "primary": "No",
+            "primaryKey": "No",
             "unique": "No",
             "required": "No",
             "minLength": "1",
@@ -292,7 +292,9 @@ content-type: application/json
     "dsId": "abbbd1d9-e95b-42",
     "dfId": "a0A0E000002o5kwUAA",
     "dpId": "a0C0E000004Mvr0UAC",
-    "userId": "u1105372"
+    "userId": "u1105372",
+    "isUpdateQuery": false,
+    "nQuery": ""
 }
 
 ### Update Column Defination 
@@ -324,7 +326,9 @@ content-type: application/json
     "dsId": "abbbd1d9-e95b-42",
     "dfId": "a0A0E000002o5kwUAA",
     "dpId": "a0C0E000004Mvr0UAC",
-    "userId": "u1105372"
+    "userId": "u1105372",
+    "isUpdateQuery": false,
+    "nQuery": ""
 }
 
 ### Activate DataFlow
@@ -416,28 +420,27 @@ POST http://localhost:4001/v1/api/dataset/create HTTP/1.1
 content-type: application/json
 
 {
-   "active": true,
+    "active": true,
     "locationType": "SFTP",
     "delimiter": "COMMA",
-    "fileType": "Excel",
+    "fileType": "SAS",
     "encoding": "UTF-8",
     "escapeCharacter": "\\",
     "quote": "''",
-    "headerRowNumber": "0",
+    "headerRowNumber": 1,
     "footerRowNumber": "",
     "overrideStaleAlert": 3,
     "rowDecreaseAllowed": 0,
     "loadType": "Cumulative",
-    "datasetName": "SRds2",
-    "filePwd": "fasdfsadf",
-    "transferFrequency": "2",
-    "fileNamingConvention": "fasdfads.xls",
-    "folderPath": "dfafasdf",
-    "clinicalDataType": [257],
-    "dpId": "a0C0E00000BvGDVUA3",
+    "datasetName": "dsdfs",
+    "clinicalDataType": [962],
+    "fileNamingConvention": "asfsad.sas7bdat",
+    "folderPath": "asfadssa",
+    "transferFrequency": "5",
+    "dpId": "k3v6cax0bw9c8of3",
     "userId": "u1105372",
-    "testFlag": 1,
-    "dfId": "a0A0E000004iociUAA",
+    "testFlag": 0,
+    "dfId": "a0A0E000002o5kwUAA",
     "studyId": "a020E000005Szl0QAC"
 }
 
@@ -447,15 +450,19 @@ POST http://localhost:4001/v1/api/dataset/create HTTP/1.1
 content-type: application/json
 
 {
-  "datapackageid": "Zn2Jyi7zMUbuULOL",
-  "datasetName": "asdfasdfsda_Asdfads",
-  "active": true,
-  "customSQLQuery": "",
-  "clinicalDataType": [1],
-  "customSQLQuery": "Yes",
-  "sQLQuery": "select * from data",
-  "tableName": "I2.TOAD_PLAN_TABLE"
+    "datasetName": "adsfsadASFD_ADS",
+    "clinicalDataType": [269],
+    "isCustomSQL": "No",
+    "tableName": "sadfads",
+    "dataType": "Cumulative",
+    "locationType": "jdbc",
+    "dpId": "lzppvxq5thdawxxf",
+    "userId": "u1105372",
+    "testFlag": 1,
+    "dfId": "w2pujq36gmeux5od",
+    "studyId": "a020E000005Szl0QAC"
 }
+
 
 ### dataset details
 

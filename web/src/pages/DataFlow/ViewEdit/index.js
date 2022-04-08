@@ -28,6 +28,8 @@ import {
 
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
+import { getUserInfo } from "../../../utils";
+import { updateDataflow } from "../../../services/ApiServices";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -72,13 +74,20 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const dataFlowData = useSelector((state) => state.dataFlow);
   const dashboardData = useSelector((state) => state.dashboard);
   const dataSetCount = dashboardData?.selectedDataFlow?.dataSets;
-  const { selectedLocation, createTriggered, error, loading, dataFlowdetail } =
-    dataFlowData;
+  const {
+    selectedLocation,
+    createTriggered,
+    error,
+    loading,
+    dataFlowdetail,
+    updated,
+  } = dataFlowData;
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
   const [dataflowSource, setDataFlowSource] = useState({});
   const { dataflowId } = useParams();
+  const userInfo = getUserInfo();
 
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
@@ -148,7 +157,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
       FormValues.locationName &&
       FormValues.serviceOwnerValue &&
       FormValues.description !== "" &&
-      protId !== ""
+      protId !== "" &&
+      dataflowId
     ) {
       const payload = {
         vendorID: FormValues.vendors[0],
@@ -163,9 +173,15 @@ const DataFlow = ({ FormValues, dashboard }) => {
         serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
         protocolNumberStandard: protId,
         externalSystemName: "CDI",
+        dataflowId,
+        userId: userInfo.userId,
       };
-      await dispatch(addDataFlow(payload));
-      history.push("/dashboard");
+      const result = await updateDataflow(payload);
+      if (result.status === 1) {
+        messageContext.showSuccessMessage(result.message);
+      } else {
+        messageContext.showErrorMessage(result.message);
+      }
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
     }

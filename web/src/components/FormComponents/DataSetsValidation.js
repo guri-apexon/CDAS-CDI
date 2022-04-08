@@ -23,9 +23,10 @@ const dataSetsValidation = ({
   delimiter,
   headerRowNumber,
   footerRowNumber,
-  customSQLQuery,
+  isCustomSQL,
   sQLQuery,
   filterCondition,
+  tableName,
 }) =>
   removeUndefined({
     datasetName: checkRequired(datasetName) || checkAlphaNumeric(datasetName),
@@ -46,9 +47,10 @@ const dataSetsValidation = ({
       checkRequired(delimiter) && fileType?.toLowerCase() === "delimited"
         ? "Required"
         : "",
-    customSQLQuery: checkRequired(customSQLQuery),
+    isCustomSQL: checkRequired(isCustomSQL),
     sQLQuery: checkValidQuery(sQLQuery),
-    filterCondition: checkfilterCondition(filterCondition),
+    // filterCondition: checkfilterCondition(filterCondition),
+    tableName: checkRequired(tableName),
   });
 
 export default dataSetsValidation;

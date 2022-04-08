@@ -6,7 +6,7 @@ const _ = require("lodash");
 const { createUniqueID } = require("../helpers/customFunctions");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
-const { push } = require("../config/logger");
+const { addDataflowHistory } = require("./CommonController");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 exports.getStudyDataflows = async (req, res) => {
@@ -243,7 +243,7 @@ const commonInsertFunction = async (req, res) => {
       (dataflowid,name,vend_id,type,description,src_loc_id,active,configured,expt_fst_prd_dt,
         testflag,data_in_cdr,connectiontype,externalsystemname,externalid,
         fsrstatus,prot_id,insrt_tm,updt_tm, refreshtimestamp) VALUES 
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17);`,
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17) returning dataflowid as "dataFlowId", name as "dataFlowName", type as adapter, description, active as status, testflag, connectiontype as "locationType", fsrstatus as "fsrStatus", prot_id as "studyId", externalsystemname as "externalSourceSystem";`,
         DFBody
       );
       let ts = new Date().toLocaleString();
@@ -253,7 +253,9 @@ const commonInsertFunction = async (req, res) => {
         : "Inactive";
       ResponseBody.timestamp = ts;
       ResponseBody.version = 1;
-      ResponseBody.dataflowId = uid;
+      ResponseBody.dataflowDetails = createDF.rows?.length
+        ? createDF?.rows[0]
+        : null;
       if (dataPackage && dataPackage.length > 0) {
         ResponseBody.data_packages = [];
         // if datapackage exists
@@ -344,6 +346,30 @@ const commonInsertFunction = async (req, res) => {
               } else {
                 dsPasswordStatus = "No";
               }
+
+              let sqlQuery = "";
+              if (obj.customQuery === "No") {
+                if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                  const cList = obj.columnDefinition
+                    .map((el) => el.name || el.columnName)
+                    .join(", ");
+
+                  sqlQuery = `Select ${cList} from ${obj.tableName} ${
+                    obj.conditionalExpression
+                      ? obj.conditionalExpression
+                      : "where 1=1"
+                  }`;
+                } else {
+                  sqlQuery = `Select from ${obj.tableName} ${
+                    obj.conditionalExpression
+                      ? obj.conditionalExpression
+                      : "where 1=1"
+                  }`;
+                }
+              } else {
+                sqlQuery = obj.customSql;
+              }
+
               let DSBody = [
                 dsUid,
                 dpUid,
@@ -361,7 +387,7 @@ const commonInsertFunction = async (req, res) => {
                 obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
                 obj.headerRowNumber || 0,
                 obj.footerRowNumber || 0,
-                obj.customSql || null,
+                sqlQuery || null,
                 obj.customQuery || null,
                 obj.tableName || null,
                 externalID || null,
@@ -374,11 +400,12 @@ const commonInsertFunction = async (req, res) => {
                 obj.quote || "",
                 obj.rowDecreaseAllowed || 0,
                 obj.dataTransferFrequency || "",
+                obj.conditionalExpression,
               ];
               let createDS = await DB.executeQuery(
                 `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
                 offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
-                customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27)`,
+                customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
                 DSBody
               );
               newobj.timestamp = ts;
@@ -542,6 +569,7 @@ const commonInsertFunction = async (req, res) => {
 exports.createDataflow = async (req, res) => {
   // return; // this return need to delete
   try {
+    var validate = [];
     const Data = [
       {
         key: "protocolNumberStandard",
@@ -570,7 +598,6 @@ exports.createDataflow = async (req, res) => {
         type: "boolean",
       },
     ];
-    var validate = [];
 
     // Validation Function call for dataFlow
     let dataRes = helper.validation(Data);
@@ -658,6 +685,8 @@ exports.createDataflow = async (req, res) => {
       console.log("testt 245");
       // return apiResponse.ErrorResponse(res, validate);
     } else {
+      console.log("Success");
+      return;
       commonInsertFunction(req, res);
     }
   } catch (err) {
@@ -847,7 +876,6 @@ exports.hardDelete = async (req, res) => {
 
 exports.activateDataFlow = async (req, res) => {
   try {
-    const dataflowAuditlogId = createUniqueID();
     const { dataFlowId, userId, versionNo } = req.body;
     const curDate = new Date();
     const newVersion = versionNo + 1;
@@ -862,7 +890,7 @@ exports.activateDataFlow = async (req, res) => {
       // const q1 = `SELECT "version" FROM ${schemaName}.dataflow_version WHERE dataflowid=$1 ORDER BY created_on DESC LIMIT 1`;
       const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1`;
       const q3 = `INSERT INTO ${schemaName}.dataflow_audit_log
-      (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
+      (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
       VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
       const q4 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
       VALUES($1, $2, $3, $4)`;
@@ -871,7 +899,6 @@ exports.activateDataFlow = async (req, res) => {
       // const newVersion = currVersion + 1;
       const $q2 = await DB.executeQuery(q2, [dataFlowId]);
       const $q3 = await DB.executeQuery(q3, [
-        dataflowAuditlogId,
         dataFlowId,
         newVersion,
         curDate,
@@ -996,6 +1023,7 @@ exports.getDataflowDetail = async (req, res) => {
 
 exports.updateDataFlow = async (req, res) => {
   try {
+    var validate = [];
     const Data = [
       {
         key: "protocolNumberStandard",
@@ -1012,6 +1040,7 @@ exports.updateDataFlow = async (req, res) => {
         type: "string",
       },
       { key: "location", value: req.body.locationType, type: "string" },
+
       {
         key: "testFlag",
         value: req.body.testFlag,
@@ -1024,16 +1053,68 @@ exports.updateDataFlow = async (req, res) => {
         type: "boolean",
       },
     ];
-    var validate = [];
+
+    // Validating Connection Type
+    if (req.body.externalSystemName !== "CDI") {
+      var ConnectionType = req.body.connectionType;
+      const externalID = req.body.externalID;
+      if (
+        externalID !== null &&
+        externalID !== "" &&
+        externalID !== undefined
+      ) {
+      } else {
+        validate.push({
+          text: "this externalID field is required and data type should be string or Number ",
+          status: false,
+        });
+      }
+      if (
+        ConnectionType !== null &&
+        ConnectionType !== "" &&
+        ConnectionType !== undefined &&
+        typeof ConnectionType === "string"
+      ) {
+        if (
+          ConnectionType === "SFTP" ||
+          ConnectionType == "FTPS" ||
+          ConnectionType == "Oracle" ||
+          ConnectionType == "Hive CDP" ||
+          ConnectionType === "Hive CDH" ||
+          ConnectionType == "Impala" ||
+          ConnectionType == "MySQL" ||
+          ConnectionType == "PostgreSQL" ||
+          ConnectionType == "SQL Server"
+        ) {
+        } else {
+          validate.push({
+            text: "this ConnectionType's Supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server ",
+            status: false,
+          });
+        }
+      } else {
+        validate.push({
+          text: "this ConnectionType field is required and data type should be string ",
+          status: false,
+        });
+      }
+    }
 
     // Validation Function call for dataFlow
     let dataRes = helper.validation(Data);
     if (dataRes.length > 0) {
       validate.push(dataRes);
     } else {
-      if (req.body.dataPackage && req.body.dataPackage.length > 0) {
+      if (
+        req.body.externalSystemName !== "CDI" &&
+        req.body.dataPackage &&
+        req.body.dataPackage.length > 0
+      ) {
+        console.log("data package data", req.body.dataPackage.length);
         for (let each of req.body.dataPackage) {
-          // console.log("data package data", each);
+          var LocationType = req.body.locationType;
+
+          console.log("FTPS");
 
           if (each.dataSet && each.dataSet.length > 0) {
             for (let obj of each.dataSet) {
@@ -1054,21 +1135,21 @@ exports.updateDataFlow = async (req, res) => {
                     const clArray = [
                       { key: "clName", value: el.columnName, type: "string" },
                       { key: "cldataType", value: el.dataType, type: "string" },
-                      {
-                        key: "primaryKey",
-                        value: el.primaryKey,
-                        type: "boolean",
-                      },
-                      {
-                        key: "required",
-                        value: el.required,
-                        type: "boolean",
-                      },
-                      {
-                        key: "unique",
-                        value: el.required,
-                        type: "boolean",
-                      },
+                      // {
+                      //   key: "primaryKey",
+                      //   value: el.primaryKey,
+                      //   type: "boolean",
+                      // },
+                      // {
+                      //   key: "required",
+                      //   value: el.required,
+                      //   type: "boolean",
+                      // },
+                      // {
+                      //   key: "unique",
+                      //   value: el.required,
+                      //   type: "boolean",
+                      // },
                     ];
 
                     // Validation Function call for column defination
@@ -1482,6 +1563,82 @@ exports.hardDeleteNew = async (req, res) => {
     });
   } catch (err) {
     Logger.error("catch :hardDeleteNew");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.updateDataflowConfig = async (req, res) => {
+  try {
+    let {
+      connectionType,
+      dataStructure,
+      description,
+      externalSystemName,
+      firstFileDate,
+      locationName,
+      locationType,
+      protocolNumberStandard,
+      serviceOwnerValue,
+      testFlag,
+      vendorID,
+      dataflowId,
+      userId,
+    } = req.body;
+
+    if (
+      vendorID !== null &&
+      protocolNumberStandard !== null &&
+      description !== "" &&
+      dataflowId &&
+      userId
+    ) {
+      const dFTimestamp = helper.getCurrentTime();
+      const dFBody = [
+        vendorID,
+        dataStructure,
+        description,
+        locationName,
+        helper.stringToBoolean(testFlag) ? 1 : 0,
+        connectionType,
+        externalSystemName,
+        dFTimestamp,
+        dataflowId,
+      ];
+      // insert dataflow schema into db
+      const updatedDF = await DB.executeQuery(
+        `update ${schemaName}.dataflow set vend_id=$1, type=$2, description=$3, src_loc_id=$4, testflag=$5, connectiontype=$6, externalsystemname=$7, updt_tm=$8 WHERE dataflowid=$9 returning *;`,
+        dFBody
+      );
+      if (!updatedDF?.rowCount) {
+        return apiResponse.ErrorResponse(res, "Something went wrong on update");
+      }
+      const dataflowObj = updatedDF.rows[0];
+      const updatedLogs = await addDataflowHistory({
+        dataflowId,
+        externalSystemName,
+        userId,
+        config_json: dataflowObj,
+      });
+
+      if (updatedLogs) {
+        return apiResponse.successResponseWithData(
+          res,
+          "Dataflow config updated successfully.",
+          { ...dataflowObj, version: updatedLogs }
+        );
+      }
+    } else {
+      return apiResponse.ErrorResponse(
+        res,
+        "Vendor name , protocol number and description is required"
+      );
+    }
+    return apiResponse.ErrorResponse(res, "Something went wrong");
+  } catch (err) {
+    console.log(err);
+    //throw error in json response with status 500.
+    Logger.error("catch :createDataflow");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }

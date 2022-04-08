@@ -36,11 +36,13 @@ import {
   addDataFlow,
   setDataflowLocal,
 } from "../../../store/actions/DataFlowAction";
+import { getSQLColumns } from "../../../store/actions/DataSetsAction";
 import DataPackages from "./Datapackage";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import DataSet from "./Dataset";
 import { dataflowSave } from "../../../services/ApiServices";
+import { SelectedDataflow } from "../../../store/actions/DashboardAction";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -96,6 +98,7 @@ const DataFlow = ({
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [FormType, setFormType] = useState("dataflow");
   const [createdDataflow, setCreatedDataflow] = useState(null);
+  const [headerValue, setHeaderValue] = useState(1);
   const [currentStep, setCurrentStep] = useReducer((state, action) => {
     if (action?.step) return action.step;
     return action?.prev ? state - 1 : state + 1;
@@ -163,7 +166,7 @@ const DataFlow = ({
     console.log("FormValues", FormValues, selectedVendor);
     if (
       FormValues &&
-      FormValues.vendor &&
+      (FormValues.vendor || FormValues.vendor.length > 0) &&
       FormValues.locationName &&
       FormValues.description !== "" &&
       selectedCard.prot_id !== ""
@@ -245,6 +248,12 @@ const DataFlow = ({
       datasetObj.OverrideStaleAlert = datasetObj.overrideStaleAlert;
       delete datasetObj.overrideStaleAlert;
     }
+    if (datasetObj.customQuery === "No" && datasetObj.tableName) {
+      dispatch(getSQLColumns(datasetObj.tableName));
+    }
+    if (datasetObj.headerRowNumber) {
+      setHeaderValue(datasetObj.headerRowNumber);
+    }
 
     newForm.dataPackage[0].dataSet[0] = datasetObj;
     setForm(newForm);
@@ -263,16 +272,20 @@ const DataFlow = ({
     const reqBody = {
       ...myform,
     };
+
     setSubmitting(true);
     const result = await dataflowSave(reqBody);
-    if (result?.dataflowId) setCreatedDataflow(result.dataflowId);
+    if (result?.dataflowDetails) setCreatedDataflow(result.dataflowDetails);
     if (result) {
       setSaveSuccess(true);
     }
     setSubmitting(false);
   };
   const redirectToDataflow = () => {
-    history.push(`/dashboard/dataflow-management/${createdDataflow}`);
+    dispatch(SelectedDataflow(createdDataflow));
+    history.push(
+      `/dashboard/dataflow-management/${createdDataflow?.dataFlowId}`
+    );
   };
   const nextStep = async () => {
     console.log("datasetFormValues?", datasetFormValues, currentStep);
@@ -350,6 +363,7 @@ const DataFlow = ({
             submitData={AddDatasetData}
             updateStep={(step) => setCurrentStep({ step })}
             getDataSetValue={getDataSetValue}
+            headerValue={headerValue}
           />
         </div>
       </>

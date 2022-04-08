@@ -13,7 +13,10 @@ export const checkValidQuery = (value) => {
 };
 
 export const checkfilterCondition = (value) => {
-  if (value !== "" && !value?.toLowerCase().trim().includes("where")) {
+  if (!value?.toLowerCase().trim().startsWith("where")) {
+    if (value === "" || value === undefined) {
+      return false;
+    }
     return "Filter condition should start with WHERE";
   }
   return false;
@@ -28,7 +31,7 @@ export const checkNumbers = (value) => {
 };
 
 export const checkNumeric = (value) => {
-  const regexp = /^[0-9.]+$/;
+  const regexp = /^[0-9]+$/;
   if (value !== "" && !regexp.test(value)) {
     return "Only numeric values are allowed";
   }
@@ -70,7 +73,7 @@ export const checkExceSupport = (value, fileType) => {
 };
 
 export const checkAlphaNumeric = (value, key = "") => {
-  const regexp = key === "values" ? /^[a-zA-Z0-9~_]+$/ : /\w+$/;
+  const regexp = key === "values" ? /^[a-zA-Z0-9~_\s]+$/ : /\w+$/;
   if (key === "format") {
     return false;
   }
@@ -153,9 +156,9 @@ export const checkMinLength = (value) => {
   return false;
 };
 
-export const checkMaxLength = (value) => {
-  if (value && value.length > 30) {
-    return `Must be 30 characters or less`;
+export const checkMaxLength = (value, length = 30) => {
+  if (value && value.length > length) {
+    return `Must be ${length} characters or less`;
   }
   return false;
 };

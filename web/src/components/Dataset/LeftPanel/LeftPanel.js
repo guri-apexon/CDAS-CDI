@@ -68,14 +68,16 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LeftPanel = ({ dataflowSource }) => {
+const LeftPanel = () => {
   const classes = useStyles();
   const history = useHistory();
   const dispatch = useDispatch();
   const [searchTxt, setSearchTxt] = useState("");
   const packageData = useSelector((state) => state.dataPackage);
+  const dataFlow = useSelector((state) => state.dataFlow);
+  const { dataFlowdetail, isDatasetCreation } = dataFlow;
   const { description, dataflowid, vendorname, name, testflag, active } =
-    dataflowSource;
+    dataFlowdetail;
   const { loading, packagesList, refreshData } = packageData;
   const userInfo = getUserInfo();
   const location = useLocation();
