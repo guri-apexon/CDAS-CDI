@@ -133,14 +133,26 @@ export default function DSColumnTable({
 
   const handleSaveLOV = () => {
     if (selectedRow.dbColumnId) {
-      updateLOV({
-        userId: userInfo.userId,
-        columnId: selectedRow.dbColumnId,
-        dsId: datasetid,
-        dpId,
-        dfId,
-        lov: selectedRow.values,
-      });
+      const newQuery = "";
+      dispatch(
+        updateDatasetColumns(
+          [selectedRow],
+          datasetid,
+          dfId,
+          dpId,
+          userInfo.userId,
+          false,
+          newQuery
+        )
+      );
+      // updateLOV({
+      //   userId: userInfo.userId,
+      //   columnId: selectedRow.dbColumnId,
+      //   dsId: datasetid,
+      //   dpId,
+      //   dfId,
+      //   lov: selectedRow.values,
+      // });
     }
   };
 
