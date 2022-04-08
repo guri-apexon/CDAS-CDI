@@ -14,7 +14,7 @@ import {
   createDatasetColumns,
   updateDatasetColumns,
 } from "../../../store/actions/DataSetsAction";
-import { deleteCD, updateLOV } from "../../../services/ApiServices";
+import { deleteCD } from "../../../services/ApiServices";
 import { getUserInfo, isSftp } from "../../../utils/index";
 
 export default function DSColumnTable({
@@ -141,7 +141,7 @@ export default function DSColumnTable({
           dfId,
           dpId,
           userInfo.userId,
-          false,
+          customQuery === "No",
           newQuery
         )
       );
@@ -417,7 +417,7 @@ export default function DSColumnTable({
           dfId,
           dpId,
           userInfo.userId,
-          true,
+          customQuery === "No",
           newQuery
         )
       );
@@ -438,18 +438,8 @@ export default function DSColumnTable({
   const onRowCancel = (uniqueId) => {
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
-    // console.log("row cancel", uniqueId, removeRow, removeEdited);
     setEditedRows(removeEdited);
     setSelectedRows([...removeRow]);
-  };
-
-  const formatSave = (inArray) => {
-    const formatted = inArray;
-    return formatted;
-  };
-
-  const generateColumn = (arr) => {
-    const cName = arr.map((e) => e.columnName).join(", ");
   };
 
   const onRowSave = async (uniqueId) => {
@@ -493,7 +483,7 @@ export default function DSColumnTable({
           dfId,
           dpId,
           userInfo.userId,
-          true,
+          customQuery === "No",
           newQuery
         )
       );
@@ -505,7 +495,7 @@ export default function DSColumnTable({
           dfId,
           dpId,
           userInfo.userId,
-          true,
+          customQuery === "No",
           newQuery
         )
       );
