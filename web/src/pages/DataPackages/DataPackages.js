@@ -29,7 +29,6 @@ import {
   getPackagesList,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
-// import CreatepackageForm from "./CreatePackageForm";
 
 const compressionTypes = [
   { text: "Not Compressed", value: "not_compressed" },
@@ -50,7 +49,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const DataPackages = () => {
+const DataPackages = React.memo(() => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
@@ -68,7 +67,10 @@ const DataPackages = () => {
   const userInfo = getUserInfo();
   const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
 
-  const { dfId, selectedCard } = dashboard;
+  const {
+    selectedCard,
+    selectedDataFlow: { dataFlowId: dfId },
+  } = dashboard;
 
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -113,9 +115,6 @@ const DataPackages = () => {
     if (packageData.openAddPackage) setShowForm(true);
   }, [packageData.openAddPackage]);
 
-  // useEffect(() => {
-  //   console.log("packageData", packageData);
-  // }, [packageData]);
   // eslint-disable-next-line consistent-return
   const submitPackage = async () => {
     const validated = validateFields();
@@ -152,6 +151,9 @@ const DataPackages = () => {
     setIsPanelOpen(true);
   };
 
+  useEffect(() => {
+    console.log("packageRender");
+  }, []);
   return (
     <div className="data-packages-wrapper">
       <Panel
@@ -173,6 +175,7 @@ const DataPackages = () => {
           <Paper className="no-shadow">
             <Box className="top-content">
               <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />
+              {console.log("renderAgainPackage")}
               {showForm && (
                 <>
                   <div className="flex title">
@@ -181,9 +184,6 @@ const DataPackages = () => {
                       Creating New Package
                     </Typography>
                   </div>
-                  {/* <Typography variant="body2" className="b-font dataset-count">
-                6 datasets
-              </Typography> */}
                   <ButtonGroup
                     alignItems="right"
                     buttonProps={[
@@ -221,7 +221,6 @@ const DataPackages = () => {
                   </div>
                   {configShow && (
                     <div className="package-form">
-                      {/* <CreatepackageForm onSubmit={onSubmit} /> */}
                       <Select
                         error={notMatchedType}
                         label="Package Compression Type"
@@ -292,6 +291,6 @@ const DataPackages = () => {
       {/* </Grid> */}
     </div>
   );
-};
+});
 
 export default DataPackages;

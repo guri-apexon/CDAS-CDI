@@ -1406,23 +1406,28 @@ exports.fetchdataflowSource = async (req, res) => {
 
 exports.fetchdataflowDetails = async (req, res) => {
   try {
-    let dataflow_id = req.params.id;
+    let { id: dataflow_id } = req.params;
     let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
-    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
-      inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    inner join ${schemaName}.datakind dk on (dk.datakindid=d3.datakindid)
       inner join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
       where d.dataflowid ='${dataflow_id}'`;
-    console.log(q);
     Logger.info({
       message: "fetchdataflowDetails",
       dataflow_id,
     });
     let { rows } = await DB.executeQuery(q);
-    console.log(rows);
+    if (!rows.length) {
+      return apiResponse.ErrorResponse(
+        res,
+        "There is no dataflow exist with this id"
+      );
+    }
     let response = rows;
     let tempDP = _.uniqBy(response, "datapackageid");
     let tempDS = _.uniqBy(response, "datasetid");
@@ -1461,7 +1466,7 @@ exports.fetchdataflowDetails = async (req, res) => {
               footerRowNumber: el.footerrownumber,
               escapeCode: el.escapecode,
               delimiter: el.delimiter,
-              dataKind: el.datakindid,
+              dataKind: el.datakind,
               naming_convention: el.naming_convention,
               columnDefinition: [],
             };

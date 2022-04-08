@@ -12,7 +12,7 @@ import Button from "apollo-react/components/Button";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
-
+import Progress from "../../../components/Common/Progress/Progress";
 import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../utils/index";
 
@@ -23,7 +23,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
   const { datasetColumns, sqlColumns } = dataSets;
-
+  const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
   const [showColumns, setShowColumns] = useState(false);
@@ -91,6 +91,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               isInitLoad: true,
               isHavingError: false,
               isHavingColumnName: true,
+              isHavingDataType: true,
             };
             return newObj;
           })
@@ -119,6 +120,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               isInitLoad: true,
               isHavingError: false,
               isHavingColumnName: true,
+              isHavingDataType: true,
             };
             return newObj;
           })
@@ -192,10 +194,11 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
         />
       </>
     );
-  }, [showColumns]);
+  }, [showColumns, loading]);
 
   return (
     <>
+      {loading && <Progress />}
       {!showColumns && (
         <div className="tab colums-tab">
           <p className="title">Configure Dataset Column Settings</p>
