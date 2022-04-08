@@ -18,8 +18,8 @@ import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import TextField from "apollo-react/components/TextField";
 
-import Progress from "../../../../components/Common/Progress/Progress";
-import { MessageContext } from "../../../../components/Providers/MessageProvider";
+import Progress from "../../../components/Common/Progress/Progress";
+import { MessageContext } from "../../../components/Providers/MessageProvider";
 import {
   TextFieldFilter,
   createSourceFromKey,
@@ -27,15 +27,15 @@ import {
   createStatusArraySearchFilter,
   createStringArraySearchFilter,
   getCookie,
-} from "../../../../utils/index";
-import { getCDTList } from "../../../../store/actions/CDIAdminAction";
+} from "../../../utils/index";
+import { getCDTList } from "../../../store/actions/CDIAdminAction";
 import {
   activateDK,
   inActivateDK,
   getENSList,
   addDK,
   updateDK,
-} from "../../../../services/ApiServices";
+} from "../../../services/ApiServices";
 
 import "./CDTList.scss";
 
