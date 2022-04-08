@@ -14,6 +14,6 @@ router.post("/syncNow", DataflowController.syncDataFlow);
 router.post("/update", DataflowController.updateDataFlow);
 router.post("/search-dataflow/:id", DataflowController.searchDataflow);
 router.get("/:id", DataflowController.fetchdataflowSource);
-router.get("/dfdeatils/:id", DataflowController.fetchdataflowDetails);
+router.get("/details/:id", DataflowController.fetchdataflowDetails);
 
 module.exports = router;
