@@ -25,7 +25,7 @@ async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
 async function saveSQLDataset(res, values, dpId, userId, dfId) {
   try {
     Logger.info({ message: "create SQL Dataset" });
-    const datasetId = helper.generateUniqueID();
+    const dsId = helper.generateUniqueID();
     let sqlQuery = "";
     if (values.isCustomSQL === "No") {
       if (values.filterCondition) {
@@ -38,13 +38,13 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     }
 
     const body = [
-      datasetId,
+      dsId,
       values.datasetName,
       values.active === true ? 1 : 0,
       values.clinicalDataType[0] ? values.clinicalDataType[0] : null,
       values.isCustomSQL,
       sqlQuery,
-      values.dataType == "Incremental" ? "Y" : "N" || null,
+      values.dataType === "Incremental" ? "Y" : "N" || null,
       values.tableName || null,
       values.offsetColumn || null,
       values.filterCondition || null,
@@ -52,7 +52,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     ];
 
     const conf_Data = {
-      datasetId: datasetId,
+      datasetid: dsId,
       datapackageid: dpId,
       mnemonic: values.datasetName,
       active: values.active === true ? 1 : 0,
@@ -61,7 +61,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
         : null,
       customsql_yn: values.isCustomSQL,
       customsql: values.sQLQuery || null,
-      incremental: values.dataType == "Incremental" ? "Y" : "N" || null,
+      incremental: values.dataType === "Incremental" ? "Y" : "N" || null,
       tbl_nm: values.tableName || null,
       offsetcolumn: values.offsetColumn || null,
       dataset_fltr: values.filterCondition || null,
@@ -76,7 +76,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
       dfId,
       userId,
       dpId,
-      datasetId,
+      dsId,
       jsonData,
       "New Entry"
     );
@@ -89,7 +89,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     );
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :storeDataset");
+    Logger.error("catch: create SQL Dataset");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
@@ -116,13 +116,13 @@ exports.saveDatasetData = async (req, res) => {
       return saveSQLDataset(res, values, dpId, userId, dfId);
     }
 
-    const datasetId = helper.generateUniqueID();
+    const dsId = helper.generateUniqueID();
 
     let passwordStatus = "No";
 
-    if (values.filePwd) {
+    if (values.filePwd !== "" || values.filePwd !== undefined) {
       passwordStatus = "Yes";
-      await helper.writeVaultData(`${dfId}/${dpId}/${datasetId}`, {
+      await helper.writeVaultData(`${dfId}/${dpId}/${dsId}`, {
         password: filePwd,
       });
     }
@@ -131,7 +131,7 @@ exports.saveDatasetData = async (req, res) => {
     const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, name, path,file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, Now(), Now(), $18, $19) returning *`;
 
     const body = [
-      datasetId,
+      dsId,
       values.datasetName,
       values.fileType,
       values.encoding || null,
@@ -153,7 +153,7 @@ exports.saveDatasetData = async (req, res) => {
     ];
 
     const conf_Data = {
-      datasetId: datasetId,
+      datasetId: dsId,
       datapackageid: dpId,
       mnemonic: values.datasetName,
       type: values.fileType,
@@ -180,7 +180,7 @@ exports.saveDatasetData = async (req, res) => {
         dfId,
         userId,
         dpId,
-        datasetId,
+        dsId,
         jsonData,
         "New Entry"
       );
@@ -224,7 +224,7 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
       values.dataType == "Incremental" ? "Y" : "N" || null,
       values.offsetColumn || null,
       new Date(),
-      values.datasetid,
+      datasetid,
     ];
     const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
     dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
