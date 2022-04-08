@@ -31,7 +31,7 @@ export default function DSColumnTable({
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDataset } = dataSets;
   const {
-    fileType,
+    type: fileType,
     datasetid,
     headerrownumber,
     headerRowNumber,

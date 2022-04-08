@@ -35,7 +35,7 @@ import {
   checkFormat,
   checkRequiredValue,
   checkCharacterLength,
-  checkMaxLength,
+  checkAlphaNumericFileName,
 } from "../../../../../components/FormComponents/validators";
 
 const fieldStyles = {
@@ -159,7 +159,8 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
   const { editMode } = row;
-  const errorText = checkRequired(row[key]) && checkMaxLength(row[key], 32);
+  const errorText =
+    checkAlphaNumericFileName(row[key]) || checkRequired(row[key]);
   return editMode ? (
     <TextField
       size="small"
@@ -171,8 +172,10 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
-      helperText={!row.isInitLoad ? errorText : ""}
+      error={
+        (!row.isInitLoad || row.isHavingColumnName) && errorText ? true : false
+      }
+      helperText={!row.isInitLoad || row.isHavingColumnName ? errorText : ""}
       {...fieldStyles}
     />
   ) : (
