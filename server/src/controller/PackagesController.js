@@ -7,6 +7,8 @@ const constants = require("../config/constants");
 const helper = require("../helpers/customFunctions");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
+//const getVersion = `select version from ${schemaName}.dataflow_version where dataflowid =$1 order by  version desc limit 1`;
+
 exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
@@ -88,7 +90,7 @@ exports.addPackage = function (req, res) {
 
     DB.executeQuery(query, insertValues).then(async (response) => {
       const package = response.rows[0] || [];
-      const historyVersion = await CommonController.addHistory(
+      const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
         "New Package"
@@ -96,7 +98,7 @@ exports.addPackage = function (req, res) {
       if (!historyVersion) throw new Error("History not updated");
       return apiResponse.successResponseWithData(
         res,
-        "Created Successfully",
+        "Datapackage created successfully",
         {}
       );
     });
@@ -115,13 +117,14 @@ exports.changeStatus = function (req, res) {
     DB.executeQuery(query).then(async (response) => {
       const package = response.rows[0] || [];
       const oldActive = Number(active) == 1 ? "0" : "1";
-      const historyVersion = await CommonController.addHistory(
+      const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
         "active",
         oldActive,
         active
       );
+
       if (!historyVersion) throw new Error("History not updated");
       return apiResponse.successResponseWithData(
         res,
@@ -140,9 +143,13 @@ exports.deletePackage = function (req, res) {
     const query = `UPDATE ${schemaName}.datapackage
     SET del_flg = 'Y'
     WHERE datapackageid = '${package_id}' RETURNING *`;
+
+    const dataSetQuery = `UPDATE ${schemaName}.dataset SET del_flg = 'Y' WHERE datapackageid = '${package_id}' RETURNING datasetid`;
+    const columnQuery = `UPDATE ${schemaName}.columndefinition SET del_flg = 1 WHERE datasetid = $1`;
+
     DB.executeQuery(query).then(async (response) => {
       const package = response.rows[0] || [];
-      const historyVersion = await CommonController.addHistory(
+      const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
         "del_flg",
@@ -150,6 +157,16 @@ exports.deletePackage = function (req, res) {
         "Y"
       );
       if (!historyVersion) throw new Error("History not updated");
+
+      const updateDataset = await DB.executeQuery(dataSetQuery);
+      // console.log("update dataSet", updateDataset.rows);
+
+      for (const id in updateDataset.rows) {
+        const updatedColumn = await DB.executeQuery(columnQuery, [
+          updateDataset.rows[id].datasetid,
+        ]);
+      }
+
       return apiResponse.successResponseWithData(
         res,
         "Deleted successfully",

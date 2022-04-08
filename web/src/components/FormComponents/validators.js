@@ -13,7 +13,10 @@ export const checkValidQuery = (value) => {
 };
 
 export const checkfilterCondition = (value) => {
-  if (value !== "" && !value?.toLowerCase().trim().includes("where")) {
+  if (!value?.toLowerCase().trim().startsWith("where")) {
+    if (value === "" || value === undefined) {
+      return false;
+    }
     return "Filter condition should start with WHERE";
   }
   return false;
@@ -28,7 +31,7 @@ export const checkNumbers = (value) => {
 };
 
 export const checkNumeric = (value) => {
-  const regexp = /^[0-9.]+$/;
+  const regexp = /^[0-9]+$/;
   if (value !== "" && !regexp.test(value)) {
     return "Only numeric values are allowed";
   }
@@ -70,7 +73,7 @@ export const checkExceSupport = (value, fileType) => {
 };
 
 export const checkAlphaNumeric = (value, key = "") => {
-  const regexp = key === "values" ? /^[a-zA-Z0-9~_]+$/ : /^[a-zA-Z0-9-_]+$/;
+  const regexp = key === "values" ? /^[a-zA-Z0-9~_\s]+$/ : /\w+$/;
   if (key === "format") {
     return false;
   }
@@ -84,6 +87,14 @@ export const checkAlphaNumericFileName = (value) => {
   const regexp = /^[A-Za-z0-9_<.>]+$/;
   if (value && value.search(regexp) === -1) {
     return "Special characters are not allowed";
+  }
+  return false;
+};
+
+export const checkExecptSpace = (value) => {
+  const regexp = /^[A-Za-z0-9_<.>@#/|$%&*()+]+$/;
+  if (value && value.search(regexp) === -1) {
+    return "Space is not allowed";
   }
   return false;
 };
@@ -127,7 +138,7 @@ export const checkFormat = (value, key = "", dataType = "") => {
     }
   }
   if (dataType === "Date") {
-    const regexp = /^\d{8}$/;
+    const regexp = /^[Y]{4}[M]{2}[D]{2}$/;
     if (value !== "" && !regexp.test(value)) {
       return (
         key === "format" &&
@@ -138,9 +149,16 @@ export const checkFormat = (value, key = "", dataType = "") => {
   return false;
 };
 
-export const checkMaxLength = (value) => {
-  if (value && value.length > 30) {
-    return `Must be 30 characters or less`;
+export const checkMinLength = (value) => {
+  if (value && value.length < 8) {
+    return `Minimum 8 characters are required`;
+  }
+  return false;
+};
+
+export const checkMaxLength = (value, length = 30) => {
+  if (value && value.length > length) {
+    return `Must be ${length} characters or less`;
   }
   return false;
 };

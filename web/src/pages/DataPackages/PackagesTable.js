@@ -21,10 +21,11 @@ import {
   updateStatus,
 } from "../../store/actions/DataPackageAction";
 import { updateDSState } from "../../store/actions/DataFlowAction";
+import { updateDSStatus } from "../../store/actions/DataSetsAction";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
-    <div style={{ width: 12, marginLeft: "5px" }}>
+    <div style={{ width: 12, marginLeft: "1px" }}>
       <Tooltip title={expanded ? "Collapse" : "Expand"} disableFocusListener>
         <IconButton
           id="expand"
@@ -45,7 +46,7 @@ const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
 //   />
 // );
 const NameCustomCell = ({ row, column: { accessor } }) => {
-  const title = row[accessor] || row.datapackageid;
+  const title = row[accessor] || "No Package";
   return (
     <div className="flex package-name-td">
       <PackageIcon style={{ width: 15, margin: "0px 10px" }} />
@@ -75,6 +76,7 @@ const PackagesList = ({ data, userInfo }) => {
   const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
     dispatch(updateDSState(true));
+    dispatch(updateDSStatus(false));
     history.push("/dashboard/dataset/new");
   };
 
@@ -86,13 +88,15 @@ const PackagesList = ({ data, userInfo }) => {
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
-        <span customtooltip="Add dataset" className="add-dataset">
-          <RoundPlusSvg
-            className="add-dataset-btn"
-            onClick={() =>
-              addDataSet(row.dataflowid, "", row.datapackageid, row.name)
-            }
-          />
+        <span className="add-dataset">
+          <Tooltip title="Add dataset" disableFocusListener>
+            <RoundPlusSvg
+              className="add-dataset-btn"
+              onClick={() =>
+                addDataSet(row.dataflowid, "", row.datapackageid, row.name)
+              }
+            />
+          </Tooltip>
         </span>
       </div>
     );
@@ -287,11 +291,6 @@ const PackagesList = ({ data, userInfo }) => {
       }))}
       rowProps={{ hover: false }}
       hidePagination={true}
-      // tablePaginationProps={{
-      //   labelDisplayedRows: ({ from, to, count }) =>
-      //     `${count === 1 ? "Package" : "Packages"} ${from}-${to} of ${count}`,
-      //   truncate: true,
-      // }}
       ExpandableComponent={DetailRow}
     />
   );

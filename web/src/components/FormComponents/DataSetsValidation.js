@@ -7,12 +7,15 @@ import {
   checkAlphaNumericFileName,
   checkValidQuery,
   checkfilterCondition,
+  checkExecptSpace,
+  checkMinLength,
 } from "./validators";
 
 const dataSetsValidation = ({
   datasetName,
   clinicalDataType,
   fileType,
+  filePwd,
   transferFrequency,
   fileNamingConvention,
   rowDecreaseAllowed,
@@ -20,14 +23,16 @@ const dataSetsValidation = ({
   delimiter,
   headerRowNumber,
   footerRowNumber,
-  customSQLQuery,
+  isCustomSQL,
   sQLQuery,
   filterCondition,
+  tableName,
 }) =>
   removeUndefined({
     datasetName: checkRequired(datasetName) || checkAlphaNumeric(datasetName),
     clinicalDataType: checkRequired(clinicalDataType),
     fileType: checkRequired(fileType),
+    filePwd: checkExecptSpace(filePwd) || checkMinLength(filePwd),
     transferFrequency:
       checkRequired(transferFrequency) || checkNumbers(transferFrequency),
     fileNamingConvention:
@@ -42,9 +47,10 @@ const dataSetsValidation = ({
       checkRequired(delimiter) && fileType?.toLowerCase() === "delimited"
         ? "Required"
         : "",
-    customSQLQuery: checkRequired(customSQLQuery),
+    isCustomSQL: checkRequired(isCustomSQL),
     sQLQuery: checkValidQuery(sQLQuery),
-    filterCondition: checkfilterCondition(filterCondition),
+    // filterCondition: checkfilterCondition(filterCondition),
+    tableName: checkRequired(tableName),
   });
 
 export default dataSetsValidation;

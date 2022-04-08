@@ -2,29 +2,44 @@ const uuid = require("uuid");
 const crypto = require("crypto");
 const moment = require("moment");
 
+const endpoint = process.env.VAULT_END_POINT;
+const token = process.env.ROOT_TOKEN;
+
 const vault = require("node-vault")({
   apiVersion: "v1",
-  endpoint: "http://ca2updb249vd:8200",
-  token: "s.LJQBC0xwKO83u4cxHbBYH05z",
+  endpoint: endpoint,
+  token: token,
 });
 
-const roleId = process.env.ROLE_ID;
-const secretId = process.env.SECRET_ID;
+const getAlphaNumeric = () => {
+  const characters = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  const charactersLength = characters.length;
+  for (var i = 0; i < 16; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
 
 exports.generateUniqueID = function () {
-  const unique_id = uuid();
-  return unique_id.slice(0, 16);
+  return getAlphaNumeric();
+  // const unique_id = uuid();
+  // return unique_id.slice(0, 16);
 };
 exports.createUniqueID = () => {
-  return crypto.randomBytes(3 * 4).toString("base64");
+  return getAlphaNumeric();
+  // return crypto.randomBytes(3 * 4).toString("base64");
 };
 exports.getCurrentTime = () => {
   return moment().utc().format("YYYY-MM-DD HH:mm:ss");
 };
 
 exports.readVaultData = async (vaultPath) => {
-  const { data } = await vault.read(`kv/${vaultPath}`);
-  return data;
+  const res = await vault.read(`kv/${vaultPath}`);
+  if (res.data) {
+    return res.data;
+  }
+  return null;
 };
 
 // { user: usr_nm, password: pswd }
@@ -52,4 +67,8 @@ exports.stringToBoolean = (string) => {
     default:
       return Boolean(string);
   }
+};
+
+exports.convertEscapeChar = (str) => {
+  return str ? String.raw`${str}`.replace(/\\/g, "\\\\") : "";
 };

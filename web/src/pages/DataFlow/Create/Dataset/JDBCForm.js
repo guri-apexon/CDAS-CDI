@@ -112,7 +112,7 @@ const JDBCForm = forwardRef((props, ref) => {
   const { datakind, selectedDataset, previewSQL, sqlTables, sqlColumns } =
     dataSets;
 
-  const { datasetId, datapackageid, dfTestFlag, onSubmit, moveNext } = props;
+  const { datasetId, dfTestFlag, onSubmit, moveNext } = props;
 
   const setDefaultValues = () => {
     setDsActive(true);
@@ -173,16 +173,16 @@ const JDBCForm = forwardRef((props, ref) => {
 
   const submitJDBCForm = () => {
     const data = {
-      datapackageid,
       datasetName,
       active: dsActive,
-      incremental: dataType,
+      incremental: dataType === "Incremental" ? 1 : 0,
       clinicalDataType,
-      customSQLQuery: isCustomSQL,
-      sQLQuery,
-      tableName,
-      offsetColumn,
+      customQuery: isCustomSQL,
+      customSql: sQLQuery,
+      tableName: tableName?.length ? tableName[0] : "",
+      offsetColumn: offsetColumn?.length ? offsetColumn[0] : "",
       dfTestFlag,
+      conditionalExpression: filterCondition || "",
     };
     onSubmit(data);
   };
@@ -368,7 +368,6 @@ const JDBCForm = forwardRef((props, ref) => {
                 minHeight={32}
                 multiline
                 sizeAdjustable
-                inputProps={{ maxLength: 255 }}
                 label="SQL Query"
               />
               <Button
@@ -384,7 +383,19 @@ const JDBCForm = forwardRef((props, ref) => {
           )}
           {isCustomSQL === "No" && (
             <>
-              <Autocomplete
+              <TextField
+                fullWidth
+                name="tableName"
+                id="tableName"
+                style={{ width: "70%", display: "flex" }}
+                size="small"
+                value={tableName}
+                minHeight={32}
+                onChange={(e) => handleTableSelect([e.target.value])}
+                inputProps={{ maxLength: 255 }}
+                label="Table Name"
+              />
+              {/* <Autocomplete
                 name="tableName"
                 id="tableName"
                 size="small"
@@ -400,12 +411,12 @@ const JDBCForm = forwardRef((props, ref) => {
                 singleSelect
                 required
                 fullWidth
-              />
+              /> */}
               <TextField
                 fullWidth
                 name="filterCondition"
                 id="filterCondition"
-                style={{ width: "70%", display: "flex" }}
+                style={{ width: "200px", display: "flex" }}
                 size="small"
                 value={filterCondition}
                 minHeight={32}
@@ -428,23 +439,35 @@ const JDBCForm = forwardRef((props, ref) => {
                 <Radio value="Incremental" label="Incremental" />
               </RadioGroup>
               {dataType === "Incremental" && (
-                <Autocomplete
+                <TextField
+                  fullWidth
                   name="offsetColumn"
                   id="offsetColumn"
+                  style={{ width: "200px", display: "flex" }}
                   size="small"
-                  label="Offset Column"
                   value={offsetColumn}
-                  source={sqlColumns.map((e) => ({
-                    label: e.columnName,
-                    value: e.columnName,
-                  }))}
-                  className="smallSize_autocomplete"
-                  onChange={handleColumnSelect}
-                  variant="search"
-                  singleSelect
-                  required
-                  fullWidth
+                  minHeight={32}
+                  onChange={(e) => handleColumnSelect([e.target.value])}
+                  inputProps={{ maxLength: 255 }}
+                  label="Offset Column"
                 />
+                // <Autocomplete
+                //   name="offsetColumn"
+                //   id="offsetColumn"
+                //   size="small"
+                //   label="Offset Column"
+                //   value={offsetColumn}
+                //   source={sqlColumns.map((e) => ({
+                //     label: e.columnName,
+                //     value: e.columnName,
+                //   }))}
+                //   className="smallSize_autocomplete"
+                //   onChange={handleColumnSelect}
+                //   variant="search"
+                //   singleSelect
+                //   required
+                //   fullWidth
+                // />
               )}
             </>
           )}

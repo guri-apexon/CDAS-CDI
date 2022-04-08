@@ -61,8 +61,7 @@ export function* saveLocationData(action) {
     const fetchSBData = yield call(
       axios.post,
       `${baseURL}/${LOCATIONAPI}/create`,
-      action.values,
-      config
+      { ...action.values, userId }
     );
 
     // console.log("study", fetchSBData);
@@ -83,8 +82,7 @@ export function* updateLocationData(action) {
     const fetchData = yield call(
       axios.post,
       `${baseURL}/${LOCATIONAPI}/update`,
-      action.values,
-      config
+      { ...action.values, userId }
     );
     yield put({
       type: UPDATE_LOCATION_SUCCESS,
@@ -103,8 +101,7 @@ export function* createSettingsData(action) {
     const fetchSBData = yield call(
       axios.post,
       `${baseURL}/${SETTINGAPI}/create`,
-      action.values,
-      config
+      { ...action.values, userId }
     );
 
     // console.log("study", fetchSBData);
@@ -125,8 +122,7 @@ export function* updateSettingsData(action) {
     const fetchData = yield call(
       axios.post,
       `${baseURL}/${SETTINGAPI}/update`,
-      action.values,
-      config
+      { ...action.values, userId }
     );
     yield put({
       type: UPDATE_SETTINGS_SUCCESS,

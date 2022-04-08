@@ -46,6 +46,7 @@ export const initialState = {
   dsProdLock: false,
   dsTestLock: false,
   isDatasetCreation: true,
+  updated: false,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -77,6 +78,7 @@ const DataFlowReducer = (state = initialState, action) =>
 
       case ADD_DATAFLOW_SUCCESS:
         newState.selectedDataFlow = action.dataflow;
+        newState.updated = true;
         break;
 
       case UPDATE_DATAFLOW_SUCCESS:

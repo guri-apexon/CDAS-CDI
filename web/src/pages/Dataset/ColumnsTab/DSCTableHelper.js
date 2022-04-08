@@ -16,12 +16,17 @@ import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Tooltip from "apollo-react/components/Tooltip";
 import {
   createStringSearchFilter,
+  createSelectFilterComponent,
   compareNumbers,
   compareStrings,
 } from "apollo-react/components/Table";
 
 import { ReactComponent as Plus } from "../../../components/Icons/roundPlusBlue.svg";
-import { TextFieldFilter } from "../../../utils/index";
+import {
+  TextFieldFilter,
+  createStringArraySearchFilter,
+  isSftp,
+} from "../../../utils/index";
 
 import {
   checkNumeric,
@@ -57,7 +62,33 @@ export const makeEditableSelectCell =
         fullWidth
         canDeselect={false}
         value={row[key]}
-        error={!row.isInitLoad && errorText ? true : false}
+        onChange={(e) =>
+          row.editRow(row.uniqueId, key, e.target.value, errorText)
+        }
+        {...fieldStyles}
+      >
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </Select>
+    ) : (
+      row[key]
+    );
+  };
+
+export const DataTypeEditableSelectCell =
+  (options) =>
+  ({ row, column: { accessor: key } }) => {
+    const errorText = checkRequired(row[key], key);
+    return row.editMode ? (
+      <Select
+        size="small"
+        fullWidth
+        canDeselect={false}
+        value={row[key]}
+        error={!row.isInitLoad && errorText}
         helperText={!row.isInitLoad ? errorText : ""}
         onChange={(e) =>
           row.editRow(row.uniqueId, key, e.target.value, errorText)
@@ -82,13 +113,13 @@ export const editableSelectCell =
 
     // eslint-disable-next-line consistent-return
     const checkDisabled = () => {
-      if (row.locationType === "jdbc") {
-        if (row.testLock || row.prodLock) {
+      if (!isSftp(row.locationType)) {
+        if (row.dsTestLock || row.dsProdLock) {
           return true;
         }
       }
-      if (row.locationType === "sftp") {
-        if (row.prodLock) {
+      if (isSftp(row.locationType)) {
+        if (row.dsProdLock) {
           return true;
         }
       }
@@ -101,7 +132,7 @@ export const editableSelectCell =
         fullWidth
         canDeselect={false}
         value={row[key]}
-        error={!row.isInitLoad && errorText ? true : false}
+        error={!row.isInitLoad && errorText}
         helperText={!row.isInitLoad ? errorText : ""}
         onChange={(e) =>
           row.editRow(row.uniqueId, key, e.target.value, errorText)
@@ -132,7 +163,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
+      error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStylesNo}
     />
@@ -150,15 +181,15 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       fullWidth
       value={row[key]}
       inputProps={{
-        maxLength: row.fileType === "SAS" && key === "columnName" ? 32 : null,
+        maxLength: row.fileType === "SAS" ? 32 : null,
       }}
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
+      error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
-      disabled={row.prodLock}
+      disabled={row.dsProdLock}
     />
   ) : (
     row[key]
@@ -176,7 +207,7 @@ export const FormatCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
+      error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
     />
@@ -196,7 +227,7 @@ export const EditableCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
+      error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
     />
@@ -276,61 +307,95 @@ export const columns = [
     accessor: "columnName",
     customCell: ColumnNameCell,
     sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("columnName"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Position",
     accessor: "position",
-    customCell: EditableCell,
+    customCell: NumericEditableCell,
     sortFunction: compareStrings,
-    hidden: true,
+    filterFunction: createStringSearchFilter("position"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Format",
     accessor: "format",
     customCell: FormatCell,
     sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("format"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Data Type",
     accessor: "dataType",
-    customCell: makeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
+    customCell: DataTypeEditableSelectCell(["Alphanumeric", "Numeric", "Date"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("dataType"),
+    filterComponent: createSelectFilterComponent(
+      ["Alphanumeric", "Numeric", "Date"],
+      {
+        size: "small",
+        multiple: true,
+      }
+    ),
   },
   {
     header: "Primary?",
-    accessor: "primary",
+    accessor: "primaryKey",
     customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("primaryKey"),
+    filterComponent: createSelectFilterComponent(["Yes", "No"], {
+      size: "small",
+      multiple: true,
+    }),
   },
   {
     header: "Unique?",
     accessor: "unique",
     customCell: makeEditableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("unique"),
+    filterComponent: createSelectFilterComponent(["Yes", "No"], {
+      size: "small",
+      multiple: true,
+    }),
   },
   {
     header: "Required?",
     accessor: "required",
     customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("required"),
+    filterComponent: createSelectFilterComponent(["Yes", "No"], {
+      size: "small",
+      multiple: true,
+    }),
   },
   {
     header: "Min length",
     accessor: "minLength",
     customCell: NumericEditableCell,
     sortFunction: compareNumbers,
+    filterFunction: createStringSearchFilter("minLength"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "Max length",
     accessor: "maxLength",
     customCell: NumericEditableCell,
     sortFunction: compareNumbers,
+    filterFunction: createStringSearchFilter("maxLength"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "List of values",
     accessor: "values",
     customCell: EditableCell,
     sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("values"),
+    filterComponent: TextFieldFilter,
   },
   {
     accessor: "action",
@@ -355,8 +420,10 @@ export const CustomHeader = ({
   cancelMulti,
   newRows,
   disableSaveAll,
-  testLock,
-  prodLock,
+  dsTestLock,
+  dsProdLock,
+  toggleFilters,
+  changeHandler,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -377,7 +444,7 @@ export const CustomHeader = ({
       )}
       {!isMultiAdd && (
         <>
-          {locationType === ("sftp" || "ftps") && (
+          {isSftp(locationType) && (
             <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
               <IconMenuButton
                 id="actions-1"
@@ -420,10 +487,10 @@ export const CustomHeader = ({
           </Button>
         </>
       )}
-      {locationType === ("sftp" || "ftps") && (
+      {isSftp(locationType) && (
         <Tooltip
           title={
-            (!isEditAll || !prodLock || !testLock) &&
+            (!isEditAll || !dsProdLock || !dsTestLock) &&
             "Import dataset column settings"
           }
           disableFocusListener
@@ -431,7 +498,8 @@ export const CustomHeader = ({
           <IconButton
             color="primary"
             size="small"
-            disabled={isEditAll || prodLock || testLock}
+            disabled={isEditAll || dsProdLock || dsTestLock}
+            onClick={changeHandler}
           >
             <Upload />
           </IconButton>
@@ -456,6 +524,7 @@ export const CustomHeader = ({
         variant="secondary"
         icon={Filter}
         disabled={isEditAll}
+        onClick={toggleFilters}
       >
         Filter
       </Button>

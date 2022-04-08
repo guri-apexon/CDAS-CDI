@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useEffect, useState } from "react";
+import React from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch } from "react-redux";
 import {
@@ -10,12 +10,8 @@ import {
 } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
-import Divider from "apollo-react/components/Divider";
 import FixedBar from "apollo-react/components/FixedBar";
-import Status from "apollo-react/components/Status";
 import Radio from "apollo-react/components/Radio";
-import RadioError from "apollo-react-icons/RadioError";
-import Typography from "apollo-react/components/Typography";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
 import {
@@ -98,7 +94,7 @@ const DataSetsFormBase = (props) => {
     defaultLoadType,
     values,
   } = props;
-  const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
+  // const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
 
   const setDefaultValues = (e) => {
     const fileValue = e.target.value;
@@ -122,23 +118,24 @@ const DataSetsFormBase = (props) => {
     // handleSubmit();
   };
 
-  useEffect(() => {
-    if (values?.clinicalDataType) {
-      const filteredDK = datakind?.filter(
-        (e) => e.value === values.clinicalDataType[0]
-      );
-      if (filteredDK?.length) {
-        SetSelectedClinicalData([]);
-        setTimeout(() => {
-          SetSelectedClinicalData([filteredDK[0].value]);
-        });
-        // change("CreateDataSetsForm", "clinicalDataType");
-      }
-    }
-    if (!values) {
-      SetSelectedClinicalData(["1"]);
-    }
-  }, [values]);
+  // useEffect(() => {
+  //   console.log("values", values);
+  //   if (values?.clinicalDataType) {
+  //     const filteredDK = datakind?.filter(
+  //       (e) => e.value === values.clinicalDataType[0]
+  //     );
+  //     if (filteredDK?.length) {
+  //       SetSelectedClinicalData([]);
+  //       setTimeout(() => {
+  //         SetSelectedClinicalData([filteredDK[0].value]);
+  //       });
+  //       // change("CreateDataSetsForm", "clinicalDataType");
+  //     }
+  //   }
+  //   if (!values) {
+  //     SetSelectedClinicalData(["1"]);
+  //   }
+  // }, [values]);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -164,6 +161,7 @@ const DataSetsFormBase = (props) => {
                 name="datasetName"
                 size="small"
                 inputProps={{ maxLength: 30 }}
+                required
                 label="Data Set Name (Mnemonic)"
               />
               <ReduxFormSelect
@@ -173,6 +171,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 onChange={setDefaultValues}
                 fullWidth
+                required
               >
                 {fileTypes?.map((type) => (
                   <MenuItem value={type}>{type}</MenuItem>
@@ -252,8 +251,8 @@ const DataSetsFormBase = (props) => {
               />
               <ReduxFormTextField
                 fullWidth
-                name="folderPath"
-                id="folderPath"
+                name="path"
+                id="path"
                 size="small"
                 label="sFTP Folder Path"
               />
@@ -274,7 +273,18 @@ const DataSetsFormBase = (props) => {
                 variant="search"
                 singleSelect
                 fullWidth
+                required
               />
+              {formValues === "Excel" && (
+                <ReduxFormTextField
+                  fullWidth
+                  name="filePwd"
+                  size="small"
+                  type="password"
+                  inputProps={{ minLength: 8, maxLength: 30 }}
+                  label="File Password"
+                />
+              )}
               <ReduxFormTextField
                 fullWidth
                 name="transferFrequency"

@@ -29,6 +29,8 @@ import {
 
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
+import { getUserInfo } from "../../../utils";
+import { updateDataflow } from "../../../services/ApiServices";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -73,13 +75,20 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const dataFlowData = useSelector((state) => state.dataFlow);
   const dashboardData = useSelector((state) => state.dashboard);
   const dataSetCount = dashboardData?.selectedDataFlow?.dataSets;
-  const { selectedLocation, createTriggered, error, loading, dataFlowdetail } =
-    dataFlowData;
+  const {
+    selectedLocation,
+    createTriggered,
+    error,
+    loading,
+    dataFlowdetail,
+    updated,
+  } = dataFlowData;
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
   const [dataflowSource, setDataFlowSource] = useState({});
   const { dataflowId } = useParams();
+  const userInfo = getUserInfo();
 
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
@@ -144,14 +153,15 @@ const DataFlow = ({ FormValues, dashboard }) => {
     const protId = dashboard.selectedCard.prot_id;
     if (
       FormValues.vendors &&
-      selectedLocation &&
-      FormValues.firstFileDate &&
+      FormValues.locationName &&
+      FormValues.serviceOwnerValue &&
       FormValues.description !== "" &&
-      protId !== ""
+      protId !== "" &&
+      dataflowId
     ) {
       const payload = {
         vendorID: FormValues.vendors[0],
-        src_loc_id: selectedLocation.value,
+        locationName: FormValues.locationName[0],
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.dataflowType,
         testFlag: FormValues.dataflowType === "test" ? "true" : "false",
@@ -165,10 +175,15 @@ const DataFlow = ({ FormValues, dashboard }) => {
           null,
         protocolNumberStandard: protId,
         externalSystemName: "CDI",
+        dataflowId,
+        userId: userInfo.userId,
       };
-      // await dispatch(addDataFlow(payload));
-      await dispatch(updateDataFlow(payload));
-      history.push("/dashboard");
+      const result = await updateDataflow(payload);
+      if (result.status === 1) {
+        messageContext.showSuccessMessage(result.message);
+      } else {
+        messageContext.showErrorMessage(result.message);
+      }
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
     }

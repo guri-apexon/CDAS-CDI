@@ -13,6 +13,7 @@ import {
   RESET_FTP_FORM,
   RESET_JDBC_FORM,
   UPDATE_COLUMNS_DATA,
+  UPDATE_DS_STATUS,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -48,7 +49,15 @@ export const updateDatasetData = (values) => {
   };
 };
 
-export const createDatasetColumns = (values, dsId, dfId, dpId, userId) => {
+export const createDatasetColumns = (
+  values,
+  dsId,
+  dfId,
+  dpId,
+  userId,
+  isUpdateQuery,
+  nQuery
+) => {
   return {
     type: SAVE_DATASET_COLUMNS,
     values,
@@ -56,10 +65,20 @@ export const createDatasetColumns = (values, dsId, dfId, dpId, userId) => {
     dfId,
     dpId,
     userId,
+    isUpdateQuery,
+    nQuery,
   };
 };
 
-export const updateDatasetColumns = (values, dsId, dfId, dpId, userId) => {
+export const updateDatasetColumns = (
+  values,
+  dsId,
+  dfId,
+  dpId,
+  userId,
+  isUpdateQuery,
+  nQuery
+) => {
   return {
     type: UPDATE_COLUMNS_DATA,
     values,
@@ -67,13 +86,17 @@ export const updateDatasetColumns = (values, dsId, dfId, dpId, userId) => {
     dfId,
     dpId,
     userId,
+    isUpdateQuery,
+    nQuery,
   };
 };
 
-export const getDataSetDetail = (dsId) => {
+export const getDataSetDetail = (dsId, dfId, dpId) => {
   return {
     type: GET_DATASET_DETAIL,
     dsId,
+    dfId,
+    dpId,
   };
 };
 
@@ -113,5 +136,12 @@ export const resetFTP = () => {
 export const resetJDBC = () => {
   return {
     type: RESET_JDBC_FORM,
+  };
+};
+
+export const updateDSStatus = (status) => {
+  return {
+    type: UPDATE_DS_STATUS,
+    status,
   };
 };

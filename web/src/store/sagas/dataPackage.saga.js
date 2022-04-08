@@ -29,23 +29,6 @@ export function* fetchPackagesData(params) {
   }
 }
 
-export function* addDataPackage(params) {
-  try {
-    const fetchData = yield call(
-      axios.post,
-      `${baseURL}/${ADD_PACKAGE}`,
-      params.packageData
-    );
-
-    yield put({
-      type: ADD_PACKAGE_SUCCESS,
-      refreshData: true,
-    });
-  } catch (e) {
-    yield put({ type: PACKAGES_LIST_FAILURE, message: e.message });
-  }
-}
-
 export function* updateDataPackage(params) {
   try {
     let fetchData;

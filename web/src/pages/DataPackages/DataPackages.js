@@ -1,7 +1,7 @@
 /* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/no-array-index-key */
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import Paper from "apollo-react/components/Paper";
@@ -19,13 +19,16 @@ import { makeStyles } from "@material-ui/core/styles";
 // import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
+import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import "./DataPackages.scss";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, toast } from "../../utils";
+import { submitDataPackage } from "../../services/ApiServices";
 import {
   addDataPackage,
   getPackagesList,
 } from "../../store/actions/DataPackageAction";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 // import CreatepackageForm from "./CreatePackageForm";
 
 const compressionTypes = [
@@ -63,6 +66,7 @@ const DataPackages = () => {
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
   const userInfo = getUserInfo();
+  const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
 
   const { dfId, selectedCard } = dashboard;
 
@@ -95,13 +99,13 @@ const DataPackages = () => {
     }
     return false;
   };
-  const getPackages = (query = "") => {
-    dispatch(getPackagesList(query));
-  };
+  // const getPackages = (query = "") => {
+  //   dispatch(getPackagesList(query));
+  // };
 
   useEffect(() => {
     if (packageData && packageData.refreshData) {
-      getPackages();
+      // getPackages();
       resetForm();
     }
   }, [packageData.refreshData]);
@@ -109,20 +113,15 @@ const DataPackages = () => {
     if (packageData.openAddPackage) setShowForm(true);
   }, [packageData.openAddPackage]);
 
-  useEffect(() => {
-    getPackages();
-  }, []);
+  // useEffect(() => {
+  //   console.log("packageData", packageData);
+  // }, [packageData]);
   // eslint-disable-next-line consistent-return
-  const submitPackage = () => {
+  const submitPackage = async () => {
     const validated = validateFields();
     setNotMatchedType(!validated);
     if (!validated) return false;
-    if (
-      namingConvention === "" ||
-      compression === "" ||
-      packagePassword === "" ||
-      sftpPath === ""
-    ) {
+    if (namingConvention === "" || compression === "") {
       toast("Please fill all fields to proceed", "error");
       return false;
     }
@@ -135,7 +134,14 @@ const DataPackages = () => {
       dataflow_id: dfId,
       user_id: userInfo.userId,
     };
-    dispatch(addDataPackage(reqBody));
+    const result = await submitDataPackage(reqBody);
+    if (result.status === 1) {
+      showSuccessMessage(result.message);
+      dispatch(addDataPackage());
+    } else {
+      showErrorMessage(result.message);
+    }
+    resetForm();
   };
 
   const handleClose = () => {
@@ -170,7 +176,7 @@ const DataPackages = () => {
               {showForm && (
                 <>
                   <div className="flex title">
-                    <img src="assets/svg/datapackage.svg" alt="datapackage" />
+                    <DataPackageIcon />
                     <Typography className="b-font">
                       Creating New Package
                     </Typography>
@@ -264,11 +270,7 @@ const DataPackages = () => {
               ) : (
                 <>
                   <Box className="h-v-center flex-column add-btn-container">
-                    <img
-                      src="assets/svg/datapackage.svg"
-                      className="head-icon"
-                      alt="datapackage"
-                    />
+                    <DataPackageIcon className="head-icon" />
                     <Typography variant="title1">
                       No Data Package or Datasets Added
                     </Typography>

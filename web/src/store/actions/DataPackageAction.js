@@ -1,9 +1,11 @@
 import {
   ADD_DATA_PACKAGE,
   ADD_PACKAGE_BTN,
+  ADD_PACKAGE_SUCCESS,
   PACKAGES_LIST,
   REDIRECT_TO_DATASET,
   UPDATE_DATA_PACKAGE,
+  UPDATE_LEFT_PANEL,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -23,8 +25,8 @@ export const addPackageBtnAction = () => {
 
 export const addDataPackage = (packageData) => {
   return {
-    type: ADD_DATA_PACKAGE,
-    packageData,
+    type: ADD_PACKAGE_SUCCESS,
+    refreshData: true,
   };
 };
 
@@ -51,5 +53,11 @@ export const redirectToDataSet = (dfId, dfName, dpId, dpName, dsId, dsName) => {
     dpName,
     dsId,
     dsName,
+  };
+};
+
+export const updatePanel = () => {
+  return {
+    type: UPDATE_LEFT_PANEL,
   };
 };

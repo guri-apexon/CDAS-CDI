@@ -163,7 +163,13 @@ const LeftPanel = () => {
   }, [selectedStudy]);
 
   return (
-    <div className="leftPanel">
+    <div
+      style={{
+        maxHeight: "calc( 100vh - 120px)",
+        overflow: "hidden",
+      }}
+      className="leftPanel"
+    >
       <div className="searchBox">
         <Typography
           variant="title1"

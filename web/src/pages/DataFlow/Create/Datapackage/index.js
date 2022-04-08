@@ -14,7 +14,7 @@ import TextField from "apollo-react/components/TextField";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import { ReactComponent as DataPackageIcon } from "../../../../components/Icons/datapackage.svg";
-import "./DataPackages.scss";
+import "./index.scss";
 // import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, isSftp, validateFields } from "../../../../utils";
 // import {
@@ -53,10 +53,12 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
     submitForm: () => {
       if (disabled) {
         payloadBack({
-          compression_type: "",
-          naming_convention: "No package",
-          package_password: "",
-          sftp_path: "",
+          type: "",
+          name: "No package",
+          password: "",
+          path: "",
+          noPackageConfig: 1,
+          active: 1,
         });
         return false;
       }
@@ -70,11 +72,12 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
         }
       }
       const reqBody = {
-        compression_type: compression,
-        naming_convention:
-          namingConvention === "" ? "No package" : namingConvention,
-        package_password: packagePassword,
-        sftp_path: sftpPath,
+        type: compression,
+        name: namingConvention === "" ? "No package" : namingConvention,
+        password: packagePassword,
+        path: sftpPath,
+        noPackageConfig: configShow ? 0 : 1,
+        active: 1,
       };
       payloadBack(reqBody);
     },

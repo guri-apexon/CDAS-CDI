@@ -79,7 +79,7 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
   const userInfo = getUserInfo();
   const location = useLocation();
   const viewAuditLog = () => {
-    history.push("/audit-logs");
+    history.push(`/dashboard/audit-logs/${dataflowId}`);
   };
   const getPackages = (dfid, query = "") => {
     if (dfid) {
@@ -99,10 +99,10 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
     }, 1000);
   };
   const redirectDataPackage = () => {
-    if (location.pathname === "/data-packages") {
+    if (location.pathname === "/dashboard/data-packages") {
       dispatch(addPackageBtnAction());
     } else {
-      history.push("/data-packages");
+      history.push("/dashboard/data-packages");
     }
   };
   const menuItems = [
@@ -185,7 +185,7 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
           </Button>
         </div>
 
-        <div style={{ maxWidth: 400 }}>
+        <div style={{ maxWidth: 400 }} className="search-package">
           <Search
             placeholder="Search"
             size="small"
@@ -206,10 +206,8 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
             {!loading && (
               <>
                 <Typography variant="body2" style={{ marginLeft: 10 }}>
-                  {packagesList.length === 1 &&
-                    `${packagesList.length}  Data Package`}
-                  {packagesList.length >= 1 &&
-                    `${packagesList.length} Data Packages`}
+                  {packagesList.length}
+                  {packagesList.length > 1 ? " Data Packages" : " Data Package"}
                 </Typography>
                 <PackagesList userInfo={userInfo} data={packageData} />
               </>

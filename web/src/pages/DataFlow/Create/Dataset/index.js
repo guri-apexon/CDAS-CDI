@@ -1,27 +1,21 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-script-url */
 import React, {
-  Fragment,
   useState,
-  useContext,
   useEffect,
   useRef,
   forwardRef,
   useImperativeHandle,
 } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { useHistory, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
 import Panel from "apollo-react/components/Panel/Panel";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import "./Dataset.scss";
-import {
-  getDataKindData,
-  saveDatasetData,
-  updateDatasetData,
-} from "../../../../store/actions/DataSetsAction";
+import { getDataKindData } from "../../../../store/actions/DataSetsAction";
 import CreateDataSetsForm from "./DataSetsForm";
 // import DataSetsFormSQL from "./DataSetsFormSQL";
 import JDBCForm from "./JDBCForm";
@@ -81,22 +75,15 @@ const styles = {
   },
 };
 const Dataset = (props, ref) => {
-  const { datapackageid, currentStep, updateStep, messageContext, submitData } =
-    props;
+  const { currentStep, updateStep, submitData, headerValue } = props;
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
   const [customSql, setCustomSql] = useState("no");
   const dispatch = useDispatch();
-  const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
-  const dashboard = useSelector((state) => state.dashboard);
-  const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
-  const { selectedDSDetails } = packageData;
-  const { dataflowName, datapackageName, datasetName } = selectedDSDetails;
-  const { loading, error, sucessMsg, isDatasetCreated, selectedDataset } =
-    dataSets;
+  const { loading, isDatasetCreated } = dataSets;
   const { dataFlowdetail } = dataFlow;
   const { datasetId } = useParams();
 
@@ -116,12 +103,6 @@ const Dataset = (props, ref) => {
         updateStep(3);
         break;
     }
-  };
-  const getDataSetType = (type) => {
-    if (type?.toLowerCase() === ("sftp" || "ftps")) {
-      return "sftp";
-    }
-    return "jdbc";
   };
 
   const onChangeSql = (val) => {
@@ -147,7 +128,7 @@ const Dataset = (props, ref) => {
   useEffect(() => {
     if (dataFlowdetail?.locationType) {
       setLocationType(dataFlowdetail?.locationType);
-      if (getDataSetType(dataFlowdetail?.locationType) === ("sftp" || "ftps")) {
+      if (isSftp(dataFlowdetail?.locationType)) {
         setColumnsActive(true);
       }
     }
@@ -166,40 +147,21 @@ const Dataset = (props, ref) => {
       }
     },
   }));
-  // useEffect(() => {
-  //   if (messageContext?.dataflowObj?.dataset) {
-  //     const datasetObj = messageContext?.dataflowObj?.dataset || {};
-  //     submitData(datasetObj);
-  //   }
-  // }, [messageContext?.dataflowObj?.dataset]);
 
   const onSubmit = (formValue) => {
     const data = {
       ...formValue,
-      datapackageid,
       dfTestFlag: dataFlowdetail.testflag,
     };
     submitData(data);
   };
 
-  const closeForm = async () => {
-    if (locationType?.toLowerCase() === ("sftp" || "ftps")) {
-      await dispatch(reset("CreateDataSetsForm"));
-    } else {
-      jdbcRef.current.handleCancel();
-    }
-    history.push("/dashboard");
-  };
   useEffect(() => {
     console.log("currentStep", currentStep);
     if (currentStep === 5) {
       setValue(2);
     } else if (currentStep === 4) {
-      // if (columnsActive) {
       setValue(1);
-      // } else {
-      //   setValue(value === 2 ? 0 : 2);
-      // }
     } else if (currentStep === 3) {
       setValue(0);
     }
@@ -237,7 +199,6 @@ const Dataset = (props, ref) => {
             locationType?.toLowerCase() !== "sftp" &&
             locationType?.toLowerCase() !== "ftps" && (
               <JDBCForm
-                datapackageid={datapackageid}
                 dataflowid="123abc"
                 datasetId={datasetId}
                 dfTestFlag={dataFlowdetail.testflag}
@@ -247,7 +208,9 @@ const Dataset = (props, ref) => {
                 moveNext={() => setValue(1)}
               />
             )}
-          {value === 1 && <ColumnsTab locationType={locationType} />}
+          {value === 1 && (
+            <ColumnsTab locationType={locationType} headerValue={headerValue} />
+          )}
           {value === 2 && <VLCTab />}
         </div>
       </main>

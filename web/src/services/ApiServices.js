@@ -17,6 +17,9 @@ import {
   DATAFLOW_SAVE,
   LOCATIONAPI,
   DATAKINDAPI,
+  COLUMNSAPI,
+  DATAFLOW_UPDATE_API,
+  ADD_PACKAGE,
 } from "../constants";
 import { getCookie } from "../utils/index";
 
@@ -127,6 +130,17 @@ export const dataflowSave = async (payload) => {
       userId,
     });
     return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+export const updateDataflow = async (payload) => {
+  try {
+    const res = await axios.post(`${baseURL}/${DATAFLOW_UPDATE_API}`, {
+      ...payload,
+      userId,
+    });
+    return res.data || [];
   } catch (err) {
     return console.log("Error", err);
   }
@@ -327,8 +341,6 @@ export const getPinnedStudies = async () => {
   }
 };
 
-export default searchStudy;
-
 export const userLogOut = () => {
   return axios
     .get(`${baseURL}/logout`)
@@ -339,3 +351,37 @@ export const userLogOut = () => {
       console.log(err);
     });
 };
+
+export const deleteCD = async (id) => {
+  try {
+    const res = await axios.post(`${baseURL}/${COLUMNSAPI}/delete/${id}`, {
+      userId,
+    });
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const updateLOV = async (reqBody) => {
+  try {
+    const res = await axios.post(
+      `${baseURL}/${COLUMNSAPI}/lov-update`,
+      reqBody
+    );
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const submitDataPackage = async (reqBody) => {
+  try {
+    const res = await axios.post(`${baseURL}/${ADD_PACKAGE}`, reqBody);
+    return res.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export default searchStudy;
