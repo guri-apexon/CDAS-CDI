@@ -161,7 +161,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
 
   useEffect(() => {
     if (!isSftp(locationType)) {
-      setLoading(true);
       if (datasetColumns.length > 0) {
         formatDBColumns(datasetColumns);
         setSelectedMethod("fromDB");

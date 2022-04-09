@@ -85,12 +85,6 @@ export default function DSColumnTable({
   }, []);
 
   useEffect(() => {
-    if (rows.length) {
-      setFilteredRows(rows);
-    }
-  }, [rows]);
-
-  useEffect(() => {
     const allColumns = editedRows.map((e) => e.isHavingColumnName);
     if (allColumns.every((e) => e === true)) {
       setDisableSaveAll(false);
@@ -98,16 +92,6 @@ export default function DSColumnTable({
       setDisableSaveAll(true);
     }
   }, [editedRows]);
-
-  useEffect(() => {
-    if (selectedRows.length > 0) {
-      setIsEditAll(true);
-      setEditMode(true);
-    } else {
-      setIsEditAll(false);
-      setEditMode(false);
-    }
-  }, [selectedRows]);
 
   const handleViewLOV = (row) => {
     setShowViewLOVs(true);
@@ -469,10 +453,25 @@ export default function DSColumnTable({
   };
 
   useEffect(() => {
+    if (selectedRows.length > 0) {
+      setIsEditAll(true);
+      setEditMode(true);
+    } else {
+      setIsEditAll(false);
+      setEditMode(false);
+    }
+  }, [selectedRows]);
+
+  useEffect(() => {
     if (rows?.length) {
+      console.log("rows", rows);
+      setFilteredRows(rows);
       messageContext?.setDataflow({ columnDefinition: rows });
     }
   }, [rows]);
+  useEffect(() => {
+    console.log("editedRows, filteredRows", editedRows, filteredRows, editMode);
+  }, [editedRows, filteredRows]);
 
   useEffect(() => {
     if (previewSQL?.length) {
