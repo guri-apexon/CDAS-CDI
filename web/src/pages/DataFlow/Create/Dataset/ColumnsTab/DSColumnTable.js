@@ -418,7 +418,6 @@ export default function DSColumnTable({
                 isHavingColumnName: true,
               };
             }
-            // showColumnNameRequried();
             return {
               ...row,
               [key]: value,
