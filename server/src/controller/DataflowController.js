@@ -192,7 +192,16 @@ exports.createDataflow = async (req, res) => {
     if (!type && dataStructure) type = dataStructure;
 
     if (vendorName !== null && protocolNumber !== null && description !== "") {
-      var DFTestname = `${vendorName}-${protocolNumber}-${description}`;
+      const { rows: studyRows } = await DB.executeQuery(
+        `select prot_nbr_stnd from study where prot_id ='${protocolNumber}';`
+      );
+      if (!studyRows?.length) {
+        return apiResponse.ErrorResponse(res, "Study not found");
+      }
+      testFlag = helper.stringToBoolean(testFlag);
+      const protNbr = studyRows[0].prot_nbr_stnd;
+
+      var DFTestname = `${vendorName}-${protNbr}-${description}`;
       if (testFlag === true) {
         DFTestname = "TST-" + DFTestname;
       }
@@ -226,7 +235,7 @@ exports.createDataflow = async (req, res) => {
         helper.stringToBoolean(active) ? 1 : 0,
         configured || 0,
         exptDtOfFirstProdFile || null,
-        helper.stringToBoolean(testFlag) ? 1 : 0,
+        testFlag ? 1 : 0,
         data_in_cdr || "N",
         connectionType || null,
         externalSystemName || null,
@@ -521,8 +530,8 @@ exports.createDataflow = async (req, res) => {
       connectionType: connectionType,
       location: src_loc_id,
       exptDtOfFirstProdFile: exptDtOfFirstProdFile,
-      testFlag: testFlag,
-      prodFlag: testFlag === 1 ? true : false,
+      testFlag: testFlag ? 1 : 0,
+      prodFlag: testFlag,
       description: description,
       fsrstatus: fsrstatus,
       dataPackage,
