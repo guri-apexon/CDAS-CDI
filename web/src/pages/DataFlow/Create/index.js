@@ -269,6 +269,12 @@ const DataFlow = ({
     }
   };
   const submitFinalForm = async () => {
+    if (!myform.dataPackage[0]?.dataSet[0]?.columncount) {
+      messageContext.showErrorMessage(
+        "Please add atleast one column to proceed"
+      );
+      return false;
+    }
     const reqBody = {
       ...myform,
     };
@@ -368,64 +374,6 @@ const DataFlow = ({
         </div>
       </>
     );
-    // switch (currentStep) {
-    //   case 1:
-    //     formEl = (
-    //       <DataFlowForm
-    //         currentStep={currentStep}
-    //         onSubmit={onSubmit}
-    //         changeLocationData={changeLocationData}
-    //         changeFormField={changeFormField}
-    //         changeLocationType={changeLocationType}
-    //         modalLocationType={modalLocationType}
-    //         userName={selectedLocation?.usr_nm}
-    //         password={selectedLocation?.pswd}
-    //         connLink={selectedLocation?.cnn_url}
-    //       />
-    //     );
-    //     break;
-    //   case 2:
-    //     formEl = (
-    //       <DataPackages
-    //         setCompression={setCompression}
-    //         setNamingConvention={setNamingConvention}
-    //         setPackagePassword={setPackagePassword}
-    //         setSftpPath={setSftpPath}
-    //         compression={compression}
-    //         namingConvention={namingConvention}
-    //         packagePassword={packagePassword}
-    //         sftpPath={sftpPath}
-    //       />
-    //     );
-    //     break;
-    //   case 3:
-    //   case 4:
-    //   case 5:
-    //     formEl = (
-    //       <DataSet
-    //         currentStep={currentStep}
-    //         myform={myform}
-    //         updateStep={(step) => setCurrentStep({ step })}
-    //         datapackageid={selectedDatapackage}
-    //         getDataSetValue={getDataSetValue}
-    //       />
-    //     );
-    //     break;
-    //   default:
-    //     formEl = (
-    //       <DataFlowForm
-    //         onSubmit={onSubmit}
-    //         changeLocationData={changeLocationData}
-    //         changeFormField={changeFormField}
-    //         changeLocationType={changeLocationType}
-    //         modalLocationType={modalLocationType}
-    //         userName={selectedLocation?.usr_nm}
-    //         password={selectedLocation?.pswd}
-    //         connLink={selectedLocation?.cnn_url}
-    //       />
-    //     );
-    //     break;
-    // }
     return formEl;
   };
 

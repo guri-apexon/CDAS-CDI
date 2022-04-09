@@ -110,7 +110,7 @@ const ColumnsTab = ({ locationType, headerValue }) => {
               columnName: column.columnName || "",
               format: column.format || "",
               dataType: column.dataType || "",
-              primary: column.primarykey === true ? "Yes" : "No",
+              primaryKey: column.primarykey === true ? "Yes" : "No",
               unique: column.unique === true ? "Yes" : "No",
               required: column.required === true ? "Yes" : "No",
               minLength: column.charactermin || "",
@@ -179,20 +179,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
     setSelectedMethod(e.target.value);
   };
 
-  const showTable = React.useMemo(() => {
-    return (
-      <>
-        <DSColumnTable
-          numberOfRows={numberOfRows}
-          formattedData={formattedData}
-          dataOrigin={selectedMethod}
-          locationType={locationType}
-          headerValue={headerValue}
-        />
-      </>
-    );
-  }, [showColumns, loading]);
-
   return (
     <>
       {loading && <Progress />}
@@ -252,7 +238,15 @@ const ColumnsTab = ({ locationType, headerValue }) => {
           </div>
         </div>
       )}
-      {showColumns && !loading && <>{showTable}</>}
+      {showColumns && !loading && (
+        <DSColumnTable
+          numberOfRows={numberOfRows}
+          formattedData={formattedData}
+          dataOrigin={selectedMethod}
+          locationType={locationType}
+          headerValue={headerValue}
+        />
+      )}
     </>
   );
 };
