@@ -76,18 +76,31 @@ exports.stringToBoolean = (string) => {
   }
 };
 
+const stringToBooleanVal = (exports.stringToBooleanVal = (string) => {
+  switch (string?.toString().toLowerCase().trim()) {
+    case "true":
+    case "yes":
+    case "1":
+      return true;
+    case "false":
+    case "no":
+    case "0":
+    case null:
+      return false;
+    default:
+      return string;
+  }
+});
+
 exports.convertEscapeChar = (str) => {
   return str ? String.raw`${str}`.replace(/\\/g, "\\\\") : "";
 };
 
 exports.validation = (data) => {
-  // console.log(data);
   let msg = [];
-
   data.forEach((val) => {
-    // console.log(val.key);
     if (val.type == "boolean") {
-      val.value = stringToBoolean(val.value);
+      val.value = stringToBooleanVal(val.value);
     }
     if (
       val.value !== null &&
@@ -98,11 +111,11 @@ exports.validation = (data) => {
       // console.log(val.key);
     } else {
       msg.push({
-        text: `this ${val.key} field is required and data type should be ${val.type} `,
+        text: ` ${val.key} is required and data type should be ${val.type} `,
         status: false,
       });
     }
   });
-  console.log(msg);
+  // console.log(msg);
   return msg;
 };
