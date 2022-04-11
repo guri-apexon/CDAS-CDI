@@ -766,7 +766,7 @@ exports.activateDataFlow = async (req, res) => {
       const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1`;
       const q3 = `INSERT INTO ${schemaName}.dataflow_audit_log
       (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
-      VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+      VALUES($1, $2, $3, $4, $5, $6, $7)`;
       const q4 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
       VALUES($1, $2, $3, $4)`;
       // const $q1 = await DB.executeQuery(q1, [dataFlowId]);
@@ -813,8 +813,8 @@ exports.inActivateDataFlow = async (req, res) => {
     // const q0 = `SELECT "version" FROM ${schemaName}.dataflow_version WHERE dataflowid=$1 ORDER BY created_on DESC LIMIT 1`;
     const q1 = `UPDATE ${schemaName}.dataflow set active=0 WHERE dataflowid=$1`;
     const q2 = `INSERT INTO ${schemaName}.dataflow_audit_log
-    (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+    (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
+    VALUES($1, $2, $3, $4, $5, $6, $7)`;
     const q3 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
     VALUES($1, $2, $3, $4)`;
 
