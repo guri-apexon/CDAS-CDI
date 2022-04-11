@@ -192,7 +192,16 @@ exports.createDataflow = async (req, res) => {
     if (!type && dataStructure) type = dataStructure;
 
     if (vendorName !== null && protocolNumber !== null && description !== "") {
-      var DFTestname = `${vendorName}-${protocolNumber}-${description}`;
+      const { rows: studyRows } = await DB.executeQuery(
+        `select prot_nbr_stnd from study where prot_id ='${protocolNumber}';`
+      );
+      if (!studyRows?.length) {
+        return apiResponse.ErrorResponse(res, "Study not found");
+      }
+      testFlag = helper.stringToBoolean(testFlag);
+      const protNbr = studyRows[0].prot_nbr_stnd;
+
+      var DFTestname = `${vendorName}-${protNbr}-${description}`;
       if (testFlag === true) {
         DFTestname = "TST-" + DFTestname;
       }
@@ -226,7 +235,7 @@ exports.createDataflow = async (req, res) => {
         helper.stringToBoolean(active) ? 1 : 0,
         configured || 0,
         exptDtOfFirstProdFile || null,
-        helper.stringToBoolean(testFlag) ? 1 : 0,
+        testFlag ? 1 : 0,
         data_in_cdr || "N",
         connectionType || null,
         externalSystemName || null,
@@ -521,8 +530,8 @@ exports.createDataflow = async (req, res) => {
       connectionType: connectionType,
       location: src_loc_id,
       exptDtOfFirstProdFile: exptDtOfFirstProdFile,
-      testFlag: testFlag,
-      prodFlag: testFlag === 1 ? true : false,
+      testFlag: testFlag ? 1 : 0,
+      prodFlag: testFlag,
       description: description,
       fsrstatus: fsrstatus,
       dataPackage,
@@ -757,7 +766,7 @@ exports.activateDataFlow = async (req, res) => {
       const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1`;
       const q3 = `INSERT INTO ${schemaName}.dataflow_audit_log
       (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
-      VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+      VALUES($1, $2, $3, $4, $5, $6, $7)`;
       const q4 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
       VALUES($1, $2, $3, $4)`;
       // const $q1 = await DB.executeQuery(q1, [dataFlowId]);
@@ -804,8 +813,8 @@ exports.inActivateDataFlow = async (req, res) => {
     // const q0 = `SELECT "version" FROM ${schemaName}.dataflow_version WHERE dataflowid=$1 ORDER BY created_on DESC LIMIT 1`;
     const q1 = `UPDATE ${schemaName}.dataflow set active=0 WHERE dataflowid=$1`;
     const q2 = `INSERT INTO ${schemaName}.dataflow_audit_log
-    (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+    (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
+    VALUES($1, $2, $3, $4, $5, $6, $7)`;
     const q3 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
     VALUES($1, $2, $3, $4)`;
 
