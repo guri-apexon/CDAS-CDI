@@ -156,12 +156,12 @@ const DataFlowReducer = (state = initialState, action) =>
           exptfstprddt,
           loctyp,
           name,
-          srclocID,
+          srclocid,
           type,
           vendorid,
           vendorname,
           testflag,
-          locationName,
+          locationname,
           isSync,
         } = dataflowDetail;
 
@@ -179,7 +179,7 @@ const DataFlowReducer = (state = initialState, action) =>
         formData.locationType = loctyp;
         formData.name = name;
         formData.dataflowType = testflag === 1 ? "test" : "production";
-        formData.locations = [{ value: srclocID, label: locationName }];
+        formData.locations = [{ value: srclocid, label: locationname }];
         formData.dataStructure = type;
         formData.vendors = [vendorid];
         formData.vendorname = vendorname;

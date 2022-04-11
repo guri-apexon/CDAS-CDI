@@ -22,7 +22,6 @@ import {
   changeFormFieldData,
   hideErrorMessage,
   getLocationByType,
-  addDataFlow,
   getDataFlowDetail,
 } from "../../../store/actions/DataFlowAction";
 
@@ -150,8 +149,6 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
-    // console.log("FormValues?", FormValues);
-    // console.log("protId", protId, dataflowId, FormValues);
     if (
       FormValues.vendors &&
       FormValues.locationName &&
