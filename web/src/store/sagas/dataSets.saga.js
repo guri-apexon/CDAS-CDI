@@ -215,6 +215,7 @@ export function* saveDatasetColumns(action) {
     yield put({
       type: STORE_DATASET_COLUMNS_SUCCESS,
       datasetColumns: saveData.data.data,
+      nQuery: action.nQuery,
     });
   } catch (e) {
     const errText = e.response?.data?.message

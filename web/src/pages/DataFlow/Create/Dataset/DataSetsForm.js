@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useEffect, useState } from "react";
+import React from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch } from "react-redux";
 import {
@@ -10,12 +10,8 @@ import {
 } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
-import Divider from "apollo-react/components/Divider";
 import FixedBar from "apollo-react/components/FixedBar";
-import Status from "apollo-react/components/Status";
 import Radio from "apollo-react/components/Radio";
-import RadioError from "apollo-react-icons/RadioError";
-import Typography from "apollo-react/components/Typography";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
 import {

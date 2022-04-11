@@ -26,14 +26,15 @@ import {
   getDatasetColumns,
   resetFTP,
   resetJDBC,
+  getSQLColumns,
 } from "../../store/actions/DataSetsAction";
 import { updatePanel } from "../../store/actions/DataPackageAction";
+import { getUserInfo, isSftp } from "../../utils";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
-import { getUserInfo, isSftp } from "../../utils";
 
 const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
 const userInfo = getUserInfo();
@@ -95,6 +96,7 @@ const Dataset = () => {
   const [locationType, setLocationType] = useState("sftp");
   const [columnsActive, setColumnsActive] = useState(false);
   const dispatch = useDispatch();
+  const params = useParams();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
@@ -102,7 +104,10 @@ const Dataset = () => {
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDSDetails } = packageData;
-  const { dfId, selectedCard } = dashboard;
+  const {
+    selectedCard,
+    selectedDataFlow: { dataFlowId: dfId },
+  } = dashboard;
   const {
     datapackageid: dpId,
     datapackageName,
@@ -126,7 +131,13 @@ const Dataset = () => {
     isDatasetCreation,
   } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
-  const { locationType: newLT, isCustomSQL } = selectedDataset;
+  const {
+    locationType: newLT,
+    tbl_nm: tName,
+    tableName,
+    isCustomSQL,
+    customsql_yn: customQuery,
+  } = selectedDataset;
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -144,18 +155,23 @@ const Dataset = () => {
   };
 
   const getDataSetType = (type) => {
-    if (isSftp(type)) {
+    if (type === "SFTP" || type === "FTPS") {
       return "sftp";
     }
     return "jdbc";
   };
 
   useEffect(() => {
+    console.log("datsetRender");
     if (dfId === "") {
       history.push("/dashboard");
     }
     dispatch(getDataKindData());
   }, []);
+
+  useEffect(() => {
+    setValue(0);
+  }, [params]);
 
   useEffect(() => {
     if (datasetid === null) {
@@ -172,9 +188,18 @@ const Dataset = () => {
       messageContext.showSuccessMessage("Dataset Created Successfully");
       dispatch(updatePanel());
     }
+
     if (isDatasetCreated) {
       if (isSftp(loctyp)) {
         setValue(1);
+      }
+      if (!isSftp(loctyp)) {
+        if (customQuery || isCustomSQL) {
+          dispatch(getSQLColumns(tName || tableName));
+          setTimeout(() => {
+            setValue(1);
+          }, 500);
+        }
       }
     }
   }, [isDatasetCreated, isDatasetCreation, loctyp]);
@@ -189,7 +214,7 @@ const Dataset = () => {
   }, [loctyp]);
 
   useEffect(() => {
-    if (newLT === "JDBC") {
+    if (getDataSetType(newLT) === "jdbc") {
       if (isCustomSQL === "No") {
         setColumnsActive(true);
       }
@@ -246,6 +271,7 @@ const Dataset = () => {
         ...formValue,
         dpId,
         userId: userInfo.userId,
+        locationType: getDataSetType(loctyp),
         testFlag: testflag,
         dfId,
         studyId,
@@ -313,11 +339,7 @@ const Dataset = () => {
               <div style={{ display: "flex", paddingLeft: 11 }}>
                 <DatasetsIcon />
                 <Typography className={classes.cTitle}>
-                  {datasetName
-                    ? datasetName
-                    : selectedDataset.datasetName
-                    ? selectedDataset.datasetName
-                    : "Dataset name"}
+                  {datasetName ?? selectedDataset.datasetName ?? "Dataset name"}
                 </Typography>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>

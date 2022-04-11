@@ -8,12 +8,11 @@ import FileUpload from "apollo-react/components/FileUpload";
 import Card from "apollo-react/components/Card";
 import Radio from "apollo-react/components/Radio";
 import Link from "apollo-react/components/Link";
-
 import Button from "apollo-react/components/Button";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
-
+import Progress from "../../../components/Common/Progress/Progress";
 import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../utils/index";
 
@@ -23,7 +22,8 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
-  const { datasetColumns } = dataSets;
+  const { datasetColumns, sqlColumns } = dataSets;
+  const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
   const [showColumns, setShowColumns] = useState(false);
@@ -32,8 +32,8 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const [formattedData, setFormattedData] = useState([]);
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
-  const numberOfRows = 1;
 
+  const numberOfRows = 1;
   const maxSize = 150000;
 
   const handleUpload = (selected) => {
@@ -77,13 +77,13 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               columnId: i + 1,
               dbColumnId: column.columnid,
               uniqueId: `u${i}`,
-              variableLabel: column.VARIABLE || "",
+              variableLabel: column.variable || "",
               columnName: column.name || "",
               position: column.position || "",
-              format: column.FORMAT || "",
+              format: column.format || "",
               dataType: column.datatype || "",
-              primary: column.primarykey === 1 ? "Yes" : "No",
-              unique: column.UNIQUE === 1 ? "Yes" : "No",
+              primaryKey: column.primarykey === 1 ? "Yes" : "No",
+              unique: column.unique === 1 ? "Yes" : "No",
               required: column.required === 1 ? "Yes" : "No",
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
@@ -91,6 +91,36 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               isInitLoad: true,
               isHavingError: false,
               isHavingColumnName: true,
+              isHavingDataType: true,
+            };
+            return newObj;
+          })
+        : [];
+    setFormattedData([...newData]);
+  };
+
+  const formatJDBCColumns = (arr) => {
+    const newData =
+      arr.length > 0
+        ? arr.map((column, i) => {
+            const newObj = {
+              columnId: i + 1,
+              dbColumnId: column.columnid || "",
+              uniqueId: `u${i}`,
+              variableLabel: column.varable || "",
+              columnName: column.columnName || "",
+              format: column.format || "",
+              dataType: column.dataType || "",
+              primaryKey: column.primarykey === true ? "Yes" : "No",
+              unique: column.unique === true ? "Yes" : "No",
+              required: column.required === true ? "Yes" : "No",
+              minLength: column.charactermin || "",
+              maxLength: column.charactermax || "",
+              values: column.lov || "",
+              isInitLoad: true,
+              isHavingError: false,
+              isHavingColumnName: true,
+              isHavingDataType: true,
             };
             return newObj;
           })
@@ -105,20 +135,13 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
     setIsImportReady(false);
   };
 
-  // const handleNoHeaders = () => {
-  //   messageContext.showErrorMessage(
-  //     `Import is not available for files with no header row.`
-  //   );
-  //   handleDelete();
-  // };
-
   useEffect(() => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
         const newData = formatData(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
-        if (newData.length > 1) {
+        if (newData.length > 0) {
           setFormattedData(newData);
           setIsImportReady(true);
         } else {
@@ -141,8 +164,12 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
+    } else if (sqlColumns.length > 0) {
+      setShowColumns(true);
+      formatJDBCColumns(sqlColumns);
+      setSelectedMethod("fromAPICall");
     }
-  }, [datasetColumns]);
+  }, [datasetColumns, sqlColumns]);
 
   useEffect(() => {
     if (!isSftp(locationType)) {
@@ -167,10 +194,11 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
         />
       </>
     );
-  }, [showColumns]);
+  }, [showColumns, loading]);
 
   return (
     <>
+      {loading && <Progress />}
       {!showColumns && (
         <div className="tab colums-tab">
           <p className="title">Configure Dataset Column Settings</p>

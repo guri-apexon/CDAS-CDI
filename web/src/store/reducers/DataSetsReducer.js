@@ -132,6 +132,12 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.selectedDataset = {
           ...action.values,
           datasetid: action.dataset.datasetid,
+          customsql_yn: action.dataset.customsql_yn,
+          customsql: action.dataset.customsql,
+          fileType: action.dataset.type,
+          headerrownumber: action.dataset.headerrownumber,
+          tbl_nm: action.dataset.tbl_nm,
+          dataset_fltr: action.dataset.dataset_fltr,
         };
         if (action.values.fileType) {
           newState.formData = action.values;
@@ -158,9 +164,14 @@ const DataFlowReducer = (state = initialState, action) =>
       case STORE_DATASET_COLUMNS_SUCCESS:
         newState.loading = false;
         newState.datasetColumns = action.datasetColumns;
+        newState.selectedDataset = {
+          ...state.selectedDataset,
+          customsql: action.nQuery,
+        };
         newState.isColumnsConfigured =
           action.datasetColumns.length > 0 ? true : false;
         newState.error = null;
+        newState.sucessMsg = "Column Defination created Successfully";
         break;
       case STORE_DATASET_COLUMNS_FAILURE:
         newState.loading = false;
@@ -258,7 +269,7 @@ const DataFlowReducer = (state = initialState, action) =>
           quote,
           headerrownumber,
           footerrownumber,
-          naming_convention,
+          name,
           path,
           datakindid,
           data_freq,
@@ -269,7 +280,7 @@ const DataFlowReducer = (state = initialState, action) =>
           customsql_yn,
           customsql,
           offsetcolumn,
-          offset_val,
+          dataset_fltr,
           tbl_nm,
         } = datasetDetail;
         if (type) {
@@ -282,7 +293,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.quote = quote;
           newState.formData.headerRowNumber = headerrownumber;
           newState.formData.footerRowNumber = footerrownumber;
-          newState.formData.fileNamingConvention = naming_convention;
+          newState.formData.fileNamingConvention = name;
           newState.formData.folderPath = path;
           newState.formData.clinicalDataType = [datakindid];
           newState.formData.transferFrequency = data_freq;
@@ -300,7 +311,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL.sQLQuery = customsql;
           newState.formDataSQL.offsetColumn = offsetcolumn;
           newState.formDataSQL.tableName = tbl_nm;
-          newState.formDataSQL.filterCondition = offset_val;
+          newState.formDataSQL.filterCondition = dataset_fltr;
           newState.formDataSQL.dataType =
             incremental === "N" ? "Cumulative" : "Incremental";
         }

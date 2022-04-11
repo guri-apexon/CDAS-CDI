@@ -1,7 +1,7 @@
 /* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/no-array-index-key */
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import Paper from "apollo-react/components/Paper";
@@ -23,11 +23,12 @@ import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapa
 import "./DataPackages.scss";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, toast } from "../../utils";
+import { submitDataPackage } from "../../services/ApiServices";
 import {
   addDataPackage,
   getPackagesList,
 } from "../../store/actions/DataPackageAction";
-// import CreatepackageForm from "./CreatePackageForm";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 
 const compressionTypes = [
   { text: "Not Compressed", value: "not_compressed" },
@@ -48,7 +49,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const DataPackages = () => {
+const DataPackages = React.memo(() => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
@@ -64,8 +65,12 @@ const DataPackages = () => {
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
   const userInfo = getUserInfo();
+  const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
 
-  const { dfId, selectedCard } = dashboard;
+  const {
+    selectedCard,
+    selectedDataFlow: { dataFlowId: dfId },
+  } = dashboard;
 
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -110,11 +115,8 @@ const DataPackages = () => {
     if (packageData.openAddPackage) setShowForm(true);
   }, [packageData.openAddPackage]);
 
-  // useEffect(() => {
-  //   getPackages();
-  // }, []);
   // eslint-disable-next-line consistent-return
-  const submitPackage = () => {
+  const submitPackage = async () => {
     const validated = validateFields();
     setNotMatchedType(!validated);
     if (!validated) return false;
@@ -131,7 +133,13 @@ const DataPackages = () => {
       dataflow_id: dfId,
       user_id: userInfo.userId,
     };
-    dispatch(addDataPackage(reqBody));
+    const result = await submitDataPackage(reqBody);
+    if (result.status === 1) {
+      showSuccessMessage(result.message);
+      dispatch(addDataPackage());
+    } else {
+      showErrorMessage(result.message);
+    }
     resetForm();
   };
 
@@ -143,6 +151,9 @@ const DataPackages = () => {
     setIsPanelOpen(true);
   };
 
+  useEffect(() => {
+    console.log("packageRender");
+  }, []);
   return (
     <div className="data-packages-wrapper">
       <Panel
@@ -164,6 +175,7 @@ const DataPackages = () => {
           <Paper className="no-shadow">
             <Box className="top-content">
               <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />
+              {console.log("renderAgainPackage")}
               {showForm && (
                 <>
                   <div className="flex title">
@@ -172,9 +184,6 @@ const DataPackages = () => {
                       Creating New Package
                     </Typography>
                   </div>
-                  {/* <Typography variant="body2" className="b-font dataset-count">
-                6 datasets
-              </Typography> */}
                   <ButtonGroup
                     alignItems="right"
                     buttonProps={[
@@ -212,7 +221,6 @@ const DataPackages = () => {
                   </div>
                   {configShow && (
                     <div className="package-form">
-                      {/* <CreatepackageForm onSubmit={onSubmit} /> */}
                       <Select
                         error={notMatchedType}
                         label="Package Compression Type"
@@ -283,6 +291,6 @@ const DataPackages = () => {
       {/* </Grid> */}
     </div>
   );
-};
+});
 
 export default DataPackages;

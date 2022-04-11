@@ -63,9 +63,9 @@ const DataSetsFormBase = (props) => {
     dispatch(getPreviewSQL(formValues.sQLQuery));
   };
 
-  useEffect(() => {
-    dispatch(getSQLColumns(formValues.tableName));
-  }, [formValues.tableName]);
+  // useEffect(() => {
+  //   dispatch(getSQLColumns(formValues.tableName));
+  // }, [formValues.tableName]);
 
   useEffect(() => {
     if (formValues && ["Yes", "No"].includes(formValues)) {
@@ -230,6 +230,7 @@ const DataSetsFormBase = (props) => {
                 singleline
                 inputProps={{ maxLength: 255 }}
                 label="Table Name"
+                disabled={prodLock}
               />
               <ReduxFormTextField
                 fullWidth
@@ -276,6 +277,7 @@ const DataSetsFormBase = (props) => {
                   singleline
                   inputProps={{ maxLength: 255 }}
                   label="Offset Column"
+                  disabled={prodLock}
                 />
               )}
             </>

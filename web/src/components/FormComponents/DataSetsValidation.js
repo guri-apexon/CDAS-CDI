@@ -26,6 +26,7 @@ const dataSetsValidation = ({
   isCustomSQL,
   sQLQuery,
   filterCondition,
+  tableName,
 }) =>
   removeUndefined({
     datasetName: checkRequired(datasetName) || checkAlphaNumeric(datasetName),
@@ -48,7 +49,8 @@ const dataSetsValidation = ({
         : "",
     isCustomSQL: checkRequired(isCustomSQL),
     sQLQuery: checkValidQuery(sQLQuery),
-    filterCondition: checkfilterCondition(filterCondition),
+    // filterCondition: checkfilterCondition(filterCondition),
+    tableName: checkRequired(tableName),
   });
 
 export default dataSetsValidation;

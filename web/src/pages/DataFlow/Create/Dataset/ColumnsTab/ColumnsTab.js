@@ -7,9 +7,6 @@ import FileUpload from "apollo-react/components/FileUpload";
 import Card from "apollo-react/components/Card";
 import Radio from "apollo-react/components/Radio";
 import Link from "apollo-react/components/Link";
-// import { useHistory } from "react-router-dom";
-// import Pencil from "apollo-react-icons/Pencil";
-// import TextField from "apollo-react/components/TextField";
 import Button from "apollo-react/components/Button";
 import { MessageContext } from "../../../../../components/Providers/MessageProvider";
 import { allowedTypes } from "../../../../../constants";
@@ -17,23 +14,25 @@ import DSColumnTable from "./DSColumnTable";
 
 import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
+import Progress from "../../../../../components/Common/Progress/Progress";
 
-// const DSColumnTable = lazy(() => import("./DSColumnTable"));
-
-const ColumnsTab = ({ locationType }) => {
+const ColumnsTab = ({ locationType, headerValue }) => {
   // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
-  const { datasetColumns } = dataSets;
+  const { datasetColumns, sqlColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
-  const [numberOfRows, setNumberOfRows] = useState(1);
   const [showColumns, setShowColumns] = useState(false);
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
   const [formattedData, setFormattedData] = useState([]);
+  const { selectedCard } = dashboard;
+  const { protocolnumber } = selectedCard;
+  const [loading, setLoading] = useState(false);
 
+  const numberOfRows = 1;
   const maxSize = 150000;
 
   const handleUpload = (selected) => {
@@ -76,24 +75,57 @@ const ColumnsTab = ({ locationType }) => {
             const newObj = {
               columnId: i + 1,
               dbColumnId: column.columnid,
-              variableLabel: column.VARIABLE || "",
+              uniqueId: `u${i}`,
+              variableLabel: column.variable || "",
               columnName: column.name || "",
               position: column.position || "",
-              format: column.FORMAT || "",
+              format: column.format || "",
               dataType: column.datatype || "",
-              primaryKey: column.primaryKey === 1 ? "Yes" : "No",
-              unique: column.UNIQUE === 1 ? "Yes" : "No",
+              primaryKey: column.primarykey === 1 ? "Yes" : "No",
+              unique: column.unique === 1 ? "Yes" : "No",
               required: column.required === 1 ? "Yes" : "No",
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
               values: column.lov || "",
               isInitLoad: true,
               isHavingError: false,
+              isHavingColumnName: true,
             };
             return newObj;
           })
         : [];
     setFormattedData([...newData]);
+    setLoading(false);
+  };
+
+  const formatJDBCColumns = (arr) => {
+    const newData =
+      arr.length > 0
+        ? arr.map((column, i) => {
+            const newObj = {
+              columnId: i + 1,
+              dbColumnId: column.columnid || "",
+              uniqueId: `u${i}`,
+              variableLabel: column.varable || "",
+              columnName: column.columnName || "",
+              format: column.format || "",
+              dataType: column.dataType || "",
+              primaryKey: column.primarykey === true ? "Yes" : "No",
+              unique: column.unique === true ? "Yes" : "No",
+              required: column.required === true ? "Yes" : "No",
+              minLength: column.charactermin || "",
+              maxLength: column.charactermax || "",
+              position: 0,
+              values: column.lov || "",
+              isInitLoad: true,
+              isHavingError: false,
+              isHavingColumnName: true,
+            };
+            return newObj;
+          })
+        : [];
+    setFormattedData([...newData]);
+    setLoading(false);
   };
 
   const handleDelete = () => {
@@ -103,28 +135,21 @@ const ColumnsTab = ({ locationType }) => {
     setIsImportReady(false);
   };
 
-  // const handleNoHeaders = () => {
-  //   messageContext.showErrorMessage(
-  //     `Import is not available for files with no header row.`
-  //   );
-  //   handleDelete();
-  // };
-
   useEffect(() => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        const newData = formatData(
-          importedData,
-          dashboard?.selectedCard?.protocolnumber
-        );
+        const newData = formatData(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
-        newData.length > 1
-          ? (setFormattedData(newData), setIsImportReady(true))
-          : (messageContext.showErrorMessage(
-              `Protocol Number in file does not match protocol number ‘${dashboard?.selectedCard?.protocolnumber}’ for this data flow. Please make sure these match and try again`
-            ),
-            handleDelete());
+        if (newData.length > 1) {
+          setFormattedData(newData);
+          setIsImportReady(true);
+        } else {
+          messageContext.showErrorMessage(
+            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+          );
+          handleDelete();
+        }
       } else {
         messageContext.showErrorMessage(
           `The Selected File Does Not Match the Template`
@@ -136,33 +161,27 @@ const ColumnsTab = ({ locationType }) => {
 
   useEffect(() => {
     if (!isSftp(locationType)) {
+      if (datasetColumns.length > 0) {
+        formatDBColumns(datasetColumns);
+        setSelectedMethod("fromDB");
+      } else if (sqlColumns.length > 0) {
+        formatJDBCColumns(sqlColumns);
+        setSelectedMethod("fromDB");
+      }
       setShowColumns(true);
-      formatDBColumns(datasetColumns);
-      setSelectedMethod("fromDB");
     } else {
       setShowColumns(false);
+      setLoading(false);
     }
-  }, [datasetColumns]);
+  }, [datasetColumns, sqlColumns]);
 
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
   };
 
-  const showTable = React.useMemo(() => {
-    return (
-      <>
-        <DSColumnTable
-          numberOfRows={numberOfRows || 1}
-          formattedData={formattedData}
-          dataOrigin={selectedMethod}
-          locationType={locationType}
-        />
-      </>
-    );
-  }, [showColumns]);
-
   return (
     <>
+      {loading && <Progress />}
       {!showColumns && (
         <div className="tab colums-tab">
           <p className="title">Configure Dataset Column Settings</p>
@@ -200,17 +219,6 @@ const ColumnsTab = ({ locationType }) => {
                 onClick={handleChange}
                 checked={selectedMethod === "manually"}
               />
-              {/* <div className="center">
-                <Pencil />
-              </div> */}
-              {/* <TextField
-                label="Number of rows"
-                type="number"
-                max="500"
-                min="1"
-                onChange={(e) => setNumberOfRows(e.target.value)}
-                defaultValue={numberOfRows}
-              /> */}
             </Card>
           </div>
           <div style={{ display: "flex", justifyContent: "end" }}>
@@ -220,7 +228,7 @@ const ColumnsTab = ({ locationType }) => {
               onClick={() => setShowColumns(true)}
               disabled={
                 !(
-                  (selectedMethod === "manually" && numberOfRows >= 1) ||
+                  selectedMethod === "manually" ||
                   (selectedMethod === "fileUpload" && isImportReady)
                 )
               }
@@ -230,7 +238,15 @@ const ColumnsTab = ({ locationType }) => {
           </div>
         </div>
       )}
-      {showColumns && <>{showTable}</>}
+      {showColumns && !loading && (
+        <DSColumnTable
+          numberOfRows={numberOfRows}
+          formattedData={formattedData}
+          dataOrigin={selectedMethod}
+          locationType={locationType}
+          headerValue={headerValue}
+        />
+      )}
     </>
   );
 };

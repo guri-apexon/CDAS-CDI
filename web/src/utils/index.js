@@ -68,6 +68,7 @@ export const getHeaderValue = (accessor) => {
 
 export function getLastLogin() {
   const currentLogin = getCookie("user.last_login_ts");
+  if (!currentLogin || currentLogin === "first_time") return null;
   const localDate = moment.unix(currentLogin).local();
   return localDate.format("DD-MMM-YYYY hh:mm A");
 }
@@ -88,7 +89,10 @@ export function deleteAllCookies() {
 
 export function getUserInfo() {
   return {
-    fullName: `${getCookie("user.first_name")} ${getCookie("user.last_name")}`,
+    fullName: decodeURIComponent(`${getCookie("user.first_name")} 
+                                  ${getCookie("user.last_name")}`),
+    firstName: getCookie("user.first_name"),
+    lastName: getCookie("user.last_name"),
     userEmail: decodeURIComponent(getCookie("user.email")),
     lastLogin: getLastLogin(),
     userId: getCookie("user.id"),
@@ -371,21 +375,26 @@ export const checkHeaders = (data) => {
     header.includes("Format") &&
     header.includes("Data Type") &&
     header.includes("Primary(Y/N)") &&
-    header.includes("Required(Y/N)") &&
     header.includes("Unique(Y/N)") &&
-    header.includes("Min Length") &&
-    header.includes("Max Length") &&
-    header.includes("List of Values");
+    header.includes("Required(Y/N)") &&
+    header.includes("Min length") &&
+    header.includes("Max length") &&
+    header.includes("List of values");
   return validation;
 };
 
 export const formatData = (incomingData, protNo) => {
   const data = incomingData.slice(1); // removing header
-  const isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
+  let isAllDataMatch = false;
+  if (data.length === 1) {
+    isAllDataMatch = data[0][0] === protNo;
+  } else {
+    isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
+  }
   const setYN = (d) => (d === "Y" ? "Yes" : "No");
   if (isAllDataMatch) {
     const newData =
-      data.length > 1
+      data.length > 0
         ? data.map((e, i) => {
             const newObj = {
               uniqueId: `u${i}`,
@@ -534,7 +543,7 @@ export const generateConnectionURL = (locType, hostName, port, dbName) => {
   }
   if (locType === "Impala") {
     return port
-      ? `jdbc:impala://${hostName}:${port}/${impala};ssl=1;AllowSelfSignedCerts=1;AuthMech=3`
+      ? `jdbc:impala://${hostName}:${port}/${dbName};ssl=1;AllowSelfSignedCerts=1;AuthMech=3`
       : "";
   }
   if (locType && hostName && port && dbName) {
