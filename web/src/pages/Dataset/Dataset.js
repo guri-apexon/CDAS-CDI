@@ -90,7 +90,6 @@ const styles = {
 };
 
 const Dataset = () => {
-  const params = useParams();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("sftp");
