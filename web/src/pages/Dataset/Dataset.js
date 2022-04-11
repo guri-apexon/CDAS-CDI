@@ -110,7 +110,6 @@ const Dataset = () => {
   const {
     datapackageid: dpId,
     datapackageName,
-    datasetid,
     datasetName,
   } = selectedDSDetails;
   const {
@@ -121,6 +120,7 @@ const Dataset = () => {
     selectedDataset,
     formDataSQL,
   } = dataSets;
+  const datasetid = params.datasetId;
   const { prot_id: studyId } = selectedCard;
   const {
     dataFlowdetail,
@@ -161,7 +161,7 @@ const Dataset = () => {
   };
 
   useEffect(() => {
-    console.log("selectedDataFlow", dfId);
+    console.log("datsetRender");
     if (dfId === "") {
       history.push("/dashboard");
     }

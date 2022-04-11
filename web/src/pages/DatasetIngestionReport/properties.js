@@ -30,7 +30,7 @@ const Properties = ({ datasetProperties }) => {
     setCopyText("Copied");
   };
   const redirectToDataset = () => {
-    history.push(`/dashboard/dataset/${datasetId}`);
+    history.push(`/dashboard/dataset/${datasetId}`, datasetId);
   };
   return (
     <div style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24 }}>

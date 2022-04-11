@@ -69,46 +69,6 @@ export default function DSColumnTable({
   const [disableSaveAll, setDisableSaveAll] = useState(true);
   const [moreColumns, setMoreColumns] = useState([...columns]);
 
-  useEffect(() => {
-    const initRows = initialRows.map((e) => e.uniqueId);
-    const formatRows = formattedData.map((e) => e.uniqueId);
-    if (dataOrigin === "fileUpload") {
-      setSelectedRows(formatRows);
-      setEditedRows(formattedData);
-    } else if (dataOrigin === "fromDB") {
-      // setSelectedRows(formatRows);
-      setRows([...formattedData]);
-    } else if (dataOrigin === "manually") {
-      setSelectedRows([...initRows]);
-      setEditedRows(initialRows);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (rows.length) {
-      setFilteredRows(rows);
-    }
-  }, [rows]);
-
-  useEffect(() => {
-    const allColumns = editedRows.map((e) => e.isHavingColumnName);
-    if (allColumns.every((e) => e === true)) {
-      setDisableSaveAll(false);
-    } else {
-      setDisableSaveAll(true);
-    }
-  }, [editedRows]);
-
-  useEffect(() => {
-    if (selectedRows.length > 0) {
-      setIsEditAll(true);
-      setEditMode(true);
-    } else {
-      setIsEditAll(false);
-      setEditMode(false);
-    }
-  }, [selectedRows]);
-
   const handleViewLOV = (row) => {
     setShowViewLOVs(true);
     setSelectedRow(row);
@@ -190,7 +150,7 @@ export default function DSColumnTable({
           position: "",
           format: "",
           dataType: "",
-          primary: "No",
+          primaryKey: "No",
           unique: "No",
           required: "No",
           minLength: "",
@@ -228,7 +188,7 @@ export default function DSColumnTable({
         position: "",
         format: "",
         dataType: "",
-        primary: "No",
+        primaryKey: "No",
         unique: "No",
         required: "No",
         minLength: "",
@@ -293,36 +253,6 @@ export default function DSColumnTable({
     ...columnsToAdd.map((column) => ({ ...column })),
     columns.slice(-1)[0],
   ];
-
-  useEffect(() => {
-    if (isSftp(locationType)) {
-      if (headerValue) {
-        const data = allColumns.map((e) => {
-          if (e.accessor === "columnName" && headerValue === 0) {
-            e.hidden = true;
-          }
-          return e;
-        });
-        setMoreColumns(data);
-      } else {
-        const data = allColumns.map((e) => {
-          if (e.accessor === "position") {
-            e.hidden = true;
-          }
-          return e;
-        });
-        setMoreColumns(data);
-      }
-    } else {
-      const data = allColumns.map((e) => {
-        if (e.accessor === "position") {
-          e.hidden = true;
-        }
-        return e;
-      });
-      setMoreColumns(data);
-    }
-  }, []);
 
   const onEditAll = () => {
     if (rows.length > 0) {
@@ -434,7 +364,6 @@ export default function DSColumnTable({
                 isHavingColumnName: true,
               };
             }
-            // showColumnNameRequried();
             return {
               ...row,
               [key]: value,
@@ -469,12 +398,80 @@ export default function DSColumnTable({
   };
 
   useEffect(() => {
+    console.log(
+      "editedRows",
+      editedRows,
+      numberOfRows,
+      dataOrigin,
+      formattedData,
+      locationType,
+      headerValue
+    );
+    if (editedRows.map((e) => e.isHavingColumnName).every((e) => e === true)) {
+      setDisableSaveAll(false);
+    } else {
+      setDisableSaveAll(true);
+    }
+  }, [editedRows]);
+
+  useEffect(() => {
+    if (selectedRows.length > 0) {
+      setIsEditAll(true);
+      setEditMode(true);
+    } else {
+      setIsEditAll(false);
+      setEditMode(false);
+    }
+  }, [selectedRows]);
+
+  useEffect(() => {
     if (rows?.length) {
+      console.log("rows", rows);
+      setFilteredRows(rows);
       messageContext?.setDataflow({ columnDefinition: rows });
     }
   }, [rows]);
 
   useEffect(() => {
+    if (isSftp(locationType)) {
+      if (headerValue) {
+        const data = allColumns.map((e) => {
+          if (e.accessor === "columnName" && headerValue === 0) {
+            e.hidden = true;
+          }
+          return e;
+        });
+        setMoreColumns(data);
+      } else {
+        const data = allColumns.map((e) => {
+          if (e.accessor === "position") {
+            e.hidden = true;
+          }
+          return e;
+        });
+        setMoreColumns(data);
+      }
+    } else {
+      const data = allColumns.map((e) => {
+        if (e.accessor === "position") {
+          e.hidden = true;
+        }
+        return e;
+      });
+      setMoreColumns(data);
+    }
+    const initRows = initialRows.map((e) => e.uniqueId);
+    const formatRows = formattedData.map((e) => e.uniqueId);
+    if (dataOrigin === "fileUpload") {
+      setSelectedRows(formatRows);
+      setEditedRows(formattedData);
+    } else if (dataOrigin === "fromDB") {
+      // setSelectedRows(formatRows);
+      setRows([...formattedData]);
+    } else if (dataOrigin === "manually") {
+      setSelectedRows([...initRows]);
+      setEditedRows(initialRows);
+    }
     if (previewSQL?.length) {
       addMulti(previewSQL);
     }

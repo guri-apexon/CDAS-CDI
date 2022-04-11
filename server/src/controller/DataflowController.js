@@ -192,7 +192,16 @@ exports.createDataflow = async (req, res) => {
     if (!type && dataStructure) type = dataStructure;
 
     if (vendorName !== null && protocolNumber !== null && description !== "") {
-      var DFTestname = `${vendorName}-${protocolNumber}-${description}`;
+      const { rows: studyRows } = await DB.executeQuery(
+        `select prot_nbr_stnd from study where prot_id ='${protocolNumber}';`
+      );
+      if (!studyRows?.length) {
+        return apiResponse.ErrorResponse(res, "Study not found");
+      }
+      testFlag = helper.stringToBoolean(testFlag);
+      const protNbr = studyRows[0].prot_nbr_stnd;
+
+      var DFTestname = `${vendorName}-${protNbr}-${description}`;
       if (testFlag === true) {
         DFTestname = "TST-" + DFTestname;
       }
@@ -226,7 +235,7 @@ exports.createDataflow = async (req, res) => {
         helper.stringToBoolean(active) ? 1 : 0,
         configured || 0,
         exptDtOfFirstProdFile || null,
-        helper.stringToBoolean(testFlag) ? 1 : 0,
+        testFlag ? 1 : 0,
         data_in_cdr || "N",
         connectionType || null,
         externalSystemName || null,
@@ -521,8 +530,8 @@ exports.createDataflow = async (req, res) => {
       connectionType: connectionType,
       location: src_loc_id,
       exptDtOfFirstProdFile: exptDtOfFirstProdFile,
-      testFlag: testFlag,
-      prodFlag: testFlag === 1 ? true : false,
+      testFlag: testFlag ? 1 : 0,
+      prodFlag: testFlag,
       description: description,
       fsrstatus: fsrstatus,
       dataPackage,
@@ -742,44 +751,35 @@ exports.hardDelete = async (req, res) => {
 
 exports.activateDataFlow = async (req, res) => {
   try {
-    const { dataFlowId, userId, versionNo } = req.body;
-    const curDate = new Date();
-    const newVersion = versionNo + 1;
+    const { dataFlowId, userId } = req.body;
     Logger.info({ message: "activateDataFlow" });
 
     const q0 = `select d3.active from ${schemaName}.dataflow d
     inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid  
-    inner join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1`;
+    inner join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1 and d2.active=1`;
     const $q0 = await DB.executeQuery(q0, [dataFlowId]);
+    const q1 = `SELECT dataflowid, "version" FROM ${schemaName}.dataflow_version where dataflowid = $1 order by version DESC limit 1`;
+    const $q1 = await DB.executeQuery(q1, [dataFlowId]);
+    const newVersion = parseInt($q1.rows.length ? $q1.rows[0]?.version : 1) + 1;
 
     if ($q0.rows.map((e) => e.active).includes(1)) {
-      // const q1 = `SELECT "version" FROM ${schemaName}.dataflow_version WHERE dataflowid=$1 ORDER BY created_on DESC LIMIT 1`;
       const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1`;
       const q3 = `INSERT INTO ${schemaName}.dataflow_audit_log
       (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
-      VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+      VALUES($1, $2, Now(), $3, $4, $5, $6)`;
       const q4 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
-      VALUES($1, $2, $3, $4)`;
-      // const $q1 = await DB.executeQuery(q1, [dataFlowId]);
-      // const currVersion = $q1.rows[0].version;
-      // const newVersion = currVersion + 1;
+      VALUES($1, $2, $3, Now())`;
       const $q2 = await DB.executeQuery(q2, [dataFlowId]);
       const $q3 = await DB.executeQuery(q3, [
         dataFlowId,
         newVersion,
-        curDate,
         userId,
         "active",
         0,
         1,
       ]);
 
-      const $q4 = await DB.executeQuery(q4, [
-        dataFlowId,
-        newVersion,
-        userId,
-        curDate,
-      ]);
+      const $q4 = await DB.executeQuery(q4, [dataFlowId, newVersion, userId]);
 
       return apiResponse.successResponseWithData(res, "Operation success", {
         success: true,
@@ -796,40 +796,31 @@ exports.activateDataFlow = async (req, res) => {
 
 exports.inActivateDataFlow = async (req, res) => {
   try {
-    const dataflowAuditlogId = createUniqueID();
-    const { dataFlowId, userId, versionNo } = req.body;
-    const curDate = new Date();
-    const newVersion = versionNo + 1;
+    const { dataFlowId, userId } = req.body;
     Logger.info({ message: "inActivateDataFlow" });
-    // const q0 = `SELECT "version" FROM ${schemaName}.dataflow_version WHERE dataflowid=$1 ORDER BY created_on DESC LIMIT 1`;
+
+    const q0 = `SELECT dataflowid, "version" FROM ${schemaName}.dataflow_version where dataflowid = $1 order by version DESC limit 1`;
+    const $q0 = await DB.executeQuery(q0, [dataFlowId]);
+    const newVersion = parseInt($q0.rows.length ? $q0.rows[0]?.version : 1) + 1;
+
     const q1 = `UPDATE ${schemaName}.dataflow set active=0 WHERE dataflowid=$1`;
     const q2 = `INSERT INTO ${schemaName}.dataflow_audit_log
-    (df_audit_log_id, dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+    (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
+    VALUES($1, $2, Now(), $3, $4, $5, $6)`;
     const q3 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
-    VALUES($1, $2, $3, $4)`;
+    VALUES($1, $2, $3, Now())`;
 
-    // const $q0 = await DB.executeQuery(q0, [dataFlowId]);
-    // const currVersion = $q0.rows[0].version;
-    // const newVersion = currVersion + 1;
     const $q1 = await DB.executeQuery(q1, [dataFlowId]);
     const $q2 = await DB.executeQuery(q2, [
-      dataflowAuditlogId,
       dataFlowId,
       newVersion,
-      curDate,
       userId,
       "active",
       1,
       0,
     ]);
 
-    const $q3 = await DB.executeQuery(q3, [
-      dataFlowId,
-      newVersion,
-      userId,
-      curDate,
-    ]);
+    const $q3 = await DB.executeQuery(q3, [dataFlowId, newVersion, userId]);
 
     return apiResponse.successResponseWithData(res, "Operation success", {
       success: true,
@@ -1091,23 +1082,28 @@ exports.fetchdataflowSource = async (req, res) => {
 
 exports.fetchdataflowDetails = async (req, res) => {
   try {
-    let dataflow_id = req.params.id;
+    let { id: dataflow_id } = req.params;
     let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
-    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
-      inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    inner join ${schemaName}.datakind dk on (dk.datakindid=d3.datakindid)
       inner join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
       where d.dataflowid ='${dataflow_id}'`;
-    console.log(q);
     Logger.info({
       message: "fetchdataflowDetails",
       dataflow_id,
     });
     let { rows } = await DB.executeQuery(q);
-    console.log(rows);
+    if (!rows.length) {
+      return apiResponse.ErrorResponse(
+        res,
+        "There is no dataflow exist with this id"
+      );
+    }
     let response = rows;
     let tempDP = _.uniqBy(response, "datapackageid");
     let tempDS = _.uniqBy(response, "datasetid");
@@ -1146,7 +1142,7 @@ exports.fetchdataflowDetails = async (req, res) => {
               footerRowNumber: el.footerrownumber,
               escapeCode: el.escapecode,
               delimiter: el.delimiter,
-              dataKind: el.datakindid,
+              dataKind: el.datakind,
               naming_convention: el.naming_convention,
               columnDefinition: [],
             };

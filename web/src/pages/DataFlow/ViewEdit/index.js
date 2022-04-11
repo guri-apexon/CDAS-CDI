@@ -154,7 +154,6 @@ const DataFlow = ({ FormValues, dashboard }) => {
     if (
       FormValues.vendors &&
       FormValues.locationName &&
-      FormValues.serviceOwnerValue &&
       FormValues.description !== "" &&
       protId !== "" &&
       dataflowId
@@ -169,10 +168,9 @@ const DataFlow = ({ FormValues, dashboard }) => {
         description: FormValues.description,
         firstFileDate: FormValues.firstFileDate,
         locationType: FormValues.locationType,
-        serviceOwnerValue:
-          (FormValues.serviceOwnerValue &&
-            FormValues.serviceOwnerValue[0].label) ||
-          null,
+        serviceOwnerValue: FormValues.serviceOwnerValue?.length
+          ? FormValues.serviceOwnerValue[0].label
+          : "",
         protocolNumberStandard: protId,
         externalSystemName: "CDI",
         dataflowId,
