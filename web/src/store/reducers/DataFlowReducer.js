@@ -17,7 +17,6 @@ import {
   FETCH_DATAFLOW_DETAIL_FAILURE,
   FETCH_DATAFLOW_DETAIL_SUCCESS,
   ADD_DATAFLOW_SUCCESS,
-  UPDATE_DATAFLOW_SUCCESS,
   SAVE_DATAFLOW_LOCAL_DETAIL,
   UPDATE_DS,
 } from "../../constants";
@@ -79,10 +78,6 @@ const DataFlowReducer = (state = initialState, action) =>
       case ADD_DATAFLOW_SUCCESS:
         newState.selectedDataFlow = action.dataflow;
         newState.updated = true;
-        break;
-
-      case UPDATE_DATAFLOW_SUCCESS:
-        newState.selectedDataFlow = action.dataflow;
         break;
 
       case FETCH_LOCATION_FAILURE:
