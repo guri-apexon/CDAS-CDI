@@ -296,6 +296,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Load Type"
                 canDeselect={false}
+                disabled={prodLock}
               >
                 {loadTypes?.map((type) => (
                   <MenuItem value={type}>{type}</MenuItem>
