@@ -198,7 +198,7 @@ export const DATAFLOW_SAVE = "v1/api/dataflow/create";
 export const DATAFLOW_UPDATE_API = "v1/api/dataflow/update-dataflow";
 export const DATAFLOWSEARCH = "v1/api/dataflow/search-dataflow";
 export const DATAFLOW_SOURCE = "v1/api/dataflow";
-export const DATAFLOW_DETAILS = "v1/api/dataflow/dfdeatils";
+export const DATAFLOW_DETAILS = "v1/api/dataflow/details";
 
 export const PACKAGES_SEARCH = "v1/api/data-package/search";
 export const ADD_PACKAGE = "v1/api/data-package/add";
