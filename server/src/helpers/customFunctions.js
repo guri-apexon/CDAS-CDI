@@ -76,6 +76,10 @@ exports.stringToBoolean = (string) => {
   }
 };
 
+exports.convertEscapeChar = (str) => {
+  return str ? String.raw`${str}`.replace(/\\/g, "\\\\") : "";
+};
+
 const stringToBooleanVal = (exports.stringToBooleanVal = (string) => {
   switch (string?.toString().toLowerCase().trim()) {
     case "true":
@@ -91,10 +95,6 @@ const stringToBooleanVal = (exports.stringToBooleanVal = (string) => {
       return string;
   }
 });
-
-exports.convertEscapeChar = (str) => {
-  return str ? String.raw`${str}`.replace(/\\/g, "\\\\") : "";
-};
 
 exports.validation = (data) => {
   let msg = [];
