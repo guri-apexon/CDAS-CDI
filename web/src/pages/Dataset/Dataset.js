@@ -90,6 +90,7 @@ const styles = {
 };
 
 const Dataset = () => {
+  const params = useParams();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("sftp");
@@ -110,7 +111,6 @@ const Dataset = () => {
   const {
     datapackageid: dpId,
     datapackageName,
-    datasetid,
     datasetName,
   } = selectedDSDetails;
   const {
@@ -121,6 +121,7 @@ const Dataset = () => {
     selectedDataset,
     formDataSQL,
   } = dataSets;
+  const datasetid = params.datasetId;
   const { prot_id: studyId } = selectedCard;
   const {
     dataFlowdetail,
