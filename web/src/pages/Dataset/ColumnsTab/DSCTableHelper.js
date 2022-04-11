@@ -30,6 +30,7 @@ import {
 
 import {
   checkNumeric,
+  checkAlphaNumericFileName,
   checkAlphaNumeric,
   checkRequired,
   checkFormat,
@@ -174,7 +175,10 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
   const { editMode } = row;
-  const errorText = checkRequired(row[key]);
+
+  const errorText =
+    checkAlphaNumericFileName(row[key]) || checkRequired(row[key]);
+  console.log("val", row[key], "err", errorText);
   return editMode ? (
     <TextField
       size="small"
@@ -186,8 +190,8 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText}
-      helperText={!row.isInitLoad ? errorText : ""}
+      error={(!row.isInitLoad || row.isHavingColumnName) && errorText}
+      helperText={!row.isInitLoad || row.isHavingColumnName ? errorText : ""}
       {...fieldStyles}
       disabled={row.dsProdLock}
     />
