@@ -151,14 +151,14 @@ const DataFlow = ({ FormValues, dashboard }) => {
     const protId = dashboard.selectedCard.prot_id;
     if (
       FormValues.vendors &&
-      FormValues.locationName &&
+      selectedLocation &&
       FormValues.description !== "" &&
       protId !== "" &&
       dataflowId
     ) {
       const payload = {
         vendorID: FormValues.vendors[0],
-        locationName: FormValues.locationName[0],
+        locationName: selectedLocation.value,
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.dataflowType,
         testFlag: FormValues.dataflowType === "test" ? "true" : "false",
