@@ -9,7 +9,6 @@ import {
   UPDATE_SELECTED_LOCATION,
   GET_DATAFLOW_DETAIL,
   ADD_DATAFLOW,
-  UPDATE_DATAFLOW,
   UPDATE_LOCATION_DATA,
   SAVE_DATAFLOW_LOCAL_DETAIL,
   UPDATE_DS,
@@ -32,13 +31,6 @@ export const updateSelectedLocation = (location) => {
 export const addDataFlow = (dataflow) => {
   return {
     type: ADD_DATAFLOW,
-    dataflow,
-  };
-};
-
-export const updateDataFlow = (dataflow) => {
-  return {
-    type: UPDATE_DATAFLOW,
     dataflow,
   };
 };
