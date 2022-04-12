@@ -112,7 +112,14 @@ const JDBCForm = forwardRef((props, ref) => {
   const { datakind, selectedDataset, previewSQL, sqlTables, sqlColumns } =
     dataSets;
 
-  const { datasetId, dfTestFlag, onSubmit, moveNext, initialValue } = props;
+  const {
+    datasetId,
+    dfTestFlag,
+    onSubmit,
+    moveNext,
+    initialValue,
+    onChangeSql,
+  } = props;
 
   const setDefaultValues = () => {
     setDsActive(true);
@@ -166,7 +173,7 @@ const JDBCForm = forwardRef((props, ref) => {
 
   useEffect(() => {
     setLoading(false);
-    if (isPreviewReady && previewSQL?.length) {
+    if (isPreviewReady && previewSQL?.length && isCustomSQL === "No") {
       moveNext();
     }
   }, [previewSQL]);
@@ -187,6 +194,14 @@ const JDBCForm = forwardRef((props, ref) => {
     onSubmit(data);
   };
   const handlePreview = async () => {
+    if (sQLQuery === "") {
+      messageContext.showErrorMessage(`Please add your query to proceed.`);
+      return false;
+    }
+    if (sQLQuery.indexOf("*") >= 0) {
+      messageContext.showErrorMessage(`Please remove * from query to proceed.`);
+      return false;
+    }
     if (clinicalDataType === null || datasetName === "") {
       messageContext.showErrorMessage(
         `Please fill required fields to proceed.`
@@ -206,7 +221,7 @@ const JDBCForm = forwardRef((props, ref) => {
   const handleSelection = (e) => {
     const { value } = e.target;
     setIsCustomSQL(value);
-    props.onChangeSql(value);
+    onChangeSql(value);
   };
 
   const handleCDT = (e) => {

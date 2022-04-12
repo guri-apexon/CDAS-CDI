@@ -266,7 +266,11 @@ const DataFlow = ({
 
     newForm.dataPackage[0].dataSet[0] = datasetObj;
     setForm(newForm);
-    setCurrentStep();
+    if (datasetObj.customQuery === "Yes") {
+      setCurrentStep({ step: 4 });
+    } else {
+      setCurrentStep();
+    }
   };
 
   const AddColumnDefinitions = (rows) => {
@@ -278,13 +282,17 @@ const DataFlow = ({
     }
   };
   const submitFinalForm = async () => {
-    if (!myform.dataPackage[0]?.dataSet[0]?.columncount) {
+    if (
+      myform.dataPackage[0]?.dataSet[0]?.customQuery === "No" &&
+      !myform.dataPackage[0]?.dataSet[0]?.columncount
+    ) {
       messageContext.showErrorMessage(
         "Please add atleast one column to proceed"
       );
       return false;
     }
     if (
+      myform.dataPackage[0]?.dataSet[0]?.customQuery === "No" &&
       myform.dataPackage[0]?.dataSet[0]?.columnDefinition.find(
         (x) => x.dataType === ""
       )

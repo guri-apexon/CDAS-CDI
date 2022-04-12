@@ -357,7 +357,7 @@ export default function DSColumnTable({
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
           if (key === "columnName" || key === "position") {
-            if (value.length >= 1) {
+            if (headerValue < 1 || value.length >= 1) {
               return {
                 ...row,
                 [key]: value,
@@ -434,9 +434,13 @@ export default function DSColumnTable({
 
   useEffect(() => {
     if (isSftp(locationType)) {
+      console.log("headerValue", headerValue);
       if (headerValue) {
         const data = allColumns.map((e) => {
           if (e.accessor === "columnName" && headerValue === 0) {
+            e.hidden = true;
+          }
+          if (e.accessor === "position" && headerValue >= 1) {
             e.hidden = true;
           }
           return e;
