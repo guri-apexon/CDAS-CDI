@@ -383,7 +383,7 @@ export const checkHeaders = (data) => {
   return validation;
 };
 
-export const formatData = (incomingData, protNo) => {
+export const formatData = (incomingData, protNo, create = false) => {
   const data = incomingData.slice(1); // removing header
   let isAllDataMatch = false;
   if (data.length === 1) {
@@ -559,16 +559,14 @@ export const dateFilterCustom = (accessor) => (row, filters) => {
   if (!filters[accessor]) {
     return true;
   }
-
   if (!row[accessor]) {
     return false;
   }
-
-  const date = moment(row[accessor], "YYYY-MM-DD");
+  const date = moment(row[accessor]);
 
   const fromDate = moment(filters[accessor][0], "YYYY-MM-DD");
 
-  const toDate = moment(filters[accessor][1], "YYYY-MM-DD");
+  const toDate = moment(filters[accessor][1], "YYYY-MM-DD").endOf("day");
 
   return (
     (!fromDate.isValid() || date.isAfter(fromDate)) &&

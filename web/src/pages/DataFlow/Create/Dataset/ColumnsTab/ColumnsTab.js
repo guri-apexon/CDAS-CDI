@@ -139,7 +139,7 @@ const ColumnsTab = ({ locationType, headerValue }) => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        const newData = formatData(importedData, protocolnumber);
+        const newData = formatData(importedData, protocolnumber, true);
         // eslint-disable-next-line no-unused-expressions
         if (newData.length > 1) {
           setFormattedData(newData);
