@@ -112,7 +112,7 @@ const JDBCForm = forwardRef((props, ref) => {
   const { datakind, selectedDataset, previewSQL, sqlTables, sqlColumns } =
     dataSets;
 
-  const { datasetId, dfTestFlag, onSubmit, moveNext } = props;
+  const { datasetId, dfTestFlag, onSubmit, moveNext, initialValue } = props;
 
   const setDefaultValues = () => {
     setDsActive(true);
@@ -250,6 +250,20 @@ const JDBCForm = forwardRef((props, ref) => {
       dispatch(getSQLColumns(tableName));
     }
   }, [dataType]);
+
+  useEffect(() => {
+    if (initialValue) {
+      if (initialValue.datasetName) setDatasetName(initialValue.datasetName);
+      if (initialValue.dataKind) setClinicalDataType([initialValue.dataKind]);
+      if (initialValue.customQuery) setIsCustomSQL(initialValue.customQuery);
+      if (initialValue.customSql) setSQLQuery(initialValue.customSql);
+      if (initialValue.tableName) setTableName(initialValue.tableName);
+      if (initialValue.offsetColumn) setOffsetColumn(initialValue.offsetColumn);
+      if (initialValue.incremental === 1) setDataType("Incremental");
+      if (initialValue.conditionalExpression)
+        setFilterCondition(initialValue.conditionalExpression);
+    }
+  }, []);
 
   useImperativeHandle(ref, () => ({
     handleSubmit() {

@@ -81,6 +81,7 @@ const Dataset = (props, ref) => {
   const [columnsActive, setColumnsActive] = useState(false);
   const [customSql, setCustomSql] = useState("no");
   const dispatch = useDispatch();
+  const [jdbcFormData, setJdbcFormData] = useState(null);
   const dataSets = useSelector((state) => state.dataSets);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { loading, isDatasetCreated } = dataSets;
@@ -153,6 +154,7 @@ const Dataset = (props, ref) => {
       ...formValue,
       dfTestFlag: dataFlowdetail.testflag,
     };
+    setJdbcFormData(data);
     submitData(data);
   };
 
@@ -205,6 +207,7 @@ const Dataset = (props, ref) => {
                 onChangeSql={onChangeSql}
                 onSubmit={onSubmit}
                 ref={jdbcRef}
+                initialValue={jdbcFormData}
                 moveNext={() => setValue(1)}
               />
             )}
