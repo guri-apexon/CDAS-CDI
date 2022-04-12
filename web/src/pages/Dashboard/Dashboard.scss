@@ -70,14 +70,9 @@
     padding: 20px;
     text-align: center;
   }
-  .pinnedCards {
+  .studies {
     overflow: auto;
-    max-height: 200vh;
-  }
-  .unPinnedCards {
-    padding-top: 5px;
-    overflow: auto;
-    max-height: calc(100vh - 256px);
+    max-height: calc(100vh - 258px);
   }
 }
 .topContainer {
