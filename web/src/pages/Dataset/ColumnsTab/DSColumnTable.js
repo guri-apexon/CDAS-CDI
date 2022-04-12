@@ -2,6 +2,7 @@
 /* eslint-disable react/button-has-type */
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import * as XLSX from "xlsx";
 import Table from "apollo-react/components/Table";
 import TextField from "apollo-react/components/TextField";
 import Link from "apollo-react/components/Link";
@@ -14,7 +15,15 @@ import {
   updateDatasetColumns,
 } from "../../../store/actions/DataSetsAction";
 import { deleteCD } from "../../../services/ApiServices";
-import { getUserInfo, isSftp } from "../../../utils/index";
+import {
+  getUserInfo,
+  checkHeaders,
+  formatData,
+  isSftp,
+} from "../../../utils/index";
+import { allowedTypes } from "../../../constants";
+
+const maxSize = 150000;
 
 export default function DSColumnTable({
   numberOfRows,
@@ -26,11 +35,14 @@ export default function DSColumnTable({
 }) {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
+  const dashboard = useSelector((state) => state.dashboard);
+  const { selectedCard } = dashboard;
+  const { protocolnumber } = selectedCard;
   const dataSets = useSelector((state) => state.dataSets);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDataset } = dataSets;
   const {
-    fileType,
+    type: fileType,
     datasetid: dsId,
     headerrownumber,
     headerRowNumber,
@@ -66,6 +78,7 @@ export default function DSColumnTable({
   const [searchValue, setSearchValue] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [selectedFile, setSelectedFile] = useState();
+  const [importedData, setImportedData] = useState([]);
   const [isFilePicked, setIsFilePicked] = useState(false);
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
@@ -131,16 +144,6 @@ export default function DSColumnTable({
   };
 
   const handleSaveLOV = async () => {
-    // let newValue;
-    // const { values } = selectedRow;
-    // const isFirst = (await values.trim().charAt(0)) === "~";
-    // const isLast = (await values.trim().charAt(values.length - 1)) === "~";
-    // if (isFirst) {
-    //   newValue = await values.substring(1);
-    // }
-    // if (isLast) {
-    //   newValue = await values.slice(0, -1);
-    // }
     if (selectedRow.dbColumnId) {
       const newQuery = "";
       dispatch(
@@ -179,11 +182,75 @@ export default function DSColumnTable({
   };
 
   const handleFileUpdate = (event) => {
-    setSelectedFile(event.target.files[0]);
+    const file = event.target.files[0];
+    if (
+      allowedTypes.length &&
+      !allowedTypes.filter((type) => file.type.includes(type)).length
+    ) {
+      file.errorMessage = `${
+        file.name.split(".")[file.name.split(".").length - 1]
+      } format is not supported`;
+    } else if (maxSize && file.size > maxSize) {
+      file.errorMessage = `File is too large (max is ${maxSize} bytes)`;
+    }
+
+    setSelectedFile(file);
     setIsFilePicked(true);
+    setShowOverWrite(true);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = e.target.result;
+      const readedData = XLSX.read(data, { type: "binary" });
+      const wsname = readedData.SheetNames[0];
+      const ws = readedData.Sheets[wsname];
+      const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      setImportedData(dataParse);
+    };
+    reader.readAsBinaryString(file);
   };
 
-  const handleSubmission = () => {};
+  const hideOverWrite = () => {
+    setShowOverWrite(false);
+    setIsFilePicked(false);
+    setSelectedFile(null);
+    setImportedData([]);
+  };
+
+  const handleOverWrite = () => {
+    if (isFilePicked && importedData.length > 1) {
+      console.log(importedData);
+      setShowOverWrite(false);
+      const correctHeader = checkHeaders(importedData);
+      if (correctHeader) {
+        const newData = formatData(importedData, protocolnumber);
+        // eslint-disable-next-line no-unused-expressions
+        if (newData.length > 0) {
+          const initRows = newData.map((e) => e.uniqueId);
+          setRows([...newData]);
+          setEditedRows([...newData]);
+          setSelectedRows([...initRows]);
+        } else {
+          messageContext.showErrorMessage(
+            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+          );
+          hideOverWrite();
+        }
+      } else {
+        messageContext.showErrorMessage(
+          `The Selected File Does Not Match the Template`
+        );
+        hideOverWrite();
+      }
+    } else {
+      setSelectedFile(null);
+      setIsFilePicked(false);
+      setShowOverWrite(false);
+      messageContext.showErrorMessage(
+        "File not picked correctly please try again"
+      );
+    }
+  };
 
   const onChangeLOV = (e) => {
     const newValues = e.target.value;
@@ -583,14 +650,6 @@ export default function DSColumnTable({
         return row;
       })
     );
-  };
-
-  const hideOverWrite = () => {
-    setShowViewLOVs(false);
-  };
-
-  const handleOverWrite = () => {
-    console.log("handle overwrite");
   };
 
   return (

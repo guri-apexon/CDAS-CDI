@@ -122,7 +122,7 @@ exports.saveDatasetData = async (req, res) => {
     if (values.filePwd) {
       passwordStatus = "Yes";
       await helper.writeVaultData(`${dfId}/${dpId}/${datasetId}`, {
-        password: filePwd,
+        password: values.filePwd,
       });
     }
 

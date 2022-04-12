@@ -68,6 +68,7 @@ export const getHeaderValue = (accessor) => {
 
 export function getLastLogin() {
   const currentLogin = getCookie("user.last_login_ts");
+  if (!currentLogin || currentLogin === "first_time") return null;
   const localDate = moment.unix(currentLogin).local();
   return localDate.format("DD-MMM-YYYY hh:mm A");
 }
@@ -88,7 +89,10 @@ export function deleteAllCookies() {
 
 export function getUserInfo() {
   return {
-    fullName: `${getCookie("user.first_name")} ${getCookie("user.last_name")}`,
+    fullName: decodeURIComponent(`${getCookie("user.first_name")} 
+                                  ${getCookie("user.last_name")}`),
+    firstName: getCookie("user.first_name"),
+    lastName: getCookie("user.last_name"),
     userEmail: decodeURIComponent(getCookie("user.email")),
     lastLogin: getLastLogin(),
     userId: getCookie("user.id"),
@@ -400,7 +404,7 @@ export const formatData = (incomingData, protNo) => {
               position: "",
               format: e[3] || "",
               dataType: e[4] || "",
-              primary: setYN(e[5]),
+              primaryKey: setYN(e[5]),
               unique: setYN(e[6]),
               required: setYN(e[7]),
               minLength: e[8] || "",
@@ -408,6 +412,8 @@ export const formatData = (incomingData, protNo) => {
               values: e[10] || "",
               isInitLoad: true,
               isHavingError: false,
+              isHavingColumnName: true,
+              isHavingDataType: true,
             };
             return newObj;
           })
@@ -575,9 +581,9 @@ export const isSftp = (str) => {
 };
 
 export const validateFields = (name, ext) => {
-  const nameArr = name.split(".");
-  if (ext === nameArr[1]) {
-    console.log("nameArr[1]", nameArr[1], ext);
+  if (!name || !ext) return false;
+  const fileExt = name.split(".").pop();
+  if (ext === fileExt.toLowerCase()) {
     return true;
   }
   return false;

@@ -93,6 +93,13 @@ exports.saveDatasetColumns = async (req, res) => {
   } catch (err) {
     Logger.error("catch :storeDatasetColumns");
     Logger.error(err);
+    if (err.code === "23505") {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Operation failed",
+        "column name should be unique for a dataset"
+      );
+    }
     return apiResponse.ErrorResponse(res, err);
   }
 };
@@ -189,6 +196,13 @@ exports.updateColumns = async (req, res) => {
   } catch (err) {
     Logger.error("catch :update set columns");
     Logger.error(err);
+    if (err.code === "23505") {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Operation failed",
+        "column name should be unique for a dataset"
+      );
+    }
     return apiResponse.ErrorResponse(res, err);
   }
 };
@@ -272,6 +286,13 @@ exports.lovUpdate = async (req, res) => {
   } catch (err) {
     Logger.error("catch: lovUpdate");
     Logger.error(err);
+    if (err.code === "23505") {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Operation failed",
+        "column name should be unique for a dataset"
+      );
+    }
     return apiResponse.ErrorResponse(res, err);
   }
 };

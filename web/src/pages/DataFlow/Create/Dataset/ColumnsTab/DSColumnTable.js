@@ -2,6 +2,7 @@
 /* eslint-disable react/button-has-type */
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import * as XLSX from "xlsx";
 import Table from "apollo-react/components/Table";
 import TextField from "apollo-react/components/TextField";
 import Link from "apollo-react/components/Link";
@@ -10,7 +11,10 @@ import Modal from "apollo-react/components/Modal";
 import { MessageContext } from "../../../../../components/Providers/MessageProvider";
 import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../../../utils/downloadData";
-import { isSftp } from "../../../../../utils/index";
+import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
+import { allowedTypes } from "../../../../../constants";
+
+const maxSize = 150000;
 
 export default function DSColumnTable({
   numberOfRows,
@@ -22,6 +26,9 @@ export default function DSColumnTable({
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
+  const dashboard = useSelector((state) => state.dashboard);
+  const { selectedCard } = dashboard;
+  const { protocolnumber } = selectedCard;
   const { selectedDataset, previewSQL } = dataSets;
   const {
     fileType,
@@ -68,46 +75,7 @@ export default function DSColumnTable({
   const [newRows, setNewRows] = useState("");
   const [disableSaveAll, setDisableSaveAll] = useState(true);
   const [moreColumns, setMoreColumns] = useState([...columns]);
-
-  useEffect(() => {
-    const initRows = initialRows.map((e) => e.uniqueId);
-    const formatRows = formattedData.map((e) => e.uniqueId);
-    if (dataOrigin === "fileUpload") {
-      setSelectedRows(formatRows);
-      setEditedRows(formattedData);
-    } else if (dataOrigin === "fromDB") {
-      // setSelectedRows(formatRows);
-      setRows([...formattedData]);
-    } else if (dataOrigin === "manually") {
-      setSelectedRows([...initRows]);
-      setEditedRows(initialRows);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (rows.length) {
-      setFilteredRows(rows);
-    }
-  }, [rows]);
-
-  useEffect(() => {
-    const allColumns = editedRows.map((e) => e.isHavingColumnName);
-    if (allColumns.every((e) => e === true)) {
-      setDisableSaveAll(false);
-    } else {
-      setDisableSaveAll(true);
-    }
-  }, [editedRows]);
-
-  useEffect(() => {
-    if (selectedRows.length > 0) {
-      setIsEditAll(true);
-      setEditMode(true);
-    } else {
-      setIsEditAll(false);
-      setEditMode(false);
-    }
-  }, [selectedRows]);
+  const [importedData, setImportedData] = useState([]);
 
   const handleViewLOV = (row) => {
     setShowViewLOVs(true);
@@ -133,11 +101,75 @@ export default function DSColumnTable({
   };
 
   const handleFileUpdate = (event) => {
-    setSelectedFile(event.target.files[0]);
+    const file = event.target.files[0];
+    if (
+      allowedTypes.length &&
+      !allowedTypes.filter((type) => file.type.includes(type)).length
+    ) {
+      file.errorMessage = `${
+        file.name.split(".")[file.name.split(".").length - 1]
+      } format is not supported`;
+    } else if (maxSize && file.size > maxSize) {
+      file.errorMessage = `File is too large (max is ${maxSize} bytes)`;
+    }
+
+    setSelectedFile(file);
     setIsFilePicked(true);
+    setShowOverWrite(true);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = e.target.result;
+      const readedData = XLSX.read(data, { type: "binary" });
+      const wsname = readedData.SheetNames[0];
+      const ws = readedData.Sheets[wsname];
+      const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      setImportedData(dataParse);
+    };
+    reader.readAsBinaryString(file);
   };
 
-  const handleSubmission = () => {};
+  const hideOverWrite = () => {
+    setShowOverWrite(false);
+    setIsFilePicked(false);
+    setSelectedFile(null);
+    setImportedData([]);
+  };
+
+  const handleOverWrite = () => {
+    if (isFilePicked && importedData.length > 1) {
+      console.log(importedData);
+      setShowOverWrite(false);
+      const correctHeader = checkHeaders(importedData);
+      if (correctHeader) {
+        const newData = formatData(importedData, protocolnumber);
+        // eslint-disable-next-line no-unused-expressions
+        if (newData.length > 0) {
+          const initRows = newData.map((e) => e.uniqueId);
+          setRows([...newData]);
+          setEditedRows([...newData]);
+          setSelectedRows([...initRows]);
+        } else {
+          messageContext.showErrorMessage(
+            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+          );
+          hideOverWrite();
+        }
+      } else {
+        messageContext.showErrorMessage(
+          `The Selected File Does Not Match the Template`
+        );
+        hideOverWrite();
+      }
+    } else {
+      setSelectedFile(null);
+      setIsFilePicked(false);
+      setShowOverWrite(false);
+      messageContext.showErrorMessage(
+        "File not picked correctly please try again"
+      );
+    }
+  };
 
   const onChangeLOV = (e) => {
     const newValues = e.target.value;
@@ -190,7 +222,7 @@ export default function DSColumnTable({
           position: "",
           format: "",
           dataType: "",
-          primary: "No",
+          primaryKey: "No",
           unique: "No",
           required: "No",
           minLength: "",
@@ -228,7 +260,7 @@ export default function DSColumnTable({
         position: "",
         format: "",
         dataType: "",
-        primary: "No",
+        primaryKey: "No",
         unique: "No",
         required: "No",
         minLength: "",
@@ -293,36 +325,6 @@ export default function DSColumnTable({
     ...columnsToAdd.map((column) => ({ ...column })),
     columns.slice(-1)[0],
   ];
-
-  useEffect(() => {
-    if (isSftp(locationType)) {
-      if (headerValue) {
-        const data = allColumns.map((e) => {
-          if (e.accessor === "columnName" && headerValue === 0) {
-            e.hidden = true;
-          }
-          return e;
-        });
-        setMoreColumns(data);
-      } else {
-        const data = allColumns.map((e) => {
-          if (e.accessor === "position") {
-            e.hidden = true;
-          }
-          return e;
-        });
-        setMoreColumns(data);
-      }
-    } else {
-      const data = allColumns.map((e) => {
-        if (e.accessor === "position") {
-          e.hidden = true;
-        }
-        return e;
-      });
-      setMoreColumns(data);
-    }
-  }, []);
 
   const onEditAll = () => {
     if (rows.length > 0) {
@@ -459,21 +461,81 @@ export default function DSColumnTable({
     );
   };
 
-  const hideOverWrite = () => {
-    setShowViewLOVs(false);
-  };
+  useEffect(() => {
+    console.log(
+      "editedRows",
+      editedRows,
+      numberOfRows,
+      dataOrigin,
+      formattedData,
+      locationType,
+      headerValue
+    );
+    if (editedRows.map((e) => e.isHavingColumnName).every((e) => e === true)) {
+      setDisableSaveAll(false);
+    } else {
+      setDisableSaveAll(true);
+    }
+  }, [editedRows]);
 
-  const handleOverWrite = () => {
-    console.log("handle overwrite");
-  };
+  useEffect(() => {
+    if (selectedRows.length > 0) {
+      setIsEditAll(true);
+      setEditMode(true);
+    } else {
+      setIsEditAll(false);
+      setEditMode(false);
+    }
+  }, [selectedRows]);
 
   useEffect(() => {
     if (rows?.length) {
+      console.log("rows", rows);
+      setFilteredRows(rows);
       messageContext?.setDataflow({ columnDefinition: rows });
     }
   }, [rows]);
 
   useEffect(() => {
+    if (isSftp(locationType)) {
+      if (headerValue) {
+        const data = allColumns.map((e) => {
+          if (e.accessor === "columnName" && headerValue === 0) {
+            e.hidden = true;
+          }
+          return e;
+        });
+        setMoreColumns(data);
+      } else {
+        const data = allColumns.map((e) => {
+          if (e.accessor === "position") {
+            e.hidden = true;
+          }
+          return e;
+        });
+        setMoreColumns(data);
+      }
+    } else {
+      const data = allColumns.map((e) => {
+        if (e.accessor === "position") {
+          e.hidden = true;
+        }
+        return e;
+      });
+      setMoreColumns(data);
+    }
+    const initRows = initialRows.map((e) => e.uniqueId);
+    const formatRows = formattedData.map((e) => e.uniqueId);
+    if (dataOrigin === "fileUpload") {
+      setSelectedRows(formatRows);
+      setEditedRows(formattedData);
+    } else if (dataOrigin === "fromDB") {
+      // setSelectedRows(formatRows);
+      setRows([...formattedData]);
+    } else if (dataOrigin === "manually") {
+      setSelectedRows([...initRows]);
+      setEditedRows(initialRows);
+    }
     if (previewSQL?.length) {
       addMulti(previewSQL);
     }

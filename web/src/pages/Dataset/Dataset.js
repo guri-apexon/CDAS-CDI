@@ -110,7 +110,6 @@ const Dataset = () => {
   const {
     datapackageid: dpId,
     datapackageName,
-    datasetid,
     datasetName,
   } = selectedDSDetails;
   const {
@@ -121,6 +120,7 @@ const Dataset = () => {
     selectedDataset,
     formDataSQL,
   } = dataSets;
+  const datasetid = params.datasetId;
   const { prot_id: studyId } = selectedCard;
   const {
     dataFlowdetail,
@@ -136,6 +136,7 @@ const Dataset = () => {
     tableName,
     isCustomSQL,
     customsql_yn: customQuery,
+    datasetid: dsId,
   } = selectedDataset;
 
   const useStyles = makeStyles(styles);
@@ -173,7 +174,7 @@ const Dataset = () => {
   }, [params]);
 
   useEffect(() => {
-    if (datasetid === null) {
+    if (datasetid === null || datasetid === "new") {
       dispatch(resetFTP());
       dispatch(resetJDBC());
     } else {
@@ -183,11 +184,6 @@ const Dataset = () => {
   }, [datasetid]);
 
   useEffect(() => {
-    if (isDatasetCreated && isDatasetCreation) {
-      messageContext.showSuccessMessage("Dataset Created Successfully");
-      dispatch(updatePanel());
-    }
-
     if (isDatasetCreated) {
       if (isSftp(loctyp)) {
         setValue(1);
@@ -200,6 +196,12 @@ const Dataset = () => {
           }, 500);
         }
       }
+    }
+
+    if (isDatasetCreated && isDatasetCreation) {
+      messageContext.showSuccessMessage("Dataset Created Successfully");
+      history.push(`/dashboard/dataset/${dsId}`);
+      dispatch(updatePanel());
     }
   }, [isDatasetCreated, isDatasetCreation, loctyp]);
 

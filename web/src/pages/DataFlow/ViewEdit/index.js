@@ -22,7 +22,6 @@ import {
   changeFormFieldData,
   hideErrorMessage,
   getLocationByType,
-  addDataFlow,
   getDataFlowDetail,
 } from "../../../store/actions/DataFlowAction";
 
@@ -150,19 +149,16 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
-    // console.log("FormValues?", FormValues);
-    // console.log("protId", protId);
     if (
       FormValues.vendors &&
-      FormValues.locationName &&
-      FormValues.serviceOwnerValue &&
+      selectedLocation &&
       FormValues.description !== "" &&
       protId !== "" &&
       dataflowId
     ) {
       const payload = {
         vendorID: FormValues.vendors[0],
-        locationName: FormValues.locationName[0],
+        locationName: selectedLocation.value,
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.dataflowType,
         testFlag: FormValues.dataflowType === "test" ? "true" : "false",
@@ -170,7 +166,9 @@ const DataFlow = ({ FormValues, dashboard }) => {
         description: FormValues.description,
         firstFileDate: FormValues.firstFileDate,
         locationType: FormValues.locationType,
-        serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
+        serviceOwnerValue: FormValues.serviceOwnerValue?.length
+          ? FormValues.serviceOwnerValue[0].label
+          : "",
         protocolNumberStandard: protId,
         externalSystemName: "CDI",
         dataflowId,

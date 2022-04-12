@@ -775,15 +775,15 @@ export default function DataflowTab({ updateData }) {
         ]}
         id="syncDataFlow"
       />
-      <Clone
-        open={openClone}
-        handleModalClose={handleModalClose}
-        handleBack={handleBack}
-        handleSelect={handleSelect}
-        selectedStudy={selectedStudy}
-        studyList={studyList}
-        dataflowList={dataflowList}
-      />
+      {openClone && (
+        <Clone
+          open={openClone}
+          handleModalClose={handleModalClose}
+          handleBack={handleBack}
+          studyList={studyList}
+          dataflowList={dataflowList}
+        />
+      )}
     </div>
   );
 }

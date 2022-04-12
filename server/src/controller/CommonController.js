@@ -133,7 +133,7 @@ module.exports = {
         const values = [
           package.dataflowid,
           version,
-          null,
+          package,
           user_id,
           currentTime,
         ];

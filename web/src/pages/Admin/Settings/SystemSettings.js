@@ -116,7 +116,11 @@ const SettingCell = ({ row }) => {
                   size="small"
                   name="name"
                   value={row.editedRow.name}
-                  onChange={(e) => row.editRow("name", e.target.value)}
+                  onChange={(e) => {
+                    let resultValue = e.target.value;
+                    resultValue = resultValue.replace(/[^A-Za-z]/gi, "");
+                    row.editRow("name", resultValue);
+                  }}
                   label="Name of Setting"
                 />
               </div>
@@ -125,7 +129,11 @@ const SettingCell = ({ row }) => {
                 size="small"
                 name="value"
                 value={row.editedRow.value}
-                onChange={(e) => row.editRow("value", e.target.value)}
+                onChange={(e) => {
+                  let resultValue = e.target.value;
+                  resultValue = resultValue.replace(/[^A-Za-z]/gi, "");
+                  row.editRow("value", resultValue);
+                }}
                 label="Setting Value"
               />
             </div>
