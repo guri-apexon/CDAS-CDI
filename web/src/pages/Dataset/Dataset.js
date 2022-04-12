@@ -354,7 +354,9 @@ const Dataset = () => {
                     {dataSettabs.map((tab) => (
                       <Tab
                         label={tab}
-                        disabled={!columnsActive && tab === "Dataset Columns"}
+                        disabled={
+                          !columnsActive && tab === ("Dataset Columns" || "VLC")
+                        }
                       />
                     ))}
                   </Tabs>
