@@ -404,7 +404,7 @@ export const formatData = (incomingData, protNo) => {
               position: "",
               format: e[3] || "",
               dataType: e[4] || "",
-              primary: setYN(e[5]),
+              primaryKey: setYN(e[5]),
               unique: setYN(e[6]),
               required: setYN(e[7]),
               minLength: e[8] || "",
@@ -412,6 +412,8 @@ export const formatData = (incomingData, protNo) => {
               values: e[10] || "",
               isInitLoad: true,
               isHavingError: false,
+              isHavingColumnName: true,
+              isHavingDataType: true,
             };
             return newObj;
           })
