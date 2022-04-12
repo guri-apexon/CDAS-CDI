@@ -579,9 +579,9 @@ export const isSftp = (str) => {
 };
 
 export const validateFields = (name, ext) => {
-  const nameArr = name.split(".");
-  if (ext === nameArr[1]) {
-    console.log("nameArr[1]", nameArr[1], ext);
+  if (!name || !ext) return false;
+  const fileExt = name.split(".").pop();
+  if (ext === fileExt.toLowerCase()) {
     return true;
   }
   return false;
