@@ -219,7 +219,6 @@ export default function DSColumnTable({
 
   const handleOverWrite = () => {
     if (isFilePicked && importedData.length > 1) {
-      console.log(importedData);
       setShowOverWrite(false);
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
@@ -655,14 +654,6 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {console.log(
-          "data",
-          rows,
-          editedRows,
-          formattedData,
-          dataOrigin,
-          moreColumns
-        )}
         <input
           type="file"
           id="file"
