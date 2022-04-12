@@ -383,7 +383,7 @@ export const checkHeaders = (data) => {
   return validation;
 };
 
-export const formatData = (incomingData, protNo, create = false) => {
+export const formatData = (incomingData, protNo) => {
   const data = incomingData.slice(1); // removing header
   let isAllDataMatch = false;
   if (data.length === 1) {
