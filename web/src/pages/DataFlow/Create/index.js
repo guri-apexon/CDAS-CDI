@@ -169,10 +169,10 @@ const DataFlow = ({
     console.log("FormValues", FormValues, selectedVendor);
     if (
       FormValues &&
-      (FormValues.vendor || FormValues.vendor.length > 0) &&
-      FormValues.locationName &&
-      FormValues.description !== "" &&
-      selectedCard.prot_id !== ""
+      (FormValues?.vendor || FormValues?.vendor?.length > 0) &&
+      FormValues?.locationName &&
+      FormValues?.description !== "" &&
+      selectedCard?.prot_id !== ""
     ) {
       if (changeLocationRequire) {
         messageContext.showErrorMessage(
