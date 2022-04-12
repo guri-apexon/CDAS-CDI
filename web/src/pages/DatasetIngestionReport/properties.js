@@ -162,7 +162,10 @@ const Properties = ({ datasetProperties }) => {
           onClose={() => setModalOpen(false)}
           title="You are about to leave dashboard page?"
           id="neutral"
-          buttonProps={[{}, { label: "Continue", onClick: () => goToDataset }]}
+          buttonProps={[
+            {},
+            { label: "Continue", onClick: () => goToDataset() },
+          ]}
         />
       </Paper>
     </div>
