@@ -296,6 +296,7 @@ const commonInsertFunction = async (req, res) => {
           );
           newObj.timestamp = ts;
           newObj.externalId = each.externalID;
+          newObj.datapackageid = dpUid;
           newObj.action = "Data package created successfully.";
           each.datapackageid = dpUid;
           ResponseBody.data_packages.push(newObj);
@@ -321,6 +322,7 @@ const commonInsertFunction = async (req, res) => {
             ResponseBody.data_sets = [];
             // if datasets exists
             for (let obj of each.dataSet) {
+              // console.log("dataSet ", obj);
               let newobj = {};
               // if (
               //   obj.name !== "" &&
@@ -410,6 +412,7 @@ const commonInsertFunction = async (req, res) => {
               );
               newobj.timestamp = ts;
               newobj.externalId = obj.externalID;
+              newobj.datasetid = dsUid;
               newobj.action = "Data set created successfully.";
               ResponseBody.data_sets.push(newobj);
               obj.datasetid = dsUid;
@@ -434,6 +437,7 @@ const commonInsertFunction = async (req, res) => {
               if (obj.columnDefinition && obj.columnDefinition.length > 0) {
                 ResponseBody.column_definition = [];
                 for (let el of obj.columnDefinition) {
+                  // console.log("column ", el);
                   let newobj = {};
                   const CDUid = createUniqueID();
                   let CDBody = [
@@ -478,6 +482,7 @@ const commonInsertFunction = async (req, res) => {
                   await DB.executeQuery(dataflow_aduit_query, audit_body);
 
                   newobj.timestamp = ts;
+                  newobj.colmunid = CDUid;
                   newobj.externalId = obj.externalID;
                   newobj.action = "column definition created successfully.";
                   el.colmunid = CDUid;
@@ -575,7 +580,7 @@ exports.createDataflow = async (req, res) => {
       const Data = [
         {
           key: " Protocol Number Standard ",
-          value: req.body.protocolNumber,
+          value: req.body.protocolNumberStandard,
           type: "string",
         },
         { key: "Vendor Name", value: req.body.vendorName, type: "string" },
@@ -603,7 +608,9 @@ exports.createDataflow = async (req, res) => {
 
       // Validating Connection Type and externalID
       var ConnectionType = req.body.connectionType;
+      const description = req.body.description;
       const externalID = req.body.externalID;
+
       if (
         externalID !== null &&
         externalID !== "" &&
@@ -641,6 +648,14 @@ exports.createDataflow = async (req, res) => {
       } else {
         validate.push({
           text: " ConnectionType is required and data type should be string ",
+          status: false,
+        });
+      }
+      if (description.length <= 30) {
+        console.log("success");
+      } else {
+        validate.push({
+          text: " Description length , Max of 30 characters  ",
           status: false,
         });
       }
@@ -857,6 +872,13 @@ exports.createDataflow = async (req, res) => {
                       obj.tableName !== "" &&
                       obj.tableName !== undefined
                     ) {
+                      if (obj.tableName.length <= 255) {
+                      } else {
+                        validate.push({
+                          text: " Table Name  Max of 255 characters  ",
+                          status: false,
+                        });
+                      }
                     } else {
                       validate.push({
                         text: " Table Name  is required ",
@@ -1288,7 +1310,7 @@ exports.updateDataFlow = async (req, res) => {
       const Data = [
         {
           key: " Protocol Number Standard ",
-          value: req.body.protocolNumber,
+          value: req.body.protocolNumberStandard,
           type: "string",
         },
         { key: "Vendor Name", value: req.body.vendorName, type: "string" },
@@ -1316,7 +1338,9 @@ exports.updateDataFlow = async (req, res) => {
 
       // Validating Connection Type and externalID
       var ConnectionType = req.body.connectionType;
+      const description = req.body.description;
       const externalID = req.body.externalID;
+
       if (
         externalID !== null &&
         externalID !== "" &&
@@ -1354,6 +1378,14 @@ exports.updateDataFlow = async (req, res) => {
       } else {
         validate.push({
           text: " ConnectionType is required and data type should be string ",
+          status: false,
+        });
+      }
+      if (description.length <= 30) {
+        console.log("success");
+      } else {
+        validate.push({
+          text: " Description length , Max of 30 characters  ",
           status: false,
         });
       }
@@ -1570,6 +1602,13 @@ exports.updateDataFlow = async (req, res) => {
                       obj.tableName !== "" &&
                       obj.tableName !== undefined
                     ) {
+                      if (obj.tableName.length <= 255) {
+                      } else {
+                        validate.push({
+                          text: " Table Name  Max of 255 characters  ",
+                          status: false,
+                        });
+                      }
                     } else {
                       validate.push({
                         text: " Table Name  is required ",
@@ -1663,6 +1702,9 @@ exports.updateDataFlow = async (req, res) => {
       // console.log(rows);
       if (rows.length > 0) {
         console.log("Update Query");
+
+        // return;
+
         let {
           active,
           connectionType,
@@ -1670,149 +1712,407 @@ exports.updateDataFlow = async (req, res) => {
           vendorName,
           protocolNumber,
           type,
+          name,
           externalID,
           location,
           testFlag,
+          userId,
           description,
           dataPackage,
+          dataStructure,
+          externalSystemName,
+          src_loc_id,
+          vend_id,
+          fsrstatus,
+          // connectiondriver,
+          data_in_cdr,
+          configured,
+          sponsorNameStandard,
+          sponsorName,
+          externalVersion,
+          protocolNumberStandard,
         } = req.body;
-        if (vendorName !== "") {
-          var ResponseBody = {};
-          let q = `select vend_id from ${schemaName}.vendor where vend_nm='${vendorName}'`;
-          let { rows } = await DB.executeQuery(q);
-          let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${location}'`;
-          let { rows: data } = await DB.executeQuery(q1);
-          if (rows.length > 0 && data.length > 0) {
-            //validation for dataflow metadata
-            if (
-              vendorName !== null &&
-              protocolNumber !== null &&
-              description !== ""
-            ) {
-              const query = `update ${schemaName}.dataflow set vend_id=$1,type=$2,description=$3,src_loc_id=$4,active=$5,expt_fst_prd_dt=$6,
-              testflag=$7,connectiontype=$8,updt_tm=$9 where extrnl_id='${externalID}'`;
-              let body = [
-                vend_id,
-                type,
-                description,
-                src_loc_id,
-                active,
-                exptDtOfFirstProdFile,
-                testFlag === "false" ? 0 : 1,
-                connectionType,
-                // location,
-                new Date(),
-              ];
-              let ts = new Date().toLocaleString();
-              // update dataflow schema into db
-              let createDF = await DB.executeQuery(query);
-              ResponseBody.action = "Data flow updated successfully.";
-              ResponseBody.timestamp = ts;
-              if (dataPackage && dataPackage.length > 0) {
-                ResponseBody.data_packages = [];
-                // if datapackage exists
-                for (let each of dataPackage) {
-                  let newObj = {};
-                  const dpUid = createUniqueID();
-                  if (
-                    each.name !== "" &&
-                    each.path !== "" &&
-                    each.type !== ""
-                  ) {
-                    let DPQuery = `UPDATE ${
-                      constants.DB_SCHEMA_NAME
-                    }.datapackage set type='${each.type}', name='${
-                      each.name
-                    }', path='${each.path}',
-                       password='${each.password}',active='${
-                      each.active === false ? 0 : 1
-                    }',nopackageconfig='${
-                      each.noPackageConfig === false ? 0 : 1
-                    }',
-                       updt_tm=CURRENT_TIMESTAMP where extrnl_id='${
-                         each.externalID
-                       }'`;
-                    let createDP = await DB.executeQuery(DPQuery);
-                    newObj.timestamp = ts;
-                    newObj.externalId = each.externalID;
-                    newObj.action = "Data package update successfully.";
-                    ResponseBody.data_packages.push(newObj);
-                    if (each.dataSet && each.dataSet.length > 0) {
-                      ResponseBody.data_sets = [];
-                      // if datasets exists
-                      for (let obj of each.dataSet) {
-                        let newobj = {};
-                        if (
-                          obj.name !== "" &&
-                          obj.path !== "" &&
-                          obj.mnemonic !== "" &&
-                          obj.customQuery !== "" &&
-                          obj.columncount !== null
-                        ) {
-                          let dataKindQ = `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}'`;
-                          let checkDataKind = await DB.executeQuery(dataKindQ);
-                          if (checkDataKind.rows.length > 0) {
-                            let datakindid = checkDataKind.rows[0].datakindid;
-                            const dsUid = createUniqueID();
-                            let DSQuery = `UPDATE ${schemaName}.dataset set datakind='${obj.dataKind}',mnemonic='${obj.mnemonic}',columncount=${obj.columncount},incremental=${obj.incremental},
-                            offsetcolumn='${obj.offsetColumn}',type='${obj.type}',path='${obj.path}',ovrd_stale_alert=${obj.OverrideStaleAlert} ,
-                            headerrownumber=${obj.headerRowNumber},footerrownumber=${obj.footerRowNumber},customsql='${obj.customSql}',custm_sql_query='${obj.customQuery}',
-                            tbl_nm='${obj.tableName}',updt_tm=CURRENT_TIMESTAMP where extrnl_id=${obj.externalID}`;
-                            let createDS = await DB.executeQuery(DSQuery);
-                            newobj.timestamp = ts;
-                            newobj.externalId = obj.externalID;
-                            newobj.action = "Data set update successfully.";
-                            ResponseBody.data_sets.push(newobj);
-                          } else {
-                            return apiResponse.ErrorResponse(
-                              res,
-                              "Data set Datakind is required"
-                            );
-                          }
-                        } else {
-                          return apiResponse.ErrorResponse(
-                            res,
-                            "Data set name and path is required"
-                          );
-                        }
-                      }
-                    } else {
-                      return apiResponse.successResponseWithData(
-                        res,
-                        "Data flow update successfully",
-                        ResponseBody
-                      );
-                    }
-                  } else {
-                    return apiResponse.ErrorResponse(
-                      res,
-                      "Data package name, type and path is required"
-                    );
-                  }
-                }
-              } else {
-                return apiResponse.successResponseWithData(
-                  res,
-                  "Data flow update successfully",
-                  ResponseBody
-                );
-              }
-            } else {
-              return apiResponse.ErrorResponse(
-                res,
-                "Vendor name , protocol number standard and description is required"
+
+        var ResponseBody = {};
+        if (!type && dataStructure) type = dataStructure;
+
+        if (
+          vendorName !== null &&
+          protocolNumberStandard !== null &&
+          description !== ""
+        ) {
+          var DFTestname = `${vendorName}-${protocolNumberStandard}-${description}`;
+          if (testFlag === true) {
+            DFTestname = "TST-" + DFTestname;
+          }
+          //check for dataflowname && sequence logic
+          const checkDFQuery = `select name from ${schemaName}.dataflow where name LIKE '${DFTestname}%';`;
+          const executeCheckDf = await DB.executeQuery(checkDFQuery);
+          if (executeCheckDf.rows.length > 0) {
+            let splittedVal =
+              executeCheckDf.rows[executeCheckDf.rows.length - 1].name.split(
+                "-"
               );
+            let _index = testFlag === true ? 4 : 3;
+            if (splittedVal.length > _index) {
+              let newParsed = parseInt(splittedVal[_index]);
+              DFTestname = DFTestname + "-" + (newParsed + 1);
+            } else {
+              DFTestname = DFTestname + "-1";
             }
           }
+          let q = `select vend_id from ${schemaName}.vendor where vend_nm='${vendorName}';`;
+          let { rows } = await DB.executeQuery(q);
+          let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${location}';`;
+          let { rows: data } = await DB.executeQuery(q1);
+
+          let q2 = `select * from ${schemaName}.dataflow where externalid='${externalID}';`;
+          let { rows: dataFlow } = await DB.executeQuery(q2);
+          let q3 = `select * from ${schemaName}.datapackage where externalid='${externalID}';`;
+          let { rows: packageData } = await DB.executeQuery(q3);
+          let q4 = `select * from ${schemaName}.dataset where externalid='${externalID}';`;
+          let { rows: dataSet } = await DB.executeQuery(q4);
+
+          const uid = dataFlow[0].dataflowid;
+          const dpUid = packageData[0].datapackageid;
+          const dsUid = dataSet[0].datasetid;
+
+          // console.log("dataflow data", dataFlow[0].dataflowid);
+          // console.log("data package data", packageData[0].datapackageid);
+          // console.log("data set data", dataSet[0].datasetid);
+
+          let dFTimestamp = new Date();
+          // if (rows.length > 0 && data.length > 0) {
+          DFBody = [
+            DFTestname,
+            externalSystemName === "CDI" ? vend_id : rows[0].vend_id,
+            type || null,
+            description || null,
+            externalSystemName === "CDI"
+              ? src_loc_id
+              : data[0]?.src_loc_id || null,
+            helper.stringToBoolean(active) ? 1 : 0,
+            configured || 0,
+            exptDtOfFirstProdFile || null,
+            helper.stringToBoolean(testFlag) ? 1 : 0,
+            data_in_cdr || "N",
+            connectionType || null,
+            externalSystemName || null,
+            externalID,
+            fsrstatus || null,
+            protocolNumber,
+            dFTimestamp,
+          ];
+          // insert dataflow schema into db
+          let updateQueryDF = `UPDATE ${schemaName}.dataflow set 
+          name =$1 ,vend_id =$2,type =$3,description =$4,src_loc_id =$5,active =$6,configured =$7,
+          expt_fst_prd_dt =$8,testflag =$9,data_in_cdr =$10,connectiontype =$11,externalsystemname =$12,
+          fsrstatus =$14,prot_id =$15,insrt_tm =$16,updt_tm =$16, refreshtimestamp =$16 where
+          externalid=$13`;
+
+          let dataFlowUpdate = await DB.executeQuery(updateQueryDF, [
+            ...DFBody,
+          ]);
+
+          let ts = new Date().toLocaleString();
+          ResponseBody.action = "Data flow updated successfully.";
+          ResponseBody.status = helper.stringToBoolean(active)
+            ? "Active"
+            : "Inactive";
+          ResponseBody.timestamp = ts;
+          ResponseBody.version = 1;
+          ResponseBody.dataflowId = dataFlow[0].dataflowid;
+          if (dataPackage && dataPackage.length > 0) {
+            ResponseBody.data_packages = [];
+            // if datapackage exists
+            for (let each of dataPackage) {
+              let newObj = {};
+              // if (each.name !== "" && each.path !== "" && each.type !== "") {
+
+              let passwordStatus = "No";
+              let dPTimestamp = new Date();
+              let { password } = each;
+
+              if (password) {
+                passwordStatus = "Yes";
+                helper.writeVaultData(`${uid}/${dpUid}`, {
+                  password,
+                });
+              }
+
+              let dPBody = [
+                each.type || null,
+                each.name || null,
+                each.path || null,
+                each.sasXptMethod || null,
+                passwordStatus,
+                helper.stringToBoolean(each.active) ? 1 : 0,
+                helper.stringToBoolean(each.noPackageConfig) ? 1 : 0,
+                externalID,
+                dPTimestamp,
+              ];
+              let updateQueryDP = `UPDATE ${schemaName}.datapackage set 
+                type =$1 , name =$2 , path =$3 , sasxptmethod =$4 , password =$5 , active =$6 ,
+               nopackageconfig =$7 , updt_tm =$9 where externalid=$8`;
+
+              let dataPackageUpdate = await DB.executeQuery(updateQueryDP, [
+                ...dPBody,
+              ]);
+
+              newObj.timestamp = ts;
+              newObj.externalId = each.externalID;
+              newObj.datapackageid = dpUid;
+              newObj.action = "Data package updated successfully.";
+              each.datapackageid = dpUid;
+              ResponseBody.data_packages.push(newObj);
+
+              await DB.executeQuery(
+                `INSERT INTO ${schemaName}.dataflow_audit_log
+              ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+              VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+                [
+                  uid,
+                  dpUid,
+                  null,
+                  null,
+                  1,
+                  "New Datapackage",
+                  "",
+                  "",
+                  externalSystemName === "CDI" ? userId : externalSystemName,
+                  new Date(),
+                ]
+              );
+              if (each.dataSet && each.dataSet.length > 0) {
+                ResponseBody.data_sets = [];
+                // if datasets exists
+                for (let obj of each.dataSet) {
+                  let newobj = {};
+                  // if (
+                  //   obj.name !== "" &&
+                  //   obj.path !== "" &&
+                  //   obj.mnemonic !== "" &&
+                  // ) {
+                  let dataKind = null;
+                  if (obj.dataKind) {
+                    let checkDataKind = await DB.executeQuery(
+                      `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
+                    );
+                    dataKind = checkDataKind.rows[0].datakindid;
+                  }
+
+                  // const dsUid = createUniqueID();
+                  let dsPasswordStatus;
+                  if (obj.filePwd) {
+                    let { filePwd } = obj;
+                    dsPasswordStatus = "Yes";
+                    helper.writeVaultData(`${uid}/${dpUid}/${dsUid}`, {
+                      password: filePwd,
+                    });
+                  } else {
+                    dsPasswordStatus = "No";
+                  }
+                  let DSBody = [
+                    dataKind || null,
+                    obj.mnemonic || obj.datasetName || null,
+                    obj.fileNamingConvention || "",
+                    helper.stringToBoolean(obj.active) ? 1 : 0,
+                    typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
+                    helper.stringToBoolean(obj.incremental) ? "Y" : "N",
+                    obj.offsetColumn || null,
+                    obj.type || obj.fileType || null,
+                    obj.path || null,
+                    obj.OverrideStaleAlert || null,
+                    obj.headerRowNumber && obj.headerRowNumber != "" ? 1 : 0,
+                    obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
+                    obj.headerRowNumber || 0,
+                    obj.footerRowNumber || 0,
+                    obj.customSql || null,
+                    obj.customQuery || null,
+                    obj.tableName || null,
+                    externalID,
+                    dsPasswordStatus || "No",
+                    new Date(),
+                    obj.delimiter || "",
+                    helper.convertEscapeChar(
+                      obj.escapeCode || obj.escapeCharacter
+                    ) || "",
+                    obj.quote || "",
+                    obj.rowDecreaseAllowed || 0,
+                    obj.dataTransferFrequency || "",
+                  ];
+
+                  let updateQueryDS = `UPDATE ${schemaName}.dataset set 
+                    datakindid =$1 , mnemonic =$2 , name =$3 , active =$4 , columncount =$5 , incremental =$6 ,
+                    offsetcolumn =$7 , type =$8 , path =$9 , ovrd_stale_alert =$10 , headerrow =$11 , 
+                    footerrow =$12 , headerrownumber =$13 ,footerrownumber =$14 , customsql =$15 , customsql_yn =$16 ,
+                    tbl_nm =$17 , file_pwd =$19 , updt_tm =$20 , delimiter=$21, 
+                    escapecode =$22 , quote=$23, rowdecreaseallowed =$24 , data_freq  =$25  where externalid=$18`;
+
+                  let dataSetUpdate = await DB.executeQuery(updateQueryDS, [
+                    ...DSBody,
+                  ]);
+
+                  newobj.timestamp = ts;
+                  newobj.externalId = obj.externalID;
+                  newobj.datasetid = dsUid;
+                  newobj.action = "Data set updated successfully.";
+                  ResponseBody.data_sets.push(newobj);
+                  obj.datasetid = dsUid;
+                  await DB.executeQuery(
+                    `INSERT INTO ${schemaName}.dataflow_audit_log
+                    ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+                    [
+                      "cci4te0l3fmtyv4q",
+                      dpUid,
+                      dsUid,
+                      null,
+                      1,
+                      "New Dataset",
+                      "",
+                      "",
+                      externalSystemName === "CDI"
+                        ? userId
+                        : externalSystemName,
+                      new Date(),
+                    ]
+                  );
+
+                  if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                    ResponseBody.column_definition = [];
+                    for (let el of obj.columnDefinition) {
+                      let newobj = {};
+                      const CDUid = createUniqueID();
+                      let CDBody = [
+                        el.name || el.columnName || null,
+                        el.dataType || null,
+                        helper.stringToBoolean(el.primaryKey) ? 1 : 0,
+                        helper.stringToBoolean(el.required) ? 1 : 0,
+                        el.characterMin || el.minLength || 0,
+                        el.characterMax || el.maxLength || 0,
+                        el.position || 0,
+                        el.format || null,
+                        el.lov || el.values || null,
+                        helper.stringToBoolean(el.unique) ? 1 : 0,
+                        el.requiredfield || null,
+                        new Date(),
+                      ];
+                      let updateQueryCD = `UPDATE ${schemaName}.columndefinition set  name =$1 ,
+                      datatype =$2 ,primarykey =$3,required =$4 ,charactermin =$5 ,charactermax =$6,
+                      position =$7 ,format =$8,lov =$9 , "unique", requiredfield =$11 , updt_tm =$12 
+                      where externalid=$18`;
+
+                      // let columnUpdate = await DB.executeQuery(updateQueryCD, [
+                      //   ...CDBody,
+                      // ]);
+
+                      return;
+
+                      // dataflow audit
+                      let dataflow_aduit_query = `INSERT INTO ${schemaName}.dataflow_audit_log
+                      ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`;
+                      let audit_body = [
+                        uid,
+                        dpUid,
+                        dsUid,
+                        CDUid,
+                        1,
+                        "New Column definition",
+                        "",
+                        "",
+                        externalSystemName === "CDI"
+                          ? userId
+                          : externalSystemName,
+                        new Date(),
+                      ];
+                      await DB.executeQuery(dataflow_aduit_query, audit_body);
+
+                      newobj.timestamp = ts;
+                      newobj.externalId = obj.externalID;
+                      newobj.colmunid = CDUid;
+                      newobj.action = "column definition updated successfully.";
+                      el.colmunid = CDUid;
+                      ResponseBody.column_definition.push(newobj);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          return apiResponse.ErrorResponse(
+            res,
+            "Vendor name , protocol number and description is required"
+          );
         }
+
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_audit_log
+    ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+          [
+            uid,
+            null,
+            null,
+            null,
+            1,
+            "New Dataflow",
+            "",
+            "",
+            externalSystemName === "CDI" ? userId : externalSystemName,
+            new Date(),
+          ]
+        );
+        let config_json = {
+          dataFlowId: uid,
+          vendorName: vendorName,
+          protocolNumber: protocolNumber,
+          type: type,
+          name: name,
+          externalID: externalID,
+          externalSystemName: externalSystemName,
+          connectionType: connectionType,
+          location: src_loc_id,
+          exptDtOfFirstProdFile: exptDtOfFirstProdFile,
+          testFlag: testFlag,
+          prodFlag: testFlag === 1 ? true : false,
+          description: description,
+          fsrstatus: fsrstatus,
+          dataPackage,
+        };
+
+        //insert into dataflow version config log table
+        let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
+    ( dataflowid, "version", config_json, created_by, created_on)
+    VALUES($1,$2,$3,$4,$5);`;
+        let aduit_version_body = [
+          uid,
+          1,
+          JSON.stringify(config_json),
+          externalSystemName === "CDI" ? userId : externalSystemName,
+          new Date(),
+        ];
+        await DB.executeQuery(dataflow_version_query, aduit_version_body);
+
+        let q = `INSERT INTO ${schemaName}.cdr_ta_queue
+    (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+    VALUES($1, 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', 1, '', 1, '', 0)`;
+
+        await DB.executeQuery(q, [
+          uid,
+          externalSystemName === "CDI" ? userId : externalSystemName,
+        ]);
+
         return apiResponse.successResponseWithData(
           res,
-          "Data flow update successfully.",
+          "Data flow updated successfully.",
           ResponseBody
         );
         // return apiResponse.successResponseWithData(res, "Success", rows);
       } else {
-        // console.log("insert Query");
+        console.log("insert Query");
         commonInsertFunction(req, res);
       }
     }
