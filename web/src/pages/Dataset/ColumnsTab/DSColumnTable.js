@@ -2,6 +2,7 @@
 /* eslint-disable react/button-has-type */
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import * as XLSX from "xlsx";
 import Table from "apollo-react/components/Table";
 import TextField from "apollo-react/components/TextField";
 import Link from "apollo-react/components/Link";
@@ -14,7 +15,15 @@ import {
   updateDatasetColumns,
 } from "../../../store/actions/DataSetsAction";
 import { deleteCD } from "../../../services/ApiServices";
-import { getUserInfo, isSftp } from "../../../utils/index";
+import {
+  getUserInfo,
+  checkHeaders,
+  formatData,
+  isSftp,
+} from "../../../utils/index";
+import { allowedTypes } from "../../../constants";
+
+const maxSize = 150000;
 
 export default function DSColumnTable({
   numberOfRows,
@@ -26,6 +35,9 @@ export default function DSColumnTable({
 }) {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
+  const dashboard = useSelector((state) => state.dashboard);
+  const { selectedCard } = dashboard;
+  const { protocolnumber } = selectedCard;
   const dataSets = useSelector((state) => state.dataSets);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDataset } = dataSets;
@@ -66,6 +78,7 @@ export default function DSColumnTable({
   const [searchValue, setSearchValue] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [selectedFile, setSelectedFile] = useState();
+  const [importedData, setImportedData] = useState([]);
   const [isFilePicked, setIsFilePicked] = useState(false);
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
@@ -73,6 +86,8 @@ export default function DSColumnTable({
   const [isEditAll, setIsEditAll] = useState(false);
   const [isEditLOVs, setIsEditLOVs] = useState(false);
   const [isMultiAdd, setIsMultiAdd] = useState(false);
+  const [pkDisabled, setPkDisabled] = useState(false);
+  const [isColumnMandatory, setIsColumnMandatory] = useState(false);
   const [newRows, setNewRows] = useState("");
   const [disableSaveAll, setDisableSaveAll] = useState(true);
   const [moreColumns, setMoreColumns] = useState([...columns]);
@@ -95,6 +110,20 @@ export default function DSColumnTable({
       setDisableSaveAll(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!isSftp(locationType)) {
+      if (dsTestLock || dsProdLock) {
+        setPkDisabled(true);
+      } else {
+        setPkDisabled(false);
+      }
+    } else if (dsProdLock) {
+      setPkDisabled(true);
+    } else {
+      setPkDisabled(false);
+    }
+  }, [locationType, dsTestLock, dsProdLock]);
 
   useEffect(() => {
     if (rows.length) {
@@ -131,16 +160,6 @@ export default function DSColumnTable({
   };
 
   const handleSaveLOV = async () => {
-    // let newValue;
-    // const { values } = selectedRow;
-    // const isFirst = (await values.trim().charAt(0)) === "~";
-    // const isLast = (await values.trim().charAt(values.length - 1)) === "~";
-    // if (isFirst) {
-    //   newValue = await values.substring(1);
-    // }
-    // if (isLast) {
-    //   newValue = await values.slice(0, -1);
-    // }
     if (selectedRow.dbColumnId) {
       const newQuery = "";
       dispatch(
@@ -179,11 +198,74 @@ export default function DSColumnTable({
   };
 
   const handleFileUpdate = (event) => {
-    setSelectedFile(event.target.files[0]);
+    const file = event.target.files[0];
+    if (
+      allowedTypes.length &&
+      !allowedTypes.filter((type) => file.type.includes(type)).length
+    ) {
+      file.errorMessage = `${
+        file.name.split(".")[file.name.split(".").length - 1]
+      } format is not supported`;
+    } else if (maxSize && file.size > maxSize) {
+      file.errorMessage = `File is too large (max is ${maxSize} bytes)`;
+    }
+
+    setSelectedFile(file);
     setIsFilePicked(true);
+    setShowOverWrite(true);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = e.target.result;
+      const readedData = XLSX.read(data, { type: "binary" });
+      const wsname = readedData.SheetNames[0];
+      const ws = readedData.Sheets[wsname];
+      const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      setImportedData(dataParse);
+    };
+    reader.readAsBinaryString(file);
   };
 
-  const handleSubmission = () => {};
+  const hideOverWrite = () => {
+    setShowOverWrite(false);
+    setIsFilePicked(false);
+    setSelectedFile(null);
+    setImportedData([]);
+  };
+
+  const handleOverWrite = () => {
+    if (isFilePicked && importedData.length > 1) {
+      setShowOverWrite(false);
+      const correctHeader = checkHeaders(importedData);
+      if (correctHeader) {
+        const newData = formatData(importedData, protocolnumber);
+        // eslint-disable-next-line no-unused-expressions
+        if (newData.length > 0) {
+          const initRows = newData.map((e) => e.uniqueId);
+          setRows([...newData]);
+          setEditedRows([...newData]);
+          setSelectedRows([...initRows]);
+        } else {
+          messageContext.showErrorMessage(
+            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+          );
+          hideOverWrite();
+        }
+      } else {
+        messageContext.showErrorMessage(
+          `The Selected File Does Not Match the Template`
+        );
+        hideOverWrite();
+      }
+    } else {
+      setSelectedFile(null);
+      setIsFilePicked(false);
+      setShowOverWrite(false);
+      messageContext.showErrorMessage(
+        "File not picked correctly please try again"
+      );
+    }
+  };
 
   const onChangeLOV = (e) => {
     const newValues = e.target.value;
@@ -354,13 +436,7 @@ export default function DSColumnTable({
         });
         setMoreColumns(data);
       } else {
-        const data = allColumns.map((e) => {
-          if (e.accessor === "columnName") {
-            e.hidden = true;
-          }
-          return e;
-        });
-        setMoreColumns(data);
+        setMoreColumns(allColumns);
       }
     } else {
       const data = allColumns.map((e) => {
@@ -386,8 +462,15 @@ export default function DSColumnTable({
     }
   };
 
+  const toFindDuplicates = (arry) => {
+    arry.some((element, index) => {
+      return arry.indexOf(element) !== index;
+    });
+    return false;
+  };
+
   const onSaveAll = async () => {
-    const removeSpaces = editedRows
+    const removeSpaces = await editedRows
       .map((e) => {
         e.values = e.values.trim();
         e.columnName = e.columnName.trim();
@@ -404,39 +487,52 @@ export default function DSColumnTable({
         }
         return e;
       });
-    setRows([...removeSpaces]);
-    setSelectedRows([]);
-    setEditedRows(rows);
-    const existingCD = await removeSpaces.filter((e) => e.dbColumnId);
-    const newCD = await removeSpaces.filter((e) => !e.dbColumnId);
-    let newQuery = "";
-    if (customQuery === "No") {
-      const columnList = removeSpaces.map((e) => e.columnName).join(", ");
-      const wherePart = customsql.indexOf("where");
-      newQuery = `Select ${columnList} from ${tableName} ${customsql.slice(
-        wherePart
-      )}`;
-    }
 
-    if (newCD && newCD.length > 0) {
-      dispatch(
-        createDatasetColumns(
-          newCD,
-          dsId,
-          dfId,
-          dpId,
-          userInfo.userId,
-          customQuery === "No",
-          newQuery
-        )
-      );
-    }
+    if (!toFindDuplicates(removeSpaces)) {
+      setRows([...removeSpaces]);
+      setSelectedRows([]);
+      setEditedRows(rows);
+      const existingCD = await removeSpaces.filter((e) => e.dbColumnId);
+      const newCD = await removeSpaces.filter((e) => !e.dbColumnId);
+      let newQuery = "";
+      if (customQuery === "No") {
+        const columnList = removeSpaces.map((e) => e.columnName).join(", ");
+        const wherePart = customsql?.indexOf("where");
+        if (wherePart) {
+          newQuery = `Select ${columnList} from ${tableName} ${customsql.slice(
+            wherePart
+          )}`;
+        }
+      }
 
-    // if (existingCD && existingCD.length > 0) {
-    //   dispatch(
-    //     updateDatasetColumns(existingCD, dsId, dfId, dpId, userInfo.userId, true, newQuery)
-    //   );
-    // }
+      if (newCD && newCD.length > 0) {
+        dispatch(
+          createDatasetColumns(
+            newCD,
+            dsId,
+            dfId,
+            dpId,
+            userInfo.userId,
+            customQuery === "No",
+            newQuery
+          )
+        );
+      }
+
+      if (existingCD && existingCD.length > 0) {
+        dispatch(
+          updateDatasetColumns(
+            existingCD,
+            dsId,
+            dfId,
+            dpId,
+            userInfo.userId,
+            customQuery === "No",
+            newQuery
+          )
+        );
+      }
+    }
   };
 
   const onCancelAll = () => {
@@ -529,12 +625,7 @@ export default function DSColumnTable({
     setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
   };
 
-  // const showColumnNameRequried = () => {
-  //   messageContext.showErrorMessage("Column Name Should be there");
-  // };
-
   const editRow = (uniqueId, key, value, errorTxt) => {
-    // console.log(uniqueId, "ColumdId");
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
@@ -585,25 +676,9 @@ export default function DSColumnTable({
     );
   };
 
-  const hideOverWrite = () => {
-    setShowViewLOVs(false);
-  };
-
-  const handleOverWrite = () => {
-    console.log("handle overwrite");
-  };
-
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {console.log(
-          "data",
-          rows,
-          editedRows,
-          formattedData,
-          dataOrigin,
-          moreColumns
-        )}
         <input
           type="file"
           id="file"
@@ -637,6 +712,7 @@ export default function DSColumnTable({
             dsTestLock,
             dsProdLock,
             locationType,
+            pkDisabled,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}

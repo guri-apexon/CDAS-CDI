@@ -111,22 +111,6 @@ export const editableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
     const errorText = checkRequiredValue(row[key], key, row.primary);
-
-    // eslint-disable-next-line consistent-return
-    const checkDisabled = () => {
-      if (!isSftp(row.locationType)) {
-        if (row.dsTestLock || row.dsProdLock) {
-          return true;
-        }
-      }
-      if (isSftp(row.locationType)) {
-        if (row.dsProdLock) {
-          return true;
-        }
-      }
-      return false;
-    };
-
     return row.editMode ? (
       <Select
         size="small"
@@ -139,7 +123,7 @@ export const editableSelectCell =
           row.editRow(row.uniqueId, key, e.target.value, errorText)
         }
         {...fieldStyles}
-        disabled={checkDisabled}
+        disabled={row.pkDisabled}
       >
         {options.map((option) => (
           <MenuItem key={option} value={option}>
@@ -178,7 +162,6 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
 
   const errorText =
     checkAlphaNumericFileName(row[key]) || checkRequired(row[key]);
-  console.log("val", row[key], "err", errorText);
   return editMode ? (
     <TextField
       size="small"
@@ -254,6 +237,7 @@ export const ActionCell = ({ row }) => {
     onRowDelete,
     editMode: eMode,
     isHavingColumnName,
+    isHavingDataType,
     onRowSave,
   } = row;
 
@@ -270,7 +254,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={!isHavingColumnName}
+        disabled={!isHavingColumnName || !isHavingDataType}
       >
         Save
       </Button>
@@ -318,7 +302,7 @@ export const columns = [
     header: "Position",
     accessor: "position",
     customCell: NumericEditableCell,
-    sortFunction: compareStrings,
+    sortFunction: compareNumbers,
     filterFunction: createStringSearchFilter("position"),
     filterComponent: TextFieldFilter,
   },

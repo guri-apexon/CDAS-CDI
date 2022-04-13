@@ -4,7 +4,7 @@ import React from "react";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import { TextField } from "apollo-react/components/TextField/TextField";
-import { hive2CDH, hive2CDP, impala, oracle, SQLServer } from "../constants";
+// import { hive2CDH, hive2CDP, impala, oracle, SQLServer } from "../constants";
 
 export const getCookie = (key) => {
   const b = document.cookie.match(`(^|;)\\s*${key}\\s*=\\s*([^;]+)`);
@@ -404,7 +404,7 @@ export const formatData = (incomingData, protNo) => {
               position: "",
               format: e[3] || "",
               dataType: e[4] || "",
-              primary: setYN(e[5]),
+              primaryKey: setYN(e[5]),
               unique: setYN(e[6]),
               required: setYN(e[7]),
               minLength: e[8] || "",
@@ -412,6 +412,8 @@ export const formatData = (incomingData, protNo) => {
               values: e[10] || "",
               isInitLoad: true,
               isHavingError: false,
+              isHavingColumnName: true,
+              isHavingDataType: true,
             };
             return newObj;
           })
@@ -557,16 +559,14 @@ export const dateFilterCustom = (accessor) => (row, filters) => {
   if (!filters[accessor]) {
     return true;
   }
-
   if (!row[accessor]) {
     return false;
   }
-
-  const date = moment(row[accessor], "YYYY-MM-DD");
+  const date = moment(row[accessor]);
 
   const fromDate = moment(filters[accessor][0], "YYYY-MM-DD");
 
-  const toDate = moment(filters[accessor][1], "YYYY-MM-DD");
+  const toDate = moment(filters[accessor][1], "YYYY-MM-DD").endOf("day");
 
   return (
     (!fromDate.isValid() || date.isAfter(fromDate)) &&
@@ -579,9 +579,9 @@ export const isSftp = (str) => {
 };
 
 export const validateFields = (name, ext) => {
-  const nameArr = name.split(".");
-  if (ext === nameArr[1]) {
-    console.log("nameArr[1]", nameArr[1], ext);
+  if (!name || !ext) return false;
+  const fileExt = name.split(".").pop();
+  if (ext === fileExt.toLowerCase()) {
     return true;
   }
   return false;

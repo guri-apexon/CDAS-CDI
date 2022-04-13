@@ -22,21 +22,14 @@ import ButtonGroup from "apollo-react/components/ButtonGroup";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import "./DataPackages.scss";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
-import { getUserInfo, toast } from "../../utils";
+import { getUserInfo, toast, validateFields } from "../../utils";
 import { submitDataPackage } from "../../services/ApiServices";
 import {
   addDataPackage,
   getPackagesList,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
-
-const compressionTypes = [
-  { text: "Not Compressed", value: "not_compressed" },
-  { text: "Zip", value: "zip" },
-  { text: "7Z", value: "7z" },
-  { text: "SAS XPT", value: "xpt" },
-  { text: "RAR", value: "rar" },
-];
+import { packageComprTypes } from "../../utils/constants";
 
 const useStyles = makeStyles(() => ({
   rightPanel: {
@@ -93,14 +86,6 @@ const DataPackages = React.memo(() => {
     setConfigShow(false);
     setShowForm(false);
   };
-  const validateFields = () => {
-    const nameArr = namingConvention.split(".");
-    if (compression === nameArr[1]) {
-      console.log("nameArr[1]", nameArr[1], compression);
-      return true;
-    }
-    return false;
-  };
   // const getPackages = (query = "") => {
   //   dispatch(getPackagesList(query));
   // };
@@ -117,7 +102,7 @@ const DataPackages = React.memo(() => {
 
   // eslint-disable-next-line consistent-return
   const submitPackage = async () => {
-    const validated = validateFields();
+    const validated = validateFields(namingConvention, compression);
     setNotMatchedType(!validated);
     if (!validated) return false;
     if (namingConvention === "" || compression === "") {
@@ -230,7 +215,7 @@ const DataPackages = React.memo(() => {
                         onChange={(e) => setCompression(e.target.value)}
                         className="mb-20 package-type"
                       >
-                        {compressionTypes.map((type, i) => (
+                        {packageComprTypes.map((type, i) => (
                           <MenuItem key={i} value={type.value}>
                             {type.text}
                           </MenuItem>

@@ -1120,6 +1120,7 @@ exports.fetchdataflowDetails = async (req, res) => {
             noPackageConfig: each.nopackageconfig,
             name: each.datapackagename,
             dataSet: [],
+            active: each.active,
           };
           if (el.datasetid === each.datasetid) {
             let datasetObj = {
@@ -1145,6 +1146,7 @@ exports.fetchdataflowDetails = async (req, res) => {
               dataKind: el.datakind,
               naming_convention: el.naming_convention,
               columnDefinition: [],
+              active: el.active,
             };
             for (let obj of rows) {
               if (obj.datasetid === el.datasetid) {

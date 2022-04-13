@@ -29,6 +29,7 @@ import {
   getSQLColumns,
 } from "../../store/actions/DataSetsAction";
 import { updatePanel } from "../../store/actions/DataPackageAction";
+import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
 import { getUserInfo, isSftp } from "../../utils";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
@@ -136,6 +137,7 @@ const Dataset = () => {
     tableName,
     isCustomSQL,
     customsql_yn: customQuery,
+    datasetid: dsId,
   } = selectedDataset;
 
   const useStyles = makeStyles(styles);
@@ -166,6 +168,9 @@ const Dataset = () => {
       history.push("/dashboard");
     }
     dispatch(getDataKindData());
+    if (!dataFlowdetail.name) {
+      dispatch(getDataFlowDetail(selectedDSDetails.dataflowid));
+    }
   }, []);
 
   useEffect(() => {
@@ -173,7 +178,7 @@ const Dataset = () => {
   }, [params]);
 
   useEffect(() => {
-    if (datasetid === null) {
+    if (datasetid === null || datasetid === "new") {
       dispatch(resetFTP());
       dispatch(resetJDBC());
     } else {
@@ -183,11 +188,6 @@ const Dataset = () => {
   }, [datasetid]);
 
   useEffect(() => {
-    if (isDatasetCreated && isDatasetCreation) {
-      messageContext.showSuccessMessage("Dataset Created Successfully");
-      dispatch(updatePanel());
-    }
-
     if (isDatasetCreated) {
       if (isSftp(loctyp)) {
         setValue(1);
@@ -200,6 +200,12 @@ const Dataset = () => {
           }, 500);
         }
       }
+    }
+
+    if (isDatasetCreated && isDatasetCreation) {
+      messageContext.showSuccessMessage("Dataset Created Successfully");
+      history.push(`/dashboard/dataset/${dsId}`);
+      dispatch(updatePanel());
     }
   }, [isDatasetCreated, isDatasetCreation, loctyp]);
 
@@ -352,7 +358,9 @@ const Dataset = () => {
                     {dataSettabs.map((tab) => (
                       <Tab
                         label={tab}
-                        disabled={!columnsActive && tab === "Dataset Columns"}
+                        disabled={
+                          !columnsActive && tab === ("Dataset Columns" || "VLC")
+                        }
                       />
                     ))}
                   </Tabs>
