@@ -99,6 +99,7 @@ const DataFlow = ({
   const [FormType, setFormType] = useState("dataflow");
   const [createdDataflow, setCreatedDataflow] = useState(null);
   const [headerValue, setHeaderValue] = useState(1);
+  const [changeLocationRequire, setChangeLocationRequire] = useState(true);
   const [currentStep, setCurrentStep] = useReducer((state, action) => {
     if (action?.step) return action.step;
     return action?.prev ? state - 1 : state + 1;
@@ -137,6 +138,7 @@ const DataFlow = ({
       (loc) => value == loc.src_loc_id
     );
     dispatch(updateSelectedLocation(location));
+    setChangeLocationRequire(false);
   };
   const changeFormField = (value, field, arr) => {
     if (field === "vendor" && value[0]) {
@@ -147,6 +149,7 @@ const DataFlow = ({
   const changeLocationType = (value) => {
     dispatch(getLocationByType(value));
     setLocType(value);
+    setChangeLocationRequire(true);
   };
   const modalLocationType = (value) => {
     setModalLocType(value);
@@ -166,11 +169,17 @@ const DataFlow = ({
     console.log("FormValues", FormValues, selectedVendor);
     if (
       FormValues &&
-      (FormValues.vendor || FormValues.vendor.length > 0) &&
-      FormValues.locationName &&
-      FormValues.description !== "" &&
-      selectedCard.prot_id !== ""
+      (FormValues?.vendor || FormValues?.vendor?.length > 0) &&
+      FormValues?.locationName &&
+      FormValues?.description !== "" &&
+      selectedCard?.prot_id !== ""
     ) {
+      if (changeLocationRequire) {
+        messageContext.showErrorMessage(
+          "Please change location name as per location type"
+        );
+        return false;
+      }
       const payload = {
         vend_id: FormValues.vendor[0],
         src_loc_id: FormValues.locationName[0],
@@ -257,7 +266,11 @@ const DataFlow = ({
 
     newForm.dataPackage[0].dataSet[0] = datasetObj;
     setForm(newForm);
-    setCurrentStep();
+    if (datasetObj.customQuery === "Yes") {
+      setCurrentStep({ step: 4 });
+    } else {
+      setCurrentStep();
+    }
   };
 
   const AddColumnDefinitions = (rows) => {
@@ -269,9 +282,23 @@ const DataFlow = ({
     }
   };
   const submitFinalForm = async () => {
-    if (!myform.dataPackage[0]?.dataSet[0]?.columncount) {
+    if (
+      myform.dataPackage[0]?.dataSet[0]?.customQuery === "No" &&
+      !myform.dataPackage[0]?.dataSet[0]?.columncount
+    ) {
       messageContext.showErrorMessage(
         "Please add atleast one column to proceed"
+      );
+      return false;
+    }
+    if (
+      myform.dataPackage[0]?.dataSet[0]?.customQuery === "No" &&
+      myform.dataPackage[0]?.dataSet[0]?.columnDefinition.find(
+        (x) => x.dataType === ""
+      )
+    ) {
+      messageContext.showErrorMessage(
+        "Please select data type for columns to proceed"
       );
       return false;
     }

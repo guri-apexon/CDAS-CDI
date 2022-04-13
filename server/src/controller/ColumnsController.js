@@ -96,8 +96,8 @@ exports.saveDatasetColumns = async (req, res) => {
     if (err.code === "23505") {
       return apiResponse.validationErrorWithData(
         res,
-        "Operation failed",
-        "column name should be unique for a dataset"
+        "Column name should be unique for a dataset",
+        "Operation failed"
       );
     }
     return apiResponse.ErrorResponse(res, err);
@@ -199,8 +199,8 @@ exports.updateColumns = async (req, res) => {
     if (err.code === "23505") {
       return apiResponse.validationErrorWithData(
         res,
-        "Operation failed",
-        "column name should be unique for a dataset"
+        "Column name should be unique for a dataset",
+        "Operation failed"
       );
     }
     return apiResponse.ErrorResponse(res, err);
@@ -289,8 +289,8 @@ exports.lovUpdate = async (req, res) => {
     if (err.code === "23505") {
       return apiResponse.validationErrorWithData(
         res,
-        "Operation failed",
-        "column name should be unique for a dataset"
+        "Column name should be unique for a dataset",
+        "Operation failed"
       );
     }
     return apiResponse.ErrorResponse(res, err);

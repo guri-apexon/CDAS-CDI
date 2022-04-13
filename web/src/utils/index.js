@@ -4,7 +4,7 @@ import React from "react";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import { TextField } from "apollo-react/components/TextField/TextField";
-import { hive2CDH, hive2CDP, impala, oracle, SQLServer } from "../constants";
+// import { hive2CDH, hive2CDP, impala, oracle, SQLServer } from "../constants";
 
 export const getCookie = (key) => {
   const b = document.cookie.match(`(^|;)\\s*${key}\\s*=\\s*([^;]+)`);
@@ -559,16 +559,14 @@ export const dateFilterCustom = (accessor) => (row, filters) => {
   if (!filters[accessor]) {
     return true;
   }
-
   if (!row[accessor]) {
     return false;
   }
-
-  const date = moment(row[accessor], "YYYY-MM-DD");
+  const date = moment(row[accessor]);
 
   const fromDate = moment(filters[accessor][0], "YYYY-MM-DD");
 
-  const toDate = moment(filters[accessor][1], "YYYY-MM-DD");
+  const toDate = moment(filters[accessor][1], "YYYY-MM-DD").endOf("day");
 
   return (
     (!fromDate.isValid() || date.isAfter(fromDate)) &&

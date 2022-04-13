@@ -29,14 +29,7 @@ import {
   getPackagesList,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
-
-const compressionTypes = [
-  { text: "Not Compressed", value: "not_compressed" },
-  { text: "Zip", value: "zip" },
-  { text: "7Z", value: "7z" },
-  { text: "SAS XPT", value: "xpt" },
-  { text: "RAR", value: "rar" },
-];
+import { packageComprTypes } from "../../utils/constants";
 
 const useStyles = makeStyles(() => ({
   rightPanel: {
@@ -222,7 +215,7 @@ const DataPackages = React.memo(() => {
                         onChange={(e) => setCompression(e.target.value)}
                         className="mb-20 package-type"
                       >
-                        {compressionTypes.map((type, i) => (
+                        {packageComprTypes.map((type, i) => (
                           <MenuItem key={i} value={type.value}>
                             {type.text}
                           </MenuItem>

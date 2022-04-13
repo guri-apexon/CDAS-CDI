@@ -305,7 +305,7 @@ const DataFlowReducer = (state = initialState, action) =>
         }
         if (customsql_yn) {
           newState.formDataSQL.active = active === 1 ? true : false;
-          newState.formData.clinicalDataType = [datakindid];
+          newState.formDataSQL.clinicalDataType = [datakindid];
           newState.formDataSQL.datasetName = mnemonic;
           newState.formDataSQL.isCustomSQL = customsql_yn;
           newState.formDataSQL.sQLQuery = customsql;
@@ -314,6 +314,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL.filterCondition = dataset_fltr;
           newState.formDataSQL.dataType =
             incremental === "N" ? "Cumulative" : "Incremental";
+          newState.formDataSQL.datasetid = datasetid;
         }
         newState.selectedDataset = action.datasetDetail;
         break;

@@ -29,6 +29,7 @@ import {
   getSQLColumns,
 } from "../../store/actions/DataSetsAction";
 import { updatePanel } from "../../store/actions/DataPackageAction";
+import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
 import { getUserInfo, isSftp } from "../../utils";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
@@ -167,6 +168,9 @@ const Dataset = () => {
       history.push("/dashboard");
     }
     dispatch(getDataKindData());
+    if (!dataFlowdetail.name) {
+      dispatch(getDataFlowDetail(selectedDSDetails.dataflowid));
+    }
   }, []);
 
   useEffect(() => {
@@ -354,7 +358,9 @@ const Dataset = () => {
                     {dataSettabs.map((tab) => (
                       <Tab
                         label={tab}
-                        disabled={!columnsActive && tab === "Dataset Columns"}
+                        disabled={
+                          !columnsActive && tab === ("Dataset Columns" || "VLC")
+                        }
                       />
                     ))}
                   </Tabs>
