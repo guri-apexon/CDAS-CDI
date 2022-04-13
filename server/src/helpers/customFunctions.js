@@ -60,7 +60,7 @@ exports.deleteVaultData = async (vaultPath) => {
   return true;
 };
 
-exports.stringToBoolean = (string) => {
+const stringToBoolean = (exports.stringToBoolean = (string) => {
   switch (string?.toString().toLowerCase().trim()) {
     case "true":
     case "yes":
@@ -72,35 +72,19 @@ exports.stringToBoolean = (string) => {
     case null:
       return false;
     default:
-      return Boolean(string);
+      return "not_boolean";
   }
-};
+});
 
 exports.convertEscapeChar = (str) => {
   return str ? String.raw`${str}`.replace(/\\/g, "\\\\") : "";
 };
 
-const stringToBooleanVal = (exports.stringToBooleanVal = (string) => {
-  switch (string?.toString().toLowerCase().trim()) {
-    case "true":
-    case "yes":
-    case "1":
-      return true;
-    case "false":
-    case "no":
-    case "0":
-    case null:
-      return false;
-    default:
-      return string;
-  }
-});
-
 exports.validation = (data) => {
   let msg = [];
   data.forEach((val) => {
     if (val.type == "boolean") {
-      val.value = stringToBooleanVal(val.value);
+      val.value = stringToBoolean(val.value);
     }
     if (
       val.value !== null &&
