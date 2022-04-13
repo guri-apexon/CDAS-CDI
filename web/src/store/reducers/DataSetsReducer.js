@@ -314,6 +314,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL.filterCondition = dataset_fltr;
           newState.formDataSQL.dataType =
             incremental === "N" ? "Cumulative" : "Incremental";
+          newState.formDataSQL.datasetid = datasetid;
         }
         newState.selectedDataset = action.datasetDetail;
         break;
