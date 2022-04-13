@@ -237,6 +237,7 @@ export const ActionCell = ({ row }) => {
     onRowDelete,
     editMode: eMode,
     isHavingColumnName,
+    isHavingDataType,
     onRowSave,
   } = row;
 
@@ -253,7 +254,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={!isHavingColumnName}
+        disabled={!isHavingColumnName || !isHavingDataType}
       >
         Save
       </Button>
