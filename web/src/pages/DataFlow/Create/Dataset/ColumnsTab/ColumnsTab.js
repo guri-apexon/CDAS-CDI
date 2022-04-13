@@ -62,7 +62,14 @@ const ColumnsTab = ({ locationType, headerValue }) => {
         const wsname = readedData.SheetNames[0];
         const ws = readedData.Sheets[wsname];
         const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        setImportedData(dataParse);
+        if (dataParse[0]?.length) {
+          setImportedData(dataParse);
+        } else {
+          messageContext.showErrorMessage(
+            `Template is not available for files with no header row`
+          );
+          setSelectedFile([]);
+        }
       };
       reader.readAsBinaryString(f);
     }, 1000);
