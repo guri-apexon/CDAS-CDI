@@ -216,11 +216,12 @@ const DataFlowFormBase = (props) => {
               {dataLoaded && locations && (
                 <ReduxFormAutocomplete
                   name="locationName"
-                  label={
-                    locations?.find(
-                      (l) => l.value === initialValues?.locations[0]?.value
-                    )?.label
-                  }
+                  label="Location Name"
+                  // label={
+                  //   locations?.find(
+                  //     (l) => l.value === initialValues?.locations[0]?.value
+                  //   )?.label
+                  // }
                   input={{
                     onChange: changeLocationData,
                     value: [initialValues?.locations[0]?.value],
