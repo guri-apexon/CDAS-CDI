@@ -305,7 +305,7 @@ const DataFlowReducer = (state = initialState, action) =>
         }
         if (customsql_yn) {
           newState.formDataSQL.active = active === 1 ? true : false;
-          newState.formData.clinicalDataType = [datakindid];
+          newState.formDataSQL.clinicalDataType = [datakindid];
           newState.formDataSQL.datasetName = mnemonic;
           newState.formDataSQL.isCustomSQL = customsql_yn;
           newState.formDataSQL.sQLQuery = customsql;
