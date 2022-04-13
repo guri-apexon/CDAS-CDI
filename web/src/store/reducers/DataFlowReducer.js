@@ -93,7 +93,10 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case UPDATE_SELECTED_LOCATION:
         newState.selectedLocation = action.location;
+        if (action.location)
+          newState.formData.locations = [{ ...action.location }];
         newState.loading = false;
+        console.log(">>>> UPDATE_SELECTED_LOCATION", action.location, state);
         break;
       case UPDATE_FORM_FIELDS:
         // newState[action.field] = action.value;
@@ -158,6 +161,7 @@ const DataFlowReducer = (state = initialState, action) =>
           name,
           srclocid,
           type,
+          username,
           vendorid,
           vendorname,
           testflag,
@@ -182,6 +186,7 @@ const DataFlowReducer = (state = initialState, action) =>
         formData.locations = [{ value: srclocid, label: locationname }];
         formData.dataStructure = type;
         formData.vendors = [vendorid];
+        formData.userName = username;
         formData.vendorname = vendorname;
         newState.dataFlowdetail = action.dataflowDetail;
         newState.formData = formData;
