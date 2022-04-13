@@ -229,10 +229,7 @@ const DataFlowFormBase = (props) => {
                   }
                   input={{
                     onChange: changeLocationData,
-                    // value: [initialValues?.locations[0]?.value],
-                    value: locations?.filter(
-                      (l) => l.value === initialValues?.locations[0]?.value
-                    ),
+                    value: [initialValues?.locations[0]?.value],
                   }}
                   ref={locationNameRef}
                   source={locations}
