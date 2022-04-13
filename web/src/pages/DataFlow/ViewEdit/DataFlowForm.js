@@ -115,12 +115,6 @@ const DataFlowFormBase = (props) => {
         // changeFormField(dataflowType, "dataflowType");
       }
     }
-    console.log(
-      ">>>>> initial value ",
-      initialValues,
-      selectedLocation,
-      locationNameRef
-    );
   }, [initialValues]);
 
   useEffect(() => {

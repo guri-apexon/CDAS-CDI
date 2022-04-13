@@ -96,7 +96,6 @@ const DataFlowReducer = (state = initialState, action) =>
         if (action.location)
           newState.formData.locations = [{ ...action.location }];
         newState.loading = false;
-        console.log(">>>> UPDATE_SELECTED_LOCATION", action.location, state);
         break;
       case UPDATE_FORM_FIELDS:
         // newState[action.field] = action.value;
