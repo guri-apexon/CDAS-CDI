@@ -3,6 +3,7 @@
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import * as XLSX from "xlsx";
+import _ from "lodash";
 import Table from "apollo-react/components/Table";
 import TextField from "apollo-react/components/TextField";
 import Link from "apollo-react/components/Link";
@@ -13,6 +14,7 @@ import { downloadTemplate } from "../../../utils/downloadData";
 import {
   createDatasetColumns,
   updateDatasetColumns,
+  getDatasetColumns,
 } from "../../../store/actions/DataSetsAction";
 import { deleteCD } from "../../../services/ApiServices";
 import {
@@ -506,7 +508,7 @@ export default function DSColumnTable({
       }
 
       if (newCD && newCD.length > 0) {
-        dispatch(
+        await dispatch(
           createDatasetColumns(
             newCD,
             dsId,
@@ -520,7 +522,7 @@ export default function DSColumnTable({
       }
 
       if (existingCD && existingCD.length > 0) {
-        dispatch(
+        await dispatch(
           updateDatasetColumns(
             existingCD,
             dsId,
@@ -532,6 +534,8 @@ export default function DSColumnTable({
           )
         );
       }
+
+      await dispatch(getDatasetColumns(dsId));
     }
   };
 
@@ -551,6 +555,7 @@ export default function DSColumnTable({
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     const removeEdited = editedRows.filter((e) => e !== uniqueId);
     const editedRowData = editedRows
+      .filter((e) => e.uniqueId === uniqueId)
       .map((e) => {
         e.values = e.values.trim();
         e.columnName = e.columnName.trim();
@@ -570,44 +575,54 @@ export default function DSColumnTable({
       .find((e) => e.uniqueId === uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
 
-    let newQuery = "";
-    if (customQuery === "No") {
-      const selectedList = [...selectedCN, editedRowData?.columnName];
-      setSelectedCN(selectedList);
-      const splitted = customsql.split("where");
-      newQuery = `Select ${selectedList.join(
-        ", "
-      )} from ${tableName} where ${splitted[1].trim()}`;
-    }
+    const duplicate = _.find(rows, (e) => {
+      return _.isEqual(e.columnName === editedRowData.columnName);
+    });
 
-    if (editedRowData?.dbColumnId) {
-      dispatch(
-        updateDatasetColumns(
-          [editedRowData],
-          dsId,
-          dfId,
-          dpId,
-          userInfo.userId,
-          customQuery === "No",
-          newQuery
-        )
+    if (duplicate) {
+      messageContext.showErrorMessage(
+        "Column name should be unique for a dataset"
       );
     } else {
-      dispatch(
-        createDatasetColumns(
-          [editedRowData],
-          dsId,
-          dfId,
-          dpId,
-          userInfo.userId,
-          customQuery === "No",
-          newQuery
-        )
-      );
+      let newQuery = "";
+      if (customQuery === "No") {
+        const selectedList = [...selectedCN, editedRowData?.columnName];
+        setSelectedCN(selectedList);
+        const splitted = customsql.split("where");
+        newQuery = `Select ${selectedList.join(
+          ", "
+        )} from ${tableName} where ${splitted[1].trim()}`;
+      }
+
+      if (editedRowData?.dbColumnId) {
+        await dispatch(
+          updateDatasetColumns(
+            [editedRowData],
+            dsId,
+            dfId,
+            dpId,
+            userInfo.userId,
+            customQuery === "No",
+            newQuery
+          )
+        );
+      } else {
+        dispatch(
+          createDatasetColumns(
+            [editedRowData],
+            dsId,
+            dfId,
+            dpId,
+            userInfo.userId,
+            customQuery === "No",
+            newQuery
+          )
+        );
+      }
+      setRows([...removeExistingRowData, editedRowData]);
+      setEditedRows([...removeEdited]);
+      setSelectedRows([...removeRow]);
     }
-    setRows([...removeExistingRowData, editedRowData]);
-    setEditedRows([...removeEdited]);
-    setSelectedRows([...removeRow]);
   };
 
   const onRowEdit = (uniqueId) => {
