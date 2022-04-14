@@ -158,7 +158,7 @@ exports.getStudyDataflows = async (req, res) => {
   }
 };
 
-const insertValidation = (req) => {
+const insertValidation1 = (req) => {
   var validate = [];
   const Data = [
     {
@@ -1306,6 +1306,1243 @@ exports.getDataflowDetail = async (req, res) => {
     Logger.error("catch :dataflowDetail");
     Logger.error(err);
 
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+const packageLevelInsert = async (req, res) => {
+  try {
+    var validate = [];
+
+    if (req.body.externalSystemName !== "CDI") {
+      if (req.body.dataPackage && req.body.dataPackage.length > 0) {
+        // console.log("data package data", req.body.dataPackage.length);
+        for (let each of req.body.dataPackage) {
+          var LocationType = req.body.connectionType;
+          if (
+            each.externalID == null ||
+            each.externalID == "" ||
+            each.externalID == undefined
+          ) {
+            validate.push({
+              text: " Data Package, Level External Id  is required and data type should be string or Number ",
+              status: false,
+            });
+          } else {
+            if (LocationType === "SFTP" || LocationType === "FTPS") {
+              // console.log("data");
+              const dpArray = [
+                { key: "Package type", value: each.type, type: "string" },
+                {
+                  key: "SAS XPT Method ",
+                  value: each.sasXptMethod,
+                  type: "string",
+                },
+                { key: "Package Path ", value: each.path, type: "string" },
+                {
+                  key: "No Package Level Config ",
+                  value: each.noPackageConfig,
+                  type: "boolean",
+                },
+                {
+                  key: "Package Naming Convention",
+                  value: each.name,
+                  type: "string",
+                },
+                {
+                  key: "active",
+                  value: each.active,
+                  type: "boolean",
+                },
+              ];
+
+              if (
+                each.type === "7Z" ||
+                each.type == "ZIP" ||
+                each.type == "RAR" ||
+                each.type == "SAS"
+              ) {
+              } else {
+                validate.push({
+                  text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
+                  status: false,
+                });
+              }
+
+              let dpRes = helper.validation(dpArray);
+              if (dpRes.length > 0) {
+                validate.push(dpRes);
+              } else {
+                if (each.dataSet && each.dataSet.length > 0) {
+                  for (let obj of each.dataSet) {
+                    const dsArray = [
+                      {
+                        key: "Data Set Name (Mnemonic) ",
+                        value: obj.mnemonic,
+                        type: "string",
+                      },
+                      {
+                        key: "Clinical Data Type ",
+                        value: obj.dataKind,
+                        type: "string",
+                      },
+                      { key: "File Type", value: obj.type, type: "string" },
+                      {
+                        key: "File Naming Convention ",
+                        value: obj.name,
+                        type: "string",
+                      },
+                      {
+                        key: "Delimiter",
+                        value: obj.delimiter,
+                        type: "string",
+                      },
+                      { key: "Quote", value: obj.quote, type: "string" },
+                      {
+                        key: "Data Set Level, Path",
+                        value: obj.path,
+                        type: "string",
+                      },
+                      {
+                        key: "Row Decrease Allowed",
+                        value: obj.rowDecreaseAllowed,
+                        type: "number",
+                      },
+                      {
+                        key: "Escape Character",
+                        value: obj.escapeCode,
+                        type: "string",
+                      },
+                      {
+                        key: "New Data Frequency (Days)",
+                        value: obj.dataTransferFrequency,
+                        type: "number",
+                      },
+                      {
+                        key: "active",
+                        value: obj.active,
+                        type: "boolean",
+                      },
+                    ];
+
+                    if (
+                      obj.externalID !== null &&
+                      obj.externalID !== "" &&
+                      obj.externalID !== undefined
+                    ) {
+                    } else {
+                      validate.push({
+                        text: " Data Set Level, External Id  is required and data type should be string or Number ",
+                        status: false,
+                      });
+                    }
+
+                    let dsRes = helper.validation(dsArray);
+                    if (dsRes.length > 0) {
+                      validate.push(dsRes);
+                    } else {
+                      if (
+                        obj.columnDefinition &&
+                        obj.columnDefinition.length > 0
+                      ) {
+                        for (let el of obj.columnDefinition) {
+                          const clArray = [
+                            {
+                              key: "Column Name or Designator ",
+                              value: el.name,
+                              type: "string",
+                            },
+                            {
+                              key: "Data Type",
+                              value: el.dataType,
+                              type: "string",
+                            },
+                            {
+                              key: "Primary Key",
+                              value: el.primaryKey,
+                              type: "boolean",
+                            },
+                            {
+                              key: "Required",
+                              value: el.required,
+                              type: "boolean",
+                            },
+                            {
+                              key: "Unique",
+                              value: el.required,
+                              type: "boolean",
+                            },
+                          ];
+
+                          // Validation Function call for column defination
+                          let clRes = helper.validation(clArray);
+                          if (clRes.length > 0) {
+                            validate.push(clRes);
+                          }
+                        }
+
+                        // If Column is not = 0 then Column Comunt is not null
+                        dsArray.push({
+                          key: "Column Count",
+                          value: obj.columncount,
+                          type: "number",
+                        });
+
+                        // Validation Function call for column Number fields
+                        let cnRes = helper.validation(dsArray);
+                        if (cnRes.length > 0) {
+                          validate.push(cnRes);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            } else {
+              // console.log("Blank");
+
+              if (each.dataSet && each.dataSet.length > 0) {
+                for (let obj of each.dataSet) {
+                  const dsArray = [
+                    {
+                      key: "Data Set Name (Mnemonic) ",
+                      value: obj.mnemonic,
+                      type: "string",
+                    },
+                    {
+                      key: "Clinical Data Type ",
+                      value: obj.dataKind,
+                      type: "string",
+                    },
+                    {
+                      key: "active",
+                      value: obj.active,
+                      type: "boolean",
+                    },
+                    {
+                      key: "Custom Query",
+                      value: obj.customQuery,
+                      type: "boolean",
+                    },
+                  ];
+
+                  if (obj.customQuery === "yes") {
+                    if (
+                      obj.customSql !== null &&
+                      obj.customSql !== "" &&
+                      obj.customSql !== undefined
+                    ) {
+                    } else {
+                      validate.push({
+                        text: " Custom Sql  is required ",
+                        status: false,
+                      });
+                    }
+                  } else {
+                    if (
+                      obj.tableName !== null &&
+                      obj.tableName !== "" &&
+                      obj.tableName !== undefined
+                    ) {
+                      if (obj.tableName.length <= 255) {
+                      } else {
+                        validate.push({
+                          text: " Table Name  Max of 255 characters  ",
+                          status: false,
+                        });
+                      }
+                    } else {
+                      validate.push({
+                        text: " Table Name  is required ",
+                        status: false,
+                      });
+                    }
+                  }
+
+                  if (
+                    obj.externalID !== null &&
+                    obj.externalID !== "" &&
+                    obj.externalID !== undefined
+                  ) {
+                  } else {
+                    validate.push({
+                      text: " Data Set Level, External Id  is required and data type should be string or Number ",
+                      status: false,
+                    });
+                  }
+
+                  // Validation Function call for data set
+                  let dsRes = helper.validation(dsArray);
+                  if (dsRes.length > 0) {
+                    validate.push(dsRes);
+                  } else {
+                    // console.log("data set data", dsData);
+
+                    if (
+                      obj.columnDefinition &&
+                      obj.columnDefinition.length > 0
+                    ) {
+                      for (let el of obj.columnDefinition) {
+                        const clArray = [
+                          {
+                            key: "Include Flag",
+                            value: el.includeFlag,
+                            type: "boolean",
+                          },
+                          {
+                            key: "Column Name or Designator ",
+                            value: el.name,
+                            type: "string",
+                          },
+                          {
+                            key: "Data Type ",
+                            value: el.dataType,
+                            type: "string",
+                          },
+                          {
+                            key: "Primary Key",
+                            value: el.primaryKey,
+                            type: "boolean",
+                          },
+                          {
+                            key: "Required",
+                            value: el.required,
+                            type: "boolean",
+                          },
+                          {
+                            key: "Unique",
+                            value: el.required,
+                            type: "boolean",
+                          },
+                        ];
+
+                        // Validation Function call for column defination
+                        let clRes = helper.validation(clArray);
+                        if (clRes.length > 0) {
+                          validate.push(clRes);
+                        }
+                      }
+
+                      // If Column is not = 0 then Column Comunt is not null
+                      dsArray.push({
+                        key: "Column Count",
+                        value: obj.columncount,
+                        type: "number",
+                      });
+
+                      // Validation Function call for column Number fields
+                      let cnRes = helper.validation(dsArray);
+                      if (cnRes.length > 0) {
+                        validate.push(cnRes);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (validate.length > 0) {
+      console.log("testt 245");
+
+      return apiResponse.ErrorResponse(res, validate);
+    } else {
+      console.log("Data package level Inseert Function");
+      // return;
+      //  commonInsertFunction(req, res);
+    }
+  } catch (err) {
+    console.log(err);
+    //throw error in json response with status 500.
+    Logger.error("catch :createDataflow");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+const datasetLevelInsert = async (req, res) => {
+  try {
+    var validate = [];
+
+    if (req.body.externalSystemName !== "CDI") {
+      const Data = [
+        {
+          key: " Protocol Number Standard ",
+          value: req.body.protocolNumberStandard,
+          type: "string",
+        },
+        { key: "Vendor Name", value: req.body.vendorName, type: "string" },
+        { key: "Data Structure ", value: req.body.type, type: "string" },
+        { key: "Data Flow Name ", value: req.body.name, type: "string" },
+
+        {
+          key: "External System Name",
+          value: req.body.externalSystemName,
+          type: "string",
+        },
+
+        {
+          key: "Test Flag",
+          value: req.body.testFlag,
+          type: "boolean",
+        },
+        { key: "Description", value: req.body.description, type: "string" },
+        {
+          key: "active",
+          value: req.body.active,
+          type: "boolean",
+        },
+      ];
+
+      // Validating Connection Type and externalID
+      var ConnectionType = req.body.connectionType;
+      const description = req.body.description;
+      const externalID = req.body.externalID;
+
+      if (
+        externalID !== null &&
+        externalID !== "" &&
+        externalID !== undefined
+      ) {
+      } else {
+        validate.push({
+          text: " External Id  is required and data type should be string or Number ",
+          status: false,
+        });
+      }
+      if (
+        ConnectionType !== null &&
+        ConnectionType !== "" &&
+        ConnectionType !== undefined &&
+        typeof ConnectionType === "string"
+      ) {
+        if (
+          ConnectionType === "SFTP" ||
+          ConnectionType == "FTPS" ||
+          ConnectionType == "Oracle" ||
+          ConnectionType == "Hive CDP" ||
+          ConnectionType === "Hive CDH" ||
+          ConnectionType == "Impala" ||
+          ConnectionType == "MySQL" ||
+          ConnectionType == "PostgreSQL" ||
+          ConnectionType == "SQL Server"
+        ) {
+        } else {
+          validate.push({
+            text: " ConnectionType's Supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server ",
+            status: false,
+          });
+        }
+      } else {
+        validate.push({
+          text: " ConnectionType is required and data type should be string ",
+          status: false,
+        });
+      }
+      if (description.length <= 30) {
+        console.log("success");
+      } else {
+        validate.push({
+          text: " Description length , Max of 30 characters  ",
+          status: false,
+        });
+      }
+
+      // Validation Function call for dataFlow data
+      let dataRes = helper.validation(Data);
+      if (dataRes.length > 0) {
+        validate.push(dataRes);
+      } else {
+        if (req.body.dataPackage && req.body.dataPackage.length > 0) {
+          // console.log("data package data", req.body.dataPackage.length);
+          for (let each of req.body.dataPackage) {
+            var LocationType = req.body.connectionType;
+            if (
+              each.externalID == null ||
+              each.externalID == "" ||
+              each.externalID == undefined
+            ) {
+              validate.push({
+                text: " Data Package, Level External Id  is required and data type should be string or Number ",
+                status: false,
+              });
+            } else {
+              if (LocationType === "SFTP" || LocationType === "FTPS") {
+                // console.log("data");
+                const dpArray = [
+                  { key: "Package type", value: each.type, type: "string" },
+                  {
+                    key: "SAS XPT Method ",
+                    value: each.sasXptMethod,
+                    type: "string",
+                  },
+                  { key: "Package Path ", value: each.path, type: "string" },
+                  {
+                    key: "No Package Level Config ",
+                    value: each.noPackageConfig,
+                    type: "boolean",
+                  },
+                  {
+                    key: "Package Naming Convention",
+                    value: each.name,
+                    type: "string",
+                  },
+                  {
+                    key: "active",
+                    value: each.active,
+                    type: "boolean",
+                  },
+                ];
+
+                if (
+                  each.type === "7Z" ||
+                  each.type == "ZIP" ||
+                  each.type == "RAR" ||
+                  each.type == "SAS"
+                ) {
+                } else {
+                  validate.push({
+                    text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
+                    status: false,
+                  });
+                }
+
+                let dpRes = helper.validation(dpArray);
+                if (dpRes.length > 0) {
+                  validate.push(dpRes);
+                } else {
+                  if (each.dataSet && each.dataSet.length > 0) {
+                    for (let obj of each.dataSet) {
+                      const dsArray = [
+                        {
+                          key: "Data Set Name (Mnemonic) ",
+                          value: obj.mnemonic,
+                          type: "string",
+                        },
+                        {
+                          key: "Clinical Data Type ",
+                          value: obj.dataKind,
+                          type: "string",
+                        },
+                        { key: "File Type", value: obj.type, type: "string" },
+                        {
+                          key: "File Naming Convention ",
+                          value: obj.name,
+                          type: "string",
+                        },
+                        {
+                          key: "Delimiter",
+                          value: obj.delimiter,
+                          type: "string",
+                        },
+                        { key: "Quote", value: obj.quote, type: "string" },
+                        {
+                          key: "Data Set Level, Path",
+                          value: obj.path,
+                          type: "string",
+                        },
+                        {
+                          key: "Row Decrease Allowed",
+                          value: obj.rowDecreaseAllowed,
+                          type: "number",
+                        },
+                        {
+                          key: "Escape Character",
+                          value: obj.escapeCode,
+                          type: "string",
+                        },
+                        {
+                          key: "New Data Frequency (Days)",
+                          value: obj.dataTransferFrequency,
+                          type: "number",
+                        },
+                        {
+                          key: "active",
+                          value: obj.active,
+                          type: "boolean",
+                        },
+                      ];
+
+                      if (
+                        obj.externalID !== null &&
+                        obj.externalID !== "" &&
+                        obj.externalID !== undefined
+                      ) {
+                      } else {
+                        validate.push({
+                          text: " Data Set Level, External Id  is required and data type should be string or Number ",
+                          status: false,
+                        });
+                      }
+
+                      let dsRes = helper.validation(dsArray);
+                      if (dsRes.length > 0) {
+                        validate.push(dsRes);
+                      } else {
+                        if (
+                          obj.columnDefinition &&
+                          obj.columnDefinition.length > 0
+                        ) {
+                          for (let el of obj.columnDefinition) {
+                            const clArray = [
+                              {
+                                key: "Column Name or Designator ",
+                                value: el.name,
+                                type: "string",
+                              },
+                              {
+                                key: "Data Type",
+                                value: el.dataType,
+                                type: "string",
+                              },
+                              {
+                                key: "Primary Key",
+                                value: el.primaryKey,
+                                type: "boolean",
+                              },
+                              {
+                                key: "Required",
+                                value: el.required,
+                                type: "boolean",
+                              },
+                              {
+                                key: "Unique",
+                                value: el.required,
+                                type: "boolean",
+                              },
+                            ];
+
+                            // Validation Function call for column defination
+                            let clRes = helper.validation(clArray);
+                            if (clRes.length > 0) {
+                              validate.push(clRes);
+                            }
+                          }
+
+                          // If Column is not = 0 then Column Comunt is not null
+                          dsArray.push({
+                            key: "Column Count",
+                            value: obj.columncount,
+                            type: "number",
+                          });
+
+                          // Validation Function call for column Number fields
+                          let cnRes = helper.validation(dsArray);
+                          if (cnRes.length > 0) {
+                            validate.push(cnRes);
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              } else {
+                // console.log("Blank");
+
+                if (each.dataSet && each.dataSet.length > 0) {
+                  for (let obj of each.dataSet) {
+                    const dsArray = [
+                      {
+                        key: "Data Set Name (Mnemonic) ",
+                        value: obj.mnemonic,
+                        type: "string",
+                      },
+                      {
+                        key: "Clinical Data Type ",
+                        value: obj.dataKind,
+                        type: "string",
+                      },
+                      {
+                        key: "active",
+                        value: obj.active,
+                        type: "boolean",
+                      },
+                      {
+                        key: "Custom Query",
+                        value: obj.customQuery,
+                        type: "boolean",
+                      },
+                    ];
+
+                    if (obj.customQuery === "yes") {
+                      if (
+                        obj.customSql !== null &&
+                        obj.customSql !== "" &&
+                        obj.customSql !== undefined
+                      ) {
+                      } else {
+                        validate.push({
+                          text: " Custom Sql  is required ",
+                          status: false,
+                        });
+                      }
+                    } else {
+                      if (
+                        obj.tableName !== null &&
+                        obj.tableName !== "" &&
+                        obj.tableName !== undefined
+                      ) {
+                        if (obj.tableName.length <= 255) {
+                        } else {
+                          validate.push({
+                            text: " Table Name  Max of 255 characters  ",
+                            status: false,
+                          });
+                        }
+                      } else {
+                        validate.push({
+                          text: " Table Name  is required ",
+                          status: false,
+                        });
+                      }
+                    }
+
+                    if (
+                      obj.externalID !== null &&
+                      obj.externalID !== "" &&
+                      obj.externalID !== undefined
+                    ) {
+                    } else {
+                      validate.push({
+                        text: " Data Set Level, External Id  is required and data type should be string or Number ",
+                        status: false,
+                      });
+                    }
+
+                    // Validation Function call for data set
+                    let dsRes = helper.validation(dsArray);
+                    if (dsRes.length > 0) {
+                      validate.push(dsRes);
+                    } else {
+                      // console.log("data set data", dsData);
+
+                      if (
+                        obj.columnDefinition &&
+                        obj.columnDefinition.length > 0
+                      ) {
+                        for (let el of obj.columnDefinition) {
+                          const clArray = [
+                            {
+                              key: "Include Flag",
+                              value: el.includeFlag,
+                              type: "boolean",
+                            },
+                            {
+                              key: "Column Name or Designator ",
+                              value: el.name,
+                              type: "string",
+                            },
+                            {
+                              key: "Data Type ",
+                              value: el.dataType,
+                              type: "string",
+                            },
+                            {
+                              key: "Primary Key",
+                              value: el.primaryKey,
+                              type: "boolean",
+                            },
+                            {
+                              key: "Required",
+                              value: el.required,
+                              type: "boolean",
+                            },
+                            {
+                              key: "Unique",
+                              value: el.required,
+                              type: "boolean",
+                            },
+                          ];
+
+                          // Validation Function call for column defination
+                          let clRes = helper.validation(clArray);
+                          if (clRes.length > 0) {
+                            validate.push(clRes);
+                          }
+                        }
+
+                        // If Column is not = 0 then Column Comunt is not null
+                        dsArray.push({
+                          key: "Column Count",
+                          value: obj.columncount,
+                          type: "number",
+                        });
+
+                        // Validation Function call for column Number fields
+                        let cnRes = helper.validation(dsArray);
+                        if (cnRes.length > 0) {
+                          validate.push(cnRes);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (validate.length > 0) {
+      console.log("testt 245");
+
+      return apiResponse.ErrorResponse(res, validate);
+    } else {
+      console.log("From DataSet Level Inseert Function");
+      // return;
+      //  commonInsertFunction(req, res);
+    }
+  } catch (err) {
+    console.log(err);
+    //throw error in json response with status 500.
+    Logger.error("catch :createDataflow");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+const columnLevelInsert = async (req, res) => {
+  try {
+    var validate = [];
+
+    if (req.body.externalSystemName !== "CDI") {
+      const Data = [
+        {
+          key: " Protocol Number Standard ",
+          value: req.body.protocolNumberStandard,
+          type: "string",
+        },
+        { key: "Vendor Name", value: req.body.vendorName, type: "string" },
+        { key: "Data Structure ", value: req.body.type, type: "string" },
+        { key: "Data Flow Name ", value: req.body.name, type: "string" },
+
+        {
+          key: "External System Name",
+          value: req.body.externalSystemName,
+          type: "string",
+        },
+
+        {
+          key: "Test Flag",
+          value: req.body.testFlag,
+          type: "boolean",
+        },
+        { key: "Description", value: req.body.description, type: "string" },
+        {
+          key: "active",
+          value: req.body.active,
+          type: "boolean",
+        },
+      ];
+
+      // Validating Connection Type and externalID
+      var ConnectionType = req.body.connectionType;
+      const description = req.body.description;
+      const externalID = req.body.externalID;
+
+      if (
+        externalID !== null &&
+        externalID !== "" &&
+        externalID !== undefined
+      ) {
+      } else {
+        validate.push({
+          text: " External Id  is required and data type should be string or Number ",
+          status: false,
+        });
+      }
+      if (
+        ConnectionType !== null &&
+        ConnectionType !== "" &&
+        ConnectionType !== undefined &&
+        typeof ConnectionType === "string"
+      ) {
+        if (
+          ConnectionType === "SFTP" ||
+          ConnectionType == "FTPS" ||
+          ConnectionType == "Oracle" ||
+          ConnectionType == "Hive CDP" ||
+          ConnectionType === "Hive CDH" ||
+          ConnectionType == "Impala" ||
+          ConnectionType == "MySQL" ||
+          ConnectionType == "PostgreSQL" ||
+          ConnectionType == "SQL Server"
+        ) {
+        } else {
+          validate.push({
+            text: " ConnectionType's Supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server ",
+            status: false,
+          });
+        }
+      } else {
+        validate.push({
+          text: " ConnectionType is required and data type should be string ",
+          status: false,
+        });
+      }
+      if (description.length <= 30) {
+        console.log("success");
+      } else {
+        validate.push({
+          text: " Description length , Max of 30 characters  ",
+          status: false,
+        });
+      }
+
+      // Validation Function call for dataFlow data
+      let dataRes = helper.validation(Data);
+      if (dataRes.length > 0) {
+        validate.push(dataRes);
+      } else {
+        if (req.body.dataPackage && req.body.dataPackage.length > 0) {
+          // console.log("data package data", req.body.dataPackage.length);
+          for (let each of req.body.dataPackage) {
+            var LocationType = req.body.connectionType;
+            if (
+              each.externalID == null ||
+              each.externalID == "" ||
+              each.externalID == undefined
+            ) {
+              validate.push({
+                text: " Data Package, Level External Id  is required and data type should be string or Number ",
+                status: false,
+              });
+            } else {
+              if (LocationType === "SFTP" || LocationType === "FTPS") {
+                // console.log("data");
+                const dpArray = [
+                  { key: "Package type", value: each.type, type: "string" },
+                  {
+                    key: "SAS XPT Method ",
+                    value: each.sasXptMethod,
+                    type: "string",
+                  },
+                  { key: "Package Path ", value: each.path, type: "string" },
+                  {
+                    key: "No Package Level Config ",
+                    value: each.noPackageConfig,
+                    type: "boolean",
+                  },
+                  {
+                    key: "Package Naming Convention",
+                    value: each.name,
+                    type: "string",
+                  },
+                  {
+                    key: "active",
+                    value: each.active,
+                    type: "boolean",
+                  },
+                ];
+
+                if (
+                  each.type === "7Z" ||
+                  each.type == "ZIP" ||
+                  each.type == "RAR" ||
+                  each.type == "SAS"
+                ) {
+                } else {
+                  validate.push({
+                    text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
+                    status: false,
+                  });
+                }
+
+                let dpRes = helper.validation(dpArray);
+                if (dpRes.length > 0) {
+                  validate.push(dpRes);
+                } else {
+                  if (each.dataSet && each.dataSet.length > 0) {
+                    for (let obj of each.dataSet) {
+                      const dsArray = [
+                        {
+                          key: "Data Set Name (Mnemonic) ",
+                          value: obj.mnemonic,
+                          type: "string",
+                        },
+                        {
+                          key: "Clinical Data Type ",
+                          value: obj.dataKind,
+                          type: "string",
+                        },
+                        { key: "File Type", value: obj.type, type: "string" },
+                        {
+                          key: "File Naming Convention ",
+                          value: obj.name,
+                          type: "string",
+                        },
+                        {
+                          key: "Delimiter",
+                          value: obj.delimiter,
+                          type: "string",
+                        },
+                        { key: "Quote", value: obj.quote, type: "string" },
+                        {
+                          key: "Data Set Level, Path",
+                          value: obj.path,
+                          type: "string",
+                        },
+                        {
+                          key: "Row Decrease Allowed",
+                          value: obj.rowDecreaseAllowed,
+                          type: "number",
+                        },
+                        {
+                          key: "Escape Character",
+                          value: obj.escapeCode,
+                          type: "string",
+                        },
+                        {
+                          key: "New Data Frequency (Days)",
+                          value: obj.dataTransferFrequency,
+                          type: "number",
+                        },
+                        {
+                          key: "active",
+                          value: obj.active,
+                          type: "boolean",
+                        },
+                      ];
+
+                      if (
+                        obj.externalID !== null &&
+                        obj.externalID !== "" &&
+                        obj.externalID !== undefined
+                      ) {
+                      } else {
+                        validate.push({
+                          text: " Data Set Level, External Id  is required and data type should be string or Number ",
+                          status: false,
+                        });
+                      }
+
+                      let dsRes = helper.validation(dsArray);
+                      if (dsRes.length > 0) {
+                        validate.push(dsRes);
+                      } else {
+                        if (
+                          obj.columnDefinition &&
+                          obj.columnDefinition.length > 0
+                        ) {
+                          for (let el of obj.columnDefinition) {
+                            const clArray = [
+                              {
+                                key: "Column Name or Designator ",
+                                value: el.name,
+                                type: "string",
+                              },
+                              {
+                                key: "Data Type",
+                                value: el.dataType,
+                                type: "string",
+                              },
+                              {
+                                key: "Primary Key",
+                                value: el.primaryKey,
+                                type: "boolean",
+                              },
+                              {
+                                key: "Required",
+                                value: el.required,
+                                type: "boolean",
+                              },
+                              {
+                                key: "Unique",
+                                value: el.required,
+                                type: "boolean",
+                              },
+                            ];
+
+                            // Validation Function call for column defination
+                            let clRes = helper.validation(clArray);
+                            if (clRes.length > 0) {
+                              validate.push(clRes);
+                            }
+                          }
+
+                          // If Column is not = 0 then Column Comunt is not null
+                          dsArray.push({
+                            key: "Column Count",
+                            value: obj.columncount,
+                            type: "number",
+                          });
+
+                          // Validation Function call for column Number fields
+                          let cnRes = helper.validation(dsArray);
+                          if (cnRes.length > 0) {
+                            validate.push(cnRes);
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              } else {
+                // console.log("Blank");
+
+                if (each.dataSet && each.dataSet.length > 0) {
+                  for (let obj of each.dataSet) {
+                    const dsArray = [
+                      {
+                        key: "Data Set Name (Mnemonic) ",
+                        value: obj.mnemonic,
+                        type: "string",
+                      },
+                      {
+                        key: "Clinical Data Type ",
+                        value: obj.dataKind,
+                        type: "string",
+                      },
+                      {
+                        key: "active",
+                        value: obj.active,
+                        type: "boolean",
+                      },
+                      {
+                        key: "Custom Query",
+                        value: obj.customQuery,
+                        type: "boolean",
+                      },
+                    ];
+
+                    if (obj.customQuery === "yes") {
+                      if (
+                        obj.customSql !== null &&
+                        obj.customSql !== "" &&
+                        obj.customSql !== undefined
+                      ) {
+                      } else {
+                        validate.push({
+                          text: " Custom Sql  is required ",
+                          status: false,
+                        });
+                      }
+                    } else {
+                      if (
+                        obj.tableName !== null &&
+                        obj.tableName !== "" &&
+                        obj.tableName !== undefined
+                      ) {
+                        if (obj.tableName.length <= 255) {
+                        } else {
+                          validate.push({
+                            text: " Table Name  Max of 255 characters  ",
+                            status: false,
+                          });
+                        }
+                      } else {
+                        validate.push({
+                          text: " Table Name  is required ",
+                          status: false,
+                        });
+                      }
+                    }
+
+                    if (
+                      obj.externalID !== null &&
+                      obj.externalID !== "" &&
+                      obj.externalID !== undefined
+                    ) {
+                    } else {
+                      validate.push({
+                        text: " Data Set Level, External Id  is required and data type should be string or Number ",
+                        status: false,
+                      });
+                    }
+
+                    // Validation Function call for data set
+                    let dsRes = helper.validation(dsArray);
+                    if (dsRes.length > 0) {
+                      validate.push(dsRes);
+                    } else {
+                      // console.log("data set data", dsData);
+
+                      if (
+                        obj.columnDefinition &&
+                        obj.columnDefinition.length > 0
+                      ) {
+                        for (let el of obj.columnDefinition) {
+                          const clArray = [
+                            {
+                              key: "Include Flag",
+                              value: el.includeFlag,
+                              type: "boolean",
+                            },
+                            {
+                              key: "Column Name or Designator ",
+                              value: el.name,
+                              type: "string",
+                            },
+                            {
+                              key: "Data Type ",
+                              value: el.dataType,
+                              type: "string",
+                            },
+                            {
+                              key: "Primary Key",
+                              value: el.primaryKey,
+                              type: "boolean",
+                            },
+                            {
+                              key: "Required",
+                              value: el.required,
+                              type: "boolean",
+                            },
+                            {
+                              key: "Unique",
+                              value: el.required,
+                              type: "boolean",
+                            },
+                          ];
+
+                          // Validation Function call for column defination
+                          let clRes = helper.validation(clArray);
+                          if (clRes.length > 0) {
+                            validate.push(clRes);
+                          }
+                        }
+
+                        // If Column is not = 0 then Column Comunt is not null
+                        dsArray.push({
+                          key: "Column Count",
+                          value: obj.columncount,
+                          type: "number",
+                        });
+
+                        // Validation Function call for column Number fields
+                        let cnRes = helper.validation(dsArray);
+                        if (cnRes.length > 0) {
+                          validate.push(cnRes);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (validate.length > 0) {
+      console.log("testt 245");
+
+      return apiResponse.ErrorResponse(res, validate);
+    } else {
+      console.log("Column Inseert Function");
+      // return;
+      //  commonInsertFunction(req, res);
+    }
+  } catch (err) {
+    console.log(err);
+    //throw error in json response with status 500.
+    Logger.error("catch :createDataflow");
+    Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
 };
