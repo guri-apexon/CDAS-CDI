@@ -29,9 +29,15 @@ const Properties = ({ datasetProperties }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const { datasetId } = params;
   const connectionTypeCheck = ["sftp", "ftps"];
-  const copyVendor = () => {
-    navigator.clipboard.writeText(datasetProperties?.VendorContactInformation);
-    setCopyText("Copied");
+  const copyVendor = async () => {
+    await navigator.clipboard
+      .writeText(datasetProperties?.VendorContactInformation)
+      .then(() => {
+        setCopyText("Copied");
+      })
+      .catch((err) => {
+        console.log("clipboard err", err);
+      });
   };
   const {
     DatasetName,
@@ -56,7 +62,6 @@ const Properties = ({ datasetProperties }) => {
   };
   return (
     <div style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24 }}>
-      {console.log(datasetProperties)}
       <Paper
         style={{ padding: 24, backgroundColor: "#fff" }}
         id="properties-box"
