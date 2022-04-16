@@ -618,8 +618,9 @@ export default function DSColumnTable({
   const onRowDelete = async (uniqueId) => {
     const isInDB = rows.find((row) => row.uniqueId === uniqueId);
     if (isInDB) {
-      const id = isInDB.dbColumnId;
-      await deleteCD(id);
+      if (isInDB.dbColumnId !== ("" || undefined || null)) {
+        await deleteCD(isInDB.dbColumnId, dsId, dpId, dfId, false, "");
+      }
     }
     setRows(rows.filter((row) => row.uniqueId !== uniqueId));
     setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));

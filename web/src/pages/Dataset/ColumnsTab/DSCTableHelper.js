@@ -160,8 +160,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
   const { editMode } = row;
 
-  const errorText =
-    checkAlphaNumericFileName(row[key]) || checkRequired(row[key]);
+  const errorText = checkAlphaNumeric(row[key]) || checkRequired(row[key]);
   return editMode ? (
     <TextField
       size="small"

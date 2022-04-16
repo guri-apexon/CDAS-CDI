@@ -13,7 +13,7 @@ exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
     const { dataflowId } = req.params;
-    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}';`;
+    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and del_flg != 'Y';`;
     if (searchParam) {
       searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage 
       WHERE LOWER(name) LIKE '%${searchParam}%' and dataflowid='${dataflowId}';`;

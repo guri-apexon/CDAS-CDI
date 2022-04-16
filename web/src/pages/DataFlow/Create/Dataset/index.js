@@ -161,9 +161,17 @@ const Dataset = (props, ref) => {
   useEffect(() => {
     console.log("currentStep", currentStep);
     if (currentStep === 5) {
-      if (customSql !== "Yes") setValue(2);
+      if (
+        isSftp(locationType) ||
+        (!isSftp(locationType) && customSql !== "Yes")
+      )
+        setValue(2);
     } else if (currentStep === 4) {
-      if (customSql !== "Yes") setValue(1);
+      if (
+        isSftp(locationType) ||
+        (!isSftp(locationType) && customSql !== "Yes")
+      )
+        setValue(1);
     } else if (currentStep === 3) {
       setValue(0);
     }
