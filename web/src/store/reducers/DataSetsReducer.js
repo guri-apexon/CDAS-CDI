@@ -145,9 +145,9 @@ const DataFlowReducer = (state = initialState, action) =>
           dataset_fltr: action.dataset.dataset_fltr,
         };
         if (action.values.fileType) {
-          newState.formData = action.dataset;
+          newState.formData = action.values;
         } else {
-          newState.formDataSQL = action.dataset;
+          newState.formDataSQL = action.values;
         }
         newState.dsCreatedSuccessfully = true;
         break;

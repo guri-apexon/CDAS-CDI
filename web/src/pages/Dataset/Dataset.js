@@ -183,11 +183,11 @@ const Dataset = () => {
     if (datasetid === null || datasetid === "new") {
       dispatch(resetFTP());
       dispatch(resetJDBC());
-    } else {
+    } else if (!dsCreatedSuccessfully) {
       dispatch(getDataSetDetail(datasetid, dfId, dpId));
       dispatch(getDatasetColumns(datasetid));
     }
-  }, [datasetid]);
+  }, [datasetid, dsCreatedSuccessfully]);
 
   useEffect(() => {
     if (isDatasetCreated && isDatasetCreation) {
