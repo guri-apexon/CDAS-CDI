@@ -3,7 +3,6 @@ import produce from "immer";
 
 import {
   PAGEHEADER_UPDATE,
-  SELECT_DATAFLOW,
   GET_DATA_FLOW_LIST,
   GET_DATA_FLOW_LIST_SUCCESS,
   GET_DATA_FLOW_LIST_FAILURE,
@@ -26,15 +25,19 @@ export const initialState = {
   ingestionData: {},
   flowData: [],
   selectedCard: {
-    phase: "",
-    projectcode: "",
-    prot_id: "",
-    protocolnumber: "",
-    protocolstatus: "",
-    sponsorname: "",
-    vCount: "",
-    dfCount: "",
-    dsCount: "",
+    prot_id: "a020E000005Szl0QAC",
+    protocolnumber: "UXA19253 new",
+    sponsorname: "ACHILLION  [US]",
+    phase: "Phase 4",
+    protocolstatus: "Closed To Enrollment",
+    projectcode: "ZYA38645",
+    ingestionCount: "1",
+    priorityCount: "52",
+    staleFilesCount: "1",
+    dfCount: "217",
+    vCount: "25",
+    dpCount: "286",
+    dsCount: "386",
   },
   dfId: "",
   userStudies: [],
@@ -47,10 +50,6 @@ const DashboardReducer = (state = initialState, action) =>
     switch (action.type) {
       case PAGEHEADER_UPDATE:
         newState.selectedCard = action.study;
-        break;
-
-      case SELECT_DATAFLOW:
-        newState.dfId = action.dataflowId;
         break;
 
       case GET_DATA_FLOW_LIST:

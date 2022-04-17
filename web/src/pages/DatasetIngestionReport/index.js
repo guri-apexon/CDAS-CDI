@@ -28,7 +28,6 @@ import {
   getDatasetProperties,
   getDatasetIngestionIssueTypes,
 } from "../../store/actions/IngestionReportAction";
-import { updateSelectedDataflow } from "../../store/actions/DashboardAction";
 
 const getDatasetStatus = (status) => {
   return (
@@ -134,12 +133,6 @@ const DatasetIngestionReport = () => {
     getProperties();
     getIngestionIssueTypes();
   }, []);
-
-  useEffect(() => {
-    if (datasetProperties) {
-      dispatch(updateSelectedDataflow(datasetProperties?.dataflowid));
-    }
-  }, [datasetProperties]);
 
   return (
     <main className="ingestion-report">
