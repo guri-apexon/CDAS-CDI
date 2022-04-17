@@ -162,13 +162,16 @@ const Dataset = () => {
   };
 
   useEffect(() => {
-    console.log("datsetRender");
     if (dfId === "") {
       history.push("/dashboard");
     }
     dispatch(getDataKindData());
     if (!dataFlowdetail.name) {
-      dispatch(getDataFlowDetail(selectedDSDetails.dataflowid));
+      if (selectedDSDetails.dataflowid) {
+        dispatch(getDataFlowDetail(selectedDSDetails.dataflowid));
+      } else {
+        history.push("/dashboard");
+      }
     }
   }, []);
 
