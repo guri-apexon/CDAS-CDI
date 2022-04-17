@@ -32,7 +32,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
   const { protocolnumber } = selectedCard;
   const [loading, setLoading] = useState(false);
 
-  const numberOfRows = 1;
   const maxSize = 150000;
 
   const handleUpload = (selected) => {
@@ -240,7 +239,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
       )}
       {showColumns && !loading && (
         <DSColumnTable
-          numberOfRows={numberOfRows}
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}
