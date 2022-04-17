@@ -17,7 +17,6 @@ import { allowedTypes } from "../../../../../constants";
 const maxSize = 150000;
 
 export default function DSColumnTable({
-  numberOfRows,
   dataOrigin,
   formattedData,
   locationType,
@@ -39,24 +38,27 @@ export default function DSColumnTable({
     customsql_yn: customQuery,
     tbl_nm: tableName,
   } = selectedDataset;
-  const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
-    uniqueId: `u${index}`,
-    columnId: index + 1,
-    variableLabel: "",
-    columnName: "",
-    position: "",
-    format: "",
-    dataType: "",
-    primaryKey: "No",
-    unique: "No",
-    required: "No",
-    minLength: "",
-    maxLength: "",
-    values: "",
-    isInitLoad: true,
-    isHavingError: false,
-    isHavingColumnName: false,
-  }));
+  const initialRows = [
+    {
+      uniqueId: `u0`,
+      columnId: 1,
+      variableLabel: "",
+      columnName: "",
+      position: "",
+      format: "",
+      dataType: "",
+      primaryKey: "No",
+      unique: "No",
+      required: "No",
+      minLength: "",
+      maxLength: "",
+      values: "",
+      isInitLoad: true,
+      isHavingError: false,
+      isHavingColumnName: false,
+      isHavingDataType: false,
+    },
+  ];
 
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
@@ -465,7 +467,6 @@ export default function DSColumnTable({
     console.log(
       "editedRows",
       editedRows,
-      numberOfRows,
       dataOrigin,
       formattedData,
       locationType,

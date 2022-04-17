@@ -33,7 +33,6 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
 
-  const numberOfRows = 1;
   const maxSize = 150000;
 
   const handleUpload = (selected) => {
@@ -185,7 +184,6 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
     return (
       <>
         <DSColumnTable
-          numberOfRows={numberOfRows}
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}
