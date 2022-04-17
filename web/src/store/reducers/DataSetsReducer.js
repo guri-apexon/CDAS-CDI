@@ -55,6 +55,7 @@ const defaultData = {
   overrideStaleAlert: 3,
   rowDecreaseAllowed: 0,
   loadType: "Cumulative",
+  clinicalDataType: null,
 };
 
 const defaultDataSQL = {
@@ -62,6 +63,7 @@ const defaultDataSQL = {
   active: true,
   isCustomSQL: "Yes",
   dataType: "Cumulative",
+  clinicalDataType: null,
 };
 
 export const initialState = {
@@ -91,6 +93,7 @@ export const initialState = {
   sqlColumns: [],
   sqlTables: [],
   previewSQL: [],
+  dsCreatedSuccessfully: false,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -124,11 +127,13 @@ const DataFlowReducer = (state = initialState, action) =>
 
       case UPDATE_DS_STATUS:
         newState.isDatasetCreated = action.status;
+        newState.dsCreatedSuccessfully = false;
         break;
 
       case STORE_DATASET_SUCCESS:
         newState.loading = false;
         newState.isDatasetCreated = !state.isDatasetCreated;
+
         newState.selectedDataset = {
           ...action.values,
           datasetid: action.dataset.datasetid,
@@ -140,10 +145,11 @@ const DataFlowReducer = (state = initialState, action) =>
           dataset_fltr: action.dataset.dataset_fltr,
         };
         if (action.values.fileType) {
-          newState.formData = action.values;
+          newState.formData = action.dataset;
         } else {
-          newState.formDataSQL = action.values;
+          newState.formDataSQL = action.dataset;
         }
+        newState.dsCreatedSuccessfully = true;
         break;
       case STORE_DATASET_FAILURE:
         newState.loading = false;
@@ -316,7 +322,7 @@ const DataFlowReducer = (state = initialState, action) =>
             incremental === "N" ? "Cumulative" : "Incremental";
           newState.formDataSQL.datasetid = datasetid;
         }
-        newState.selectedDataset = action.datasetDetail;
+        newState.selectedDataset = { ...datasetDetail };
         break;
       case GET_DATASET_COLUMNS:
         newState.loading = true;

@@ -118,6 +118,7 @@ const Dataset = () => {
     error,
     sucessMsg,
     isDatasetCreated,
+    dsCreatedSuccessfully,
     selectedDataset,
     formDataSQL,
   } = dataSets;
@@ -133,10 +134,8 @@ const Dataset = () => {
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
   const {
     locationType: newLT,
-    tbl_nm: tName,
-    tableName,
-    isCustomSQL,
-    customsql_yn: customQuery,
+    tbl_nm: tableName,
+    customsql_yn: isCustomSQL,
     datasetid: dsId,
   } = selectedDataset;
 
@@ -188,26 +187,28 @@ const Dataset = () => {
   }, [datasetid]);
 
   useEffect(() => {
-    if (isDatasetCreated) {
-      if (isSftp(loctyp)) {
-        setValue(1);
-      }
-      if (!isSftp(loctyp)) {
-        if (customQuery || isCustomSQL) {
-          dispatch(getSQLColumns(tName || tableName));
-          setTimeout(() => {
-            setValue(1);
-          }, 500);
-        }
-      }
-    }
-
     if (isDatasetCreated && isDatasetCreation) {
       messageContext.showSuccessMessage("Dataset Created Successfully");
       history.push(`/dashboard/dataset/${dsId}`);
       dispatch(updatePanel());
     }
   }, [isDatasetCreated, isDatasetCreation, loctyp]);
+
+  useEffect(() => {
+    if (dsCreatedSuccessfully) {
+      setTimeout(() => {
+        if (isSftp(loctyp)) {
+          setValue(1);
+        }
+        if (!isSftp(loctyp)) {
+          if (isCustomSQL) {
+            dispatch(getSQLColumns(tableName));
+            setValue(1);
+          }
+        }
+      }, 2000);
+    }
+  }, [dsCreatedSuccessfully, loctyp]);
 
   useEffect(() => {
     if (loctyp) {
