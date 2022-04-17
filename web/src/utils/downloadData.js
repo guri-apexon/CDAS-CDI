@@ -8,7 +8,6 @@ export const exportToCSV = (
   pageNo,
   rowsPerPageRecord
 ) => {
-  // console.log("data for export", exportData, headers, fileName, sheetName, pageNo, rowsPerPageRecord);
   const wb = XLSX.utils.book_new();
   let ws = XLSX.worksheet;
   const rowPerPage =
@@ -27,10 +26,8 @@ export default function exportToCSVWithoutFilter(
   fileName,
   sheetName
 ) {
-  // console.log("data for export", exportData, sheetName, fileName);
   const wb = XLSX.utils.book_new();
-  let ws = XLSX.worksheet;
-  ws = XLSX.utils.json_to_sheet(exportData);
+  const ws = XLSX.utils.json_to_sheet(exportData);
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
   XLSX.writeFile(wb, fileName);
 }
