@@ -79,7 +79,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
       datacolumns.length > 1
         ? datacolumns.map((column, i) => {
             const newObj = {
-              columnId: i + 1,
               dbColumnId: column.columnid,
               uniqueId: `u${i}`,
               variableLabel: column.variable || "",
@@ -109,7 +108,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
       arr.length > 0
         ? arr.map((column, i) => {
             const newObj = {
-              columnId: i + 1,
               dbColumnId: column.columnid || "",
               uniqueId: `u${i}`,
               variableLabel: column.varable || "",

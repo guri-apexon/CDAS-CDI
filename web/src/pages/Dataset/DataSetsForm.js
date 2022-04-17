@@ -207,6 +207,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="File Naming Convention"
+                required
               />
               <ReduxFormTextField
                 fullWidth
@@ -255,6 +256,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="Transfer Frequency"
+                required
               />
               <ReduxFormTextField
                 fullWidth
@@ -280,6 +282,7 @@ const DataSetsFormBase = (props) => {
                 label="Load Type"
                 canDeselect={false}
                 disabled={prodLock}
+                required
               >
                 {loadTypes?.map((type) => (
                   <MenuItem value={type}>{type}</MenuItem>
