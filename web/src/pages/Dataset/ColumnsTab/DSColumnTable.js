@@ -40,7 +40,6 @@ export default function DSColumnTable({
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
   const dataSets = useSelector((state) => state.dataSets);
-  const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDataset } = dataSets;
   const {
     type: fileType,
@@ -48,14 +47,15 @@ export default function DSColumnTable({
     headerrownumber,
     headerRowNumber,
     customsql,
-    customsql_yn: customQuery,
+    customsql_yn: isCustomSQL,
     tbl_nm: tableName,
   } = selectedDataset;
+  const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
+
   const initialRows = [
     {
       uniqueId: `u0`,
-      columnId: 1,
       variableLabel: "",
       columnName: "",
       position: "",
@@ -172,7 +172,7 @@ export default function DSColumnTable({
           dfId,
           dpId,
           userInfo.userId,
-          customQuery === "No",
+          isCustomSQL === "No",
           newQuery
         )
       );
@@ -316,7 +316,6 @@ export default function DSColumnTable({
       const singleRow = [
         {
           uniqueId: `u${rows.length}`,
-          columnId: rows.length + 1,
           variableLabel: "",
           columnName: "",
           position: "",
@@ -355,7 +354,6 @@ export default function DSColumnTable({
     if (newRows > 0) {
       const multiRows = Array.from({ length: newRows }, (i, index) => ({
         uniqueId: `u${rows.length + index}`,
-        columnId: rows.length + index + 1,
         variableLabel: "",
         columnName: "",
         position: "",
@@ -498,7 +496,7 @@ export default function DSColumnTable({
       const existingCD = await removeSpaces.filter((e) => e.dbColumnId);
       const newCD = await removeSpaces.filter((e) => !e.dbColumnId);
       let newQuery = "";
-      if (customQuery === "No") {
+      if (isCustomSQL === "No") {
         const columnList = removeSpaces.map((e) => e.columnName).join(", ");
         const wherePart = customsql?.indexOf("where");
         if (wherePart) {
@@ -516,7 +514,7 @@ export default function DSColumnTable({
             dfId,
             dpId,
             userInfo.userId,
-            customQuery === "No",
+            isCustomSQL === "No",
             newQuery
           )
         );
@@ -530,7 +528,7 @@ export default function DSColumnTable({
             dfId,
             dpId,
             userInfo.userId,
-            customQuery === "No",
+            isCustomSQL === "No",
             newQuery
           )
         );
@@ -586,7 +584,7 @@ export default function DSColumnTable({
       );
     } else {
       let newQuery = "";
-      if (customQuery === "No") {
+      if (isCustomSQL === "No") {
         const selectedList = [...selectedCN, editedRowData?.columnName];
         setSelectedCN(selectedList);
         const splitted = customsql.split("where");
@@ -603,7 +601,7 @@ export default function DSColumnTable({
             dfId,
             dpId,
             userInfo.userId,
-            customQuery === "No",
+            isCustomSQL === "No",
             newQuery
           )
         );
@@ -615,7 +613,7 @@ export default function DSColumnTable({
             dfId,
             dpId,
             userInfo.userId,
-            customQuery === "No",
+            isCustomSQL === "No",
             newQuery
           )
         );

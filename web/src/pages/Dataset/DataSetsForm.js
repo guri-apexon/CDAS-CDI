@@ -10,10 +10,7 @@ import {
 } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
-import Divider from "apollo-react/components/Divider";
-import Status from "apollo-react/components/Status";
 import Radio from "apollo-react/components/Radio";
-import RadioError from "apollo-react-icons/RadioError";
 import Typography from "apollo-react/components/Typography";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
