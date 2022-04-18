@@ -161,7 +161,7 @@ exports.getStudyDataflows = async (req, res) => {
 const insertValidation = (req) => {
   var validate = [];
   var error = [];
-  var status = true;
+
   const Data = [
     {
       key: " Protocol Number Standard ",
@@ -251,9 +251,9 @@ const insertValidation = (req) => {
       for (let each of req.dataPackage) {
         var LocationType = req.connectionType;
         if (
-          each.externalID == null ||
-          each.externalID == "" ||
-          each.externalID == undefined
+          each.externalID === null ||
+          each.externalID === "" ||
+          each.externalID === undefined
         ) {
           validate.push({
             text: " Data Package, Level External Id  is required and data type should be string or Number ",
@@ -370,7 +370,8 @@ const insertValidation = (req) => {
                     },
                   ];
 
-                  if (obj.type === "Delimited") {
+                  // console.log("line 373", obj.type.toLowerCase());
+                  if (obj.type.toLowerCase() === "delimited") {
                     const dsArrayDt = [
                       {
                         key: "Delimiter",
@@ -467,13 +468,13 @@ const insertValidation = (req) => {
             }
           } else {
             // console.log("Blank");
-            // data package level validation
+            // Start data package data validation
             if (
               helper.stringToBoolean(each.noPackageConfig) === true &&
               helper.stringToBoolean(each.active) === true
             ) {
             } else {
-              error.push({
+              validate.push({
                 text: " In JDBC noPackageConfig, active should be True ",
                 status: false,
               });
@@ -485,8 +486,9 @@ const insertValidation = (req) => {
               { key: "Package Path ", value: each.path },
               { key: "Package Naming Convention ", value: each.name },
             ];
-
+            // End data package data validation
             let dataBlank = helper.validationBlank(DPblankData);
+
             if (dataBlank.length > 0) {
               validate.push(dataBlank);
             } else {
@@ -536,14 +538,7 @@ const insertValidation = (req) => {
                       },
                     ];
 
-                    if (
-                      obj.customQuery == "yes" ||
-                      obj.customQuery == "Yes" ||
-                      obj.customQuery == "YES" ||
-                      obj.customQuery == "YEs" ||
-                      obj.customQuery == "yeS" ||
-                      obj.customQuery == "yES"
-                    ) {
+                    if (obj.customQuery.toLowerCase() == "yes") {
                       if (
                         obj.customSql !== null &&
                         obj.customSql !== "" &&
@@ -556,12 +551,7 @@ const insertValidation = (req) => {
                         });
                       }
                     }
-                    if (
-                      obj.customQuery == "NO" ||
-                      obj.customQuery == "no" ||
-                      obj.customQuery == "No" ||
-                      obj.customQuery == "nO"
-                    ) {
+                    if (obj.customQuery.toLowerCase() == "no") {
                       if (
                         obj.tableName !== null &&
                         obj.tableName !== "" &&

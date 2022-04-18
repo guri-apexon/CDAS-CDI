@@ -27,16 +27,10 @@ const packageLevelInsert = async (
 
     if (externalID !== null && externalID !== "" && externalID !== undefined) {
       console.log("data need to validate");
+
       if (LocationType === "SFTP" || LocationType === "FTPS") {
         // if (LocationType === "Hive CDH") {
         const dpArray = [
-          { key: "Package type", value: data.type, type: "string" },
-          {
-            key: "SAS XPT Method ",
-            value: data.sasXptMethod,
-            type: "string",
-          },
-          { key: "Package Path ", value: data.path, type: "string" },
           {
             key: "No Package Level Config ",
             value: data.noPackageConfig,
@@ -54,17 +48,54 @@ const packageLevelInsert = async (
           },
         ];
 
-        if (
-          data.type === "7Z" ||
-          data.type == "ZIP" ||
-          data.type == "RAR" ||
-          data.type == "SAS"
-        ) {
-        } else {
-          msg.push({
-            text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
-          });
-          status = false;
+        if (helper.stringToBoolean(data.noPackageConfig) === false) {
+          const dpArrayST = [
+            { key: "Package type", value: data.type, type: "string" },
+            {
+              key: "SAS XPT Method ",
+              value: data.sasXptMethod,
+              type: "string",
+            },
+          ];
+          if (
+            data.type === "7Z" ||
+            data.type == "ZIP" ||
+            data.type == "RAR" ||
+            data.type == "SAS"
+          ) {
+          } else {
+            msg.push({
+              text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
+            });
+            status = false;
+          }
+
+          if (msg.length > 0) {
+            return { validate: msg, status: status };
+          } else {
+            let dpResST = helper.validation(dpArrayST);
+
+            if (dpResST.length > 0) {
+              msg.push(dpResST);
+              status = false;
+              return { validate: msg, status: status };
+            }
+          }
+        }
+
+        if (data.type != null) {
+          if (
+            data.type === "7Z" ||
+            data.type == "ZIP" ||
+            data.type == "RAR" ||
+            data.type == "SAS"
+          ) {
+          } else {
+            msg.push({
+              text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
+            });
+            status = false;
+          }
         }
 
         if (msg.length > 0) {
@@ -77,6 +108,32 @@ const packageLevelInsert = async (
             status = false;
             return { validate: msg, status: status };
           }
+        }
+      } else {
+        if (
+          helper.stringToBoolean(data.noPackageConfig) === true &&
+          helper.stringToBoolean(data.active) === true
+        ) {
+        } else {
+          msg.push({
+            text: " In JDBC noPackageConfig, active should be True ",
+          });
+          status = false;
+        }
+
+        const DPblankData = [
+          { key: " Package type ", value: data.type },
+          { key: "SAS XPT Method", value: data.sasXptMethod },
+          { key: "Package Path ", value: data.path },
+          { key: "Package Naming Convention ", value: data.name },
+        ];
+
+        let dataBlank = helper.validationBlank(DPblankData);
+
+        if (dataBlank.length > 0) {
+          msg.push(dataBlank);
+          status = false;
+          return { validate: msg, status: status };
         }
       }
       if (msg.length > 0) {
@@ -145,12 +202,7 @@ const packageLevelInsert = async (
                   value: obj.name,
                   type: "string",
                 },
-                {
-                  key: "Delimiter",
-                  value: obj.delimiter,
-                  type: "string",
-                },
-                { key: "Quote", value: obj.quote, type: "string" },
+
                 {
                   key: "Data Set Level, Path",
                   value: obj.path,
@@ -161,11 +213,7 @@ const packageLevelInsert = async (
                   value: obj.rowDecreaseAllowed,
                   type: "number",
                 },
-                {
-                  key: "Escape Character",
-                  value: obj.escapeCode,
-                  type: "string",
-                },
+
                 {
                   key: "New Data Frequency (Days)",
                   value: obj.dataTransferFrequency,
@@ -176,12 +224,30 @@ const packageLevelInsert = async (
                   value: obj.active,
                   type: "boolean",
                 },
-                {
-                  key: "Column Count",
-                  value: obj.columncount,
-                  type: "number",
-                },
               ];
+
+              if (obj.type.toLowerCase() === "delimited") {
+                const dsArrayDt = [
+                  {
+                    key: "Delimiter",
+                    value: obj.delimiter,
+                    type: "string",
+                  },
+                  { key: "Quote", value: obj.quote, type: "string" },
+
+                  {
+                    key: "Escape Character",
+                    value: obj.escapeCode,
+                    type: "string",
+                  },
+                ];
+
+                let dsResdt = helper.validation(dsArrayDt);
+                if (dsResdt.length > 0) {
+                  msg.push(dsResdt);
+                  status = false;
+                }
+              }
 
               if (
                 obj.externalID !== null &&
@@ -371,6 +437,28 @@ const packageLevelInsert = async (
                 // return { validate: msg, status: status };
               }
             } else {
+              const dsBlankArry = [
+                { key: "File Type ", value: obj.type },
+                { key: "File Naming Convention ", value: obj.name },
+                { key: "Delimiter ", value: obj.delimiter },
+                { key: "Quote ", value: obj.quote },
+                {
+                  key: "Row Decrease Allowed ",
+                  value: obj.rowDecreaseAllowed,
+                },
+                { key: "Escape Character ", value: obj.escapeCode },
+                {
+                  key: "New Data Frequency ",
+                  value: obj.dataTransferFrequency,
+                },
+                { key: "Path ", value: obj.path },
+              ];
+
+              let DSBlank = helper.validationBlank(dsBlankArry);
+              if (DSBlank.length > 0) {
+                msg.push(DSBlank);
+                status = false;
+              }
               const dsArray = [
                 {
                   key: "Data Set Name (Mnemonic) ",
@@ -392,14 +480,9 @@ const packageLevelInsert = async (
                   value: obj.customQuery,
                   type: "boolean",
                 },
-                {
-                  key: "Column Count",
-                  value: obj.columncount,
-                  type: "number",
-                },
               ];
 
-              if (obj.customQuery === "yes") {
+              if (obj.customQuery.toLowerCase() == "yes") {
                 if (
                   obj.customSql !== null &&
                   obj.customSql !== "" &&
@@ -411,7 +494,8 @@ const packageLevelInsert = async (
                   });
                   status = false;
                 }
-              } else {
+              }
+              if (obj.customQuery.toLowerCase() == "no") {
                 if (
                   obj.tableName !== null &&
                   obj.tableName !== "" &&
@@ -429,6 +513,20 @@ const packageLevelInsert = async (
                     text: " Table Name  is required ",
                   });
                   status = false;
+                }
+                if (helper.stringToBoolean(obj.incremental) === true) {
+                  if (
+                    obj.offsetColumn !== null &&
+                    obj.offsetColumn !== "" &&
+                    obj.offsetColumn !== undefined &&
+                    typeof obj.offsetColumn === "string"
+                  ) {
+                  } else {
+                    msg.push({
+                      text: " offsetColumn  is required and data type should be string ",
+                    });
+                    status = false;
+                  }
                 }
               }
 
@@ -655,8 +753,8 @@ const datasetLevelInsert = async (
     var ResponseBody = {};
     ResponseBody.data_sets = [];
 
-    if (LocationType === "SFTP" || LocationType === "FTPS") {
-      // if (LocationType === "Hive CDH") {
+    // if (LocationType === "SFTP" || LocationType === "FTPS") {
+    if (LocationType === "Hive CDH") {
       const dsArray = [
         {
           key: "Data Set Name (Mnemonic) ",
@@ -674,12 +772,7 @@ const datasetLevelInsert = async (
           value: obj.name,
           type: "string",
         },
-        {
-          key: "Delimiter",
-          value: obj.delimiter,
-          type: "string",
-        },
-        { key: "Quote", value: obj.quote, type: "string" },
+
         {
           key: "Data Set Level, Path",
           value: obj.path,
@@ -690,11 +783,7 @@ const datasetLevelInsert = async (
           value: obj.rowDecreaseAllowed,
           type: "number",
         },
-        {
-          key: "Escape Character",
-          value: obj.escapeCode,
-          type: "string",
-        },
+
         {
           key: "New Data Frequency (Days)",
           value: obj.dataTransferFrequency,
@@ -705,12 +794,31 @@ const datasetLevelInsert = async (
           value: obj.active,
           type: "boolean",
         },
-        {
-          key: "Column Count",
-          value: obj.columncount,
-          type: "number",
-        },
       ];
+
+      if (obj.type.toLowerCase() === "delimited") {
+        const dsArrayDt = [
+          {
+            key: "Delimiter",
+            value: obj.delimiter,
+            type: "string",
+          },
+          { key: "Quote", value: obj.quote, type: "string" },
+
+          {
+            key: "Escape Character",
+            value: obj.escapeCode,
+            type: "string",
+          },
+        ];
+
+        let dsResdt1 = helper.validation(dsArrayDt);
+        if (dsResdt1.length > 0) {
+          msg.push(dsResdt1);
+          status = false;
+          return { validate: msg, status: status };
+        }
+      }
 
       if (
         obj.externalID !== null &&
@@ -811,12 +919,12 @@ const datasetLevelInsert = async (
           obj.dataTransferFrequency || "",
           obj.conditionalExpression,
         ];
-        let createDS = await DB.executeQuery(
-          `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
-                offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
-                customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
-          DSBody
-        );
+        // let createDS = await DB.executeQuery(
+        //   `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
+        //         offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
+        //         customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
+        //   DSBody
+        // );
         dsObj.timestamp = ts;
         dsObj.externalId = obj.externalID;
         dsObj.datasetid = dsUid;
@@ -879,12 +987,12 @@ const datasetLevelInsert = async (
               el.requiredfield || null,
               new Date(),
             ];
-            await DB.executeQuery(
-              `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
-                    primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
-                    insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
-              CDBody
-            );
+            // await DB.executeQuery(
+            //   `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
+            //         primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
+            //         insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
+            //   CDBody
+            // );
 
             cdObj.timestamp = ts;
             cdObj.colmunid = CDUid;
@@ -898,6 +1006,28 @@ const datasetLevelInsert = async (
         // return { validate: msg, status: status };
       }
     } else {
+      const dsBlankArry = [
+        { key: "File Type ", value: obj.type },
+        { key: "File Naming Convention ", value: obj.name },
+        { key: "Delimiter ", value: obj.delimiter },
+        { key: "Quote ", value: obj.quote },
+        {
+          key: "Row Decrease Allowed ",
+          value: obj.rowDecreaseAllowed,
+        },
+        { key: "Escape Character ", value: obj.escapeCode },
+        {
+          key: "New Data Frequency ",
+          value: obj.dataTransferFrequency,
+        },
+        { key: "Path ", value: obj.path },
+      ];
+
+      let DSBlank = helper.validationBlank(dsBlankArry);
+      if (DSBlank.length > 0) {
+        msg.push(DSBlank);
+        status = false;
+      }
       const dsArray = [
         {
           key: "Data Set Name (Mnemonic) ",
@@ -919,14 +1049,9 @@ const datasetLevelInsert = async (
           value: obj.customQuery,
           type: "boolean",
         },
-        {
-          key: "Column Count",
-          value: obj.columncount,
-          type: "number",
-        },
       ];
 
-      if (obj.customQuery === "yes") {
+      if (obj.customQuery.toLowerCase() == "yes") {
         if (
           obj.customSql !== null &&
           obj.customSql !== "" &&
@@ -938,7 +1063,8 @@ const datasetLevelInsert = async (
           });
           status = false;
         }
-      } else {
+      }
+      if (obj.customQuery.toLowerCase() == "no") {
         if (
           obj.tableName !== null &&
           obj.tableName !== "" &&
@@ -956,6 +1082,20 @@ const datasetLevelInsert = async (
             text: " Table Name  is required ",
           });
           status = false;
+        }
+        if (helper.stringToBoolean(obj.incremental) === true) {
+          if (
+            obj.offsetColumn !== null &&
+            obj.offsetColumn !== "" &&
+            obj.offsetColumn !== undefined &&
+            typeof obj.offsetColumn === "string"
+          ) {
+          } else {
+            msg.push({
+              text: " offsetColumn  is required and data type should be string ",
+            });
+            status = false;
+          }
         }
       }
 
@@ -1057,12 +1197,12 @@ const datasetLevelInsert = async (
           obj.dataTransferFrequency || "",
           obj.conditionalExpression,
         ];
-        let createDS = await DB.executeQuery(
-          `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
-                offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
-                customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
-          DSBody
-        );
+        // let createDS = await DB.executeQuery(
+        //   `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
+        //         offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
+        //         customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
+        //   DSBody
+        // );
         dsObj.timestamp = ts;
         dsObj.externalId = obj.externalID;
         dsObj.datasetid = dsUid;
@@ -1126,12 +1266,12 @@ const datasetLevelInsert = async (
               el.requiredfield || null,
               new Date(),
             ];
-            await DB.executeQuery(
-              `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
-                    primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
-                    insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
-              CDBody
-            );
+            // await DB.executeQuery(
+            //   `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
+            //         primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
+            //         insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
+            //   CDBody
+            // );
 
             cdObj.timestamp = ts;
             cdObj.colmunid = CDUid;
@@ -1762,10 +1902,10 @@ exports.updateDataFlow = async (req, res) => {
         DFVer
       );
 
-      if (ReturnDFUpdate.status == false) {
-        console.log("error");
-        return apiResponse.ErrorResponse(res, ReturnDFUpdate.validate);
-      }
+      // if (ReturnDFUpdate.status == false) {
+      //   console.log("error");
+      //   return apiResponse.ErrorResponse(res, ReturnDFUpdate.validate);
+      // }
       //  else {
       //   console.log("success", ReturnDFUpdate.validate);
       // }

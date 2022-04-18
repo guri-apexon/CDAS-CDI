@@ -108,13 +108,8 @@ exports.validationBlank = (data) => {
   let msg = [];
 
   data.forEach((val) => {
-    if (
-      val.value == null ||
-      val.value == "" ||
-      val.value == undefined ||
-      val.value !== 0
-    ) {
-      console.log(val.key, val.value);
+    if (val.value === "" || val.value === null || val.value === undefined) {
+      // console.log(val.key, val.value);
     } else {
       msg.push({
         text: `In JDBC ${val.key}fields should be Blank `,
