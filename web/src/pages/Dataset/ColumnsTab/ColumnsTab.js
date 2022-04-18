@@ -152,6 +152,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
           `The Selected File Does Not Match the Template`
         );
         handleDelete();
+        // Template is not available for files with no header row.
       }
     }
   }, [importedData]);
