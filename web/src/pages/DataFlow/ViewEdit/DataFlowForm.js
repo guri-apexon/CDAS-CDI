@@ -107,10 +107,14 @@ const DataFlowFormBase = (props) => {
     setLocationOpen(true);
   };
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [locationId, setLocationId] = useState(null);
+  const [renderLocation, setRenderLocation] = useState(false);
+
   useEffect(() => {
     if (initialValues) {
       const { dataflowType } = initialValues;
       setDataLoaded(true);
+      setLocationId(initialValues?.locations[0]?.value || null);
       if (dataflowType) {
         // changeFormField(dataflowType, "dataflowType");
       }
@@ -118,11 +122,21 @@ const DataFlowFormBase = (props) => {
   }, [initialValues]);
 
   useEffect(() => {
-    if (initialValues && locations)
-      changeLocationData(initialValues.locations[0].value);
-  }, [locations, initialValues]);
+    if (!renderLocation) setTimeout(() => setRenderLocation(true), 100);
+  }, [renderLocation]);
 
-  useEffect(() => {}, [initialValues?.locations, selectedLocation]);
+  useEffect(() => {
+    console.log(">>> locationid", locationId);
+    setRenderLocation(false);
+    changeLocationData(locationId);
+  }, [locationId, locations]);
+
+  useEffect(() => {
+    return () => {
+      console.log(">>> unmounted");
+      setDataLoaded(false);
+    };
+  }, []);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -213,18 +227,13 @@ const DataFlowFormBase = (props) => {
                   </MenuItem>
                 ))}
               </ReduxFormSelect>
-              {dataLoaded && locations && (
+              {renderLocation && locations && (
                 <ReduxFormAutocomplete
                   name="locationName"
                   label="Location Name"
-                  // label={
-                  //   locations?.find(
-                  //     (l) => l.value === initialValues?.locations[0]?.value
-                  //   )?.label
-                  // }
                   input={{
                     onChange: changeLocationData,
-                    value: [initialValues?.locations[0]?.value],
+                    value: [locationId],
                   }}
                   ref={locationNameRef}
                   source={locations}
