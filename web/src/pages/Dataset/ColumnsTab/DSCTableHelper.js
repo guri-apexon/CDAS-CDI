@@ -157,8 +157,15 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
-  const errorText = checkNumeric(row[key]);
-  return row.editMode ? (
+  const { editMode, haveHeader } = row;
+  let errorText;
+  if (haveHeader) {
+    errorText = checkRequired(row[key]) || checkNumeric(row[key]);
+  } else {
+    errorText = checkNumeric(row[key]);
+  }
+
+  return editMode ? (
     <TextField
       size="small"
       fullWidth
@@ -177,9 +184,14 @@ export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
-  const { editMode } = row;
+  const { editMode, haveHeader } = row;
+  let errorText;
+  if (haveHeader) {
+    errorText = checkRequired(row[key]) || checkAlphaNumeric(row[key]);
+  } else {
+    errorText = checkAlphaNumeric(row[key]);
+  }
 
-  const errorText = checkAlphaNumeric(row[key]) || checkRequired(row[key]);
   return editMode ? (
     <TextField
       size="small"
@@ -191,8 +203,8 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={(!row.isInitLoad || row.isHavingColumnName) && errorText}
-      helperText={!row.isInitLoad || row.isHavingColumnName ? errorText : ""}
+      error={!row.isInitLoad && errorText}
+      helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
       disabled={row.dsProdLock}
     />

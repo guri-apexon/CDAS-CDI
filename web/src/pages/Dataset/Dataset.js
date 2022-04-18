@@ -121,6 +121,7 @@ const Dataset = () => {
     dsCreatedSuccessfully,
     selectedDataset,
     formDataSQL,
+    isDatasetFetched,
   } = dataSets;
   const datasetid = params.datasetId;
   const { prot_id: studyId } = selectedCard;
@@ -182,6 +183,8 @@ const Dataset = () => {
     } else if (!dsCreatedSuccessfully) {
       dispatch(getDataSetDetail(datasetid, dfId, dpId));
       dispatch(getDatasetColumns(datasetid));
+    } else {
+      dispatch(getDataSetDetail(datasetid, dfId, dpId));
     }
   }, [datasetid, dsCreatedSuccessfully]);
 
@@ -213,6 +216,17 @@ const Dataset = () => {
       }, 2000);
     }
   }, [dsCreatedSuccessfully, loctyp, isCustomSQL]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (isSftp(locationType)) {
+        setColumnsActive(true);
+      } else if (isCustomSQL === "No") {
+        // dispatch(getSQLColumns(tableName));
+        setColumnsActive(true);
+      }
+    }, 2000);
+  }, [isDatasetFetched]);
 
   const goToDataflow = () => {
     if (dfId) {
