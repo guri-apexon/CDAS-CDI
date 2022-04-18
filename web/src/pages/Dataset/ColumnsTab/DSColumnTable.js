@@ -454,24 +454,18 @@ export default function DSColumnTable({
   useEffect(() => {
     if (isSftp(locationType)) {
       if (haveHeader) {
+        setMoreColumns(allColumns);
+      } else {
         const data = allColumns.map((e) => {
           if (e.accessor === "position") {
-            e.hidden = true;
+            e.hidden = false;
           }
           return e;
         });
         setMoreColumns(data);
-      } else {
-        setMoreColumns(allColumns);
       }
     } else {
-      const data = allColumns.map((e) => {
-        if (e.accessor === "position") {
-          e.hidden = true;
-        }
-        return e;
-      });
-      setMoreColumns(data);
+      setMoreColumns(allColumns);
     }
   }, []);
 

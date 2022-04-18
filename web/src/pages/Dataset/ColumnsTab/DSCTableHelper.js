@@ -335,6 +335,7 @@ export const columns = [
     sortFunction: compareNumbers,
     filterFunction: createStringSearchFilter("position"),
     filterComponent: TextFieldFilter,
+    hidden: true,
   },
   {
     header: "Format",
