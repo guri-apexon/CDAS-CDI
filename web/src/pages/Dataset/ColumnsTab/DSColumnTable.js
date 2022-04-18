@@ -221,7 +221,7 @@ export default function DSColumnTable({
       setShowOverWrite(false);
       const correctHeader = await checkHeaders(importedData);
       if (correctHeader) {
-        const newData = await formatDataNew(importedData, protocolnumber);
+        const newData = formatDataNew(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
         if (newData?.headerNotMatching) {
           messageContext.showErrorMessage(
@@ -454,24 +454,18 @@ export default function DSColumnTable({
   useEffect(() => {
     if (isSftp(locationType)) {
       if (haveHeader) {
+        setMoreColumns(allColumns);
+      } else {
         const data = allColumns.map((e) => {
           if (e.accessor === "position") {
-            e.hidden = true;
+            e.hidden = false;
           }
           return e;
         });
         setMoreColumns(data);
-      } else {
-        setMoreColumns(allColumns);
       }
     } else {
-      const data = allColumns.map((e) => {
-        if (e.accessor === "position") {
-          e.hidden = true;
-        }
-        return e;
-      });
-      setMoreColumns(data);
+      setMoreColumns(allColumns);
     }
   }, []);
 
