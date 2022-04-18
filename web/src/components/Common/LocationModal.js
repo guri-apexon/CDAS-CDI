@@ -465,7 +465,6 @@ const ReduxForm = compose(
     selectedPort: selector(state, "port"),
     selectedDB: selector(state, "dbName"),
     locType: selector(state, "locationType"),
-    jhui: selector(state, "username"),
     formState: getFormValues("AddLocationForm")(state),
   }))
 )(LocationForm);
