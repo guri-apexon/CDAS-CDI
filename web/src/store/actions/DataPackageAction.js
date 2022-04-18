@@ -1,6 +1,7 @@
 import {
   ADD_DATA_PACKAGE,
   ADD_PACKAGE_BTN,
+  ADD_PACKAGE_SUCCESS,
   PACKAGES_LIST,
   REDIRECT_TO_DATASET,
   UPDATE_DATA_PACKAGE,
@@ -24,8 +25,8 @@ export const addPackageBtnAction = () => {
 
 export const addDataPackage = (packageData) => {
   return {
-    type: ADD_DATA_PACKAGE,
-    packageData,
+    type: ADD_PACKAGE_SUCCESS,
+    refreshData: true,
   };
 };
 

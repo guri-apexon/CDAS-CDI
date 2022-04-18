@@ -45,6 +45,7 @@ export const initialState = {
   dsProdLock: false,
   dsTestLock: false,
   isDatasetCreation: true,
+  updated: false,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -68,14 +69,15 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.dsProdLock = false;
           newState.dsTestLock = false;
         } else {
-          newState.dsTestProdLock = state.testLock;
+          newState.dsTestProdLock = state.testProdLock;
           newState.dsProdLock = state.prodLock;
-          newState.dsTestLock = state.testProdLock;
+          newState.dsTestLock = state.testLock;
         }
         break;
 
       case ADD_DATAFLOW_SUCCESS:
         newState.selectedDataFlow = action.dataflow;
+        newState.updated = true;
         break;
 
       case FETCH_LOCATION_FAILURE:
@@ -154,12 +156,12 @@ const DataFlowReducer = (state = initialState, action) =>
           exptfstprddt,
           loctyp,
           name,
-          srclocID,
+          srclocid,
           type,
           vendorid,
           vendorname,
           testflag,
-          locationName,
+          locationname,
           isSync,
         } = dataflowDetail;
 
@@ -177,7 +179,7 @@ const DataFlowReducer = (state = initialState, action) =>
         formData.locationType = loctyp;
         formData.name = name;
         formData.dataflowType = testflag === 1 ? "test" : "production";
-        formData.locations = [{ value: srclocID, label: locationName }];
+        formData.locations = [{ value: srclocid, label: locationname }];
         formData.dataStructure = type;
         formData.vendors = [vendorid];
         formData.vendorname = vendorname;

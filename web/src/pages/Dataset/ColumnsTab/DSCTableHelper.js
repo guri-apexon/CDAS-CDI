@@ -88,7 +88,7 @@ export const DataTypeEditableSelectCell =
         fullWidth
         canDeselect={false}
         value={row[key]}
-        error={!row.isInitLoad && errorText ? true : false}
+        error={!row.isInitLoad && errorText}
         helperText={!row.isInitLoad ? errorText : ""}
         onChange={(e) =>
           row.editRow(row.uniqueId, key, e.target.value, errorText)
@@ -110,35 +110,19 @@ export const editableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
     const errorText = checkRequiredValue(row[key], key, row.primary);
-
-    // eslint-disable-next-line consistent-return
-    const checkDisabled = () => {
-      if (!isSftp(row.locationType)) {
-        if (row.dsTestLock || row.dsProdLock) {
-          return true;
-        }
-      }
-      if (isSftp(row.locationType)) {
-        if (row.dsProdLock) {
-          return true;
-        }
-      }
-      return false;
-    };
-
     return row.editMode ? (
       <Select
         size="small"
         fullWidth
         canDeselect={false}
         value={row[key]}
-        error={!row.isInitLoad && errorText ? true : false}
+        error={!row.isInitLoad && errorText}
         helperText={!row.isInitLoad ? errorText : ""}
         onChange={(e) =>
           row.editRow(row.uniqueId, key, e.target.value, errorText)
         }
         {...fieldStyles}
-        disabled={checkDisabled}
+        disabled={row.pkDisabled}
       >
         {options.map((option) => (
           <MenuItem key={option} value={option}>
@@ -163,7 +147,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
+      error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStylesNo}
     />
@@ -174,7 +158,8 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
   const { editMode } = row;
-  const errorText = checkRequired(row[key]);
+
+  const errorText = checkAlphaNumeric(row[key]) || checkRequired(row[key]);
   return editMode ? (
     <TextField
       size="small"
@@ -186,8 +171,8 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
-      helperText={!row.isInitLoad ? errorText : ""}
+      error={(!row.isInitLoad || row.isHavingColumnName) && errorText}
+      helperText={!row.isInitLoad || row.isHavingColumnName ? errorText : ""}
       {...fieldStyles}
       disabled={row.dsProdLock}
     />
@@ -207,7 +192,7 @@ export const FormatCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
+      error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
     />
@@ -227,7 +212,7 @@ export const EditableCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
+      error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
     />
@@ -250,6 +235,7 @@ export const ActionCell = ({ row }) => {
     onRowDelete,
     editMode: eMode,
     isHavingColumnName,
+    isHavingDataType,
     onRowSave,
   } = row;
 
@@ -266,7 +252,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={!isHavingColumnName}
+        disabled={!isHavingColumnName || !isHavingDataType}
       >
         Save
       </Button>
@@ -313,8 +299,8 @@ export const columns = [
   {
     header: "Position",
     accessor: "position",
-    customCell: EditableCell,
-    sortFunction: compareStrings,
+    customCell: NumericEditableCell,
+    sortFunction: compareNumbers,
     filterFunction: createStringSearchFilter("position"),
     filterComponent: TextFieldFilter,
   },
@@ -342,10 +328,10 @@ export const columns = [
   },
   {
     header: "Primary?",
-    accessor: "primary",
+    accessor: "primaryKey",
     customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("primary"),
+    filterFunction: createStringArraySearchFilter("primaryKey"),
     filterComponent: createSelectFilterComponent(["Yes", "No"], {
       size: "small",
       multiple: true,

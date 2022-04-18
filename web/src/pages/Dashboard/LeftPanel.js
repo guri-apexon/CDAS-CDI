@@ -191,50 +191,53 @@ const LeftPanel = () => {
         />
         <Divider />
       </div>
-      {pinnedStudies.length > 0 && (
-        <div className="pinned-studies">
-          <Typography className={classes.pinTitle} variant="caption">
-            Pinned Studies
-          </Typography>
-          <div className="customScrollbar pinnedCards">
-            {pinnedStudies.map((e, index) => (
-              <CustomCard
-                key={e.prot_id}
-                data={e}
-                index={`p${index}`}
-                isPinned={true}
-                unPinningStudy={unPinningStudy}
-                classes={classes}
-                setSelectedStudy={setSelectedStudy}
-                selectedStudy={selectedStudy}
-              />
-            ))}
-          </div>
-          <Divider />
-        </div>
-      )}
-      {unPinnedStudies.length > 0 && (
-        <div className="customScrollbar unpinned-studies unPinnedCards">
-          {loading ? (
-            <Progress />
-          ) : (
-            unPinnedStudies.map((e, index) => (
-              <CustomCard
-                key={e.prot_id}
-                data={e}
-                index={`up${index}`}
-                isPinned={false}
-                pinningStudy={pinningStudy}
-                classes={classes}
-                setSelectedStudy={setSelectedStudy}
-                selectedStudy={selectedStudy}
-              />
-            ))
+
+      {loading ? (
+        <Progress />
+      ) : (
+        <div className="customScrollbar studies">
+          {pinnedStudies.length > 0 && (
+            <>
+              <Typography className={classes.pinTitle} variant="caption">
+                Pinned Studies
+              </Typography>
+              <div className="pinnedCards">
+                {pinnedStudies.map((e, index) => (
+                  <CustomCard
+                    key={e.prot_id}
+                    data={e}
+                    index={`p${index}`}
+                    isPinned={true}
+                    unPinningStudy={unPinningStudy}
+                    classes={classes}
+                    setSelectedStudy={setSelectedStudy}
+                    selectedStudy={selectedStudy}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+          {unPinnedStudies.length > 0 && (
+            <div className="unPinnedCards">
+              {unPinnedStudies.map((e, index) => (
+                <CustomCard
+                  key={e.prot_id}
+                  data={e}
+                  index={`up${index}`}
+                  isPinned={false}
+                  disablePinning={pinnedStudies.length > 2}
+                  pinningStudy={pinningStudy}
+                  classes={classes}
+                  setSelectedStudy={setSelectedStudy}
+                  selectedStudy={selectedStudy}
+                />
+              ))}
+            </div>
+          )}
+          {unPinnedStudies.length === 0 && (
+            <div className="no-data-found"> No Studies Found </div>
           )}
         </div>
-      )}
-      {unPinnedStudies.length === 0 && (
-        <div className="no-data-found"> No Studies Found </div>
       )}
     </div>
   );

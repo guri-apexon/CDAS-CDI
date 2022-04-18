@@ -303,29 +303,31 @@ POST http://localhost:4001/v1/api/columnset/update HTTP/1.1
 content-type: application/json
 
 {
-  "values": [
+    "values": [
         {
-            "uniqueId": "u2",
-            "columnId": 3,
-            "variableLabel": "testlable",
-            "columnName": "testname",
+            "columnId": 1,
+            "dbColumnId": "ltzho6gig6ny0cms",
+            "uniqueId": "u0",
+            "variableLabel": "vname",
+            "columnName": "asfdsa",
             "position": "",
-            "format": "testformat",
+            "format": "test",
             "dataType": "Alphanumeric",
-            "primary": "No",
+            "primaryKey": "No",
             "unique": "No",
             "required": "No",
-            "minLength": "1",
-            "maxLength": "10",
-            "values": "testlov",
+            "minLength": 2,
+            "maxLength": 15,
+            "values": "safsd~afdasd~as~sdfasd",
             "isInitLoad": false,
             "isHavingError": true,
-            "isHavingColumnName": true
+            "isHavingColumnName": true,
+            "isHavingDataType": true
         }
     ],
-    "dsId": "abbbd1d9-e95b-42",
-    "dfId": "a0A0E000002o5kwUAA",
-    "dpId": "a0C0E000004Mvr0UAC",
+    "dsId": "rjufebx54heob3gt",
+    "dfId": "a0A0E000004SCt1UAG",
+    "dpId": "1e2hxc7anfhcuouw",
     "userId": "u1105372",
     "isUpdateQuery": false,
     "nQuery": ""
@@ -542,7 +544,33 @@ content-type: application/json
 }
 
 
-### update dataset
+### update JDBC dataset
+
+POST http://localhost:4001/v1/api/dataset/update HTTP/1.1
+content-type: application/json
+
+{
+    "locationType": "jdbc",
+    "active": true,
+    "isCustomSQL": "No",
+    "dataType": "Cumulative",
+    "clinicalDataType": [
+        277
+    ],
+    "datasetName": "tst_jdbc_ds_vaithe",
+    "sQLQuery": "Select from tableName where 1=1",
+    "offsetColumn": null,
+    "tableName": "tableNameNew",
+    "filterCondition": null,
+    "datasetid": "0pyswb3jgn1c8u8y",
+    "dpId": "lzppvxq5thdawxxf",
+    "userId": "u1105372",
+    "testFlag": 1,
+    "dfId": "w2pujq36gmeux5od",
+    "studyId": "a020E000005Szl0QAC"
+}
+
+### create dataflow
 
 POST http://localhost:4001/v1/api/dataflow/create HTTP/1.1
 content-type: application/json

@@ -285,12 +285,12 @@ const StatusCell = ({ row, column: { accessor } }) => {
             }}
           />
           {status}
-          <Link
+          {/* <Link
             onClick={() => console.log("link clicked")}
             style={{ fontWeight: 500, marginLeft: 8 }}
           >
             View
-          </Link>
+          </Link> */}
         </div>
       </div>
     );

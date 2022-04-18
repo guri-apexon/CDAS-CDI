@@ -75,10 +75,10 @@
     }
     .records-with-issues {
       display: flex;
-      .right-se {
-        margin-top: 96px;
-        margin-left: 40px;
-        text-align: center;
+      width: 35%;
+      justify-content: space-around;
+      .post-ingestion-issues {
+        align-self: center;
         a:hover {
           text-decoration: none !important;
           border-bottom: none;

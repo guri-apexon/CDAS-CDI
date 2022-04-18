@@ -12,7 +12,7 @@ import Button from "apollo-react/components/Button";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
-
+import Progress from "../../../components/Common/Progress/Progress";
 import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../utils/index";
 
@@ -23,7 +23,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
   const { datasetColumns, sqlColumns } = dataSets;
-
+  const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
   const [showColumns, setShowColumns] = useState(false);
@@ -33,7 +33,6 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
 
-  const numberOfRows = 1;
   const maxSize = 150000;
 
   const handleUpload = (selected) => {
@@ -74,7 +73,6 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       datacolumns.length > 0
         ? datacolumns.map((column, i) => {
             const newObj = {
-              columnId: i + 1,
               dbColumnId: column.columnid,
               uniqueId: `u${i}`,
               variableLabel: column.variable || "",
@@ -91,6 +89,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               isInitLoad: true,
               isHavingError: false,
               isHavingColumnName: true,
+              isHavingDataType: true,
             };
             return newObj;
           })
@@ -103,14 +102,13 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       arr.length > 0
         ? arr.map((column, i) => {
             const newObj = {
-              columnId: i + 1,
               dbColumnId: column.columnid || "",
               uniqueId: `u${i}`,
               variableLabel: column.varable || "",
               columnName: column.columnName || "",
               format: column.format || "",
               dataType: column.dataType || "",
-              primary: column.primarykey === true ? "Yes" : "No",
+              primaryKey: column.primarykey === true ? "Yes" : "No",
               unique: column.unique === true ? "Yes" : "No",
               required: column.required === true ? "Yes" : "No",
               minLength: column.charactermin || "",
@@ -119,6 +117,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               isInitLoad: true,
               isHavingError: false,
               isHavingColumnName: true,
+              isHavingDataType: true,
             };
             return newObj;
           })
@@ -139,7 +138,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       if (correctHeader) {
         const newData = formatData(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
-        if (newData.length > 1) {
+        if (newData.length > 0) {
           setFormattedData(newData);
           setIsImportReady(true);
         } else {
@@ -162,8 +161,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
-    }
-    if (sqlColumns.length > 0) {
+    } else if (sqlColumns.length > 0) {
       setShowColumns(true);
       formatJDBCColumns(sqlColumns);
       setSelectedMethod("fromAPICall");
@@ -184,7 +182,6 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
     return (
       <>
         <DSColumnTable
-          numberOfRows={numberOfRows}
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}
@@ -193,10 +190,11 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
         />
       </>
     );
-  }, [showColumns]);
+  }, [showColumns, loading]);
 
   return (
     <>
+      {loading && <Progress />}
       {!showColumns && (
         <div className="tab colums-tab">
           <p className="title">Configure Dataset Column Settings</p>

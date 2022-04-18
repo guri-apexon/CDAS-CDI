@@ -18,6 +18,8 @@ import {
   LOCATIONAPI,
   DATAKINDAPI,
   COLUMNSAPI,
+  DATAFLOW_UPDATE_API,
+  ADD_PACKAGE,
 } from "../constants";
 import { getCookie } from "../utils/index";
 
@@ -128,6 +130,17 @@ export const dataflowSave = async (payload) => {
       userId,
     });
     return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+export const updateDataflow = async (payload) => {
+  try {
+    const res = await axios.post(`${baseURL}/${DATAFLOW_UPDATE_API}`, {
+      ...payload,
+      userId,
+    });
+    return res.data || [];
   } catch (err) {
     return console.log("Error", err);
   }
@@ -339,9 +352,22 @@ export const userLogOut = () => {
     });
 };
 
-export const deleteCD = async (id) => {
+export const deleteCD = async (
+  columnId,
+  dsId,
+  dpId,
+  dfId,
+  isUpdateQuery,
+  nQuery
+) => {
   try {
-    const res = await axios.post(`${baseURL}/${COLUMNSAPI}/delete/${id}`, {
+    const res = await axios.post(`${baseURL}/${COLUMNSAPI}/delete`, {
+      columnId,
+      dsId,
+      dfId,
+      dpId,
+      isUpdateQuery,
+      nQuery,
       userId,
     });
     return res.data?.data || [];
@@ -357,6 +383,15 @@ export const updateLOV = async (reqBody) => {
       reqBody
     );
     return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const submitDataPackage = async (reqBody) => {
+  try {
+    const res = await axios.post(`${baseURL}/${ADD_PACKAGE}`, reqBody);
+    return res.data || [];
   } catch (err) {
     return console.log("Error", err);
   }

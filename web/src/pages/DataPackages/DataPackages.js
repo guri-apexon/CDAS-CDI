@@ -1,7 +1,7 @@
 /* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/no-array-index-key */
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import Paper from "apollo-react/components/Paper";
@@ -22,20 +22,14 @@ import ButtonGroup from "apollo-react/components/ButtonGroup";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import "./DataPackages.scss";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
-import { getUserInfo, toast } from "../../utils";
+import { getUserInfo, toast, validateFields } from "../../utils";
+import { submitDataPackage } from "../../services/ApiServices";
 import {
   addDataPackage,
   getPackagesList,
 } from "../../store/actions/DataPackageAction";
-// import CreatepackageForm from "./CreatePackageForm";
-
-const compressionTypes = [
-  { text: "Not Compressed", value: "not_compressed" },
-  { text: "Zip", value: "zip" },
-  { text: "7Z", value: "7z" },
-  { text: "SAS XPT", value: "xpt" },
-  { text: "RAR", value: "rar" },
-];
+import { MessageContext } from "../../components/Providers/MessageProvider";
+import { packageComprTypes } from "../../utils/constants";
 
 const useStyles = makeStyles(() => ({
   rightPanel: {
@@ -48,7 +42,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const DataPackages = () => {
+const DataPackages = React.memo(() => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
@@ -64,8 +58,12 @@ const DataPackages = () => {
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
   const userInfo = getUserInfo();
+  const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
 
-  const { dfId, selectedCard } = dashboard;
+  const {
+    selectedCard,
+    selectedDataFlow: { dataFlowId: dfId },
+  } = dashboard;
 
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -88,14 +86,6 @@ const DataPackages = () => {
     setConfigShow(false);
     setShowForm(false);
   };
-  const validateFields = () => {
-    const nameArr = namingConvention.split(".");
-    if (compression === nameArr[1]) {
-      console.log("nameArr[1]", nameArr[1], compression);
-      return true;
-    }
-    return false;
-  };
   // const getPackages = (query = "") => {
   //   dispatch(getPackagesList(query));
   // };
@@ -110,12 +100,9 @@ const DataPackages = () => {
     if (packageData.openAddPackage) setShowForm(true);
   }, [packageData.openAddPackage]);
 
-  // useEffect(() => {
-  //   getPackages();
-  // }, []);
   // eslint-disable-next-line consistent-return
-  const submitPackage = () => {
-    const validated = validateFields();
+  const submitPackage = async () => {
+    const validated = validateFields(namingConvention, compression);
     setNotMatchedType(!validated);
     if (!validated) return false;
     if (namingConvention === "" || compression === "") {
@@ -131,7 +118,13 @@ const DataPackages = () => {
       dataflow_id: dfId,
       user_id: userInfo.userId,
     };
-    dispatch(addDataPackage(reqBody));
+    const result = await submitDataPackage(reqBody);
+    if (result.status === 1) {
+      showSuccessMessage(result.message);
+      dispatch(addDataPackage());
+    } else {
+      showErrorMessage(result.message);
+    }
     resetForm();
   };
 
@@ -143,6 +136,9 @@ const DataPackages = () => {
     setIsPanelOpen(true);
   };
 
+  useEffect(() => {
+    console.log("packageRender");
+  }, []);
   return (
     <div className="data-packages-wrapper">
       <Panel
@@ -164,6 +160,7 @@ const DataPackages = () => {
           <Paper className="no-shadow">
             <Box className="top-content">
               <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />
+              {console.log("renderAgainPackage")}
               {showForm && (
                 <>
                   <div className="flex title">
@@ -172,9 +169,6 @@ const DataPackages = () => {
                       Creating New Package
                     </Typography>
                   </div>
-                  {/* <Typography variant="body2" className="b-font dataset-count">
-                6 datasets
-              </Typography> */}
                   <ButtonGroup
                     alignItems="right"
                     buttonProps={[
@@ -212,7 +206,6 @@ const DataPackages = () => {
                   </div>
                   {configShow && (
                     <div className="package-form">
-                      {/* <CreatepackageForm onSubmit={onSubmit} /> */}
                       <Select
                         error={notMatchedType}
                         label="Package Compression Type"
@@ -222,7 +215,7 @@ const DataPackages = () => {
                         onChange={(e) => setCompression(e.target.value)}
                         className="mb-20 package-type"
                       >
-                        {compressionTypes.map((type, i) => (
+                        {packageComprTypes.map((type, i) => (
                           <MenuItem key={i} value={type.value}>
                             {type.text}
                           </MenuItem>
@@ -283,6 +276,6 @@ const DataPackages = () => {
       {/* </Grid> */}
     </div>
   );
-};
+});
 
 export default DataPackages;

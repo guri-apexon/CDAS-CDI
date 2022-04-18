@@ -35,6 +35,7 @@ import {
   checkFormat,
   checkRequiredValue,
   checkCharacterLength,
+  checkAlphaNumericFileName,
 } from "../../../../../components/FormComponents/validators";
 
 const fieldStyles = {
@@ -55,7 +56,7 @@ const fieldStylesNo = {
 export const makeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText = checkRequiredValue(row[key], key, row.primary);
+    const errorText = checkRequiredValue(row[key], key, row.primaryKey);
     return row.editMode ? (
       <Select
         size="small"
@@ -109,7 +110,7 @@ export const DataTypeEditableSelectCell =
 export const editableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText = checkRequiredValue(row[key], key, row.primary);
+    const errorText = checkRequiredValue(row[key], key, row.primaryKey);
 
     return row.editMode ? (
       <Select
@@ -158,7 +159,8 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
   const { editMode } = row;
-  const errorText = checkRequired(row[key]);
+  const errorText =
+    checkAlphaNumericFileName(row[key]) || checkRequired(row[key]);
   return editMode ? (
     <TextField
       size="small"
@@ -170,8 +172,10 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
-      helperText={!row.isInitLoad ? errorText : ""}
+      error={
+        (!row.isInitLoad || row.isHavingColumnName) && errorText ? true : false
+      }
+      helperText={!row.isInitLoad || row.isHavingColumnName ? errorText : ""}
       {...fieldStyles}
     />
   ) : (
@@ -325,10 +329,10 @@ export const columns = [
   },
   {
     header: "Primary?",
-    accessor: "primary",
+    accessor: "primaryKey",
     customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("primary"),
+    filterFunction: createStringArraySearchFilter("primaryKey"),
     filterComponent: createSelectFilterComponent(["Yes", "No"], {
       size: "small",
       multiple: true,

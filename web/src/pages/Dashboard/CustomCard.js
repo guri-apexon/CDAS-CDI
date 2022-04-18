@@ -15,6 +15,7 @@ const CustomCard = ({
   isPinned,
   unPinningStudy,
   pinningStudy,
+  disablePinning,
   setSelectedStudy,
   selectedStudy,
   classes,
@@ -68,7 +69,11 @@ const CustomCard = ({
             {isPinned ? (
               <PinnedIcon onClick={() => unPinningStudy(protId)} />
             ) : (
-              <UnPinnedIcon onClick={() => pinningStudy(protId)} />
+              <>
+                {!disablePinning && (
+                  <UnPinnedIcon onClick={() => pinningStudy(protId)} />
+                )}
+              </>
             )}
           </div>
         </div>

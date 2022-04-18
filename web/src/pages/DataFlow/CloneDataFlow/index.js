@@ -32,6 +32,7 @@ import searchStudy, {
 } from "../../../services/ApiServices";
 import "./index.scss";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
+import { SelectedDataflow } from "../../../store/actions/DashboardAction";
 
 const styles = {
   paper: {
@@ -64,19 +65,12 @@ const styles = {
 };
 const useStyles = makeStyles(styles);
 
-const CloneDataFlow = ({
-  open,
-  handleModalClose,
-  handleSelect,
-  handleBack,
-  selectedStudy,
-  dataflowList,
-  studyList,
-}) => {
+const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
   const [isActive, setIsActive] = useState(false);
+  const [selectedStudy, setSelectedStudy] = useState(null);
   const [searchTxt, setSearchTxt] = useState("");
   const [studies, setStudies] = useState([]);
   const [datflows, setDatflows] = useState([]);
@@ -112,13 +106,16 @@ const CloneDataFlow = ({
     [searchTxt]
   );
 
-  const setDetail = async (study) => {
+  const setStudyDetails = async (study) => {
     setLoadingTableData(true);
-    await handleSelect(study);
+    await setSelectedStudy(study);
     await setSearchTxt("");
     await setStudies([]);
     await setDatflows([]);
     setLoadingTableData(false);
+  };
+  const handleBack = () => {
+    setSelectedStudy(null);
   };
 
   const FormatCell = ({ row, column: { accessor } }) => {
@@ -129,7 +126,7 @@ const CloneDataFlow = ({
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events
       <div
         className="result-row"
-        onClick={() => setDetail(row)}
+        onClick={() => setStudyDetails(row)}
         role="menu"
         tabIndex={0}
       >
@@ -158,64 +155,6 @@ const CloneDataFlow = ({
       width: "25%",
     },
   ];
-
-  const ModalComponent = () => {
-    return (
-      <div style={{ minHeight: "413px" }}>
-        <>
-          <Typography variant="caption">Search for a study</Typography>
-          <Search
-            // onKeyDown={searchTrigger}
-            style={{ marginTop: "0px" }}
-            placeholder="Search"
-            value={searchTxt}
-            onChange={(e) => searchTrigger(e, "study")}
-            fullWidth
-          />
-          {loading ? (
-            <Box display="flex" className="loader-container">
-              <ApolloProgress />
-            </Box>
-          ) : (
-            <Table
-              columns={studyColumns}
-              rows={studies}
-              rowId="prot_id"
-              hidePagination
-              maxHeight="40vh"
-              emptyProps={{
-                text: searchTxt === "" && !loading ? "" : "No data to display",
-              }}
-            />
-          )}
-        </>
-
-        {/* <Button variant="secondary" size="small">
-          Cancel
-        </Button>
-        <Button variant="secondary" size="small">
-          Back
-        </Button> */}
-      </div>
-    );
-  };
-
-  const ActionCell = ({ row }) => {
-    return (
-      <div style={{ width: 68 }}>
-        <IconButton
-          size="small"
-          data-id={row.employeeId}
-          style={{ marginRight: 4 }}
-        >
-          <Pencil />
-        </IconButton>
-        <IconButton size="small" data-id={row.employeeId}>
-          <OpenNew />
-        </IconButton>
-      </div>
-    );
-  };
 
   const RenderDataFlowDetails = () => {
     const backBtn = (
@@ -380,7 +319,7 @@ const CloneDataFlow = ({
   const handleDataFlowSelect = async (row) => {
     const data = await fetchDataFlowSource(row.dataflowid);
     await setDataFlowSource(data);
-    await setDetail(row);
+    await setStudyDetails({ ...selectedStudy, dataflow: row });
   };
 
   const DfFormatCell = ({ row, column: { accessor } }) => {
@@ -452,13 +391,13 @@ const CloneDataFlow = ({
       },
     ];
     const searchDataflow = (e) => {
-      const newValue = e.target.value;
+      const newValue = e ? e.target.value : "";
       setSearchText(newValue);
       debounceFunction(async () => {
         setLoading(true);
         const newDataflows = await searchDataflows(
           newValue,
-          selectedStudy.study.prot_id
+          selectedStudy?.prot_id
         );
         setDatflows(newDataflows.dataflows ? newDataflows.dataflows : []);
         setLoading(false);
@@ -478,7 +417,7 @@ const CloneDataFlow = ({
               <span className="selected-study-table">
                 <Table
                   columns={selectedStudyColumns}
-                  rows={[selectedStudy.study]}
+                  rows={[selectedStudy]}
                   rowId="prot_id"
                   hidePagination
                 />
@@ -516,18 +455,29 @@ const CloneDataFlow = ({
     );
   });
 
+  // eslint-disable-next-line consistent-return
   const handleClone = async () => {
     try {
       setLoading(true);
-      const res = await getDataFlowDetails(selectedStudy.dataflow.dataflowid);
-      console.log("res", res);
+      const res = await getDataFlowDetails(selectedStudy?.dataflow?.dataflowid);
+      if (!res) {
+        messageContext.showErrorMessage(`Something went wrong`);
+        return false;
+      }
       res.externalSystemName = "CDI";
-      const data = await dataflowSave(res);
+      const { dataflowDetails } = await dataflowSave(res);
       setLoading(false);
-      messageContext.showSuccessMessage(
-        `Selected Dataflow has been cloned to this study.`
-      );
-      history.push(`/dashboard/dataflow-management/${data.dataflowId}`);
+      if (dataflowDetails) {
+        dispatch(SelectedDataflow(dataflowDetails));
+        messageContext.showSuccessMessage(
+          `Selected Dataflow has been cloned to this study.`
+        );
+        history.push(
+          `/dashboard/dataflow-management/${dataflowDetails?.dataFlowId}`
+        );
+      } else {
+        messageContext.showErrorMessage(`Something wrong with clone`);
+      }
     } catch (error) {
       console.log(error);
       setLoading(false);
@@ -535,18 +485,14 @@ const CloneDataFlow = ({
     }
   };
 
-  // useEffect(() => {
-  //   console.log("selectedStudy", selectedStudy);
-  //   if (selectedStudy) {
-  //     setDatflows(flowData);
-  //   }
-  // }, [flowData]);
   useEffect(() => {
-    console.log("Render", selectedStudy);
+    return () => {
+      setSelectedStudy(null);
+    };
   }, []);
   return (
     <>
-      {selectedStudy.study ? (
+      {selectedStudy ? (
         <>
           <Modal
             open={open}
@@ -556,28 +502,17 @@ const CloneDataFlow = ({
             buttonProps={[
               {
                 size: "small",
-                className:
-                  selectedStudy.dataflow && selectedStudy.study
-                    ? ""
-                    : "left-btn",
+                className: selectedStudy?.dataflow ? "" : "left-btn",
               },
               {
                 size: "small",
-                variant:
-                  selectedStudy.dataflow && selectedStudy.study
-                    ? "primary"
-                    : "secondary",
+                variant: selectedStudy?.dataflow ? "primary" : "secondary",
                 disabled:
                   loading ||
                   (selectedStudy.dataflow && !dataFlowSource?.length),
-                label:
-                  selectedStudy.dataflow && selectedStudy.study
-                    ? "Clone & Edit"
-                    : "Back",
+                label: selectedStudy.dataflow ? "Clone & Edit" : "Back",
                 onClick: () =>
-                  selectedStudy.dataflow && selectedStudy.study
-                    ? handleClone()
-                    : handleBack(),
+                  selectedStudy.dataflow ? handleClone() : handleBack(),
               },
             ]}
             id="dataflowModal"

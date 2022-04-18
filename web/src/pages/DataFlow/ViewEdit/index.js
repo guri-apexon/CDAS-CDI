@@ -22,12 +22,13 @@ import {
   changeFormFieldData,
   hideErrorMessage,
   getLocationByType,
-  addDataFlow,
   getDataFlowDetail,
 } from "../../../store/actions/DataFlowAction";
 
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
+import { getUserInfo } from "../../../utils";
+import { updateDataflow } from "../../../services/ApiServices";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -72,13 +73,20 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const dataFlowData = useSelector((state) => state.dataFlow);
   const dashboardData = useSelector((state) => state.dashboard);
   const dataSetCount = dashboardData?.selectedDataFlow?.dataSets;
-  const { selectedLocation, createTriggered, error, loading, dataFlowdetail } =
-    dataFlowData;
+  const {
+    selectedLocation,
+    createTriggered,
+    error,
+    loading,
+    dataFlowdetail,
+    updated,
+  } = dataFlowData;
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
   const [dataflowSource, setDataFlowSource] = useState({});
   const { dataflowId } = useParams();
+  const userInfo = getUserInfo();
 
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
@@ -141,18 +149,17 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
-    // console.log("FormValues?", FormValues);
-    // console.log("protId", protId);
+    // console.log("FormValues", FormValues, protId, selectedLocation, dataflowId);
     if (
-      FormValues.vendors &&
-      FormValues.locationName &&
-      FormValues.serviceOwnerValue &&
-      FormValues.description !== "" &&
-      protId !== ""
+      FormValues?.vendors &&
+      selectedLocation &&
+      FormValues?.description !== "" &&
+      protId !== "" &&
+      dataflowId
     ) {
       const payload = {
         vendorID: FormValues.vendors[0],
-        locationName: FormValues.locationName[0],
+        locationName: selectedLocation.value,
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.dataflowType,
         testFlag: FormValues.dataflowType === "test" ? "true" : "false",
@@ -160,12 +167,20 @@ const DataFlow = ({ FormValues, dashboard }) => {
         description: FormValues.description,
         firstFileDate: FormValues.firstFileDate,
         locationType: FormValues.locationType,
-        serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
+        serviceOwnerValue: FormValues.serviceOwnerValue?.length
+          ? FormValues.serviceOwnerValue[0].label
+          : "",
         protocolNumberStandard: protId,
         externalSystemName: "CDI",
+        dataflowId,
+        userId: userInfo.userId,
       };
-      await dispatch(addDataFlow(payload));
-      history.push("/dashboard");
+      const result = await updateDataflow(payload);
+      if (result.status === 1) {
+        messageContext.showSuccessMessage(result.message);
+      } else {
+        messageContext.showErrorMessage(result.message);
+      }
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
     }
@@ -178,6 +193,11 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const handleOpen = () => {
     setIsPanelOpen(true);
   };
+  useEffect(() => {
+    if (!selectedLocation?.value && dataFlowData?.dataFlowdetail?.srclocid) {
+      changeLocationData(dataFlowData?.dataFlowdetail?.srclocid);
+    }
+  }, [dataFlowData]);
 
   return (
     <div className={classes.root}>

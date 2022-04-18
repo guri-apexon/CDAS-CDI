@@ -32,7 +32,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
   const { protocolnumber } = selectedCard;
   const [loading, setLoading] = useState(false);
 
-  const numberOfRows = 1;
   const maxSize = 150000;
 
   const handleUpload = (selected) => {
@@ -62,7 +61,14 @@ const ColumnsTab = ({ locationType, headerValue }) => {
         const wsname = readedData.SheetNames[0];
         const ws = readedData.Sheets[wsname];
         const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        setImportedData(dataParse);
+        if (dataParse[0]?.length) {
+          setImportedData(dataParse);
+        } else {
+          messageContext.showErrorMessage(
+            `Template is not available for files with no header row`
+          );
+          setSelectedFile([]);
+        }
       };
       reader.readAsBinaryString(f);
     }, 1000);
@@ -73,7 +79,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
       datacolumns.length > 1
         ? datacolumns.map((column, i) => {
             const newObj = {
-              columnId: i + 1,
               dbColumnId: column.columnid,
               uniqueId: `u${i}`,
               variableLabel: column.variable || "",
@@ -103,14 +108,13 @@ const ColumnsTab = ({ locationType, headerValue }) => {
       arr.length > 0
         ? arr.map((column, i) => {
             const newObj = {
-              columnId: i + 1,
               dbColumnId: column.columnid || "",
               uniqueId: `u${i}`,
               variableLabel: column.varable || "",
               columnName: column.columnName || "",
               format: column.format || "",
               dataType: column.dataType || "",
-              primary: column.primarykey === true ? "Yes" : "No",
+              primaryKey: column.primarykey === true ? "Yes" : "No",
               unique: column.unique === true ? "Yes" : "No",
               required: column.required === true ? "Yes" : "No",
               minLength: column.charactermin || "",
@@ -139,7 +143,7 @@ const ColumnsTab = ({ locationType, headerValue }) => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        const newData = formatData(importedData, protocolnumber);
+        const newData = formatData(importedData, protocolnumber, true);
         // eslint-disable-next-line no-unused-expressions
         if (newData.length > 1) {
           setFormattedData(newData);
@@ -161,7 +165,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
 
   useEffect(() => {
     if (!isSftp(locationType)) {
-      setLoading(true);
       if (datasetColumns.length > 0) {
         formatDBColumns(datasetColumns);
         setSelectedMethod("fromDB");
@@ -179,20 +182,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
   };
-
-  const showTable = React.useMemo(() => {
-    return (
-      <>
-        <DSColumnTable
-          numberOfRows={numberOfRows}
-          formattedData={formattedData}
-          dataOrigin={selectedMethod}
-          locationType={locationType}
-          headerValue={headerValue}
-        />
-      </>
-    );
-  }, [showColumns, loading]);
 
   return (
     <>
@@ -253,7 +242,14 @@ const ColumnsTab = ({ locationType, headerValue }) => {
           </div>
         </div>
       )}
-      {showColumns && !loading && <>{showTable}</>}
+      {showColumns && !loading && (
+        <DSColumnTable
+          formattedData={formattedData}
+          dataOrigin={selectedMethod}
+          locationType={locationType}
+          headerValue={headerValue}
+        />
+      )}
     </>
   );
 };

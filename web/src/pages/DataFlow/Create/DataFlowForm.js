@@ -127,6 +127,7 @@ const DataFlowFormBase = (props) => {
               singleSelect
               variant="search"
               fullWidth
+              required
             />
             <ReduxFormTextField
               fullWidth
@@ -135,6 +136,7 @@ const DataFlowFormBase = (props) => {
               inputProps={{ maxLength: 30 }}
               onChange={(v) => changeFormField(v, "description")}
               label="Description"
+              required
             />
             <div className="expected-date">
               <ReduxFormDatePickerV2
@@ -142,6 +144,7 @@ const DataFlowFormBase = (props) => {
                 dateFormat="DD MMM YYYY"
                 placeholder="DD MMM YYYY"
                 label="Expected First File Date"
+                required
               />
             </div>
 
@@ -149,6 +152,7 @@ const DataFlowFormBase = (props) => {
               name="dataflowType"
               onChange={(v) => changeFormField(v, "dataflowType")}
               label="Data Flow Type"
+              required
             >
               <Radio value="test" label="Test" />
               <Radio value="production" label="Production" />

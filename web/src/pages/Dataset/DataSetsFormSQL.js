@@ -123,20 +123,6 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 labelPlacement="start"
               />
-              {formValues.active && (
-                <Status
-                  variant="positive"
-                  icon={RadioError}
-                  size="small"
-                  style={{ marginLeft: 35 }}
-                  label={
-                    // eslint-disable-next-line react/jsx-wrap-multilines
-                    <Typography variant="body2" style={{ color: "#595959" }}>
-                      Ready
-                    </Typography>
-                  }
-                />
-              )}
             </div>
           </div>
           <Grid container spacing={3}>
@@ -230,6 +216,7 @@ const DataSetsFormBase = (props) => {
                 singleline
                 inputProps={{ maxLength: 255 }}
                 label="Table Name"
+                disabled={prodLock}
               />
               <ReduxFormTextField
                 fullWidth
@@ -276,6 +263,7 @@ const DataSetsFormBase = (props) => {
                   singleline
                   inputProps={{ maxLength: 255 }}
                   label="Offset Column"
+                  disabled={prodLock}
                 />
               )}
             </>

@@ -93,6 +93,13 @@ exports.saveDatasetColumns = async (req, res) => {
   } catch (err) {
     Logger.error("catch :storeDatasetColumns");
     Logger.error(err);
+    if (err.code === "23505") {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Column name should be unique for a dataset",
+        "Operation failed"
+      );
+    }
     return apiResponse.ErrorResponse(res, err);
   }
 };
@@ -108,71 +115,74 @@ exports.updateColumns = async (req, res) => {
     }
 
     Logger.info({ message: "update set columns" });
-    const updateQuery = `UPDATE ${schemaName}.columndefinition SET "variable"=$2, datasetid=$3, "nam"e=$4, "datatype"=$5, primarykey=$6, "required"=$7, "unique"=$8, charactermin=$9, charactermax=$10, "position"=$11, "format"=$12, lov=$13, updt_tm=$14 WHERE columnid=$1`;
-    const selectQuery = `select datasetid, columnid, "variable", "name", "datatype", primarykey, "required", "unique", charactermin, charactermax, "position", "format", lov from ${schemaName}.columndefinition where columnid=$1`;
+
+    const updateQuery = `UPDATE ${schemaName}.columndefinition
+    SET "name"=$1, "datatype"=$2, primarykey=$3, "required"=$4, charactermin=$5, charactermax=$6, "position"=$7, "format"=$8, lov=$9, "unique"=$10, "variable"=$11, updt_tm=Now() WHERE datasetid=$12 AND columnid=$13`;
+    const selectQuery = `SELECT datasetid, columnid, "name", "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, requiredfield, "unique", variable, del_flg, insrt_tm, updt_tm
+    FROM ${schemaName}.columndefinition`;
 
     if (values && values.length > 0) {
       for (let value of values) {
         const body = [
-          value.dbColumnId,
-          value.variableLabel.trim() || null,
-          dsId,
           value.columnName.trim() || null,
-          value.dataType.trim(),
+          value.dataType.trim() || null,
           value.primaryKey === "Yes" ? 1 : 0,
           value.required === "Yes" ? 1 : 0,
-          value.unique === "Yes" ? 1 : 0,
-          value.minLength,
-          value.maxLength,
+          value.minLength || 0,
+          value.maxLength || 0,
           value.position || 0,
           value.format.trim() || null,
           value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
-          curDate,
+          value.unique === "Yes" ? 1 : 0,
+          value.variableLabel.trim() || null,
+          dsId,
+          value.dbColumnId.trim(),
         ];
 
         await DB.executeQuery(updateQuery, body);
 
         const requestData = {
           datasetid: dsId,
-          columnid: value.columnId.trim(),
+          columnid: value.dbColumnId.trim(),
           variable: value.variableLabel.trim() || null,
           name: value.columnName.trim() || null,
           datatype: value.dataType.trim() || null,
           primarykey: value.primaryKey == "Yes" ? 1 : 0,
           required: value.required == "Yes" ? 1 : 0,
           unique: value.unique == "Yes" ? 1 : 0,
-          charactermin: value.minLength.trim() || null,
-          charactermax: value.maxLength.trim() || null,
-          position: value.position.trim() || null,
+          charactermin: value.minLength || 0,
+          charactermax: value.maxLength || 0,
+          position: value.position.trim() || 0,
           format: value.format.trim() || null,
           lov: value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
         };
 
         const config_json = JSON.stringify(requestData);
 
-        const { rows: tempData } = await DB.executeQuery(selectQuery, [
-          value.columnId.trim(),
-        ]);
-        const oldData = tempData[0];
+        // const { rows: tempData } = await DB.executeQuery(selectQuery, [
+        //   value.dbColumnId,
+        // ]);
 
-        for (const key in requestData) {
-          if (`${requestData[key]}` != oldData[key]) {
-            if (oldData[key] != null) {
-              const historyVersion = await CommonController.addColumnHistory(
-                value.columnId.trim(),
-                dsId,
-                dfId,
-                dpId,
-                userId,
-                config_json,
-                key,
-                oldData[key],
-                `${requestData[key]}`
-              );
-              if (!historyVersion) throw new Error("History not updated");
-            }
-          }
-        }
+        // const oldData = tempData[0];
+
+        // for (const key in requestData) {
+        //   if (`${requestData[key]}` != oldData[key]) {
+        //     if (oldData[key] != null) {
+        //       const historyVersion = await CommonController.addColumnHistory(
+        //         value.dbColumnId.trim(),
+        //         dsId,
+        //         dfId,
+        //         dpId,
+        //         userId,
+        //         config_json,
+        //         key,
+        //         oldData[key],
+        //         `${requestData[key]}`
+        //       );
+        //       if (!historyVersion) throw new Error("History not updated");
+        //     }
+        //   }
+        // }
       }
 
       const datasetColumns = values;
@@ -186,6 +196,13 @@ exports.updateColumns = async (req, res) => {
   } catch (err) {
     Logger.error("catch :update set columns");
     Logger.error(err);
+    if (err.code === "23505") {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Column name should be unique for a dataset",
+        "Operation failed"
+      );
+    }
     return apiResponse.ErrorResponse(res, err);
   }
 };
@@ -269,6 +286,13 @@ exports.lovUpdate = async (req, res) => {
   } catch (err) {
     Logger.error("catch: lovUpdate");
     Logger.error(err);
+    if (err.code === "23505") {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Column name should be unique for a dataset",
+        "Operation failed"
+      );
+    }
     return apiResponse.ErrorResponse(res, err);
   }
 };
