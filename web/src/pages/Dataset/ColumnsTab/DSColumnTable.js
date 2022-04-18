@@ -221,7 +221,7 @@ export default function DSColumnTable({
       setShowOverWrite(false);
       const correctHeader = await checkHeaders(importedData);
       if (correctHeader) {
-        const newData = await formatDataNew(importedData, protocolnumber);
+        const newData = formatDataNew(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
         if (newData?.headerNotMatching) {
           messageContext.showErrorMessage(
