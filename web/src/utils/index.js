@@ -386,6 +386,46 @@ export const checkHeaders = (data) => {
   return validation;
 };
 
+const setYN = (d) => (d === "Y" ? "Yes" : "No");
+
+export const formatDataNew = (incomingData, protNo) => {
+  const data = incomingData.slice(1); // removing header
+  let isAllDataMatch = false;
+  if (data.length === 1) {
+    isAllDataMatch = data[0][0] === protNo;
+  } else if (data.length > 1) {
+    isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
+  }
+  if (isAllDataMatch) {
+    const newData =
+      data.length > 0
+        ? data.map((e, i) => {
+            const newObj = {
+              uniqueId: `u${i}`,
+              variableLabel: e[1] || "",
+              columnName: e[2] || "",
+              position: "",
+              format: e[3] || "",
+              dataType: e[4] || "",
+              primaryKey: setYN(e[5]),
+              unique: setYN(e[6]),
+              required: setYN(e[7]),
+              minLength: e[8] || "",
+              maxLength: e[9] || "",
+              values: e[10] || "",
+              isInitLoad: true,
+              isHavingError: false,
+              isHavingColumnName: true,
+              isHavingDataType: true,
+            };
+            return newObj;
+          })
+        : [];
+    return { headerNotMatching: false, data: newData };
+  }
+  return { headerNotMatching: !isAllDataMatch, data: [] };
+};
+
 export const formatData = (incomingData, protNo) => {
   const data = incomingData.slice(1); // removing header
   let isAllDataMatch = false;
@@ -394,7 +434,7 @@ export const formatData = (incomingData, protNo) => {
   } else {
     isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
   }
-  const setYN = (d) => (d === "Y" ? "Yes" : "No");
+
   if (isAllDataMatch) {
     const newData =
       data.length > 0
