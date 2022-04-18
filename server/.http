@@ -669,3 +669,10 @@ content-type: application/json
     "extrnl_sys_nm": "Externalsyst",
     "loc_alias_nm": "LocationName"
 }
+
+### get password of location 
+
+POST http://localhost:4001/v1/api/location/get_password/7u6g7ihq2trdfctu HTTP/1.1
+
+{
+}
