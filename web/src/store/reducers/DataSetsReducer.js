@@ -167,6 +167,8 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.loadType =
             dataset.incremental === "Y" ? "Incremental" : "Cumulative";
           newState.formData.datasetid = dataset.datasetid;
+          newState.haveHeader =
+            parseInt(action.dataset.headerrownumber, 10) > 0;
         }
         if (dataset.customsql_yn) {
           newState.formDataSQL.active = dataset.active === 1 ? true : false;
@@ -180,9 +182,9 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL.dataType =
             dataset.incremental === "N" ? "Cumulative" : "Incremental";
           newState.formDataSQL.datasetid = dataset.datasetid;
-          newState.haveHeader =
-            parseInt(action.dataset.headerrownumber, 10) > 0;
+          newState.haveHeader = true;
         }
+
         newState.dsCreatedSuccessfully = true;
         break;
       case STORE_DATASET_FAILURE:
@@ -344,6 +346,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.loadType =
             incremental === "Y" ? "Incremental" : "Cumulative";
           newState.formData.datasetid = datasetid;
+          newState.haveHeader = parseInt(headerrownumber, 10) > 0;
         }
         if (customsql_yn) {
           newState.formDataSQL.active = active === 1 ? true : false;
@@ -357,8 +360,9 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL.dataType =
             incremental === "N" ? "Cumulative" : "Incremental";
           newState.formDataSQL.datasetid = datasetid;
+          newState.haveHeader = true;
         }
-        newState.haveHeader = parseInt(headerrownumber, 10) > 0;
+
         newState.isDatasetFetched = true;
         newState.selectedDataset = { ...datasetDetail };
         break;
