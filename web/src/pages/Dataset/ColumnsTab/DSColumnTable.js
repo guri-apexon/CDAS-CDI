@@ -138,6 +138,7 @@ export default function DSColumnTable({
         );
         if (matchingData?.columnid) {
           e.dbColumnId = matchingData.columnid;
+          e.values = matchingData.lov;
         }
         return e;
       });
@@ -171,31 +172,6 @@ export default function DSColumnTable({
   const handleViewLOV = (row) => {
     setShowViewLOVs(true);
     setSelectedRow(row);
-  };
-
-  const handleSaveLOV = async () => {
-    if (selectedRow.dbColumnId) {
-      const newQuery = "";
-      dispatch(
-        updateDatasetColumns(
-          [{ ...selectedRow }],
-          dsId,
-          dfId,
-          dpId,
-          userInfo.userId,
-          isCustomSQL === "No",
-          newQuery
-        )
-      );
-      // updateLOV({
-      //   userId: userInfo.userId,
-      //   columnId: selectedRow.dbColumnId,
-      //   dsId,
-      //   dpId,
-      //   dfId,
-      //   lov: selectedRow.values,
-      // });
-    }
   };
 
   const inputFile = useRef(null);
@@ -288,6 +264,45 @@ export default function DSColumnTable({
     setShowViewLOVs(false);
     setIsEditLOVs(false);
     setSelectedRow(null);
+  };
+
+  const handleSaveLOV = async () => {
+    if (selectedRow.dbColumnId) {
+      const newQuery = "";
+      const removeExistingRowData = rows.filter(
+        (e) => e.uniqueId !== selectedRow.uniqueId
+      );
+      const newData = [{ ...selectedRow }]
+        .map((e) => {
+          e.values = e.values.trim();
+          return e;
+        })
+        .map((e) => {
+          const isFirst = e.values.charAt(0) === "~";
+          const isLast = e.values.charAt(e.values.length - 1) === "~";
+          if (isFirst) {
+            e.values = e.values.substring(1);
+          }
+          if (isLast) {
+            e.values = e.values.slice(0, -1);
+          }
+          return e;
+        });
+
+      dispatch(
+        updateDatasetColumns(
+          newData,
+          dsId,
+          dfId,
+          dpId,
+          userInfo.userId,
+          isCustomSQL === "No",
+          newQuery
+        )
+      );
+      setRows([...removeExistingRowData, ...newData]);
+    }
+    hideViewLOVs();
   };
 
   const LinkCell = ({ row }) => {
