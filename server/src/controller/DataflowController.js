@@ -731,17 +731,21 @@ exports.createDataflow = async (req, res) => {
     var ResponseBody = {};
     if (!type && dataStructure) type = dataStructure;
 
-    if (vendorName !== null && protocolNumber !== null && description !== "") {
+    if (
+      vendorName !== null &&
+      protocolNumberStandard !== null &&
+      description !== ""
+    ) {
       const { rows: studyRows } = await DB.executeQuery(
-        `select prot_nbr_stnd from study where prot_id ='${protocolNumber}';`
+        `select prot_id from study where prot_nbr_stnd ='${protocolNumberStandard}';`
       );
       if (!studyRows?.length) {
         return apiResponse.ErrorResponse(res, "Study not found");
       }
       testFlag = helper.stringToBoolean(testFlag);
-      const protNbr = studyRows[0].prot_nbr_stnd;
+      const studyId = studyRows[0].prot_id;
 
-      var DFTestname = `${vendorName}-${protNbr}-${description}`;
+      var DFTestname = `${vendorName}-${protocolNumberStandard}-${description}`;
       if (testFlag === true) {
         DFTestname = "TST-" + DFTestname;
       }
@@ -781,7 +785,7 @@ exports.createDataflow = async (req, res) => {
         externalSystemName || null,
         externalID || null,
         fsrstatus || null,
-        protocolNumber,
+        studyId,
         dFTimestamp,
       ];
       // insert dataflow schema into db
@@ -1067,7 +1071,7 @@ exports.createDataflow = async (req, res) => {
     let config_json = {
       dataFlowId: uid,
       vendorName: vendorName,
-      protocolNumber: protocolNumber,
+      protocolNumber: studyId,
       type: type,
       name: name,
       externalID: externalID,

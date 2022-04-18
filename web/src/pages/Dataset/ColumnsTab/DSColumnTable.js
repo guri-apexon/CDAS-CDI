@@ -3,6 +3,7 @@
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import * as XLSX from "xlsx";
+import _ from "lodash";
 import Table from "apollo-react/components/Table";
 import TextField from "apollo-react/components/TextField";
 import Link from "apollo-react/components/Link";
@@ -13,6 +14,7 @@ import { downloadTemplate } from "../../../utils/downloadData";
 import {
   createDatasetColumns,
   updateDatasetColumns,
+  getDatasetColumns,
 } from "../../../store/actions/DataSetsAction";
 import { deleteCD } from "../../../services/ApiServices";
 import {
@@ -26,7 +28,6 @@ import { allowedTypes } from "../../../constants";
 const maxSize = 150000;
 
 export default function DSColumnTable({
-  numberOfRows,
   dataOrigin,
   formattedData,
   locationType,
@@ -39,7 +40,6 @@ export default function DSColumnTable({
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
   const dataSets = useSelector((state) => state.dataSets);
-  const dataFlow = useSelector((state) => state.dataFlow);
   const { selectedDataset } = dataSets;
   const {
     type: fileType,
@@ -47,29 +47,32 @@ export default function DSColumnTable({
     headerrownumber,
     headerRowNumber,
     customsql,
-    customsql_yn: customQuery,
+    customsql_yn: isCustomSQL,
     tbl_nm: tableName,
   } = selectedDataset;
+  const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
-  const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
-    uniqueId: `u${index}`,
-    columnId: index + 1,
-    variableLabel: "",
-    columnName: "",
-    position: "",
-    format: "",
-    dataType: "",
-    primaryKey: "No",
-    unique: "No",
-    required: "No",
-    minLength: "",
-    maxLength: "",
-    values: "",
-    isInitLoad: true,
-    isHavingError: false,
-    isHavingColumnName: false,
-    isHavingDataType: false,
-  }));
+
+  const initialRows = [
+    {
+      uniqueId: `u0`,
+      variableLabel: "",
+      columnName: "",
+      position: "",
+      format: "",
+      dataType: "",
+      primaryKey: "No",
+      unique: "No",
+      required: "No",
+      minLength: "",
+      maxLength: "",
+      values: "",
+      isInitLoad: true,
+      isHavingError: false,
+      isHavingColumnName: false,
+      isHavingDataType: false,
+    },
+  ];
 
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
@@ -169,7 +172,7 @@ export default function DSColumnTable({
           dfId,
           dpId,
           userInfo.userId,
-          customQuery === "No",
+          isCustomSQL === "No",
           newQuery
         )
       );
@@ -313,7 +316,6 @@ export default function DSColumnTable({
       const singleRow = [
         {
           uniqueId: `u${rows.length}`,
-          columnId: rows.length + 1,
           variableLabel: "",
           columnName: "",
           position: "",
@@ -352,7 +354,6 @@ export default function DSColumnTable({
     if (newRows > 0) {
       const multiRows = Array.from({ length: newRows }, (i, index) => ({
         uniqueId: `u${rows.length + index}`,
-        columnId: rows.length + index + 1,
         variableLabel: "",
         columnName: "",
         position: "",
@@ -495,7 +496,7 @@ export default function DSColumnTable({
       const existingCD = await removeSpaces.filter((e) => e.dbColumnId);
       const newCD = await removeSpaces.filter((e) => !e.dbColumnId);
       let newQuery = "";
-      if (customQuery === "No") {
+      if (isCustomSQL === "No") {
         const columnList = removeSpaces.map((e) => e.columnName).join(", ");
         const wherePart = customsql?.indexOf("where");
         if (wherePart) {
@@ -506,32 +507,34 @@ export default function DSColumnTable({
       }
 
       if (newCD && newCD.length > 0) {
-        dispatch(
+        await dispatch(
           createDatasetColumns(
             newCD,
             dsId,
             dfId,
             dpId,
             userInfo.userId,
-            customQuery === "No",
+            isCustomSQL === "No",
             newQuery
           )
         );
       }
 
       if (existingCD && existingCD.length > 0) {
-        dispatch(
+        await dispatch(
           updateDatasetColumns(
             existingCD,
             dsId,
             dfId,
             dpId,
             userInfo.userId,
-            customQuery === "No",
+            isCustomSQL === "No",
             newQuery
           )
         );
       }
+
+      await dispatch(getDatasetColumns(dsId));
     }
   };
 
@@ -551,6 +554,7 @@ export default function DSColumnTable({
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     const removeEdited = editedRows.filter((e) => e !== uniqueId);
     const editedRowData = editedRows
+      .filter((e) => e.uniqueId === uniqueId)
       .map((e) => {
         e.values = e.values.trim();
         e.columnName = e.columnName.trim();
@@ -570,44 +574,54 @@ export default function DSColumnTable({
       .find((e) => e.uniqueId === uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
 
-    let newQuery = "";
-    if (customQuery === "No") {
-      const selectedList = [...selectedCN, editedRowData?.columnName];
-      setSelectedCN(selectedList);
-      const splitted = customsql.split("where");
-      newQuery = `Select ${selectedList.join(
-        ", "
-      )} from ${tableName} where ${splitted[1].trim()}`;
-    }
+    const duplicate = _.find(rows, (e) => {
+      return _.isEqual(e.columnName === editedRowData.columnName);
+    });
 
-    if (editedRowData?.dbColumnId) {
-      dispatch(
-        updateDatasetColumns(
-          [editedRowData],
-          dsId,
-          dfId,
-          dpId,
-          userInfo.userId,
-          customQuery === "No",
-          newQuery
-        )
+    if (duplicate) {
+      messageContext.showErrorMessage(
+        "Column name should be unique for a dataset"
       );
     } else {
-      dispatch(
-        createDatasetColumns(
-          [editedRowData],
-          dsId,
-          dfId,
-          dpId,
-          userInfo.userId,
-          customQuery === "No",
-          newQuery
-        )
-      );
+      let newQuery = "";
+      if (isCustomSQL === "No") {
+        const selectedList = [...selectedCN, editedRowData?.columnName];
+        setSelectedCN(selectedList);
+        const splitted = customsql.split("where");
+        newQuery = `Select ${selectedList.join(
+          ", "
+        )} from ${tableName} where ${splitted[1].trim()}`;
+      }
+
+      if (editedRowData?.dbColumnId) {
+        await dispatch(
+          updateDatasetColumns(
+            [editedRowData],
+            dsId,
+            dfId,
+            dpId,
+            userInfo.userId,
+            isCustomSQL === "No",
+            newQuery
+          )
+        );
+      } else {
+        dispatch(
+          createDatasetColumns(
+            [editedRowData],
+            dsId,
+            dfId,
+            dpId,
+            userInfo.userId,
+            isCustomSQL === "No",
+            newQuery
+          )
+        );
+      }
+      setRows([...removeExistingRowData, editedRowData]);
+      setEditedRows([...removeEdited]);
+      setSelectedRows([...removeRow]);
     }
-    setRows([...removeExistingRowData, editedRowData]);
-    setEditedRows([...removeEdited]);
-    setSelectedRows([...removeRow]);
   };
 
   const onRowEdit = (uniqueId) => {

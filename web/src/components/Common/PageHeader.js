@@ -9,7 +9,7 @@ const PageHeader = ({ height = 120 }) => {
   const location = useLocation();
 
   const dashboard = useSelector((state) => state.dashboard);
-  const { selectedCard, dfId } = dashboard;
+  const { selectedCard } = dashboard;
 
   useEffect(() => {
     const updateData = [

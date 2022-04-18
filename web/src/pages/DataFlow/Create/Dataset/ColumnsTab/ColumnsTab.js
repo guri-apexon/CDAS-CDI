@@ -32,7 +32,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
   const { protocolnumber } = selectedCard;
   const [loading, setLoading] = useState(false);
 
-  const numberOfRows = 1;
   const maxSize = 150000;
 
   const handleUpload = (selected) => {
@@ -80,7 +79,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
       datacolumns.length > 1
         ? datacolumns.map((column, i) => {
             const newObj = {
-              columnId: i + 1,
               dbColumnId: column.columnid,
               uniqueId: `u${i}`,
               variableLabel: column.variable || "",
@@ -110,7 +108,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
       arr.length > 0
         ? arr.map((column, i) => {
             const newObj = {
-              columnId: i + 1,
               dbColumnId: column.columnid || "",
               uniqueId: `u${i}`,
               variableLabel: column.varable || "",
@@ -247,7 +244,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
       )}
       {showColumns && !loading && (
         <DSColumnTable
-          numberOfRows={numberOfRows}
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}

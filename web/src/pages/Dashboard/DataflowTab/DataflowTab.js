@@ -42,7 +42,6 @@ import {
 import Clone from "../../DataFlow/CloneDataFlow";
 import {
   SelectedDataflow,
-  updateSelectedDataflow,
   updateSelectedStudy,
 } from "../../../store/actions/DashboardAction";
 
@@ -257,7 +256,6 @@ export default function DataflowTab({ updateData }) {
   };
 
   const handleLink = (dataFlowId, dataFlow) => {
-    dispatch(updateSelectedDataflow(dataFlowId));
     dispatch(SelectedDataflow(dataFlow));
     history.push(`/dashboard/dataflow-management/${dataFlowId}`);
   };

@@ -33,7 +33,6 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
 
-  const numberOfRows = 1;
   const maxSize = 150000;
 
   const handleUpload = (selected) => {
@@ -74,7 +73,6 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       datacolumns.length > 0
         ? datacolumns.map((column, i) => {
             const newObj = {
-              columnId: i + 1,
               dbColumnId: column.columnid,
               uniqueId: `u${i}`,
               variableLabel: column.variable || "",
@@ -104,7 +102,6 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       arr.length > 0
         ? arr.map((column, i) => {
             const newObj = {
-              columnId: i + 1,
               dbColumnId: column.columnid || "",
               uniqueId: `u${i}`,
               variableLabel: column.varable || "",
@@ -185,7 +182,6 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
     return (
       <>
         <DSColumnTable
-          numberOfRows={numberOfRows}
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}

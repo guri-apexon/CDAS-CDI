@@ -30,7 +30,6 @@ import {
 
 import {
   checkNumeric,
-  checkAlphaNumericFileName,
   checkAlphaNumeric,
   checkRequired,
   checkFormat,

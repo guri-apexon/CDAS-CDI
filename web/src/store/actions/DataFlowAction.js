@@ -12,6 +12,7 @@ import {
   UPDATE_LOCATION_DATA,
   SAVE_DATAFLOW_LOCAL_DETAIL,
   UPDATE_DS,
+  RESET_DF_FORMDATA,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -92,5 +93,11 @@ export const updateDSState = (status) => {
   return {
     type: UPDATE_DS,
     status,
+  };
+};
+
+export const resetDfFormData = () => {
+  return {
+    type: RESET_DF_FORMDATA,
   };
 };
