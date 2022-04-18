@@ -156,6 +156,26 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   );
 };
 
+export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
+  const errorText = checkNumeric(row[key]);
+  return row.editMode ? (
+    <TextField
+      size="small"
+      fullWidth
+      value={row[key]}
+      onChange={(e) =>
+        row.editRow(row.uniqueId, key, e.target.value, errorText)
+      }
+      disabled={row.dsProdLock}
+      error={!row.isInitLoad && errorText}
+      helperText={!row.isInitLoad ? errorText : ""}
+      {...fieldStylesNo}
+    />
+  ) : (
+    row[key]
+  );
+};
+
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
   const { editMode } = row;
 
@@ -299,7 +319,7 @@ export const columns = [
   {
     header: "Position",
     accessor: "position",
-    customCell: NumericEditableCell,
+    customCell: PositionEditableCell,
     sortFunction: compareNumbers,
     filterFunction: createStringSearchFilter("position"),
     filterComponent: TextFieldFilter,
