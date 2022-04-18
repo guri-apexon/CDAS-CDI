@@ -618,6 +618,7 @@ exports.createDataflow = async (req, res) => {
     var ResponseBody = {};
     if (!type && dataStructure) type = dataStructure;
 
+    let studyId = null;
     if (
       vendorName !== null &&
       protocolNumberStandard !== null &&
@@ -630,7 +631,7 @@ exports.createDataflow = async (req, res) => {
         return apiResponse.ErrorResponse(res, "Study not found");
       }
       testFlag = helper.stringToBoolean(testFlag);
-      const studyId = studyRows[0].prot_id;
+      studyId = studyRows[0].prot_id;
 
       var DFTestname = `${vendorName}-${protocolNumberStandard}-${description}`;
       if (testFlag === true) {
@@ -1842,9 +1843,10 @@ exports.fetchdataflowDetails = async (req, res) => {
   try {
     let { id: dataflow_id } = req.params;
     let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
-    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, S.prot_nbr_stnd
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
+    inner Join ${schemaName}.study S on (d.prot_id = S.prot_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
     inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
@@ -1933,7 +1935,7 @@ exports.fetchdataflowDetails = async (req, res) => {
     }
     let myobj = {
       vendorName: rows[0].vend_nm,
-      protocolNumber: rows[0].prot_id,
+      protocolNumberStandard: rows[0].prot_nbr_stnd,
       type: rows[0].type,
       name: rows[0].dataflowname,
       externalID: rows[0].externalid,
