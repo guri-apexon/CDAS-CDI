@@ -588,3 +588,8 @@ export const validateFields = (name, ext) => {
   }
   return false;
 };
+
+export const goToCore = () => {
+  if (process.env.REACT_APP_CORE_URL)
+    window.location.href = process.env.REACT_APP_CORE_URL;
+};
