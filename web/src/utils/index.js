@@ -72,18 +72,21 @@ export function getLastLogin() {
   const localDate = moment.unix(currentLogin).local();
   return localDate.format("DD-MMM-YYYY hh:mm A");
 }
+const getDomainName = () => {
+  const urlParts = window.location.hostname.split(".");
+  return urlParts
+    .slice(0)
+    .slice(-(urlParts.length === 4 ? 3 : 2))
+    .join(".");
+};
 
 export function deleteAllCookies() {
-  const cookies = document.cookie.split(";");
-
-  // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < cookies.length; i++) {
-    const cookie = cookies[i];
-    const eqPos = cookie.indexOf("=");
-    const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-    // eslint-disable-next-line prefer-template
-    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-  }
+  const domain = getDomainName() || "";
+  document.cookie.split(";").forEach(function (c) {
+    document.cookie = c
+      .replace(/^ +/, "")
+      .replace(/=.*/, `=;expires=${new Date().toUTCString()};domain=${domain}`);
+  });
   return true;
 }
 
