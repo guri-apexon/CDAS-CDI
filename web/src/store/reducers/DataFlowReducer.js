@@ -12,6 +12,7 @@ import {
   GET_SERVICE_OWNERS,
   FETCH_SERVICE_OWNERS_SUCCESS,
   FETCH_SERVICE_OWNERS_FAILURE,
+  RESET_DF_FORMDATA,
   HIDE_ERROR_MSG,
   UPDATE_SELECTED_LOCATION,
   FETCH_DATAFLOW_DETAIL_FAILURE,
@@ -109,6 +110,9 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case GET_SERVICE_OWNERS:
         newState.loading = true;
+        break;
+      case RESET_DF_FORMDATA:
+        newState.formData = {};
         break;
       case FETCH_SERVICE_OWNERS_FAILURE:
         newState.loading = false;

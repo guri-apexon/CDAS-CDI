@@ -212,7 +212,7 @@ const DataFlowFormBase = (props) => {
                   label="Location Name"
                   input={{
                     onChange: changeLocationData,
-                    value: [initialValues?.locations[0].value],
+                    value: [initialValues?.locations[0]?.value],
                   }}
                   source={locations}
                   className="autocomplete_field"
