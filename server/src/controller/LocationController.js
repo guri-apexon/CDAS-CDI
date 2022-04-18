@@ -3,6 +3,7 @@ const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
+const _ = require("lodash");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 async function updateDataflowVersion(locationId, location, userId) {
@@ -107,7 +108,7 @@ exports.searchLocationList = function (req, res) {
 exports.getLocationList = function (req, res) {
   try {
     let type = req.query.type || null;
-    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label, usr_nm, pswd, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
+    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
     let searchQuery = `SELECT ${select} from ${schemaName}.source_location where active=1 order by label asc`;
     let dbQuery = DB.executeQuery(searchQuery);
     Logger.info({ message: "getLocationList" });
@@ -134,17 +135,19 @@ exports.getLocationList = function (req, res) {
     dbQuery
       .then(async (response) => {
         const locations = response.rows || [];
-        const withCredentials = locations.map((d) => {
-          const credentials = helper.readVaultData(d.src_loc_id);
-          if (credentials) {
-            d.usr_nm = credentials.user;
-            d.pswd = credentials.password;
-          } else {
-            d.usr_nm = "Dummy";
-            d.pswd = "DummyPassword";
+
+        const withCredentials = _.map(locations, (d) => {
+          if (d.pswd === "Yes") {
+            // const credentials = helper.readVaultData(d.src_loc_id);
+            // if (credentials) {
+            //   d.pswd = credentials.password;
+            // }
+          } else if (d.pswd === "No") {
+            d.pswd = "";
           }
           return d;
         });
+
         return apiResponse.successResponseWithData(res, "Operation success", {
           records: withCredentials,
           totalSize: response.rowCount,
@@ -156,6 +159,23 @@ exports.getLocationList = function (req, res) {
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :getLocationList");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.getPassword = async function (req, res) {
+  try {
+    const id = req.params.location_id;
+    Logger.info({ message: "getPasswordOfLocation" });
+    const response = await helper.readVaultData(id);
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      response
+    );
+  } catch (err) {
+    Logger.error("catch :getPasswordOfLocation");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
