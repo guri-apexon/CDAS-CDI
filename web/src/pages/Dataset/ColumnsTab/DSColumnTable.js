@@ -138,6 +138,7 @@ export default function DSColumnTable({
         );
         if (matchingData?.columnid) {
           e.dbColumnId = matchingData.columnid;
+          e.values = matchingData.lov;
         }
         return e;
       });
@@ -176,9 +177,29 @@ export default function DSColumnTable({
   const handleSaveLOV = async () => {
     if (selectedRow.dbColumnId) {
       const newQuery = "";
+      const removeExistingRowData = rows.filter(
+        (e) => e.uniqueId !== selectedRow.uniqueId
+      );
+      const newData = [{ ...selectedRow }]
+        .map((e) => {
+          e.values = e.values.trim();
+          return e;
+        })
+        .map((e) => {
+          const isFirst = e.values.charAt(0) === "~";
+          const isLast = e.values.charAt(e.values.length - 1) === "~";
+          if (isFirst) {
+            e.values = e.values.substring(1);
+          }
+          if (isLast) {
+            e.values = e.values.slice(0, -1);
+          }
+          return e;
+        });
+
       dispatch(
         updateDatasetColumns(
-          [{ ...selectedRow }],
+          newData,
           dsId,
           dfId,
           dpId,
@@ -187,14 +208,7 @@ export default function DSColumnTable({
           newQuery
         )
       );
-      // updateLOV({
-      //   userId: userInfo.userId,
-      //   columnId: selectedRow.dbColumnId,
-      //   dsId,
-      //   dpId,
-      //   dfId,
-      //   lov: selectedRow.values,
-      // });
+      setRows([...removeExistingRowData, ...newData]);
     }
   };
 
