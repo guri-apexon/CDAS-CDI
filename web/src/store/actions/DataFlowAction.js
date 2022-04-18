@@ -13,6 +13,7 @@ import {
   SAVE_DATAFLOW_LOCAL_DETAIL,
   UPDATE_DS,
   RESET_DF_FORMDATA,
+  TOGGLE_DF_BTN,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -79,6 +80,13 @@ export const hideErrorMessage = () => {
 export const getDataKindData = () => {
   return {
     type: GET_DATA_KIND,
+  };
+};
+
+export const toggleSaveDFBtn = (disabled = false) => {
+  return {
+    type: TOGGLE_DF_BTN,
+    disabled,
   };
 };
 
