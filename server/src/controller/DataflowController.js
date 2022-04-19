@@ -667,7 +667,7 @@ exports.createDataflow = async (req, res) => {
         helper.stringToBoolean(active) ? 1 : 0,
         configured || 0,
         exptDtOfFirstProdFile || null,
-        testFlag ? 1 : 0,
+        helper.stringToBoolean(testFlag) ? 1 : 0,
         data_in_cdr || "N",
         connectionType || null,
         externalSystemName || null,
@@ -967,8 +967,8 @@ exports.createDataflow = async (req, res) => {
       connectionType: connectionType,
       location: src_loc_id,
       exptDtOfFirstProdFile: exptDtOfFirstProdFile,
-      testFlag: testFlag ? 1 : 0,
-      prodFlag: testFlag,
+      testFlag: helper.stringToBoolean(testFlag) ? 1 : 0,
+      prodFlag: helper.stringToBoolean(testFlag) ? 0 : 1,
       description: description,
       fsrstatus: fsrstatus,
       dataPackage,
@@ -1742,8 +1742,8 @@ exports.updateDataFlow = async (req, res) => {
         connectionType: connectionType,
         location: src_loc_id,
         exptDtOfFirstProdFile: exptDtOfFirstProdFile,
-        testFlag: testFlag,
-        prodFlag: testFlag === 1 ? true : false,
+        testFlag: helper.stringToBoolean(testFlag) ? 1 : 0,
+        prodFlag: helper.stringToBoolean(testFlag) ? 0 : 1,
         description: description,
         fsrstatus: fsrstatus,
         dataPackage,
@@ -1841,7 +1841,7 @@ exports.fetchdataflowSource = async (req, res) => {
 
 exports.fetchdataflowDetails = async (req, res) => {
   try {
-    let { id: dataflow_id } = req.params;
+    let dataflow_id = req.params.id;
     let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
     d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, S.prot_nbr_stnd
     from ${schemaName}.dataflow d
@@ -1858,7 +1858,7 @@ exports.fetchdataflowDetails = async (req, res) => {
       dataflow_id,
     });
     let { rows } = await DB.executeQuery(q);
-    if (!rows.length) {
+    if (!rows.length || rows.length === 0) {
       return apiResponse.ErrorResponse(
         res,
         "There is no dataflow exist with this id"
@@ -1903,7 +1903,7 @@ exports.fetchdataflowDetails = async (req, res) => {
               footerRowNumber: el.footerrownumber,
               escapeCode: el.escapecode,
               delimiter: el.delimiter,
-              dataKind: el.datakind,
+              dataKind: el.datakindid,
               naming_convention: el.naming_convention,
               columnDefinition: [],
               active: el.active,
@@ -1991,16 +1991,24 @@ exports.hardDeleteNew = async (req, res) => {
       userId,
       curDate,
     ]);
-    const q3 = await DB.executeQuery($q3, [
-      dataFlowId,
-      dataFlowName,
-      "delete",
-      fsrStatus,
-      userId,
-      curDate,
-      studyId,
-      version,
-    ]);
+    // await DB.executeQuery(
+    //   `DELETE from ${schemaName}.dataflow_action WHERE df_id = $1`,
+    //   [dataFlowId]
+    // );
+    const q3 = await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_action (df_id, df_nm, action_typ, df_status, action_usr, insrt_tmstmp, prot_id, df_versn)
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        dataFlowId,
+        dataFlowName,
+        "delete",
+        fsrStatus, //"temp", //fsrStatus, // we are not getting any fsr status as of now
+        userId,
+        curDate,
+        studyId,
+        version,
+      ]
+    );
     return apiResponse.successResponseWithData(res, "Operation success", {
       success: true,
     });
