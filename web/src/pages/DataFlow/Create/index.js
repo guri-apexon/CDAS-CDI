@@ -268,7 +268,7 @@ const DataFlow = ({
     newForm.dataPackage[0].dataSet[0] = datasetObj;
     setForm(newForm);
     if (datasetObj.customQuery === "Yes") {
-      setCurrentStep({ step: 4 });
+      setCurrentStep({ step: 5 });
     } else {
       setCurrentStep();
     }
@@ -290,17 +290,6 @@ const DataFlow = ({
     ) {
       messageContext.showErrorMessage(
         "Please add atleast one column to proceed"
-      );
-      return false;
-    }
-    if (
-      myform.dataPackage[0]?.dataSet[0]?.customQuery === "No" &&
-      myform.dataPackage[0]?.dataSet[0]?.columnDefinition.find(
-        (x) => x.dataType === ""
-      )
-    ) {
-      messageContext.showErrorMessage(
-        "Please select data type for columns to proceed"
       );
       return false;
     }
@@ -335,10 +324,11 @@ const DataFlow = ({
         datasetRef.current.submitForm();
         break;
       case 4:
-        submitFinalForm();
+        datasetRef.current.checkvalidation();
         break;
       case 5:
-        setCurrentStep({ step: 3 });
+        submitFinalForm();
+        // setCurrentStep({ step: 3 });
         break;
       default:
         break;
