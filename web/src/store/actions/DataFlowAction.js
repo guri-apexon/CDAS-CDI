@@ -24,11 +24,10 @@ export const getVendorsData = () => {
   };
 };
 
-export const updateSelectedLocation = (location, mode) => {
+export const updateSelectedLocation = (location) => {
   return {
     type: UPDATE_SELECTED_LOCATION,
     location,
-    mode,
   };
 };
 

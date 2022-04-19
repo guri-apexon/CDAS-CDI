@@ -104,7 +104,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
       // eslint-disable-next-line eqeqeq
       (loc) => value == loc.src_loc_id
     );
-    dispatch(updateSelectedLocation(location, "edit"));
+    dispatch(updateSelectedLocation(location));
   };
 
   const pullVendorandLocation = () => {
