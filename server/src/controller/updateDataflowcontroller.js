@@ -1968,17 +1968,14 @@ const datasetUpdate = async (
 
     // Request Filed validation loop
     for (let key in data) {
-      if (LocationType === "SFTP" || LocationType === "FTPS") {
-        // if (LocationType === "Hive CDH") {
+      // if (LocationType === "SFTP" || LocationType === "FTPS") {
+      if (LocationType === "Hive CDH") {
         if (
           key == "mnemonic" ||
           key == "dataKind" ||
           key == "type" ||
           key == "name" ||
-          key == "delimiter" ||
-          key == "quote" ||
-          key == "path" ||
-          key == "escapeCode"
+          key == "path"
         ) {
           if (
             data[key] !== null &&
@@ -1992,6 +1989,23 @@ const datasetUpdate = async (
               text: ` ${key} is required and data type should be string `,
             });
             status = false;
+          }
+        }
+
+        if (key == "delimiter" || key == "quote" || key == "escapeCode") {
+          if (data.type.toLowerCase() === "delimited") {
+            if (
+              data[key] !== null &&
+              data[key] !== "" &&
+              data[key] !== undefined &&
+              typeof data[key] === "string"
+            ) {
+            } else {
+              msg.push({
+                text: ` ${key} is required and data type should be string `,
+              });
+              status = false;
+            }
           }
         }
 
@@ -2009,7 +2023,7 @@ const datasetUpdate = async (
             console.log("Fields Validation Success");
           } else {
             msg.push({
-              text: ` ${key} is required and data type should be string `,
+              text: ` ${key} is required and data type should be number `,
             });
             status = false;
           }
