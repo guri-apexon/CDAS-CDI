@@ -284,8 +284,9 @@ const DataFlow = ({
   };
   const submitFinalForm = async () => {
     if (
-      myform.dataPackage[0]?.dataSet[0]?.customQuery === "No" &&
-      !myform.dataPackage[0]?.dataSet[0]?.columncount
+      (isSftp(locType) && !myform.dataPackage[0]?.dataSet[0]?.columncount) ||
+      (myform.dataPackage[0]?.dataSet[0]?.customQuery === "No" &&
+        !myform.dataPackage[0]?.dataSet[0]?.columncount)
     ) {
       messageContext.showErrorMessage(
         "Please add atleast one column to proceed"
