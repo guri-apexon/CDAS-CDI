@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-nested-ternary */
 import React, { useState, useContext, useEffect, useCallback } from "react";
@@ -16,7 +17,7 @@ import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 import Progress from "../../../../../components/Common/Progress/Progress";
 
-const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
+const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
   // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -179,18 +180,23 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
     }
   }, [datasetColumns, sqlColumns]);
 
-  const columnvalidation = () => {
-    console.log("End validat", selectedMethod, isImportReady);
-    if (selectedMethod === "manually" || isImportReady) {
-      console.log("End validationSSS");
-      // setShowColumns(true);
-    } else {
-      console.log("End validationEND");
-    }
-  };
   useEffect(() => {
-    columnFunc.current = columnvalidation;
-  }, []);
+    columnFunc.current = () => {
+      if (
+        selectedMethod === "manually" ||
+        (selectedMethod === "fileUpload" && isImportReady)
+      ) {
+        setShowColumns(true);
+        moveNext();
+      } else {
+        if (selectedMethod === "fileUpload" && !isImportReady) {
+          messageContext.showErrorMessage(`Please upload file to continue`);
+          return false;
+        }
+        messageContext.showErrorMessage(`Please select one option to continue`);
+      }
+    };
+  }, [selectedMethod, isImportReady]);
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
   };
@@ -238,7 +244,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
             </Card>
           </div>
           <div style={{ display: "flex", justifyContent: "end" }}>
-            <Button
+            {/* <Button
               variant="primary"
               style={{ marginRight: 10, float: "right" }}
               onClick={() => setShowColumns(true)}
@@ -250,7 +256,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
               }
             >
               Create
-            </Button>
+            </Button> */}
           </div>
         </div>
       )}
