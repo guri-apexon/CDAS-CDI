@@ -167,6 +167,7 @@ const DataFlowReducer = (state = initialState, action) =>
           name,
           srclocid,
           type,
+          username,
           vendorid,
           vendorname,
           testflag,
@@ -191,6 +192,7 @@ const DataFlowReducer = (state = initialState, action) =>
         formData.locations = [{ value: srclocid, label: locationname }];
         formData.dataStructure = type;
         formData.vendors = [vendorid];
+        formData.userName = username;
         formData.vendorname = vendorname;
         newState.dataFlowdetail = action.dataflowDetail;
         newState.formData = formData;

@@ -98,7 +98,7 @@ const Header = (props) => {
               size: "small",
             },
             {
-              label: currentStep >= 4 ? "Save data flow" : "Next",
+              label: currentStep >= 5 ? "Save data flow" : "Next",
               onClick: () => props.submit(),
               size: "small",
               disabled: submitting,

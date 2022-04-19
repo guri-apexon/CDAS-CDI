@@ -110,28 +110,26 @@ exports.getLocationList = function (req, res) {
     let type = req.query.type || null;
     let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
     let searchQuery = `SELECT ${select} from ${schemaName}.source_location where active=1 order by label asc`;
-    let dbQuery = DB.executeQuery(searchQuery);
     Logger.info({ message: "getLocationList" });
     if (type) {
       switch (type) {
         case "rdbms_only":
           searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ NOT IN('SFTP','FTPS') and active=1 order by label asc`;
-          dbQuery = DB.executeQuery(searchQuery);
           break;
         case "ftp_only":
           searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ IN('SFTP','FTPS') and active=1 order by label asc`;
-          dbQuery = DB.executeQuery(searchQuery);
           break;
         case "all":
           searchQuery = `SELECT ${select} from ${schemaName}.source_location order by label asc`;
-          dbQuery = DB.executeQuery(searchQuery);
           break;
         default:
-          searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ = $1 and active=1 order by label asc`;
-          dbQuery = DB.executeQuery(searchQuery, [type]);
+          searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ = '${type}' and active=1 order by label asc`;
       }
     }
 
+    Logger.info({ message: "locationList" });
+
+    let dbQuery = DB.executeQuery(searchQuery, []);
     dbQuery
       .then(async (response) => {
         const locations = response.rows || [];
