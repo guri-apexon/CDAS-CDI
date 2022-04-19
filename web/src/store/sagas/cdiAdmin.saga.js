@@ -18,6 +18,9 @@ import {
   UPDATE_SETTINGS_FAILURE,
   FETCH_SETTINGS_SUCCESS,
   FETCH_SETTINGS_FAILURE,
+  LOCATIONPASSWORDAPI,
+  FETCH_LOCATION_PASSWORD_FAILURE,
+  FETCH_LOCATION_PASSWORD_SUCCESS,
 } from "../../constants";
 import { getCookie } from "../../utils";
 
@@ -133,5 +136,21 @@ export function* updateSettingsData(action) {
       ? e.response.data.message
       : e.message;
     yield put({ type: UPDATE_SETTINGS_FAILURE, message: errText });
+  }
+}
+
+export function* fetchLocationspassword(action) {
+  try {
+    const fetchSBData = yield call(
+      axios.post,
+      `${baseURL}/${LOCATIONPASSWORDAPI}/${action.id}`,
+      {}
+    );
+    yield put({
+      type: FETCH_LOCATION_PASSWORD_SUCCESS,
+      locationPassword: fetchSBData.data.data.password,
+    });
+  } catch (e) {
+    yield put({ type: FETCH_LOCATION_PASSWORD_FAILURE, message: e.message });
   }
 }

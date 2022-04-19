@@ -443,6 +443,7 @@ export const CustomHeader = ({
   dsProdLock,
   toggleFilters,
   changeHandler,
+  haveHeader,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -509,7 +510,7 @@ export const CustomHeader = ({
       {isSftp(locationType) && (
         <Tooltip
           title={
-            (!isEditAll || !dsProdLock || !dsTestLock) &&
+            (!isEditAll || !dsProdLock || !dsTestLock || haveHeader) &&
             "Import dataset column settings"
           }
           disableFocusListener
@@ -517,7 +518,7 @@ export const CustomHeader = ({
           <IconButton
             color="primary"
             size="small"
-            disabled={isEditAll || dsProdLock || dsTestLock}
+            disabled={isEditAll || dsProdLock || dsTestLock || !haveHeader}
             onClick={changeHandler}
           >
             <Upload />
