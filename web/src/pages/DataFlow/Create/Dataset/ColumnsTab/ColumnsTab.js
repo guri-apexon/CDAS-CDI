@@ -67,7 +67,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
           setImportedData(dataParse);
         } else {
           messageContext.showErrorMessage(
-            `Template is not available for files with no header row`
+            `The Selected File Does Not Match the Template`
           );
           setSelectedFile([]);
         }
@@ -201,7 +201,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
   useEffect(() => {
     if (headerValue.toString() === "0" || headerValue === "") {
       messageContext.showErrorMessage(
-        `Template is not available for files with no header row.`
+        `Import is not available for files with no header row.`
       );
       setDisableUpload(true);
     }
