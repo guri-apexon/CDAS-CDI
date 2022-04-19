@@ -96,10 +96,6 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case UPDATE_SELECTED_LOCATION:
         newState.selectedLocation = action.location;
-        if (action.mode === "edit") {
-          if (action.location)
-            newState.formData.locations = [{ ...action.location }];
-        }
         newState.loading = false;
         break;
       case UPDATE_FORM_FIELDS:
