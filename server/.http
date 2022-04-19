@@ -373,12 +373,12 @@ POST http://localhost:4001/v1/api/dataflow/hardDeleteNew HTTP/1.1
 content-type: application/json
 
 {
-"dataFlowId": "a0A0E000004k7m3UAA",
-"userId": "u1105372",
-"version": 2,
-"studyId": "",
-"dataFlowName": "",
-"fsrStatus": "Success"
+    "dataFlowId": "6crblbqnm1k8gv9v",
+    "dataFlowName": "25520_DEPRICATED_PLUGIN_VENDOR-a020E000005SwPJQA0-test desc-4",
+    "version": 1,
+    "studyId": "a020E000005SwPJQA0",
+    "fsrStatus": null,
+    "userId": "u1105372"
 }
 
 ### Get VLC Data
@@ -544,7 +544,33 @@ content-type: application/json
 }
 
 
-### update dataset
+### update JDBC dataset
+
+POST http://localhost:4001/v1/api/dataset/update HTTP/1.1
+content-type: application/json
+
+{
+    "locationType": "jdbc",
+    "active": true,
+    "isCustomSQL": "No",
+    "dataType": "Cumulative",
+    "clinicalDataType": [
+        277
+    ],
+    "datasetName": "tst_jdbc_ds_vaithe",
+    "sQLQuery": "Select from tableName where 1=1",
+    "offsetColumn": null,
+    "tableName": "tableNameNew",
+    "filterCondition": null,
+    "datasetid": "0pyswb3jgn1c8u8y",
+    "dpId": "lzppvxq5thdawxxf",
+    "userId": "u1105372",
+    "testFlag": 1,
+    "dfId": "w2pujq36gmeux5od",
+    "studyId": "a020E000005Szl0QAC"
+}
+
+### create dataflow
 
 POST http://localhost:4001/v1/api/dataflow/create HTTP/1.1
 content-type: application/json
@@ -642,4 +668,11 @@ content-type: application/json
     "active": 0,
     "extrnl_sys_nm": "Externalsyst",
     "loc_alias_nm": "LocationName"
+}
+
+### get password of location 
+
+POST http://localhost:4001/v1/api/location/get_password/7u6g7ihq2trdfctu HTTP/1.1
+
+{
 }

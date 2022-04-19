@@ -14,11 +14,8 @@ import PageHeader from "./components/Common/PageHeader";
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
 const DataFlowCreate = lazy(() => import("./pages/DataFlow/Create"));
-
-// const DataSets = lazy(() => import("./pages/DataSets/DataSets"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
 // const ColumnsTab = lazy(() => import("./pages/Dataset/ColumnsTab/ColumnsTab"));
-// const JDBCForm = lazy(() => import("./pages/Dataset/JDBCForm"));
 const CDIAdmin = lazy(() => import("./pages/Admin/CDIAdmin"));
 const DatasetIngestionReport = lazy(() =>
   import("./pages/DatasetIngestionReport")

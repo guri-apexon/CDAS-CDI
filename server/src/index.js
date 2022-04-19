@@ -15,7 +15,7 @@ let dir = "./public/exports";
 const apiRoutes = require("./route/apiRoutes");
 const baseRoutes = require("./route/baseRoutes");
 
-// const Logger = require("./config/logger");
+const Logger = require("./config/logger");
 
 const shouldCompress = (req, res) => {
   if (req.headers["x-no-compression"]) {
@@ -62,5 +62,5 @@ if (!fs.existsSync(dir)) {
 
 app.listen(PORT, () => {
   console.log(`app started on port ${PORT}`);
-  // Logger.info({ message: `app started on port ${PORT}` });
+  Logger.info({ message: `app started on port ${PORT}` });
 });

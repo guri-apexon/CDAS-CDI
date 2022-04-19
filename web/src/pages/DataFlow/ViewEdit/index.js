@@ -159,10 +159,11 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
+    // console.log("FormValues", FormValues, protId, selectedLocation, dataflowId);
     if (
-      FormValues.vendors &&
+      FormValues?.vendors &&
       selectedLocation &&
-      FormValues.description !== "" &&
+      FormValues?.description !== "" &&
       protId !== "" &&
       dataflowId
     ) {
@@ -202,6 +203,11 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const handleOpen = () => {
     setIsPanelOpen(true);
   };
+  useEffect(() => {
+    if (!selectedLocation?.value && dataFlowData?.dataFlowdetail?.srclocid) {
+      changeLocationData(dataFlowData?.dataFlowdetail?.srclocid);
+    }
+  }, [dataFlowData]);
 
   return (
     <div className={classes.root}>

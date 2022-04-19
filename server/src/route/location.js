@@ -14,4 +14,5 @@ router.post("/create", LocationController.saveLocationData);
 router.post("/update", LocationController.updateLocationData);
 router.get("/service_owners", LocationController.getServiceOwnersList);
 router.post("/statusUpdate", LocationController.statusUpdate);
+router.post("/get_password/:location_id", LocationController.getPassword);
 module.exports = router;
