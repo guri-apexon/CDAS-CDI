@@ -402,7 +402,7 @@ export default function DSColumnTable({
   //   const cName = arr.map((e) => e.columnName).join(", ");
   // };
 
-  const onRowSave = (uniqueId) => {
+  const onRowSave = async (uniqueId) => {
     const editedRowData = _.filter(editedRows, (e) => e.uniqueId === uniqueId)
       .map((e) => {
         e.values = e.values.trim();
@@ -426,18 +426,21 @@ export default function DSColumnTable({
       messageContext.showErrorMessage(
         "Column name should be unique for a dataset"
       );
-    } else if (editedRowData && editedRowData.dataType === "") {
+      return false;
+    }
+
+    if (editedRowData && editedRowData.dataType === "") {
       messageContext.showErrorMessage(
         `Please select Data Type for this record to save.`
       );
-    } else {
-      const removeRow = selectedRows.filter((e) => e !== uniqueId);
-      const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
-      const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
-      setRows([...removeExistingRowData, editedRowData]);
-      setEditedRows([...removeEdited]);
-      setSelectedRows([...removeRow]);
+      return false;
     }
+    const removeRow = selectedRows.filter((e) => e !== uniqueId);
+    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+    const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
+    setRows([...removeExistingRowData, editedRowData]);
+    setEditedRows([...removeEdited]);
+    setSelectedRows([...removeRow]);
   };
 
   const onRowEdit = (uniqueId) => {
