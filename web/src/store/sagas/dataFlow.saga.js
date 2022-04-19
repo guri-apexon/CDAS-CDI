@@ -10,9 +10,6 @@ import {
   FETCH_SERVICE_OWNERS_SUCCESS,
   FETCH_SERVICE_OWNERS_FAILURE,
   LOCATIONAPI,
-  LOCATIONPASSWORDAPI,
-  FETCH_LOCATION_PASSWORD_FAILURE,
-  FETCH_LOCATION_PASSWORD_SUCCESS,
   VENDORAPI,
   DATAFLOWAPI,
   FETCH_DATAFLOW_DETAIL_FAILURE,
@@ -76,30 +73,6 @@ export function* fetchLocationsData(action = null) {
     });
   } catch (e) {
     yield put({ type: FETCH_LOCATION_FAILURE, message: e.message });
-  }
-}
-
-export function* fetchLocationspassword(action = null) {
-  console.log(action, "junaid");
-  let param = "";
-  if (action.id) {
-    param = `${action.id}`;
-  }
-  try {
-    const fetchSBData = yield call(
-      axios.post,
-      `${baseURL}/${LOCATIONPASSWORDAPI}/${param}`,
-      {}
-    );
-
-    console.log("study", fetchSBData);
-    yield put({
-      type: FETCH_LOCATION_PASSWORD_SUCCESS,
-      locationPassword: fetchSBData.data.data.password,
-    });
-  } catch (e) {
-    console.log("failure");
-    yield put({ type: FETCH_LOCATION_PASSWORD_FAILURE, message: e.message });
   }
 }
 

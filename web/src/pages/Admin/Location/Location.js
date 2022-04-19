@@ -18,7 +18,10 @@ import Tooltip from "apollo-react/components/Tooltip";
 import Switch from "apollo-react/components/Switch";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import LocationModal from "../../../components/Common/LocationModal";
-import { getLocationsData } from "../../../store/actions/CDIAdminAction";
+import {
+  getLocationsData,
+  getLocationPasswordData,
+} from "../../../store/actions/CDIAdminAction";
 import {
   TextFieldFilter,
   createAutocompleteFilter,
@@ -34,7 +37,6 @@ import {
 } from "../../../services/ApiServices";
 import { locationExistInDFMsg } from "../../../constants";
 import "./Location.scss";
-import { getLocationPasswordData } from "../../../store/actions/DataFlowAction";
 
 const LinkCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
