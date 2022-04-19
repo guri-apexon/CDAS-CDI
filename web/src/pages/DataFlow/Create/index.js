@@ -261,7 +261,7 @@ const DataFlow = ({
     if (datasetObj.customQuery === "No" && datasetObj.tableName) {
       dispatch(getSQLColumns(datasetObj.tableName));
     }
-    if (datasetObj.headerRowNumber) {
+    if (typeof datasetObj.headerRowNumber !== "undefined") {
       setHeaderValue(datasetObj.headerRowNumber);
     }
 

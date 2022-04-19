@@ -29,6 +29,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
   const [formattedData, setFormattedData] = useState([]);
+  const [disableUpload, setDisableUpload] = useState(false);
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
   const [loading, setLoading] = useState(false);
@@ -197,6 +198,15 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
       }
     };
   }, [selectedMethod, isImportReady]);
+  useEffect(() => {
+    console.log("headerValue", headerValue);
+    if (headerValue.toString() === "0" || headerValue === "") {
+      messageContext.showInfoMessage(
+        `Template is not available for files with no header row.`
+      );
+      setDisableUpload(true);
+    }
+  }, []);
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
   };
@@ -217,13 +227,17 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
             >
               <Radio
                 value="fileUpload"
+                disabled={disableUpload}
                 label="Upload dataset column settings"
                 onClick={handleChange}
                 checked={selectedMethod === "fileUpload"}
               />
-              <Link onClick={downloadTemplate}>Download Excel Template</Link>
+              <Link disabled={disableUpload} onClick={downloadTemplate}>
+                Download Excel Template
+              </Link>
               <div className="upload-box">
                 <FileUpload
+                  disabled={disableUpload}
                   value={selectedFile}
                   onUpload={handleUpload}
                   onFileDelete={handleDelete}
