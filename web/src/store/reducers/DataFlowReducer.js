@@ -12,6 +12,7 @@ import {
   GET_SERVICE_OWNERS,
   FETCH_SERVICE_OWNERS_SUCCESS,
   FETCH_SERVICE_OWNERS_FAILURE,
+  RESET_DF_FORMDATA,
   HIDE_ERROR_MSG,
   UPDATE_SELECTED_LOCATION,
   FETCH_DATAFLOW_DETAIL_FAILURE,
@@ -19,6 +20,7 @@ import {
   ADD_DATAFLOW_SUCCESS,
   SAVE_DATAFLOW_LOCAL_DETAIL,
   UPDATE_DS,
+  TOGGLE_DF_BTN,
 } from "../../constants";
 
 export const initialState = {
@@ -46,6 +48,7 @@ export const initialState = {
   dsTestLock: false,
   isDatasetCreation: true,
   updated: false,
+  disableCreateBtn: false,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -69,9 +72,9 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.dsProdLock = false;
           newState.dsTestLock = false;
         } else {
-          newState.dsTestProdLock = state.testLock;
+          newState.dsTestProdLock = state.testProdLock;
           newState.dsProdLock = state.prodLock;
-          newState.dsTestLock = state.testProdLock;
+          newState.dsTestLock = state.testLock;
         }
         break;
 
@@ -110,6 +113,9 @@ const DataFlowReducer = (state = initialState, action) =>
       case GET_SERVICE_OWNERS:
         newState.loading = true;
         break;
+      case RESET_DF_FORMDATA:
+        newState.formData = {};
+        break;
       case FETCH_SERVICE_OWNERS_FAILURE:
         newState.loading = false;
         break;
@@ -145,6 +151,9 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = false;
         newState.error = action.message;
         break;
+      case TOGGLE_DF_BTN:
+        newState.disableCreateBtn = action.disabled;
+        break;
       case FETCH_DATAFLOW_DETAIL_SUCCESS:
         newState.loading = false;
         // eslint-disable-next-line no-case-declarations
@@ -156,12 +165,12 @@ const DataFlowReducer = (state = initialState, action) =>
           exptfstprddt,
           loctyp,
           name,
-          srclocID,
+          srclocid,
           type,
           vendorid,
           vendorname,
           testflag,
-          locationName,
+          locationname,
           isSync,
         } = dataflowDetail;
 
@@ -179,7 +188,7 @@ const DataFlowReducer = (state = initialState, action) =>
         formData.locationType = loctyp;
         formData.name = name;
         formData.dataflowType = testflag === 1 ? "test" : "production";
-        formData.locations = [{ value: srclocID, label: locationName }];
+        formData.locations = [{ value: srclocid, label: locationname }];
         formData.dataStructure = type;
         formData.vendors = [vendorid];
         formData.vendorname = vendorname;

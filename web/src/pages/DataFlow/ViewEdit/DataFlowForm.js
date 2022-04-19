@@ -112,9 +112,14 @@ const DataFlowFormBase = (props) => {
       if (dataflowType) {
         // changeFormField(dataflowType, "dataflowType");
       }
-      console.log("initialValues", initialValues, dataflowType);
     }
   }, [initialValues]);
+
+  useEffect(() => {
+    if (initialValues && locations)
+      changeLocationData(initialValues.locations[0].value);
+  }, [locations]);
+
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper}>
@@ -201,16 +206,21 @@ const DataFlowFormBase = (props) => {
                   </MenuItem>
                 ))}
               </ReduxFormSelect>
-              <ReduxFormAutocomplete
-                name="locationName"
-                label="Location Name"
-                source={locations}
-                className="autocomplete_field"
-                variant="search"
-                onChange={changeLocationData}
-                singleSelect
-                fullWidth
-              />
+              {dataLoaded && locations && (
+                <ReduxFormAutocomplete
+                  name="locationName"
+                  label="Location Name"
+                  input={{
+                    onChange: changeLocationData,
+                    value: [initialValues?.locations[0]?.value],
+                  }}
+                  source={locations}
+                  className="autocomplete_field"
+                  variant="search"
+                  singleSelect
+                  fullWidth
+                />
+              )}
               <Link
                 onClick={() => openLocationModal()}
                 style={{ fontWeight: 600 }}

@@ -16,7 +16,7 @@ import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 import Progress from "../../../../../components/Common/Progress/Progress";
 
-const ColumnsTab = ({ locationType, headerValue }) => {
+const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
   // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -32,7 +32,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
   const { protocolnumber } = selectedCard;
   const [loading, setLoading] = useState(false);
 
-  const numberOfRows = 1;
   const maxSize = 150000;
 
   const handleUpload = (selected) => {
@@ -62,7 +61,14 @@ const ColumnsTab = ({ locationType, headerValue }) => {
         const wsname = readedData.SheetNames[0];
         const ws = readedData.Sheets[wsname];
         const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        setImportedData(dataParse);
+        if (dataParse[0]?.length) {
+          setImportedData(dataParse);
+        } else {
+          messageContext.showErrorMessage(
+            `Template is not available for files with no header row`
+          );
+          setSelectedFile([]);
+        }
       };
       reader.readAsBinaryString(f);
     }, 1000);
@@ -73,7 +79,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
       datacolumns.length > 1
         ? datacolumns.map((column, i) => {
             const newObj = {
-              columnId: i + 1,
               dbColumnId: column.columnid,
               uniqueId: `u${i}`,
               variableLabel: column.variable || "",
@@ -103,7 +108,6 @@ const ColumnsTab = ({ locationType, headerValue }) => {
       arr.length > 0
         ? arr.map((column, i) => {
             const newObj = {
-              columnId: i + 1,
               dbColumnId: column.columnid || "",
               uniqueId: `u${i}`,
               variableLabel: column.varable || "",
@@ -139,7 +143,7 @@ const ColumnsTab = ({ locationType, headerValue }) => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        const newData = formatData(importedData, protocolnumber);
+        const newData = formatData(importedData, protocolnumber, true);
         // eslint-disable-next-line no-unused-expressions
         if (newData.length > 1) {
           setFormattedData(newData);
@@ -175,6 +179,18 @@ const ColumnsTab = ({ locationType, headerValue }) => {
     }
   }, [datasetColumns, sqlColumns]);
 
+  const columnvalidation = () => {
+    console.log("End validat", selectedMethod, isImportReady);
+    if (selectedMethod === "manually" || isImportReady) {
+      console.log("End validationSSS");
+      // setShowColumns(true);
+    } else {
+      console.log("End validationEND");
+    }
+  };
+  useEffect(() => {
+    columnFunc.current = columnvalidation;
+  }, []);
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
   };
@@ -222,7 +238,7 @@ const ColumnsTab = ({ locationType, headerValue }) => {
             </Card>
           </div>
           <div style={{ display: "flex", justifyContent: "end" }}>
-            <Button
+            {/* <Button
               variant="primary"
               style={{ marginRight: 10, float: "right" }}
               onClick={() => setShowColumns(true)}
@@ -234,13 +250,12 @@ const ColumnsTab = ({ locationType, headerValue }) => {
               }
             >
               Create
-            </Button>
+            </Button> */}
           </div>
         </div>
       )}
       {showColumns && !loading && (
         <DSColumnTable
-          numberOfRows={numberOfRows}
           formattedData={formattedData}
           dataOrigin={selectedMethod}
           locationType={locationType}

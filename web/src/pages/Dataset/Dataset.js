@@ -29,6 +29,7 @@ import {
   getSQLColumns,
 } from "../../store/actions/DataSetsAction";
 import { updatePanel } from "../../store/actions/DataPackageAction";
+import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
 import { getUserInfo, isSftp } from "../../utils";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
@@ -110,7 +111,6 @@ const Dataset = () => {
   const {
     datapackageid: dpId,
     datapackageName,
-    datasetid,
     datasetName,
   } = selectedDSDetails;
   const {
@@ -118,9 +118,12 @@ const Dataset = () => {
     error,
     sucessMsg,
     isDatasetCreated,
+    dsCreatedSuccessfully,
     selectedDataset,
     formDataSQL,
+    isDatasetFetched,
   } = dataSets;
+  const datasetid = params.datasetId;
   const { prot_id: studyId } = selectedCard;
   const {
     dataFlowdetail,
@@ -130,13 +133,8 @@ const Dataset = () => {
     isDatasetCreation,
   } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
-  const {
-    locationType: newLT,
-    tbl_nm: tName,
-    tableName,
-    isCustomSQL,
-    customsql_yn: customQuery,
-  } = selectedDataset;
+  const { datasetid: dsId } = selectedDataset;
+  const { isCustomSQL, tableName } = formDataSQL;
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -161,11 +159,17 @@ const Dataset = () => {
   };
 
   useEffect(() => {
-    console.log("datsetRender");
     if (dfId === "") {
       history.push("/dashboard");
     }
     dispatch(getDataKindData());
+    if (!dataFlowdetail.name) {
+      if (selectedDSDetails.dataflowid) {
+        dispatch(getDataFlowDetail(selectedDSDetails.dataflowid));
+      } else {
+        history.push("/dashboard");
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -173,55 +177,56 @@ const Dataset = () => {
   }, [params]);
 
   useEffect(() => {
-    if (datasetid === null) {
+    if (datasetid === null || datasetid === "new") {
       dispatch(resetFTP());
       dispatch(resetJDBC());
-    } else {
+    } else if (!dsCreatedSuccessfully) {
       dispatch(getDataSetDetail(datasetid, dfId, dpId));
       dispatch(getDatasetColumns(datasetid));
+    } else {
+      dispatch(getDataSetDetail(datasetid, dfId, dpId));
     }
-  }, [datasetid]);
+  }, [datasetid, dsCreatedSuccessfully]);
 
   useEffect(() => {
     if (isDatasetCreated && isDatasetCreation) {
       messageContext.showSuccessMessage("Dataset Created Successfully");
+      history.push(`/dashboard/dataset/${dsId}`);
       dispatch(updatePanel());
     }
-
-    if (isDatasetCreated) {
-      if (isSftp(loctyp)) {
-        setValue(1);
-      }
-      if (!isSftp(loctyp)) {
-        if (customQuery || isCustomSQL) {
-          dispatch(getSQLColumns(tName || tableName));
-          setTimeout(() => {
-            setValue(1);
-          }, 500);
-        }
-      }
-    }
-  }, [isDatasetCreated, isDatasetCreation, loctyp]);
+  }, [isDatasetCreated, isDatasetCreation]);
 
   useEffect(() => {
     if (loctyp) {
       setLocationType(getDataSetType(loctyp));
-      if (isSftp(loctyp)) {
-        setColumnsActive(true);
-      }
     }
   }, [loctyp]);
 
   useEffect(() => {
-    if (getDataSetType(newLT) === "jdbc") {
-      if (isCustomSQL === "No") {
+    if (dsCreatedSuccessfully) {
+      setTimeout(() => {
+        if (isSftp(loctyp)) {
+          setValue(1);
+          setColumnsActive(true);
+        } else if (isCustomSQL === "No") {
+          // dispatch(getSQLColumns(tableName));
+          setColumnsActive(true);
+          setValue(1);
+        }
+      }, 2000);
+    }
+  }, [dsCreatedSuccessfully, loctyp, isCustomSQL]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (isSftp(locationType)) {
+        setColumnsActive(true);
+      } else if (isCustomSQL === "No") {
+        // dispatch(getSQLColumns(tableName));
         setColumnsActive(true);
       }
-    }
-    if (formDataSQL?.isCustomSQL === "No") {
-      setColumnsActive(true);
-    }
-  }, [newLT, isCustomSQL, formDataSQL]);
+    }, 2000);
+  }, [isDatasetFetched]);
 
   const goToDataflow = () => {
     if (dfId) {
@@ -287,7 +292,8 @@ const Dataset = () => {
     if (isSftp(locationType)) {
       await dispatch(reset("DataSetsForm"));
     } else {
-      jdbcRef.current.handleCancel();
+      await dispatch(reset("DataSetsFormSQL"));
+      // jdbcRef.current.handleCancel();
     }
     history.push("/dashboard");
   };
@@ -352,7 +358,9 @@ const Dataset = () => {
                     {dataSettabs.map((tab) => (
                       <Tab
                         label={tab}
-                        disabled={!columnsActive && tab === "Dataset Columns"}
+                        disabled={
+                          !columnsActive && tab === ("Dataset Columns" || "VLC")
+                        }
                       />
                     ))}
                   </Tabs>

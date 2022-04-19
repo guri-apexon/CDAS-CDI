@@ -3,6 +3,7 @@ const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
+const _ = require("lodash");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 async function updateDataflowVersion(locationId, location, userId) {
@@ -83,9 +84,7 @@ exports.searchLocationList = function (req, res) {
             WHERE LOWER(loc_typ) LIKE $1 OR 
             LOWER(loc_alias_nm) LIKE $2
             `;
-    Logger.info({
-      message: "locationList",
-    });
+    Logger.info({ message: "searchLocationList" });
 
     DB.executeQuery(searchQuery, [`%${searchParam}%`, `%${searchParam}%`])
       .then((response) => {
@@ -100,9 +99,8 @@ exports.searchLocationList = function (req, res) {
       });
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :locationList");
+    Logger.error("catch :searchLocationList");
     Logger.error(err);
-
     return apiResponse.ErrorResponse(res, err);
   }
 };
@@ -110,10 +108,10 @@ exports.searchLocationList = function (req, res) {
 exports.getLocationList = function (req, res) {
   try {
     let type = req.query.type || null;
-    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label, usr_nm, pswd, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
+    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
     let searchQuery = `SELECT ${select} from ${schemaName}.source_location where active=1 order by label asc`;
     let dbQuery = DB.executeQuery(searchQuery);
-    Logger.info({ message: "locationList" });
+    Logger.info({ message: "getLocationList" });
     if (type) {
       switch (type) {
         case "rdbms_only":
@@ -137,17 +135,19 @@ exports.getLocationList = function (req, res) {
     dbQuery
       .then(async (response) => {
         const locations = response.rows || [];
-        const withCredentials = locations.map((d) => {
-          const credentials = helper.readVaultData(d.src_loc_id);
-          if (credentials) {
-            d.usr_nm = credentials.user;
-            d.pswd = credentials.password;
-          } else {
-            d.usr_nm = "Dummy";
-            d.pswd = "DummyPassword";
+
+        const withCredentials = _.map(locations, (d) => {
+          if (d.pswd === "Yes") {
+            // const credentials = helper.readVaultData(d.src_loc_id);
+            // if (credentials) {
+            //   d.pswd = credentials.password;
+            // }
+          } else if (d.pswd === "No") {
+            d.pswd = "";
           }
           return d;
         });
+
         return apiResponse.successResponseWithData(res, "Operation success", {
           records: withCredentials,
           totalSize: response.rowCount,
@@ -158,9 +158,25 @@ exports.getLocationList = function (req, res) {
       });
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :locationList");
+    Logger.error("catch :getLocationList");
     Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
 
+exports.getPassword = async function (req, res) {
+  try {
+    const id = req.params.location_id;
+    Logger.info({ message: "getPasswordOfLocation" });
+    const response = await helper.readVaultData(id);
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      response
+    );
+  } catch (err) {
+    Logger.error("catch :getPasswordOfLocation");
+    Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
 };
@@ -169,7 +185,7 @@ exports.getLocationById = async function (req, res) {
   try {
     const id = req.params.location_id;
     const searchQuery = `SELECT src_loc_id,loc_typ,ip_servr,port,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm from ${schemaName}.source_location WHERE src_loc_id = $1`;
-    Logger.info({ message: "locationList" });
+    Logger.info({ message: "getLocationById" });
     const response = await DB.executeQuery(searchQuery, [id]);
     if (response.rows[0]) {
       const credentials = await helper.readVaultData(id);
@@ -181,7 +197,7 @@ exports.getLocationById = async function (req, res) {
     }
     return apiResponse.successResponseWithData(res, "Operation success", null);
   } catch (err) {
-    Logger.error("catch :locationList");
+    Logger.error("catch :getLocationById");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
@@ -190,6 +206,7 @@ exports.getLocationById = async function (req, res) {
 exports.updateLocationData = async function (req, res) {
   try {
     const values = req.body;
+    Logger.info({ message: "updateLocation" });
     const isExist = await checkLocationExists(
       values.locationType,
       values.connURL,
@@ -221,7 +238,7 @@ exports.updateLocationData = async function (req, res) {
       values.locationID,
     ];
     const searchQuery = `UPDATE ${schemaName}.source_location set loc_typ=$1, ip_servr=$2, port=$3, data_strc=$4, active=$5, extrnl_sys_nm=$6, loc_alias_nm=$7, updt_tm=$8, db_nm=$9, cnn_url=$10, usr_nm=$11, pswd=$12  where src_loc_id=$13`;
-    Logger.info({ message: "updateLocation" });
+
     DB.executeQuery(searchQuery, body)
       .then(async (response) => {
         await updateDataflowVersion(values.locationID, values, userId);
@@ -360,7 +377,6 @@ exports.statusUpdate = async (req, res) => {
     console.log(err);
     Logger.error("catch :statusUpdate");
     Logger.error(err);
-
     return apiResponse.ErrorResponse(res, err);
   }
 };

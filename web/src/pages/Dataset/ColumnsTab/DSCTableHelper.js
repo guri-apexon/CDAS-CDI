@@ -110,22 +110,6 @@ export const editableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
     const errorText = checkRequiredValue(row[key], key, row.primary);
-
-    // eslint-disable-next-line consistent-return
-    const checkDisabled = () => {
-      if (!isSftp(row.locationType)) {
-        if (row.dsTestLock || row.dsProdLock) {
-          return true;
-        }
-      }
-      if (isSftp(row.locationType)) {
-        if (row.dsProdLock) {
-          return true;
-        }
-      }
-      return false;
-    };
-
     return row.editMode ? (
       <Select
         size="small"
@@ -138,7 +122,7 @@ export const editableSelectCell =
           row.editRow(row.uniqueId, key, e.target.value, errorText)
         }
         {...fieldStyles}
-        disabled={checkDisabled}
+        disabled={row.pkDisabled}
       >
         {options.map((option) => (
           <MenuItem key={option} value={option}>
@@ -172,9 +156,42 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   );
 };
 
+export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
+  const { editMode, haveHeader } = row;
+  let errorText;
+  if (haveHeader) {
+    errorText = checkRequired(row[key]) || checkNumeric(row[key]);
+  } else {
+    errorText = checkNumeric(row[key]);
+  }
+
+  return editMode ? (
+    <TextField
+      size="small"
+      fullWidth
+      value={row[key]}
+      onChange={(e) =>
+        row.editRow(row.uniqueId, key, e.target.value, errorText)
+      }
+      disabled={row.dsProdLock}
+      error={!row.isInitLoad && errorText}
+      helperText={!row.isInitLoad ? errorText : ""}
+      {...fieldStylesNo}
+    />
+  ) : (
+    row[key]
+  );
+};
+
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
-  const { editMode } = row;
-  const errorText = checkRequired(row[key]);
+  const { editMode, haveHeader } = row;
+  let errorText;
+  if (haveHeader) {
+    errorText = checkRequired(row[key]) || checkAlphaNumeric(row[key]);
+  } else {
+    errorText = checkAlphaNumeric(row[key]);
+  }
+
   return editMode ? (
     <TextField
       size="small"
@@ -250,6 +267,7 @@ export const ActionCell = ({ row }) => {
     onRowDelete,
     editMode: eMode,
     isHavingColumnName,
+    isHavingDataType,
     onRowSave,
   } = row;
 
@@ -266,7 +284,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={!isHavingColumnName}
+        disabled={!isHavingColumnName || !isHavingDataType}
       >
         Save
       </Button>
@@ -313,10 +331,11 @@ export const columns = [
   {
     header: "Position",
     accessor: "position",
-    customCell: NumericEditableCell,
-    sortFunction: compareStrings,
+    customCell: PositionEditableCell,
+    sortFunction: compareNumbers,
     filterFunction: createStringSearchFilter("position"),
     filterComponent: TextFieldFilter,
+    hidden: true,
   },
   {
     header: "Format",

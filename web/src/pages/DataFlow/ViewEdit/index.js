@@ -22,7 +22,6 @@ import {
   changeFormFieldData,
   hideErrorMessage,
   getLocationByType,
-  addDataFlow,
   getDataFlowDetail,
 } from "../../../store/actions/DataFlowAction";
 
@@ -150,18 +149,17 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
-    // console.log("FormValues?", FormValues);
-    // console.log("protId", protId, dataflowId, FormValues);
+    // console.log("FormValues", FormValues, protId, selectedLocation, dataflowId);
     if (
-      FormValues.vendors &&
-      FormValues.locationName &&
-      FormValues.description !== "" &&
+      FormValues?.vendors &&
+      selectedLocation &&
+      FormValues?.description !== "" &&
       protId !== "" &&
       dataflowId
     ) {
       const payload = {
         vendorID: FormValues.vendors[0],
-        locationName: FormValues.locationName[0],
+        locationName: selectedLocation.value,
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.dataflowType,
         testFlag: FormValues.dataflowType === "test" ? "true" : "false",
@@ -195,6 +193,11 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const handleOpen = () => {
     setIsPanelOpen(true);
   };
+  useEffect(() => {
+    if (!selectedLocation?.value && dataFlowData?.dataFlowdetail?.srclocid) {
+      changeLocationData(dataFlowData?.dataFlowdetail?.srclocid);
+    }
+  }, [dataFlowData]);
 
   return (
     <div className={classes.root}>
