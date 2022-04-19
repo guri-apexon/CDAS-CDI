@@ -122,18 +122,20 @@ const DataFlowFormBase = (props) => {
   }, [initialValues]);
 
   useEffect(() => {
+    setLocationId(selectedLocation?.value || null);
+  }, [selectedLocation]);
+
+  useEffect(() => {
     if (!renderLocation) setTimeout(() => setRenderLocation(true), 100);
   }, [renderLocation]);
 
   useEffect(() => {
-    console.log(">>> locationid", locationId);
     setRenderLocation(false);
     changeLocationData(locationId);
   }, [locationId, locations]);
 
   useEffect(() => {
     return () => {
-      console.log(">>> unmounted");
       setDataLoaded(false);
     };
   }, []);
