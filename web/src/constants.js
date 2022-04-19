@@ -82,6 +82,12 @@ export const GET_SERVICE_OWNERS = "GET_SERVICE_OWNERS";
 export const FETCH_SERVICE_OWNERS_SUCCESS = "FETCH_SERVICE_OWNERS_SUCCESS";
 export const FETCH_SERVICE_OWNERS_FAILURE = "FETCH_SERVICE_OWNERS_FAILURE";
 
+export const GET_PASSWORD_LOCATION = "GET_PASSWORD_LOCATION";
+export const FETCH_LOCATION_PASSWORD_SUCCESS =
+  "FETCH_LOCATION_PASSWORD_SUCCESS";
+export const FETCH_LOCATION_PASSWORD_FAILURE =
+  "FETCH_LOCATION_PASSWORD_FAILURE";
+
 export const GET_DATAFLOW_DETAIL = "GET_DATAFLOW_DETAIL";
 export const RESET_DF_FORMDATA = "RESET_DF_FORMDATA";
 export const FETCH_DATAFLOW_DETAIL_SUCCESS = "FETCH_DATAFLOW_DETAIL_SUCCESS";
@@ -213,6 +219,8 @@ export const PINSTUDY = "v1/api/study/pinStudy";
 export const AUDIT_LOGS_FETCH = "v1/api/audit-logs/get";
 
 export const LOCATIONAPI = "v1/api/location";
+export const LOCATIONPASSWORDAPI = "v1/api/location/get_password";
+
 export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";
 export const DATASETAPI = "v1/api/dataset";
