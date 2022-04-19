@@ -52,6 +52,8 @@ const DataSetsFormBase = (props) => {
   } = props;
   const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
 
+  const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
+
   const setDefaultValues = (e) => {
     const fileValue = e.target.value;
     if (fileValue !== "Delimited") {
@@ -87,6 +89,15 @@ const DataSetsFormBase = (props) => {
       SetSelectedClinicalData(["1"]);
     }
   }, [values]);
+
+  useEffect(() => {
+    setRenderClinicalDataType(false);
+  }, [datakind, formValues.clinicalDataType]);
+
+  useEffect(() => {
+    if (!renderClinicalDataType)
+      setTimeout(() => setRenderClinicalDataType(true), 50);
+  }, [renderClinicalDataType]);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -223,21 +234,21 @@ const DataSetsFormBase = (props) => {
               </div>
             </Grid>
             <Grid item md={5}>
-              {/* {selectedClinicalData.length ? ( */}
-              <ReduxFormAutocomplete
-                name="clinicalDataType"
-                autoSelect
-                id="clinicalDataType"
-                label="Clinical Data Type"
-                source={datakind}
-                className="smallSize_autocomplete"
-                variant="search"
-                singleSelect
-                fullWidth
-                required
-                disabled={prodLock}
-              />
-              {/* ) : null} */}
+              {datakind && renderClinicalDataType && (
+                <ReduxFormAutocomplete
+                  name="clinicalDataType"
+                  autoSelect
+                  id="clinicalDataType"
+                  label="Clinical Data Type"
+                  source={datakind}
+                  className="smallSize_autocomplete"
+                  variant="search"
+                  singleSelect
+                  fullWidth
+                  required
+                  disabled={prodLock}
+                />
+              )}
               {formValues.fileType === "Excel" && (
                 <ReduxFormTextField
                   fullWidth
@@ -309,7 +320,7 @@ const selector = formValueSelector("DataSetsForm");
 const DataSetsForm = connect((state) => ({
   initialValues: state.dataSets.formData, // pull initial values from account reducer
   enableReinitialize: true,
-  formValues: selector(state, "fileType", "active"),
+  formValues: selector(state, "fileType", "active", "clinicalDataType"),
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
   defaultQuote: state.dataSets.defaultQuote,
