@@ -79,8 +79,9 @@ const Dataset = (props, ref) => {
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
-  const [customSql, setCustomSql] = useState("no");
+  const [customSql, setCustomSql] = useState("Yes");
   const dispatch = useDispatch();
+  const [jdbcFormData, setJdbcFormData] = useState(null);
   const dataSets = useSelector((state) => state.dataSets);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { loading, isDatasetCreated } = dataSets;
@@ -89,6 +90,7 @@ const Dataset = (props, ref) => {
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
+  const columnFunc = React.useRef(null);
 
   const handleChangeTab = (event, v) => {
     setValue(v);
@@ -146,6 +148,11 @@ const Dataset = (props, ref) => {
         jdbcRef.current.handleSubmit();
       }
     },
+    checkvalidation() {
+      if (isSftp(locationType)) {
+        columnFunc.current();
+      }
+    },
   }));
 
   const onSubmit = (formValue) => {
@@ -153,15 +160,24 @@ const Dataset = (props, ref) => {
       ...formValue,
       dfTestFlag: dataFlowdetail.testflag,
     };
+    setJdbcFormData(data);
     submitData(data);
   };
 
   useEffect(() => {
     console.log("currentStep", currentStep);
     if (currentStep === 5) {
-      setValue(2);
+      if (
+        isSftp(locationType) ||
+        (!isSftp(locationType) && customSql !== "Yes")
+      )
+        setValue(2);
     } else if (currentStep === 4) {
-      setValue(1);
+      if (
+        isSftp(locationType) ||
+        (!isSftp(locationType) && customSql !== "Yes")
+      )
+        setValue(1);
     } else if (currentStep === 3) {
       setValue(0);
     }
@@ -182,7 +198,9 @@ const Dataset = (props, ref) => {
               {dataSettabs.map((tab) => (
                 <Tab
                   label={tab}
-                  disabled={!columnsActive && tab === "Dataset Columns"}
+                  disabled={
+                    !columnsActive && ["Dataset Columns", "VLC"].includes(tab)
+                  }
                 />
               ))}
             </Tabs>
@@ -205,11 +223,16 @@ const Dataset = (props, ref) => {
                 onChangeSql={onChangeSql}
                 onSubmit={onSubmit}
                 ref={jdbcRef}
+                initialValue={jdbcFormData}
                 moveNext={() => setValue(1)}
               />
             )}
           {value === 1 && (
-            <ColumnsTab locationType={locationType} headerValue={headerValue} />
+            <ColumnsTab
+              columnFunc={columnFunc}
+              locationType={locationType}
+              headerValue={headerValue}
+            />
           )}
           {value === 2 && <VLCTab />}
         </div>

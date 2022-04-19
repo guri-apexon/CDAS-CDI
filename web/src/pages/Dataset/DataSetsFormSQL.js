@@ -5,9 +5,7 @@ import { connect, useDispatch } from "react-redux";
 import { reduxForm, getFormValues, formValueSelector } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
-import Status from "apollo-react/components/Status";
 import Radio from "apollo-react/components/Radio";
-import RadioError from "apollo-react-icons/RadioError";
 import Typography from "apollo-react/components/Typography";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
@@ -123,20 +121,6 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 labelPlacement="start"
               />
-              {formValues.active && (
-                <Status
-                  variant="positive"
-                  icon={RadioError}
-                  size="small"
-                  style={{ marginLeft: 35 }}
-                  label={
-                    // eslint-disable-next-line react/jsx-wrap-multilines
-                    <Typography variant="body2" style={{ color: "#595959" }}>
-                      Ready
-                    </Typography>
-                  }
-                />
-              )}
             </div>
           </div>
           <Grid container spacing={3}>

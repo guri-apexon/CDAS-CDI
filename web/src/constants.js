@@ -23,7 +23,6 @@ export const PAGEHEADER_UPDATE = "PAGEHEADER_UPDATE";
 export const UPDATE_DS = "UPDATE_DS";
 export const RESET_FTP_FORM = "RESET_FTP_FORM";
 export const RESET_JDBC_FORM = "RESET_JDBC_FORM";
-export const SELECT_DATAFLOW = "SELECT_DATAFLOW";
 
 export const GET_DATA_FLOW_LIST = "GET_DATA_FLOW_LIST";
 export const GET_DATA_FLOW_LIST_SUCCESS = "GET_DATA_FLOW_LIST_SUCCESS";
@@ -84,6 +83,7 @@ export const FETCH_SERVICE_OWNERS_SUCCESS = "FETCH_SERVICE_OWNERS_SUCCESS";
 export const FETCH_SERVICE_OWNERS_FAILURE = "FETCH_SERVICE_OWNERS_FAILURE";
 
 export const GET_DATAFLOW_DETAIL = "GET_DATAFLOW_DETAIL";
+export const RESET_DF_FORMDATA = "RESET_DF_FORMDATA";
 export const FETCH_DATAFLOW_DETAIL_SUCCESS = "FETCH_DATAFLOW_DETAIL_SUCCESS";
 export const FETCH_DATAFLOW_DETAIL_FAILURE = "FETCH_DATAFLOW_DETAIL_FAILURE";
 export const FETCH_DATAFLOW_LOCAL_DETAIL = "FETCH_DATAFLOW_LOCAL_DETAIL";
@@ -199,6 +199,7 @@ export const DATAFLOW_UPDATE_API = "v1/api/dataflow/update-dataflow";
 export const DATAFLOWSEARCH = "v1/api/dataflow/search-dataflow";
 export const DATAFLOW_SOURCE = "v1/api/dataflow";
 export const DATAFLOW_DETAILS = "v1/api/dataflow/details";
+export const TOGGLE_DF_BTN = "TOGGLE_DF_BTN";
 
 export const PACKAGES_SEARCH = "v1/api/data-package/search";
 export const ADD_PACKAGE = "v1/api/data-package/add";

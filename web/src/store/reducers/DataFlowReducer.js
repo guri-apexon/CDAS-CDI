@@ -12,6 +12,7 @@ import {
   GET_SERVICE_OWNERS,
   FETCH_SERVICE_OWNERS_SUCCESS,
   FETCH_SERVICE_OWNERS_FAILURE,
+  RESET_DF_FORMDATA,
   HIDE_ERROR_MSG,
   UPDATE_SELECTED_LOCATION,
   FETCH_DATAFLOW_DETAIL_FAILURE,
@@ -19,6 +20,7 @@ import {
   ADD_DATAFLOW_SUCCESS,
   SAVE_DATAFLOW_LOCAL_DETAIL,
   UPDATE_DS,
+  TOGGLE_DF_BTN,
 } from "../../constants";
 
 export const initialState = {
@@ -46,6 +48,7 @@ export const initialState = {
   dsTestLock: false,
   isDatasetCreation: true,
   updated: false,
+  disableCreateBtn: false,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -112,6 +115,9 @@ const DataFlowReducer = (state = initialState, action) =>
       case GET_SERVICE_OWNERS:
         newState.loading = true;
         break;
+      case RESET_DF_FORMDATA:
+        newState.formData = {};
+        break;
       case FETCH_SERVICE_OWNERS_FAILURE:
         newState.loading = false;
         break;
@@ -146,6 +152,9 @@ const DataFlowReducer = (state = initialState, action) =>
       case FETCH_DATAFLOW_DETAIL_FAILURE:
         newState.loading = false;
         newState.error = action.message;
+        break;
+      case TOGGLE_DF_BTN:
+        newState.disableCreateBtn = action.disabled;
         break;
       case FETCH_DATAFLOW_DETAIL_SUCCESS:
         newState.loading = false;

@@ -17,7 +17,6 @@ import { allowedTypes } from "../../../../../constants";
 const maxSize = 150000;
 
 export default function DSColumnTable({
-  numberOfRows,
   dataOrigin,
   formattedData,
   locationType,
@@ -39,24 +38,26 @@ export default function DSColumnTable({
     customsql_yn: customQuery,
     tbl_nm: tableName,
   } = selectedDataset;
-  const initialRows = Array.from({ length: numberOfRows }, (i, index) => ({
-    uniqueId: `u${index}`,
-    columnId: index + 1,
-    variableLabel: "",
-    columnName: "",
-    position: "",
-    format: "",
-    dataType: "",
-    primaryKey: "No",
-    unique: "No",
-    required: "No",
-    minLength: "",
-    maxLength: "",
-    values: "",
-    isInitLoad: true,
-    isHavingError: false,
-    isHavingColumnName: false,
-  }));
+  const initialRows = [
+    {
+      uniqueId: `u0`,
+      variableLabel: "",
+      columnName: "",
+      position: "",
+      format: "",
+      dataType: "",
+      primaryKey: "No",
+      unique: "No",
+      required: "No",
+      minLength: "",
+      maxLength: "",
+      values: "",
+      isInitLoad: true,
+      isHavingError: false,
+      isHavingColumnName: false,
+      isHavingDataType: false,
+    },
+  ];
 
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
@@ -216,7 +217,6 @@ export default function DSColumnTable({
       const singleRow = [
         {
           uniqueId: `u${rows.length}`,
-          columnId: rows.length + 1,
           variableLabel: "",
           columnName: "",
           position: "",
@@ -254,7 +254,6 @@ export default function DSColumnTable({
     if (newRows > 0) {
       const multiRows = Array.from({ length: newRows }, (i, index) => ({
         uniqueId: `u${rows.length + index}`,
-        columnId: rows.length + index + 1,
         variableLabel: "",
         columnName: "",
         position: "",
@@ -429,7 +428,7 @@ export default function DSColumnTable({
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
           if (key === "columnName" || key === "position") {
-            if (value.length >= 1) {
+            if (headerValue < 1 || value.length >= 1) {
               return {
                 ...row,
                 [key]: value,
@@ -465,7 +464,6 @@ export default function DSColumnTable({
     console.log(
       "editedRows",
       editedRows,
-      numberOfRows,
       dataOrigin,
       formattedData,
       locationType,
@@ -498,9 +496,13 @@ export default function DSColumnTable({
 
   useEffect(() => {
     if (isSftp(locationType)) {
+      console.log("headerValue", headerValue);
       if (headerValue) {
         const data = allColumns.map((e) => {
           if (e.accessor === "columnName" && headerValue === 0) {
+            e.hidden = true;
+          }
+          if (e.accessor === "position" && headerValue >= 1) {
             e.hidden = true;
           }
           return e;

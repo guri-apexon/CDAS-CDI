@@ -79,10 +79,14 @@ const IncrementalSummary = ({
             </>
           }
         />
-        <div className="right-se">
-          <Typography gutterBottom darkMode style={{ marginBottom: 14 }}>
-            {`${totalRecords} Total Records`}
+        <div className="post-ingestion-issues">
+          <Typography variant="h2" gutterBottom darkMode>
+            {totalRecords}
           </Typography>
+          <Typography gutterBottom darkMode style={{ marginBottom: 32 }}>
+            Total Records
+          </Typography>
+
           <Link
             onClick={() => console.log("link clicked")}
             style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
@@ -157,10 +161,14 @@ const IncrementalSummary = ({
             </>
           }
         />
-        <div className="right-se">
-          <Typography gutterBottom darkMode style={{ marginBottom: 14 }}>
-            {`${totalFileIngested} Total files ingested`}
+        <div className="post-ingestion-issues">
+          <Typography variant="h2" gutterBottom darkMode>
+            {totalFileIngested}
           </Typography>
+          <Typography gutterBottom darkMode style={{ marginBottom: 32 }}>
+            Total files ingested
+          </Typography>
+
           <Link
             onClick={() => handleChangeTab("ingestion_issues")}
             style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
