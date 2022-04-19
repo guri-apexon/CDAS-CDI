@@ -1858,7 +1858,12 @@ exports.fetchdataflowDetails = async (req, res) => {
       dataflow_id,
     });
     let { rows } = await DB.executeQuery(q);
-    console.log(rows);
+    if (!rows.length || rows.length === 0) {
+      return apiResponse.ErrorResponse(
+        res,
+        "There is no dataflow exist with this id"
+      );
+    }
     let response = rows;
     let tempDP = _.uniqBy(response, "datapackageid");
     let tempDS = _.uniqBy(response, "datasetid");
@@ -1986,10 +1991,10 @@ exports.hardDeleteNew = async (req, res) => {
       userId,
       curDate,
     ]);
-    await DB.executeQuery(
-      `DELETE from ${schemaName}.dataflow_action WHERE df_id = $1`,
-      [dataFlowId]
-    );
+    // await DB.executeQuery(
+    //   `DELETE from ${schemaName}.dataflow_action WHERE df_id = $1`,
+    //   [dataFlowId]
+    // );
     const q3 = await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_action (df_id, df_nm, action_typ, df_status, action_usr, insrt_tmstmp, prot_id, df_versn)
       VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
@@ -1997,7 +2002,7 @@ exports.hardDeleteNew = async (req, res) => {
         dataFlowId,
         dataFlowName,
         "delete",
-        "temp", //fsrStatus, // we are not getting any fsr status as of now
+        fsrStatus, //"temp", //fsrStatus, // we are not getting any fsr status as of now
         userId,
         curDate,
         studyId,
