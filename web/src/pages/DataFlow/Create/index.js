@@ -138,7 +138,7 @@ const DataFlow = ({
       // eslint-disable-next-line eqeqeq
       (loc) => value == loc.src_loc_id
     );
-    dispatch(updateSelectedLocation(location, "create"));
+    dispatch(updateSelectedLocation(location));
     setChangeLocationRequire(false);
   };
   const changeFormField = (value, field, arr) => {
