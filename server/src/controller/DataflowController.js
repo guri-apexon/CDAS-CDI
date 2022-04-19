@@ -614,6 +614,7 @@ exports.createDataflow = async (req, res) => {
       sponsorName,
       externalVersion,
       protocolNumberStandard,
+      serviceOwners,
     } = req.body;
     var ResponseBody = {};
     if (!type && dataStructure) type = dataStructure;
@@ -675,14 +676,17 @@ exports.createDataflow = async (req, res) => {
         fsrstatus || null,
         studyId,
         dFTimestamp,
+        serviceOwners && Array.isArray(serviceOwners)
+          ? serviceOwners.join()
+          : "",
       ];
       // insert dataflow schema into db
       let createDF = await DB.executeQuery(
         `insert into ${schemaName}.dataflow 
       (dataflowid,name,vend_id,type,description,src_loc_id,active,configured,expt_fst_prd_dt,
         testflag,data_in_cdr,connectiontype,externalsystemname,externalid,
-        fsrstatus,prot_id,insrt_tm,updt_tm, refreshtimestamp) VALUES 
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17) returning dataflowid as "dataFlowId", name as "dataFlowName", type as adapter, description, active as status, testflag, connectiontype as "locationType", fsrstatus as "fsrStatus", prot_id as "studyId", externalsystemname as "externalSourceSystem";`,
+        fsrstatus,prot_id,insrt_tm,updt_tm, refreshtimestamp, serv_ownr) VALUES 
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17, $18) returning dataflowid as "dataFlowId", name as "dataFlowName", type as adapter, description, active as status, testflag, connectiontype as "locationType", fsrstatus as "fsrStatus", prot_id as "studyId", externalsystemname as "externalSourceSystem";`,
         DFBody
       );
       let ts = new Date().toLocaleString();
@@ -1301,7 +1305,7 @@ exports.syncDataFlow = async (req, res) => {
 exports.getDataflowDetail = async (req, res) => {
   try {
     const dataFlowId = req.params.dataFlowId;
-    const searchQuery = `SELECT dataflowTbl.active, locationTbl.usr_nm as username,  dataflowTbl.dataflowid, dataflowTbl.name, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID, locationTbl.loc_alias_nm as locationName
+    const searchQuery = `SELECT dataflowTbl.active, locationTbl.usr_nm as username,  dataflowTbl.dataflowid, dataflowTbl.name, dataflowTbl.serv_ownr as serviceOwner, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID, locationTbl.loc_alias_nm as locationName
     from ${schemaName}.dataflow as dataflowTbl 
     JOIN ${schemaName}.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id
     JOIN ${schemaName}.vendor v on (v.vend_id = dataflowTbl.vend_id)

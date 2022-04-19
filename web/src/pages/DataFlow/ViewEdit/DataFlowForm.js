@@ -111,6 +111,7 @@ const DataFlowFormBase = (props) => {
   const [renderLocation, setRenderLocation] = useState(false);
 
   useEffect(() => {
+    console.log("initialValues", initialValues);
     if (initialValues) {
       const { dataflowType } = initialValues;
       setDataLoaded(true);
@@ -279,6 +280,9 @@ const DataFlowFormBase = (props) => {
           <div style={{ width: "50%" }} className="service-owner">
             <ReduxFormAutocompleteV2
               name="serviceOwner"
+              // input={{
+              //   value: initialValues?.serviceOwner,
+              // }}
               label="Service Owners (Optional)"
               source={serviceOwners ?? []}
               onChange={onChangeServiceOwner}
