@@ -73,24 +73,6 @@ const RenderAutocomplete = ({
 
 export const ReduxFormAutocomplete = reduxFormify(RenderAutocomplete);
 
-const RenderAutocompleteV3 = ({
-  helperText,
-  meta: { touched, error },
-  ...rest
-}) => {
-  return (
-    <>
-      <Autocomplete
-        helperText={(touched && error) || helperText}
-        error={touched && !!error}
-        {...rest}
-      />
-    </>
-  );
-};
-
-export const ReduxFormAutocompleteV3 = reduxFormify(RenderAutocompleteV3);
-
 const RenderAutocompleteV2 = ({
   input: { onChange, value, ...input },
   helperText,
