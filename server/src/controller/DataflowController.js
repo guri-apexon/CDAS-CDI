@@ -667,7 +667,7 @@ exports.createDataflow = async (req, res) => {
         helper.stringToBoolean(active) ? 1 : 0,
         configured || 0,
         exptDtOfFirstProdFile || null,
-        testFlag ? 1 : 0,
+        helper.stringToBoolean(testFlag) ? 1 : 0,
         data_in_cdr || "N",
         connectionType || null,
         externalSystemName || null,
@@ -967,8 +967,8 @@ exports.createDataflow = async (req, res) => {
       connectionType: connectionType,
       location: src_loc_id,
       exptDtOfFirstProdFile: exptDtOfFirstProdFile,
-      testFlag: testFlag ? 1 : 0,
-      prodFlag: testFlag,
+      testFlag: helper.stringToBoolean(testFlag) ? 1 : 0,
+      prodFlag: helper.stringToBoolean(testFlag) ? 0 : 1,
       description: description,
       fsrstatus: fsrstatus,
       dataPackage,
@@ -1742,8 +1742,8 @@ exports.updateDataFlow = async (req, res) => {
         connectionType: connectionType,
         location: src_loc_id,
         exptDtOfFirstProdFile: exptDtOfFirstProdFile,
-        testFlag: testFlag,
-        prodFlag: testFlag === 1 ? true : false,
+        testFlag: helper.stringToBoolean(testFlag) ? 1 : 0,
+        prodFlag: helper.stringToBoolean(testFlag) ? 0 : 1,
         description: description,
         fsrstatus: fsrstatus,
         dataPackage,
@@ -1841,24 +1841,24 @@ exports.fetchdataflowSource = async (req, res) => {
 
 exports.fetchdataflowDetails = async (req, res) => {
   try {
-    let { id: dataflow_id } = req.params;
+    let dataflow_id = req.params.id;
     let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
     d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, S.prot_nbr_stnd
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner Join ${schemaName}.study S on (d.prot_id = S.prot_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
-    inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
-    inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
-    inner join ${schemaName}.datakind dk on (dk.datakindid=d3.datakindid)
-      inner join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
-      where d.dataflowid ='${dataflow_id}'`;
+    left join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
+    left join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    left join ${schemaName}.datakind dk on (dk.datakindid=d3.datakindid)
+    left join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
+    where d.dataflowid ='${dataflow_id}'`;
     Logger.info({
       message: "fetchdataflowDetails",
       dataflow_id,
     });
     let { rows } = await DB.executeQuery(q);
-    if (!rows.length) {
+    if (!rows.length || rows.length === 0) {
       return apiResponse.ErrorResponse(
         res,
         "There is no dataflow exist with this id"
@@ -1903,7 +1903,7 @@ exports.fetchdataflowDetails = async (req, res) => {
               footerRowNumber: el.footerrownumber,
               escapeCode: el.escapecode,
               delimiter: el.delimiter,
-              dataKind: el.datakind,
+              dataKind: el.datakindid,
               naming_convention: el.naming_convention,
               columnDefinition: [],
               active: el.active,
@@ -1973,34 +1973,37 @@ exports.hardDeleteNew = async (req, res) => {
   try {
     const { dataFlowId, userId, version, studyId, dataFlowName, fsrStatus } =
       req.body;
-    const curDate = helper.getCurrentTime();
-    const $q2 = `UPDATE ${schemaName}.dataflow SET updt_tm=$2, del_flg=$3 WHERE dataflowid=$1`;
-    const $q3 = `INSERT INTO ${schemaName}.dataflow_action (df_id, df_nm, action_typ, df_status, action_usr, insrt_tmstmp, prot_id, df_versn)
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+    const $q2 = `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), del_flg=1 WHERE dataflowid=$1`;
     const $q4 = `INSERT INTO ${schemaName}.dataflow_audit_log (dataflowid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt) 
-    VALUES($1, $2, $3, $4, $5, $6, $7)`;
+    VALUES($1, $2, $3, $4, $5, $6, Now())`;
 
     Logger.info({ message: "hardDeleteNew" });
-    const q2 = await DB.executeQuery($q2, [dataFlowId, curDate, 1]);
+    const q2 = await DB.executeQuery($q2, [dataFlowId]);
     const q4 = await DB.executeQuery($q4, [
       dataFlowId,
       version,
       "del_flg",
-      null,
+      0,
       1,
       userId,
-      curDate,
     ]);
-    const q3 = await DB.executeQuery($q3, [
-      dataFlowId,
-      dataFlowName,
-      "delete",
-      fsrStatus,
-      userId,
-      curDate,
-      studyId,
-      version,
-    ]);
+    // await DB.executeQuery(
+    //   `DELETE from ${schemaName}.dataflow_action WHERE df_id = $1`,
+    //   [dataFlowId]
+    // );
+    const q3 = await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_action (df_id, df_nm, action_typ, df_status, action_usr, insrt_tmstmp, prot_id, df_versn)
+      VALUES($1, $2, $3, $4, $5, Now(), $6, $7)`,
+      [
+        dataFlowId,
+        dataFlowName,
+        "delete",
+        fsrStatus || "temp", //"temp", //fsrStatus, // we are not getting any fsr status as of now
+        userId,
+        studyId,
+        version,
+      ]
+    );
     return apiResponse.successResponseWithData(res, "Operation success", {
       success: true,
     });

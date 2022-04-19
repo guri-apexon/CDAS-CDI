@@ -16,7 +16,7 @@ import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 import Progress from "../../../../../components/Common/Progress/Progress";
 
-const ColumnsTab = ({ locationType, headerValue }) => {
+const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
   // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -179,6 +179,18 @@ const ColumnsTab = ({ locationType, headerValue }) => {
     }
   }, [datasetColumns, sqlColumns]);
 
+  const columnvalidation = () => {
+    console.log("End validat", selectedMethod, isImportReady);
+    if (selectedMethod === "manually" || isImportReady) {
+      console.log("End validationSSS");
+      // setShowColumns(true);
+    } else {
+      console.log("End validationEND");
+    }
+  };
+  useEffect(() => {
+    columnFunc.current = columnvalidation;
+  }, []);
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
   };

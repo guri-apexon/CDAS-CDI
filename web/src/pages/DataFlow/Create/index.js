@@ -43,6 +43,7 @@ import { MessageContext } from "../../../components/Providers/MessageProvider";
 import DataSet from "./Dataset";
 import { dataflowSave } from "../../../services/ApiServices";
 import { SelectedDataflow } from "../../../store/actions/DashboardAction";
+import { isSftp } from "../../../utils";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -166,13 +167,13 @@ const DataFlow = ({
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
-    console.log("FormValues", FormValues, selectedVendor);
+    console.log("FormValues", FormValues, selectedCard);
     if (
       FormValues &&
-      (FormValues?.vendor || FormValues?.vendor?.length > 0) &&
+      FormValues?.vendor?.length > 0 &&
       FormValues?.locationName &&
       FormValues?.description !== "" &&
-      selectedCard?.prot_id !== ""
+      selectedCard?.protocolnumberstandard !== ""
     ) {
       if (changeLocationRequire) {
         messageContext.showErrorMessage(
@@ -189,7 +190,7 @@ const DataFlow = ({
         exptDtOfFirstProdFile: FormValues.firstFileDate,
         locationType: FormValues.locationType,
         // serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
-        protocolNumberStandard: selectedCard.prot_id,
+        protocolNumberStandard: selectedCard.protocolnumberstandard,
         // protocolNumber: selectedCard.prot_id,
         externalSystemName: "CDI",
         dataPackage: [{ dataSet: [] }],

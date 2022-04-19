@@ -90,6 +90,7 @@ const Dataset = (props, ref) => {
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
+  const columnFunc = React.useRef(null);
 
   const handleChangeTab = (event, v) => {
     setValue(v);
@@ -145,6 +146,11 @@ const Dataset = (props, ref) => {
       } else {
         // messageContext?.setDataflow({ datasetSubmit: true });
         jdbcRef.current.handleSubmit();
+      }
+    },
+    checkvalidation() {
+      if (isSftp(locationType)) {
+        columnFunc.current();
       }
     },
   }));
@@ -222,7 +228,11 @@ const Dataset = (props, ref) => {
               />
             )}
           {value === 1 && (
-            <ColumnsTab locationType={locationType} headerValue={headerValue} />
+            <ColumnsTab
+              columnFunc={columnFunc}
+              locationType={locationType}
+              headerValue={headerValue}
+            />
           )}
           {value === 2 && <VLCTab />}
         </div>
