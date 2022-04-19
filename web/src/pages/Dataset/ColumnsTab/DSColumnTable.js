@@ -630,7 +630,7 @@ export default function DSColumnTable({
           )
         );
       } else {
-        dispatch(
+        await dispatch(
           createDatasetColumns(
             [editedRowData],
             dsId,
@@ -647,6 +647,7 @@ export default function DSColumnTable({
       setEditedRows([...removeEdited]);
       setSelectedRows([...removeRow]);
     }
+    await dispatch(getDatasetColumns(dsId));
   };
 
   const onRowEdit = (uniqueId) => {
