@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useEffect, useState } from "react";
+import React, { createRef, useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect } from "react-redux";
 import { reduxForm, getFormValues } from "redux-form";
@@ -86,6 +86,7 @@ const DataFlowFormBase = (props) => {
     classes,
     change,
     locations,
+    selectedLocation,
     vendors,
     userName,
     password,
@@ -98,6 +99,7 @@ const DataFlowFormBase = (props) => {
     testLock,
     prodLock,
   } = props;
+  const locationNameRef = React.useRef(null);
   const onChangeServiceOwner = (values) => {
     change("serviceOwnerValue", values);
   };
@@ -105,10 +107,14 @@ const DataFlowFormBase = (props) => {
     setLocationOpen(true);
   };
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [locationId, setLocationId] = useState(null);
+  const [renderLocation, setRenderLocation] = useState(false);
+
   useEffect(() => {
     if (initialValues) {
       const { dataflowType } = initialValues;
       setDataLoaded(true);
+      setLocationId(initialValues?.locations[0]?.value || null);
       if (dataflowType) {
         // changeFormField(dataflowType, "dataflowType");
       }
@@ -116,9 +122,23 @@ const DataFlowFormBase = (props) => {
   }, [initialValues]);
 
   useEffect(() => {
-    if (initialValues && locations)
-      changeLocationData(initialValues.locations[0].value);
-  }, [locations]);
+    setLocationId(selectedLocation?.value || null);
+  }, [selectedLocation]);
+
+  useEffect(() => {
+    if (!renderLocation) setTimeout(() => setRenderLocation(true), 100);
+  }, [renderLocation]);
+
+  useEffect(() => {
+    setRenderLocation(false);
+    changeLocationData(locationId);
+  }, [locationId, locations]);
+
+  useEffect(() => {
+    return () => {
+      setDataLoaded(false);
+    };
+  }, []);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -195,7 +215,10 @@ const DataFlowFormBase = (props) => {
               <ReduxFormSelect
                 name="locationType"
                 label="Location Type"
-                onChange={(e) => changeLocationType(e.target.value)}
+                onChange={(e) => {
+                  changeLocationData(null);
+                  changeLocationType(e.target.value);
+                }}
                 fullWidth
                 canDeselect={false}
                 disabled={testLock || prodLock}
@@ -206,14 +229,15 @@ const DataFlowFormBase = (props) => {
                   </MenuItem>
                 ))}
               </ReduxFormSelect>
-              {dataLoaded && locations && (
+              {renderLocation && locations && (
                 <ReduxFormAutocomplete
                   name="locationName"
                   label="Location Name"
                   input={{
                     onChange: changeLocationData,
-                    value: [initialValues?.locations[0]?.value],
+                    value: [locationId],
                   }}
+                  ref={locationNameRef}
                   source={locations}
                   className="autocomplete_field"
                   variant="search"

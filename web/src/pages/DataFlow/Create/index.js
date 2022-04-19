@@ -167,13 +167,13 @@ const DataFlow = ({
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
-    // console.log("FormValues", FormValues, selectedVendor);
+    console.log("FormValues", FormValues, selectedCard);
     if (
       FormValues &&
       FormValues?.vendor?.length > 0 &&
       FormValues?.locationName &&
       FormValues?.description !== "" &&
-      selectedCard?.prot_id !== ""
+      selectedCard?.protocolnumberstandard !== ""
     ) {
       if (changeLocationRequire) {
         messageContext.showErrorMessage(
@@ -190,7 +190,7 @@ const DataFlow = ({
         exptDtOfFirstProdFile: FormValues.firstFileDate,
         locationType: FormValues.locationType,
         // serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
-        protocolNumberStandard: selectedCard.prot_id,
+        protocolNumberStandard: selectedCard.protocolnumberstandard,
         // protocolNumber: selectedCard.prot_id,
         externalSystemName: "CDI",
         dataPackage: [{ dataSet: [] }],
@@ -261,14 +261,14 @@ const DataFlow = ({
     if (datasetObj.customQuery === "No" && datasetObj.tableName) {
       dispatch(getSQLColumns(datasetObj.tableName));
     }
-    if (datasetObj.headerRowNumber) {
+    if (typeof datasetObj.headerRowNumber !== "undefined") {
       setHeaderValue(datasetObj.headerRowNumber);
     }
 
     newForm.dataPackage[0].dataSet[0] = datasetObj;
     setForm(newForm);
     if (datasetObj.customQuery === "Yes") {
-      setCurrentStep({ step: 4 });
+      setCurrentStep({ step: 5 });
     } else {
       setCurrentStep();
     }
@@ -284,22 +284,12 @@ const DataFlow = ({
   };
   const submitFinalForm = async () => {
     if (
-      myform.dataPackage[0]?.dataSet[0]?.customQuery === "No" &&
-      !myform.dataPackage[0]?.dataSet[0]?.columncount
+      (isSftp(locType) && !myform.dataPackage[0]?.dataSet[0]?.columncount) ||
+      (myform.dataPackage[0]?.dataSet[0]?.customQuery === "No" &&
+        !myform.dataPackage[0]?.dataSet[0]?.columncount)
     ) {
       messageContext.showErrorMessage(
         "Please add atleast one column to proceed"
-      );
-      return false;
-    }
-    if (
-      myform.dataPackage[0]?.dataSet[0]?.customQuery === "No" &&
-      myform.dataPackage[0]?.dataSet[0]?.columnDefinition.find(
-        (x) => x.dataType === ""
-      )
-    ) {
-      messageContext.showErrorMessage(
-        "Please select data type for columns to proceed"
       );
       return false;
     }
@@ -334,17 +324,11 @@ const DataFlow = ({
         datasetRef.current.submitForm();
         break;
       case 4:
-        // if (isSftp(locType)) {
-        //   datasetRef.current.checkvalidation();
-        // } else {
-        submitFinalForm();
-        // }
+        datasetRef.current.checkvalidation();
         break;
       case 5:
-        // if (isSftp(locType)) {
-        //   submitFinalForm();
-        // }
-        setCurrentStep({ step: 3 });
+        submitFinalForm();
+        // setCurrentStep({ step: 3 });
         break;
       default:
         break;

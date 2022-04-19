@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-nested-ternary */
 import React, { useState, useContext, useEffect, useCallback } from "react";
@@ -16,7 +17,7 @@ import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 import Progress from "../../../../../components/Common/Progress/Progress";
 
-const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
+const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
   // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -28,6 +29,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
   const [formattedData, setFormattedData] = useState([]);
+  const [disableUpload, setDisableUpload] = useState(false);
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
   const [loading, setLoading] = useState(false);
@@ -145,7 +147,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
       if (correctHeader) {
         const newData = formatData(importedData, protocolnumber, true);
         // eslint-disable-next-line no-unused-expressions
-        if (newData.length > 1) {
+        if (newData.length > 0) {
           setFormattedData(newData);
           setIsImportReady(true);
         } else {
@@ -179,17 +181,30 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
     }
   }, [datasetColumns, sqlColumns]);
 
-  const columnvalidation = () => {
-    console.log("End validat", selectedMethod, isImportReady);
-    if (selectedMethod === "manually" || isImportReady) {
-      console.log("End validationSSS");
-      // setShowColumns(true);
-    } else {
-      console.log("End validationEND");
-    }
-  };
   useEffect(() => {
-    columnFunc.current = columnvalidation;
+    columnFunc.current = () => {
+      if (
+        selectedMethod === "manually" ||
+        (selectedMethod === "fileUpload" && isImportReady)
+      ) {
+        setShowColumns(true);
+        moveNext();
+      } else {
+        if (selectedMethod === "fileUpload" && !isImportReady) {
+          messageContext.showErrorMessage(`Please upload file to continue`);
+          return false;
+        }
+        messageContext.showErrorMessage(`Please select one option to continue`);
+      }
+    };
+  }, [selectedMethod, isImportReady]);
+  useEffect(() => {
+    if (headerValue.toString() === "0" || headerValue === "") {
+      messageContext.showErrorMessage(
+        `Template is not available for files with no header row.`
+      );
+      setDisableUpload(true);
+    }
   }, []);
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
@@ -211,13 +226,17 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
             >
               <Radio
                 value="fileUpload"
+                disabled={disableUpload}
                 label="Upload dataset column settings"
                 onClick={handleChange}
                 checked={selectedMethod === "fileUpload"}
               />
-              <Link onClick={downloadTemplate}>Download Excel Template</Link>
+              <Link disabled={disableUpload} onClick={downloadTemplate}>
+                Download Excel Template
+              </Link>
               <div className="upload-box">
                 <FileUpload
+                  disabled={disableUpload}
                   value={selectedFile}
                   onUpload={handleUpload}
                   onFileDelete={handleDelete}
