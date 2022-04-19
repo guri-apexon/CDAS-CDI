@@ -147,7 +147,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
       if (correctHeader) {
         const newData = formatData(importedData, protocolnumber, true);
         // eslint-disable-next-line no-unused-expressions
-        if (newData.length > 1) {
+        if (newData.length > 0) {
           setFormattedData(newData);
           setIsImportReady(true);
         } else {
@@ -199,9 +199,8 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
     };
   }, [selectedMethod, isImportReady]);
   useEffect(() => {
-    console.log("headerValue", headerValue);
     if (headerValue.toString() === "0" || headerValue === "") {
-      messageContext.showInfoMessage(
+      messageContext.showErrorMessage(
         `Template is not available for files with no header row.`
       );
       setDisableUpload(true);
