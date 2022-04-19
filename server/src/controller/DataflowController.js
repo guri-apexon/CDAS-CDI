@@ -270,6 +270,11 @@ const insertValidation = (req) => {
                 type: "boolean",
               },
               {
+                key: "Package Path  ",
+                value: each.path,
+                type: "string",
+              },
+              {
                 key: "Package Naming Convention",
                 value: each.name,
                 type: "string",
@@ -308,20 +313,20 @@ const insertValidation = (req) => {
               }
             }
 
-            if (each.type != null) {
-              if (
-                each.type === "7Z" ||
-                each.type == "ZIP" ||
-                each.type == "RAR" ||
-                each.type == "SAS"
-              ) {
-              } else {
-                validate.push({
-                  text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
-                  status: false,
-                });
-              }
-            }
+            // if (each.type != null) {
+            //   if (
+            //     each.type === "7Z" ||
+            //     each.type == "ZIP" ||
+            //     each.type == "RAR" ||
+            //     each.type == "SAS"
+            //   ) {
+            //   } else {
+            //     validate.push({
+            //       text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
+            //       status: false,
+            //     });
+            //   }
+            // }
 
             let dpRes = helper.validation(dpArray);
             if (dpRes.length > 0) {

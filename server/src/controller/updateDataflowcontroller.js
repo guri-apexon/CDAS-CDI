@@ -46,6 +46,11 @@ const packageLevelInsert = async (
             value: data.active,
             type: "boolean",
           },
+          {
+            key: "Package Path  ",
+            value: data.path,
+            type: "string",
+          },
         ];
 
         if (helper.stringToBoolean(data.noPackageConfig) === false) {
@@ -83,20 +88,20 @@ const packageLevelInsert = async (
           }
         }
 
-        if (data.type != null) {
-          if (
-            data.type === "7Z" ||
-            data.type == "ZIP" ||
-            data.type == "RAR" ||
-            data.type == "SAS"
-          ) {
-          } else {
-            msg.push({
-              text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
-            });
-            status = false;
-          }
-        }
+        // if (data.type !== null) {
+        //   if (
+        //     data.type === "7Z" ||
+        //     data.type == "ZIP" ||
+        //     data.type == "RAR" ||
+        //     data.type == "SAS"
+        //   ) {
+        //   } else {
+        //     msg.push({
+        //       text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
+        //     });
+        //     status = false;
+        //   }
+        // }
 
         if (msg.length > 0) {
           return { validate: msg, status: status };
@@ -180,6 +185,24 @@ const packageLevelInsert = async (
         ResponseBody.data_packages.push(DpObj);
         // // each.datapackageid = dpUid;
 
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_audit_log
+          ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+          [
+            DFId,
+            dpUid,
+            null,
+            null,
+            version,
+            "New Datapackage",
+            "",
+            "",
+            null,
+            new Date(),
+          ]
+        );
+
         if (data.dataSet && data.dataSet.length > 0) {
           ResponseBody.data_sets = [];
           for (let obj of data.dataSet) {
@@ -245,6 +268,21 @@ const packageLevelInsert = async (
                 let dsResdt = helper.validation(dsArrayDt);
                 if (dsResdt.length > 0) {
                   msg.push(dsResdt);
+                  status = false;
+                }
+              }
+
+              if (obj.columnDefinition.length > 0) {
+                if (
+                  obj.columncount !== null &&
+                  obj.columncount !== "" &&
+                  obj.columncount !== undefined &&
+                  typeof obj.columncount === "number"
+                ) {
+                } else {
+                  msg.push({
+                    text: " column count is required and data type should be Number ",
+                  });
                   status = false;
                 }
               }
@@ -361,6 +399,25 @@ const packageLevelInsert = async (
                 dsObj.datasetid = dsUid;
                 dsObj.action = "Data set created successfully.";
                 ResponseBody.data_sets.push(dsObj);
+
+                await DB.executeQuery(
+                  `INSERT INTO ${schemaName}.dataflow_audit_log
+                    ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+                  [
+                    DFId,
+                    dpUid,
+                    dsUid,
+                    null,
+                    version,
+                    "New Dataset",
+                    "",
+                    "",
+                    null,
+                    new Date(),
+                  ]
+                );
+
                 if (obj.columnDefinition && obj.columnDefinition.length > 0) {
                   ResponseBody.column_definition = [];
                   for (let el of obj.columnDefinition) {
@@ -431,6 +488,24 @@ const packageLevelInsert = async (
                     cdObj.action = "column definition created successfully.";
                     // //el.colmunid = CDUid;
                     ResponseBody.column_definition.push(cdObj);
+
+                    await DB.executeQuery(
+                      `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+                      [
+                        DFId,
+                        dpUid,
+                        dsUid,
+                        null,
+                        version,
+                        "New Column Definition",
+                        "",
+                        "",
+                        null,
+                        new Date(),
+                      ]
+                    );
                   }
                 }
 
@@ -527,6 +602,21 @@ const packageLevelInsert = async (
                     });
                     status = false;
                   }
+                }
+              }
+
+              if (obj.columnDefinition.length > 0) {
+                if (
+                  obj.columncount !== null &&
+                  obj.columncount !== "" &&
+                  obj.columncount !== undefined &&
+                  typeof obj.columncount === "number"
+                ) {
+                } else {
+                  msg.push({
+                    text: " column count is required and data type should be Number ",
+                  });
+                  status = false;
                 }
               }
 
@@ -642,6 +732,24 @@ const packageLevelInsert = async (
                 dsObj.action = "Data set created successfully.";
                 ResponseBody.data_sets.push(dsObj);
 
+                await DB.executeQuery(
+                  `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+                  [
+                    DFId,
+                    dpUid,
+                    dsUid,
+                    null,
+                    version,
+                    "New Data Set",
+                    "",
+                    "",
+                    null,
+                    new Date(),
+                  ]
+                );
+
                 if (obj.columnDefinition && obj.columnDefinition.length > 0) {
                   ResponseBody.column_definition = [];
                   for (let el of obj.columnDefinition) {
@@ -712,6 +820,24 @@ const packageLevelInsert = async (
                     cdObj.action = "column definition created successfully.";
                     // //el.colmunid = CDUid;
                     ResponseBody.column_definition.push(cdObj);
+
+                    await DB.executeQuery(
+                      `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+                      [
+                        DFId,
+                        dpUid,
+                        dsUid,
+                        null,
+                        version,
+                        "New Column Definition",
+                        "",
+                        "",
+                        null,
+                        new Date(),
+                      ]
+                    );
                   }
                 }
               }
@@ -753,8 +879,8 @@ const datasetLevelInsert = async (
     var ResponseBody = {};
     ResponseBody.data_sets = [];
 
-    // if (LocationType === "SFTP" || LocationType === "FTPS") {
-    if (LocationType === "Hive CDH") {
+    if (LocationType === "SFTP" || LocationType === "FTPS") {
+      // if (LocationType === "Hive CDH") {
       const dsArray = [
         {
           key: "Data Set Name (Mnemonic) ",
@@ -830,6 +956,21 @@ const datasetLevelInsert = async (
           text: " Data Set Level, External Id  is required and data type should be string or Number ",
         });
         status = false;
+      }
+
+      if (obj.columnDefinition.length > 0) {
+        if (
+          obj.columncount !== null &&
+          obj.columncount !== "" &&
+          obj.columncount !== undefined &&
+          typeof obj.columncount === "number"
+        ) {
+        } else {
+          msg.push({
+            text: " column count is required and data type should be Number ",
+          });
+          status = false;
+        }
       }
 
       let dsRes = helper.validation(dsArray);
@@ -919,17 +1060,35 @@ const datasetLevelInsert = async (
           obj.dataTransferFrequency || "",
           obj.conditionalExpression,
         ];
-        // let createDS = await DB.executeQuery(
-        //   `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
-        //         offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
-        //         customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
-        //   DSBody
-        // );
+        let createDS = await DB.executeQuery(
+          `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
+                offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
+                customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
+          DSBody
+        );
         dsObj.timestamp = ts;
         dsObj.externalId = obj.externalID;
         dsObj.datasetid = dsUid;
         dsObj.action = "Data set created successfully.";
         ResponseBody.data_sets.push(dsObj);
+
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+          [
+            DFId,
+            DPId,
+            dsUid,
+            null,
+            version,
+            "New Data set",
+            "",
+            "",
+            null,
+            new Date(),
+          ]
+        );
         if (obj.columnDefinition && obj.columnDefinition.length > 0) {
           ResponseBody.column_definition = [];
           for (let el of obj.columnDefinition) {
@@ -987,12 +1146,12 @@ const datasetLevelInsert = async (
               el.requiredfield || null,
               new Date(),
             ];
-            // await DB.executeQuery(
-            //   `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
-            //         primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
-            //         insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
-            //   CDBody
-            // );
+            await DB.executeQuery(
+              `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
+                    primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
+                    insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
+              CDBody
+            );
 
             cdObj.timestamp = ts;
             cdObj.colmunid = CDUid;
@@ -1000,6 +1159,24 @@ const datasetLevelInsert = async (
             cdObj.action = "column definition created successfully.";
             // //el.colmunid = CDUid;
             ResponseBody.column_definition.push(cdObj);
+
+            await DB.executeQuery(
+              `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+              [
+                DFId,
+                DPId,
+                dsUid,
+                null,
+                version,
+                "New Column Definition",
+                "",
+                "",
+                null,
+                new Date(),
+              ]
+            );
           }
         }
 
@@ -1096,6 +1273,21 @@ const datasetLevelInsert = async (
             });
             status = false;
           }
+        }
+      }
+
+      if (obj.columnDefinition.length > 0) {
+        if (
+          obj.columncount !== null &&
+          obj.columncount !== "" &&
+          obj.columncount !== undefined &&
+          typeof obj.columncount === "number"
+        ) {
+        } else {
+          msg.push({
+            text: " column count is required and data type should be Number ",
+          });
+          status = false;
         }
       }
 
@@ -1197,17 +1389,35 @@ const datasetLevelInsert = async (
           obj.dataTransferFrequency || "",
           obj.conditionalExpression,
         ];
-        // let createDS = await DB.executeQuery(
-        //   `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
-        //         offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
-        //         customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
-        //   DSBody
-        // );
+        let createDS = await DB.executeQuery(
+          `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
+                offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
+                customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
+          DSBody
+        );
         dsObj.timestamp = ts;
         dsObj.externalId = obj.externalID;
         dsObj.datasetid = dsUid;
         dsObj.action = "Data set created successfully.";
         ResponseBody.data_sets.push(dsObj);
+
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+          [
+            DFId,
+            DPId,
+            dsUid,
+            null,
+            version,
+            "New Data Set",
+            "",
+            "",
+            null,
+            new Date(),
+          ]
+        );
 
         if (obj.columnDefinition && obj.columnDefinition.length > 0) {
           ResponseBody.column_definition = [];
@@ -1266,12 +1476,12 @@ const datasetLevelInsert = async (
               el.requiredfield || null,
               new Date(),
             ];
-            // await DB.executeQuery(
-            //   `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
-            //         primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
-            //         insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
-            //   CDBody
-            // );
+            await DB.executeQuery(
+              `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
+                    primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
+                    insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
+              CDBody
+            );
 
             cdObj.timestamp = ts;
             cdObj.colmunid = CDUid;
@@ -1279,6 +1489,24 @@ const datasetLevelInsert = async (
             cdObj.action = "column definition created successfully.";
             // //el.colmunid = CDUid;
             ResponseBody.column_definition.push(cdObj);
+
+            await DB.executeQuery(
+              `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+              [
+                DFId,
+                DPId,
+                dsUid,
+                null,
+                version,
+                "New Column Definition",
+                "",
+                "",
+                null,
+                new Date(),
+              ]
+            );
           }
         }
       }
@@ -1348,10 +1576,70 @@ const dataflowUpdate = async (data, externalID, DFId, version) => {
       protocolNumber: "prot_id",
     };
 
-    // for (let key in data) {
-    //   columnArray.push(dsObj[k]);
-    //   valueArry.push(data[k]);
-    // }
+    // validation loop
+    for (let key in data) {
+      if (
+        key === "protocolNumberStandard" ||
+        key === "vendorName" ||
+        key === "type" ||
+        key === "name" ||
+        key === "externalSystemName"
+      ) {
+        if (
+          data[key] !== null &&
+          data[key] !== "" &&
+          data[key] !== undefined &&
+          typeof data[key] === "string"
+        ) {
+        } else {
+          msg.push({
+            text: ` ${key} is required and data type should be string `,
+          });
+          status = false;
+        }
+      }
+
+      if (key === "description") {
+        if (
+          data[key] !== null &&
+          data[key] !== "" &&
+          data[key] !== undefined &&
+          typeof data[key] === "string"
+        ) {
+          if (data[key].length <= 30) {
+          } else {
+            msg.push({
+              text: ` Description length , Max of 30 characters `,
+            });
+            status = false;
+          }
+        } else {
+          msg.push({
+            text: ` ${key} is required and data type should be string `,
+          });
+          status = false;
+        }
+      }
+
+      if (key === "testFlag" || key === "active") {
+        keyValue = helper.stringToBoolean(data[key]);
+
+        if (
+          data[key] !== null &&
+          data[key] !== "" &&
+          data[key] !== undefined &&
+          typeof keyValue === "boolean"
+        ) {
+          // valueArry.push(data[key]);
+          // columnArray.push(dpObj[key]);
+        } else {
+          msg.push({
+            text: ` ${key} is required and data type should be boolean `,
+          });
+          status = false;
+        }
+      }
+    }
 
     // for (let k in data) {
     //   columnArray.push(dfObj[k]);
@@ -1422,9 +1710,9 @@ const packageUpdate = async (
     };
 
     for (let key in data) {
-      if (LocationType === "SFTP" || LocationType === "FTPS") {
-        // if (LocationType === "Hive CDH") {
-        if (key === "path" || key === "name" || key === "sasXptMethod") {
+      // if (LocationType === "SFTP" || LocationType === "FTPS") {
+      if (LocationType === "Hive CDH") {
+        if (key === "path" || key === "name") {
           if (
             data[key] !== null &&
             data[key] !== "" &&
@@ -1441,25 +1729,103 @@ const packageUpdate = async (
           }
         }
 
-        if (key === "type") {
+        if (
+          helper.stringToBoolean(data.noPackageConfig) === false &&
+          key === "type"
+        ) {
           if (
-            data[key] === "7Z" ||
-            data[key] == "ZIP" ||
-            data[key] == "RAR" ||
-            data[key] == "SAS"
+            data[key] !== null &&
+            data[key] !== "" &&
+            data[key] !== undefined &&
+            typeof data[key] === "string"
           ) {
-            valueArry.push(data[key]);
-            columnArray.push(dpObj[key]);
+            if (
+              data[key] === "7Z" ||
+              data[key] == "ZIP" ||
+              data[key] == "RAR" ||
+              data[key] == "SAS"
+            ) {
+              valueArry.push(data[key]);
+              columnArray.push(dpObj[key]);
+            } else {
+              msg.push({
+                text: " Package type's is required and Supported values : 7Z, ZIP, RAR, SAS ",
+              });
+              status = false;
+            }
           } else {
             msg.push({
-              text: " Package type's is required and Supported values : 7Z, ZIP, RAR, SAS ",
+              text: ` ${key} is required and data type should be string `,
             });
             status = false;
           }
         }
 
+        if (
+          helper.stringToBoolean(data.noPackageConfig) === true &&
+          key === "type"
+        ) {
+          if (
+            data[key] === "" ||
+            data[key] === null ||
+            data[key] === undefined
+          ) {
+          } else {
+            if (
+              data[key] === "7Z" ||
+              data[key] == "ZIP" ||
+              data[key] == "RAR" ||
+              data[key] == "SAS"
+            ) {
+              valueArry.push(data[key]);
+              columnArray.push(dpObj[key]);
+            } else {
+              msg.push({
+                text: " Package type's is required and Supported values : 7Z, ZIP, RAR, SAS ",
+              });
+              status = false;
+            }
+          }
+        }
+
+        if (
+          helper.stringToBoolean(data.noPackageConfig) === false &&
+          key === "sasXptMethod"
+        ) {
+          if (
+            data[key] !== null &&
+            data[key] !== "" &&
+            data[key] !== undefined &&
+            typeof data[key] === "string"
+          ) {
+            valueArry.push(data[key]);
+            columnArray.push(dpObj[key]);
+          } else {
+            msg.push({
+              text: ` ${key} is required and data type should be string `,
+            });
+            status = false;
+          }
+        }
+
+        if (
+          helper.stringToBoolean(data.noPackageConfig) === true &&
+          key === "sasXptMethod"
+        ) {
+          if (
+            data[key] === "" ||
+            data[key] === null ||
+            data[key] === undefined
+          ) {
+          } else {
+            valueArry.push(data[key]);
+            columnArray.push(dpObj[key]);
+          }
+        }
+
         if (key === "noPackageConfig" || key === "active") {
           keyValue = helper.stringToBoolean(data[key]);
+
           if (
             data[key] !== null &&
             data[key] !== "" &&
@@ -1477,56 +1843,14 @@ const packageUpdate = async (
         }
 
         if (key === "password") {
-          if (data[key] == undefined) {
-            valueArry.push(null);
+          if (
+            data[key] === "" ||
+            data[key] === null ||
+            data[key] === undefined
+          ) {
           } else {
             valueArry.push(data[key]);
-          }
-
-          columnArray.push(dpObj[key]);
-        }
-      } else {
-        if (key === "type") {
-          if (
-            data[key] === "7Z" ||
-            data[key] == "ZIP" ||
-            data[key] == "RAR" ||
-            data[key] == "SAS"
-          ) {
-            valueArry.push(data[key]);
             columnArray.push(dpObj[key]);
-          } else {
-            msg.push({
-              text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
-            });
-            status = false;
-          }
-        } else {
-          if (
-            key === "path" ||
-            key === "name" ||
-            key === "sasXptMethod" ||
-            key === "password"
-          ) {
-            if (data[key] == undefined) {
-              valueArry.push(null);
-            } else {
-              valueArry.push(data[key]);
-            }
-
-            columnArray.push(dpObj[key]);
-          }
-          if (key === "noPackageConfig" || key === "active") {
-            keyValue = helper.stringToBoolean(data[key]);
-            if (typeof keyValue === "boolean") {
-              valueArry.push(data[key]);
-              columnArray.push(dpObj[key]);
-            } else {
-              msg.push({
-                text: ` ${key} data type should be boolean `,
-              });
-              status = false;
-            }
           }
         }
       }
@@ -1545,6 +1869,9 @@ const packageUpdate = async (
     const fData = resultData.slice(0, -2);
 
     let updateQueryDP = `UPDATE ${schemaName}.datapackage set ${fData} where externalid='${externalID}'`;
+    let selectQueryDP = `select * from ${schemaName}.datapackage where externalid='${externalID}'`;
+
+    // console.log(DpData.rows[0]);
 
     if (msg.length > 0) {
       return { validate: msg, status: status };
@@ -1558,6 +1885,35 @@ const packageUpdate = async (
       newObj.datapackageid = DPId;
       newObj.action = "Data package update successfully.";
       ResponseBody.data_packages.push(newObj);
+
+      let DpData = await DB.executeQuery(selectQueryDP);
+
+      const logAttribute = columnArray.slice(0, -1);
+      const logValue = valueArry.slice(0, -1);
+
+      logAttribute.forEach((e) => {
+        logValue.forEach(async (key) => {
+          console.log(e, DpData.rows[0][e], key);
+          await DB.executeQuery(
+            `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+            [
+              DFId,
+              DPId,
+              null,
+              null,
+              version,
+              e,
+              DpData.rows[0][e],
+              key,
+              null,
+              new Date(),
+            ]
+          );
+        });
+      });
+
       return { validate: ResponseBody, status: status };
     }
   } catch (e) {
@@ -1858,7 +2214,8 @@ exports.updateDataFlow = async (req, res) => {
       rows[0].dataflowid,
     ]);
 
-    const DFVer = version[0].version;
+    const Ver = version[0].version;
+    const DFVer = Ver + 1;
     const ConnectionType = rows[0].connectiontype;
     const DFId = rows[0].dataflowid;
 
@@ -1894,19 +2251,18 @@ exports.updateDataFlow = async (req, res) => {
       } = req.body;
 
       var ResponseBody = {};
-      // dataFlow update function Call
-      var ReturnDFUpdate = await dataflowUpdate(
-        req.body,
-        dataFlowExternalId,
-        DFId,
-        DFVer
-      );
+      //dataFlow update function Call
+      // var ReturnDFUpdate = await dataflowUpdate(
+      //   req.body,
+      //   dataFlowExternalId,
+      //   DFId,
+      //   DFVer
+      // );
 
       // if (ReturnDFUpdate.status == false) {
       //   console.log("error");
       //   return apiResponse.ErrorResponse(res, ReturnDFUpdate.validate);
-      // }
-      //  else {
+      // } else {
       //   console.log("success", ReturnDFUpdate.validate);
       // }
 
@@ -1922,7 +2278,7 @@ exports.updateDataFlow = async (req, res) => {
             console.log("data package Update Function");
             const DPId = dpRows.rows[0].datapackageid;
 
-            // Function call for update dataPackage data
+            //Function call for update dataPackage data
             // var ReturnDPUpdate = await packageUpdate(
             //   each,
             //   packageExternalId,
@@ -1952,26 +2308,25 @@ exports.updateDataFlow = async (req, res) => {
                   console.log("Data set update function");
                   const DSId = dsRows[0].datasetid;
                   //Function call for update dataSet data
-                  // var ReturnDSUpdate = await datasetUpdate(
-                  //   obj,
-                  //   datasetExternalId,
-                  //   DSId,
-                  //   DPId,
-                  //   DFId,
-                  //   DFVer,
-                  //   ConnectionType
-                  // );
+                  var ReturnDSUpdate = await datasetUpdate(
+                    obj,
+                    datasetExternalId,
+                    DSId,
+                    DPId,
+                    DFId,
+                    DFVer,
+                    ConnectionType
+                  );
 
-                  // if (ReturnDSUpdate.status == false) {
-                  //   console.log("error line 1688");
-                  //   return apiResponse.ErrorResponse(
-                  //     res,
-                  //     ReturnDSUpdate.validate
-                  //   );
-                  // }
-                  // else {
-                  //   console.log("success", ReturnDSUpdate.validate);
-                  // }
+                  if (ReturnDSUpdate.status == false) {
+                    console.log("error line 1688");
+                    return apiResponse.ErrorResponse(
+                      res,
+                      ReturnDSUpdate.validate
+                    );
+                  } else {
+                    console.log("success", ReturnDSUpdate.validate);
+                  }
 
                   // if (obj.columnDefinition && obj.columnDefinition.length > 0) {
                   //   ResponseBody.column_definition = [];
@@ -2020,10 +2375,44 @@ exports.updateDataFlow = async (req, res) => {
               return apiResponse.ErrorResponse(res, ReturnDPUpdate.validate);
             } else {
               console.log("success", ReturnDPUpdate.validate);
+              ResponseBody.data_packages.push(ReturnDPUpdate.validate);
             }
           }
         }
       }
+
+      // if (ResponseBody.length > 0) {
+      //   let config_json = {
+      //     dataFlowId: DFId,
+      //     vendorName: vendorName,
+      //     protocolNumber: studyId,
+      //     type: type,
+      //     name: name,
+      //     externalID: externalID,
+      //     externalSystemName: externalSystemName,
+      //     connectionType: connectionType,
+      //     location: src_loc_id,
+      //     exptDtOfFirstProdFile: exptDtOfFirstProdFile,
+      //     testFlag: testFlag ? 1 : 0,
+      //     prodFlag: testFlag,
+      //     description: description,
+      //     fsrstatus: fsrstatus,
+      //     dataPackage,
+      //   };
+
+      //   //insert into dataflow version config log table
+      //   let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
+      //   ( dataflowid, "version", config_json, created_by, created_on)
+      //   VALUES($1,$2,$3,$4,$5);`;
+      //   let aduit_version_body = [
+      //     DFId,
+      //     DFVer,
+      //     JSON.stringify(config_json),
+      //     null,
+      //     new Date(),
+      //   ];
+      //   await DB.executeQuery(dataflow_version_query, aduit_version_body);
+      // }
 
       // return apiResponse.successResponseWithData(res, "Success", rows);
     } else {
