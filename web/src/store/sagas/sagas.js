@@ -64,7 +64,6 @@ import {
   fetchVendorsData,
   fetchLocationsData,
   fetchServiceOwnersData,
-  fetchLocationspassword,
   fetchDataflowDetail,
   addDataFlow,
 } from "./dataFlow.saga";
@@ -78,6 +77,7 @@ import {
   createSettingsData,
   updateSettingsData,
   fetchSettingsList,
+  fetchLocationspassword,
 } from "./cdiAdmin.saga";
 import {
   fetchDatasetIngestionFileHistory,
