@@ -349,7 +349,9 @@ const CreateDataSetsForm = connect((state, ownProps) => {
       ownProps.initialValues.transferFrequency ||
       formDataStore.transferFrequency,
     headerRowNumber:
-      ownProps.initialValues.headerRowNumber || formDataStore.headerRowNumber,
+      typeof ownProps.initialValues.headerRowNumber !== "undefined"
+        ? ownProps.initialValues.headerRowNumber
+        : formDataStore.headerRowNumber,
     fileNamingConvention:
       ownProps.initialValues.fileNamingConvention ||
       formDataStore.fileNamingConvention,
