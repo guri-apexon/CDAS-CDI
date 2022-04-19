@@ -85,30 +85,6 @@ export default function DSColumnTable({
     setSelectedRow(row);
   };
 
-  const handleSaveLOV = () => {
-    const newData = [{ ...selectedRow }]
-      .map((e) => {
-        e.values = e.values.trim();
-        return e;
-      })
-      .map((e) => {
-        const isFirst = e.values.charAt(0) === "~";
-        const isLast = e.values.charAt(e.values.length - 1) === "~";
-        if (isFirst) {
-          e.values = e.values.substring(1);
-        }
-        if (isLast) {
-          e.values = e.values.slice(0, -1);
-        }
-        return e;
-      });
-
-    const removeExistingRowData = rows.filter(
-      (e) => e.uniqueId !== selectedRow.uniqueId
-    );
-    setRows([...removeExistingRowData, ...newData]);
-  };
-
   const inputFile = useRef(null);
 
   const changeHandler = () => {
@@ -195,6 +171,31 @@ export default function DSColumnTable({
     setShowViewLOVs(false);
     setIsEditLOVs(false);
     setSelectedRow(null);
+  };
+
+  const handleSaveLOV = () => {
+    const newData = [{ ...selectedRow }]
+      .map((e) => {
+        e.values = e.values.trim();
+        return e;
+      })
+      .map((e) => {
+        const isFirst = e.values.charAt(0) === "~";
+        const isLast = e.values.charAt(e.values.length - 1) === "~";
+        if (isFirst) {
+          e.values = e.values.substring(1);
+        }
+        if (isLast) {
+          e.values = e.values.slice(0, -1);
+        }
+        return e;
+      });
+
+    const removeExistingRowData = rows.filter(
+      (e) => e.uniqueId !== selectedRow.uniqueId
+    );
+    setRows([...removeExistingRowData, ...newData]);
+    hideViewLOVs();
   };
 
   const LinkCell = ({ row }) => {
