@@ -77,7 +77,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
       dpId,
       datasetId,
       jsonData,
-      "New Entry"
+      "New Dataset"
     );
     if (!historyVersion) throw new Error("History not updated");
 
@@ -181,7 +181,7 @@ exports.saveDatasetData = async (req, res) => {
         dpId,
         datasetId,
         jsonData,
-        "New Entry"
+        "New Dataset"
       );
       if (!historyVersion) throw new Error("History not updated");
       return apiResponse.successResponseWithData(
