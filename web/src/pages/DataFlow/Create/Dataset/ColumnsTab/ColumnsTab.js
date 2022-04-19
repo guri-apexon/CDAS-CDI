@@ -238,7 +238,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
             </Card>
           </div>
           <div style={{ display: "flex", justifyContent: "end" }}>
-            {/* <Button
+            <Button
               variant="primary"
               style={{ marginRight: 10, float: "right" }}
               onClick={() => setShowColumns(true)}
@@ -250,7 +250,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
               }
             >
               Create
-            </Button> */}
+            </Button>
           </div>
         </div>
       )}
