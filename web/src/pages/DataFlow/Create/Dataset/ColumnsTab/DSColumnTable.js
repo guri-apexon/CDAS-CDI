@@ -8,6 +8,7 @@ import Table from "apollo-react/components/Table";
 import TextField from "apollo-react/components/TextField";
 import Link from "apollo-react/components/Link";
 import Modal from "apollo-react/components/Modal";
+import _ from "lodash";
 
 import { MessageContext } from "../../../../../components/Providers/MessageProvider";
 import { CustomHeader, columns } from "./DSCTableHelper";
@@ -85,16 +86,28 @@ export default function DSColumnTable({
   };
 
   const handleSaveLOV = () => {
-    // if (selectedRow.dbColumnId) {
-    // }
-  };
+    const newData = [{ ...selectedRow }]
+      .map((e) => {
+        e.values = e.values.trim();
+        return e;
+      })
+      .map((e) => {
+        const isFirst = e.values.charAt(0) === "~";
+        const isLast = e.values.charAt(e.values.length - 1) === "~";
+        if (isFirst) {
+          e.values = e.values.substring(1);
+        }
+        if (isLast) {
+          e.values = e.values.slice(0, -1);
+        }
+        return e;
+      });
 
-  // const handleNoHeaders = () => {
-  //   messageContext.showErrorMessage(
-  //     `Import is not available for files with no header row.`
-  //   );
-  //   handleDelete();
-  // };
+    const removeExistingRowData = rows.filter(
+      (e) => e.uniqueId !== selectedRow.uniqueId
+    );
+    setRows([...removeExistingRowData, ...newData]);
+  };
 
   const inputFile = useRef(null);
 
@@ -389,17 +402,8 @@ export default function DSColumnTable({
   //   const cName = arr.map((e) => e.columnName).join(", ");
   // };
 
-  const onRowSave = async (uniqueId) => {
-    const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const removeEdited = editedRows.filter((e) => e !== uniqueId);
-    const currentRow = editedRows.find((x) => x.uniqueId === uniqueId);
-    if (currentRow && currentRow.dataType === "") {
-      messageContext.showErrorMessage(
-        `Please select Data Type for this record to save.`
-      );
-      return false;
-    }
-    const editedRowData = editedRows
+  const onRowSave = (uniqueId) => {
+    const editedRowData = _.filter(editedRows, (e) => e.uniqueId === uniqueId)
       .map((e) => {
         e.values = e.values.trim();
         e.columnName = e.columnName.trim();
@@ -417,10 +421,23 @@ export default function DSColumnTable({
         return e;
       })
       .find((e) => e.uniqueId === uniqueId);
-    const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
-    setRows([...removeExistingRowData, editedRowData]);
-    setEditedRows([...removeEdited]);
-    setSelectedRows([...removeRow]);
+
+    if (rows.some((r) => r.columnName === editedRowData.columnName)) {
+      messageContext.showErrorMessage(
+        "Column name should be unique for a dataset"
+      );
+    } else if (editedRowData && editedRowData.dataType === "") {
+      messageContext.showErrorMessage(
+        `Please select Data Type for this record to save.`
+      );
+    } else {
+      const removeRow = selectedRows.filter((e) => e !== uniqueId);
+      const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+      const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
+      setRows([...removeExistingRowData, editedRowData]);
+      setEditedRows([...removeEdited]);
+      setSelectedRows([...removeRow]);
+    }
   };
 
   const onRowEdit = (uniqueId) => {
@@ -663,7 +680,7 @@ export default function DSColumnTable({
           isEditLOVs
             ? [
                 { label: "Save", onClick: handleSaveLOV },
-                { label: "Cancel", onClick: () => setIsEditLOVs(false) },
+                { label: "Cancel", onClick: hideViewLOVs },
               ]
             : [
                 { label: "Edit", onClick: () => setIsEditLOVs(true) },
