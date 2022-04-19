@@ -123,16 +123,13 @@ exports.getLocationList = function (req, res) {
           searchQuery = `SELECT ${select} from ${schemaName}.source_location order by label asc`;
           break;
         default:
-          searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ = $1 and active=1 order by label asc`;
+          searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ = '${type}' and active=1 order by label asc`;
       }
     }
 
-    Logger.info({
-      message: "locationList",
-      searchQuery: searchQuery,
-    });
+    Logger.info({ message: "locationList" });
 
-    let dbQuery = DB.executeQuery(searchQuery, [type]);
+    let dbQuery = DB.executeQuery(searchQuery, []);
     dbQuery
       .then(async (response) => {
         const locations = response.rows || [];
