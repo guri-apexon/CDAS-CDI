@@ -423,7 +423,13 @@ export default function DSColumnTable({
       })
       .find((e) => e.uniqueId === uniqueId);
 
-    if (rows.some((r) => r.columnName === editedRowData.columnName)) {
+    if (
+      rows.some(
+        (r) =>
+          r.columnName === editedRowData.columnName &&
+          r.uniqueId !== editedRowData.uniqueId
+      )
+    ) {
       messageContext.showErrorMessage(
         "Column name should be unique for a dataset"
       );
