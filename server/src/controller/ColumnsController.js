@@ -41,9 +41,11 @@ exports.saveDatasetColumns = async (req, res) => {
     }
 
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, "name", "datatype", primarykey, "required", "unique", charactermin, charactermax, "position", "format", lov, "variable", del_flg, insrt_tm, updt_tm)
-     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, Now(), Now());`;
+     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, Now(), Now()) RETURNING *;`;
 
     Logger.info({ message: "storeDatasetColumns" });
+
+    const datasetColumns = [];
 
     if (values && values.length > 0) {
       for (let value of values) {
@@ -65,7 +67,8 @@ exports.saveDatasetColumns = async (req, res) => {
           0,
         ];
 
-        await DB.executeQuery(insertQuery, body);
+        const inserted = await DB.executeQuery(insertQuery, body);
+        datasetColumns.push(inserted.rows[0]);
 
         const jsonObj = { datasetid: dsId, columnId, ...value };
         const config_json = JSON.stringify(jsonObj);
@@ -80,11 +83,9 @@ exports.saveDatasetColumns = async (req, res) => {
         );
       }
 
-      const datasetColumns = values;
-
       return apiResponse.successResponseWithData(
         res,
-        "Column Defination created Successfully",
+        "Column Definition created Successfully",
         datasetColumns
       );
     }

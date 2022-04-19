@@ -16,7 +16,7 @@ import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 import Progress from "../../../../../components/Common/Progress/Progress";
 
-const ColumnsTab = ({ locationType, headerValue }) => {
+const ColumnsTab = ({ locationType, headerValue, columnFunc }) => {
   // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -179,6 +179,18 @@ const ColumnsTab = ({ locationType, headerValue }) => {
     }
   }, [datasetColumns, sqlColumns]);
 
+  const columnvalidation = () => {
+    console.log("End validat", selectedMethod, isImportReady);
+    if (selectedMethod === "manually" || isImportReady) {
+      console.log("End validationSSS");
+      // setShowColumns(true);
+    } else {
+      console.log("End validationEND");
+    }
+  };
+  useEffect(() => {
+    columnFunc.current = columnvalidation;
+  }, []);
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
   };
@@ -226,7 +238,7 @@ const ColumnsTab = ({ locationType, headerValue }) => {
             </Card>
           </div>
           <div style={{ display: "flex", justifyContent: "end" }}>
-            <Button
+            {/* <Button
               variant="primary"
               style={{ marginRight: 10, float: "right" }}
               onClick={() => setShowColumns(true)}
@@ -238,7 +250,7 @@ const ColumnsTab = ({ locationType, headerValue }) => {
               }
             >
               Create
-            </Button>
+            </Button> */}
           </div>
         </div>
       )}

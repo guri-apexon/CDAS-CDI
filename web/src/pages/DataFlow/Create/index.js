@@ -43,6 +43,7 @@ import { MessageContext } from "../../../components/Providers/MessageProvider";
 import DataSet from "./Dataset";
 import { dataflowSave } from "../../../services/ApiServices";
 import { SelectedDataflow } from "../../../store/actions/DashboardAction";
+import { isSftp } from "../../../utils";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -166,10 +167,10 @@ const DataFlow = ({
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
-    console.log("FormValues", FormValues, selectedVendor);
+    // console.log("FormValues", FormValues, selectedVendor);
     if (
       FormValues &&
-      (FormValues?.vendor || FormValues?.vendor?.length > 0) &&
+      FormValues?.vendor?.length > 0 &&
       FormValues?.locationName &&
       FormValues?.description !== "" &&
       selectedCard?.prot_id !== ""
@@ -333,9 +334,16 @@ const DataFlow = ({
         datasetRef.current.submitForm();
         break;
       case 4:
+        // if (isSftp(locType)) {
+        //   datasetRef.current.checkvalidation();
+        // } else {
         submitFinalForm();
+        // }
         break;
       case 5:
+        // if (isSftp(locType)) {
+        //   submitFinalForm();
+        // }
         setCurrentStep({ step: 3 });
         break;
       default:

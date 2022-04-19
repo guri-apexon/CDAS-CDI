@@ -12,6 +12,7 @@ import Arrow2Down from "apollo-react-icons/Arrow2Down";
 import App from "apollo-react-icons/App";
 import Tooltip from "apollo-react/components/Tooltip/Tooltip";
 import "./NavigationPanel.scss";
+import { goToCore } from "../../../utils";
 
 const styles = {
   content: {
@@ -119,7 +120,7 @@ const NavigationPanel = ({
         </Box>
         <Box display="flex" m={1} mt={2}>
           <Typography
-            onClick={() => history.push("dashboard")}
+            onClick={() => goToCore()}
             className="link flex flex-center"
             variant="body2"
             gutterBottom

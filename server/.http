@@ -670,9 +670,9 @@ content-type: application/json
     "loc_alias_nm": "LocationName"
 }
 
-### get location detail
+### get password of location 
 
-POST http://localhost:4001/v1/api/location/get_password HTTP/1.1
+POST http://localhost:4001/v1/api/location/get_password/7u6g7ihq2trdfctu HTTP/1.1
+
 {
-
 }
