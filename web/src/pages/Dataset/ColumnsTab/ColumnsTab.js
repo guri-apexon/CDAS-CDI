@@ -163,7 +163,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
 
   useEffect(() => {
     if (!haveHeader) {
-      messageContext.showInfoMessage(
+      messageContext.showErrorMessage(
         `Import is not available for files with no header row.`
       );
     }
