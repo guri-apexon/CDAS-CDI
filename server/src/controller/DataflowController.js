@@ -375,6 +375,19 @@ const insertValidation = (req) => {
                     },
                   ];
 
+                  if (
+                    obj.customQuery === "" ||
+                    obj.customQuery === null ||
+                    obj.customQuery === undefined
+                  ) {
+                    // console.log(val.key, val.value);
+                  } else {
+                    validate.push({
+                      text: `customQuery fields should be Blank `,
+                      status: false,
+                    });
+                  }
+
                   // console.log("line 373", obj.type.toLowerCase());
                   if (obj.type.toLowerCase() === "delimited") {
                     const dsArrayDt = [

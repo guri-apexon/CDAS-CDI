@@ -112,7 +112,7 @@ exports.validationBlank = (data) => {
       // console.log(val.key, val.value);
     } else {
       msg.push({
-        text: `In JDBC ${val.key}fields should be Blank `,
+        text: `In JDBC ${val.key} fields should be Blank `,
         status: false,
       });
     }

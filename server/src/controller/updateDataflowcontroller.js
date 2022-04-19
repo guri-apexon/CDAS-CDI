@@ -272,6 +272,18 @@ const packageLevelInsert = async (
                 }
               }
 
+              if (
+                obj.customQuery === "" ||
+                obj.customQuery === null ||
+                obj.customQuery === undefined
+              ) {
+                // console.log(val.key, val.value);
+              } else {
+                msg.push({
+                  text: " customQuery fields should be Blank ",
+                });
+              }
+
               if (obj.columnDefinition.length > 0) {
                 if (
                   obj.columncount !== null &&
@@ -642,7 +654,7 @@ const packageLevelInsert = async (
               if (msg.length > 0) {
                 return { validate: msg, status: status };
               } else {
-                console.log("else tesst insert data");
+                // console.log("else tesst insert data");
                 let dsObj = {};
 
                 let dataKind = null;
@@ -947,6 +959,18 @@ const datasetLevelInsert = async (
       }
 
       if (
+        obj.customQuery === "" ||
+        obj.customQuery === null ||
+        obj.customQuery === undefined
+      ) {
+        // console.log(val.key, val.value);
+      } else {
+        msg.push({
+          text: " customQuery fields should be Blank ",
+        });
+      }
+
+      if (
         obj.externalID !== null &&
         obj.externalID !== "" &&
         obj.externalID !== undefined
@@ -983,7 +1007,7 @@ const datasetLevelInsert = async (
       if (msg.length > 0) {
         return { validate: msg, status: status };
       } else {
-        console.log("insert data");
+        // console.log("insert data");
 
         let dsObj = {};
 
@@ -1313,7 +1337,7 @@ const datasetLevelInsert = async (
       if (msg.length > 0) {
         return { validate: msg, status: status };
       } else {
-        console.log("else tesst insert data");
+        // console.log("else tesst insert data");
         let dsObj = {};
 
         let dataKind = null;
@@ -1546,8 +1570,6 @@ const columnLevelInsert = async (req, res) => {
 };
 
 const dataflowUpdate = async (data, externalID, DFId, version) => {
-  // console.log(data);
-  // console.log(externalID, DFId, version);
   try {
     const columnArray = [];
     const valueArry = [];
@@ -1556,25 +1578,78 @@ const dataflowUpdate = async (data, externalID, DFId, version) => {
     let status = true;
     let ts = new Date().toLocaleString();
     var ResponseBody = {};
+    var dataflow = [];
+    var newDfobj = {};
     const dfObj = {
-      DFTestname: "name",
-      externalSystemName: "vend_id",
+      // DFTestname: "name",
+      // externalSystemName: "vend_id",
       type: "type",
       description: "description",
-      // externalSystemName === "CDI"
-      //         ? src_loc_id
-      //         : data[0]?.src_loc_id || null,
       protocolNumberStandard: "protocolNumberStandard",
       active: "active",
       configured: "configured",
       exptDtOfFirstProdFile: "expt_fst_prd_dt",
       testFlag: "testflag",
       data_in_cdr: "data_in_cdr",
-      connectionType: "connectiontype",
       externalSystemName: "externalsystemname",
       fsrstatus: "fsrstatus",
       protocolNumber: "prot_id",
     };
+
+    const q1 = `select * from ${schemaName}.dataflow where externalid='${externalID}'`;
+    let q3 = `select vend_nm from ${schemaName}.vendor where vend_id=$1;`;
+    let q4 = `select prot_nbr_stnd  from study where prot_id=$1;`;
+
+    if (data.vendorName) {
+      let q2 = `select vend_id from ${schemaName}.vendor where vend_nm=$1;`;
+      let { rows } = await DB.executeQuery(q2, [data.vendorName]);
+      if (rows.length > 0) {
+        columnArray.push("vend_id");
+        valueArry.push(rows[0].vend_id);
+      }
+    }
+    const dataflowData = await DB.executeQuery(q1);
+
+    const vendorData = await DB.executeQuery(q3, [
+      dataflowData.rows[0].vend_id,
+    ]);
+    const protocolData = await DB.executeQuery(q4, [
+      dataflowData.rows[0].prot_id,
+    ]);
+
+    let vName;
+    let ptNum;
+    let desc;
+    if (data.vendorName) {
+      vName = data.vendorName;
+    } else {
+      vName = vendorData.rows[0].vend_nm;
+    }
+
+    if (data.protocolNumberStandard) {
+      ptNum = data.protocolNumberStandard;
+    } else {
+      ptNum = protocolData.rows[0].prot_nbr_stnd;
+    }
+
+    if (data.description) {
+      desc = data.description;
+    } else {
+      desc = dataflowData.rows[0].description;
+    }
+
+    var DFTestname = `${vName}-${ptNum}-${desc}`;
+
+    var testFlag = helper.stringToBoolean(data.testFlag);
+
+    if (testFlag === true) {
+      DFTestname = "TST-" + DFTestname;
+      columnArray.push("name");
+      valueArry.push(DFTestname);
+    } else {
+      columnArray.push("name");
+      valueArry.push(DFTestname);
+    }
 
     // validation loop
     for (let key in data) {
@@ -1641,39 +1716,67 @@ const dataflowUpdate = async (data, externalID, DFId, version) => {
       }
     }
 
-    // for (let k in data) {
-    //   columnArray.push(dfObj[k]);
-    // }
+    for (let k in dfObj) {
+      if (data.hasOwnProperty(k)) {
+        if (data[k] != null && data[k] != undefined) {
+          columnArray.push(dfObj[k]);
+          valueArry.push(data[k]);
+        }
+      }
+    }
 
-    // columnArray.push("insrt_tm", "updt_tm", "refreshtimestamp");
+    columnArray.push("updt_tm", "refreshtimestamp");
+    valueArry.push(new Date(), new Date());
+    let Count = 1;
+    const resultData = columnArray.reduce((prev, cur) => {
+      prev += cur.toString() + " =$" + Count + ", ";
+      Count += 1;
+      return prev;
+    }, "");
+    const fData = resultData.slice(0, -2);
 
-    // columnArray.push("updt_tm");
-    // const dpColData = columnArray.filter(function (element) {
-    //   return element !== undefined;
-    // });
-
-    // let Count = 1;
-    // const resultData = dpColData.reduce((prev, cur) => {
-    //   prev += cur.toString() + " =$" + Count + ", ";
-    //   Count += 1;
-    //   return prev;
-    // }, "");
-
-    // const fData = resultData.slice(0, -2);
-
-    // let updateQueryDF = `UPDATE ${schemaName}.dataflow set ${fData} where externalid='${externalID}'`;
-
-    // console.log(updateQueryDF);
+    let updateQueryDF = `UPDATE ${schemaName}.dataflow set ${fData} where externalid='${externalID}'`;
 
     if (msg.length > 0) {
       return { validate: msg, status: status };
     } else {
-      // let dataFlowUpdate = await DB.executeQuery(updateQueryDF, [...valueArry]);
-      // ResponseBody.timestamp = ts;
-      // ResponseBody.externalId = externalID;
-      // ResponseBody.dataSetid = DSId;
-      // ResponseBody.action = "Data Flow update successfully.";
-      // return { validate: ResponseBody, status: status };
+      let dataFlowUpdate = await DB.executeQuery(updateQueryDF, [...valueArry]);
+
+      ResponseBody.data_set = [];
+      newDfobj.timestamp = ts;
+      newDfobj.externalId = externalID;
+      newDfobj.dataSetid = DFId;
+      newDfobj.action = "Data Flow update successfully.";
+      // ResponseBody.data_set.push(newObj);
+      dataflow.push(newDfobj);
+
+      const logAttribute = columnArray.slice(0, -2);
+      const logValue = valueArry.slice(0, -2);
+
+      logAttribute.forEach(async (e, index) => {
+        const key = e;
+        const val = logValue[index];
+
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+          [
+            DFId,
+            null,
+            null,
+            null,
+            version,
+            key,
+            dataflowData.rows[0][key],
+            val,
+            null,
+            new Date(),
+          ]
+        );
+      });
+
+      return { validate: dataflow, status: status };
     }
   } catch (e) {
     console.log(e);
@@ -1697,7 +1800,7 @@ const packageUpdate = async (
     let msg = [];
     let status = true;
     let ts = new Date().toLocaleString();
-    var ResponseBody = {};
+
     var newObj = {};
     const dpObj = {
       type: "type",
@@ -1705,13 +1808,12 @@ const packageUpdate = async (
       path: "path",
       sasXptMethod: "sasxptmethod",
       password: "password",
-      active: "active",
       noPackageConfig: "nopackageconfig",
     };
 
     for (let key in data) {
-      // if (LocationType === "SFTP" || LocationType === "FTPS") {
-      if (LocationType === "Hive CDH") {
+      if (LocationType === "SFTP" || LocationType === "FTPS") {
+        // if (LocationType === "Hive CDH") {
         if (key === "path" || key === "name") {
           if (
             data[key] !== null &&
@@ -1823,7 +1925,7 @@ const packageUpdate = async (
           }
         }
 
-        if (key === "noPackageConfig" || key === "active") {
+        if (key === "noPackageConfig") {
           keyValue = helper.stringToBoolean(data[key]);
 
           if (
@@ -1879,42 +1981,42 @@ const packageUpdate = async (
       let dataPackageUpdate = await DB.executeQuery(updateQueryDP, [
         ...valueArry,
       ]);
-      ResponseBody.data_packages = [];
+      var data_packages = [];
       newObj.timestamp = ts;
       newObj.externalId = externalID;
       newObj.datapackageid = DPId;
       newObj.action = "Data package update successfully.";
-      ResponseBody.data_packages.push(newObj);
+      data_packages.push(newObj);
 
       let DpData = await DB.executeQuery(selectQueryDP);
 
       const logAttribute = columnArray.slice(0, -1);
       const logValue = valueArry.slice(0, -1);
 
-      logAttribute.forEach((e) => {
-        logValue.forEach(async (key) => {
-          console.log(e, DpData.rows[0][e], key);
-          await DB.executeQuery(
-            `INSERT INTO ${schemaName}.dataflow_audit_log
+      logAttribute.forEach(async (e, index) => {
+        const key = e;
+        const val = logValue[index];
+
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_audit_log
                         ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
                         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-            [
-              DFId,
-              DPId,
-              null,
-              null,
-              version,
-              e,
-              DpData.rows[0][e],
-              key,
-              null,
-              new Date(),
-            ]
-          );
-        });
+          [
+            DFId,
+            DPId,
+            null,
+            null,
+            version,
+            key,
+            DpData.rows[0][key],
+            val,
+            null,
+            new Date(),
+          ]
+        );
       });
 
-      return { validate: ResponseBody, status: status };
+      return { validate: data_packages, status: status };
     }
   } catch (e) {
     console.log(e);
@@ -1938,13 +2040,14 @@ const datasetUpdate = async (
     let msg = [];
     let status = true;
     let ts = new Date().toLocaleString();
-    var ResponseBody = {};
+    var dataset_update = [];
+
     var newObj = {};
     const dsObj = {
-      dataKind: "datakindid",
+      // dataKind: "datakindid",
       mnemonic: "mnemonic",
-      fileNamingConvention: "name",
-      active: "active",
+      name: "name",
+
       columnCount: "columncount",
       incremental: "incremental",
       offsetColumn: "offsetcolumn",
@@ -1958,7 +2061,7 @@ const datasetUpdate = async (
       customSql: "customsql",
       customQuery: "customsql_yn",
       tableName: "tbl_nm",
-      dsPasswordStatus: "file_pwd",
+
       delimiter: "delimiter",
       escapeCode: "escapecode",
       quote: "quote",
@@ -1966,10 +2069,19 @@ const datasetUpdate = async (
       dataTransferFrequency: "data_freq",
     };
 
+    if (data.dataKind) {
+      let checkDataKind = await DB.executeQuery(
+        `select datakindid from ${schemaName}.datakind where name='${data.dataKind}';`
+      );
+      dataKind = checkDataKind.rows[0].datakindid;
+      columnArray.push("datakindid");
+      valueArry.push(dataKind);
+    }
+
     // Request Filed validation loop
     for (let key in data) {
-      // if (LocationType === "SFTP" || LocationType === "FTPS") {
-      if (LocationType === "Hive CDH") {
+      if (LocationType === "SFTP" || LocationType === "FTPS") {
+        // if (LocationType === "Hive CDH") {
         if (
           key == "mnemonic" ||
           key == "dataKind" ||
@@ -1983,7 +2095,7 @@ const datasetUpdate = async (
             data[key] !== undefined &&
             typeof data[key] === "string"
           ) {
-            console.log("Fields Validation Success");
+            // console.log("Fields Validation Success");
           } else {
             msg.push({
               text: ` ${key} is required and data type should be string `,
@@ -2009,6 +2121,20 @@ const datasetUpdate = async (
           }
         }
 
+        if (key == "customQuery") {
+          if (
+            data[key] === null ||
+            data[key] === "" ||
+            data[key] === undefined
+          ) {
+          } else {
+            msg.push({
+              text: ` customQuery fields should be Blank `,
+            });
+            status = false;
+          }
+        }
+
         if (
           key == "rowDecreaseAllowed" ||
           key == "dataTransferFrequency" ||
@@ -2020,7 +2146,7 @@ const datasetUpdate = async (
             data[key] !== undefined &&
             typeof data[key] === "number"
           ) {
-            console.log("Fields Validation Success");
+            // console.log("Fields Validation Success");
           } else {
             msg.push({
               text: ` ${key} is required and data type should be number `,
@@ -2037,7 +2163,7 @@ const datasetUpdate = async (
             data[key] !== undefined &&
             typeof keyValue === "boolean"
           ) {
-            console.log("Fields Validation Success");
+            // console.log("Fields Validation Success");
           } else {
             msg.push({
               text: ` ${key} is required and data type should be boolean `,
@@ -2053,10 +2179,34 @@ const datasetUpdate = async (
             data[key] !== undefined &&
             typeof data[key] === "string"
           ) {
-            console.log("Fields Validation Success");
+            // console.log("Fields Validation Success");
           } else {
             msg.push({
               text: ` ${key} is required and data type should be string `,
+            });
+            status = false;
+          }
+        }
+
+        if (
+          key == "type" ||
+          key == "name" ||
+          key == "delimiter" ||
+          key == "quote" ||
+          key == "rowDecreaseAllowed" ||
+          key == "escapeCode" ||
+          key == "dataTransferFrequency" ||
+          key == "path"
+        ) {
+          if (
+            data[key] === "" ||
+            data[key] === null ||
+            data[key] === undefined
+          ) {
+            // console.log("Fields Validation Success");
+          } else {
+            msg.push({
+              text: ` This ${key} fields should be Blank`,
             });
             status = false;
           }
@@ -2069,7 +2219,7 @@ const datasetUpdate = async (
             data[key] !== undefined &&
             typeof data[key] === "number"
           ) {
-            console.log("Fields Validation Success");
+            // console.log("Fields Validation Success");
           } else {
             msg.push({
               text: ` ${key} is required and data type should be string `,
@@ -2086,7 +2236,7 @@ const datasetUpdate = async (
             data[key] !== undefined &&
             typeof keyValue === "boolean"
           ) {
-            console.log("Fields Validation Success");
+            // console.log("Fields Validation Success");
           } else {
             msg.push({
               text: ` ${key} is required and data type should be boolean `,
@@ -2096,20 +2246,13 @@ const datasetUpdate = async (
         }
 
         if (key === "customQuery") {
-          if (
-            data[key] == "yes" ||
-            data[key] == "Yes" ||
-            data[key] == "YES" ||
-            data[key] == "YEs" ||
-            data[key] == "yES" ||
-            data[key] == "yeS"
-          ) {
+          if (data[key].toLowerCase() === "yes") {
             if (
               data.customSql !== null &&
               data.customSql !== "" &&
               data.customSql !== undefined
             ) {
-              console.log("Fields Validation Success");
+              // console.log("Fields Validation Success");
             } else {
               msg.push({
                 text: ` Custom Sql is required  `,
@@ -2117,7 +2260,7 @@ const datasetUpdate = async (
               status = false;
             }
             if (data.customSql.length <= 131072) {
-              console.log("Fields Validation Success");
+              // console.log("Fields Validation Success");
             } else {
               msg.push({
                 text: ` Custom Sql Max of 131072 characters  `,
@@ -2125,18 +2268,13 @@ const datasetUpdate = async (
               status = false;
             }
           }
-          if (
-            data[key] == "no" ||
-            data[key] == "No" ||
-            data[key] == "nO" ||
-            data[key] == "NO"
-          ) {
+          if (data[key].toLowerCase() == "no") {
             if (
               data.tableName !== null &&
               data.tableName !== "" &&
               data.tableName !== undefined
             ) {
-              console.log("Fields Validation Success");
+              // console.log("Fields Validation Success");
             } else {
               msg.push({
                 text: ` Table Name is required `,
@@ -2144,7 +2282,7 @@ const datasetUpdate = async (
               status = false;
             }
             if (data.tableName.length <= 255) {
-              console.log("Fields Validation Success");
+              // console.log("Fields Validation Success");
             } else {
               msg.push({
                 text: ` Table Name  Max of 255 characters  `,
@@ -2153,49 +2291,96 @@ const datasetUpdate = async (
             }
           }
         }
+
+        if (key === "offsetColumn") {
+          if (
+            helper.stringToBoolean(data.incremental) === true &&
+            data.customQuery.toLowerCase() == "no"
+          ) {
+            if (
+              data.offsetColumn !== null &&
+              data.offsetColumn !== "" &&
+              data.offsetColumn !== undefined &&
+              typeof data.offsetColumn === "string"
+            ) {
+            } else {
+              msg.push({
+                text: " offsetColumn  is required and data type should be string ",
+              });
+              status = false;
+            }
+          }
+        }
       }
     }
 
-    // for (let k in data) {
-    //   columnArray.push(dsObj[k]);
-    //   valueArry.push(data[k]);
-    // }
+    for (let k in dsObj) {
+      if (data.hasOwnProperty(k)) {
+        if (data[k] !== null && data[k] !== undefined && data[k] !== "") {
+          columnArray.push(dsObj[k]);
+          valueArry.push(data[k]);
+        }
+      }
+    }
 
     // console.log(columnArray, valueArry);
-    // columnArray.push("updt_tm");
-    // const dpColData = columnArray.filter(function (element) {
-    //   return element !== undefined;
-    // });
+    columnArray.push("updt_tm");
+    valueArry.push(new Date());
 
-    // let Count = 1;
-    // const resultData = dpColData.reduce((prev, cur) => {
-    //   prev += cur.toString() + " =$" + Count + ", ";
-    //   Count += 1;
-    //   return prev;
-    // }, "");
+    let Count = 1;
+    const resultData = columnArray.reduce((prev, cur) => {
+      prev += cur.toString() + " =$" + Count + ", ";
+      Count += 1;
+      return prev;
+    }, "");
 
-    // console.log(resultData);
-    // console.log(resultData.slice(0, -2));
-
-    // const fData = resultData.slice(0, -2);
+    const fData = resultData.slice(0, -2);
     // console.log(fData);
 
-    // let updateQueryDS = `UPDATE ${schemaName}.dataset set ${fData} where externalid='${externalID}'`;
+    let updateQueryDS = `UPDATE ${schemaName}.dataset set ${fData} where externalid='${externalID}'`;
+    let slectQueryDS = `select * from ${schemaName}.dataset where externalid='${externalID}'`;
 
     if (msg.length > 0) {
       return { validate: msg, status: status };
-    }
-    //else {
-    //   let dataSetUpdate = await DB.executeQuery(updateQueryDS, [...valueArry]);
+    } else {
+      let dataSetUpdate = await DB.executeQuery(updateQueryDS, [...valueArry]);
+      let DsData = await DB.executeQuery(slectQueryDS);
 
-    //   ResponseBody.data_set = [];
-    //   newObj.timestamp = ts;
-    //   newObj.externalId = externalID;
-    //   newObj.dataSetid = DSId;
-    //   newObj.action = "Data Set update successfully.";
-    //   ResponseBody.data_set.push(newObj);
-    //   return { validate: ResponseBody, status: status };
-    // }
+      newObj.timestamp = ts;
+      newObj.externalId = externalID;
+      newObj.dataSetid = DSId;
+      newObj.action = "Data Set update successfully.";
+      // ResponseBody.data_set.push(newObj);
+      dataset_update.push(newObj);
+
+      const logAttribute = columnArray.slice(0, -1);
+      const logValue = valueArry.slice(0, -1);
+
+      logAttribute.forEach(async (e, index) => {
+        const key = e;
+        const val = logValue[index];
+
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+          [
+            DFId,
+            DPId,
+            DSId,
+            null,
+            version,
+            key,
+            DsData.rows[0][key],
+            val,
+            null,
+            new Date(),
+          ]
+        );
+      });
+
+      return { validate: dataset_update, status: status };
+    }
   } catch (e) {
     console.log(e);
   }
@@ -2234,8 +2419,6 @@ exports.updateDataFlow = async (req, res) => {
     const DFId = rows[0].dataflowid;
 
     if (rows.length > 0) {
-      console.log("Update Query");
-
       let {
         active,
         connectionType,
@@ -2265,20 +2448,20 @@ exports.updateDataFlow = async (req, res) => {
       } = req.body;
 
       var ResponseBody = {};
+      ResponseBody.dataflow = [];
       //dataFlow update function Call
-      // var ReturnDFUpdate = await dataflowUpdate(
-      //   req.body,
-      //   dataFlowExternalId,
-      //   DFId,
-      //   DFVer
-      // );
+      var updateDataflow = await dataflowUpdate(
+        req.body,
+        dataFlowExternalId,
+        DFId,
+        DFVer
+      );
 
-      // if (ReturnDFUpdate.status == false) {
-      //   console.log("error");
-      //   return apiResponse.ErrorResponse(res, ReturnDFUpdate.validate);
-      // } else {
-      //   console.log("success", ReturnDFUpdate.validate);
-      // }
+      if (updateDataflow.status == false) {
+        return apiResponse.ErrorResponse(res, updateDataflow.validate);
+      } else {
+        ResponseBody.dataflow.push(updateDataflow.validate);
+      }
 
       if (dataPackage && dataPackage.length > 0) {
         ResponseBody.data_packages = [];
@@ -2289,28 +2472,27 @@ exports.updateDataFlow = async (req, res) => {
           const packageExternalId = each.externalID;
 
           if (dpRows.rows.length > 0) {
-            console.log("data package Update Function");
             const DPId = dpRows.rows[0].datapackageid;
 
             //Function call for update dataPackage data
-            // var ReturnDPUpdate = await packageUpdate(
-            //   each,
-            //   packageExternalId,
-            //   DPId,
-            //   DFId,
-            //   DFVer,
-            //   ConnectionType
-            // );
+            var updatePackage = await packageUpdate(
+              each,
+              packageExternalId,
+              DPId,
+              DFId,
+              DFVer,
+              ConnectionType
+            );
 
-            // if (ReturnDPUpdate.status == false) {
-            //   console.log("error");
-            //   return apiResponse.ErrorResponse(res, ReturnDPUpdate.validate);
-            // } else {
-            //   console.log("success", ReturnDPUpdate.validate);
-            // }
+            if (updatePackage.status == false) {
+              return apiResponse.ErrorResponse(res, updatePackage.validate);
+            } else {
+              // console.log("success", updatePackage.validate);
+              ResponseBody.data_packages.push(updatePackage.validate);
+            }
 
             if (each.dataSet && each.dataSet.length > 0) {
-              ResponseBody.data_sets = [];
+              ResponseBody.dataSets = [];
               // if datasets exists
               for (let obj of each.dataSet) {
                 var newobj = {};
@@ -2319,10 +2501,9 @@ exports.updateDataFlow = async (req, res) => {
 
                 const datasetExternalId = obj.externalID;
                 if (dsRows.length > 0) {
-                  console.log("Data set update function");
                   const DSId = dsRows[0].datasetid;
                   //Function call for update dataSet data
-                  var ReturnDSUpdate = await datasetUpdate(
+                  var updateDataset = await datasetUpdate(
                     obj,
                     datasetExternalId,
                     DSId,
@@ -2332,14 +2513,14 @@ exports.updateDataFlow = async (req, res) => {
                     ConnectionType
                   );
 
-                  if (ReturnDSUpdate.status == false) {
-                    console.log("error line 1688");
+                  if (updateDataset.status == false) {
                     return apiResponse.ErrorResponse(
                       res,
-                      ReturnDSUpdate.validate
+                      updateDataset.validate
                     );
                   } else {
-                    console.log("success", ReturnDSUpdate.validate);
+                    // console.log("success", updateDataset.validate);
+                    ResponseBody.dataSets.push(updateDataset.validate);
                   }
 
                   // if (obj.columnDefinition && obj.columnDefinition.length > 0) {
@@ -2351,9 +2532,8 @@ exports.updateDataFlow = async (req, res) => {
                   //   }
                   // }
                 } else {
-                  console.log("Data set level Insert Function");
                   // Function call for insert dataSet level data
-                  var ReturnDSUpdate = await datasetLevelInsert(
+                  var DatasetInsert = await datasetLevelInsert(
                     obj,
                     datasetExternalId,
                     DPId,
@@ -2362,21 +2542,20 @@ exports.updateDataFlow = async (req, res) => {
                     ConnectionType
                   );
 
-                  if (ReturnDSUpdate.status == false) {
-                    console.log("error");
+                  if (DatasetInsert.status == false) {
                     return apiResponse.ErrorResponse(
                       res,
-                      ReturnDSUpdate.validate
+                      DatasetInsert.validate
                     );
                   } else {
-                    console.log("success", ReturnDSUpdate.validate);
+                    // console.log("success", DatasetInsert.validate);
+                    ResponseBody.dataSets.push(DatasetInsert.validate);
                   }
                 }
               }
             }
           } else {
-            console.log(" Package Level insert Function");
-            var ReturnDPUpdate = await packageLevelInsert(
+            var PackageInsert = await packageLevelInsert(
               each,
               packageExternalId,
               DFId,
@@ -2384,12 +2563,11 @@ exports.updateDataFlow = async (req, res) => {
               ConnectionType
             );
 
-            if (ReturnDPUpdate.status == false) {
-              console.log("error");
-              return apiResponse.ErrorResponse(res, ReturnDPUpdate.validate);
+            if (PackageInsert.status == false) {
+              return apiResponse.ErrorResponse(res, PackageInsert.validate);
             } else {
-              console.log("success", ReturnDPUpdate.validate);
-              ResponseBody.data_packages.push(ReturnDPUpdate.validate);
+              // console.log("success", PackageInsert.validate);
+              ResponseBody.data_packages.push(PackageInsert.validate);
             }
           }
         }
@@ -2427,7 +2605,11 @@ exports.updateDataFlow = async (req, res) => {
       //   ];
       //   await DB.executeQuery(dataflow_version_query, aduit_version_body);
       // }
-
+      return apiResponse.successResponseWithData(
+        res,
+        "Data flow Update successfully.",
+        ResponseBody
+      );
       // return apiResponse.successResponseWithData(res, "Success", rows);
     } else {
       console.log("insert Query");
