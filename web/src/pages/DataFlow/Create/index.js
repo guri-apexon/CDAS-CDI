@@ -167,13 +167,13 @@ const DataFlow = ({
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
-    // console.log("FormValues", FormValues, selectedVendor);
+    console.log("FormValues", FormValues, selectedCard);
     if (
       FormValues &&
       FormValues?.vendor?.length > 0 &&
       FormValues?.locationName &&
       FormValues?.description !== "" &&
-      selectedCard?.prot_id !== ""
+      selectedCard?.protocolnumberstandard !== ""
     ) {
       if (changeLocationRequire) {
         messageContext.showErrorMessage(
@@ -190,7 +190,7 @@ const DataFlow = ({
         exptDtOfFirstProdFile: FormValues.firstFileDate,
         locationType: FormValues.locationType,
         // serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
-        protocolNumberStandard: selectedCard.prot_id,
+        protocolNumberStandard: selectedCard.protocolnumberstandard,
         // protocolNumber: selectedCard.prot_id,
         externalSystemName: "CDI",
         dataPackage: [{ dataSet: [] }],
@@ -334,16 +334,9 @@ const DataFlow = ({
         datasetRef.current.submitForm();
         break;
       case 4:
-        // if (isSftp(locType)) {
-        //   datasetRef.current.checkvalidation();
-        // } else {
         submitFinalForm();
-        // }
         break;
       case 5:
-        // if (isSftp(locType)) {
-        //   submitFinalForm();
-        // }
         setCurrentStep({ step: 3 });
         break;
       default:
