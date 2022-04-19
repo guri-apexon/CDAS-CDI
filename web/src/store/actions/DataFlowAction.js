@@ -3,6 +3,7 @@ import {
   GET_LOCATIONS_DATA,
   UPDATE_FORM_FIELDS,
   GET_SERVICE_OWNERS,
+  GET_PASSWORD_LOCATION,
   GET_DATA_KIND,
   SAVE_LOCATION_DATA,
   HIDE_ERROR_MSG,
@@ -12,6 +13,8 @@ import {
   UPDATE_LOCATION_DATA,
   SAVE_DATAFLOW_LOCAL_DETAIL,
   UPDATE_DS,
+  RESET_DF_FORMDATA,
+  TOGGLE_DF_BTN,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -62,6 +65,13 @@ export const getServiceOwnersData = () => {
   };
 };
 
+export const getLocationPasswordData = (id) => {
+  return {
+    type: GET_PASSWORD_LOCATION,
+    id,
+  };
+};
+
 export const getDataFlowDetail = (dataflowId) => {
   return {
     type: GET_DATAFLOW_DETAIL,
@@ -81,6 +91,13 @@ export const getDataKindData = () => {
   };
 };
 
+export const toggleSaveDFBtn = (disabled = false) => {
+  return {
+    type: TOGGLE_DF_BTN,
+    disabled,
+  };
+};
+
 export const setDataflowLocal = (details) => {
   return {
     type: SAVE_DATAFLOW_LOCAL_DETAIL,
@@ -92,5 +109,11 @@ export const updateDSState = (status) => {
   return {
     type: UPDATE_DS,
     status,
+  };
+};
+
+export const resetDfFormData = () => {
+  return {
+    type: RESET_DF_FORMDATA,
   };
 };

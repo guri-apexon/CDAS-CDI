@@ -163,7 +163,6 @@ export function* saveDataset(action) {
       `${baseURL}/${DATASETAPI}/create`,
       action.values
     );
-    console.log("resp", saveData);
     yield put({
       type: STORE_DATASET_SUCCESS,
       dataset: saveData.data.data,

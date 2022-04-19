@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react/button-has-type */
 import React, { useState, useContext, useEffect, useRef } from "react";
@@ -41,7 +42,6 @@ export default function DSColumnTable({
   const initialRows = [
     {
       uniqueId: `u0`,
-      columnId: 1,
       variableLabel: "",
       columnName: "",
       position: "",
@@ -218,7 +218,6 @@ export default function DSColumnTable({
       const singleRow = [
         {
           uniqueId: `u${rows.length}`,
-          columnId: rows.length + 1,
           variableLabel: "",
           columnName: "",
           position: "",
@@ -256,7 +255,6 @@ export default function DSColumnTable({
     if (newRows > 0) {
       const multiRows = Array.from({ length: newRows }, (i, index) => ({
         uniqueId: `u${rows.length + index}`,
-        columnId: rows.length + index + 1,
         variableLabel: "",
         columnName: "",
         position: "",
@@ -359,6 +357,12 @@ export default function DSColumnTable({
         }
         return e;
       });
+    if (removeSpaces?.length && removeSpaces.find((x) => x.dataType === "")) {
+      messageContext.showErrorMessage(
+        `Please select Data Type for all records to save.`
+      );
+      return false;
+    }
     setRows([...removeSpaces]);
     setSelectedRows([]);
     setEditedRows(rows);
@@ -388,6 +392,13 @@ export default function DSColumnTable({
   const onRowSave = async (uniqueId) => {
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     const removeEdited = editedRows.filter((e) => e !== uniqueId);
+    const currentRow = editedRows.find((x) => x.uniqueId === uniqueId);
+    if (currentRow && currentRow.dataType === "") {
+      messageContext.showErrorMessage(
+        `Please select Data Type for this record to save.`
+      );
+      return false;
+    }
     const editedRowData = editedRows
       .map((e) => {
         e.values = e.values.trim();

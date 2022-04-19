@@ -121,6 +121,7 @@ const Dataset = () => {
     dsCreatedSuccessfully,
     selectedDataset,
     formDataSQL,
+    isDatasetFetched,
   } = dataSets;
   const datasetid = params.datasetId;
   const { prot_id: studyId } = selectedCard;
@@ -132,12 +133,8 @@ const Dataset = () => {
     isDatasetCreation,
   } = dataFlow;
   const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
-  const {
-    locationType: newLT,
-    tbl_nm: tableName,
-    customsql_yn: isCustomSQL,
-    datasetid: dsId,
-  } = selectedDataset;
+  const { datasetid: dsId } = selectedDataset;
+  const { isCustomSQL, tableName } = formDataSQL;
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -186,6 +183,8 @@ const Dataset = () => {
     } else if (!dsCreatedSuccessfully) {
       dispatch(getDataSetDetail(datasetid, dfId, dpId));
       dispatch(getDatasetColumns(datasetid));
+    } else {
+      dispatch(getDataSetDetail(datasetid, dfId, dpId));
     }
   }, [datasetid, dsCreatedSuccessfully]);
 
@@ -195,43 +194,39 @@ const Dataset = () => {
       history.push(`/dashboard/dataset/${dsId}`);
       dispatch(updatePanel());
     }
-  }, [isDatasetCreated, isDatasetCreation, loctyp]);
+  }, [isDatasetCreated, isDatasetCreation]);
+
+  useEffect(() => {
+    if (loctyp) {
+      setLocationType(getDataSetType(loctyp));
+    }
+  }, [loctyp]);
 
   useEffect(() => {
     if (dsCreatedSuccessfully) {
       setTimeout(() => {
         if (isSftp(loctyp)) {
           setValue(1);
-        }
-        if (!isSftp(loctyp)) {
-          if (isCustomSQL) {
-            dispatch(getSQLColumns(tableName));
-            setValue(1);
-          }
+          setColumnsActive(true);
+        } else if (isCustomSQL === "No") {
+          // dispatch(getSQLColumns(tableName));
+          setColumnsActive(true);
+          setValue(1);
         }
       }, 2000);
     }
-  }, [dsCreatedSuccessfully, loctyp]);
+  }, [dsCreatedSuccessfully, loctyp, isCustomSQL]);
 
   useEffect(() => {
-    if (loctyp) {
-      setLocationType(getDataSetType(loctyp));
-      if (isSftp(loctyp)) {
+    setTimeout(() => {
+      if (isSftp(locationType)) {
+        setColumnsActive(true);
+      } else if (isCustomSQL === "No") {
+        // dispatch(getSQLColumns(tableName));
         setColumnsActive(true);
       }
-    }
-  }, [loctyp]);
-
-  useEffect(() => {
-    if (getDataSetType(newLT) === "jdbc") {
-      if (isCustomSQL === "No") {
-        setColumnsActive(true);
-      }
-    }
-    if (formDataSQL?.isCustomSQL === "No") {
-      setColumnsActive(true);
-    }
-  }, [newLT, isCustomSQL, formDataSQL]);
+    }, 2000);
+  }, [isDatasetFetched]);
 
   const goToDataflow = () => {
     if (dfId) {
@@ -297,7 +292,8 @@ const Dataset = () => {
     if (isSftp(locationType)) {
       await dispatch(reset("DataSetsForm"));
     } else {
-      jdbcRef.current.handleCancel();
+      await dispatch(reset("DataSetsFormSQL"));
+      // jdbcRef.current.handleCancel();
     }
     history.push("/dashboard");
   };

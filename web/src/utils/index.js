@@ -72,18 +72,21 @@ export function getLastLogin() {
   const localDate = moment.unix(currentLogin).local();
   return localDate.format("DD-MMM-YYYY hh:mm A");
 }
+const getDomainName = () => {
+  const urlParts = window.location.hostname.split(".");
+  return urlParts
+    .slice(0)
+    .slice(-(urlParts.length === 4 ? 3 : 2))
+    .join(".");
+};
 
 export function deleteAllCookies() {
-  const cookies = document.cookie.split(";");
-
-  // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < cookies.length; i++) {
-    const cookie = cookies[i];
-    const eqPos = cookie.indexOf("=");
-    const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-    // eslint-disable-next-line prefer-template
-    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-  }
+  const domain = getDomainName() || "";
+  document.cookie.split(";").forEach(function (c) {
+    document.cookie = c
+      .replace(/^ +/, "")
+      .replace(/=.*/, `=;expires=${new Date().toUTCString()};domain=${domain}`);
+  });
   return true;
 }
 
@@ -383,6 +386,46 @@ export const checkHeaders = (data) => {
   return validation;
 };
 
+const setYN = (d) => (d === "Y" ? "Yes" : "No");
+
+export const formatDataNew = (incomingData, protNo) => {
+  const data = incomingData.slice(1); // removing header
+  let isAllDataMatch = false;
+  if (data.length === 1) {
+    isAllDataMatch = data[0][0] === protNo;
+  } else if (data.length > 1) {
+    isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
+  }
+  if (isAllDataMatch) {
+    const newData =
+      data.length > 0
+        ? data.map((e, i) => {
+            const newObj = {
+              uniqueId: `u${i}`,
+              variableLabel: e[1] || "",
+              columnName: e[2] || "",
+              position: "",
+              format: e[3] || "",
+              dataType: e[4] || "",
+              primaryKey: setYN(e[5]),
+              unique: setYN(e[6]),
+              required: setYN(e[7]),
+              minLength: e[8] || "",
+              maxLength: e[9] || "",
+              values: e[10] || "",
+              isInitLoad: true,
+              isHavingError: false,
+              isHavingColumnName: true,
+              isHavingDataType: true,
+            };
+            return newObj;
+          })
+        : [];
+    return { headerNotMatching: false, data: newData };
+  }
+  return { headerNotMatching: !isAllDataMatch, data: [] };
+};
+
 export const formatData = (incomingData, protNo) => {
   const data = incomingData.slice(1); // removing header
   let isAllDataMatch = false;
@@ -391,7 +434,7 @@ export const formatData = (incomingData, protNo) => {
   } else {
     isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
   }
-  const setYN = (d) => (d === "Y" ? "Yes" : "No");
+
   if (isAllDataMatch) {
     const newData =
       data.length > 0
@@ -584,4 +627,9 @@ export const validateFields = (name, ext) => {
     return true;
   }
   return false;
+};
+
+export const goToCore = () => {
+  if (process.env.REACT_APP_CORE_URL)
+    window.location.href = process.env.REACT_APP_CORE_URL;
 };
