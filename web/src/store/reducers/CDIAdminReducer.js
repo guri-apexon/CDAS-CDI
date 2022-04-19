@@ -11,6 +11,9 @@ import {
   SAVE_LOCATION_DATA,
   STORE_LOCATION_SUCCESS,
   STORE_LOCATION_FAILURE,
+  GET_PASSWORD_LOCATION,
+  FETCH_LOCATION_PASSWORD_FAILURE,
+  FETCH_LOCATION_PASSWORD_SUCCESS,
   HIDE_ERROR_MSG,
   UPDATE_LOCATION_SUCCESS,
   UPDATE_LOCATION_FAILURE,
@@ -31,6 +34,7 @@ export const initialState = {
   upsertLoading: false,
   upserted: false,
   locations: [],
+  locationPassword: "",
   cdtList: [],
   settings: [],
   error: null,
@@ -90,6 +94,16 @@ const CDIAdminReducer = (state = initialState, action) =>
       case STORE_LOCATION_FAILURE:
         newState.upsertLoading = false;
         newState.error = action.message;
+        break;
+      case GET_PASSWORD_LOCATION:
+        newState.loading = false;
+        break;
+      case FETCH_LOCATION_PASSWORD_FAILURE:
+        newState.loading = false;
+        break;
+      case FETCH_LOCATION_PASSWORD_SUCCESS:
+        newState.loading = false;
+        newState.locationPassword = action.locationPassword;
         break;
       case FETCH_SETTINGS_DATA:
         newState.loading = true;

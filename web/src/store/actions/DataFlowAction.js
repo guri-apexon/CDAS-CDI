@@ -3,6 +3,7 @@ import {
   GET_LOCATIONS_DATA,
   UPDATE_FORM_FIELDS,
   GET_SERVICE_OWNERS,
+  GET_PASSWORD_LOCATION,
   GET_DATA_KIND,
   SAVE_LOCATION_DATA,
   HIDE_ERROR_MSG,
@@ -61,6 +62,13 @@ export const getLocationByType = (value) => {
 export const getServiceOwnersData = () => {
   return {
     type: GET_SERVICE_OWNERS,
+  };
+};
+
+export const getLocationPasswordData = (id) => {
+  return {
+    type: GET_PASSWORD_LOCATION,
+    id,
   };
 };
 
