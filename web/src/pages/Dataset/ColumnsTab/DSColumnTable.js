@@ -780,6 +780,7 @@ export default function DSColumnTable({
             dsTestLock,
             dsProdLock,
             changeHandler,
+            haveHeader,
           }}
         />
       </div>

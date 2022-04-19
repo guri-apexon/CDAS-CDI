@@ -164,7 +164,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   useEffect(() => {
     if (!haveHeader) {
       messageContext.showInfoMessage(
-        `Template is not available for files with no header row.`
+        `Import is not available for files with no header row.`
       );
     }
   }, [haveHeader]);
@@ -219,7 +219,11 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
                 selectedMethod === "fileUpload" ? "active card" : "card"
               }
             >
-              <div className={dsTestLock || dsProdLock ? "disable-card" : ""}>
+              <div
+                className={
+                  dsTestLock || dsProdLock || !haveHeader ? "disable-card" : ""
+                }
+              >
                 <Radio
                   value="fileUpload"
                   label="Upload dataset column settings"
@@ -227,9 +231,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
                   checked={selectedMethod === "fileUpload"}
                 />
 
-                <Link onClick={downloadTemplate} disabled={!haveHeader}>
-                  Download Excel Template
-                </Link>
+                <Link onClick={downloadTemplate}>Download Excel Template</Link>
 
                 <div className="upload-box">
                   <FileUpload
