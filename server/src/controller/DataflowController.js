@@ -8,6 +8,7 @@ const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { addDataflowHistory } = require("./CommonController");
 const { DB_SCHEMA_NAME: schemaName } = constants;
+const externalFunction = require("../createDataflow/externalDataflowFunctions");
 
 exports.getStudyDataflows = async (req, res) => {
   try {
@@ -158,550 +159,14 @@ exports.getStudyDataflows = async (req, res) => {
   }
 };
 
-const insertValidation = (req) => {
-  var validate = [];
-  var error = [];
-
-  const Data = [
-    {
-      key: " Protocol Number Standard ",
-      value: req.protocolNumberStandard,
-      type: "string",
-    },
-    { key: "Vendor Name", value: req.vendorName, type: "string" },
-    { key: "Data Structure ", value: req.type, type: "string" },
-    { key: "Data Flow Name ", value: req.name, type: "string" },
-
-    {
-      key: "External System Name",
-      value: req.externalSystemName,
-      type: "string",
-    },
-
-    {
-      key: "Test Flag",
-      value: req.testFlag,
-      type: "boolean",
-    },
-    { key: "Description", value: req.description, type: "string" },
-    {
-      key: "active",
-      value: req.active,
-      type: "boolean",
-    },
-  ];
-
-  // Validating Connection Type and externalID
-  var ConnectionType = req.connectionType;
-  const description = req.description;
-  const externalID = req.externalID;
-
-  if (externalID !== null && externalID !== "" && externalID !== undefined) {
-  } else {
-    validate.push({
-      text: " External Id  is required and data type should be string or Number ",
-      status: false,
-    });
-  }
-  if (
-    ConnectionType !== null &&
-    ConnectionType !== "" &&
-    ConnectionType !== undefined &&
-    typeof ConnectionType === "string"
-  ) {
-    if (
-      ConnectionType === "SFTP" ||
-      ConnectionType == "FTPS" ||
-      ConnectionType == "Oracle" ||
-      ConnectionType == "Hive CDP" ||
-      ConnectionType === "Hive CDH" ||
-      ConnectionType == "Impala" ||
-      ConnectionType == "MySQL" ||
-      ConnectionType == "PostgreSQL" ||
-      ConnectionType == "SQL Server"
-    ) {
-    } else {
-      validate.push({
-        text: " ConnectionType's Supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server ",
-        status: false,
-      });
-    }
-  } else {
-    validate.push({
-      text: " ConnectionType is required and data type should be string ",
-      status: false,
-    });
-  }
-  if (description.length <= 30) {
-    console.log("success");
-  } else {
-    validate.push({
-      text: " Description length , Max of 30 characters  ",
-      status: false,
-    });
-  }
-
-  // Validation Function call for dataFlow data
-  let dataRes = helper.validation(Data);
-  if (dataRes.length > 0) {
-    validate.push(dataRes);
-  } else {
-    if (req.dataPackage && req.dataPackage.length > 0) {
-      // console.log("data package data", req.body.dataPackage.length);
-      for (let each of req.dataPackage) {
-        var LocationType = req.connectionType;
-        if (
-          each.externalID === null ||
-          each.externalID === "" ||
-          each.externalID === undefined
-        ) {
-          validate.push({
-            text: " Data Package, Level External Id  is required and data type should be string or Number ",
-            status: false,
-          });
-        } else {
-          if (LocationType === "SFTP" || LocationType === "FTPS") {
-            // if (LocationType === "Hive CDH") {
-            // console.log("data");
-            const dpArray = [
-              {
-                key: "No Package Level Config ",
-                value: each.noPackageConfig,
-                type: "boolean",
-              },
-              {
-                key: "Package Path  ",
-                value: each.path,
-                type: "string",
-              },
-              {
-                key: "Package Naming Convention",
-                value: each.name,
-                type: "string",
-              },
-              {
-                key: "active",
-                value: each.active,
-                type: "boolean",
-              },
-            ];
-
-            if (helper.stringToBoolean(each.noPackageConfig) === false) {
-              const dpArrayST = [
-                { key: "Package type", value: each.type, type: "string" },
-                {
-                  key: "SAS XPT Method ",
-                  value: each.sasXptMethod,
-                  type: "string",
-                },
-              ];
-              if (
-                each.type === "7Z" ||
-                each.type == "ZIP" ||
-                each.type == "RAR" ||
-                each.type == "SAS"
-              ) {
-              } else {
-                validate.push({
-                  text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
-                  status: false,
-                });
-              }
-              let dpResST = helper.validation(dpArrayST);
-              if (dpResST.length > 0) {
-                validate.push(dpResST);
-              }
-            }
-
-            // if (each.type != null) {
-            //   if (
-            //     each.type === "7Z" ||
-            //     each.type == "ZIP" ||
-            //     each.type == "RAR" ||
-            //     each.type == "SAS"
-            //   ) {
-            //   } else {
-            //     validate.push({
-            //       text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
-            //       status: false,
-            //     });
-            //   }
-            // }
-
-            let dpRes = helper.validation(dpArray);
-            if (dpRes.length > 0) {
-              validate.push(dpRes);
-            } else {
-              if (each.dataSet && each.dataSet.length > 0) {
-                for (let obj of each.dataSet) {
-                  const dsArray = [
-                    {
-                      key: "Data Set Name (Mnemonic) ",
-                      value: obj.mnemonic,
-                      type: "string",
-                    },
-                    {
-                      key: "Clinical Data Type ",
-                      value: obj.dataKind,
-                      type: "string",
-                    },
-                    { key: "File Type", value: obj.type, type: "string" },
-                    {
-                      key: "File Naming Convention ",
-                      value: obj.name,
-                      type: "string",
-                    },
-
-                    {
-                      key: "Data Set Level, Path",
-                      value: obj.path,
-                      type: "string",
-                    },
-                    {
-                      key: "Row Decrease Allowed",
-                      value: obj.rowDecreaseAllowed,
-                      type: "number",
-                    },
-
-                    {
-                      key: "New Data Frequency (Days)",
-                      value: obj.dataTransferFrequency,
-                      type: "number",
-                    },
-                    {
-                      key: "active",
-                      value: obj.active,
-                      type: "boolean",
-                    },
-                  ];
-
-                  if (
-                    obj.customQuery === "" ||
-                    obj.customQuery === null ||
-                    obj.customQuery === undefined
-                  ) {
-                    // console.log(val.key, val.value);
-                  } else {
-                    validate.push({
-                      text: `customQuery fields should be Blank `,
-                      status: false,
-                    });
-                  }
-
-                  // console.log("line 373", obj.type.toLowerCase());
-                  if (obj.type.toLowerCase() === "delimited") {
-                    const dsArrayDt = [
-                      {
-                        key: "Delimiter",
-                        value: obj.delimiter,
-                        type: "string",
-                      },
-                      { key: "Quote", value: obj.quote, type: "string" },
-
-                      {
-                        key: "Escape Character",
-                        value: obj.escapeCode,
-                        type: "string",
-                      },
-                    ];
-
-                    let dsResdt = helper.validation(dsArrayDt);
-                    if (dsResdt.length > 0) {
-                      validate.push(dsResdt);
-                    }
-                  }
-
-                  if (
-                    obj.externalID !== null &&
-                    obj.externalID !== "" &&
-                    obj.externalID !== undefined
-                  ) {
-                  } else {
-                    validate.push({
-                      text: " Data Set Level, External Id  is required and data type should be string or Number ",
-                      status: false,
-                    });
-                  }
-
-                  let dsRes = helper.validation(dsArray);
-                  if (dsRes.length > 0) {
-                    validate.push(dsRes);
-                  } else {
-                    if (
-                      obj.columnDefinition &&
-                      obj.columnDefinition.length > 0
-                    ) {
-                      for (let el of obj.columnDefinition) {
-                        const clArray = [
-                          {
-                            key: "Column Name or Designator ",
-                            value: el.name,
-                            type: "string",
-                          },
-                          {
-                            key: "Data Type",
-                            value: el.dataType,
-                            type: "string",
-                          },
-                          {
-                            key: "Primary Key",
-                            value: el.primaryKey,
-                            type: "boolean",
-                          },
-                          {
-                            key: "Required",
-                            value: el.required,
-                            type: "boolean",
-                          },
-                          {
-                            key: "Unique",
-                            value: el.required,
-                            type: "boolean",
-                          },
-                        ];
-
-                        // Validation Function call for column defination
-                        let clRes = helper.validation(clArray);
-                        if (clRes.length > 0) {
-                          validate.push(clRes);
-                        }
-                      }
-
-                      // If Column is not = 0 then Column Comunt is not null
-                      dsArray.push({
-                        key: "Column Count",
-                        value: obj.columncount,
-                        type: "number",
-                      });
-
-                      // Validation Function call for column Number fields
-                      let cnRes = helper.validation(dsArray);
-                      if (cnRes.length > 0) {
-                        validate.push(cnRes);
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          } else {
-            // console.log("Blank");
-            // Start data package data validation
-            if (
-              helper.stringToBoolean(each.noPackageConfig) === true &&
-              helper.stringToBoolean(each.active) === true
-            ) {
-            } else {
-              validate.push({
-                text: " In JDBC noPackageConfig, active should be True ",
-                status: false,
-              });
-            }
-
-            const DPblankData = [
-              { key: " Package type ", value: each.type },
-              { key: "SAS XPT Method", value: each.sasXptMethod },
-              { key: "Package Path ", value: each.path },
-              { key: "Package Naming Convention ", value: each.name },
-            ];
-            // End data package data validation
-            let dataBlank = helper.validationBlank(DPblankData);
-
-            if (dataBlank.length > 0) {
-              validate.push(dataBlank);
-            } else {
-              if (each.dataSet && each.dataSet.length > 0) {
-                for (let obj of each.dataSet) {
-                  const dsBlankArry = [
-                    { key: "File Type ", value: obj.type },
-                    { key: "File Naming Convention ", value: obj.name },
-                    { key: "Delimiter ", value: obj.delimiter },
-                    { key: "Quote ", value: obj.quote },
-                    {
-                      key: "Row Decrease Allowed ",
-                      value: obj.rowDecreaseAllowed,
-                    },
-                    { key: "Escape Character ", value: obj.escapeCode },
-                    {
-                      key: "New Data Frequency ",
-                      value: obj.dataTransferFrequency,
-                    },
-                    { key: "Path ", value: obj.path },
-                  ];
-
-                  let DSBlank = helper.validationBlank(dsBlankArry);
-                  if (DSBlank.length > 0) {
-                    validate.push(DSBlank);
-                  } else {
-                    const dsArray = [
-                      {
-                        key: "Data Set Name (Mnemonic) ",
-                        value: obj.mnemonic,
-                        type: "string",
-                      },
-                      {
-                        key: "Clinical Data Type ",
-                        value: obj.dataKind,
-                        type: "string",
-                      },
-                      {
-                        key: "active",
-                        value: obj.active,
-                        type: "boolean",
-                      },
-                      {
-                        key: "Custom Query",
-                        value: obj.customQuery,
-                        type: "boolean",
-                      },
-                    ];
-
-                    if (obj.customQuery.toLowerCase() == "yes") {
-                      if (
-                        obj.customSql !== null &&
-                        obj.customSql !== "" &&
-                        obj.customSql !== undefined
-                      ) {
-                      } else {
-                        validate.push({
-                          text: " Custom Sql  is required ",
-                          status: false,
-                        });
-                      }
-                    }
-                    if (obj.customQuery.toLowerCase() == "no") {
-                      if (
-                        obj.tableName !== null &&
-                        obj.tableName !== "" &&
-                        obj.tableName !== undefined
-                      ) {
-                        if (obj.tableName.length <= 255) {
-                        } else {
-                          validate.push({
-                            text: " Table Name  Max of 255 characters  ",
-                            status: false,
-                          });
-                        }
-                      } else {
-                        validate.push({
-                          text: " Table Name  is required ",
-                          status: false,
-                        });
-                      }
-                      if (helper.stringToBoolean(obj.incremental) === true) {
-                        if (
-                          obj.offsetColumn !== null &&
-                          obj.offsetColumn !== "" &&
-                          obj.offsetColumn !== undefined &&
-                          typeof obj.offsetColumn === "string"
-                        ) {
-                        } else {
-                          validate.push({
-                            text: " offsetColumn  is required and data type should be string",
-                            status: false,
-                          });
-                        }
-                      }
-                    }
-
-                    if (
-                      obj.externalID !== null &&
-                      obj.externalID !== "" &&
-                      obj.externalID !== undefined
-                    ) {
-                    } else {
-                      validate.push({
-                        text: " Data Set Level, External Id  is required and data type should be string or Number ",
-                        status: false,
-                      });
-                    }
-
-                    // Validation Function call for data set
-                    let dsRes = helper.validation(dsArray);
-                    if (dsRes.length > 0) {
-                      validate.push(dsRes);
-                    } else {
-                      // console.log("data set data", dsData);
-
-                      if (
-                        obj.columnDefinition &&
-                        obj.columnDefinition.length > 0
-                      ) {
-                        for (let el of obj.columnDefinition) {
-                          const clArray = [
-                            {
-                              key: "Include Flag",
-                              value: el.includeFlag,
-                              type: "boolean",
-                            },
-                            {
-                              key: "Column Name or Designator ",
-                              value: el.name,
-                              type: "string",
-                            },
-                            {
-                              key: "Data Type ",
-                              value: el.dataType,
-                              type: "string",
-                            },
-                            {
-                              key: "Primary Key",
-                              value: el.primaryKey,
-                              type: "boolean",
-                            },
-                            {
-                              key: "Required",
-                              value: el.required,
-                              type: "boolean",
-                            },
-                            {
-                              key: "Unique",
-                              value: el.required,
-                              type: "boolean",
-                            },
-                          ];
-
-                          // Validation Function call for column defination
-                          let clRes = helper.validation(clArray);
-                          if (clRes.length > 0) {
-                            validate.push(clRes);
-                          }
-                        }
-
-                        // If Column is not = 0 then Column Comunt is not null
-                        dsArray.push({
-                          key: "Column Count",
-                          value: obj.columncount,
-                          type: "number",
-                        });
-
-                        // Validation Function call for column Number fields
-                        let cnRes = helper.validation(dsArray);
-                        if (cnRes.length > 0) {
-                          validate.push(cnRes);
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return validate;
-};
-
-exports.createDataflow = async (req, res) => {
+const creatDataflow = (exports.createDataflow = async (req, res) => {
   // return; // this return need to delete
   try {
     var validate = [];
 
     if (req.body.externalSystemName !== "CDI") {
-      var dataRes = insertValidation(req.body);
+      // var dataRes = insertValidation(req.body);
+      var dataRes = externalFunction.insertValidation(req.body);
       if (dataRes.length > 0) {
         validate.push(dataRes);
         return apiResponse.ErrorResponse(res, validate);
@@ -1126,6 +591,239 @@ exports.createDataflow = async (req, res) => {
     console.log(err);
     //throw error in json response with status 500.
     Logger.error("catch :createDataflow");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+});
+
+exports.updateDataFlow = async (req, res) => {
+  try {
+    var validate = [];
+
+    const dataFlowExternalId = req.body.externalID;
+
+    let selectDataFlow = `select * from ${schemaName}.dataflow where externalid='${dataFlowExternalId}'`;
+    let { rows } = await DB.executeQuery(selectDataFlow);
+
+    // console.log(req.body);
+
+    if (rows.length > 0) {
+      let {
+        active,
+        connectionType,
+        exptDtOfFirstProdFile,
+        vendorName,
+        protocolNumber,
+        type,
+        name,
+        externalID,
+        location,
+        testFlag,
+        userId,
+        description,
+        dataPackage,
+        dataStructure,
+        externalSystemName,
+        src_loc_id,
+        vend_id,
+        fsrstatus,
+        // connectiondriver,
+        data_in_cdr,
+        configured,
+        sponsorNameStandard,
+        sponsorName,
+        externalVersion,
+        protocolNumberStandard,
+      } = req.body;
+
+      let selectVersion = `SELECT version from ${schemaName}.dataflow_version
+        WHERE dataflowid = $1 order by version DESC limit 1`;
+
+      let { rows: version } = await DB.executeQuery(selectVersion, [
+        rows[0].dataflowid,
+      ]);
+
+      const Ver = version[0].version;
+      const DFVer = Ver + 1;
+      const ConnectionType = rows[0].connectiontype;
+      const DFId = rows[0].dataflowid;
+
+      var ResponseBody = {};
+      ResponseBody.dataflow = [];
+      //dataFlow update function Call
+      var updateDataflow = await externalFunction.dataflowUpdate(
+        req.body,
+        dataFlowExternalId,
+        DFId,
+        DFVer
+      );
+
+      if (updateDataflow.status == false) {
+        return apiResponse.ErrorResponse(res, updateDataflow.validate);
+      } else {
+        ResponseBody.dataflow.push(updateDataflow.validate);
+      }
+
+      if (dataPackage && dataPackage.length > 0) {
+        ResponseBody.data_packages = [];
+        // if datapackage exists
+        for (let each of dataPackage) {
+          let selectDP = `select * from ${schemaName}.datapackage where externalid='${each.externalID}'`;
+          let dpRows = await DB.executeQuery(selectDP);
+          const packageExternalId = each.externalID;
+
+          if (dpRows.rows.length > 0) {
+            const DPId = dpRows.rows[0].datapackageid;
+
+            //Function call for update dataPackage data
+            var updatePackage = await externalFunction.packageUpdate(
+              each,
+              packageExternalId,
+              DPId,
+              DFId,
+              DFVer,
+              ConnectionType
+            );
+
+            if (updatePackage.status == false) {
+              return apiResponse.ErrorResponse(res, updatePackage.validate);
+            } else {
+              // console.log("success", updatePackage.validate);
+              ResponseBody.data_packages.push(updatePackage.validate);
+            }
+
+            if (each.dataSet && each.dataSet.length > 0) {
+              ResponseBody.dataSets = [];
+              // if datasets exists
+              for (let obj of each.dataSet) {
+                var newobj = {};
+                let selectDS = `select * from ${schemaName}.dataset where externalid='${obj.externalID}'`;
+                let { rows: dsRows } = await DB.executeQuery(selectDS);
+
+                const datasetExternalId = obj.externalID;
+                if (dsRows.length > 0) {
+                  const DSId = dsRows[0].datasetid;
+                  //Function call for update dataSet data
+                  var updateDataset = await externalFunction.datasetUpdate(
+                    obj,
+                    datasetExternalId,
+                    DSId,
+                    DPId,
+                    DFId,
+                    DFVer,
+                    ConnectionType
+                  );
+
+                  if (updateDataset.status == false) {
+                    return apiResponse.ErrorResponse(
+                      res,
+                      updateDataset.validate
+                    );
+                  } else {
+                    // console.log("success", updateDataset.validate);
+                    ResponseBody.dataSets.push(updateDataset.validate);
+                  }
+
+                  // if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                  //   ResponseBody.column_definition = [];
+                  //   for (let el of obj.columnDefinition) {
+                  //     let clobj = {};
+                  //     let selectDS = `select * from ${schemaName}.dataset where externalid='${obj.externalID}'`;
+                  //     let { rows: dsRows } = await DB.executeQuery(selectDS);
+                  //   }
+                  // }
+                } else {
+                  // Function call for insert dataSet level data
+                  var DatasetInsert = await externalFunction.datasetLevelInsert(
+                    obj,
+                    datasetExternalId,
+                    DPId,
+                    DFId,
+                    DFVer,
+                    ConnectionType
+                  );
+
+                  if (DatasetInsert.status == false) {
+                    return apiResponse.ErrorResponse(
+                      res,
+                      DatasetInsert.validate
+                    );
+                  } else {
+                    // console.log("success", DatasetInsert.validate);
+                    ResponseBody.dataSets.push(DatasetInsert.validate);
+                  }
+                }
+              }
+            }
+          } else {
+            var PackageInsert = await externalFunction.packageLevelInsert(
+              each,
+              packageExternalId,
+              DFId,
+              DFVer,
+              ConnectionType
+            );
+
+            if (PackageInsert.status == false) {
+              return apiResponse.ErrorResponse(res, PackageInsert.validate);
+            } else {
+              // console.log("success", PackageInsert.validate);
+              ResponseBody.data_packages.push(PackageInsert.validate);
+            }
+          }
+        }
+      }
+
+      // let config_json = {
+      //   dataFlowId: DFId,
+      //   vendorName: vendorName || null,
+      //   protocolNumber: studyId || null,
+      //   type: type,
+      //   name: name,
+      //   externalID: externalID,
+      //   externalSystemName: externalSystemName,
+      //   connectionType: connectionType,
+      //   location: src_loc_id,
+      //   exptDtOfFirstProdFile: exptDtOfFirstProdFile,
+      //   testFlag: testFlag ? 1 : 0,
+      //   prodFlag: testFlag,
+      //   description: description,
+      //   fsrstatus: fsrstatus,
+      //   dataPackage,
+      // };
+
+      const cData = { dataFlowId: DFId };
+      const conf_data = Object.assign(cData, req.body);
+
+      //insert into dataflow version config log table
+      let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
+        ( dataflowid, "version", config_json, created_by, created_on)
+        VALUES($1,$2,$3,$4,$5);`;
+      let aduit_version_body = [
+        DFId,
+        DFVer,
+        // JSON.stringify(config_json),
+        JSON.stringify(conf_data),
+        // null,
+        null,
+        new Date(),
+      ];
+      await DB.executeQuery(dataflow_version_query, aduit_version_body);
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Data flow Update successfully.",
+        ResponseBody
+      );
+      // return apiResponse.successResponseWithData(res, "Success", rows);
+    } else {
+      console.log("insert Query");
+      var dataRes = creatDataflow(req, res);
+    }
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error("catch :update dataflow");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }

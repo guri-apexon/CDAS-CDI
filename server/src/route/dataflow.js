@@ -13,8 +13,8 @@ router.post("/hard-delete", DataflowController.hardDeleteNew);
 router.post("/activate", DataflowController.activateDataFlow);
 router.post("/inActivate", DataflowController.inActivateDataFlow);
 router.post("/syncNow", DataflowController.syncDataFlow);
-// router.post("/update", DataflowController.updateDataFlow);
-router.post("/update", updateDataflowController.updateDataFlow);
+router.post("/update", DataflowController.updateDataFlow);
+// router.post("/update", updateDataflowController.updateDataFlow);
 
 router.post("/search-dataflow/:id", DataflowController.searchDataflow);
 router.get("/:id", DataflowController.fetchdataflowSource);
