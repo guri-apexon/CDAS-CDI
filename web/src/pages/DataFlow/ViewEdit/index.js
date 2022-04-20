@@ -159,7 +159,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
-    // console.log("FormValues", FormValues, protId, selectedLocation, dataflowId);
+    console.log("FormValues", FormValues);
     if (
       FormValues?.vendors &&
       selectedLocation &&
@@ -177,9 +177,9 @@ const DataFlow = ({ FormValues, dashboard }) => {
         description: FormValues.description,
         firstFileDate: FormValues.firstFileDate,
         locationType: FormValues.locationType,
-        serviceOwnerValue: FormValues.serviceOwnerValue?.length
-          ? FormValues.serviceOwnerValue[0].label
-          : "",
+        serviceOwners: FormValues.serviceOwner?.length
+          ? FormValues.serviceOwner
+          : null,
         protocolNumberStandard: protId,
         externalSystemName: "CDI",
         dataflowId,
