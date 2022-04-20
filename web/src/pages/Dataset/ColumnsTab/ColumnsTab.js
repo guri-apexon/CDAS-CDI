@@ -208,7 +208,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   return (
     <>
       {loading && <Progress />}
-      {!showColumns && (
+      {!showColumns && !loading && (
         <div className="tab colums-tab">
           <p className="title">Configure Dataset Column Settings</p>
           <p className="sub-title">Select an option</p>
