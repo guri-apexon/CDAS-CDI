@@ -192,6 +192,7 @@ const DataFlow = ({
         // serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
         protocolNumberStandard: selectedCard.protocolnumberstandard,
         // protocolNumber: selectedCard.prot_id,
+        serviceOwners: FormValues.serviceOwnerValue?.map((x) => x.value) || [],
         externalSystemName: "CDI",
         dataPackage: [{ dataSet: [] }],
         active: true,

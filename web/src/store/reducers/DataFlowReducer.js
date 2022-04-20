@@ -173,6 +173,7 @@ const DataFlowReducer = (state = initialState, action) =>
           testflag,
           locationname,
           isSync,
+          serviceowner,
         } = dataflowDetail;
 
         newState.testLock = testflag === 1 && isSync === "Y";
@@ -194,6 +195,7 @@ const DataFlowReducer = (state = initialState, action) =>
         formData.vendors = [vendorid];
         formData.userName = username;
         formData.vendorname = vendorname;
+        formData.serviceOwner = serviceowner ? serviceowner.split(",") : [];
         newState.dataFlowdetail = action.dataflowDetail;
         newState.formData = formData;
         break;
