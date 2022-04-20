@@ -1,5 +1,5 @@
 import { withRouter } from "react-router";
-import { useState, useContext } from "react";
+import { useState, useContext, memo } from "react";
 import NavigationBar from "apollo-react/components/NavigationBar";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import { neutral7 } from "apollo-react/colors";
@@ -12,7 +12,7 @@ import DashboardIcon from "apollo-react-icons/Dashboard";
 import Question from "apollo-react-icons/Question";
 import moment from "moment";
 import Button from "apollo-react/components/Button";
-
+import Modal from "apollo-react/components/Modal";
 import NavigationPanel from "../NavigationPanel/NavigationPanel";
 import { MessageContext } from "../../Providers/MessageProvider";
 // eslint-disable-next-line import/named
@@ -100,6 +100,7 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
   const [notLoggedOutErr, setNotLoggedOutErr] = useState(false);
   const [open, setOpen] = useState(false);
   const messageContext = useContext(MessageContext);
+  const [showVersionModal, setShowVersionModal] = useState(false);
   const userInfo = getUserInfo();
   const profileMenuProps = {
     name: userInfo.fullName,
@@ -116,7 +117,24 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
     logoutButtonProps: { onClick: () => LogOut() },
     menuItems: [],
   };
-
+  const ConfirmModal = memo(({ showVersionopen, closeModal }) => {
+    return (
+      <Modal
+        open={showVersionopen}
+        disableBackdropClick="true"
+        onClose={closeModal}
+        message={
+          // eslint-disable-next-line react/jsx-wrap-multilines
+          <>
+            <div>Clinical Data Analytics Suite</div>
+            <p>Version 1.0</p>
+          </>
+        }
+        buttonProps={[{ label: "Close", onClick: closeModal }]}
+        id="neutral"
+      />
+    );
+  });
   const LogOut = async () => {
     setOpen(true);
     const isLogout = await userLogOut();
@@ -153,6 +171,10 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
   };
   return (
     <div id="topNavbar">
+      <ConfirmModal
+        showVersionopen={showVersionModal}
+        closeModal={() => setShowVersionModal(false)}
+      />
       <Backdrop style={{ zIndex: 1 }} open={open}>
         <CircularProgress variant="indeterminate" size="small" />
       </Backdrop>
@@ -189,7 +211,7 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
           // eslint-disable-next-line react/jsx-wrap-multilines
           <div className={classes.centerAligned}>
             <Button
-              onClick={() => history.push("help")}
+              onClick={() => setShowVersionModal(true)}
               className={classes.fullNavHeight}
             >
               <Question className={classes.appIcon} />
