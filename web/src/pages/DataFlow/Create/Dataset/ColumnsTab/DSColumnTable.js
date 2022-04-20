@@ -79,7 +79,6 @@ export default function DSColumnTable({
   const [disableSaveAll, setDisableSaveAll] = useState(true);
   const [moreColumns, setMoreColumns] = useState([...columns]);
   const [importedData, setImportedData] = useState([]);
-  const [haveHeader, setHaveHeader] = useState(true);
 
   const handleViewLOV = (row) => {
     setShowViewLOVs(true);
@@ -461,6 +460,8 @@ export default function DSColumnTable({
     setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
   };
 
+  const haveHeader = parseInt(headerValue, 10) > 0;
+
   // const showColumnNameRequried = () => {
   //   messageContext.showErrorMessage("Column Name Should be there");
   // };
@@ -538,10 +539,6 @@ export default function DSColumnTable({
       messageContext?.setDataflow({ columnDefinition: rows });
     }
   }, [rows]);
-
-  useEffect(() => {
-    setHaveHeader(parseInt(headerValue, 10) > 0);
-  }, [headerValue]);
 
   useEffect(() => {
     if (isSftp(locationType)) {
