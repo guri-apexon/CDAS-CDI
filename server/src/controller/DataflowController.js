@@ -2039,7 +2039,7 @@ exports.updateDataflowConfig = async (req, res) => {
       locationName,
       locationType,
       protocolNumberStandard,
-      serviceOwnerValue,
+      serviceOwners,
       testFlag,
       vendorID,
       dataflowId,
@@ -2063,11 +2063,14 @@ exports.updateDataflowConfig = async (req, res) => {
         connectionType,
         externalSystemName,
         dFTimestamp,
+        serviceOwners && Array.isArray(serviceOwners)
+          ? serviceOwners.join()
+          : "",
         dataflowId,
       ];
       // insert dataflow schema into db
       const updatedDF = await DB.executeQuery(
-        `update ${schemaName}.dataflow set vend_id=$1, type=$2, description=$3, src_loc_id=$4, testflag=$5, connectiontype=$6, externalsystemname=$7, updt_tm=$8 WHERE dataflowid=$9 returning *;`,
+        `update ${schemaName}.dataflow set vend_id=$1, type=$2, description=$3, src_loc_id=$4, testflag=$5, connectiontype=$6, externalsystemname=$7, updt_tm=$8, serv_ownr=$9 WHERE dataflowid=$10 returning *;`,
         dFBody
       );
       if (!updatedDF?.rowCount) {
