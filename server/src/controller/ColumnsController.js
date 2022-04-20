@@ -79,7 +79,7 @@ exports.saveDatasetColumns = async (req, res) => {
           dpId,
           userId,
           config_json,
-          "New Entry "
+          "New Column Definition"
         );
       }
 

@@ -200,6 +200,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       sponsorName,
       externalVersion,
       protocolNumberStandard,
+      serviceOwners,
     } = req.body;
     var ResponseBody = {};
     if (!type && dataStructure) type = dataStructure;
@@ -261,14 +262,17 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
         fsrstatus || null,
         studyId,
         dFTimestamp,
+        serviceOwners && Array.isArray(serviceOwners)
+          ? serviceOwners.join()
+          : "",
       ];
       // insert dataflow schema into db
       let createDF = await DB.executeQuery(
         `insert into ${schemaName}.dataflow 
       (dataflowid,name,vend_id,type,description,src_loc_id,active,configured,expt_fst_prd_dt,
         testflag,data_in_cdr,connectiontype,externalsystemname,externalid,
-        fsrstatus,prot_id,insrt_tm,updt_tm, refreshtimestamp) VALUES 
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17) returning dataflowid as "dataFlowId", name as "dataFlowName", type as adapter, description, active as status, testflag, connectiontype as "locationType", fsrstatus as "fsrStatus", prot_id as "studyId", externalsystemname as "externalSourceSystem";`,
+        fsrstatus,prot_id,insrt_tm,updt_tm, refreshtimestamp, serv_ownr) VALUES 
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17, $18) returning dataflowid as "dataFlowId", name as "dataFlowName", type as adapter, description, active as status, testflag, connectiontype as "locationType", fsrstatus as "fsrStatus", prot_id as "studyId", externalsystemname as "externalSourceSystem";`,
         DFBody
       );
       let ts = new Date().toLocaleString();
@@ -1019,12 +1023,12 @@ exports.activateDataFlow = async (req, res) => {
     const newVersion = parseInt($q1.rows.length ? $q1.rows[0]?.version : 1) + 1;
 
     if ($q0.rows.map((e) => e.active).includes(1)) {
-      const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1`;
+      const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1 returning *`;
       const q3 = `INSERT INTO ${schemaName}.dataflow_audit_log
       (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
       VALUES($1, $2, Now(), $3, $4, $5, $6)`;
-      const q4 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
-      VALUES($1, $2, $3, Now())`;
+      const q4 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on, config_json)
+      VALUES($1, $2, $3, Now(), $4)`;
       const $q2 = await DB.executeQuery(q2, [dataFlowId]);
       const $q3 = await DB.executeQuery(q3, [
         dataFlowId,
@@ -1035,7 +1039,12 @@ exports.activateDataFlow = async (req, res) => {
         1,
       ]);
 
-      const $q4 = await DB.executeQuery(q4, [dataFlowId, newVersion, userId]);
+      const $q4 = await DB.executeQuery(q4, [
+        dataFlowId,
+        newVersion,
+        userId,
+        $q2.rows[0] || null,
+      ]);
 
       return apiResponse.successResponseWithData(res, "Operation success", {
         success: true,
@@ -1059,12 +1068,12 @@ exports.inActivateDataFlow = async (req, res) => {
     const $q0 = await DB.executeQuery(q0, [dataFlowId]);
     const newVersion = parseInt($q0.rows.length ? $q0.rows[0]?.version : 1) + 1;
 
-    const q1 = `UPDATE ${schemaName}.dataflow set active=0 WHERE dataflowid=$1`;
+    const q1 = `UPDATE ${schemaName}.dataflow set active=0 WHERE dataflowid=$1 returning *`;
     const q2 = `INSERT INTO ${schemaName}.dataflow_audit_log
     (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
     VALUES($1, $2, Now(), $3, $4, $5, $6)`;
-    const q3 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
-    VALUES($1, $2, $3, Now())`;
+    const q3 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on, config_json)
+    VALUES($1, $2, $3, Now(), $4)`;
 
     const $q1 = await DB.executeQuery(q1, [dataFlowId]);
     const $q2 = await DB.executeQuery(q2, [
@@ -1076,7 +1085,12 @@ exports.inActivateDataFlow = async (req, res) => {
       0,
     ]);
 
-    const $q3 = await DB.executeQuery(q3, [dataFlowId, newVersion, userId]);
+    const $q3 = await DB.executeQuery(q3, [
+      dataFlowId,
+      newVersion,
+      userId,
+      $q1.rows[0] || null,
+    ]);
 
     return apiResponse.successResponseWithData(res, "Operation success", {
       success: true,
@@ -1110,7 +1124,7 @@ exports.syncDataFlow = async (req, res) => {
 exports.getDataflowDetail = async (req, res) => {
   try {
     const dataFlowId = req.params.dataFlowId;
-    const searchQuery = `SELECT dataflowTbl.active, locationTbl.usr_nm as username,  dataflowTbl.dataflowid, dataflowTbl.name, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID, locationTbl.loc_alias_nm as locationName
+    const searchQuery = `SELECT dataflowTbl.active, locationTbl.usr_nm as username,  dataflowTbl.dataflowid, dataflowTbl.name, dataflowTbl.serv_ownr as serviceOwner, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID, locationTbl.loc_alias_nm as locationName
     from ${schemaName}.dataflow as dataflowTbl 
     JOIN ${schemaName}.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id
     JOIN ${schemaName}.vendor v on (v.vend_id = dataflowTbl.vend_id)

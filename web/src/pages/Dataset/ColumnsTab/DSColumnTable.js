@@ -593,7 +593,13 @@ export default function DSColumnTable({
       })
       .find((e) => e.uniqueId === uniqueId);
 
-    if (rows.some((r) => r.columnName === editedRowData.columnName)) {
+    if (
+      rows.some(
+        (r) =>
+          r.columnName === editedRowData.columnName &&
+          r.uniqueId !== editedRowData.uniqueId
+      )
+    ) {
       messageContext.showErrorMessage(
         "Column name should be unique for a dataset"
       );
@@ -780,6 +786,7 @@ export default function DSColumnTable({
             dsTestLock,
             dsProdLock,
             changeHandler,
+            haveHeader,
           }}
         />
       </div>
@@ -825,7 +832,7 @@ export default function DSColumnTable({
           isEditLOVs
             ? [
                 { label: "Save", onClick: handleSaveLOV },
-                { label: "Cancel", onClick: () => setIsEditLOVs(false) },
+                { label: "Cancel", onClick: hideViewLOVs },
               ]
             : [
                 { label: "Edit", onClick: () => setIsEditLOVs(true) },
