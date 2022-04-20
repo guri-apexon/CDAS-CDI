@@ -100,8 +100,13 @@ const DataFlowFormBase = (props) => {
     prodLock,
   } = props;
   const locationNameRef = React.useRef(null);
+  const [selectedSrvcOwnr, setSelectedSrvcOwnr] = useState(null);
   const onChangeServiceOwner = (values) => {
-    change("serviceOwnerValue", values);
+    setSelectedSrvcOwnr(values);
+    change(
+      "serviceOwner",
+      values.map((x) => x.value)
+    );
   };
   const openLocationModal = () => {
     setLocationOpen(true);
@@ -111,7 +116,7 @@ const DataFlowFormBase = (props) => {
   const [renderLocation, setRenderLocation] = useState(false);
 
   useEffect(() => {
-    console.log("initialValues", initialValues);
+    // console.log("initialValues", initialValues);
     if (initialValues) {
       const { dataflowType } = initialValues;
       setDataLoaded(true);
@@ -278,21 +283,27 @@ const DataFlowFormBase = (props) => {
         <div className={classes.section}>
           <Typography variant="title1">Others</Typography>
           <div style={{ width: "50%" }} className="service-owner">
-            <ReduxFormAutocompleteV2
-              name="serviceOwner"
-              // input={{
-              //   value: initialValues?.serviceOwner,
-              // }}
-              label="Service Owners (Optional)"
-              source={serviceOwners ?? []}
-              onChange={onChangeServiceOwner}
-              forcePopupIcon={true}
-              fullWidth
-              noOptionsText="No Service Owner"
-              variant="search"
-              chipColor="white"
-              multiple
-            />
+            {serviceOwners && (
+              <ReduxFormAutocompleteV2
+                name="serviceOwner"
+                input={{
+                  value:
+                    selectedSrvcOwnr ||
+                    serviceOwners.filter((x) =>
+                      initialValues?.serviceOwner.includes(x.value)
+                    ),
+                  onChange: onChangeServiceOwner,
+                }}
+                label="Service Owners (Optional)"
+                source={serviceOwners ?? []}
+                forcePopupIcon={true}
+                fullWidth
+                noOptionsText="No Service Owner"
+                variant="search"
+                chipColor="white"
+                multiple
+              />
+            )}
           </div>
         </div>
       </Paper>

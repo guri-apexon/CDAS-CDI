@@ -85,6 +85,7 @@ const RenderAutocompleteV2 = ({
         helperText={(touched && error) || helperText}
         error={touched && !!error}
         {...input}
+        value={value === "" ? [] : value}
         onChange={(event, v) => onChange(v)}
         {...rest}
       />
