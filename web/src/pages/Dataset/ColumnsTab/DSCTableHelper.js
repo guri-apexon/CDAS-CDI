@@ -159,7 +159,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
   const { editMode, haveHeader } = row;
   let errorText;
-  if (haveHeader) {
+  if (!haveHeader) {
     errorText = checkRequired(row[key]) || checkNumeric(row[key]);
   } else {
     errorText = checkNumeric(row[key]);
