@@ -34,7 +34,6 @@ import { locationModalValidate } from "../FormComponents/validation";
 import {
   saveLocationData,
   removeErrMessage,
-  getLocationPasswordData,
 } from "../../store/actions/CDIAdminAction";
 import {
   checkLocationExistsInDataFlow,
