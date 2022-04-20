@@ -2012,7 +2012,7 @@ exports.hardDeleteNew = async (req, res) => {
         dataFlowId,
         dataFlowName,
         "delete",
-        fsrStatus || "temp", //"temp", //fsrStatus, // we are not getting any fsr status as of now
+        fsrStatus || "QUEUE", //"temp", //fsrStatus, // we are not getting any fsr status as of now
         userId,
         studyId,
         version,
