@@ -36,7 +36,7 @@ exports.searchVendorList = function (req, res) {
 exports.getVendorList = function (req, res) {
   try {
     let select = `vend_id,vend_id as value, vend_nm as label, vend_nm,vend_nm_stnd,description,active,extrnl_sys_nm`;
-    let searchQuery = `SELECT ${select} from ${schemaName}.vendor where active=1 order by vend_nm asc`;
+    let searchQuery = `SELECT ${select} from ${schemaName}.vendor where active=1 and vend_nm != '' order by vend_nm asc`;
     let dbQuery = DB.executeQuery(searchQuery);
     Logger.info({
       message: "vendorList",
