@@ -20,8 +20,11 @@ import {
   ReduxFormSwitch,
   ReduxFormSelect,
   ReduxFormTextField,
+  ReduxFormPassword,
 } from "../../../../components/FormComponents/FormComponents";
-import dataSetsValidation from "../../../../components/FormComponents/DataSetsValidation";
+import dataSetsValidation, {
+  passwordWarnings,
+} from "../../../../components/FormComponents/DataSetsValidation";
 
 import { fileTypes, delimeters, loadTypes } from "../../../../utils";
 
@@ -276,12 +279,10 @@ const DataSetsFormBase = (props) => {
                 required
               />
               {formValues === "Excel" && (
-                <ReduxFormTextField
-                  fullWidth
+                <ReduxFormPassword
                   name="filePwd"
                   size="small"
                   type="password"
-                  inputProps={{ minLength: 8, maxLength: 30 }}
                   label="File Password"
                 />
               )}
@@ -333,6 +334,7 @@ const ReduxForm = compose(
   reduxForm({
     form: "CreateDataSetsForm",
     validate: dataSetsValidation,
+    warn: passwordWarnings,
   }),
   connect((state) => ({ values: getFormValues("CreateDataSetsForm")(state) }))
 )(DataSetsFormBase);
