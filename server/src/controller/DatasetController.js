@@ -518,9 +518,9 @@ exports.previewSql = async (req, res) => {
     let recordsCount = 10;
     let {
       locationType,
-      customQuery,
       tableName,
       columnCount,
+      customQuery,
       connectionPassword,
       connectionUserName,
       connectionUrl,
@@ -528,7 +528,7 @@ exports.previewSql = async (req, res) => {
       driverName,
     } = req.body;
     // if (locationType === _locationType) {
-    if (customQuery === "YES") {
+    if (customQuery === "Yes") {
       //get connection
       let q = customSql;
       switch (locationType?.toLowerCase()) {
@@ -551,9 +551,6 @@ exports.previewSql = async (req, res) => {
     } else {
       return apiResponse.ErrorResponse(res, "Custom query is not true");
     }
-    // } else {
-    //   return apiResponse.ErrorResponse(res, "Dataset location type is not SQL");
-    // }
   } catch (error) {
     console.log(err);
     Logger.error("catch :datasetpreviewSql");

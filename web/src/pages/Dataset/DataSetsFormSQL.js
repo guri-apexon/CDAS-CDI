@@ -17,6 +17,7 @@ import {
   ReduxFormSwitch,
   ReduxFormSelect,
   ReduxFormTextField,
+  ReduxFormAutocompleteV2,
   ReduxFormMultiSelect,
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
@@ -44,6 +45,8 @@ const DataSetsFormBase = (props) => {
     classes,
     datakind,
     formValues,
+    change,
+    initialValues,
     previewSQL,
     sqlTables,
     sqlColumns,
@@ -57,14 +60,15 @@ const DataSetsFormBase = (props) => {
   const [showPreview, setShowPreview] = useState(false);
   const dataSets = useSelector((state) => state.dataSets);
   const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
-  const handlePreview = () => {
-    setShowPreview(true);
-    dispatch(getPreviewSQL(formValues.sQLQuery));
+  const { locationDetail } = dataSets;
+  const [selectedOffsetColumns, setSelectedOffsetColumns] = useState(null);
+  const onChangeOffsetColumn = (values) => {
+    setSelectedOffsetColumns(values);
+    change(
+      "serviceOwner",
+      values.map((x) => x.value)
+    );
   };
-
-  // useEffect(() => {
-  //   dispatch(getSQLColumns(formValues.tableName));
-  // }, [formValues.tableName]);
 
   useEffect(() => {
     if (formValues && ["Yes", "No"].includes(formValues)) {
@@ -73,14 +77,35 @@ const DataSetsFormBase = (props) => {
     if (formValues.isCustomSQL === "No") {
       dispatch(
         getSQLTables({
-          ...dataSets?.locationDetail,
+          ...locationDetail,
         })
       );
       setShowPreview(false);
     }
   }, [formValues.isCustomSQL]);
 
-  useEffect(() => {}, [showPreview]);
+  useEffect(() => {
+    dispatch(
+      getSQLColumns({
+        ...locationDetail,
+        tableName: formValues.tableName,
+      })
+    );
+  }, [formValues.tableName]);
+
+  const handlePreview = () => {
+    setShowPreview(true);
+    dispatch(
+      getPreviewSQL({
+        ...locationDetail,
+        tableName: null,
+        columnDefinition: null,
+        columnCount: null,
+        customSql: formValues.sQLQuery,
+        customQuery: formValues.isCustomSQL,
+      })
+    );
+  };
 
   const locationChange = () => {
     messageContext.showErrorMessage(
@@ -255,30 +280,49 @@ const DataSetsFormBase = (props) => {
                 <Radio value="Incremental" label="Incremental" />
               </ReduxFormRadioGroup>
               {formValues.dataType === "Incremental" && (
-                // <ReduxFormMultiSelect
-                //   name="offsetColumn"
-                //   id="offsetColumn"
-                //   label="Offset Column"
-                //   size="small"
-                //   canDeselect={true}
-                //   disabled={prodLock}
-                // >
-                //   {sqlColumns?.map((e) => (
-                //     <MenuItem value={e.columnName}>{e.columnName}</MenuItem>
-                //   ))}
-                // </ReduxFormMultiSelect>
-                <ReduxFormTextField
-                  fullWidth
+                <ReduxFormAutocompleteV2
                   name="offsetColumn"
-                  id="offsetColumn"
-                  style={{ width: "70%", display: "flex" }}
-                  size="small"
-                  minHeight={32}
-                  singleline
-                  inputProps={{ maxLength: 255 }}
+                  input={{
+                    // value:
+                    //   selectedOffsetColumns ||
+                    //   sqlColumns.filter((x) =>
+                    //     initialValues?.offsetColumns.includes(x.value)
+                    //   ),
+                    onChange: onChangeOffsetColumn,
+                  }}
+                  source={sqlColumns ?? []}
                   label="Offset Column"
+                  size="small"
+                  fullWidth
+                  showCheckboxes
+                  blurOnSelect={false}
+                  clearOnBlur={false}
+                  disableCloseOnSelect
+                  filterSelectedOptions={false}
+                  enableVirtualization
+                  limitChips={5}
+                  alwaysLimitChips
+                  chipColor="white"
+                  multiple
                   disabled={prodLock}
                 />
+
+                /* {sqlColumns?.map((e) => (
+                    <MenuItem value={e.columnName}>{e.columnName}</MenuItem>
+                  ))} */
+
+                // <ReduxFormTextField
+                //   fullWidth
+                //   name="offsetColumn"
+                //   id="offsetColumn"
+                //   style={{ width: "70%", display: "flex" }}
+                //   size="small"
+                //   minHeight={32}
+                //   singleline
+                //   inputProps={{ maxLength: 255 }}
+                //   label="Offset Column"
+                //   disabled={prodLock}
+                // />
               )}
             </>
           )}
@@ -306,6 +350,7 @@ const ReduxForm = compose(
   withStyles(styles),
   reduxForm({
     form: "DataSetsFormSQL",
+    enableReinitialize: true,
     validate: dataSetsValidation,
   }),
   connect((state) => ({ values: getFormValues("DataSetsFormSQL")(state) }))
@@ -326,7 +371,10 @@ const DataSetsFormSQL = connect((state) => ({
   ),
   datakind: state.dataSets.datakind?.records,
   sqlTables: state.dataSets.sqlTables,
-  sqlColumns: state.dataSets.sqlColumns,
+  sqlColumns: state.dataSets.sqlColumns.map((e) => ({
+    label: e.columnName,
+    value: e.columnName,
+  })),
   previewSQL: state.dataSets.previewSQL,
 }))(ReduxForm);
 
