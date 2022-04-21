@@ -316,6 +316,7 @@ exports.updateDatasetData = async (req, res) => {
     if (values.locationType.toLowerCase() === "jdbc") {
       return updateSQLDataset(res, values, dfId, userId, dpId, datasetid);
     }
+    const incremental = values.loadType === "Incremental" ? "Y" : "N";
 
     var requestData = {
       datasetid: datasetid,
@@ -329,37 +330,19 @@ exports.updateDatasetData = async (req, res) => {
       headerrownumber: values.headerRowNumber || 0,
       footerrownumber: values.footerRowNumber || 0,
       active: true ? 1 : 0,
-      naming_convention: values.fileNamingConvention || null,
+      name: values.fileNamingConvention || null,
       path: values.folderPath || null,
       datakindid: values.clinicalDataType[0],
       data_freq: values.transferFrequency || null,
       ovrd_stale_alert: values.overrideStaleAlert || null,
       rowdecreaseallowed: values.rowDecreaseAllowed || 0,
-      incremental: "Incremental" ? "Y" : "N",
+      incremental,
     };
 
     const jsonData = JSON.stringify(requestData);
 
     const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
     const oldData = tempData[0];
-
-    for (const key in requestData) {
-      if (`${requestData[key]}` != oldData[key]) {
-        if (oldData[key] != null) {
-          const historyVersion = await CommonController.addDatasetHistory(
-            dfId,
-            userId,
-            dpId,
-            datasetid,
-            jsonData,
-            key,
-            oldData[key],
-            `${requestData[key]}`
-          );
-          if (!historyVersion) throw new Error("History not updated");
-        }
-      }
-    }
 
     let passwordStatus = "No";
 
@@ -386,7 +369,7 @@ exports.updateDatasetData = async (req, res) => {
       values.overrideStaleAlert || null,
       values.rowDecreaseAllowed || 0,
       new Date(),
-      values.loadType == "Incremental" ? "Y" : "N",
+      incremental,
       passwordStatus,
     ];
 
@@ -394,6 +377,22 @@ exports.updateDatasetData = async (req, res) => {
       ...body,
       values.datasetid,
     ]);
+
+    for (const key in requestData) {
+      if (requestData[key] != oldData[key]) {
+        const historyVersion = await CommonController.addDatasetHistory(
+          dfId,
+          userId,
+          dpId,
+          datasetid,
+          jsonData,
+          key,
+          oldData[key] || null,
+          requestData[key]
+        );
+        if (!historyVersion) throw new Error("History not updated");
+      }
+    }
 
     return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
