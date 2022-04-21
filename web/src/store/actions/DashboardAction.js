@@ -1,7 +1,6 @@
 import {
   DASHBOARD_DATA,
   PAGEHEADER_UPDATE,
-  SELECT_DATAFLOW,
   SELECTED_DATAFLOW,
   GET_DATA_FLOW_LIST,
   GET_DATASET_INGESTION_SUMMARY,
@@ -34,13 +33,6 @@ export const updateSelectedStudy = (study) => {
   return {
     type: PAGEHEADER_UPDATE,
     study,
-  };
-};
-
-export const updateSelectedDataflow = (dataflowId) => {
-  return {
-    type: SELECT_DATAFLOW,
-    dataflowId,
   };
 };
 

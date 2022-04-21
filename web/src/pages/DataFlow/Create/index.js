@@ -43,6 +43,7 @@ import { MessageContext } from "../../../components/Providers/MessageProvider";
 import DataSet from "./Dataset";
 import { dataflowSave } from "../../../services/ApiServices";
 import { SelectedDataflow } from "../../../store/actions/DashboardAction";
+import { isSftp } from "../../../utils";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -99,6 +100,7 @@ const DataFlow = ({
   const [FormType, setFormType] = useState("dataflow");
   const [createdDataflow, setCreatedDataflow] = useState(null);
   const [headerValue, setHeaderValue] = useState(1);
+  const [changeLocationRequire, setChangeLocationRequire] = useState(true);
   const [currentStep, setCurrentStep] = useReducer((state, action) => {
     if (action?.step) return action.step;
     return action?.prev ? state - 1 : state + 1;
@@ -137,6 +139,7 @@ const DataFlow = ({
       (loc) => value == loc.src_loc_id
     );
     dispatch(updateSelectedLocation(location));
+    setChangeLocationRequire(false);
   };
   const changeFormField = (value, field, arr) => {
     if (field === "vendor" && value[0]) {
@@ -147,6 +150,7 @@ const DataFlow = ({
   const changeLocationType = (value) => {
     dispatch(getLocationByType(value));
     setLocType(value);
+    setChangeLocationRequire(true);
   };
   const modalLocationType = (value) => {
     setModalLocType(value);
@@ -163,14 +167,20 @@ const DataFlow = ({
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
-    console.log("FormValues", FormValues, selectedVendor);
+    console.log("FormValues", FormValues, selectedCard);
     if (
       FormValues &&
-      (FormValues.vendor || FormValues.vendor.length > 0) &&
-      FormValues.locationName &&
-      FormValues.description !== "" &&
-      selectedCard.prot_id !== ""
+      FormValues?.vendor?.length > 0 &&
+      FormValues?.locationName &&
+      FormValues?.description !== "" &&
+      selectedCard?.protocolnumberstandard !== ""
     ) {
+      if (changeLocationRequire) {
+        messageContext.showErrorMessage(
+          "Please change location name as per location type"
+        );
+        return false;
+      }
       const payload = {
         vend_id: FormValues.vendor[0],
         src_loc_id: FormValues.locationName[0],
@@ -179,9 +189,9 @@ const DataFlow = ({
         description: FormValues.description,
         exptDtOfFirstProdFile: FormValues.firstFileDate,
         locationType: FormValues.locationType,
-        // serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
-        // protocolNumberStandard: selectedCard.prot_id,
-        protocolNumber: selectedCard.prot_id,
+        protocolNumberStandard: selectedCard.protocolnumberstandard,
+        // protocolNumber: selectedCard.prot_id,
+        serviceOwners: FormValues.serviceOwner?.map((x) => x.value) || [],
         externalSystemName: "CDI",
         dataPackage: [{ dataSet: [] }],
         active: true,
@@ -251,13 +261,17 @@ const DataFlow = ({
     if (datasetObj.customQuery === "No" && datasetObj.tableName) {
       dispatch(getSQLColumns(datasetObj.tableName));
     }
-    if (datasetObj.headerRowNumber) {
+    if (typeof datasetObj.headerRowNumber !== "undefined") {
       setHeaderValue(datasetObj.headerRowNumber);
     }
 
     newForm.dataPackage[0].dataSet[0] = datasetObj;
     setForm(newForm);
-    setCurrentStep();
+    if (datasetObj.customQuery === "Yes") {
+      setCurrentStep({ step: 5 });
+    } else {
+      setCurrentStep();
+    }
   };
 
   const AddColumnDefinitions = (rows) => {
@@ -269,6 +283,16 @@ const DataFlow = ({
     }
   };
   const submitFinalForm = async () => {
+    if (
+      (isSftp(locType) && !myform.dataPackage[0]?.dataSet[0]?.columncount) ||
+      (myform.dataPackage[0]?.dataSet[0]?.customQuery === "No" &&
+        !myform.dataPackage[0]?.dataSet[0]?.columncount)
+    ) {
+      messageContext.showErrorMessage(
+        "Please add atleast one column to proceed"
+      );
+      return false;
+    }
     const reqBody = {
       ...myform,
     };
@@ -300,10 +324,11 @@ const DataFlow = ({
         datasetRef.current.submitForm();
         break;
       case 4:
-        submitFinalForm();
+        datasetRef.current.checkvalidation();
         break;
       case 5:
-        setCurrentStep({ step: 3 });
+        submitFinalForm();
+        // setCurrentStep({ step: 3 });
         break;
       default:
         break;
@@ -368,64 +393,6 @@ const DataFlow = ({
         </div>
       </>
     );
-    // switch (currentStep) {
-    //   case 1:
-    //     formEl = (
-    //       <DataFlowForm
-    //         currentStep={currentStep}
-    //         onSubmit={onSubmit}
-    //         changeLocationData={changeLocationData}
-    //         changeFormField={changeFormField}
-    //         changeLocationType={changeLocationType}
-    //         modalLocationType={modalLocationType}
-    //         userName={selectedLocation?.usr_nm}
-    //         password={selectedLocation?.pswd}
-    //         connLink={selectedLocation?.cnn_url}
-    //       />
-    //     );
-    //     break;
-    //   case 2:
-    //     formEl = (
-    //       <DataPackages
-    //         setCompression={setCompression}
-    //         setNamingConvention={setNamingConvention}
-    //         setPackagePassword={setPackagePassword}
-    //         setSftpPath={setSftpPath}
-    //         compression={compression}
-    //         namingConvention={namingConvention}
-    //         packagePassword={packagePassword}
-    //         sftpPath={sftpPath}
-    //       />
-    //     );
-    //     break;
-    //   case 3:
-    //   case 4:
-    //   case 5:
-    //     formEl = (
-    //       <DataSet
-    //         currentStep={currentStep}
-    //         myform={myform}
-    //         updateStep={(step) => setCurrentStep({ step })}
-    //         datapackageid={selectedDatapackage}
-    //         getDataSetValue={getDataSetValue}
-    //       />
-    //     );
-    //     break;
-    //   default:
-    //     formEl = (
-    //       <DataFlowForm
-    //         onSubmit={onSubmit}
-    //         changeLocationData={changeLocationData}
-    //         changeFormField={changeFormField}
-    //         changeLocationType={changeLocationType}
-    //         modalLocationType={modalLocationType}
-    //         userName={selectedLocation?.usr_nm}
-    //         password={selectedLocation?.pswd}
-    //         connLink={selectedLocation?.cnn_url}
-    //       />
-    //     );
-    //     break;
-    // }
     return formEl;
   };
 

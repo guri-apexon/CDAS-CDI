@@ -36,6 +36,7 @@ import {
   GET_DATASET_INGESTION_ISSUE_TYPES,
   GET_DATASET_INGESTION_FILE_HISTORY,
   GET_LOCATION_DETAIL,
+  GET_PASSWORD_LOCATION,
 } from "../../constants";
 
 import { fetchPackagesData, updateDataPackage } from "./dataPackage.saga";
@@ -78,6 +79,7 @@ import {
   createSettingsData,
   updateSettingsData,
   fetchSettingsList,
+  fetchLocationspassword,
 } from "./cdiAdmin.saga";
 import {
   fetchDatasetIngestionFileHistory,
@@ -101,6 +103,7 @@ function* cdasCoreSaga() {
   yield takeLatest(GET_LOCATIONS_DATA, fetchLocationsData);
   yield takeLatest(SAVE_LOCATION_DATA, saveLocationData);
   yield takeLatest(GET_SERVICE_OWNERS, fetchServiceOwnersData);
+  yield takeLatest(GET_PASSWORD_LOCATION, fetchLocationspassword);
   yield takeLatest(AUDIT_LOGS, fetchAuditLogs);
   yield takeLatest(GET_DATA_KIND, fetchDataKindData);
   yield takeLatest(SAVE_DATASET_DATA, saveDataset);

@@ -7,6 +7,7 @@ import {
   CREARE_SETTINGS_DATA,
   UPDATE_SETTINGS_DATA,
   FETCH_SETTINGS_DATA,
+  GET_PASSWORD_LOCATION,
 } from "../../constants";
 
 export const searchSettings = (search) => {
@@ -61,4 +62,11 @@ export const saveLocationData = (values) => {
 
 export const getCDTList = () => {
   return { type: GET_CDT_LIST };
+};
+
+export const getLocationPasswordData = (id) => {
+  return {
+    type: GET_PASSWORD_LOCATION,
+    id,
+  };
 };

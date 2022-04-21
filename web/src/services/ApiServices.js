@@ -21,9 +21,9 @@ import {
   DATAFLOW_UPDATE_API,
   ADD_PACKAGE,
 } from "../constants";
-import { getCookie } from "../utils/index";
+import { getUserId } from "../utils/index";
 
-const userId = getCookie("user.id");
+const userId = getUserId();
 
 const config = { headers: { userId } };
 
@@ -352,9 +352,22 @@ export const userLogOut = () => {
     });
 };
 
-export const deleteCD = async (id) => {
+export const deleteCD = async (
+  columnId,
+  dsId,
+  dpId,
+  dfId,
+  isUpdateQuery,
+  nQuery
+) => {
   try {
-    const res = await axios.post(`${baseURL}/${COLUMNSAPI}/delete/${id}`, {
+    const res = await axios.post(`${baseURL}/${COLUMNSAPI}/delete`, {
+      columnId,
+      dsId,
+      dfId,
+      dpId,
+      isUpdateQuery,
+      nQuery,
       userId,
     });
     return res.data?.data || [];

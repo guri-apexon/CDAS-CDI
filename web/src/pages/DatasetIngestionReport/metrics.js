@@ -225,7 +225,7 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
               className="panel-body"
               style={{ overflow: "hidden", overflowX: "auto" }}
             >
-              {historyData.length > 0 && (
+              {historyData.length > 0 ? (
                 <ClusterColumnChart
                   {...(historyData.length > 4 && {
                     width:
@@ -237,8 +237,7 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
                   suffix="k"
                   yTicks={6}
                 />
-              )}
-              {historyData.length === 0 && (
+              ) : (
                 <div
                   style={{
                     height: "50vh",

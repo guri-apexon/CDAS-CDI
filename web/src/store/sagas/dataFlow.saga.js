@@ -66,7 +66,7 @@ export function* fetchLocationsData(action = null) {
       {}
     );
 
-    // console.log("study", fetchSBData);
+    console.log("study", fetchSBData);
     yield put({
       type: FETCH_LOCATION_SUCCESS,
       locations: fetchSBData.data.data,

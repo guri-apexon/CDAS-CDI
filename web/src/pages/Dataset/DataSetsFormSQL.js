@@ -55,7 +55,7 @@ const DataSetsFormBase = (props) => {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const [showPreview, setShowPreview] = useState(false);
-
+  const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
   const handlePreview = () => {
     setShowPreview(true);
     dispatch(getPreviewSQL(formValues.sQLQuery));
@@ -105,6 +105,15 @@ const DataSetsFormBase = (props) => {
     );
   };
 
+  useEffect(() => {
+    setRenderClinicalDataType(false);
+  }, [datakind, formValues.clinicalDataType]);
+
+  useEffect(() => {
+    if (!renderClinicalDataType)
+      setTimeout(() => setRenderClinicalDataType(true), 50);
+  }, [renderClinicalDataType]);
+
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
@@ -138,19 +147,21 @@ const DataSetsFormBase = (props) => {
               />
             </Grid>
             <Grid item md={6}>
-              <ReduxFormAutocomplete
-                name="clinicalDataType"
-                id="clinicalDataType"
-                label="Clinical Data Type"
-                source={datakind}
-                className="smallSize_autocomplete"
-                variant="search"
-                singleSelect
-                size="small"
-                fullWidth
-                required
-                disabled={prodLock}
-              />
+              {datakind && renderClinicalDataType && (
+                <ReduxFormAutocomplete
+                  name="clinicalDataType"
+                  id="clinicalDataType"
+                  label="Clinical Data Type"
+                  source={datakind}
+                  className="smallSize_autocomplete"
+                  variant="search"
+                  singleSelect
+                  size="small"
+                  fullWidth
+                  required
+                  disabled={prodLock}
+                />
+              )}
             </Grid>
           </Grid>
           <ReduxFormSelect
@@ -305,7 +316,8 @@ const DataSetsFormSQL = connect((state) => ({
     "sQLQuery",
     "tableName",
     "dataType",
-    "offsetColumn"
+    "offsetColumn",
+    "clinicalDataType"
   ),
   datakind: state.dataSets.datakind?.records,
   sqlTables: state.dataSets.sqlTables,

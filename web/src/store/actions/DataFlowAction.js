@@ -12,6 +12,8 @@ import {
   UPDATE_LOCATION_DATA,
   SAVE_DATAFLOW_LOCAL_DETAIL,
   UPDATE_DS,
+  RESET_DF_FORMDATA,
+  TOGGLE_DF_BTN,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -81,6 +83,13 @@ export const getDataKindData = () => {
   };
 };
 
+export const toggleSaveDFBtn = (disabled = false) => {
+  return {
+    type: TOGGLE_DF_BTN,
+    disabled,
+  };
+};
+
 export const setDataflowLocal = (details) => {
   return {
     type: SAVE_DATAFLOW_LOCAL_DETAIL,
@@ -92,5 +101,11 @@ export const updateDSState = (status) => {
   return {
     type: UPDATE_DS,
     status,
+  };
+};
+
+export const resetDfFormData = () => {
+  return {
+    type: RESET_DF_FORMDATA,
   };
 };

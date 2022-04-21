@@ -17,6 +17,7 @@ import { ReactComponent as DataPackageIcon } from "../../../../components/Icons/
 import "./index.scss";
 // import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, isSftp, validateFields } from "../../../../utils";
+import { packageComprTypes } from "../../../../utils/constants";
 // import {
 //   addDataPackage,
 //   getPackagesList,
@@ -32,14 +33,6 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
   const [disabled, setDisabled] = useState(false);
   const [notMatchedType, setNotMatchedType] = useState(false);
   const userInfo = getUserInfo();
-
-  const compressionTypes = [
-    { text: "Not Compressed", value: "not_compressed" },
-    { text: "Zip", value: "zip" },
-    { text: "7Z", value: "7z" },
-    { text: "SAS XPT", value: "xpt" },
-    { text: "RAR", value: "rar" },
-  ];
 
   const showConfig = (e, checked) => {
     setConfigShow(checked);
@@ -114,7 +107,7 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
                   onChange={(e) => setCompression(e.target.value)}
                   className="mb-20 package-type"
                 >
-                  {compressionTypes.map((type, i) => (
+                  {packageComprTypes.map((type, i) => (
                     // eslint-disable-next-line react/no-array-index-key
                     <MenuItem key={i} value={type.value}>
                       {type.text}

@@ -26,7 +26,7 @@ import {
   createAutocompleteFilter,
   createStatusArraySearchFilter,
   createStringArraySearchFilter,
-  getCookie,
+  getUserId,
 } from "../../../utils/index";
 import { getCDTList } from "../../../store/actions/CDIAdminAction";
 import {
@@ -240,7 +240,7 @@ export default function CDTList() {
   // eslint-disable-next-line consistent-return
   const handleSave = async () => {
     const regexp = /^[a-zA-Z0-9-_]+$/;
-    const userId = getCookie("user.id");
+    const userId = getUserId();
 
     if (cName === "") {
       setReqNameError(true);

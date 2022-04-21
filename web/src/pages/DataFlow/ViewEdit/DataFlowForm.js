@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useEffect, useState } from "react";
+import React, { createRef, useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect } from "react-redux";
 import { reduxForm, getFormValues } from "redux-form";
@@ -86,6 +86,7 @@ const DataFlowFormBase = (props) => {
     classes,
     change,
     locations,
+    selectedLocation,
     vendors,
     userName,
     password,
@@ -98,23 +99,53 @@ const DataFlowFormBase = (props) => {
     testLock,
     prodLock,
   } = props;
+  const locationNameRef = React.useRef(null);
+  const [selectedSrvcOwnr, setSelectedSrvcOwnr] = useState(null);
   const onChangeServiceOwner = (values) => {
-    change("serviceOwnerValue", values);
+    setSelectedSrvcOwnr(values);
+    change(
+      "serviceOwner",
+      values.map((x) => x.value)
+    );
   };
   const openLocationModal = () => {
     setLocationOpen(true);
   };
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [locationId, setLocationId] = useState(null);
+  const [renderLocation, setRenderLocation] = useState(false);
+
   useEffect(() => {
+    // console.log("initialValues", initialValues);
     if (initialValues) {
       const { dataflowType } = initialValues;
       setDataLoaded(true);
+      setLocationId(initialValues?.locations[0]?.value || null);
       if (dataflowType) {
         // changeFormField(dataflowType, "dataflowType");
       }
-      console.log("initialValues", initialValues, dataflowType);
     }
   }, [initialValues]);
+
+  useEffect(() => {
+    setLocationId(selectedLocation?.value || null);
+  }, [selectedLocation]);
+
+  useEffect(() => {
+    if (!renderLocation) setTimeout(() => setRenderLocation(true), 100);
+  }, [renderLocation]);
+
+  useEffect(() => {
+    setRenderLocation(false);
+    changeLocationData(locationId);
+  }, [locationId, locations]);
+
+  useEffect(() => {
+    return () => {
+      setDataLoaded(false);
+    };
+  }, []);
+
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper}>
@@ -190,7 +221,10 @@ const DataFlowFormBase = (props) => {
               <ReduxFormSelect
                 name="locationType"
                 label="Location Type"
-                onChange={(e) => changeLocationType(e.target.value)}
+                onChange={(e) => {
+                  changeLocationData(null);
+                  changeLocationType(e.target.value);
+                }}
                 fullWidth
                 canDeselect={false}
                 disabled={testLock || prodLock}
@@ -201,16 +235,22 @@ const DataFlowFormBase = (props) => {
                   </MenuItem>
                 ))}
               </ReduxFormSelect>
-              <ReduxFormAutocomplete
-                name="locationName"
-                label="Location Name"
-                source={locations}
-                className="autocomplete_field"
-                variant="search"
-                onChange={changeLocationData}
-                singleSelect
-                fullWidth
-              />
+              {renderLocation && locations && (
+                <ReduxFormAutocomplete
+                  name="locationName"
+                  label="Location Name"
+                  input={{
+                    onChange: changeLocationData,
+                    value: [locationId],
+                  }}
+                  ref={locationNameRef}
+                  source={locations}
+                  className="autocomplete_field"
+                  variant="search"
+                  singleSelect
+                  fullWidth
+                />
+              )}
               <Link
                 onClick={() => openLocationModal()}
                 style={{ fontWeight: 600 }}
@@ -243,18 +283,27 @@ const DataFlowFormBase = (props) => {
         <div className={classes.section}>
           <Typography variant="title1">Others</Typography>
           <div style={{ width: "50%" }} className="service-owner">
-            <ReduxFormAutocompleteV2
-              name="serviceOwner"
-              label="Service Owners (Optional)"
-              source={serviceOwners ?? []}
-              onChange={onChangeServiceOwner}
-              forcePopupIcon={true}
-              fullWidth
-              noOptionsText="No Service Owner"
-              variant="search"
-              chipColor="white"
-              multiple
-            />
+            {serviceOwners && (
+              <ReduxFormAutocompleteV2
+                name="serviceOwner"
+                input={{
+                  value:
+                    selectedSrvcOwnr ||
+                    serviceOwners.filter((x) =>
+                      initialValues?.serviceOwner.includes(x.value)
+                    ),
+                  onChange: onChangeServiceOwner,
+                }}
+                label="Service Owners (Optional)"
+                source={serviceOwners ?? []}
+                forcePopupIcon={true}
+                fullWidth
+                noOptionsText="No Service Owner"
+                variant="search"
+                chipColor="white"
+                multiple
+              />
+            )}
           </div>
         </div>
       </Paper>

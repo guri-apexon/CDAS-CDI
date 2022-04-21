@@ -35,7 +35,7 @@ import {
   checkFormat,
   checkRequiredValue,
   checkCharacterLength,
-  checkMaxLength,
+  checkAlphaNumericFileName,
 } from "../../../../../components/FormComponents/validators";
 
 const fieldStyles = {
@@ -56,7 +56,7 @@ const fieldStylesNo = {
 export const makeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText = checkRequiredValue(row[key], key, row.primary);
+    const errorText = checkRequiredValue(row[key], key, row.primaryKey);
     return row.editMode ? (
       <Select
         size="small"
@@ -110,7 +110,7 @@ export const DataTypeEditableSelectCell =
 export const editableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText = checkRequiredValue(row[key], key, row.primary);
+    const errorText = checkRequiredValue(row[key], key, row.primaryKey);
 
     return row.editMode ? (
       <Select
@@ -158,8 +158,13 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
-  const { editMode } = row;
-  const errorText = checkRequired(row[key]) && checkMaxLength(row[key], 32);
+  const { editMode, haveHeader } = row;
+  let errorText;
+  if (haveHeader) {
+    errorText = checkRequired(row[key]) || checkAlphaNumeric(row[key]);
+  } else {
+    errorText = checkAlphaNumeric(row[key]);
+  }
   return editMode ? (
     <TextField
       size="small"
@@ -171,9 +176,38 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
-      helperText={!row.isInitLoad ? errorText : ""}
+      error={
+        (!row.isInitLoad || row.isHavingColumnName) && errorText ? true : false
+      }
+      helperText={!row.isInitLoad || row.isHavingColumnName ? errorText : ""}
       {...fieldStyles}
+    />
+  ) : (
+    row[key]
+  );
+};
+
+export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
+  const { editMode, haveHeader } = row;
+  let errorText;
+  if (!haveHeader) {
+    errorText = checkRequired(row[key]) || checkNumeric(row[key]);
+  } else {
+    errorText = checkNumeric(row[key]);
+  }
+
+  return editMode ? (
+    <TextField
+      size="small"
+      fullWidth
+      value={row[key]}
+      onChange={(e) =>
+        row.editRow(row.uniqueId, key, e.target.value, errorText)
+      }
+      disabled={row.dsProdLock}
+      error={!row.isInitLoad && errorText}
+      helperText={!row.isInitLoad ? errorText : ""}
+      {...fieldStylesNo}
     />
   ) : (
     row[key]
@@ -297,10 +331,11 @@ export const columns = [
   {
     header: "Position",
     accessor: "position",
-    customCell: EditableCell,
-    sortFunction: compareStrings,
+    customCell: PositionEditableCell,
+    sortFunction: compareNumbers,
     filterFunction: createStringSearchFilter("position"),
     filterComponent: TextFieldFilter,
+    hidden: true,
   },
   {
     header: "Format",
@@ -326,10 +361,10 @@ export const columns = [
   },
   {
     header: "Primary?",
-    accessor: "primary",
+    accessor: "primaryKey",
     customCell: editableSelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("primary"),
+    filterFunction: createStringArraySearchFilter("primaryKey"),
     filterComponent: createSelectFilterComponent(["Yes", "No"], {
       size: "small",
       multiple: true,
@@ -406,6 +441,7 @@ export const CustomHeader = ({
   disableSaveAll,
   toggleFilters,
   changeHandler,
+  haveHeader,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -471,13 +507,13 @@ export const CustomHeader = ({
       )}
       {isSftp(locationType) && (
         <Tooltip
-          title={!isEditAll && "Import dataset column settings"}
+          title={(!isEditAll || haveHeader) && "Import dataset column settings"}
           disableFocusListener
         >
           <IconButton
             color="primary"
             size="small"
-            disabled={isEditAll}
+            disabled={isEditAll || !haveHeader}
             onClick={changeHandler}
           >
             <Upload />

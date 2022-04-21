@@ -22,7 +22,6 @@ import {
   changeFormFieldData,
   hideErrorMessage,
   getLocationByType,
-  addDataFlow,
   getDataFlowDetail,
 } from "../../../store/actions/DataFlowAction";
 
@@ -82,27 +81,12 @@ const DataFlow = ({ FormValues, dashboard }) => {
     dataFlowdetail,
     updated,
   } = dataFlowData;
-  const [locType, setLocType] = useState("SFTP");
+  const [locType, setLocType] = useState("");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
   const [dataflowSource, setDataFlowSource] = useState({});
   const { dataflowId } = useParams();
   const userInfo = getUserInfo();
-
-  const pullVendorandLocation = () => {
-    dispatch(getVendorsData());
-    dispatch(getLocationByType(locType));
-    dispatch(getServiceOwnersData());
-  };
-
-  const getDataFlowSource = async (dataflowid) => {
-    dispatch(getDataFlowDetail(dataflowid));
-  };
-
-  useEffect(() => {
-    getDataFlowSource(dataflowId);
-    pullVendorandLocation();
-  }, [dataflowId]);
 
   const breadcrumbItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -113,13 +97,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
     },
   ];
 
-  useEffect(() => {
-    if (modalLocType === locType) {
-      dispatch(getLocationByType(locType));
-    }
-  }, [createTriggered]);
-
   const changeLocationData = (value) => {
+    if (selectedLocation && value === selectedLocation.value) return;
     const locationsRec = dataFlowData.locations?.records ?? [];
     const location = locationsRec?.find(
       // eslint-disable-next-line eqeqeq
@@ -127,20 +106,50 @@ const DataFlow = ({ FormValues, dashboard }) => {
     );
     dispatch(updateSelectedLocation(location));
   };
+
+  const pullVendorandLocation = () => {
+    dispatch(getVendorsData());
+    dispatch(getServiceOwnersData());
+  };
+
+  useEffect(() => {
+    dispatch(getDataFlowDetail(dataflowId));
+  }, [dataflowId]);
+
+  useEffect(() => {
+    if (modalLocType === locType) {
+      dispatch(getLocationByType(locType));
+    }
+  }, [createTriggered]);
+
+  useEffect(() => {
+    if (locType) dispatch(getLocationByType(locType));
+  }, [locType]);
+
   const changeFormField = (value, field) => {
     dispatch(changeFormFieldData(value, field));
   };
   const changeLocationType = (value) => {
-    dispatch(getLocationByType(value));
     setLocType(value);
   };
+
   const modalLocationType = (value) => {
     setModalLocType(value);
   };
+
   const closeForm = async () => {
     await dispatch(reset("DataFlowForm"));
     history.push("/dashboard");
   };
+
+  useEffect(() => {
+    if (dataFlowdetail) {
+      pullVendorandLocation();
+      if (dataFlowdetail.loctyp && locType !== dataFlowdetail.loctyp) {
+        changeLocationType(dataFlowdetail.loctyp);
+      }
+    }
+  }, [dataFlowdetail]);
 
   // useEffect(() => {
   //   if (!dashboard?.selectedCard?.prot_id) {
@@ -150,19 +159,17 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
-    // console.log("FormValues?", FormValues);
-    // console.log("protId", protId);
+    console.log("FormValues", FormValues);
     if (
-      FormValues.vendors &&
-      FormValues.locationName &&
-      FormValues.serviceOwnerValue &&
-      FormValues.description !== "" &&
+      FormValues?.vendors &&
+      selectedLocation &&
+      FormValues?.description !== "" &&
       protId !== "" &&
       dataflowId
     ) {
       const payload = {
         vendorID: FormValues.vendors[0],
-        locationName: FormValues.locationName[0],
+        locationName: selectedLocation.value,
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.dataflowType,
         testFlag: FormValues.dataflowType === "test" ? "true" : "false",
@@ -170,7 +177,9 @@ const DataFlow = ({ FormValues, dashboard }) => {
         description: FormValues.description,
         firstFileDate: FormValues.firstFileDate,
         locationType: FormValues.locationType,
-        serviceOwnerValue: FormValues.serviceOwnerValue[0].label,
+        serviceOwners: FormValues.serviceOwner?.length
+          ? FormValues.serviceOwner
+          : null,
         protocolNumberStandard: protId,
         externalSystemName: "CDI",
         dataflowId,
@@ -194,6 +203,11 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const handleOpen = () => {
     setIsPanelOpen(true);
   };
+  useEffect(() => {
+    if (!selectedLocation?.value && dataFlowData?.dataFlowdetail?.srclocid) {
+      changeLocationData(dataFlowData?.dataFlowdetail?.srclocid);
+    }
+  }, [dataFlowData]);
 
   return (
     <div className={classes.root}>

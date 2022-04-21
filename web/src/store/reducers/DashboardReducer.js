@@ -3,7 +3,6 @@ import produce from "immer";
 
 import {
   PAGEHEADER_UPDATE,
-  SELECT_DATAFLOW,
   GET_DATA_FLOW_LIST,
   GET_DATA_FLOW_LIST_SUCCESS,
   GET_DATA_FLOW_LIST_FAILURE,
@@ -30,6 +29,7 @@ export const initialState = {
     projectcode: "",
     prot_id: "",
     protocolnumber: "",
+    protocolnumberstandard: "",
     protocolstatus: "",
     sponsorname: "",
     vCount: "",
@@ -47,10 +47,6 @@ const DashboardReducer = (state = initialState, action) =>
     switch (action.type) {
       case PAGEHEADER_UPDATE:
         newState.selectedCard = action.study;
-        break;
-
-      case SELECT_DATAFLOW:
-        newState.dfId = action.dataflowId;
         break;
 
       case GET_DATA_FLOW_LIST:
