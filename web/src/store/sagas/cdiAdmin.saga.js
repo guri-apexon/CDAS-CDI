@@ -22,9 +22,9 @@ import {
   FETCH_LOCATION_PASSWORD_FAILURE,
   FETCH_LOCATION_PASSWORD_SUCCESS,
 } from "../../constants";
-import { getCookie } from "../../utils";
+import { getUserId } from "../../utils";
 
-const userId = getCookie("user.id");
+const userId = getUserId();
 const config = { headers: { userId } };
 export function* fetchCDTList() {
   try {

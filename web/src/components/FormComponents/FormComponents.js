@@ -21,6 +21,8 @@ import Switch from "apollo-react/components/Switch";
 import TextField from "apollo-react/components/TextField";
 import Typography from "apollo-react/components/Typography";
 
+import "./FormComponents.scss";
+
 export const styles = {
   topSpacer: {
     marginTop: 16,
@@ -85,6 +87,7 @@ const RenderAutocompleteV2 = ({
         helperText={(touched && error) || helperText}
         error={touched && !!error}
         {...input}
+        value={value === "" ? [] : value}
         onChange={(event, v) => onChange(v)}
         {...rest}
       />
@@ -360,6 +363,30 @@ const RenderTextField = ({ input, meta: { touched, error }, ...rest }) => (
 );
 
 export const ReduxFormTextField = reduxFormify(RenderTextField);
+
+const RenderTextPassword = ({
+  input,
+  label,
+  type,
+  disabled,
+  meta: { touched, error, warning },
+}) => (
+  <div
+    className={`custom-password-input-container ${
+      disabled ? "cus-disabled" : ""
+    }`}
+  >
+    <div className="custom-label">{label}</div>
+    <div className={`custom-password-input ${warning ? "warning" : ""}`}>
+      <input {...input} placeholder="" type={type} disabled={disabled} />
+    </div>
+    {touched &&
+      ((error && <p className="error">{error}</p>) ||
+        (warning && <p className="warnings">{warning}</p>))}
+  </div>
+);
+
+export const ReduxFormPassword = reduxFormify(RenderTextPassword);
 
 const RenderButtonToggle = ({
   input: { onChange, value },

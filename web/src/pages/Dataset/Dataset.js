@@ -307,6 +307,12 @@ const Dataset = () => {
     []
   );
 
+  useEffect(() => {
+    setTimeout(() => {
+      dispatch(hideErrorMessage());
+    }, 7500);
+  }, [error, sucessMsg]);
+
   return (
     <>
       {(error || sucessMsg) && (

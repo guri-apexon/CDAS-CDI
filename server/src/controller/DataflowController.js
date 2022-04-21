@@ -664,7 +664,7 @@ exports.updateDataFlow = async (req, res) => {
     }
 
     const valData = [];
-    if (type != "") {
+    if (typeof type != "undefined") {
       valData.push({ key: "Type ", value: type, type: "string" });
     }
     if (name != "") {
@@ -701,7 +701,7 @@ exports.updateDataFlow = async (req, res) => {
     }
 
     const returnData = helper.validation(valData);
-    // console.log(returnData);
+    console.log(returnData);
     if (returnData.length > 0) {
       return apiResponse.ErrorResponse(res, returnData);
     }
@@ -723,12 +723,12 @@ exports.updateDataFlow = async (req, res) => {
       var ResponseBody = {};
       ResponseBody.dataflow = [];
       //dataFlow update function Call
-      var updateDataflow = await externalFunction.dataflowUpdate(
-        req.body,
-        externalID,
-        DFId,
-        DFVer
-      );
+      // var updateDataflow = await externalFunction.dataflowUpdate(
+      //   req.body,
+      //   externalID,
+      //   DFId,
+      //   DFVer
+      // );
 
       // if (updateDataflow.validate?.length) {
       //   return apiResponse.ErrorResponse(res, updateDataflow.validate);
@@ -736,11 +736,17 @@ exports.updateDataFlow = async (req, res) => {
       //   ResponseBody.dataflow.push(updateDataflow.dataflow);
       // }
 
-      return;
+      // return;
       if (dataPackage && dataPackage.length > 0) {
         ResponseBody.data_packages = [];
         // if datapackage exists
         for (let each of dataPackage) {
+          if (!each.externalID) {
+            return apiResponse.ErrorResponse(
+              res,
+              "Data Package Level External Id required Data flow Level"
+            );
+          }
           let selectDP = `select * from ${schemaName}.datapackage where externalid='${each.externalID}'`;
           let dpRows = await DB.executeQuery(selectDP);
           const packageExternalId = each.externalID;
@@ -770,6 +776,12 @@ exports.updateDataFlow = async (req, res) => {
               ResponseBody.dataSets = [];
               // if datasets exists
               for (let obj of each.dataSet) {
+                if (!obj.externalID) {
+                  return apiResponse.ErrorResponse(
+                    res,
+                    "Data Set Level External Id required Data flow Level"
+                  );
+                }
                 var newobj = {};
                 let selectDS = `select * from ${schemaName}.dataset where externalid='${obj.externalID}'`;
                 let { rows: dsRows } = await DB.executeQuery(selectDS);
@@ -832,18 +844,18 @@ exports.updateDataFlow = async (req, res) => {
           } else {
             var PackageInsert = await externalFunction.packageLevelInsert(
               each,
-              packageExternalId,
               DFId,
               DFVer,
               ConnectionType
             );
 
-            if (PackageInsert.status == false) {
+            console.log("error", PackageInsert);
+
+            if (PackageInsert.validate) {
               return apiResponse.ErrorResponse(res, PackageInsert.validate);
-            } else {
-              // console.log("success", PackageInsert.validate);
-              ResponseBody.data_packages.push(PackageInsert.validate);
             }
+
+            ResponseBody.data_packages.push(PackageInsert.validate);
           }
         }
       }
@@ -1426,7 +1438,7 @@ exports.hardDeleteNew = async (req, res) => {
         dataFlowId,
         dataFlowName,
         "delete",
-        fsrStatus || "temp", //"temp", //fsrStatus, // we are not getting any fsr status as of now
+        fsrStatus || "QUEUE", //"temp", //fsrStatus, // we are not getting any fsr status as of now
         userId,
         studyId,
         version,
@@ -1453,7 +1465,7 @@ exports.updateDataflowConfig = async (req, res) => {
       locationName,
       locationType,
       protocolNumberStandard,
-      serviceOwnerValue,
+      serviceOwners,
       testFlag,
       vendorID,
       dataflowId,
@@ -1467,32 +1479,58 @@ exports.updateDataflowConfig = async (req, res) => {
       dataflowId &&
       userId
     ) {
+      const { rows: existDfRows } = await DB.executeQuery(
+        `SELECT vend_id as "vendorID", src_loc_id as "locationName", testflag as "testFlag", type as "dataStructure", description, connectiontype as "connectionType", serv_ownr as "serviceOwners" from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}';`
+      );
+      if (!existDfRows?.length) {
+        return apiResponse.ErrorResponse(res, "Dataflow doesn't exist");
+      }
+      const existDf = existDfRows[0];
       const dFTimestamp = helper.getCurrentTime();
+      if (testFlag) testFlag = helper.stringToBoolean(testFlag) ? 1 : 0;
+      if (serviceOwners)
+        serviceOwners =
+          serviceOwners && Array.isArray(serviceOwners)
+            ? serviceOwners.join()
+            : "";
       const dFBody = [
         vendorID,
         dataStructure,
         description,
         locationName,
-        helper.stringToBoolean(testFlag) ? 1 : 0,
+        testFlag,
         connectionType,
         externalSystemName,
         dFTimestamp,
+        serviceOwners,
         dataflowId,
       ];
-      // insert dataflow schema into db
+      // update dataflow schema into db
       const updatedDF = await DB.executeQuery(
-        `update ${schemaName}.dataflow set vend_id=$1, type=$2, description=$3, src_loc_id=$4, testflag=$5, connectiontype=$6, externalsystemname=$7, updt_tm=$8 WHERE dataflowid=$9 returning *;`,
+        `update ${schemaName}.dataflow set vend_id=$1, type=$2, description=$3, src_loc_id=$4, testflag=$5, connectiontype=$6, externalsystemname=$7, updt_tm=$8, serv_ownr=$9 WHERE dataflowid=$10 returning *;`,
         dFBody
       );
       if (!updatedDF?.rowCount) {
         return apiResponse.ErrorResponse(res, "Something went wrong on update");
       }
       const dataflowObj = updatedDF.rows[0];
+      const comparisionObj = {
+        vendorID,
+        dataStructure,
+        description,
+        locationName,
+        testFlag,
+        connectionType,
+        serviceOwners,
+      };
+      const diffObj = helper.getdiffKeys(comparisionObj, existDf);
       const updatedLogs = await addDataflowHistory({
         dataflowId,
         externalSystemName,
         userId,
         config_json: dataflowObj,
+        diffObj,
+        existDf,
       });
 
       if (updatedLogs) {

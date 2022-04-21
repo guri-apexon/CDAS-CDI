@@ -460,6 +460,8 @@ export default function DSColumnTable({
     setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
   };
 
+  const haveHeader = parseInt(headerValue, 10) > 0;
+
   // const showColumnNameRequried = () => {
   //   messageContext.showErrorMessage("Column Name Should be there");
   // };
@@ -468,8 +470,11 @@ export default function DSColumnTable({
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
-          if (key === "columnName" || key === "position") {
-            if (headerValue < 1 || value.length >= 1) {
+          if (
+            (key === "columnName" && haveHeader) ||
+            (!haveHeader && key === "position")
+          ) {
+            if (value.length >= 1) {
               return {
                 ...row,
                 [key]: value,
@@ -537,35 +542,19 @@ export default function DSColumnTable({
 
   useEffect(() => {
     if (isSftp(locationType)) {
-      console.log("headerValue", headerValue);
-      if (headerValue) {
-        const data = allColumns.map((e) => {
-          if (e.accessor === "columnName" && headerValue === 0) {
-            e.hidden = true;
-          }
-          if (e.accessor === "position" && headerValue >= 1) {
-            e.hidden = true;
-          }
-          return e;
-        });
-        setMoreColumns(data);
+      if (haveHeader) {
+        setMoreColumns(allColumns);
       } else {
         const data = allColumns.map((e) => {
           if (e.accessor === "position") {
-            e.hidden = true;
+            e.hidden = false;
           }
           return e;
         });
         setMoreColumns(data);
       }
     } else {
-      const data = allColumns.map((e) => {
-        if (e.accessor === "position") {
-          e.hidden = true;
-        }
-        return e;
-      });
-      setMoreColumns(data);
+      setMoreColumns(allColumns);
     }
     const initRows = initialRows.map((e) => e.uniqueId);
     const formatRows = formattedData.map((e) => e.uniqueId);
@@ -618,6 +607,7 @@ export default function DSColumnTable({
             onRowCancel,
             onRowEdit,
             locationType,
+            haveHeader,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}
@@ -645,6 +635,7 @@ export default function DSColumnTable({
             newRows,
             disableSaveAll,
             changeHandler,
+            haveHeader,
           }}
         />
       </div>

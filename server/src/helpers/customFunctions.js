@@ -1,7 +1,8 @@
 const uuid = require("uuid");
 const crypto = require("crypto");
 const moment = require("moment");
-const { forEach } = require("lodash");
+// const { forEach } = require("lodash");
+const _ = require("lodash");
 
 // const joi = require("joi");
 
@@ -125,4 +126,34 @@ exports.validationBlank = (data) => {
   });
   // console.log(msg);
   return msg;
+};
+exports.getdiffKeys = (newObj, oldObj) => {
+  console.log("line 131");
+  if (
+    typeof newObj === "object" &&
+    !Array.isArray(newObj) &&
+    newObj !== null &&
+    typeof oldObj === "object" &&
+    !Array.isArray(oldObj) &&
+    oldObj !== null
+  ) {
+    return _.pickBy(newObj, (v, k) => !_.isEqual(oldObj[k], v));
+  }
+  return {};
+};
+
+exports.isSftp = (str) => {
+  return ["SFTP", "FTPS"].includes(str.toUpperCase());
+};
+
+exports.isPackageType = (str) => {
+  return ["7Z", "ZIP", "RAR", "SAS"].includes(str.toUpperCase());
+};
+
+exports.createCustomSql = (clname, tableName, condition) => {
+  sqlQuery = `Select ${clname.join(", ")} from ${tableName} ${
+    condition ? condition : "where 1=1"
+  }`;
+
+  return sqlQuery;
 };

@@ -21,9 +21,9 @@ import {
   DATAFLOW_UPDATE_API,
   ADD_PACKAGE,
 } from "../constants";
-import { getCookie } from "../utils/index";
+import { getUserId } from "../utils/index";
 
-const userId = getCookie("user.id");
+const userId = getUserId();
 
 const config = { headers: { userId } };
 
