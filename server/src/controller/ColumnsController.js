@@ -119,11 +119,12 @@ exports.updateColumns = async (req, res) => {
 
     const updateQuery = `UPDATE ${schemaName}.columndefinition
     SET "name"=$1, "datatype"=$2, primarykey=$3, "required"=$4, charactermin=$5, charactermax=$6, "position"=$7, "format"=$8, lov=$9, "unique"=$10, "variable"=$11, updt_tm=Now() WHERE datasetid=$12 AND columnid=$13`;
-    const selectQuery = `SELECT datasetid, columnid, "name", "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, requiredfield, "unique", variable, del_flg, insrt_tm, updt_tm
-    FROM ${schemaName}.columndefinition`;
+    const selectQuery = `SELECT "name", datasetid, columnid, "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable FROM ${schemaName}.columndefinition where columnid=$1`;
 
     if (values && values.length > 0) {
       for (let value of values) {
+        const columnid = value.dbColumnId.trim();
+
         const body = [
           value.columnName.trim() || null,
           value.dataType.trim() || null,
@@ -137,14 +138,14 @@ exports.updateColumns = async (req, res) => {
           value.unique === "Yes" ? 1 : 0,
           value.variableLabel.trim() || null,
           dsId,
-          value.dbColumnId.trim(),
+          columnid,
         ];
 
         await DB.executeQuery(updateQuery, body);
 
         const requestData = {
           datasetid: dsId,
-          columnid: value.dbColumnId.trim(),
+          columnid: columnid,
           variable: value.variableLabel.trim() || null,
           name: value.columnName.trim() || null,
           datatype: value.dataType.trim() || null,
@@ -160,30 +161,28 @@ exports.updateColumns = async (req, res) => {
 
         const config_json = JSON.stringify(requestData);
 
-        // const { rows: tempData } = await DB.executeQuery(selectQuery, [
-        //   value.dbColumnId,
-        // ]);
+        const tempData = await DB.executeQuery(selectQuery, [
+          requestData.columnid,
+        ]);
 
-        // const oldData = tempData[0];
+        const oldData = tempData?.rows[0];
 
-        // for (const key in requestData) {
-        //   if (`${requestData[key]}` != oldData[key]) {
-        //     if (oldData[key] != null) {
-        //       const historyVersion = await CommonController.addColumnHistory(
-        //         value.dbColumnId.trim(),
-        //         dsId,
-        //         dfId,
-        //         dpId,
-        //         userId,
-        //         config_json,
-        //         key,
-        //         oldData[key],
-        //         `${requestData[key]}`
-        //       );
-        //       if (!historyVersion) throw new Error("History not updated");
-        //     }
-        //   }
-        // }
+        for (const key in requestData) {
+          if (requestData[key] != oldData[key]) {
+            const historyVersion = await CommonController.addColumnHistory(
+              value.dbColumnId.trim(),
+              dsId,
+              dfId,
+              dpId,
+              userId,
+              config_json,
+              key,
+              oldData[key] || "",
+              requestData[key] || ""
+            );
+            if (!historyVersion) throw new Error("History not updated");
+          }
+        }
       }
 
       const datasetColumns = values;
