@@ -2053,22 +2053,33 @@ exports.updateDataflowConfig = async (req, res) => {
       dataflowId &&
       userId
     ) {
+      const { rows: existDfRows } = await DB.executeQuery(
+        `SELECT vend_id as "vendorID", src_loc_id as "locationName", testflag as "testFlag", type as "dataStructure", description, connectiontype as "connectionType", serv_ownr as "serviceOwners" from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}';`
+      );
+      if (!existDfRows?.length) {
+        return apiResponse.ErrorResponse(res, "Dataflow doesn't exist");
+      }
+      const existDf = existDfRows[0];
       const dFTimestamp = helper.getCurrentTime();
+      if (testFlag) testFlag = helper.stringToBoolean(testFlag) ? 1 : 0;
+      if (serviceOwners)
+        serviceOwners =
+          serviceOwners && Array.isArray(serviceOwners)
+            ? serviceOwners.join()
+            : "";
       const dFBody = [
         vendorID,
         dataStructure,
         description,
         locationName,
-        helper.stringToBoolean(testFlag) ? 1 : 0,
+        testFlag,
         connectionType,
         externalSystemName,
         dFTimestamp,
-        serviceOwners && Array.isArray(serviceOwners)
-          ? serviceOwners.join()
-          : "",
+        serviceOwners,
         dataflowId,
       ];
-      // insert dataflow schema into db
+      // update dataflow schema into db
       const updatedDF = await DB.executeQuery(
         `update ${schemaName}.dataflow set vend_id=$1, type=$2, description=$3, src_loc_id=$4, testflag=$5, connectiontype=$6, externalsystemname=$7, updt_tm=$8, serv_ownr=$9 WHERE dataflowid=$10 returning *;`,
         dFBody
@@ -2077,11 +2088,23 @@ exports.updateDataflowConfig = async (req, res) => {
         return apiResponse.ErrorResponse(res, "Something went wrong on update");
       }
       const dataflowObj = updatedDF.rows[0];
+      const comparisionObj = {
+        vendorID,
+        dataStructure,
+        description,
+        locationName,
+        testFlag,
+        connectionType,
+        serviceOwners,
+      };
+      const diffObj = helper.getdiffKeys(comparisionObj, existDf);
       const updatedLogs = await addDataflowHistory({
         dataflowId,
         externalSystemName,
         userId,
         config_json: dataflowObj,
+        diffObj,
+        existDf,
       });
 
       if (updatedLogs) {
