@@ -67,6 +67,7 @@ const defaultDataSQL = {
   isCustomSQL: "Yes",
   dataType: "Cumulative",
   clinicalDataType: null,
+  offsetColumns: [],
 };
 
 export const initialState = {
