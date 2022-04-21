@@ -38,6 +38,8 @@ module.exports = {
     externalSystemName,
     userId,
     config_json,
+    diffObj,
+    existDf,
   }) => {
     return new Promise((resolve, reject) => {
       if (!dataflowId) resolve(false);
@@ -54,42 +56,44 @@ module.exports = {
           `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`,
           values
         ).then(async (response) => {
-          // const addAuditLogQuery = `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid,datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8,$9)`;
-          // const auditValues = [
-          //   dataflowId,
-          //   null,
-          //   null,
-          //   version,
-          //   column,
-          //   old_val,
-          //   new_val,
-          //   userId,
-          //   currentTime,
-          // ];
-          // DB.executeQuery(addAuditLogQuery, auditValues)
-          //   .then(async (response) => {
-          //     resolve(version);
-          //   })
-          //   .catch((err) => {
-          //     resolve(version);
-          //   });
-
-          DB.executeQuery(
-            `INSERT INTO ${schemaName}.cdr_ta_queue
-          (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
-          VALUES($1, 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0)`,
-            [
-              dataflowId,
-              externalSystemName === "CDI" ? userId : externalSystemName,
-              version,
-            ]
-          )
-            .then((response) => {
-              resolve(version);
-            })
-            .catch((err) => {
-              resolve(false);
-            });
+          const anditLogsQueries = [];
+          Object.keys(diffObj).map((key) => {
+            anditLogsQueries.push(
+              DB.executeQuery(
+                `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid,datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8,$9)`,
+                [
+                  dataflowId,
+                  null,
+                  null,
+                  version,
+                  key,
+                  existDf[key],
+                  diffObj[key],
+                  userId,
+                  currentTime,
+                ]
+              )
+            );
+          });
+          Promise.all(anditLogsQueries).then((values) => {
+            console.log("valuesPromise", values);
+            DB.executeQuery(
+              `INSERT INTO ${schemaName}.cdr_ta_queue
+            (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+            VALUES($1, 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0)`,
+              [
+                dataflowId,
+                externalSystemName === "CDI" ? userId : externalSystemName,
+                version,
+              ]
+            )
+              .then((response) => {
+                resolve(version);
+              })
+              .catch((err) => {
+                resolve(false);
+              });
+          });
         });
       });
 
