@@ -3,7 +3,8 @@ import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
 
-import CDTList from "./CDI/CDT/CDTList";
+import CDTList from "./CDT/CDTList";
+import Callback from "./Callback/Callback";
 import Location from "./Location/Location";
 import SystemSettings from "./Settings/SystemSettings";
 
@@ -38,7 +39,7 @@ const CDIAdmin = () => {
       <div style={{ padding: 20 }}>
         {value === 0 && <Location />}
         {value === 1 && <CDTList />}
-        {value === 2 && <CDTList />}
+        {value === 2 && <Callback />}
         {value === 3 && <SystemSettings />}
       </div>
     </main>
