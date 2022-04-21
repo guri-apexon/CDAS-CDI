@@ -1,6 +1,5 @@
 const express = require("express");
 const DataflowController = require("../controller/DataflowController");
-const updateDataflowController = require("../controller/updateDataflowcontroller");
 
 const router = express.Router();
 
@@ -14,7 +13,6 @@ router.post("/activate", DataflowController.activateDataFlow);
 router.post("/inActivate", DataflowController.inActivateDataFlow);
 router.post("/syncNow", DataflowController.syncDataFlow);
 router.post("/update", DataflowController.updateDataFlow);
-// router.post("/update", updateDataflowController.updateDataFlow);
 
 router.post("/search-dataflow/:id", DataflowController.searchDataflow);
 router.get("/:id", DataflowController.fetchdataflowSource);

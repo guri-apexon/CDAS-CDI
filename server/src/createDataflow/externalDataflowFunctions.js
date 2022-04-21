@@ -85,7 +85,7 @@ exports.insertValidation = (req) => {
     });
   }
   if (description.length <= 30) {
-    console.log("success");
+    // console.log("success");
   } else {
     validate.push({
       text: " Description length , Max of 30 characters  ",
@@ -2117,20 +2117,11 @@ exports.dataflowUpdate = async (data, externalID, DFId, version) => {
     var ResponseBody = {};
     var dataflow = [];
     var newDfobj = {};
-    const dfObj = {
-      // DFTestname: "name",
-      // externalSystemName: "vend_id",
-      type: "type",
-      description: "description",
-      // protocolNumberStandard: "protocolNumberStandard",
-      active: "active",
-      configured: "configured",
-      exptDtOfFirstProdFile: "expt_fst_prd_dt",
-      testFlag: "testflag",
-      data_in_cdr: "data_in_cdr",
-      externalSystemName: "externalsystemname",
-      fsrstatus: "fsrstatus",
-    };
+    let studyId;
+    let vendorId;
+    let vName;
+    let ptNum;
+    let desc;
 
     const q1 = `select * from ${schemaName}.dataflow where externalid='${externalID}'`;
     let q3 = `select vend_nm from ${schemaName}.vendor where vend_id=$1;`;
@@ -2139,10 +2130,7 @@ exports.dataflowUpdate = async (data, externalID, DFId, version) => {
     if (data.vendorName) {
       let q2 = `select vend_id from ${schemaName}.vendor where vend_nm=$1;`;
       let { rows } = await DB.executeQuery(q2, [data.vendorName]);
-      if (rows.length > 0) {
-        columnArray.push("vend_id");
-        valueArry.push(rows[0].vend_id);
-      }
+      vendorId = rows[0].vend_id;
     }
     const dataflowData = await DB.executeQuery(q1);
 
@@ -2153,9 +2141,6 @@ exports.dataflowUpdate = async (data, externalID, DFId, version) => {
       dataflowData.rows[0].prot_id,
     ]);
 
-    let vName;
-    let ptNum;
-    let desc;
     if (data.vendorName) {
       vName = data.vendorName;
     } else {
@@ -2164,12 +2149,13 @@ exports.dataflowUpdate = async (data, externalID, DFId, version) => {
 
     if (data.protocolNumberStandard) {
       ptNum = data.protocolNumberStandard;
-      const { rows: studyRows } = await DB.executeQuery(
+      const studyRows = await DB.executeQuery(
         `select prot_id from study where prot_nbr_stnd ='${data.protocolNumberStandard}';`
       );
-      studyId = studyRows[0].prot_id;
-      columnArray.push("prot_id");
-      valueArry.push(studyId);
+
+      if (studyRows.rows.length > 0) {
+        studyId = studyRows.rows[0].prot_id;
+      }
     } else {
       ptNum = protocolData.rows[0].prot_nbr_stnd;
     }
@@ -2179,147 +2165,96 @@ exports.dataflowUpdate = async (data, externalID, DFId, version) => {
     } else {
       desc = dataflowData.rows[0].description;
     }
-
     var DFTestname = `${vName}-${ptNum}-${desc}`;
-
     var testFlag = helper.stringToBoolean(data.testFlag);
 
     if (testFlag === true) {
       DFTestname = "TST-" + DFTestname;
-      columnArray.push("name");
-      valueArry.push(DFTestname);
-    } else {
-      columnArray.push("name");
-      valueArry.push(DFTestname);
     }
 
-    // validation loop
-    for (let key in data) {
-      if (
-        key === "protocolNumberStandard" ||
-        key === "vendorName" ||
-        key === "type" ||
-        key === "name" ||
-        key === "externalSystemName"
-      ) {
-        if (
-          data[key] !== null &&
-          data[key] !== "" &&
-          data[key] !== undefined &&
-          typeof data[key] === "string"
-        ) {
-        } else {
-          msg.push({
-            text: ` ${key} is required and data type should be string `,
-          });
-          status = false;
-        }
-      }
+    let updateQueryDF = `UPDATE ${schemaName}.dataflow set updt_tm=NOW(), refreshtimestamp=NOW()`;
 
-      if (key === "description") {
-        if (
-          data[key] !== null &&
-          data[key] !== "" &&
-          data[key] !== undefined &&
-          typeof data[key] === "string"
-        ) {
-          if (data[key].length <= 30) {
-          } else {
-            msg.push({
-              text: ` Description length , Max of 30 characters `,
-            });
-            status = false;
-          }
-        } else {
-          msg.push({
-            text: ` ${key} is required and data type should be string `,
-          });
-          status = false;
-        }
-      }
-
-      if (key === "testFlag" || key === "active") {
-        keyValue = helper.stringToBoolean(data[key]);
-
-        if (
-          data[key] !== null &&
-          data[key] !== "" &&
-          data[key] !== undefined &&
-          typeof keyValue === "boolean"
-        ) {
-          // valueArry.push(data[key]);
-          // columnArray.push(dpObj[key]);
-        } else {
-          msg.push({
-            text: ` ${key} is required and data type should be boolean `,
-          });
-          status = false;
-        }
-      }
+    if (data.type) {
+      updateQueryDF += `,type=${data.type}`;
+    }
+    if (data.description) {
+      updateQueryDF += `,description=${data.description}`;
+    }
+    if (data.exptDtOfFirstProdFile) {
+      updateQueryDF += `,expt_fst_prd_dt=${data.exptDtOfFirstProdFile}`;
+    }
+    if (typeof data.testFlag != undefined) {
+      updateQueryDF += `,testflag=${
+        helper.stringToBoolean(data.testFlag) ? 1 : 0
+      }`;
+    }
+    if (typeof data.active != undefined) {
+      updateQueryDF += `,active=${helper.stringToBoolean(data.active) ? 1 : 0}`;
+    }
+    if (data.protocolNumberStandard) {
+      updateQueryDF += ` ,prot_id=${studyId}`;
+    }
+    if (data.vendorName) {
+      updateQueryDF += ` ,vend_id= ${vendorId}`;
+    }
+    if (data.protocolNumberStandard || data.type || data.vendorName) {
+      updateQueryDF += `,name=${DFTestname}`;
     }
 
-    for (let k in dfObj) {
-      if (data.hasOwnProperty(k)) {
-        if (data[k] != null && data[k] != undefined) {
-          columnArray.push(dfObj[k]);
-          valueArry.push(data[k]);
-        }
-      }
-    }
+    updateQueryDF += `where externalid='${externalID}';`;
 
-    columnArray.push("updt_tm", "refreshtimestamp");
-    valueArry.push(new Date(), new Date());
-    let Count = 1;
-    const resultData = columnArray.reduce((prev, cur) => {
-      prev += cur.toString() + " =$" + Count + ", ";
-      Count += 1;
-      return prev;
-    }, "");
-    const fData = resultData.slice(0, -2);
+    console.log(updateQueryDF);
 
-    let updateQueryDF = `UPDATE ${schemaName}.dataflow set ${fData} where externalid='${externalID}'`;
+    // columnArray.push("updt_tm", "refreshtimestamp");
+    // valueArry.push(new Date(), new Date());
+    // let Count = 1;
+    // const resultData = columnArray.reduce((prev, cur) => {
+    //   prev += cur.toString() + " =$" + Count + ", ";
+    //   Count += 1;
+    //   return prev;
+    // }, "");
+    // const fData = resultData.slice(0, -2);
 
-    if (msg.length > 0) {
-      return { validate: msg, status: status };
-    } else {
-      let dataFlowUpdate = await DB.executeQuery(updateQueryDF, [...valueArry]);
+    // // let updateQueryDF = `UPDATE ${schemaName}.dataflow set ${fData} `;
+    // let dataFlowUpdate = await DB.executeQuery(updateQueryDF, [...valueArry]);
 
-      ResponseBody.data_set = [];
-      newDfobj.timestamp = ts;
-      newDfobj.externalId = externalID;
-      newDfobj.dataSetid = DFId;
-      newDfobj.action = "Data Flow update successfully.";
-      // ResponseBody.data_set.push(newObj);
-      dataflow.push(newDfobj);
+    // let query = `UPDATE ${schemaName}.dataflow set type='datatests', type='${datatests}' where externalid='503'`;
 
-      const logAttribute = columnArray.slice(0, -2);
-      const logValue = valueArry.slice(0, -2);
+    ResponseBody.data_set = [];
+    newDfobj.timestamp = ts;
+    newDfobj.externalId = externalID;
+    newDfobj.dataSetid = DFId;
+    newDfobj.action = "Data Flow update successfully.";
+    // ResponseBody.data_set.push(newObj);
+    dataflow.push(newDfobj);
 
-      logAttribute.forEach(async (e, index) => {
-        const key = e;
-        const val = logValue[index];
+    // const logAttribute = columnArray.slice(0, -2);
+    // const logValue = valueArry.slice(0, -2);
 
-        await DB.executeQuery(
-          `INSERT INTO ${schemaName}.dataflow_audit_log
-                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-          [
-            DFId,
-            null,
-            null,
-            null,
-            version,
-            key,
-            dataflowData.rows[0][key],
-            val,
-            null,
-            new Date(),
-          ]
-        );
-      });
+    // logAttribute.forEach(async (e, index) => {
+    //   const key = e;
+    //   const val = logValue[index];
 
-      return { validate: dataflow, status: status };
-    }
+    //   await DB.executeQuery(
+    //     `INSERT INTO ${schemaName}.dataflow_audit_log
+    //                     ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+    //                     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+    //     [
+    //       DFId,
+    //       null,
+    //       null,
+    //       null,
+    //       version,
+    //       key,
+    //       dataflowData.rows[0][key],
+    //       val,
+    //       null,
+    //       new Date(),
+    //     ]
+    //   );
+    // });
+
+    // return { dataflow };
   } catch (e) {
     console.log(e);
   }
@@ -2363,8 +2298,6 @@ exports.packageUpdate = async (
             data[key] !== undefined &&
             typeof data[key] === "string"
           ) {
-            valueArry.push(data[key]);
-            columnArray.push(dpObj[key]);
           } else {
             msg.push({
               text: ` ${key} is required and data type should be string `,
@@ -2385,12 +2318,10 @@ exports.packageUpdate = async (
           ) {
             if (
               data[key] === "7Z" ||
-              data[key] == "ZIP" ||
-              data[key] == "RAR" ||
-              data[key] == "SAS"
+              data[key] === "ZIP" ||
+              data[key] === "RAR" ||
+              data[key] === "SAS"
             ) {
-              valueArry.push(data[key]);
-              columnArray.push(dpObj[key]);
             } else {
               msg.push({
                 text: " Package type's is required and Supported values : 7Z, ZIP, RAR, SAS ",
@@ -2414,15 +2345,14 @@ exports.packageUpdate = async (
             data[key] === null ||
             data[key] === undefined
           ) {
+            // console.log("kk");
           } else {
             if (
               data[key] === "7Z" ||
-              data[key] == "ZIP" ||
-              data[key] == "RAR" ||
-              data[key] == "SAS"
+              data[key] === "ZIP" ||
+              data[key] === "RAR" ||
+              data[key] === "SAS"
             ) {
-              valueArry.push(data[key]);
-              columnArray.push(dpObj[key]);
             } else {
               msg.push({
                 text: " Package type's is required and Supported values : 7Z, ZIP, RAR, SAS ",
@@ -2442,42 +2372,24 @@ exports.packageUpdate = async (
             data[key] !== undefined &&
             typeof data[key] === "string"
           ) {
-            valueArry.push(data[key]);
-            columnArray.push(dpObj[key]);
           } else {
             msg.push({
               text: ` ${key} is required and data type should be string `,
             });
             status = false;
-          }
-        }
-
-        if (
-          helper.stringToBoolean(data.noPackageConfig) === true &&
-          key === "sasXptMethod"
-        ) {
-          if (
-            data[key] === "" ||
-            data[key] === null ||
-            data[key] === undefined
-          ) {
-          } else {
-            valueArry.push(data[key]);
-            columnArray.push(dpObj[key]);
           }
         }
 
         if (key === "noPackageConfig") {
           keyValue = helper.stringToBoolean(data[key]);
+          console.log("status", key, keyValue);
 
           if (
-            data[key] !== null &&
-            data[key] !== "" &&
-            data[key] !== undefined &&
-            typeof keyValue === "boolean"
+            data[key] != null &&
+            data[key] != undefined
+            // &&
+            // typeof keyValue === "boolean"
           ) {
-            valueArry.push(data[key]);
-            columnArray.push(dpObj[key]);
           } else {
             msg.push({
               text: ` ${key} is required and data type should be boolean `,
@@ -2493,9 +2405,44 @@ exports.packageUpdate = async (
             data[key] === undefined
           ) {
           } else {
-            valueArry.push(data[key]);
-            columnArray.push(dpObj[key]);
           }
+        }
+      } else {
+        if (key === "noPackageConfig") {
+          if (helper.stringToBoolean(data[key]) === true) {
+          } else {
+            msg.push({
+              text: `For RDMBS, ${key} its always true `,
+            });
+            status = false;
+          }
+        }
+        if (
+          key === "type" ||
+          key === "sasXptMethod" ||
+          key === "path" ||
+          key === "name"
+        ) {
+          if (
+            data[key] === "" ||
+            data[key] === null ||
+            data[key] === undefined
+          ) {
+          } else {
+            msg.push({
+              text: `For RDMBS, ${key} its always blank `,
+            });
+            status = false;
+          }
+        }
+      }
+    }
+
+    for (let k in dpObj) {
+      if (data.hasOwnProperty(k)) {
+        if (data[k] != null && data[k] != undefined) {
+          columnArray.push(dpObj[k]);
+          valueArry.push(data[k]);
         }
       }
     }
@@ -2858,7 +2805,7 @@ exports.datasetUpdate = async (
 
     for (let k in dsObj) {
       if (data.hasOwnProperty(k)) {
-        if (data[k] !== null && data[k] !== undefined && data[k] !== "") {
+        if (data[k] != null && data[k] != undefined && data[k] != "") {
           columnArray.push(dsObj[k]);
           valueArry.push(data[k]);
         }

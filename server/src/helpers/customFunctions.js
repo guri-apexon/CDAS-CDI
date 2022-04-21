@@ -92,6 +92,12 @@ exports.validation = (data) => {
       val.value !== undefined &&
       typeof val.value === val.type
     ) {
+      if (val.maxLength && val.value.length > val.maxLength) {
+        msg.push({
+          text: ` ${val.key} should be less than ${val.maxLength} characters  `,
+          status: false,
+        });
+      }
       // console.log(val.key);
     } else {
       msg.push({

@@ -604,70 +604,139 @@ exports.updateDataFlow = async (req, res) => {
   try {
     var validate = [];
 
-    const dataFlowExternalId = req.body.externalID;
+    // console.log(req.body);
+    let {
+      active,
+      connectionType,
+      exptDtOfFirstProdFile,
+      vendorName,
+      protocolNumber,
+      type,
+      name,
+      externalID,
+      location,
+      testFlag,
+      userId,
+      description,
+      dataPackage,
+      dataStructure,
+      externalSystemName,
+      src_loc_id,
+      vend_id,
+      fsrstatus,
+      // connectiondriver,
+      data_in_cdr,
+      configured,
+      sponsorNameStandard,
+      sponsorName,
+      externalVersion,
+      protocolNumberStandard,
+    } = req.body;
 
-    let selectDataFlow = `select * from ${schemaName}.dataflow where externalid='${dataFlowExternalId}'`;
+    if (!externalID) {
+      return apiResponse.ErrorResponse(
+        res,
+        "External Id required Data flow Level"
+      );
+    }
+
+    if (vendorName) {
+      let q2 = `select vend_id from ${schemaName}.vendor where vend_nm=$1;`;
+      let { rows } = await DB.executeQuery(q2, [vendorName]);
+      if (rows.length <= 0) {
+        return apiResponse.ErrorResponse(
+          res,
+          "This Vendor Name is not exist in DB"
+        );
+      }
+    }
+
+    if (protocolNumberStandard) {
+      const studyRows = await DB.executeQuery(
+        `select prot_id from study where prot_nbr_stnd ='${protocolNumberStandard}';`
+      );
+      if (studyRows.rows.length <= 0) {
+        return apiResponse.ErrorResponse(
+          res,
+          "This Protocol Number doesn't exist "
+        );
+      }
+    }
+
+    const valData = [];
+    if (type != "") {
+      valData.push({ key: "Type ", value: type, type: "string" });
+    }
+    if (name != "") {
+      valData.push({ key: "name ", value: name, type: "string" });
+    }
+    if (externalSystemName != "") {
+      valData.push({
+        key: "externalSystemName ",
+        value: externalSystemName,
+        type: "string",
+      });
+    }
+    if (description != "") {
+      valData.push({
+        key: "description ",
+        value: description,
+        type: "string",
+        maxLength: 30,
+      });
+    }
+    if (testFlag != "" || testFlag != undefined) {
+      valData.push({
+        key: "testFlag ",
+        value: testFlag,
+        type: "boolean",
+      });
+    }
+    if (active != "" || testFlag != undefined) {
+      valData.push({
+        key: "active ",
+        value: active,
+        type: "boolean",
+      });
+    }
+
+    const returnData = helper.validation(valData);
+    // console.log(returnData);
+    if (returnData.length > 0) {
+      return apiResponse.ErrorResponse(res, returnData);
+    }
+
+    let selectDataFlow = `select * from ${schemaName}.dataflow where externalid='${externalID}'`;
     let { rows } = await DB.executeQuery(selectDataFlow);
 
-    // console.log(req.body);
-
     if (rows.length > 0) {
-      let {
-        active,
-        connectionType,
-        exptDtOfFirstProdFile,
-        vendorName,
-        protocolNumber,
-        type,
-        name,
-        externalID,
-        location,
-        testFlag,
-        userId,
-        description,
-        dataPackage,
-        dataStructure,
-        externalSystemName,
-        src_loc_id,
-        vend_id,
-        fsrstatus,
-        // connectiondriver,
-        data_in_cdr,
-        configured,
-        sponsorNameStandard,
-        sponsorName,
-        externalVersion,
-        protocolNumberStandard,
-      } = req.body;
-
       let selectVersion = `SELECT version from ${schemaName}.dataflow_version
         WHERE dataflowid = $1 order by version DESC limit 1`;
 
-      let { rows: version } = await DB.executeQuery(selectVersion, [
-        rows[0].dataflowid,
-      ]);
+      const DFId = rows[0].dataflowid;
+      let { rows: versions } = await DB.executeQuery(selectVersion, [DFId]);
 
-      const Ver = version[0].version;
+      const Ver = versions[0].version || 0;
       const DFVer = Ver + 1;
       const ConnectionType = rows[0].connectiontype;
-      const DFId = rows[0].dataflowid;
 
       var ResponseBody = {};
       ResponseBody.dataflow = [];
       //dataFlow update function Call
       var updateDataflow = await externalFunction.dataflowUpdate(
         req.body,
-        dataFlowExternalId,
+        externalID,
         DFId,
         DFVer
       );
 
-      if (updateDataflow.status == false) {
-        return apiResponse.ErrorResponse(res, updateDataflow.validate);
-      } else {
-        ResponseBody.dataflow.push(updateDataflow.validate);
-      }
+      // if (updateDataflow.validate?.length) {
+      //   return apiResponse.ErrorResponse(res, updateDataflow.validate);
+      // } else {
+      //   ResponseBody.dataflow.push(updateDataflow.dataflow);
+      // }
 
+      return;
       if (dataPackage && dataPackage.length > 0) {
         ResponseBody.data_packages = [];
         // if datapackage exists
@@ -689,6 +758,7 @@ exports.updateDataFlow = async (req, res) => {
               ConnectionType
             );
 
+            // console.log(updatePackage);
             if (updatePackage.status == false) {
               return apiResponse.ErrorResponse(res, updatePackage.validate);
             } else {
@@ -821,7 +891,6 @@ exports.updateDataFlow = async (req, res) => {
       );
       // return apiResponse.successResponseWithData(res, "Success", rows);
     } else {
-      console.log("insert Query");
       var dataRes = creatDataflow(req, res);
     }
   } catch (err) {
