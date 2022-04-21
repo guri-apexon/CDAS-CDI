@@ -185,11 +185,10 @@ exports.saveDatasetData = async (req, res) => {
         "New Dataset"
       );
       if (!historyVersion) throw new Error("History not updated");
-      return apiResponse.successResponseWithData(
-        res,
-        "Created Successfully",
-        response.rows[0]
-      );
+      return apiResponse.successResponseWithData(res, "Created Successfully", {
+        ...response.rows[0],
+        filePwd: values.filePwd,
+      });
     });
   } catch (err) {
     Logger.error("catch :storeDataset");
@@ -434,14 +433,33 @@ exports.getDatasetDetail = async (req, res) => {
     const { dfId, dpId, dsId } = req.body;
     const query = `SELECT * from ${schemaName}.dataset WHERE datasetid = $1`;
     Logger.info({ message: "getDatasetDetail" });
+    let filePwd;
+    try {
+      filePwd = await helper.readVaultData(`${dfId}/${dpId}/${dsId}`);
+    } catch {
+      Logger.error("catch :vault error");
+    }
     const datasetDetail = await DB.executeQuery(query, [dsId]);
 
     if (datasetDetail.rows[0].file_pwd === "Yes") {
-      const filePwd = helper.readVaultData(`${dfId}/${dpId}/${dsId}`);
       if (filePwd) {
-        datasetDetail.rows[0].file_pwd = filePwd.password;
+        return apiResponse.successResponseWithData(res, "Operation success", {
+          ...datasetDetail.rows[0],
+          file_pwd: filePwd.password,
+        });
       }
+      return apiResponse.successResponseWithData(
+        res,
+        "Operation success",
+        datasetDetail.rows[0]
+      );
+    } else if (datasetDetail.rows[0].file_pwd === "No") {
+      return apiResponse.successResponseWithData(res, "Operation success", {
+        ...datasetDetail.rows[0],
+        file_pwd: "",
+      });
     }
+
     return apiResponse.successResponseWithData(
       res,
       "Operation success",
