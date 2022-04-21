@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState, useContext } from "react";
 import compose from "@hypnosphi/recompose/compose";
-import { connect, useDispatch } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import { reduxForm, getFormValues, formValueSelector } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
@@ -55,6 +55,7 @@ const DataSetsFormBase = (props) => {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const [showPreview, setShowPreview] = useState(false);
+  const dataSets = useSelector((state) => state.dataSets);
   const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
   const handlePreview = () => {
     setShowPreview(true);
@@ -70,7 +71,11 @@ const DataSetsFormBase = (props) => {
       onChange(formValues);
     }
     if (formValues.isCustomSQL === "No") {
-      dispatch(getSQLTables("test"));
+      dispatch(
+        getSQLTables({
+          ...dataSets?.locationDetail,
+        })
+      );
       setShowPreview(false);
     }
   }, [formValues.isCustomSQL]);
@@ -202,7 +207,7 @@ const DataSetsFormBase = (props) => {
           )}
           {formValues.isCustomSQL === "No" && (
             <>
-              {/* <ReduxFormSelect
+              <ReduxFormSelect
                 name="tableName"
                 id="tableName"
                 label="Table Name"
@@ -214,8 +219,8 @@ const DataSetsFormBase = (props) => {
                 {sqlTables?.map((e) => (
                   <MenuItem value={e.tableName}>{e.tableName}</MenuItem>
                 ))}
-              </ReduxFormSelect> */}
-              <ReduxFormTextField
+              </ReduxFormSelect>
+              {/* <ReduxFormTextField
                 fullWidth
                 name="tableName"
                 id="tableName"
@@ -226,7 +231,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 255 }}
                 label="Table Name"
                 disabled={prodLock}
-              />
+              /> */}
               <ReduxFormTextField
                 fullWidth
                 name="filterCondition"

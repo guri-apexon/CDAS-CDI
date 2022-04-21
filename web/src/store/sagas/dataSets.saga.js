@@ -72,17 +72,16 @@ export function* fetchVLCData() {
   }
 }
 
-export function* fetchSQLTables() {
+export function* fetchSQLTables(action) {
   try {
-    const fetchSQLTable = yield call(
-      axios.post,
-      `${baseURL}/${SQLTABLESAPI}`,
-      {}
-    );
-    // console.log("fetchSQLTables", fetchSQLTables);
+    const fetchSQLTable = yield call(axios.post, `${baseURL}/${SQLTABLESAPI}`, {
+      ...action.payload,
+    });
+    console.log("fetchSQLTables", fetchSQLTables);
     yield put({
       type: FETCH_SQL_TABLES_SUCCESS,
       sqlTables: fetchSQLTable.data.data,
+      payload: action.payload,
     });
   } catch (e) {
     yield put({ type: FETCH_SQL_TABLES_FAILURE, message: e.message });
@@ -92,12 +91,13 @@ export function* fetchSQLTables() {
 export function* fetchSQLColumns(action) {
   try {
     const getColumns = yield call(axios.post, `${baseURL}/${SQLCOLUMNSAPI}`, {
-      tableName: action.tableName,
+      ...action.payload,
     });
     // console.log("fetchSQLColumns", getColumns);
     yield put({
       type: FETCH_SQL_COLUMNS_SUCCESS,
       sqlColumns: getColumns.data.data,
+      payload: action.payload,
     });
   } catch (e) {
     yield put({ type: FETCH_SQL_COLUMNS_FAILURE, message: e.message });

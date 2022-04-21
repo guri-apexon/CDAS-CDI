@@ -21,19 +21,13 @@ exports.listtables = async (res, req) => {
     let q = ``;
     switch (locationType?.toLowerCase()) {
       case "oracle":
-        q = `SELECT table_name as tableName FROM all_tables`;
-        break;
-      case "sql":
-        q = `SELECT name FROM sys.Tables`;
+        q = `SELECT table_name as tableName FROM all_tables FIRST 10`;
         break;
       case "sqlserver":
-        q = `SELECT name FROM sys.Tables`;
+        q = `SELECT name as "tableName" FROM sys.Tables LIMIT 10`;
         break;
-      case "mssql":
-        q = `SELECT name FROM sys.Tables`;
-        break;
-      case "ms sql":
-        q = `SELECT name FROM sys.Tables`;
+      case "sql server":
+        q = `SELECT name as "tableName" FROM sys.Tables LIMIT 10`;
         break;
       case "hive cdh":
         q = `show tables`;
@@ -42,25 +36,25 @@ exports.listtables = async (res, req) => {
         q = `show tables`;
         break;
       case "hivecdp":
-        q = `show tables`;
+        q = `show tables LIMIT 10`;
         break;
       case "hive cdp":
-        q = `show tables`;
+        q = `show tables LIMIT 10`;
         break;
       case "mysql":
-        q = `show tables`;
+        q = `show tables as "tableName" LIMIT 10`;
         break;
       case "my sql":
-        q = `show tables`;
+        q = `show tables as "tableName" LIMIT 10`;
         break;
       case "postgresql":
-        q = `SELECT table_name as tableName FROM information_schema.tables`;
+        q = `SELECT table_name as "tableName" FROM information_schema.tables LIMIT 10`;
         break;
       case "postgre sql":
-        q = `SELECT table_name as tableName FROM information_schema.tables`;
+        q = `SELECT table_name as "tableName" FROM information_schema.tables LIMIT 10`;
         break;
       default:
-        q = "SELECT table_name as tableName FROM information_schema.tables;";
+        q = `SELECT table_name as "tableName" FROM information_schema.tables LIMIT 10`;
         break;
     }
 
@@ -74,7 +68,6 @@ exports.listtables = async (res, req) => {
       res.res
     );
   } catch (error) {
-    console.log(error);
     Logger.error("catch :listtables");
     Logger.error(error);
     return apiResponse.ErrorResponse(res, error);

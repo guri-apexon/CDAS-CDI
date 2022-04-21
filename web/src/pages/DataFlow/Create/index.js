@@ -33,10 +33,12 @@ import {
   changeFormFieldData,
   hideErrorMessage,
   getLocationByType,
-  addDataFlow,
   setDataflowLocal,
 } from "../../../store/actions/DataFlowAction";
-import { getSQLColumns } from "../../../store/actions/DataSetsAction";
+import {
+  getSQLColumns,
+  getLocationDetails,
+} from "../../../store/actions/DataSetsAction";
 import DataPackages from "./Datapackage";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
@@ -350,6 +352,15 @@ const DataFlow = ({
       AddColumnDefinitions(columnDefinition);
     }
   }, [messageContext?.dataflowObj?.columnDefinition]);
+
+  useEffect(() => {
+    if (
+      selectedLocation?.src_loc_id &&
+      selectedLocation?.loc_typ !== ("SFTP" || "FTPS")
+    ) {
+      dispatch(getLocationDetails(selectedLocation?.src_loc_id));
+    }
+  }, [selectedLocation]);
 
   const RenderForm = () => {
     const formEl = (

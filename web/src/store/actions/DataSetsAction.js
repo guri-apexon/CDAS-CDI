@@ -108,16 +108,17 @@ export const getDatasetColumns = (dsId) => {
   };
 };
 
-export const getSQLTables = () => {
+export const getSQLTables = (payload) => {
   return {
     type: GET_SQL_TABLES,
+    payload,
   };
 };
 
-export const getSQLColumns = (table) => {
+export const getSQLColumns = (payload) => {
   return {
     type: GET_SQL_COLUMNS,
-    table,
+    payload,
   };
 };
 
