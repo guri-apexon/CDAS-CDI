@@ -9,7 +9,6 @@ const dataFlowRoute = require("./dataflow");
 const dataKindRoute = require("./datakind");
 const columnSetRoute = require("./columnSet");
 const datasetRoute = require("./dataset");
-const dbadaptorRoute = require("./dbadaptor");
 const systemSettingsRoute = require("./settings");
 const CommonController = require("../controller/CommonController");
 
@@ -34,7 +33,6 @@ router.use("/dataflow/", dataFlowRoute);
 router.use("/columnset/", columnSetRoute);
 router.use("/datakind/", dataKindRoute);
 router.use("/dataset/", datasetRoute);
-router.use("/dbadaptor/", dbadaptorRoute);
 router.use("/system-settings/", systemSettingsRoute);
 
 //fsr-connect API
