@@ -11,7 +11,7 @@ exports.getUserStudyList = function (req, res) {
     const userId = req.params.userId;
     const newQuery = `SELECT prot_id, protocolnumber, protocolnumberstandard, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
     FROM ${schemaName}.study_ingestion_dashboard
-    WHERE prot_id in (select prot_id from ${schemaName}.study_user where usr_id=$1) order by "priorityCount" desc, "ingestionCount" desc, "staleFilesCount" desc, sponsorname asc, protocolnumber asc`;
+    WHERE prot_id in (select prot_id from ${schemaName}.study_user where act_flg=1 and usr_id=$1) order by "priorityCount" desc, "ingestionCount" desc, "staleFilesCount" desc, sponsorname asc, protocolnumber asc`;
 
     Logger.info({ message: `getUserStudyList` });
 
