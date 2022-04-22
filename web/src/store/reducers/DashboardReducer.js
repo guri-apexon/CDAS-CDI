@@ -29,6 +29,7 @@ export const initialState = {
     projectcode: "",
     prot_id: "",
     protocolnumber: "",
+    protocolnumberstandard: "",
     protocolstatus: "",
     sponsorname: "",
     vCount: "",

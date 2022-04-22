@@ -18,24 +18,24 @@ import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import TextField from "apollo-react/components/TextField";
 
-import Progress from "../../../../components/Common/Progress/Progress";
-import { MessageContext } from "../../../../components/Providers/MessageProvider";
+import Progress from "../../../components/Common/Progress/Progress";
+import { MessageContext } from "../../../components/Providers/MessageProvider";
 import {
   TextFieldFilter,
   createSourceFromKey,
   createAutocompleteFilter,
   createStatusArraySearchFilter,
   createStringArraySearchFilter,
-  getCookie,
-} from "../../../../utils/index";
-import { getCDTList } from "../../../../store/actions/CDIAdminAction";
+  getUserId,
+} from "../../../utils/index";
+import { getCDTList } from "../../../store/actions/CDIAdminAction";
 import {
   activateDK,
   inActivateDK,
   getENSList,
   addDK,
   updateDK,
-} from "../../../../services/ApiServices";
+} from "../../../services/ApiServices";
 
 import "./CDTList.scss";
 
@@ -240,7 +240,7 @@ export default function CDTList() {
   // eslint-disable-next-line consistent-return
   const handleSave = async () => {
     const regexp = /^[a-zA-Z0-9-_]+$/;
-    const userId = getCookie("user.id");
+    const userId = getUserId();
 
     if (cName === "") {
       setReqNameError(true);

@@ -373,12 +373,12 @@ POST http://localhost:4001/v1/api/dataflow/hardDeleteNew HTTP/1.1
 content-type: application/json
 
 {
-"dataFlowId": "a0A0E000004k7m3UAA",
-"userId": "u1105372",
-"version": 2,
-"studyId": "",
-"dataFlowName": "",
-"fsrStatus": "Success"
+    "dataFlowId": "6crblbqnm1k8gv9v",
+    "dataFlowName": "25520_DEPRICATED_PLUGIN_VENDOR-a020E000005SwPJQA0-test desc-4",
+    "version": 1,
+    "studyId": "a020E000005SwPJQA0",
+    "fsrStatus": null,
+    "userId": "u1105372"
 }
 
 ### Get VLC Data
@@ -668,4 +668,11 @@ content-type: application/json
     "active": 0,
     "extrnl_sys_nm": "Externalsyst",
     "loc_alias_nm": "LocationName"
+}
+
+### get password of location 
+
+POST http://localhost:4001/v1/api/location/get_password/7u6g7ihq2trdfctu HTTP/1.1
+
+{
 }

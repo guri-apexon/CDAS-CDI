@@ -98,13 +98,15 @@ const DataFlowFormBase = (props) => {
     initialValues,
   } = props;
   const onChangeServiceOwner = (values) => {
-    change("serviceOwnerValue", values);
+    change("serviceOwner", values);
   };
   const openLocationModal = () => {
     setLocationOpen(true);
   };
   useEffect(() => {
-    console.log("initialValues", initialValues);
+    // console.log("initialValues::::", initialValues);
+    // changeFormField("", "description");
+    // dispatch(change("DataFlowForm", "description", ""));
     // if (initialValues?.selectedVendor?.value) {
     //   dispatch(
     //     change("DataFlowForm", "vendor", [initialValues?.selectedVendor?.value])
@@ -236,7 +238,9 @@ const DataFlowFormBase = (props) => {
               name="serviceOwner"
               label="Service Owners (Optional)"
               source={serviceOwners ?? []}
-              onChange={onChangeServiceOwner}
+              input={{
+                onChange: onChangeServiceOwner,
+              }}
               forcePopupIcon={true}
               fullWidth
               noOptionsText="No Service Owner"
@@ -260,7 +264,7 @@ const ReduxForm = compose(
 )(DataFlowFormBase);
 
 const DataFlowForm = connect((state) => ({
-  initialValues: state.dataFlow, // pull initial values from account reducer
+  // initialValues: state.dataFlow, // pull initial values from account reducer
   values: getFormValues("DataFlowForm")(state),
   locations: state.dataFlow.locations?.records,
   vendors: state.dataFlow.vendors?.records,

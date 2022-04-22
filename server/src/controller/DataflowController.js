@@ -13,11 +13,11 @@ exports.getStudyDataflows = async (req, res) => {
   try {
     const { protocolId } = req.body;
     if (protocolId) {
-      const query = `select
+      const query = `select distinct
       "studyId",
       "dataFlowId",
-      "dsCount",
-      "dpCount",
+      count(distinct datasetid) as "dsCount",
+      count(distinct datapackageid) as "dpCount",
       "studyName",
       "version",
       "dataFlowName",
@@ -37,12 +37,8 @@ exports.getStudyDataflows = async (req, res) => {
       select
       s.prot_id as "studyId",
       d.dataflowid as "dataFlowId",
-      row_number () over(partition by d.dataflowid,
-      d.prot_id
-      order by
-      dh."version" desc) as rnk,
-      dsetcount.dsCount as "dsCount",
-      dpackagecount.dpCount as "dpCount",
+      d3.datapackageid ,
+      d4.datasetid ,
       s.prot_nbr as "studyName",
       dh."version",
       d.name as "dataFlowName",
@@ -59,49 +55,20 @@ exports.getStudyDataflows = async (req, res) => {
       d.refreshtimestamp as "lastSyncDate"
       from
       ${schemaName}.dataflow d
-      inner join ${schemaName}.vendor v on
-      d.vend_id = v.vend_id
-      inner join ${schemaName}.source_location sl on
-      d.src_loc_id = sl.src_loc_id
-      inner join ${schemaName}.datapackage d2 on
-      d.dataflowid = d2.dataflowid
-      inner join ${schemaName}.study s on
-      d.prot_id = s.prot_id
-      inner join (
-      select
-      dataflowid,
-      max("version") as "version"
-      from
-      ${schemaName}.dataflow_version dv
-      group by
-      dataflowid ) dh on
-      dh.dataflowid = d.dataflowid
-      left join (
-      select
-      datapackageid,
-      COUNT(distinct datasetid) as dsCount
-      from
-      ${schemaName}.dataset d
-      group by
-      datapackageid) dsetcount on
-      (d2.datapackageid = dsetcount.datapackageid)
-      left join (
-      select
-      dataflowid,
-      COUNT(distinct datapackageid) as dpCount
-      from
-      ${schemaName}.datapackage d
-      group by
-      dataflowid) dpackagecount on
-      (d.dataflowid = dpackagecount.dataflowid)
-      where
-      s.prot_id = $1
+      inner join ${schemaName}.vendor v on d.vend_id = v.vend_id
+      inner join ${schemaName}.source_location sl on d.src_loc_id = sl.src_loc_id
+      inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
+      inner join ${schemaName}.study s on d.prot_id = s.prot_id
+      left join ${schemaName}.datapackage d3 on (d.dataflowid=d3.dataflowid)
+      left join ${schemaName}.dataset d4 on (d3.datapackageid=d4.datapackageid)
+      inner join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid = d.dataflowid
+      where s.prot_id = $1
       and coalesce (d.del_flg,0) != 1
       ) as df
-      where
-      df.rnk = 1`;
+      group by "studyId","dataFlowId","studyName","version","dataFlowName","type","dateCreated","vendorSource",description,adapter,status,"externalSourceSystem",
+      "fsrStatus","locationType","lastModified","lastSyncDate"`;
 
-      Logger.info({ message: "getStudyDataflows" });
+      // Logger.info({ message: "getStudyDataflows" });
       const $q1 = await DB.executeQuery(query, [protocolId]);
 
       const formatDateValues = await $q1.rows.map((e) => {
@@ -614,21 +581,27 @@ exports.createDataflow = async (req, res) => {
       sponsorName,
       externalVersion,
       protocolNumberStandard,
+      serviceOwners,
     } = req.body;
     var ResponseBody = {};
     if (!type && dataStructure) type = dataStructure;
 
-    if (vendorName !== null && protocolNumber !== null && description !== "") {
+    let studyId = null;
+    if (
+      vendorName !== null &&
+      protocolNumberStandard !== null &&
+      description !== ""
+    ) {
       const { rows: studyRows } = await DB.executeQuery(
-        `select prot_nbr_stnd from study where prot_id ='${protocolNumber}';`
+        `select prot_id from study where prot_nbr_stnd ='${protocolNumberStandard}';`
       );
       if (!studyRows?.length) {
         return apiResponse.ErrorResponse(res, "Study not found");
       }
       testFlag = helper.stringToBoolean(testFlag);
-      const protNbr = studyRows[0].prot_nbr_stnd;
+      studyId = studyRows[0].prot_id;
 
-      var DFTestname = `${vendorName}-${protNbr}-${description}`;
+      var DFTestname = `${vendorName}-${protocolNumberStandard}-${description}`;
       if (testFlag === true) {
         DFTestname = "TST-" + DFTestname;
       }
@@ -662,22 +635,25 @@ exports.createDataflow = async (req, res) => {
         helper.stringToBoolean(active) ? 1 : 0,
         configured || 0,
         exptDtOfFirstProdFile || null,
-        testFlag ? 1 : 0,
+        helper.stringToBoolean(testFlag) ? 1 : 0,
         data_in_cdr || "N",
         connectionType || null,
         externalSystemName || null,
         externalID || null,
         fsrstatus || null,
-        protocolNumber,
+        studyId,
         dFTimestamp,
+        serviceOwners && Array.isArray(serviceOwners)
+          ? serviceOwners.join()
+          : "",
       ];
       // insert dataflow schema into db
       let createDF = await DB.executeQuery(
         `insert into ${schemaName}.dataflow 
       (dataflowid,name,vend_id,type,description,src_loc_id,active,configured,expt_fst_prd_dt,
         testflag,data_in_cdr,connectiontype,externalsystemname,externalid,
-        fsrstatus,prot_id,insrt_tm,updt_tm, refreshtimestamp) VALUES 
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17) returning dataflowid as "dataFlowId", name as "dataFlowName", type as adapter, description, active as status, testflag, connectiontype as "locationType", fsrstatus as "fsrStatus", prot_id as "studyId", externalsystemname as "externalSourceSystem";`,
+        fsrstatus,prot_id,insrt_tm,updt_tm, refreshtimestamp, serv_ownr) VALUES 
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17, $18) returning dataflowid as "dataFlowId", name as "dataFlowName", type as adapter, description, active as status, testflag, connectiontype as "locationType", fsrstatus as "fsrStatus", prot_id as "studyId", externalsystemname as "externalSourceSystem";`,
         DFBody
       );
       let ts = new Date().toLocaleString();
@@ -954,7 +930,7 @@ exports.createDataflow = async (req, res) => {
     let config_json = {
       dataFlowId: uid,
       vendorName: vendorName,
-      protocolNumber: protocolNumber,
+      protocolNumber: studyId,
       type: type,
       name: name,
       externalID: externalID,
@@ -962,8 +938,8 @@ exports.createDataflow = async (req, res) => {
       connectionType: connectionType,
       location: src_loc_id,
       exptDtOfFirstProdFile: exptDtOfFirstProdFile,
-      testFlag: testFlag ? 1 : 0,
-      prodFlag: testFlag,
+      testFlag: helper.stringToBoolean(testFlag) ? 1 : 0,
+      prodFlag: helper.stringToBoolean(testFlag) ? 0 : 1,
       description: description,
       fsrstatus: fsrstatus,
       dataPackage,
@@ -1195,12 +1171,12 @@ exports.activateDataFlow = async (req, res) => {
     const newVersion = parseInt($q1.rows.length ? $q1.rows[0]?.version : 1) + 1;
 
     if ($q0.rows.map((e) => e.active).includes(1)) {
-      const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1`;
+      const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1 returning *`;
       const q3 = `INSERT INTO ${schemaName}.dataflow_audit_log
       (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
       VALUES($1, $2, Now(), $3, $4, $5, $6)`;
-      const q4 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
-      VALUES($1, $2, $3, Now())`;
+      const q4 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on, config_json)
+      VALUES($1, $2, $3, Now(), $4)`;
       const $q2 = await DB.executeQuery(q2, [dataFlowId]);
       const $q3 = await DB.executeQuery(q3, [
         dataFlowId,
@@ -1211,7 +1187,12 @@ exports.activateDataFlow = async (req, res) => {
         1,
       ]);
 
-      const $q4 = await DB.executeQuery(q4, [dataFlowId, newVersion, userId]);
+      const $q4 = await DB.executeQuery(q4, [
+        dataFlowId,
+        newVersion,
+        userId,
+        $q2.rows[0] || null,
+      ]);
 
       return apiResponse.successResponseWithData(res, "Operation success", {
         success: true,
@@ -1235,12 +1216,12 @@ exports.inActivateDataFlow = async (req, res) => {
     const $q0 = await DB.executeQuery(q0, [dataFlowId]);
     const newVersion = parseInt($q0.rows.length ? $q0.rows[0]?.version : 1) + 1;
 
-    const q1 = `UPDATE ${schemaName}.dataflow set active=0 WHERE dataflowid=$1`;
+    const q1 = `UPDATE ${schemaName}.dataflow set active=0 WHERE dataflowid=$1 returning *`;
     const q2 = `INSERT INTO ${schemaName}.dataflow_audit_log
     (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
     VALUES($1, $2, Now(), $3, $4, $5, $6)`;
-    const q3 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on)
-    VALUES($1, $2, $3, Now())`;
+    const q3 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on, config_json)
+    VALUES($1, $2, $3, Now(), $4)`;
 
     const $q1 = await DB.executeQuery(q1, [dataFlowId]);
     const $q2 = await DB.executeQuery(q2, [
@@ -1252,7 +1233,12 @@ exports.inActivateDataFlow = async (req, res) => {
       0,
     ]);
 
-    const $q3 = await DB.executeQuery(q3, [dataFlowId, newVersion, userId]);
+    const $q3 = await DB.executeQuery(q3, [
+      dataFlowId,
+      newVersion,
+      userId,
+      $q1.rows[0] || null,
+    ]);
 
     return apiResponse.successResponseWithData(res, "Operation success", {
       success: true,
@@ -1286,7 +1272,7 @@ exports.syncDataFlow = async (req, res) => {
 exports.getDataflowDetail = async (req, res) => {
   try {
     const dataFlowId = req.params.dataFlowId;
-    const searchQuery = `SELECT dataflowTbl.active, dataflowTbl.dataflowid, dataflowTbl.name, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID, locationTbl.loc_alias_nm as locationName
+    const searchQuery = `SELECT dataflowTbl.active, locationTbl.usr_nm as username,  dataflowTbl.dataflowid, dataflowTbl.name, dataflowTbl.serv_ownr as serviceOwner, dataflowTbl.data_in_cdr as "isSync", dataflowTbl.testflag, dataflowTbl.type,  dataflowTbl.description ,v.vend_id as vendorID,v.vend_nm as vendorName,locationTbl.loc_typ as loctyp ,dataflowTbl.expt_fst_prd_dt as exptfstprddt, locationTbl.src_loc_id as srclocID, locationTbl.loc_alias_nm as locationName
     from ${schemaName}.dataflow as dataflowTbl 
     JOIN ${schemaName}.source_location as locationTbl ON locationTbl.src_loc_id = dataflowTbl.src_loc_id
     JOIN ${schemaName}.vendor v on (v.vend_id = dataflowTbl.vend_id)
@@ -1737,8 +1723,8 @@ exports.updateDataFlow = async (req, res) => {
         connectionType: connectionType,
         location: src_loc_id,
         exptDtOfFirstProdFile: exptDtOfFirstProdFile,
-        testFlag: testFlag,
-        prodFlag: testFlag === 1 ? true : false,
+        testFlag: helper.stringToBoolean(testFlag) ? 1 : 0,
+        prodFlag: helper.stringToBoolean(testFlag) ? 0 : 1,
         description: description,
         fsrstatus: fsrstatus,
         dataPackage,
@@ -1836,23 +1822,24 @@ exports.fetchdataflowSource = async (req, res) => {
 
 exports.fetchdataflowDetails = async (req, res) => {
   try {
-    let { id: dataflow_id } = req.params;
+    let dataflow_id = req.params.id;
     let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
-    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, S.prot_nbr_stnd
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
+    inner Join ${schemaName}.study S on (d.prot_id = S.prot_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
-    inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
-    inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
-    inner join ${schemaName}.datakind dk on (dk.datakindid=d3.datakindid)
-      inner join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
-      where d.dataflowid ='${dataflow_id}'`;
+    left join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
+    left join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    left join ${schemaName}.datakind dk on (dk.datakindid=d3.datakindid)
+    left join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
+    where d.dataflowid ='${dataflow_id}'`;
     Logger.info({
       message: "fetchdataflowDetails",
       dataflow_id,
     });
     let { rows } = await DB.executeQuery(q);
-    if (!rows.length) {
+    if (!rows.length || rows.length === 0) {
       return apiResponse.ErrorResponse(
         res,
         "There is no dataflow exist with this id"
@@ -1897,7 +1884,7 @@ exports.fetchdataflowDetails = async (req, res) => {
               footerRowNumber: el.footerrownumber,
               escapeCode: el.escapecode,
               delimiter: el.delimiter,
-              dataKind: el.datakind,
+              dataKind: el.datakindid,
               naming_convention: el.naming_convention,
               columnDefinition: [],
               active: el.active,
@@ -1929,7 +1916,7 @@ exports.fetchdataflowDetails = async (req, res) => {
     }
     let myobj = {
       vendorName: rows[0].vend_nm,
-      protocolNumber: rows[0].prot_id,
+      protocolNumberStandard: rows[0].prot_nbr_stnd,
       type: rows[0].type,
       name: rows[0].dataflowname,
       externalID: rows[0].externalid,
@@ -1967,34 +1954,37 @@ exports.hardDeleteNew = async (req, res) => {
   try {
     const { dataFlowId, userId, version, studyId, dataFlowName, fsrStatus } =
       req.body;
-    const curDate = helper.getCurrentTime();
-    const $q2 = `UPDATE ${schemaName}.dataflow SET updt_tm=$2, del_flg=$3 WHERE dataflowid=$1`;
-    const $q3 = `INSERT INTO ${schemaName}.dataflow_action (df_id, df_nm, action_typ, df_status, action_usr, insrt_tmstmp, prot_id, df_versn)
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+    const $q2 = `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), del_flg=1 WHERE dataflowid=$1`;
     const $q4 = `INSERT INTO ${schemaName}.dataflow_audit_log (dataflowid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt) 
-    VALUES($1, $2, $3, $4, $5, $6, $7)`;
+    VALUES($1, $2, $3, $4, $5, $6, Now())`;
 
     Logger.info({ message: "hardDeleteNew" });
-    const q2 = await DB.executeQuery($q2, [dataFlowId, curDate, 1]);
+    const q2 = await DB.executeQuery($q2, [dataFlowId]);
     const q4 = await DB.executeQuery($q4, [
       dataFlowId,
       version,
       "del_flg",
-      null,
+      0,
       1,
       userId,
-      curDate,
     ]);
-    const q3 = await DB.executeQuery($q3, [
-      dataFlowId,
-      dataFlowName,
-      "delete",
-      fsrStatus,
-      userId,
-      curDate,
-      studyId,
-      version,
-    ]);
+    // await DB.executeQuery(
+    //   `DELETE from ${schemaName}.dataflow_action WHERE df_id = $1`,
+    //   [dataFlowId]
+    // );
+    const q3 = await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_action (df_id, df_nm, action_typ, df_status, action_usr, insrt_tmstmp, prot_id, df_versn)
+      VALUES($1, $2, $3, $4, $5, Now(), $6, $7)`,
+      [
+        dataFlowId,
+        dataFlowName,
+        "delete",
+        fsrStatus || "QUEUE", //"temp", //fsrStatus, // we are not getting any fsr status as of now
+        userId,
+        studyId,
+        version,
+      ]
+    );
     return apiResponse.successResponseWithData(res, "Operation success", {
       success: true,
     });
@@ -2016,7 +2006,7 @@ exports.updateDataflowConfig = async (req, res) => {
       locationName,
       locationType,
       protocolNumberStandard,
-      serviceOwnerValue,
+      serviceOwners,
       testFlag,
       vendorID,
       dataflowId,
@@ -2030,32 +2020,58 @@ exports.updateDataflowConfig = async (req, res) => {
       dataflowId &&
       userId
     ) {
+      const { rows: existDfRows } = await DB.executeQuery(
+        `SELECT vend_id as "vendorID", src_loc_id as "locationName", testflag as "testFlag", type as "dataStructure", description, connectiontype as "connectionType", serv_ownr as "serviceOwners" from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}';`
+      );
+      if (!existDfRows?.length) {
+        return apiResponse.ErrorResponse(res, "Dataflow doesn't exist");
+      }
+      const existDf = existDfRows[0];
       const dFTimestamp = helper.getCurrentTime();
+      if (testFlag) testFlag = helper.stringToBoolean(testFlag) ? 1 : 0;
+      if (serviceOwners)
+        serviceOwners =
+          serviceOwners && Array.isArray(serviceOwners)
+            ? serviceOwners.join()
+            : "";
       const dFBody = [
         vendorID,
         dataStructure,
         description,
         locationName,
-        helper.stringToBoolean(testFlag) ? 1 : 0,
+        testFlag,
         connectionType,
         externalSystemName,
         dFTimestamp,
+        serviceOwners,
         dataflowId,
       ];
-      // insert dataflow schema into db
+      // update dataflow schema into db
       const updatedDF = await DB.executeQuery(
-        `update ${schemaName}.dataflow set vend_id=$1, type=$2, description=$3, src_loc_id=$4, testflag=$5, connectiontype=$6, externalsystemname=$7, updt_tm=$8 WHERE dataflowid=$9 returning *;`,
+        `update ${schemaName}.dataflow set vend_id=$1, type=$2, description=$3, src_loc_id=$4, testflag=$5, connectiontype=$6, externalsystemname=$7, updt_tm=$8, serv_ownr=$9 WHERE dataflowid=$10 returning *;`,
         dFBody
       );
       if (!updatedDF?.rowCount) {
         return apiResponse.ErrorResponse(res, "Something went wrong on update");
       }
       const dataflowObj = updatedDF.rows[0];
+      const comparisionObj = {
+        vendorID,
+        dataStructure,
+        description,
+        locationName,
+        testFlag,
+        connectionType,
+        serviceOwners,
+      };
+      const diffObj = helper.getdiffKeys(comparisionObj, existDf);
       const updatedLogs = await addDataflowHistory({
         dataflowId,
         externalSystemName,
         userId,
         config_json: dataflowObj,
+        diffObj,
+        existDf,
       });
 
       if (updatedLogs) {

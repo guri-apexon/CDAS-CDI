@@ -20,8 +20,11 @@ import {
   ReduxFormSwitch,
   ReduxFormSelect,
   ReduxFormTextField,
+  ReduxFormPassword,
 } from "../../../../components/FormComponents/FormComponents";
-import dataSetsValidation from "../../../../components/FormComponents/DataSetsValidation";
+import dataSetsValidation, {
+  passwordWarnings,
+} from "../../../../components/FormComponents/DataSetsValidation";
 
 import { fileTypes, delimeters, loadTypes } from "../../../../utils";
 
@@ -276,12 +279,10 @@ const DataSetsFormBase = (props) => {
                 required
               />
               {formValues === "Excel" && (
-                <ReduxFormTextField
-                  fullWidth
+                <ReduxFormPassword
                   name="filePwd"
                   size="small"
                   type="password"
-                  inputProps={{ minLength: 8, maxLength: 30 }}
                   label="File Password"
                 />
               )}
@@ -333,22 +334,51 @@ const ReduxForm = compose(
   reduxForm({
     form: "CreateDataSetsForm",
     validate: dataSetsValidation,
+    warn: passwordWarnings,
   }),
   connect((state) => ({ values: getFormValues("CreateDataSetsForm")(state) }))
 )(DataSetsFormBase);
 
 const selector = formValueSelector("CreateDataSetsForm");
-const CreateDataSetsForm = connect((state) => ({
-  initialValues: state.dataSets.formData, // pull initial values from account reducer
-  enableReinitialize: true,
-  formValues: selector(state, "fileType"),
-  defaultDelimiter: state.dataSets.defaultDelimiter,
-  defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
-  defaultQuote: state.dataSets.defaultQuote,
-  defaultHeaderRowNumber: state.dataSets.defaultHeaderRowNumber,
-  defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
-  defaultLoadType: state.dataSets.defaultLoadType,
-  datakind: state.dataSets.datakind?.records,
-}))(ReduxForm);
+const CreateDataSetsForm = connect((state, ownProps) => {
+  const formDataStore = state.dataSets.formData;
+  const initialValues = {
+    ...formDataStore,
+    clinicalDataType:
+      ownProps.initialValues.clinicalDataType || formDataStore.clinicalDataType,
+    fileType: ownProps.initialValues.fileType || formDataStore.fileType,
+    transferFrequency:
+      ownProps.initialValues.transferFrequency ||
+      formDataStore.transferFrequency,
+    headerRowNumber:
+      typeof ownProps.initialValues.headerRowNumber !== "undefined"
+        ? ownProps.initialValues.headerRowNumber
+        : formDataStore.headerRowNumber,
+    fileNamingConvention:
+      ownProps.initialValues.fileNamingConvention ||
+      formDataStore.fileNamingConvention,
+    delimiter: ownProps.initialValues.delimiter || formDataStore.delimiter,
+    escapeCharacter:
+      ownProps.initialValues.escapeCharacter || formDataStore.escapeCharacter,
+    loadType: ownProps.initialValues.loadType || formDataStore.loadType,
+    quote: ownProps.initialValues.quote || formDataStore.quote,
+    datasetName:
+      ownProps.initialValues.datasetName || formDataStore.datasetName || "",
+    path: ownProps.initialValues.path || formDataStore.path || "",
+  };
+  // console.log("state.dataSets", initialValues, ownProps.initialValues);
+  return {
+    initialValues, // pull initial values from account reducer
+    enableReinitialize: true,
+    formValues: selector(state, "fileType"),
+    defaultDelimiter: state.dataSets.defaultDelimiter,
+    defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
+    defaultQuote: state.dataSets.defaultQuote,
+    defaultHeaderRowNumber: state.dataSets.defaultHeaderRowNumber,
+    defaultFooterRowNumber: state.dataSets.defaultFooterRowNumber,
+    defaultLoadType: state.dataSets.defaultLoadType,
+    datakind: state.dataSets.datakind?.records,
+  };
+})(ReduxForm);
 
 export default CreateDataSetsForm;

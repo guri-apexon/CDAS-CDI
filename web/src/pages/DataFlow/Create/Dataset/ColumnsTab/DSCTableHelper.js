@@ -159,9 +159,13 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
-  const { editMode } = row;
-  const errorText =
-    checkAlphaNumericFileName(row[key]) || checkRequired(row[key]);
+  const { editMode, haveHeader } = row;
+  let errorText;
+  if (haveHeader) {
+    errorText = checkRequired(row[key]) || checkAlphaNumeric(row[key]);
+  } else {
+    errorText = checkAlphaNumeric(row[key]);
+  }
   return editMode ? (
     <TextField
       size="small"
@@ -178,6 +182,33 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       }
       helperText={!row.isInitLoad || row.isHavingColumnName ? errorText : ""}
       {...fieldStyles}
+    />
+  ) : (
+    row[key]
+  );
+};
+
+export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
+  const { editMode, haveHeader } = row;
+  let errorText;
+  if (!haveHeader) {
+    errorText = checkRequired(row[key]) || checkNumeric(row[key]);
+  } else {
+    errorText = checkNumeric(row[key]);
+  }
+
+  return editMode ? (
+    <TextField
+      size="small"
+      fullWidth
+      value={row[key]}
+      onChange={(e) =>
+        row.editRow(row.uniqueId, key, e.target.value, errorText)
+      }
+      disabled={row.dsProdLock}
+      error={!row.isInitLoad && errorText}
+      helperText={!row.isInitLoad ? errorText : ""}
+      {...fieldStylesNo}
     />
   ) : (
     row[key]
@@ -303,10 +334,11 @@ export const columns = [
   {
     header: "Position",
     accessor: "position",
-    customCell: EditableCell,
-    sortFunction: compareStrings,
+    customCell: PositionEditableCell,
+    sortFunction: compareNumbers,
     filterFunction: createStringSearchFilter("position"),
     filterComponent: TextFieldFilter,
+    hidden: true,
   },
   {
     header: "Format",
@@ -412,6 +444,7 @@ export const CustomHeader = ({
   disableSaveAll,
   toggleFilters,
   changeHandler,
+  haveHeader,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -477,13 +510,13 @@ export const CustomHeader = ({
       )}
       {isSftp(locationType) && (
         <Tooltip
-          title={!isEditAll && "Import dataset column settings"}
+          title={(!isEditAll || haveHeader) && "Import dataset column settings"}
           disableFocusListener
         >
           <IconButton
             color="primary"
             size="small"
-            disabled={isEditAll}
+            disabled={isEditAll || !haveHeader}
             onClick={changeHandler}
           >
             <Upload />

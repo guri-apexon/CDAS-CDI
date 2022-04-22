@@ -14,7 +14,7 @@ import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
 import Progress from "../../../components/Common/Progress/Progress";
 import { downloadTemplate } from "../../../utils/downloadData";
-import { checkHeaders, formatData, isSftp } from "../../../utils/index";
+import { checkHeaders, formatDataNew, isSftp } from "../../../utils/index";
 
 const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const messageContext = useContext(MessageContext);
@@ -22,7 +22,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
-  const { datasetColumns, sqlColumns } = dataSets;
+  const { datasetColumns, sqlColumns, haveHeader } = dataSets;
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
@@ -136,16 +136,21 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        const newData = formatData(importedData, protocolnumber);
-        // eslint-disable-next-line no-unused-expressions
-        if (newData.length > 0) {
-          setFormattedData(newData);
-          setIsImportReady(true);
-        } else {
+        const newData = formatDataNew(importedData, protocolnumber);
+        console.log("newData", newData);
+        if (newData?.headerNotMatching) {
           messageContext.showErrorMessage(
             `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
           );
           handleDelete();
+        } else if (newData?.data?.length === 0) {
+          messageContext.showErrorMessage(
+            `Please add some proper data and try with import`
+          );
+          handleDelete();
+        } else if (newData?.data?.length > 0) {
+          setFormattedData(newData.data);
+          setIsImportReady(true);
         }
       } else {
         messageContext.showErrorMessage(
@@ -155,6 +160,14 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       }
     }
   }, [importedData]);
+
+  useEffect(() => {
+    if (!haveHeader) {
+      messageContext.showErrorMessage(
+        `Import is not available for files with no header row.`
+      );
+    }
+  }, [haveHeader]);
 
   useEffect(() => {
     if (datasetColumns.length > 0) {
@@ -195,7 +208,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   return (
     <>
       {loading && <Progress />}
-      {!showColumns && (
+      {!showColumns && !loading && (
         <div className="tab colums-tab">
           <p className="title">Configure Dataset Column Settings</p>
           <p className="sub-title">Select an option</p>
@@ -206,14 +219,20 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
                 selectedMethod === "fileUpload" ? "active card" : "card"
               }
             >
-              <div className={dsTestLock || dsProdLock ? "disable-card" : ""}>
+              <div
+                className={
+                  dsTestLock || dsProdLock || !haveHeader ? "disable-card" : ""
+                }
+              >
                 <Radio
                   value="fileUpload"
                   label="Upload dataset column settings"
                   onClick={handleChange}
                   checked={selectedMethod === "fileUpload"}
                 />
+
                 <Link onClick={downloadTemplate}>Download Excel Template</Link>
+
                 <div className="upload-box">
                   <FileUpload
                     value={selectedFile}
