@@ -188,7 +188,7 @@ const DataFlow = ({
         testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
         exptDtOfFirstProdFile: FormValues.firstFileDate,
-        locationType: FormValues.locationType,
+        connectionType: FormValues.locationType,
         protocolNumberStandard: selectedCard.protocolnumberstandard,
         // protocolNumber: selectedCard.prot_id,
         serviceOwners: FormValues.serviceOwner?.map((x) => x.value) || [],
