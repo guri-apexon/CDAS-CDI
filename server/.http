@@ -698,13 +698,13 @@ POST http://localhost:4001/v1/api/dataset/getTables HTTP/1.1
 Content-Type: application/json
 
 {
-    "externalSystem": "TDSE",
-    "driverName": "org.postgresql.Driver",
-    "locationType": "PostgreSQL",
-    "connectionUserName": "ycdas1d",
-    "pswd": "Yes",
-    "connectionUrl": "jdbc:postgresql://ca2updb249vd:5433/cdas1d",
-    "connectionPassword": "ycdas1d@cdas1d"
+      "locationType":"oracle",
+      "tableName":"dataflow",
+      "connectionPassword":"ParkWay432",
+      "connectionUserName":"IDP",
+      "connectionUrl":"jdbc:oracle:thin:@db-cdr1d:1521:CDR1D",
+      "driverName":"oracle.jdbc.driver.OracleDriver",
+      "externalSystem":"CDR"
 }
 
 ### get Web API Columns
