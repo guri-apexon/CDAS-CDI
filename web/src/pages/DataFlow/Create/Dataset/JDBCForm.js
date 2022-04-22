@@ -101,12 +101,14 @@ const JDBCForm = forwardRef((props, ref) => {
   const [dsActive, setDsActive] = useState(true);
   const [datasetName, setDatasetName] = useState("");
   const [clinicalDataType, setClinicalDataType] = useState(null);
+  const [dataKindReady, setDatakindReady] = useState(true);
   const [isCustomSQL, setIsCustomSQL] = useState("Yes");
   const [sQLQuery, setSQLQuery] = useState("");
   const [tableName, setTableName] = useState(null);
   const [filterCondition, setFilterCondition] = useState("");
   const [dataType, setDataType] = useState("Cumulative");
   const [offsetColumn, setOffsetColumn] = useState(null);
+  const [triggeredSqlData, setTriggerSqlData] = useState(false);
   const messageContext = useContext(MessageContext);
 
   const { datakind, selectedDataset, previewSQL, sqlTables, sqlColumns } =
@@ -171,14 +173,7 @@ const JDBCForm = forwardRef((props, ref) => {
     }
   }, [datasetId]);
 
-  useEffect(() => {
-    setLoading(false);
-    if (isPreviewReady && previewSQL?.length && isCustomSQL === "No") {
-      moveNext();
-    }
-  }, [previewSQL]);
-
-  const submitJDBCForm = () => {
+  const submitJDBCForm = (ready = false) => {
     const data = {
       datasetName,
       active: dsActive,
@@ -190,9 +185,28 @@ const JDBCForm = forwardRef((props, ref) => {
       offsetColumn: offsetColumn?.length ? offsetColumn[0] : "",
       dfTestFlag,
       conditionalExpression: filterCondition || "",
+      sqlReady: ready,
     };
     onSubmit(data);
   };
+  useEffect(() => {
+    if (sqlColumns?.length && triggeredSqlData) {
+      submitJDBCForm(true);
+      setTriggerSqlData(false);
+    }
+  }, [sqlColumns]);
+
+  useEffect(() => {
+    setLoading(false);
+    if (isPreviewReady && previewSQL?.length) {
+      if (isCustomSQL.toLowerCase() === "no") {
+        moveNext();
+      } else if (isCustomSQL.toLowerCase() === "yes") {
+        submitJDBCForm(true);
+      }
+    }
+  }, [previewSQL]);
+
   const handlePreview = async () => {
     if (sQLQuery === "") {
       messageContext.showErrorMessage(`Please add your query to proceed.`);
@@ -208,7 +222,6 @@ const JDBCForm = forwardRef((props, ref) => {
       );
       return false;
     }
-    submitJDBCForm();
     setIsPreviewReady(true);
     setLoading(true);
     await dispatch(getPreviewSQL(sQLQuery));
@@ -263,13 +276,30 @@ const JDBCForm = forwardRef((props, ref) => {
   useEffect(() => {
     if (dataType === "Incremental") {
       dispatch(getSQLColumns(tableName));
+      setTriggerSqlData(true);
     }
   }, [dataType]);
 
   useEffect(() => {
     if (initialValue) {
+      if (initialValue.dataKind) {
+        setDatakindReady(false);
+        setTimeout(() => {
+          const dataKindId =
+            datakind.records.find((x) => x.name === initialValue.dataKind)
+              ?.value || null;
+          console.log(
+            "initialValue.dataKind",
+            initialValue.dataKind,
+            dataKindId
+          );
+          if (dataKindId) {
+            setClinicalDataType([dataKindId]);
+          }
+          setDatakindReady(true);
+        }, 100);
+      }
       if (initialValue.datasetName) setDatasetName(initialValue.datasetName);
-      if (initialValue.dataKind) setClinicalDataType([initialValue.dataKind]);
       if (initialValue.customQuery) setIsCustomSQL(initialValue.customQuery);
       if (initialValue.customSql) setSQLQuery(initialValue.customSql);
       if (initialValue.tableName) setTableName(initialValue.tableName);
@@ -282,7 +312,12 @@ const JDBCForm = forwardRef((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     handleSubmit() {
-      submitJDBCForm();
+      if (isCustomSQL === "No" && tableName) {
+        dispatch(getSQLColumns(tableName));
+        setTriggerSqlData(true);
+      } else {
+        submitJDBCForm();
+      }
     },
     handleCancel() {
       setDefaultValues();
@@ -359,19 +394,21 @@ const JDBCForm = forwardRef((props, ref) => {
               />
             </Grid>
             <Grid item md={6}>
-              <Autocomplete
-                name="clinicalDataType"
-                value={clinicalDataType}
-                label="Clinical Data Type"
-                source={datakind.records}
-                className="smallSize_autocomplete"
-                onChange={handleCDT}
-                variant="search"
-                singleSelect
-                required
-                size="small"
-                fullWidth
-              />
+              {dataKindReady && (
+                <Autocomplete
+                  name="clinicalDataType"
+                  value={clinicalDataType}
+                  label="Clinical Data Type"
+                  source={datakind.records}
+                  className="smallSize_autocomplete"
+                  onChange={handleCDT}
+                  variant="search"
+                  singleSelect
+                  required
+                  size="small"
+                  fullWidth
+                />
+              )}
             </Grid>
           </Grid>
           <Select
