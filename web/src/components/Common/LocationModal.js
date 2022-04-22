@@ -299,13 +299,14 @@ const LocationModal = (props) => {
       const checkInDf = await checkLocationExistsInDataFlow(values.locationID);
       if (checkInDf > 0) {
         setExistErr(locationExistInDFMsg);
+        return null;
       }
-      return null;
     }
     setExistErr("");
     dispatch(saveLocationData(values));
     return null;
   };
+
   useEffect(() => {
     if (error || success || existErr) {
       setTimeout(() => {
