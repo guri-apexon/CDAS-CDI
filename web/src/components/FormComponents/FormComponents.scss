@@ -1,0 +1,100 @@
+.custom-password-input-container {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  .custom-label {
+    color: #444444;
+    display: block;
+    font-size: 14px;
+    line-height: 1.5;
+    font-family: Proxima Nova, Nunito Sans, sans-serif;
+    font-weight: 400;
+  }
+  .custom-password-input {
+    margin-top: 5px;
+    color: rgba(0, 0, 0, 0.87);
+    cursor: text;
+    display: inline-flex;
+    position: relative;
+    font-size: 16px;
+    box-sizing: border-box;
+    align-items: center;
+    font-family: Proxima Nova, Nunito Sans, sans-serif;
+    font-weight: 400;
+    line-height: 1.1876em;
+    border-radius: 4px;
+    background-color: #ffffff;
+    width: 100%;
+
+    &:focus-visible {
+      outline: none !important;
+    }
+
+    input {
+      font-size: 14px;
+      line-height: 30px !important;
+      padding-top: 0px !important;
+      padding-bottom: 0px !important;
+      font: inherit;
+      color: #000000;
+      width: 100%;
+      border: 1px solid #d9d9d9;
+      margin: 0;
+      display: block;
+      padding: 8px 8px 8px 7px;
+      min-width: 0;
+      background: none;
+      box-sizing: border-box;
+      border-radius: 4px;
+      animation-name: mui-auto-fill-cancel;
+      letter-spacing: inherit;
+      animation-duration: 10ms;
+      transition-duration: 0.4s;
+      transition-property: border-color;
+      -webkit-tap-highlight-color: transparent;
+      width: 100%;
+      &:hover,
+      &:focus {
+        border-color: #0768fd;
+        transition-duration: 0.2s;
+        transition-property: border-color;
+      }
+      &:focus-visible {
+        outline: none !important;
+      }
+    }
+  }
+  .custom-password-input.warning {
+    input {
+      border-color: #ff9300;
+      border-width: 2px;
+      transition-duration: 0.2s;
+      transition-property: border-color;
+    }
+  }
+  p.warnings {
+    color: #ff9300;
+    margin: 0;
+    font-size: 13px;
+    margin-top: 5.5px;
+    text-align: left;
+    font-family: Proxima Nova, Nunito Sans, sans-serif;
+    font-weight: 400;
+    line-height: 1;
+  }
+}
+
+.custom-password-input-container.cus-disabled {
+  .custom-label {
+    opacity: 0.4;
+  }
+  .custom-password-input {
+    color: #999999;
+    cursor: default;
+    opacity: 0.4;
+    pointer-events: none;
+    background-color: #f2f2f2;
+  }
+  p.warning {
+    opacity: 0.4;
+  }
+}

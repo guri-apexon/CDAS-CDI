@@ -167,6 +167,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.loadType =
             dataset.incremental === "Y" ? "Incremental" : "Cumulative";
           newState.formData.datasetid = dataset.datasetid;
+          newState.formData.filePwd = dataset.filePwd;
           newState.haveHeader =
             parseInt(action.dataset.headerrownumber, 10) > 0;
         }
@@ -321,6 +322,7 @@ const DataFlowReducer = (state = initialState, action) =>
           rowdecreaseallowed,
           incremental,
           datasetid,
+          file_pwd,
           customsql_yn,
           customsql,
           offsetcolumn,
@@ -343,6 +345,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.transferFrequency = data_freq;
           newState.formData.overrideStaleAlert = ovrd_stale_alert;
           newState.formData.rowDecreaseAllowed = rowdecreaseallowed || 0;
+          newState.formData.filePwd = file_pwd;
           newState.formData.loadType =
             incremental === "Y" ? "Incremental" : "Cumulative";
           newState.formData.datasetid = datasetid;

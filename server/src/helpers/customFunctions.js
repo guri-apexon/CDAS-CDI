@@ -1,7 +1,8 @@
 const uuid = require("uuid");
 const crypto = require("crypto");
 const moment = require("moment");
-const { forEach } = require("lodash");
+// const { forEach } = require("lodash");
+const _ = require("lodash");
 
 // const joi = require("joi");
 
@@ -102,4 +103,18 @@ exports.validation = (data) => {
   });
   // console.log(msg);
   return msg;
+};
+
+exports.getdiffKeys = (newObj, oldObj) => {
+  if (
+    typeof newObj === "object" &&
+    !Array.isArray(newObj) &&
+    newObj !== null &&
+    typeof oldObj === "object" &&
+    !Array.isArray(oldObj) &&
+    oldObj !== null
+  ) {
+    return _.pickBy(newObj, (v, k) => !_.isEqual(oldObj[k], v));
+  }
+  return {};
 };
