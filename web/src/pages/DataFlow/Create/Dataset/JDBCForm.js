@@ -283,21 +283,13 @@ const JDBCForm = forwardRef((props, ref) => {
   useEffect(() => {
     if (initialValue) {
       if (initialValue.dataKind) {
-        setDatakindReady(false);
-        setTimeout(() => {
-          const dataKindId =
-            datakind.records.find((x) => x.name === initialValue.dataKind)
-              ?.value || null;
-          console.log(
-            "initialValue.dataKind",
-            initialValue.dataKind,
-            dataKindId
-          );
-          if (dataKindId) {
-            setClinicalDataType([dataKindId]);
-          }
-          setDatakindReady(true);
-        }, 100);
+        const dataKindId =
+          datakind.records.find((x) => x.name === initialValue.dataKind)
+            ?.value || null;
+        if (dataKindId) {
+          setClinicalDataType([dataKindId]);
+        }
+        setDatakindReady((x) => x + 1);
       }
       if (initialValue.datasetName) setDatasetName(initialValue.datasetName);
       if (initialValue.customQuery) setIsCustomSQL(initialValue.customQuery);
@@ -394,21 +386,20 @@ const JDBCForm = forwardRef((props, ref) => {
               />
             </Grid>
             <Grid item md={6}>
-              {dataKindReady && (
-                <Autocomplete
-                  name="clinicalDataType"
-                  value={clinicalDataType}
-                  label="Clinical Data Type"
-                  source={datakind.records}
-                  className="smallSize_autocomplete"
-                  onChange={handleCDT}
-                  variant="search"
-                  singleSelect
-                  required
-                  size="small"
-                  fullWidth
-                />
-              )}
+              <Autocomplete
+                key={dataKindReady}
+                name="clinicalDataType"
+                value={clinicalDataType}
+                label="Clinical Data Type"
+                source={datakind.records}
+                className="smallSize_autocomplete"
+                onChange={handleCDT}
+                variant="search"
+                singleSelect
+                required
+                size="small"
+                fullWidth
+              />
             </Grid>
           </Grid>
           <Select
