@@ -146,6 +146,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
       fullWidth
       value={row[key]}
       onChange={(e) =>
+        !e.target.value.includes(".") &&
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
       error={!row.isInitLoad && errorText ? true : false}
@@ -238,8 +239,10 @@ export const ActionCell = ({ row }) => {
     editMode: eMode,
     isHavingColumnName,
     onRowSave,
+    maxLength,
+    minLength,
   } = row;
-
+  const checkMinMax = Number(minLength) < Number(maxLength);
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
       <Button
@@ -253,7 +256,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={!isHavingColumnName}
+        disabled={!(isHavingColumnName && checkMinMax)}
       >
         Save
       </Button>
