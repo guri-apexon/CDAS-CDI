@@ -13,11 +13,11 @@ exports.getStudyDataflows = async (req, res) => {
   try {
     const { protocolId } = req.body;
     if (protocolId) {
-      const query = `select
+      const query = `select distinct
       "studyId",
       "dataFlowId",
-      "dsCount",
-      "dpCount",
+      count(distinct datasetid) as "dsCount",
+      count(distinct datapackageid) as "dpCount",
       "studyName",
       "version",
       "dataFlowName",
@@ -37,12 +37,8 @@ exports.getStudyDataflows = async (req, res) => {
       select
       s.prot_id as "studyId",
       d.dataflowid as "dataFlowId",
-      row_number () over(partition by d.dataflowid,
-      d.prot_id
-      order by
-      dh."version" desc) as rnk,
-      dsetcount.dsCount as "dsCount",
-      dpackagecount.dpCount as "dpCount",
+      d3.datapackageid ,
+      d4.datasetid ,
       s.prot_nbr as "studyName",
       dh."version",
       d.name as "dataFlowName",
@@ -59,49 +55,20 @@ exports.getStudyDataflows = async (req, res) => {
       d.refreshtimestamp as "lastSyncDate"
       from
       ${schemaName}.dataflow d
-      inner join ${schemaName}.vendor v on
-      d.vend_id = v.vend_id
-      inner join ${schemaName}.source_location sl on
-      d.src_loc_id = sl.src_loc_id
-      inner join ${schemaName}.datapackage d2 on
-      d.dataflowid = d2.dataflowid
-      inner join ${schemaName}.study s on
-      d.prot_id = s.prot_id
-      inner join (
-      select
-      dataflowid,
-      max("version") as "version"
-      from
-      ${schemaName}.dataflow_version dv
-      group by
-      dataflowid ) dh on
-      dh.dataflowid = d.dataflowid
-      left join (
-      select
-      datapackageid,
-      COUNT(distinct datasetid) as dsCount
-      from
-      ${schemaName}.dataset d
-      group by
-      datapackageid) dsetcount on
-      (d2.datapackageid = dsetcount.datapackageid)
-      left join (
-      select
-      dataflowid,
-      COUNT(distinct datapackageid) as dpCount
-      from
-      ${schemaName}.datapackage d
-      group by
-      dataflowid) dpackagecount on
-      (d.dataflowid = dpackagecount.dataflowid)
-      where
-      s.prot_id = $1
+      inner join ${schemaName}.vendor v on d.vend_id = v.vend_id
+      inner join ${schemaName}.source_location sl on d.src_loc_id = sl.src_loc_id
+      inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
+      inner join ${schemaName}.study s on d.prot_id = s.prot_id
+      left join ${schemaName}.datapackage d3 on (d.dataflowid=d3.dataflowid)
+      left join ${schemaName}.dataset d4 on (d3.datapackageid=d4.datapackageid)
+      inner join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid = d.dataflowid
+      where s.prot_id = $1
       and coalesce (d.del_flg,0) != 1
       ) as df
-      where
-      df.rnk = 1`;
+      group by "studyId","dataFlowId","studyName","version","dataFlowName","type","dateCreated","vendorSource",description,adapter,status,"externalSourceSystem",
+      "fsrStatus","locationType","lastModified","lastSyncDate"`;
 
-      Logger.info({ message: "getStudyDataflows" });
+      // Logger.info({ message: "getStudyDataflows" });
       const $q1 = await DB.executeQuery(query, [protocolId]);
 
       const formatDateValues = await $q1.rows.map((e) => {

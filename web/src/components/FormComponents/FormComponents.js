@@ -377,7 +377,9 @@ const RenderTextPassword = ({
     }`}
   >
     <div className="custom-label">{label}</div>
-    <div className={`custom-password-input ${warning ? "warning" : ""}`}>
+    <div
+      className={`custom-password-input ${touched && warning ? "warning" : ""}`}
+    >
       <input {...input} placeholder="" type={type} disabled={disabled} />
     </div>
     {touched &&
