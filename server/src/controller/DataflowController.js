@@ -2004,7 +2004,6 @@ exports.updateDataflowConfig = async (req, res) => {
       externalSystemName,
       firstFileDate,
       locationName,
-      locationType,
       protocolNumberStandard,
       serviceOwners,
       testFlag,
@@ -2021,7 +2020,7 @@ exports.updateDataflowConfig = async (req, res) => {
       userId
     ) {
       const { rows: existDfRows } = await DB.executeQuery(
-        `SELECT vend_id as "vendorID", src_loc_id as "locationName", testflag as "testFlag", type as "dataStructure", description, connectiontype as "connectionType", serv_ownr as "serviceOwners" from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}';`
+        `SELECT vend_id as "vendorID", src_loc_id as "locationName", testflag as "testFlag", type as "dataStructure", description, connectiontype as "connectionType", serv_ownr as "serviceOwners", expt_fst_prd_dt as "firstFileDate" from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}';`
       );
       if (!existDfRows?.length) {
         return apiResponse.ErrorResponse(res, "Dataflow doesn't exist");
@@ -2029,12 +2028,12 @@ exports.updateDataflowConfig = async (req, res) => {
       const existDf = existDfRows[0];
       const dFTimestamp = helper.getCurrentTime();
       if (testFlag) testFlag = helper.stringToBoolean(testFlag) ? 1 : 0;
-      if (serviceOwners)
-        serviceOwners =
-          serviceOwners && Array.isArray(serviceOwners)
-            ? serviceOwners.join()
-            : "";
+      serviceOwners =
+        serviceOwners && Array.isArray(serviceOwners)
+          ? serviceOwners.join()
+          : "";
       const dFBody = [
+        dataflowId,
         vendorID,
         dataStructure,
         description,
@@ -2044,11 +2043,11 @@ exports.updateDataflowConfig = async (req, res) => {
         externalSystemName,
         dFTimestamp,
         serviceOwners,
-        dataflowId,
+        firstFileDate,
       ];
       // update dataflow schema into db
       const updatedDF = await DB.executeQuery(
-        `update ${schemaName}.dataflow set vend_id=$1, type=$2, description=$3, src_loc_id=$4, testflag=$5, connectiontype=$6, externalsystemname=$7, updt_tm=$8, serv_ownr=$9 WHERE dataflowid=$10 returning *;`,
+        `update ${schemaName}.dataflow set vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, externalsystemname=$8, updt_tm=$9, serv_ownr=$10, expt_fst_prd_dt=$11 WHERE dataflowid=$1 returning *;`,
         dFBody
       );
       if (!updatedDF?.rowCount) {
@@ -2064,6 +2063,9 @@ exports.updateDataflowConfig = async (req, res) => {
         connectionType,
         serviceOwners,
       };
+      if (!moment(firstFileDate).isSame(existDf.firstFileDate, "day")) {
+        comparisionObj.firstFileDate = firstFileDate;
+      }
       const diffObj = helper.getdiffKeys(comparisionObj, existDf);
       const updatedLogs = await addDataflowHistory({
         dataflowId,

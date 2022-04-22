@@ -76,7 +76,6 @@ module.exports = {
             );
           });
           Promise.all(anditLogsQueries).then((values) => {
-            console.log("valuesPromise", values);
             DB.executeQuery(
               `INSERT INTO ${schemaName}.cdr_ta_queue
             (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
