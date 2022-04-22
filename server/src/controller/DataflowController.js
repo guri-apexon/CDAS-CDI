@@ -986,181 +986,181 @@ exports.createDataflow = async (req, res) => {
   }
 };
 
-const hardDeleteTrigger = async (dataflowId, user) => {
-  const values = [dataflowId];
-  let result, dataFlow;
-  await DB.executeQuery(
-    `SELECT * from ${schemaName}.dataflow WHERE dataflowid=$1`,
-    values
-  ).then(async (response) => {
-    dataFlow = response.rows ? response.rows[0] : null;
-  });
-  if (!dataFlow) {
-    return "not_found";
-  }
-  const deleteQuery = `DELETE FROM ${schemaName}.dataflow_audit_log da
-      WHERE da.dataflowid = $1`;
-  await DB.executeQuery(deleteQuery, values)
-    .then(async (response) => {
-      const deleteQuery2 = `DELETE FROM ${schemaName}.temp_json_log da
-      WHERE da.dataflowid = '${dataflowId}';
-      DELETE FROM ${schemaName}.columndefinition cd WHERE cd.datasetid in (select datasetid FROM ${schemaName}.dataset ds
-      WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}'));
-      DELETE FROM ${schemaName}.columndefinition_history cd WHERE cd.datasetid in (select datasetid FROM ${schemaName}.dataset ds
-      WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}'));
-      DELETE FROM ${schemaName}.dataset ds
-      WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}');
-      DELETE FROM ${schemaName}.dataset_history ds
-      WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}');
-      DELETE FROM ${schemaName}.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
-      DELETE FROM ${schemaName}.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
+// const hardDeleteTrigger = async (dataflowId, user) => {
+//   const values = [dataflowId];
+//   let result, dataFlow;
+//   await DB.executeQuery(
+//     `SELECT * from ${schemaName}.dataflow WHERE dataflowid=$1`,
+//     values
+//   ).then(async (response) => {
+//     dataFlow = response.rows ? response.rows[0] : null;
+//   });
+//   if (!dataFlow) {
+//     return "not_found";
+//   }
+//   const deleteQuery = `DELETE FROM ${schemaName}.dataflow_audit_log da
+//       WHERE da.dataflowid = $1`;
+//   await DB.executeQuery(deleteQuery, values)
+//     .then(async (response) => {
+//       const deleteQuery2 = `DELETE FROM ${schemaName}.temp_json_log da
+//       WHERE da.dataflowid = '${dataflowId}';
+//       DELETE FROM ${schemaName}.columndefinition cd WHERE cd.datasetid in (select datasetid FROM ${schemaName}.dataset ds
+//       WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}'));
+//       DELETE FROM ${schemaName}.columndefinition_history cd WHERE cd.datasetid in (select datasetid FROM ${schemaName}.dataset ds
+//       WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}'));
+//       DELETE FROM ${schemaName}.dataset ds
+//       WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}');
+//       DELETE FROM ${schemaName}.dataset_history ds
+//       WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}');
+//       DELETE FROM ${schemaName}.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
+//       DELETE FROM ${schemaName}.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
 
-      await DB.executeQuery(deleteQuery2)
-        .then(async (response2) => {
-          const deleteQuery3 = `DELETE FROM ${schemaName}.dataflow
-      WHERE dataflowid = $1`;
-          await DB.executeQuery(deleteQuery3, values)
-            .then(async (response3) => {
-              if (response3.rowCount && response3.rowCount > 0) {
-                const insertDeletedQuery = `INSERT INTO ${schemaName}.deleted_dataflow(df_del_id, dataflow_nm, del_by, del_dt, del_req_dt, prot_id) VALUES($1, $2, $3, $4, $5, $6)`;
-                const deleteDfId = helper.createUniqueID();
-                const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-                const deletedValues = [
-                  deleteDfId,
-                  dataFlow.data_flow_nm,
-                  user.usr_id,
-                  currentTime,
-                  currentTime,
-                  "",
-                ];
-                await DB.executeQuery(insertDeletedQuery, deletedValues)
-                  .then(async (response) => {
-                    result = true;
-                  })
-                  .catch((err) => {
-                    result = false;
-                  });
-                result = "deleted";
-              } else {
-                result = "not_found";
-              }
-            })
-            .catch((err) => {
-              result = false;
-            });
-        })
-        .catch((err) => {
-          result = false;
-        });
-    })
-    .catch((err) => {
-      result = false;
-    });
-  return result;
-};
+//       await DB.executeQuery(deleteQuery2)
+//         .then(async (response2) => {
+//           const deleteQuery3 = `DELETE FROM ${schemaName}.dataflow
+//       WHERE dataflowid = $1`;
+//           await DB.executeQuery(deleteQuery3, values)
+//             .then(async (response3) => {
+//               if (response3.rowCount && response3.rowCount > 0) {
+//                 const insertDeletedQuery = `INSERT INTO ${schemaName}.deleted_dataflow(df_del_id, dataflow_nm, del_by, del_dt, del_req_dt, prot_id) VALUES($1, $2, $3, $4, $5, $6)`;
+//                 const deleteDfId = helper.createUniqueID();
+//                 const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+//                 const deletedValues = [
+//                   deleteDfId,
+//                   dataFlow.data_flow_nm,
+//                   user.usr_id,
+//                   currentTime,
+//                   currentTime,
+//                   "",
+//                 ];
+//                 await DB.executeQuery(insertDeletedQuery, deletedValues)
+//                   .then(async (response) => {
+//                     result = true;
+//                   })
+//                   .catch((err) => {
+//                     result = false;
+//                   });
+//                 result = "deleted";
+//               } else {
+//                 result = "not_found";
+//               }
+//             })
+//             .catch((err) => {
+//               result = false;
+//             });
+//         })
+//         .catch((err) => {
+//           result = false;
+//         });
+//     })
+//     .catch((err) => {
+//       result = false;
+//     });
+//   return result;
+// };
 
-const addDeleteTempLog = async (dataflowId, user) => {
-  const insertTempQuery = `INSERT INTO ${schemaName}.temp_json_log(temp_json_log_id, dataflowid, trans_typ, trans_stat, no_of_retry_attempted, del_flg, created_by, created_on, updated_by, updated_on) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-  const tempId = helper.createUniqueID();
-  let result;
-  const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-  const values = [
-    tempId,
-    dataflowId,
-    "DELETE",
-    "FAILURE",
-    1,
-    "N",
-    user.usr_id,
-    currentTime,
-    user.usr_id,
-    currentTime,
-  ];
-  await DB.executeQuery(insertTempQuery, values)
-    .then(async (response) => {
-      result = true;
-    })
-    .catch((err) => {
-      result = false;
-    });
-  return result;
-};
+// const addDeleteTempLog = async (dataflowId, user) => {
+//   const insertTempQuery = `INSERT INTO ${schemaName}.temp_json_log(temp_json_log_id, dataflowid, trans_typ, trans_stat, no_of_retry_attempted, del_flg, created_by, created_on, updated_by, updated_on) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+//   const tempId = helper.createUniqueID();
+//   let result;
+//   const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+//   const values = [
+//     tempId,
+//     dataflowId,
+//     "DELETE",
+//     "FAILURE",
+//     1,
+//     "N",
+//     user.usr_id,
+//     currentTime,
+//     user.usr_id,
+//     currentTime,
+//   ];
+//   await DB.executeQuery(insertTempQuery, values)
+//     .then(async (response) => {
+//       result = true;
+//     })
+//     .catch((err) => {
+//       result = false;
+//     });
+//   return result;
+// };
 
-exports.cronHardDelete = async () => {
-  DB.executeQuery(`SELECT * FROM ${schemaName}.temp_json_log`).then(
-    async (response) => {
-      const logs = response.rows || [];
-      if (logs.length) {
-        logs.forEach((log) => {
-          const { dataflowid: dataflowId, created_by: user_id } = log;
-          DB.executeQuery(
-            `SELECT * FROM ${schemaName}.user where usr_id = $1`,
-            [user_id]
-          ).then(async (response) => {
-            if (response.rows && response.rows.length) {
-              const user = response.rows[0];
-              const deleted = await hardDeleteTrigger(dataflowId, user);
-              if (deleted) {
-                return true;
-              }
-              return false;
-            }
-          });
-        });
-      }
-    }
-  );
-};
+// exports.cronHardDelete = async () => {
+//   DB.executeQuery(`SELECT * FROM ${schemaName}.temp_json_log`).then(
+//     async (response) => {
+//       const logs = response.rows || [];
+//       if (logs.length) {
+//         logs.forEach((log) => {
+//           const { dataflowid: dataflowId, created_by: user_id } = log;
+//           DB.executeQuery(
+//             `SELECT * FROM ${schemaName}.user where usr_id = $1`,
+//             [user_id]
+//           ).then(async (response) => {
+//             if (response.rows && response.rows.length) {
+//               const user = response.rows[0];
+//               const deleted = await hardDeleteTrigger(dataflowId, user);
+//               if (deleted) {
+//                 return true;
+//               }
+//               return false;
+//             }
+//           });
+//         });
+//       }
+//     }
+//   );
+// };
 
-exports.hardDelete = async (req, res) => {
-  try {
-    const { dataFlowId, userId } = req.body;
-    DB.executeQuery(`SELECT * FROM ${schemaName}.user where usr_id = $1`, [
-      userId,
-    ]).then(async (response) => {
-      if (response.rows && response.rows.length) {
-        const user = response.rows[0];
-        const deleted = await hardDeleteTrigger(dataFlowId, user);
-        if (deleted == "deleted") {
-          return apiResponse.successResponseWithData(
-            res,
-            "Deleted successfully",
-            {
-              success: true,
-            }
-          );
-        } else if (deleted == "not_found") {
-          return apiResponse.successResponseWithData(
-            res,
-            "Dataflow not found",
-            {}
-          );
-        } else {
-          const inserted = await addDeleteTempLog(dataFlowId, user);
-          if (inserted) {
-            return apiResponse.successResponseWithData(
-              res,
-              "Deleted is in queue. System will delete it automatically after sometime.",
-              {
-                success: false,
-              }
-            );
-          } else {
-            return apiResponse.successResponseWithData(
-              res,
-              "Something wrong. Please try again",
-              {}
-            );
-          }
-        }
-      } else {
-        return apiResponse.ErrorResponse(res, "User not found");
-      }
-    });
-  } catch (err) {
-    return apiResponse.ErrorResponse(res, err);
-  }
-};
+// exports.hardDelete = async (req, res) => {
+//   try {
+//     const { dataFlowId, userId } = req.body;
+//     DB.executeQuery(`SELECT * FROM ${schemaName}.user where usr_id = $1`, [
+//       userId,
+//     ]).then(async (response) => {
+//       if (response.rows && response.rows.length) {
+//         const user = response.rows[0];
+//         const deleted = await hardDeleteTrigger(dataFlowId, user);
+//         if (deleted == "deleted") {
+//           return apiResponse.successResponseWithData(
+//             res,
+//             "Deleted successfully",
+//             {
+//               success: true,
+//             }
+//           );
+//         } else if (deleted == "not_found") {
+//           return apiResponse.successResponseWithData(
+//             res,
+//             "Dataflow not found",
+//             {}
+//           );
+//         } else {
+//           const inserted = await addDeleteTempLog(dataFlowId, user);
+//           if (inserted) {
+//             return apiResponse.successResponseWithData(
+//               res,
+//               "Deleted is in queue. System will delete it automatically after sometime.",
+//               {
+//                 success: false,
+//               }
+//             );
+//           } else {
+//             return apiResponse.successResponseWithData(
+//               res,
+//               "Something wrong. Please try again",
+//               {}
+//             );
+//           }
+//         }
+//       } else {
+//         return apiResponse.ErrorResponse(res, "User not found");
+//       }
+//     });
+//   } catch (err) {
+//     return apiResponse.ErrorResponse(res, err);
+//   }
+// };
 
 exports.activateDataFlow = async (req, res) => {
   try {
@@ -1171,38 +1171,40 @@ exports.activateDataFlow = async (req, res) => {
     inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid  
     inner join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1 and d2.active=1`;
     const $q0 = await DB.executeQuery(q0, [dataFlowId]);
-    const q1 = `SELECT dataflowid, "version" FROM ${schemaName}.dataflow_version where dataflowid = $1 order by version DESC limit 1`;
-    const $q1 = await DB.executeQuery(q1, [dataFlowId]);
-    const newVersion = parseInt($q1.rows.length ? $q1.rows[0]?.version : 1) + 1;
 
     if ($q0.rows.map((e) => e.active).includes(1)) {
       const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1 returning *`;
-      const q3 = `INSERT INTO ${schemaName}.dataflow_audit_log
-      (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
-      VALUES($1, $2, Now(), $3, $4, $5, $6)`;
-      const q4 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on, config_json)
-      VALUES($1, $2, $3, Now(), $4)`;
-      const $q2 = await DB.executeQuery(q2, [dataFlowId]);
-      const $q3 = await DB.executeQuery(q3, [
-        dataFlowId,
-        newVersion,
-        userId,
-        "active",
-        0,
-        1,
-      ]);
+      const updatedDF = await DB.executeQuery(q2, [dataFlowId]);
 
-      const $q4 = await DB.executeQuery(q4, [
-        dataFlowId,
-        newVersion,
+      if (!updatedDF?.rowCount) {
+        return apiResponse.ErrorResponse(res, "Something went wrong on update");
+      }
+      const dataflowObj = updatedDF.rows[0];
+      const existDf = { active: 0 };
+      const diffObj = { active: 1 };
+
+      const updatedLogs = await addDataflowHistory({
+        dataflowId: dataFlowId,
+        externalSystemName: "CDI",
         userId,
-        $q2.rows[0] || null,
-      ]);
+        config_json: dataflowObj,
+        diffObj,
+        existDf,
+      });
+
+      if (updatedLogs) {
+        return apiResponse.successResponseWithData(
+          res,
+          "Dataflow config updated successfully.",
+          { ...dataflowObj, version: updatedLogs }
+        );
+      }
 
       return apiResponse.successResponseWithData(res, "Operation success", {
         success: true,
       });
     }
+
     return apiResponse.validationErrorWithData(res, "Dataflow Having Issue", {
       success: false,
     });
@@ -1217,33 +1219,32 @@ exports.inActivateDataFlow = async (req, res) => {
     const { dataFlowId, userId } = req.body;
     Logger.info({ message: "inActivateDataFlow" });
 
-    const q0 = `SELECT dataflowid, "version" FROM ${schemaName}.dataflow_version where dataflowid = $1 order by version DESC limit 1`;
-    const $q0 = await DB.executeQuery(q0, [dataFlowId]);
-    const newVersion = parseInt($q0.rows.length ? $q0.rows[0]?.version : 1) + 1;
-
     const q1 = `UPDATE ${schemaName}.dataflow set active=0 WHERE dataflowid=$1 returning *`;
-    const q2 = `INSERT INTO ${schemaName}.dataflow_audit_log
-    (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
-    VALUES($1, $2, Now(), $3, $4, $5, $6)`;
-    const q3 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on, config_json)
-    VALUES($1, $2, $3, Now(), $4)`;
+    const updatedDF = await DB.executeQuery(q1, [dataFlowId]);
 
-    const $q1 = await DB.executeQuery(q1, [dataFlowId]);
-    const $q2 = await DB.executeQuery(q2, [
-      dataFlowId,
-      newVersion,
-      userId,
-      "active",
-      1,
-      0,
-    ]);
+    if (!updatedDF?.rowCount) {
+      return apiResponse.ErrorResponse(res, "Something went wrong on update");
+    }
+    const dataflowObj = updatedDF.rows[0];
+    const existDf = { active: 1 };
+    const diffObj = { active: 0 };
 
-    const $q3 = await DB.executeQuery(q3, [
-      dataFlowId,
-      newVersion,
+    const updatedLogs = await addDataflowHistory({
+      dataflowId: dataFlowId,
+      externalSystemName: "CDI",
       userId,
-      $q1.rows[0] || null,
-    ]);
+      config_json: dataflowObj,
+      diffObj,
+      existDf,
+    });
+
+    if (updatedLogs) {
+      return apiResponse.successResponseWithData(
+        res,
+        "Dataflow config updated successfully.",
+        { ...dataflowObj, version: updatedLogs }
+      );
+    }
 
     return apiResponse.successResponseWithData(res, "Operation success", {
       success: true,
@@ -1330,450 +1331,450 @@ exports.updateDataFlow = async (req, res) => {
 
       return;
 
-      let {
-        active,
-        connectionType,
-        exptDtOfFirstProdFile,
-        vendorName,
-        protocolNumber,
-        type,
-        name,
-        externalID,
-        location,
-        testFlag,
-        userId,
-        description,
-        dataPackage,
-        dataStructure,
-        externalSystemName,
-        src_loc_id,
-        vend_id,
-        fsrstatus,
-        // connectiondriver,
-        data_in_cdr,
-        configured,
-        sponsorNameStandard,
-        sponsorName,
-        externalVersion,
-        protocolNumberStandard,
-      } = req.body;
+      //   let {
+      //     active,
+      //     connectionType,
+      //     exptDtOfFirstProdFile,
+      //     vendorName,
+      //     protocolNumber,
+      //     type,
+      //     name,
+      //     externalID,
+      //     location,
+      //     testFlag,
+      //     userId,
+      //     description,
+      //     dataPackage,
+      //     dataStructure,
+      //     externalSystemName,
+      //     src_loc_id,
+      //     vend_id,
+      //     fsrstatus,
+      //     // connectiondriver,
+      //     data_in_cdr,
+      //     configured,
+      //     sponsorNameStandard,
+      //     sponsorName,
+      //     externalVersion,
+      //     protocolNumberStandard,
+      //   } = req.body;
 
-      var ResponseBody = {};
-      if (!type && dataStructure) type = dataStructure;
+      //   var ResponseBody = {};
+      //   if (!type && dataStructure) type = dataStructure;
 
-      if (
-        vendorName !== null &&
-        protocolNumberStandard !== null &&
-        description !== ""
-      ) {
-        var DFTestname = `${vendorName}-${protocolNumberStandard}-${description}`;
-        if (testFlag === true) {
-          DFTestname = "TST-" + DFTestname;
-        }
-        //check for dataflowname && sequence logic
-        const checkDFQuery = `select name from ${schemaName}.dataflow where name LIKE '${DFTestname}%';`;
-        const executeCheckDf = await DB.executeQuery(checkDFQuery);
-        if (executeCheckDf.rows.length > 0) {
-          let splittedVal =
-            executeCheckDf.rows[executeCheckDf.rows.length - 1].name.split("-");
-          let _index = testFlag === true ? 4 : 3;
-          if (splittedVal.length > _index) {
-            let newParsed = parseInt(splittedVal[_index]);
-            DFTestname = DFTestname + "-" + (newParsed + 1);
-          } else {
-            DFTestname = DFTestname + "-1";
-          }
-        }
-        let q = `select vend_id from ${schemaName}.vendor where vend_nm='${vendorName}';`;
-        let { rows } = await DB.executeQuery(q);
-        let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${location}';`;
-        let { rows: data } = await DB.executeQuery(q1);
+      //   if (
+      //     vendorName !== null &&
+      //     protocolNumberStandard !== null &&
+      //     description !== ""
+      //   ) {
+      //     var DFTestname = `${vendorName}-${protocolNumberStandard}-${description}`;
+      //     if (testFlag === true) {
+      //       DFTestname = "TST-" + DFTestname;
+      //     }
+      //     //check for dataflowname && sequence logic
+      //     const checkDFQuery = `select name from ${schemaName}.dataflow where name LIKE '${DFTestname}%';`;
+      //     const executeCheckDf = await DB.executeQuery(checkDFQuery);
+      //     if (executeCheckDf.rows.length > 0) {
+      //       let splittedVal =
+      //         executeCheckDf.rows[executeCheckDf.rows.length - 1].name.split("-");
+      //       let _index = testFlag === true ? 4 : 3;
+      //       if (splittedVal.length > _index) {
+      //         let newParsed = parseInt(splittedVal[_index]);
+      //         DFTestname = DFTestname + "-" + (newParsed + 1);
+      //       } else {
+      //         DFTestname = DFTestname + "-1";
+      //       }
+      //     }
+      //     let q = `select vend_id from ${schemaName}.vendor where vend_nm='${vendorName}';`;
+      //     let { rows } = await DB.executeQuery(q);
+      //     let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${location}';`;
+      //     let { rows: data } = await DB.executeQuery(q1);
 
-        let q2 = `select * from ${schemaName}.dataflow where externalid='${externalID}';`;
-        let { rows: dataFlow } = await DB.executeQuery(q2);
-        // let q3 = `select * from ${schemaName}.datapackage where externalid='${externalID}';`;
-        // let { rows: packageData } = await DB.executeQuery(q3);
-        // let q4 = `select * from ${schemaName}.dataset where externalid='${externalID}';`;
-        // let { rows: dataSet } = await DB.executeQuery(q4);
+      //     let q2 = `select * from ${schemaName}.dataflow where externalid='${externalID}';`;
+      //     let { rows: dataFlow } = await DB.executeQuery(q2);
+      //     // let q3 = `select * from ${schemaName}.datapackage where externalid='${externalID}';`;
+      //     // let { rows: packageData } = await DB.executeQuery(q3);
+      //     // let q4 = `select * from ${schemaName}.dataset where externalid='${externalID}';`;
+      //     // let { rows: dataSet } = await DB.executeQuery(q4);
 
-        const uid = dataFlow[0].dataflowid;
-        // const dpUid = packageData[0].datapackageid;
-        // const dsUid = dataSet[0].datasetid;
+      //     const uid = dataFlow[0].dataflowid;
+      //     // const dpUid = packageData[0].datapackageid;
+      //     // const dsUid = dataSet[0].datasetid;
 
-        // console.log("dataflow data", dataFlow[0].dataflowid);
-        // console.log("data package data", packageData[0].datapackageid);
-        // console.log("data set data", dataSet[0].datasetid);
+      //     // console.log("dataflow data", dataFlow[0].dataflowid);
+      //     // console.log("data package data", packageData[0].datapackageid);
+      //     // console.log("data set data", dataSet[0].datasetid);
 
-        let dFTimestamp = new Date();
-        // if (rows.length > 0 && data.length > 0) {
-        DFBody = [
-          DFTestname,
-          externalSystemName === "CDI" ? vend_id : rows[0].vend_id,
-          type || null,
-          description || null,
-          externalSystemName === "CDI"
-            ? src_loc_id
-            : data[0]?.src_loc_id || null,
-          helper.stringToBoolean(active) ? 1 : 0,
-          configured || 0,
-          exptDtOfFirstProdFile || null,
-          helper.stringToBoolean(testFlag) ? 1 : 0,
-          data_in_cdr || "N",
-          connectionType || null,
-          externalSystemName || null,
-          externalID,
-          fsrstatus || null,
-          protocolNumber,
-          dFTimestamp,
-        ];
-        // insert dataflow schema into db
-        let updateQueryDF = `UPDATE ${schemaName}.dataflow set 
-          name =$1 ,vend_id =$2,type =$3,description =$4,src_loc_id =$5,active =$6,configured =$7,
-          expt_fst_prd_dt =$8,testflag =$9,data_in_cdr =$10,connectiontype =$11,externalsystemname =$12,
-          fsrstatus =$14,prot_id =$15,insrt_tm =$16,updt_tm =$16, refreshtimestamp =$16 where
-          externalid=$13`;
+      //     let dFTimestamp = new Date();
+      //     // if (rows.length > 0 && data.length > 0) {
+      //     DFBody = [
+      //       DFTestname,
+      //       externalSystemName === "CDI" ? vend_id : rows[0].vend_id,
+      //       type || null,
+      //       description || null,
+      //       externalSystemName === "CDI"
+      //         ? src_loc_id
+      //         : data[0]?.src_loc_id || null,
+      //       helper.stringToBoolean(active) ? 1 : 0,
+      //       configured || 0,
+      //       exptDtOfFirstProdFile || null,
+      //       helper.stringToBoolean(testFlag) ? 1 : 0,
+      //       data_in_cdr || "N",
+      //       connectionType || null,
+      //       externalSystemName || null,
+      //       externalID,
+      //       fsrstatus || null,
+      //       protocolNumber,
+      //       dFTimestamp,
+      //     ];
+      //     // insert dataflow schema into db
+      //     let updateQueryDF = `UPDATE ${schemaName}.dataflow set
+      //       name =$1 ,vend_id =$2,type =$3,description =$4,src_loc_id =$5,active =$6,configured =$7,
+      //       expt_fst_prd_dt =$8,testflag =$9,data_in_cdr =$10,connectiontype =$11,externalsystemname =$12,
+      //       fsrstatus =$14,prot_id =$15,insrt_tm =$16,updt_tm =$16, refreshtimestamp =$16 where
+      //       externalid=$13`;
 
-        let dataFlowUpdate = await DB.executeQuery(updateQueryDF, [...DFBody]);
+      //     let dataFlowUpdate = await DB.executeQuery(updateQueryDF, [...DFBody]);
 
-        let ts = new Date().toLocaleString();
-        ResponseBody.action = "Data flow updated successfully.";
-        ResponseBody.status = helper.stringToBoolean(active)
-          ? "Active"
-          : "Inactive";
-        ResponseBody.timestamp = ts;
-        ResponseBody.version = 1;
-        ResponseBody.dataflowId = dataFlow[0].dataflowid;
+      //     let ts = new Date().toLocaleString();
+      //     ResponseBody.action = "Data flow updated successfully.";
+      //     ResponseBody.status = helper.stringToBoolean(active)
+      //       ? "Active"
+      //       : "Inactive";
+      //     ResponseBody.timestamp = ts;
+      //     ResponseBody.version = 1;
+      //     ResponseBody.dataflowId = dataFlow[0].dataflowid;
 
-        if (dataPackage && dataPackage.length > 0) {
-          ResponseBody.data_packages = [];
-          // if datapackage exists
-          for (let each of dataPackage) {
-            var newObj = {};
-            // if (each.name !== "" && each.path !== "" && each.type !== "") {
-            const dpUidNew = createUniqueID();
+      //     if (dataPackage && dataPackage.length > 0) {
+      //       ResponseBody.data_packages = [];
+      //       // if datapackage exists
+      //       for (let each of dataPackage) {
+      //         var newObj = {};
+      //         // if (each.name !== "" && each.path !== "" && each.type !== "") {
+      //         const dpUidNew = createUniqueID();
 
-            let passwordStatus = "No";
-            let dPTimestamp = new Date();
-            let { password } = each;
+      //         let passwordStatus = "No";
+      //         let dPTimestamp = new Date();
+      //         let { password } = each;
 
-            if (password) {
-              passwordStatus = "Yes";
-              helper.writeVaultData(`${uid}/${dpUid}`, {
-                password,
-              });
-            }
+      //         if (password) {
+      //           passwordStatus = "Yes";
+      //           helper.writeVaultData(`${uid}/${dpUid}`, {
+      //             password,
+      //           });
+      //         }
 
-            let dPBody = [
-              each.type || null,
-              each.name || null,
-              each.path || null,
-              each.sasXptMethod || null,
-              passwordStatus,
-              helper.stringToBoolean(each.active) ? 1 : 0,
-              helper.stringToBoolean(each.noPackageConfig) ? 1 : 0,
-              each.externalID,
-              dPTimestamp,
+      //         let dPBody = [
+      //           each.type || null,
+      //           each.name || null,
+      //           each.path || null,
+      //           each.sasXptMethod || null,
+      //           passwordStatus,
+      //           helper.stringToBoolean(each.active) ? 1 : 0,
+      //           helper.stringToBoolean(each.noPackageConfig) ? 1 : 0,
+      //           each.externalID,
+      //           dPTimestamp,
 
-              dpUidNew,
-              uid,
-            ];
+      //           dpUidNew,
+      //           uid,
+      //         ];
 
-            let selectDP = `select * from ${schemaName}.datapackage where externalid='${each.externalID}'`;
+      //         let selectDP = `select * from ${schemaName}.datapackage where externalid='${each.externalID}'`;
 
-            let updateQueryDP = `UPDATE ${schemaName}.datapackage set type =$1, name =$2, path =$3,sasxptmethod =$4,
-              password =$5 , active =$6 ,nopackageconfig =$7 , updt_tm =$9 where externalid=$8`;
+      //         let updateQueryDP = `UPDATE ${schemaName}.datapackage set type =$1, name =$2, path =$3,sasxptmethod =$4,
+      //           password =$5 , active =$6 ,nopackageconfig =$7 , updt_tm =$9 where externalid=$8`;
 
-            let dpRows = await DB.executeQuery(selectDP);
-            if (dpRows.rows.length > 0) {
-              console.log("Update Query");
-              let dataPackageUpdate = await DB.executeQuery(updateQueryDP, [
-                ...dPBody,
-              ]);
+      //         let dpRows = await DB.executeQuery(selectDP);
+      //         if (dpRows.rows.length > 0) {
+      //           console.log("Update Query");
+      //           let dataPackageUpdate = await DB.executeQuery(updateQueryDP, [
+      //             ...dPBody,
+      //           ]);
 
-              newObj.timestamp = ts;
-              newObj.externalId = each.externalID;
-              newObj.datapackageid = dpUid;
-              newObj.action = "Data package updated successfully.";
-              each.datapackageid = dpUid;
-              ResponseBody.data_packages.push(newObj);
-            } else {
-              console.log("insert Query");
-              let createDP = await DB.executeQuery(
-                `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(datapackageid, type, name, path, sasxptmethod, password, active, nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid)
-                          VALUES($10,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10, $11)`,
-                dPBody
-              );
-              newObj.timestamp = ts;
-              newObj.externalId = each.externalID;
-              newObj.datapackageid = dpUid;
-              newObj.action = "Data package Added successfully.";
-              each.datapackageid = dpUid;
-              ResponseBody.data_packages.push(newObj);
-            }
+      //           newObj.timestamp = ts;
+      //           newObj.externalId = each.externalID;
+      //           newObj.datapackageid = dpUid;
+      //           newObj.action = "Data package updated successfully.";
+      //           each.datapackageid = dpUid;
+      //           ResponseBody.data_packages.push(newObj);
+      //         } else {
+      //           console.log("insert Query");
+      //           let createDP = await DB.executeQuery(
+      //             `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(datapackageid, type, name, path, sasxptmethod, password, active, nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid)
+      //                       VALUES($10,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10, $11)`,
+      //             dPBody
+      //           );
+      //           newObj.timestamp = ts;
+      //           newObj.externalId = each.externalID;
+      //           newObj.datapackageid = dpUid;
+      //           newObj.action = "Data package Added successfully.";
+      //           each.datapackageid = dpUid;
+      //           ResponseBody.data_packages.push(newObj);
+      //         }
 
-            await DB.executeQuery(
-              `INSERT INTO ${schemaName}.dataflow_audit_log
-              ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-              VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-              [
-                uid,
-                dpUid,
-                null,
-                null,
-                1,
-                "New Datapackage",
-                "",
-                "",
-                externalSystemName === "CDI" ? userId : externalSystemName,
-                new Date(),
-              ]
-            );
-            if (each.dataSet && each.dataSet.length > 0) {
-              ResponseBody.data_sets = [];
-              // if datasets exists
-              for (let obj of each.dataSet) {
-                var newobj = {};
-                // if (
-                //   obj.name !== "" &&
-                //   obj.path !== "" &&
-                //   obj.mnemonic !== "" &&
-                // ) {
-                let dataKind = null;
-                if (obj.dataKind) {
-                  let checkDataKind = await DB.executeQuery(
-                    `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
-                  );
-                  dataKind = checkDataKind.rows[0].datakindid;
-                }
+      //         await DB.executeQuery(
+      //           `INSERT INTO ${schemaName}.dataflow_audit_log
+      //           ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+      //           VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+      //           [
+      //             uid,
+      //             dpUid,
+      //             null,
+      //             null,
+      //             1,
+      //             "New Datapackage",
+      //             "",
+      //             "",
+      //             externalSystemName === "CDI" ? userId : externalSystemName,
+      //             new Date(),
+      //           ]
+      //         );
+      //         if (each.dataSet && each.dataSet.length > 0) {
+      //           ResponseBody.data_sets = [];
+      //           // if datasets exists
+      //           for (let obj of each.dataSet) {
+      //             var newobj = {};
+      //             // if (
+      //             //   obj.name !== "" &&
+      //             //   obj.path !== "" &&
+      //             //   obj.mnemonic !== "" &&
+      //             // ) {
+      //             let dataKind = null;
+      //             if (obj.dataKind) {
+      //               let checkDataKind = await DB.executeQuery(
+      //                 `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
+      //               );
+      //               dataKind = checkDataKind.rows[0].datakindid;
+      //             }
 
-                const dsUidNew = createUniqueID();
-                let dsPasswordStatus;
-                if (obj.filePwd) {
-                  let { filePwd } = obj;
-                  dsPasswordStatus = "Yes";
-                  helper.writeVaultData(`${uid}/${dpUid}/${dsUid}`, {
-                    password: filePwd,
-                  });
-                } else {
-                  dsPasswordStatus = "No";
-                }
-                let DSBody = [
-                  dataKind || null,
-                  obj.mnemonic || obj.datasetName || null,
-                  obj.fileNamingConvention || "",
-                  helper.stringToBoolean(obj.active) ? 1 : 0,
-                  typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
-                  helper.stringToBoolean(obj.incremental) ? "Y" : "N",
-                  obj.offsetColumn || null,
-                  obj.type || obj.fileType || null,
-                  obj.path || null,
-                  obj.OverrideStaleAlert || null,
-                  obj.headerRowNumber && obj.headerRowNumber != "" ? 1 : 0,
-                  obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
-                  obj.headerRowNumber || 0,
-                  obj.footerRowNumber || 0,
-                  obj.customSql || null,
-                  obj.customQuery || null,
-                  obj.tableName || null,
-                  obj.externalID,
-                  dsPasswordStatus || "No",
-                  new Date(),
-                  obj.delimiter || "",
-                  helper.convertEscapeChar(
-                    obj.escapeCode || obj.escapeCharacter
-                  ) || "",
-                  obj.quote || "",
-                  obj.rowDecreaseAllowed || 0,
-                  obj.dataTransferFrequency || "",
-                ];
+      //             const dsUidNew = createUniqueID();
+      //             let dsPasswordStatus;
+      //             if (obj.filePwd) {
+      //               let { filePwd } = obj;
+      //               dsPasswordStatus = "Yes";
+      //               helper.writeVaultData(`${uid}/${dpUid}/${dsUid}`, {
+      //                 password: filePwd,
+      //               });
+      //             } else {
+      //               dsPasswordStatus = "No";
+      //             }
+      //             let DSBody = [
+      //               dataKind || null,
+      //               obj.mnemonic || obj.datasetName || null,
+      //               obj.fileNamingConvention || "",
+      //               helper.stringToBoolean(obj.active) ? 1 : 0,
+      //               typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
+      //               helper.stringToBoolean(obj.incremental) ? "Y" : "N",
+      //               obj.offsetColumn || null,
+      //               obj.type || obj.fileType || null,
+      //               obj.path || null,
+      //               obj.OverrideStaleAlert || null,
+      //               obj.headerRowNumber && obj.headerRowNumber != "" ? 1 : 0,
+      //               obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
+      //               obj.headerRowNumber || 0,
+      //               obj.footerRowNumber || 0,
+      //               obj.customSql || null,
+      //               obj.customQuery || null,
+      //               obj.tableName || null,
+      //               obj.externalID,
+      //               dsPasswordStatus || "No",
+      //               new Date(),
+      //               obj.delimiter || "",
+      //               helper.convertEscapeChar(
+      //                 obj.escapeCode || obj.escapeCharacter
+      //               ) || "",
+      //               obj.quote || "",
+      //               obj.rowDecreaseAllowed || 0,
+      //               obj.dataTransferFrequency || "",
+      //             ];
 
-                let selectDS = `select * from ${schemaName}.datapackage where externalid='${each.externalID}'`;
+      //             let selectDS = `select * from ${schemaName}.datapackage where externalid='${each.externalID}'`;
 
-                let dsRows = await DB.executeQuery(selectDP);
-                if (dsRows.rows.length > 0) {
-                  console.log("update query");
-                  let updateQueryDS = `UPDATE ${schemaName}.dataset set 
-                      datakindid =$1, mnemonic =$2, name =$3, active =$4, columncount =$5, incremental =$6 ,
-                      offsetcolumn =$7, type =$8, path =$9, ovrd_stale_alert =$10, headerrow =$11, footerrow =$12,
-                      headerrownumber =$13,footerrownumber =$14, customsql =$15, customsql_yn =$16,tbl_nm =$17,
-                      file_pwd =$19, updt_tm =$20, delimiter=$21,  escapecode =$22, quote=$23, 
-                      rowdecreaseallowed =$24 , data_freq  =$25  where externalid=$18`;
+      //             let dsRows = await DB.executeQuery(selectDP);
+      //             if (dsRows.rows.length > 0) {
+      //               console.log("update query");
+      //               let updateQueryDS = `UPDATE ${schemaName}.dataset set
+      //                   datakindid =$1, mnemonic =$2, name =$3, active =$4, columncount =$5, incremental =$6 ,
+      //                   offsetcolumn =$7, type =$8, path =$9, ovrd_stale_alert =$10, headerrow =$11, footerrow =$12,
+      //                   headerrownumber =$13,footerrownumber =$14, customsql =$15, customsql_yn =$16,tbl_nm =$17,
+      //                   file_pwd =$19, updt_tm =$20, delimiter=$21,  escapecode =$22, quote=$23,
+      //                   rowdecreaseallowed =$24 , data_freq  =$25  where externalid=$18`;
 
-                  let dataSetUpdate = await DB.executeQuery(updateQueryDS, [
-                    ...DSBody,
-                  ]);
-                  newobj.timestamp = ts;
-                  newobj.externalId = obj.externalID;
-                  newobj.datasetid = dsUid;
-                  newobj.action = "Data set updated successfully.";
-                  ResponseBody.data_sets.push(newobj);
-                  obj.datasetid = dsUid;
-                } else {
-                  console.log("Insert query");
+      //               let dataSetUpdate = await DB.executeQuery(updateQueryDS, [
+      //                 ...DSBody,
+      //               ]);
+      //               newobj.timestamp = ts;
+      //               newobj.externalId = obj.externalID;
+      //               newobj.datasetid = dsUid;
+      //               newobj.action = "Data set updated successfully.";
+      //               ResponseBody.data_sets.push(newobj);
+      //               obj.datasetid = dsUid;
+      //             } else {
+      //               console.log("Insert query");
 
-                  let createDS = await DB.executeQuery(
-                    `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
-                        offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
-                        customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27)`,
-                    DSBody
-                  );
-                }
+      //               let createDS = await DB.executeQuery(
+      //                 `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
+      //                     offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
+      //                     customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27)`,
+      //                 DSBody
+      //               );
+      //             }
 
-                await DB.executeQuery(
-                  `INSERT INTO ${schemaName}.dataflow_audit_log
-                    ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-                    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-                  [
-                    "cci4te0l3fmtyv4q",
-                    dpUid,
-                    dsUid,
-                    null,
-                    1,
-                    "New Dataset",
-                    "",
-                    "",
-                    externalSystemName === "CDI" ? userId : externalSystemName,
-                    new Date(),
-                  ]
-                );
+      //             await DB.executeQuery(
+      //               `INSERT INTO ${schemaName}.dataflow_audit_log
+      //                 ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+      //                 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+      //               [
+      //                 "cci4te0l3fmtyv4q",
+      //                 dpUid,
+      //                 dsUid,
+      //                 null,
+      //                 1,
+      //                 "New Dataset",
+      //                 "",
+      //                 "",
+      //                 externalSystemName === "CDI" ? userId : externalSystemName,
+      //                 new Date(),
+      //               ]
+      //             );
 
-                if (obj.columnDefinition && obj.columnDefinition.length > 0) {
-                  ResponseBody.column_definition = [];
-                  for (let el of obj.columnDefinition) {
-                    let newobj = {};
-                    const CDUid = createUniqueID();
-                    let CDBody = [
-                      el.name || el.columnName || null,
-                      el.dataType || null,
-                      helper.stringToBoolean(el.primaryKey) ? 1 : 0,
-                      helper.stringToBoolean(el.required) ? 1 : 0,
-                      el.characterMin || el.minLength || 0,
-                      el.characterMax || el.maxLength || 0,
-                      el.position || 0,
-                      el.format || null,
-                      el.lov || el.values || null,
-                      helper.stringToBoolean(el.unique) ? 1 : 0,
-                      el.requiredfield || null,
-                      new Date(),
-                    ];
-                    let updateQueryCD = `UPDATE ${schemaName}.columndefinition set  name =$1 ,
-                      datatype =$2 ,primarykey =$3,required =$4 ,charactermin =$5 ,charactermax =$6,
-                      position =$7 ,format =$8,lov =$9 , "unique", requiredfield =$11 , updt_tm =$12 
-                      where externalid=$18`;
+      //             if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+      //               ResponseBody.column_definition = [];
+      //               for (let el of obj.columnDefinition) {
+      //                 let newobj = {};
+      //                 const CDUid = createUniqueID();
+      //                 let CDBody = [
+      //                   el.name || el.columnName || null,
+      //                   el.dataType || null,
+      //                   helper.stringToBoolean(el.primaryKey) ? 1 : 0,
+      //                   helper.stringToBoolean(el.required) ? 1 : 0,
+      //                   el.characterMin || el.minLength || 0,
+      //                   el.characterMax || el.maxLength || 0,
+      //                   el.position || 0,
+      //                   el.format || null,
+      //                   el.lov || el.values || null,
+      //                   helper.stringToBoolean(el.unique) ? 1 : 0,
+      //                   el.requiredfield || null,
+      //                   new Date(),
+      //                 ];
+      //                 let updateQueryCD = `UPDATE ${schemaName}.columndefinition set  name =$1 ,
+      //                   datatype =$2 ,primarykey =$3,required =$4 ,charactermin =$5 ,charactermax =$6,
+      //                   position =$7 ,format =$8,lov =$9 , "unique", requiredfield =$11 , updt_tm =$12
+      //                   where externalid=$18`;
 
-                    // let columnUpdate = await DB.executeQuery(updateQueryCD, [
-                    //   ...CDBody,
-                    // ]);
+      //                 // let columnUpdate = await DB.executeQuery(updateQueryCD, [
+      //                 //   ...CDBody,
+      //                 // ]);
 
-                    return;
+      //                 return;
 
-                    // dataflow audit
-                    let dataflow_aduit_query = `INSERT INTO ${schemaName}.dataflow_audit_log
-                      ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-                      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`;
-                    let audit_body = [
-                      uid,
-                      dpUid,
-                      dsUid,
-                      CDUid,
-                      1,
-                      "New Column definition",
-                      "",
-                      "",
-                      externalSystemName === "CDI"
-                        ? userId
-                        : externalSystemName,
-                      new Date(),
-                    ];
-                    await DB.executeQuery(dataflow_aduit_query, audit_body);
+      //                 // dataflow audit
+      //                 let dataflow_aduit_query = `INSERT INTO ${schemaName}.dataflow_audit_log
+      //                   ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+      //                   VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`;
+      //                 let audit_body = [
+      //                   uid,
+      //                   dpUid,
+      //                   dsUid,
+      //                   CDUid,
+      //                   1,
+      //                   "New Column definition",
+      //                   "",
+      //                   "",
+      //                   externalSystemName === "CDI"
+      //                     ? userId
+      //                     : externalSystemName,
+      //                   new Date(),
+      //                 ];
+      //                 await DB.executeQuery(dataflow_aduit_query, audit_body);
 
-                    newobj.timestamp = ts;
-                    newobj.externalId = obj.externalID;
-                    newobj.colmunid = CDUid;
-                    newobj.action = "column definition updated successfully.";
-                    el.colmunid = CDUid;
-                    ResponseBody.column_definition.push(newobj);
-                  }
-                }
-              }
-            }
-          }
-        }
-      } else {
-        return apiResponse.ErrorResponse(
-          res,
-          "Vendor name , protocol number and description is required"
-        );
-      }
+      //                 newobj.timestamp = ts;
+      //                 newobj.externalId = obj.externalID;
+      //                 newobj.colmunid = CDUid;
+      //                 newobj.action = "column definition updated successfully.";
+      //                 el.colmunid = CDUid;
+      //                 ResponseBody.column_definition.push(newobj);
+      //               }
+      //             }
+      //           }
+      //         }
+      //       }
+      //     }
+      //   } else {
+      //     return apiResponse.ErrorResponse(
+      //       res,
+      //       "Vendor name , protocol number and description is required"
+      //     );
+      //   }
 
-      await DB.executeQuery(
-        `INSERT INTO ${schemaName}.dataflow_audit_log
-    ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-        [
-          uid,
-          null,
-          null,
-          null,
-          1,
-          "New Dataflow",
-          "",
-          "",
-          externalSystemName === "CDI" ? userId : externalSystemName,
-          new Date(),
-        ]
-      );
-      let config_json = {
-        dataFlowId: uid,
-        vendorName: vendorName,
-        protocolNumber: protocolNumber,
-        type: type,
-        name: name,
-        externalID: externalID,
-        externalSystemName: externalSystemName,
-        connectionType: connectionType,
-        location: src_loc_id,
-        exptDtOfFirstProdFile: exptDtOfFirstProdFile,
-        testFlag: helper.stringToBoolean(testFlag) ? 1 : 0,
-        prodFlag: helper.stringToBoolean(testFlag) ? 0 : 1,
-        description: description,
-        fsrstatus: fsrstatus,
-        dataPackage,
-      };
+      //   await DB.executeQuery(
+      //     `INSERT INTO ${schemaName}.dataflow_audit_log
+      // ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+      // VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+      //     [
+      //       uid,
+      //       null,
+      //       null,
+      //       null,
+      //       1,
+      //       "New Dataflow",
+      //       "",
+      //       "",
+      //       externalSystemName === "CDI" ? userId : externalSystemName,
+      //       new Date(),
+      //     ]
+      //   );
+      //   let config_json = {
+      //     dataFlowId: uid,
+      //     vendorName: vendorName,
+      //     protocolNumber: protocolNumber,
+      //     type: type,
+      //     name: name,
+      //     externalID: externalID,
+      //     externalSystemName: externalSystemName,
+      //     connectionType: connectionType,
+      //     location: src_loc_id,
+      //     exptDtOfFirstProdFile: exptDtOfFirstProdFile,
+      //     testFlag: helper.stringToBoolean(testFlag) ? 1 : 0,
+      //     prodFlag: helper.stringToBoolean(testFlag) ? 0 : 1,
+      //     description: description,
+      //     fsrstatus: fsrstatus,
+      //     dataPackage,
+      //   };
 
-      //insert into dataflow version config log table
-      let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
-    ( dataflowid, "version", config_json, created_by, created_on)
-    VALUES($1,$2,$3,$4,$5);`;
-      let aduit_version_body = [
-        uid,
-        1,
-        JSON.stringify(config_json),
-        externalSystemName === "CDI" ? userId : externalSystemName,
-        new Date(),
-      ];
-      await DB.executeQuery(dataflow_version_query, aduit_version_body);
+      //   //insert into dataflow version config log table
+      //   let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
+      // ( dataflowid, "version", config_json, created_by, created_on)
+      // VALUES($1,$2,$3,$4,$5);`;
+      //   let aduit_version_body = [
+      //     uid,
+      //     1,
+      //     JSON.stringify(config_json),
+      //     externalSystemName === "CDI" ? userId : externalSystemName,
+      //     new Date(),
+      //   ];
+      //   await DB.executeQuery(dataflow_version_query, aduit_version_body);
 
-      let q = `INSERT INTO ${schemaName}.cdr_ta_queue
-    (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
-    VALUES($1, 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', 1, '', 1, '', 0)`;
+      //   let q = `INSERT INTO ${schemaName}.cdr_ta_queue
+      // (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+      // VALUES($1, 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', 1, '', 1, '', 0)`;
 
-      await DB.executeQuery(q, [
-        uid,
-        externalSystemName === "CDI" ? userId : externalSystemName,
-      ]);
+      //   await DB.executeQuery(q, [
+      //     uid,
+      //     externalSystemName === "CDI" ? userId : externalSystemName,
+      //   ]);
 
-      await DB.executeQuery(
-        `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
-        [uid]
-      );
+      //   await DB.executeQuery(
+      //     `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+      //     [uid]
+      //   );
 
-      return apiResponse.successResponseWithData(
-        res,
-        "Data flow updated successfully.",
-        ResponseBody
-      );
-      // return apiResponse.successResponseWithData(res, "Success", rows);
+      //   return apiResponse.successResponseWithData(
+      //     res,
+      //     "Data flow updated successfully.",
+      //     ResponseBody
+      //   );
+      //   // return apiResponse.successResponseWithData(res, "Success", rows);
     } else {
       console.log("insert Query");
     }
