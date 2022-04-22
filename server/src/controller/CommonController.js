@@ -87,8 +87,17 @@ module.exports = {
                 version,
               ]
             )
-              .then((response) => {
-                resolve(version);
+              .then(async (response) => {
+                DB.executeQuery(
+                  `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+                  [dataflowId]
+                )
+                  .then((res) => {
+                    resolve(version);
+                  })
+                  .catch((err) => {
+                    resolve(false);
+                  });
               })
               .catch((err) => {
                 resolve(false);
@@ -161,8 +170,17 @@ module.exports = {
               VALUES($1, 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0, $4)`,
                 [package.dataflowid, user_id, version, package.datapackageid]
               )
-                .then((response) => {
-                  resolve(version);
+                .then(async (response) => {
+                  DB.executeQuery(
+                    `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+                    [package.dataflowid]
+                  )
+                    .then((res) => {
+                      resolve(version);
+                    })
+                    .catch((err) => {
+                      resolve(false);
+                    });
                 })
                 .catch((err) => {
                   resolve(false);
@@ -315,8 +333,17 @@ module.exports = {
               VALUES($1, 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0, $4, $5)`,
                 [dfId, userId, version, datapackageid, datasetid]
               )
-                .then((response) => {
-                  resolve(version);
+                .then(async (response) => {
+                  DB.executeQuery(
+                    `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+                    [dfId]
+                  )
+                    .then((res) => {
+                      resolve(version);
+                    })
+                    .catch((err) => {
+                      resolve(false);
+                    });
                 })
                 .catch((err) => {
                   resolve(false);
@@ -376,8 +403,17 @@ module.exports = {
               VALUES($1, 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0, $4, $5)`,
                 [dfId, userId, version, dpId, datasetid]
               )
-                .then((response) => {
-                  resolve(version);
+                .then(async (response) => {
+                  DB.executeQuery(
+                    `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+                    [dfId]
+                  )
+                    .then((res) => {
+                      resolve(version);
+                    })
+                    .catch((err) => {
+                      resolve(false);
+                    });
                 })
                 .catch((err) => {
                   resolve(false);

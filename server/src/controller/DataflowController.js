@@ -967,6 +967,11 @@ exports.createDataflow = async (req, res) => {
       externalSystemName === "CDI" ? userId : externalSystemName,
     ]);
 
+    await DB.executeQuery(
+      `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+      [uid]
+    );
+
     return apiResponse.successResponseWithData(
       res,
       "Data flow created successfully.",
@@ -1256,6 +1261,12 @@ exports.syncDataFlow = async (req, res) => {
     (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
     VALUES($1, 'SYNC', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0)`;
     await DB.executeQuery(q, [dataFlowId, userId, version]);
+
+    await DB.executeQuery(
+      `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+      [dataFlowId]
+    );
+
     return apiResponse.successResponse(
       res,
       "Sync Pipeline configs successfully written to Kafka",
@@ -1751,6 +1762,11 @@ exports.updateDataFlow = async (req, res) => {
         uid,
         externalSystemName === "CDI" ? userId : externalSystemName,
       ]);
+
+      await DB.executeQuery(
+        `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+        [uid]
+      );
 
       return apiResponse.successResponseWithData(
         res,
