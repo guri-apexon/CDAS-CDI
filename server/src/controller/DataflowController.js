@@ -968,7 +968,7 @@ exports.createDataflow = async (req, res) => {
     ]);
 
     await DB.executeQuery(
-      `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+      `UPDATE ${schemaName}.dataflow SET updt_tm=NOW(), configured=0 WHERE dataflowid=$1`,
       [uid]
     );
 
@@ -1264,7 +1264,7 @@ exports.syncDataFlow = async (req, res) => {
     await DB.executeQuery(q, [dataFlowId, userId, version]);
 
     await DB.executeQuery(
-      `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+      `UPDATE ${schemaName}.dataflow SET updt_tm=NOW(), configured=0 WHERE dataflowid=$1`,
       [dataFlowId]
     );
 
@@ -1765,7 +1765,7 @@ exports.updateDataFlow = async (req, res) => {
       //   ]);
 
       //   await DB.executeQuery(
-      //     `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+      //     `UPDATE ${schemaName}.dataflow SET updt_tm=NOW(), configured=0 WHERE dataflowid=$1`,
       //     [uid]
       //   );
 

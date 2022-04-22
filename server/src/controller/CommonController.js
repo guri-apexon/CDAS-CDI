@@ -33,6 +33,7 @@ module.exports = {
       });
     });
   },
+
   addDataflowHistory: ({
     dataflowId,
     externalSystemName,
@@ -80,7 +81,7 @@ module.exports = {
             DB.executeQuery(
               `INSERT INTO ${schemaName}.cdr_ta_queue
             (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
-            VALUES($1, 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0)`,
+            VALUES($1, 'CONFIG', $2, 'QUEUE', NOW(), NOW(), '', $3, '', 1, '', 0)`,
               [
                 dataflowId,
                 externalSystemName === "CDI" ? userId : externalSystemName,
@@ -89,7 +90,7 @@ module.exports = {
             )
               .then(async (response) => {
                 DB.executeQuery(
-                  `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+                  `UPDATE ${schemaName}.dataflow SET updt_tm=NOW(), configured=0 WHERE dataflowid=$1`,
                   [dataflowId]
                 )
                   .then((res) => {
@@ -172,7 +173,7 @@ module.exports = {
               )
                 .then(async (response) => {
                   DB.executeQuery(
-                    `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+                    `UPDATE ${schemaName}.dataflow SET updt_tm=NOW(), configured=0 WHERE dataflowid=$1`,
                     [package.dataflowid]
                   )
                     .then((res) => {
@@ -335,7 +336,7 @@ module.exports = {
               )
                 .then(async (response) => {
                   DB.executeQuery(
-                    `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+                    `UPDATE ${schemaName}.dataflow SET updt_tm=NOW(), configured=0 WHERE dataflowid=$1`,
                     [dfId]
                   )
                     .then((res) => {
@@ -405,7 +406,7 @@ module.exports = {
               )
                 .then(async (response) => {
                   DB.executeQuery(
-                    `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), configured=0 WHERE dataflowid=$1`,
+                    `UPDATE ${schemaName}.dataflow SET updt_tm=NOW(), configured=0 WHERE dataflowid=$1`,
                     [dfId]
                   )
                     .then((res) => {
