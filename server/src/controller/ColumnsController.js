@@ -154,7 +154,7 @@ exports.updateColumns = async (req, res) => {
           unique: value.unique == "Yes" ? 1 : 0,
           charactermin: value.minLength || 0,
           charactermax: value.maxLength || 0,
-          position: value.position.trim() || 0,
+          position: value.position || 0,
           format: value.format.trim() || null,
           lov: value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
         };
