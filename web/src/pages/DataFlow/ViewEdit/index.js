@@ -193,10 +193,12 @@ const DataFlow = ({ FormValues, dashboard }) => {
         userId: userInfo.userId,
       };
       const result = await updateDataflow(payload);
-      if (result.status === 1) {
+      if (result?.status === 1) {
         messageContext.showSuccessMessage(result.message);
       } else {
-        messageContext.showErrorMessage(result.message);
+        messageContext.showErrorMessage(
+          result?.message || "Something went wrong"
+        );
       }
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
