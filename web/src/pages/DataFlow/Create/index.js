@@ -35,10 +35,7 @@ import {
   getLocationByType,
   setDataflowLocal,
 } from "../../../store/actions/DataFlowAction";
-import {
-  getSQLColumns,
-  getLocationDetails,
-} from "../../../store/actions/DataSetsAction";
+import { getLocationDetails } from "../../../store/actions/DataSetsAction";
 import DataPackages from "./Datapackage";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";

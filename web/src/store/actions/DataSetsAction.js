@@ -122,10 +122,10 @@ export const getSQLColumns = (payload) => {
   };
 };
 
-export const getPreviewSQL = (query) => {
+export const getPreviewSQL = (payload) => {
   return {
     type: GET_PREVIEW_SQL,
-    query,
+    payload,
   };
 };
 
