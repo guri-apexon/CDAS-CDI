@@ -653,3 +653,16 @@ export const goToCore = () => {
   if (process.env.REACT_APP_CORE_URL)
     window.location.href = process.env.REACT_APP_CORE_URL;
 };
+
+export const dataTypeForPostgres = (datatype) => {
+  if (datatype.includes("character")) {
+    return "Alphanumeric";
+  }
+  if (datatype.includes("integer")) {
+    return "Numeric";
+  }
+  if (datatype.includes("timestamp")) {
+    return "Date";
+  }
+  return "Alphanumeric";
+};

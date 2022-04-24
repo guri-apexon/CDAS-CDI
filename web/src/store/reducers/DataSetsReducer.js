@@ -45,6 +45,8 @@ import {
   FETCH_LOCATION_DETAIL_SUCCESS,
 } from "../../constants";
 
+import { dataTypeForPostgres } from "../../utils/index";
+
 const defaultData = {
   active: true,
   locationType: "SFTP",
@@ -305,6 +307,12 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case FETCH_SQL_COLUMNS_SUCCESS:
         newState.loading = false;
+        if (action.payload.locationType === "PostgreSQL") {
+          newState.sqlColumns = action.sqlColumns.map((e) => {
+            e.dataType = dataTypeForPostgres(e.datatype);
+            return e;
+          });
+        }
         newState.sqlColumns = action.sqlColumns;
         break;
       case GET_DATASET_DETAIL:

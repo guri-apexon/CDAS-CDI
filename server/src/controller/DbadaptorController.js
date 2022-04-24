@@ -89,7 +89,7 @@ exports.tablecolumns = async (res, req) => {
     let q = ``;
     switch (locationType?.toLowerCase()) {
       case "postgresql":
-        q = `SELECT c.COLUMN_NAME as "columnName",c.DATA_TYPE as "dataType"
+        q = `SELECT c.COLUMN_NAME as "columnName",c.DATA_TYPE as "datatype"
     ,CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 'true' ELSE 'false' END AS "primaryKey"
     ,CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 'true' ELSE 'false' END AS required
     ,case when pk.COLUMN_NAME IS null then 'false' else 'true' end as unique
