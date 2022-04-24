@@ -233,6 +233,55 @@ const DataFlowReducer = (state = initialState, action) =>
       case UPDATE_DATASET_SUCCESS:
         newState.loading = false;
         newState.error = null;
+        const { dsUpdate } = action;
+        newState.selectedDataset = {
+          ...action.values,
+          datasetid: dsUpdate.datasetid,
+          customsql_yn: dsUpdate.customsql_yn,
+          customsql: dsUpdate.customsql,
+          fileType: dsUpdate.type,
+          headerrownumber: dsUpdate.headerrownumber,
+          tbl_nm: dsUpdate.tbl_nm,
+          dataset_fltr: dsUpdate.dataset_fltr,
+        };
+        if (dsUpdate.type) {
+          newState.formData.fileType = dsUpdate.type;
+          newState.formData.datasetName = dsUpdate.mnemonic;
+          newState.formData.active = dsUpdate.active === 1 ? true : false;
+          newState.formData.encoding = dsUpdate.charset;
+          newState.formData.delimiter = dsUpdate.delimiter;
+          newState.formData.escapeCharacter = dsUpdate.escapecode;
+          newState.formData.quote = dsUpdate.quote;
+          newState.formData.headerRowNumber = dsUpdate.headerrownumber;
+          newState.formData.footerRowNumber = dsUpdate.footerrownumber;
+          newState.formData.fileNamingConvention = dsUpdate.name;
+          newState.formData.folderPath = dsUpdate.path;
+          newState.formData.clinicalDataType = [dsUpdate.datakindid];
+          newState.formData.transferFrequency = dsUpdate.data_freq;
+          newState.formData.overrideStaleAlert = dsUpdate.ovrd_stale_alert;
+          newState.formData.rowDecreaseAllowed =
+            dsUpdate.rowdecreaseallowed || 0;
+          newState.formData.loadType =
+            dsUpdate.incremental === "Y" ? "Incremental" : "Cumulative";
+          newState.formData.datasetid = dsUpdate.datasetid;
+          newState.formData.filePwd = dsUpdate.filePwd;
+          newState.haveHeader =
+            parseInt(action.dsUpdate.headerrownumber, 10) > 0;
+        }
+        if (dsUpdate.customsql_yn) {
+          newState.formDataSQL.active = dsUpdate.active === 1 ? true : false;
+          newState.formDataSQL.clinicalDataType = [dsUpdate.datakindid];
+          newState.formDataSQL.datasetName = dsUpdate.mnemonic;
+          newState.formDataSQL.isCustomSQL = dsUpdate.customsql_yn;
+          newState.formDataSQL.sQLQuery = dsUpdate.customsql;
+          newState.formDataSQL.offsetColumn = dsUpdate.offsetcolumn;
+          newState.formDataSQL.tableName = dsUpdate.tbl_nm;
+          newState.formDataSQL.filterCondition = dsUpdate.dataset_fltr;
+          newState.formDataSQL.dataType =
+            dsUpdate.incremental === "N" ? "Cumulative" : "Incremental";
+          newState.formDataSQL.datasetid = dsUpdate.datasetid;
+          newState.haveHeader = true;
+        }
         newState.sucessMsg = "Dataset updated succesfully";
         break;
       case UPDATE_DATASET_FAILURE:
