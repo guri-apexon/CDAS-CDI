@@ -189,7 +189,7 @@ export function* updateDataset(action) {
     );
     yield put({
       type: UPDATE_DATASET_SUCCESS,
-      update: saveData.data.data,
+      dsUpdate: saveData.data.data,
       values: action.values,
     });
   } catch (e) {
