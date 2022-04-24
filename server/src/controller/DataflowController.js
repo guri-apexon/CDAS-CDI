@@ -587,6 +587,7 @@ exports.createDataflow = async (req, res) => {
     if (!type && dataStructure) type = dataStructure;
 
     let studyId = null;
+    let dFTimestamp = helper.getCurrentTime();
     if (
       vendorName !== null &&
       protocolNumberStandard !== null &&
@@ -623,7 +624,6 @@ exports.createDataflow = async (req, res) => {
       let { rows } = await DB.executeQuery(q);
       let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${location}';`;
       let { rows: data } = await DB.executeQuery(q1);
-      let dFTimestamp = new Date();
       // if (rows.length > 0 && data.length > 0) {
       DFBody = [
         uid,
@@ -656,7 +656,7 @@ exports.createDataflow = async (req, res) => {
         ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17, $18) returning dataflowid as "dataFlowId", name as "dataFlowName", type as adapter, description, active as status, testflag, connectiontype as "locationType", fsrstatus as "fsrStatus", prot_id as "studyId", externalsystemname as "externalSourceSystem";`,
         DFBody
       );
-      let ts = new Date().toLocaleString();
+      let ts = dFTimestamp;
       ResponseBody.action = "Data flow created successfully.";
       ResponseBody.status = helper.stringToBoolean(active)
         ? "Active"
@@ -676,7 +676,6 @@ exports.createDataflow = async (req, res) => {
           // if (each.name !== "" && each.path !== "" && each.type !== "") {
 
           let passwordStatus = "No";
-          let dPTimestamp = new Date();
           let { password } = each;
 
           if (password) {
@@ -696,7 +695,7 @@ exports.createDataflow = async (req, res) => {
             helper.stringToBoolean(each.active) ? 1 : 0,
             helper.stringToBoolean(each.noPackageConfig) ? 1 : 0,
             each.externalID || null,
-            dPTimestamp,
+            dFTimestamp,
             uid,
           ];
           let createDP = await DB.executeQuery(
@@ -725,7 +724,7 @@ exports.createDataflow = async (req, res) => {
               "",
               "",
               externalSystemName === "CDI" ? userId : externalSystemName,
-              new Date(),
+              dFTimestamp,
             ]
           );
           if (each.dataSet && each.dataSet.length > 0) {
@@ -744,7 +743,7 @@ exports.createDataflow = async (req, res) => {
                 let checkDataKind = await DB.executeQuery(
                   `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
                 );
-                dataKind = checkDataKind.rows[0].datakindid;
+                dataKind = checkDataKind.rows[0]?.datakindid;
               }
 
               const dsUid = createUniqueID();
@@ -804,7 +803,7 @@ exports.createDataflow = async (req, res) => {
                 obj.tableName || null,
                 obj.externalID || null,
                 dsPasswordStatus || "No",
-                new Date(),
+                dFTimestamp,
                 obj.delimiter || "",
                 helper.convertEscapeChar(
                   obj.escapeCode || obj.escapeCharacter
@@ -840,7 +839,7 @@ exports.createDataflow = async (req, res) => {
                   "",
                   "",
                   externalSystemName === "CDI" ? userId : externalSystemName,
-                  new Date(),
+                  dFTimestamp,
                 ]
               );
 
@@ -864,7 +863,7 @@ exports.createDataflow = async (req, res) => {
                     el.lov || el.values || null,
                     helper.stringToBoolean(el.unique) ? 1 : 0,
                     el.requiredfield || null,
-                    new Date(),
+                    dFTimestamp,
                   ];
                   await DB.executeQuery(
                     `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
@@ -887,7 +886,7 @@ exports.createDataflow = async (req, res) => {
                     "",
                     "",
                     externalSystemName === "CDI" ? userId : externalSystemName,
-                    new Date(),
+                    dFTimestamp,
                   ];
                   await DB.executeQuery(dataflow_aduit_query, audit_body);
 
@@ -924,7 +923,7 @@ exports.createDataflow = async (req, res) => {
         "",
         "",
         externalSystemName === "CDI" ? userId : externalSystemName,
-        new Date(),
+        dFTimestamp,
       ]
     );
     let config_json = {
@@ -954,7 +953,7 @@ exports.createDataflow = async (req, res) => {
       1,
       JSON.stringify(config_json),
       externalSystemName === "CDI" ? userId : externalSystemName,
-      new Date(),
+      dFTimestamp,
     ];
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
 
@@ -2004,7 +2003,6 @@ exports.updateDataflowConfig = async (req, res) => {
       externalSystemName,
       firstFileDate,
       locationName,
-      locationType,
       protocolNumberStandard,
       serviceOwners,
       testFlag,
@@ -2021,7 +2019,7 @@ exports.updateDataflowConfig = async (req, res) => {
       userId
     ) {
       const { rows: existDfRows } = await DB.executeQuery(
-        `SELECT vend_id as "vendorID", src_loc_id as "locationName", testflag as "testFlag", type as "dataStructure", description, connectiontype as "connectionType", serv_ownr as "serviceOwners" from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}';`
+        `SELECT vend_id as "vendorID", src_loc_id as "locationName", testflag as "testFlag", type as "dataStructure", description, connectiontype as "connectionType", serv_ownr as "serviceOwners", expt_fst_prd_dt as "firstFileDate" from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}';`
       );
       if (!existDfRows?.length) {
         return apiResponse.ErrorResponse(res, "Dataflow doesn't exist");
@@ -2029,12 +2027,12 @@ exports.updateDataflowConfig = async (req, res) => {
       const existDf = existDfRows[0];
       const dFTimestamp = helper.getCurrentTime();
       if (testFlag) testFlag = helper.stringToBoolean(testFlag) ? 1 : 0;
-      if (serviceOwners)
-        serviceOwners =
-          serviceOwners && Array.isArray(serviceOwners)
-            ? serviceOwners.join()
-            : "";
+      serviceOwners =
+        serviceOwners && Array.isArray(serviceOwners)
+          ? serviceOwners.join()
+          : "";
       const dFBody = [
+        dataflowId,
         vendorID,
         dataStructure,
         description,
@@ -2044,11 +2042,11 @@ exports.updateDataflowConfig = async (req, res) => {
         externalSystemName,
         dFTimestamp,
         serviceOwners,
-        dataflowId,
+        moment(firstFileDate).isValid() ? firstFileDate : null,
       ];
       // update dataflow schema into db
       const updatedDF = await DB.executeQuery(
-        `update ${schemaName}.dataflow set vend_id=$1, type=$2, description=$3, src_loc_id=$4, testflag=$5, connectiontype=$6, externalsystemname=$7, updt_tm=$8, serv_ownr=$9 WHERE dataflowid=$10 returning *;`,
+        `update ${schemaName}.dataflow set vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, externalsystemname=$8, updt_tm=$9, serv_ownr=$10, expt_fst_prd_dt=$11 WHERE dataflowid=$1 returning *;`,
         dFBody
       );
       if (!updatedDF?.rowCount) {
@@ -2064,6 +2062,9 @@ exports.updateDataflowConfig = async (req, res) => {
         connectionType,
         serviceOwners,
       };
+      if (!moment(firstFileDate).isSame(existDf.firstFileDate, "day")) {
+        comparisionObj.firstFileDate = firstFileDate;
+      }
       const diffObj = helper.getdiffKeys(comparisionObj, existDf);
       const updatedLogs = await addDataflowHistory({
         dataflowId,

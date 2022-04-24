@@ -190,7 +190,7 @@ const DataFlow = ({
         testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
         exptDtOfFirstProdFile: FormValues.firstFileDate,
-        locationType: FormValues.locationType,
+        connectionType: FormValues.locationType,
         protocolNumberStandard: selectedCard.protocolnumberstandard,
         // protocolNumber: selectedCard.prot_id,
         serviceOwners: FormValues.serviceOwner?.map((x) => x.value) || [],
@@ -209,7 +209,15 @@ const DataFlow = ({
   };
 
   const backStep = () => {
-    setCurrentStep({ prev: true });
+    if (currentStep > 3) {
+      if (myform.dataPackage[0]?.dataSet[0]?.customQuery === "Yes") {
+        setCurrentStep({ step: 2 });
+      } else {
+        setCurrentStep({ step: 3 });
+      }
+    } else {
+      setCurrentStep({ prev: true });
+    }
   };
 
   const getDataSetValue = (val) => {
@@ -260,20 +268,26 @@ const DataFlow = ({
       datasetObj.OverrideStaleAlert = datasetObj.overrideStaleAlert;
       delete datasetObj.overrideStaleAlert;
     }
-    if (datasetObj.customQuery === "No" && datasetObj.tableName) {
-      dispatch(getSQLColumns(datasetObj.tableName));
-    }
+    // if (datasetObj.customQuery === "No" && datasetObj.tableName) {
+    //   dispatch(getSQLColumns(datasetObj.tableName));
+    // }
     if (typeof datasetObj.headerRowNumber !== "undefined") {
       setHeaderValue(datasetObj.headerRowNumber);
     }
 
-    newForm.dataPackage[0].dataSet[0] = datasetObj;
-    setForm(newForm);
     if (datasetObj.customQuery === "Yes") {
+      if (!datasetObj.sqlReady) {
+        messageContext.showErrorMessage("Please hit previewSql to proceed");
+        return false;
+      }
+      setCurrentStep({ step: 5 });
+    } else if (datasetObj.customQuery === "No") {
       setCurrentStep({ step: 5 });
     } else {
       setCurrentStep();
     }
+    newForm.dataPackage[0].dataSet[0] = datasetObj;
+    setForm(newForm);
   };
 
   const AddColumnDefinitions = (rows) => {

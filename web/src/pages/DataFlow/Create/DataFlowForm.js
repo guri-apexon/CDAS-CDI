@@ -146,7 +146,6 @@ const DataFlowFormBase = (props) => {
                 dateFormat="DD MMM YYYY"
                 placeholder="DD MMM YYYY"
                 label="Expected First File Date"
-                required
               />
             </div>
 

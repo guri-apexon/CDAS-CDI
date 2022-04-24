@@ -8,6 +8,7 @@ import { useDispatch, useSelector, connect } from "react-redux";
 import { submit, reset, getFormValues } from "redux-form";
 import Loader from "apollo-react/components/Loader";
 import { values } from "lodash";
+import moment from "moment";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
 import LeftPanel from "./LeftPanel";
@@ -86,6 +87,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
   const [dataflowSource, setDataFlowSource] = useState({});
+  const [ffDate, setFfDate] = useState(null);
   const { dataflowId } = useParams();
   const userInfo = getUserInfo();
 
@@ -166,10 +168,13 @@ const DataFlow = ({ FormValues, dashboard }) => {
   //     history.push("/dashboard");
   //   }
   // }, [dashboard?.selectedCard]);
-
+  const changeFirstFlDt = (dt) => {
+    console.log("dt", dt);
+    setFfDate(dt);
+  };
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
-    console.log("FormValues", FormValues);
+    // console.log("FormValues", FormValues);
     if (
       FormValues?.vendors &&
       selectedLocation &&
@@ -177,16 +182,18 @@ const DataFlow = ({ FormValues, dashboard }) => {
       protId !== "" &&
       dataflowId
     ) {
+      const firstFileDate = moment(ffDate || FormValues.firstFileDate).format(
+        "DD-MMM-yyyy"
+      );
       const payload = {
         vendorID: FormValues.vendors[0],
         locationName: selectedLocation.value,
         dataStructure: FormValues.dataStructure,
-        connectionType: FormValues.dataflowType,
+        connectionType: FormValues.locationType,
         testFlag: FormValues.dataflowType === "test" ? "true" : "false",
         prodFlag: FormValues.dataflowType === "production" ? "true" : "false",
         description: FormValues.description,
-        firstFileDate: FormValues.firstFileDate,
-        locationType: FormValues.locationType,
+        firstFileDate,
         serviceOwners: FormValues.serviceOwner?.length
           ? FormValues.serviceOwner
           : null,
@@ -196,10 +203,12 @@ const DataFlow = ({ FormValues, dashboard }) => {
         userId: userInfo.userId,
       };
       const result = await updateDataflow(payload);
-      if (result.status === 1) {
+      if (result?.status === 1) {
         messageContext.showSuccessMessage(result.message);
       } else {
-        messageContext.showErrorMessage(result.message);
+        messageContext.showErrorMessage(
+          result?.message || "Something went wrong"
+        );
       }
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
@@ -274,6 +283,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
                 userName={selectedLocation?.usr_nm}
                 password={selectedLocation?.pswd}
                 connLink={selectedLocation?.cnn_url}
+                firstFileDate={ffDate}
+                changeFirstFlDt={changeFirstFlDt}
               />
             </div>
           </div>
