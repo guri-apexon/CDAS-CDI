@@ -111,8 +111,14 @@ const JDBCForm = forwardRef((props, ref) => {
   const [triggeredSqlData, setTriggerSqlData] = useState(false);
   const messageContext = useContext(MessageContext);
 
-  const { datakind, selectedDataset, previewSQL, sqlTables, sqlColumns } =
-    dataSets;
+  const {
+    datakind,
+    selectedDataset,
+    previewSQL,
+    sqlTables,
+    sqlColumns,
+    locationDetail,
+  } = dataSets;
 
   const {
     datasetId,
@@ -224,7 +230,17 @@ const JDBCForm = forwardRef((props, ref) => {
     }
     setIsPreviewReady(true);
     setLoading(true);
-    await dispatch(getPreviewSQL(sQLQuery));
+    await dispatch(
+      getPreviewSQL({
+        tableName: null,
+        ...locationDetail,
+        columnCount: null,
+        customQuery: isCustomSQL,
+        columnDefinition: null,
+        customSql: sQLQuery,
+        conditionalExpression: null,
+      })
+    );
   };
 
   const handleStatusUpdate = () => {
