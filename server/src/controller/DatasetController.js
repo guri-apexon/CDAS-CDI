@@ -244,7 +244,13 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
     const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
     dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const insertQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $8, incremental = $9, updt_tm=Now() where datasetid = $10`;
+    const insertQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $8, incremental = $9, updt_tm=Now() where datasetid = $10 returning *`;
+
+    const updateDS = await DB.executeQuery(insertQuery, body);
+
+    if (!updateDS?.rowCount) {
+      return apiResponse.ErrorResponse(res, "Something went wrong on update");
+    }
 
     const requestData = {
       datasetid: datasetid,
@@ -283,8 +289,11 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
       }
     }
 
-    const data = await DB.executeQuery(insertQuery, body);
-    return apiResponse.successResponseWithData(res, "Operation success", data);
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      updateDS.rows[0]
+    );
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :update SQL Dataset");
@@ -311,7 +320,7 @@ exports.updateDatasetData = async (req, res) => {
                          datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, 
                          incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $19`;
+    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $19 returning *`;
     if (isExist) {
       return apiResponse.ErrorResponse(
         res,
@@ -322,7 +331,47 @@ exports.updateDatasetData = async (req, res) => {
     if (values.locationType.toLowerCase() === "jdbc") {
       return updateSQLDataset(res, values, dfId, userId, dpId, datasetid);
     }
+
     const incremental = values.loadType === "Incremental" ? "Y" : "N";
+
+    let passwordStatus = "No";
+
+    if (values.filePwd) {
+      passwordStatus = "Yes";
+      await helper.writeVaultData(`${dfId}/${dpId}/${datasetid}`, {
+        password: values.filePwd,
+      });
+    }
+
+    const body = [
+      values.datasetName,
+      values.fileType || null,
+      values.encoding || null,
+      values.delimiter || null,
+      values.escapeCharacter || null,
+      values.quote || null,
+      values.headerRowNumber || 0,
+      values.footerRowNumber || 0,
+      helper.stringToBoolean(values.active) ? 1 : 0,
+      values.fileNamingConvention || null,
+      values.folderPath || null,
+      values.clinicalDataType[0],
+      values.transferFrequency || null,
+      values.overrideStaleAlert || null,
+      values.rowDecreaseAllowed || 0,
+      new Date(),
+      incremental,
+      passwordStatus,
+    ];
+
+    const updateDS = await DB.executeQuery(updateQuery, [
+      ...body,
+      values.datasetid,
+    ]);
+
+    if (!updateDS?.rowCount) {
+      return apiResponse.ErrorResponse(res, "Something went wrong on update");
+    }
 
     var requestData = {
       datasetid: datasetid,
@@ -350,39 +399,6 @@ exports.updateDatasetData = async (req, res) => {
     const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
     const oldData = tempData[0];
 
-    let passwordStatus = "No";
-
-    if (values.filePwd) {
-      passwordStatus = "Yes";
-      await helper.writeVaultData(`${dfId}/${dpId}/${datasetid}`, {
-        password: values.filePwd,
-      });
-    }
-    const body = [
-      values.datasetName,
-      values.fileType || null,
-      values.encoding || null,
-      values.delimiter || null,
-      values.escapeCharacter || null,
-      values.quote || null,
-      values.headerRowNumber || 0,
-      values.footerRowNumber || 0,
-      helper.stringToBoolean(values.active) ? 1 : 0,
-      values.fileNamingConvention || null,
-      values.folderPath || null,
-      values.clinicalDataType[0],
-      values.transferFrequency || null,
-      values.overrideStaleAlert || null,
-      values.rowDecreaseAllowed || 0,
-      new Date(),
-      incremental,
-      passwordStatus,
-    ];
-
-    const inset = await DB.executeQuery(updateQuery, [
-      ...body,
-      values.datasetid,
-    ]);
     for (const key in requestData) {
       if (requestData[key] != oldData[key]) {
         console.log("requestData", requestData[key], oldData[key]);
@@ -400,7 +416,11 @@ exports.updateDatasetData = async (req, res) => {
       }
     }
 
-    return apiResponse.successResponseWithData(res, "Operation success", inset);
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      updateDS.rows[0]
+    );
   } catch (err) {
     //throw error in json response with status 500.
     console.log(err, "err");
