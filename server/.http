@@ -666,6 +666,27 @@ content-type: application/json
     "userId": "u1105372"
 }
 
+### update location
+
+POST http://localhost:4001/v1/api/location/update HTTP/1.1
+content-type: application/json
+
+{
+    "locationID": "7cex6pyiewwre7fq",
+    "locationName": "vaithe_test_MySQL",
+    "active": 1,
+    "locationType": "MySQL",
+    "ipServer": "ca2uhdtsd001vd",
+    "dataStructure": "tabular",
+    "userName": "vault",
+    "password": "",
+    "connURL": "jdbc:mysql://ca2uhdtsd001vd:3306/vault",
+    "port": "3306",
+    "dbName": "vault",
+    "externalSytemName": "IQB",
+    "userId": "u1105372"
+}
+
 ### get location detail
 
 GET http://localhost:4001/v1/api/location/list/a139214c-bf90-4d HTTP/1.1
