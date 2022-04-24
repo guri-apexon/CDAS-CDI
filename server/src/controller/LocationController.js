@@ -347,7 +347,7 @@ exports.updateLocationData = async function (req, res) {
 
     const updateQuery = `UPDATE ${schemaName}.source_location set loc_typ=$1, ip_servr=$2, port=$3, data_strc=$4, active=$5, extrnl_sys_nm=$6, loc_alias_nm=$7, updt_tm=NOW(), db_nm=$8, cnn_url=$9, usr_nm=$10, pswd=$11 where src_loc_id=$12 returning *`;
     const updateLocation = await DB.executeQuery(updateQuery, body);
-    const oldLocation = await DB.executeQuery(selectQuery, locationID);
+    const oldLocation = await DB.executeQuery(selectQuery, [locationID]);
 
     if (!updateLocation?.rowCount || !oldLocation?.rowCount) {
       return apiResponse.ErrorResponse(res, "Something went wrong on update");
@@ -388,13 +388,6 @@ exports.updateLocationData = async function (req, res) {
       });
     }
 
-    await updateDataflowVersion(
-      locationID,
-      updateLocation.row,
-      oldLocation.row,
-      userId
-    );
-
     return apiResponse.successResponseWithData(res, "Operation success", true);
   } catch (err) {
     //throw error in json response with status 500.
@@ -416,7 +409,7 @@ exports.statusUpdate = async (req, res) => {
     );
     const oldLocation = await DB.executeQuery(
       `SELECT active FROM ${schemaName}.source_location where src_loc_id=$1`,
-      id
+      [id]
     );
 
     if (!updateLocation?.rowCount || !oldLocation?.rowCount) {
