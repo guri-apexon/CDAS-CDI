@@ -176,6 +176,7 @@ const Dataset = () => {
 
   useEffect(() => {
     setValue(0);
+    setColumnsActive(false);
   }, [params]);
 
   useEffect(() => {
@@ -214,6 +215,8 @@ const Dataset = () => {
           // dispatch(getSQLColumns(tableName));
           setColumnsActive(true);
           setValue(1);
+        } else {
+          setColumnsActive(false);
         }
       }, 2000);
     }
@@ -226,9 +229,11 @@ const Dataset = () => {
       } else if (isCustomSQL === "No") {
         // dispatch(getSQLColumns(tableName));
         setColumnsActive(true);
+      } else {
+        setColumnsActive(false);
       }
     }, 2000);
-  }, [isDatasetFetched]);
+  }, [isDatasetFetched, locationType]);
 
   const goToDataflow = () => {
     if (dfId) {
@@ -367,7 +372,8 @@ const Dataset = () => {
                       <Tab
                         label={tab}
                         disabled={
-                          !columnsActive && tab === ("Dataset Columns" || "VLC")
+                          (!columnsActive && tab === "Dataset Columns") ||
+                          (!columnsActive && tab === "VLC")
                         }
                       />
                     ))}
