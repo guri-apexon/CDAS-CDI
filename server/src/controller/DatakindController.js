@@ -147,7 +147,7 @@ exports.updateDataKind = async (req, res) => {
       );
       const existingObj = existRows[0];
 
-      dfList.rows.forEach(async (row) => {
+      dfList?.rows?.forEach(async (row) => {
         const dataflowId = row.dataflowid;
         const datakindObj = updatedData.rows[0];
         const comparisionObj = {
@@ -156,18 +156,14 @@ exports.updateDataKind = async (req, res) => {
           dk_desc: dkDesc,
         };
         const diffObj = helper.getdiffKeys(comparisionObj, existingObj);
-        const updatedLogs = await addDataflowHistory({
+        await addDataflowHistory({
           dataflowId,
-          externalSystemName,
+          externalSystemName: "CDI",
           userId,
           config_json: datakindObj,
           diffObj,
           existingObj,
         });
-
-        if (updatedLogs) {
-          apiResponse.successResponse(res, "Updated successfully");
-        }
       });
 
       return apiResponse.successResponse(res, "Updated successfully");
