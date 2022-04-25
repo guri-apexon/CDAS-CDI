@@ -284,14 +284,14 @@ const JDBCForm = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (isCustomSQL === "No") {
-      dispatch(getSQLTables());
+      dispatch(getSQLTables({ ...locationDetail }));
       setIsPreviewReady(false);
     }
   }, [isCustomSQL]);
 
   useEffect(() => {
     if (dataType === "Incremental") {
-      dispatch(getSQLColumns(tableName));
+      dispatch(getSQLColumns({ ...locationDetail, tableName }));
       setTriggerSqlData(true);
     }
   }, [dataType]);
