@@ -121,9 +121,14 @@ exports.saveDatasetData = async (req, res) => {
 
     if (values.filePwd) {
       passwordStatus = "Yes";
-      await helper.writeVaultData(`${dfId}/${dpId}/${datasetId}`, {
-        password: values.filePwd,
-      });
+      try {
+        await helper.writeVaultData(`${dfId}/${dpId}/${datasetId}`, {
+          password: values.filePwd,
+        });
+      } catch (error) {
+        Logger.error(error);
+        return apiResponse.ErrorResponse(res, "Something Wrong with Vault");
+      }
     }
 
     Logger.info({ message: "create Dataset" });
@@ -328,7 +333,7 @@ exports.updateDatasetData = async (req, res) => {
       quote: values.quote || null,
       headerrownumber: values.headerRowNumber || 0,
       footerrownumber: values.footerRowNumber || 0,
-      active: true ? 1 : 0,
+      active: helper.stringToBoolean(values.active) ? 1 : 0,
       name: values.fileNamingConvention || null,
       path: values.folderPath || null,
       datakindid: values.clinicalDataType[0],
@@ -360,7 +365,7 @@ exports.updateDatasetData = async (req, res) => {
       values.quote || null,
       values.headerRowNumber || 0,
       values.footerRowNumber || 0,
-      values.active === true ? 1 : 0,
+      helper.stringToBoolean(values.active) ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
       values.clinicalDataType[0],
@@ -376,7 +381,6 @@ exports.updateDatasetData = async (req, res) => {
       ...body,
       values.datasetid,
     ]);
-
     for (const key in requestData) {
       if (requestData[key] != oldData[key]) {
         const historyVersion = await CommonController.addDatasetHistory(

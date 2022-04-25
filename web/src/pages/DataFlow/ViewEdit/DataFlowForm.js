@@ -98,6 +98,8 @@ const DataFlowFormBase = (props) => {
     initialValues,
     testLock,
     prodLock,
+    firstFileDate,
+    changeFirstFlDt,
   } = props;
   const locationNameRef = React.useRef(null);
   const [selectedSrvcOwnr, setSelectedSrvcOwnr] = useState(null);
@@ -180,10 +182,12 @@ const DataFlowFormBase = (props) => {
             />
             <div className="expected-date">
               <ReduxFormDatePickerV2
+                value={firstFileDate}
                 name="firstFileDate"
                 dateFormat="DD MMM YYYY"
                 placeholder="DD MMM YYYY"
                 label="Expected First File Date"
+                onChange={changeFirstFlDt}
               />
             </div>
             <ReduxFormRadioGroup
