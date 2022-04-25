@@ -14,6 +14,8 @@ import {
   RESET_JDBC_FORM,
   UPDATE_COLUMNS_DATA,
   UPDATE_DS_STATUS,
+  STORE_DATASET_COLUMNS_SUCCESS,
+  STORE_DATASET_COLUMNS_FAILURE,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -144,4 +146,14 @@ export const updateDSStatus = (status) => {
     type: UPDATE_DS_STATUS,
     status,
   };
+};
+export const columnsCreated = (resp) => {
+  return {
+    type: STORE_DATASET_COLUMNS_SUCCESS,
+    datasetColumns: resp.data,
+    nQuery: resp.nQuery,
+  };
+};
+export const columnsCreatedFailure = (errText) => {
+  return { type: STORE_DATASET_COLUMNS_FAILURE, message: errText };
 };
