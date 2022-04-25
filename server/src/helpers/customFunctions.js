@@ -87,6 +87,11 @@ exports.validation = (data) => {
     if (val.type == "boolean") {
       val.value = stringToBoolean(val.value);
     }
+    if (val.key === "columncount") {
+      if (val.value === 0) {
+        msg.push({ err: ` Column Count should be greater than 0  ` });
+      }
+    }
     if (
       val.value !== null &&
       val.value !== "" &&
@@ -95,15 +100,13 @@ exports.validation = (data) => {
     ) {
       if (val.maxLength && val.value.length > val.maxLength) {
         msg.push({
-          text: ` ${val.key} should be less than ${val.maxLength} characters  `,
-          status: false,
+          err: ` ${val.key} should be less than ${val.maxLength} characters  `,
         });
       }
       // console.log(val.key);
     } else {
       msg.push({
-        text: ` ${val.key} is required and data type should be ${val.type} `,
-        status: false,
+        err: ` ${val.key} is required and data type should be ${val.type} `,
       });
     }
   });
@@ -116,19 +119,15 @@ exports.validationBlank = (data) => {
 
   data.forEach((val) => {
     if (val.value === "" || val.value === null || val.value === undefined) {
-      // console.log(val.key, val.value);
     } else {
-      msg.push({
-        text: `In JDBC ${val.key} fields should be Blank `,
-        status: false,
-      });
+      msg.push([`In JDBC ${val.key} fields should be Blank `]);
     }
   });
-  // console.log(msg);
+
   return msg;
 };
 exports.getdiffKeys = (newObj, oldObj) => {
-  console.log("line 131");
+  // console.log("line 131");
   if (
     typeof newObj === "object" &&
     !Array.isArray(newObj) &&
@@ -148,6 +147,20 @@ exports.isSftp = (str) => {
 
 exports.isPackageType = (str) => {
   return ["7Z", "ZIP", "RAR", "SAS"].includes(str.toUpperCase());
+};
+
+exports.isConnectionType = (str) => {
+  return [
+    "SFTP",
+    "FTPS",
+    "ORACLE",
+    "HIVE CDP",
+    "HIVE CDH",
+    "IMPALA",
+    "MYSQL",
+    "POSTGRESQL",
+    "SQL SERVER",
+  ].includes(str.toUpperCase());
 };
 
 exports.createCustomSql = (clname, tableName, condition) => {

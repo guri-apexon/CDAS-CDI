@@ -36,7 +36,7 @@ exports.insertValidation = (req) => {
       value: req.testFlag,
       type: "boolean",
     },
-    { key: "Description", value: req.description, type: "string" },
+    { key: "Description", value: req.description, type: "string", length: 30 },
     {
       key: "active",
       value: req.active,
@@ -52,8 +52,7 @@ exports.insertValidation = (req) => {
   if (externalID !== null && externalID !== "" && externalID !== undefined) {
   } else {
     validate.push({
-      text: " External Id  is required and data type should be string or Number ",
-      status: false,
+      err: " External Id  is required and data type should be string or Number ",
     });
   }
   if (
@@ -62,35 +61,20 @@ exports.insertValidation = (req) => {
     ConnectionType !== undefined &&
     typeof ConnectionType === "string"
   ) {
-    if (
-      ConnectionType === "SFTP" ||
-      ConnectionType == "FTPS" ||
-      ConnectionType == "Oracle" ||
-      ConnectionType == "Hive CDP" ||
-      ConnectionType === "Hive CDH" ||
-      ConnectionType == "Impala" ||
-      ConnectionType == "MySQL" ||
-      ConnectionType == "PostgreSQL" ||
-      ConnectionType == "SQL Server"
-    ) {
-    } else {
+    if (!helper.isConnectionType(ConnectionType)) {
       validate.push({
-        text: " ConnectionType's Supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server ",
-        status: false,
+        err: " ConnectionType's Supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server ",
       });
     }
   } else {
     validate.push({
-      text: " ConnectionType is required and data type should be string ",
-      status: false,
+      err: " ConnectionType is required and data type should be string ",
     });
   }
   if (description.length <= 30) {
-    // console.log("success");
   } else {
     validate.push({
-      text: " Description length , Max of 30 characters  ",
-      status: false,
+      err: " Description length , Max of 30 characters  ",
     });
   }
 
@@ -109,11 +93,10 @@ exports.insertValidation = (req) => {
           each.externalID === undefined
         ) {
           validate.push({
-            text: " Data Package, Level External Id  is required and data type should be string or Number ",
-            status: false,
+            err: " Data Package, Level External Id  is required and data type should be string or Number ",
           });
         } else {
-          if (LocationType === "SFTP" || LocationType === "FTPS") {
+          if (helper.isSftp(LocationType)) {
             // if (LocationType === "Hive CDH") {
             // console.log("data");
             const dpArray = [
@@ -148,45 +131,42 @@ exports.insertValidation = (req) => {
                   type: "string",
                 },
               ];
-              if (
-                each.type === "7Z" ||
-                each.type == "ZIP" ||
-                each.type == "RAR" ||
-                each.type == "SAS"
-              ) {
-              } else {
+              if (!helper.isPackageType(each.type)) {
                 validate.push({
-                  text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
-                  status: false,
+                  err: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
                 });
               }
+
               let dpResST = helper.validation(dpArrayST);
               if (dpResST.length > 0) {
                 validate.push(dpResST);
               }
             }
 
-            // if (each.type != null) {
-            //   if (
-            //     each.type === "7Z" ||
-            //     each.type == "ZIP" ||
-            //     each.type == "RAR" ||
-            //     each.type == "SAS"
-            //   ) {
-            //   } else {
-            //     validate.push({
-            //       text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
-            //       status: false,
-            //     });
-            //   }
-            // }
-
+            if (each.type) {
+              if (!helper.isPackageType(each.type)) {
+                validate.push({
+                  err: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
+                });
+              }
+            }
             let dpRes = helper.validation(dpArray);
             if (dpRes.length > 0) {
               validate.push(dpRes);
             } else {
               if (each.dataSet && each.dataSet.length > 0) {
                 for (let obj of each.dataSet) {
+                  if (
+                    obj.externalID !== null &&
+                    obj.externalID !== "" &&
+                    obj.externalID !== undefined
+                  ) {
+                  } else {
+                    validate.push({
+                      err: " Data Set Level, External Id  is required and data type should be string or Number ",
+                    });
+                  }
+
                   const dsArray = [
                     {
                       key: "Data Set Name (Mnemonic) ",
@@ -229,15 +209,20 @@ exports.insertValidation = (req) => {
                   ];
 
                   if (
-                    obj.customQuery === "" ||
-                    obj.customQuery === null ||
-                    obj.customQuery === undefined
+                    obj.customQuery ||
+                    obj.customSql ||
+                    obj.conditionalExpression ||
+                    obj.incremental ||
+                    obj.offsetColumn
                   ) {
-                    // console.log(val.key, val.value);
-                  } else {
                     validate.push({
-                      text: `customQuery fields should be Blank `,
-                      status: false,
+                      err: " In SFTP/FTPS customQuery, customSQL, conditionalExpression, incremental, offsetColumn should be blank ",
+                    });
+                  }
+
+                  if (obj.incremental === 0) {
+                    validate.push({
+                      err: " In SFTP/FTPS incremental should be blank ",
                     });
                   }
 
@@ -262,18 +247,6 @@ exports.insertValidation = (req) => {
                     if (dsResdt.length > 0) {
                       validate.push(dsResdt);
                     }
-                  }
-
-                  if (
-                    obj.externalID !== null &&
-                    obj.externalID !== "" &&
-                    obj.externalID !== undefined
-                  ) {
-                  } else {
-                    validate.push({
-                      text: " Data Set Level, External Id  is required and data type should be string or Number ",
-                      status: false,
-                    });
                   }
 
                   let dsRes = helper.validation(dsArray);
@@ -308,7 +281,7 @@ exports.insertValidation = (req) => {
                           },
                           {
                             key: "Unique",
-                            value: el.required,
+                            value: el.unique,
                             type: "boolean",
                           },
                         ];
@@ -318,11 +291,23 @@ exports.insertValidation = (req) => {
                         if (clRes.length > 0) {
                           validate.push(clRes);
                         }
+
+                        if (
+                          typeof el.characterMin != "undefined" &&
+                          typeof el.characterMax != "undefined"
+                        ) {
+                          if (el.characterMin <= el.characterMax) {
+                          } else {
+                            validate.push({
+                              err: " MinCharacter always less than MaxCharacter  ",
+                            });
+                          }
+                        }
                       }
 
                       // If Column is not = 0 then Column Comunt is not null
                       dsArray.push({
-                        key: "Column Count",
+                        key: "columncount",
                         value: obj.columncount,
                         type: "number",
                       });
@@ -338,202 +323,188 @@ exports.insertValidation = (req) => {
               }
             }
           } else {
-            // console.log("Blank");
-            // Start data package data validation
             if (
               helper.stringToBoolean(each.noPackageConfig) === true &&
               helper.stringToBoolean(each.active) === true
             ) {
             } else {
               validate.push({
-                text: " In JDBC noPackageConfig, active should be True ",
-                status: false,
+                err: " In JDBC noPackageConfig, active should be True ",
               });
             }
 
-            const DPblankData = [
-              { key: " Package type ", value: each.type },
-              { key: "SAS XPT Method", value: each.sasXptMethod },
-              { key: "Package Path ", value: each.path },
-              { key: "Package Naming Convention ", value: each.name },
-            ];
-            // End data package data validation
-            let dataBlank = helper.validationBlank(DPblankData);
+            if (each.type || each.sasXptMethod || each.path || each.name) {
+              validate.push({
+                err: " In JDBC Data Package Level type, sasXptMethod, path, name should be blank ",
+              });
+            }
 
-            if (dataBlank.length > 0) {
-              validate.push(dataBlank);
-            } else {
-              if (each.dataSet && each.dataSet.length > 0) {
-                for (let obj of each.dataSet) {
-                  const dsBlankArry = [
-                    { key: "File Type ", value: obj.type },
-                    { key: "File Naming Convention ", value: obj.name },
-                    { key: "Delimiter ", value: obj.delimiter },
-                    { key: "Quote ", value: obj.quote },
-                    {
-                      key: "Row Decrease Allowed ",
-                      value: obj.rowDecreaseAllowed,
-                    },
-                    { key: "Escape Character ", value: obj.escapeCode },
-                    {
-                      key: "New Data Frequency ",
-                      value: obj.dataTransferFrequency,
-                    },
-                    { key: "Path ", value: obj.path },
-                  ];
+            if (each.dataSet && each.dataSet.length > 0) {
+              for (let obj of each.dataSet) {
+                if (
+                  obj.externalID !== null &&
+                  obj.externalID !== "" &&
+                  obj.externalID !== undefined
+                ) {
+                } else {
+                  validate.push({
+                    err: " Data Set Level, External Id  is required and data type should be string or Number ",
+                  });
+                }
 
-                  let DSBlank = helper.validationBlank(dsBlankArry);
-                  if (DSBlank.length > 0) {
-                    validate.push(DSBlank);
+                if (
+                  obj.type ||
+                  obj.name ||
+                  obj.delimiter ||
+                  obj.quote ||
+                  obj.rowDecreaseAllowed ||
+                  obj.dataTransferFrequency ||
+                  obj.escapeCode ||
+                  obj.path
+                ) {
+                  validate.push({
+                    err: " In JDBC Data Set Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, escapeCode, path should be blank ",
+                  });
+                }
+
+                const dsArray = [
+                  {
+                    key: "Data Set Name (Mnemonic) ",
+                    value: obj.mnemonic,
+                    type: "string",
+                  },
+                  {
+                    key: "Clinical Data Type ",
+                    value: obj.dataKind,
+                    type: "string",
+                  },
+                  {
+                    key: "active",
+                    value: obj.active,
+                    type: "boolean",
+                  },
+                  {
+                    key: "Custom Query",
+                    value: obj.customQuery,
+                    type: "boolean",
+                  },
+                ];
+
+                if (obj.customQuery.toLowerCase() == "yes") {
+                  if (
+                    obj.customSql !== null &&
+                    obj.customSql !== "" &&
+                    obj.customSql !== undefined
+                  ) {
                   } else {
-                    const dsArray = [
-                      {
-                        key: "Data Set Name (Mnemonic) ",
-                        value: obj.mnemonic,
-                        type: "string",
-                      },
-                      {
-                        key: "Clinical Data Type ",
-                        value: obj.dataKind,
-                        type: "string",
-                      },
-                      {
-                        key: "active",
-                        value: obj.active,
-                        type: "boolean",
-                      },
-                      {
-                        key: "Custom Query",
-                        value: obj.customQuery,
-                        type: "boolean",
-                      },
-                    ];
-
-                    if (obj.customQuery.toLowerCase() == "yes") {
-                      if (
-                        obj.customSql !== null &&
-                        obj.customSql !== "" &&
-                        obj.customSql !== undefined
-                      ) {
-                      } else {
-                        validate.push({
-                          text: " Custom Sql  is required ",
-                          status: false,
-                        });
-                      }
+                    validate.push({
+                      err: " Custom Sql  is required ",
+                    });
+                  }
+                }
+                if (obj.customQuery.toLowerCase() == "no") {
+                  if (
+                    obj.tableName !== null &&
+                    obj.tableName !== "" &&
+                    obj.tableName !== undefined
+                  ) {
+                    if (obj.tableName.length <= 255) {
+                    } else {
+                      validate.push({
+                        err: " Table Name  Max of 255 characters  ",
+                      });
                     }
-                    if (obj.customQuery.toLowerCase() == "no") {
-                      if (
-                        obj.tableName !== null &&
-                        obj.tableName !== "" &&
-                        obj.tableName !== undefined
-                      ) {
-                        if (obj.tableName.length <= 255) {
-                        } else {
-                          validate.push({
-                            text: " Table Name  Max of 255 characters  ",
-                            status: false,
-                          });
-                        }
-                      } else {
-                        validate.push({
-                          text: " Table Name  is required ",
-                          status: false,
-                        });
-                      }
-                      if (helper.stringToBoolean(obj.incremental) === true) {
-                        if (
-                          obj.offsetColumn !== null &&
-                          obj.offsetColumn !== "" &&
-                          obj.offsetColumn !== undefined &&
-                          typeof obj.offsetColumn === "string"
-                        ) {
-                        } else {
-                          validate.push({
-                            text: " offsetColumn  is required and data type should be string",
-                            status: false,
-                          });
-                        }
-                      }
-                    }
-
+                  } else {
+                    validate.push({
+                      err: " Table Name  is required ",
+                    });
+                  }
+                  if (helper.stringToBoolean(obj.incremental) === true) {
                     if (
-                      obj.externalID !== null &&
-                      obj.externalID !== "" &&
-                      obj.externalID !== undefined
+                      obj.offsetColumn !== null &&
+                      obj.offsetColumn !== "" &&
+                      obj.offsetColumn !== undefined &&
+                      typeof obj.offsetColumn === "string"
                     ) {
                     } else {
                       validate.push({
-                        text: " Data Set Level, External Id  is required and data type should be string or Number ",
-                        status: false,
+                        err: " offsetColumn  is required and data type should be string",
                       });
                     }
+                  }
+                }
 
-                    // Validation Function call for data set
-                    let dsRes = helper.validation(dsArray);
-                    if (dsRes.length > 0) {
-                      validate.push(dsRes);
-                    } else {
-                      // console.log("data set data", dsData);
+                // Validation Function call for data set
+                let dsRes = helper.validation(dsArray);
+                if (dsRes.length > 0) {
+                  validate.push(dsRes);
+                } else {
+                  // console.log("data set data", dsData);
+
+                  if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                    for (let el of obj.columnDefinition) {
+                      const clArray = [
+                        {
+                          key: "Include Flag",
+                          value: el.includeFlag,
+                          type: "boolean",
+                        },
+                        {
+                          key: "Column Name or Designator ",
+                          value: el.name,
+                          type: "string",
+                        },
+                        {
+                          key: "Data Type ",
+                          value: el.dataType,
+                          type: "string",
+                        },
+                        {
+                          key: "Primary Key",
+                          value: el.primaryKey,
+                          type: "boolean",
+                        },
+                        {
+                          key: "Required",
+                          value: el.required,
+                          type: "boolean",
+                        },
+                        {
+                          key: "Unique",
+                          value: el.unique,
+                          type: "boolean",
+                        },
+                      ];
+
+                      // Validation Function call for column defination
+                      let clRes = helper.validation(clArray);
+                      if (clRes.length > 0) {
+                        validate.push(clRes);
+                      }
 
                       if (
-                        obj.columnDefinition &&
-                        obj.columnDefinition.length > 0
+                        el.characterMin ||
+                        el.characterMax ||
+                        el.lov ||
+                        el.position
                       ) {
-                        for (let el of obj.columnDefinition) {
-                          const clArray = [
-                            {
-                              key: "Include Flag",
-                              value: el.includeFlag,
-                              type: "boolean",
-                            },
-                            {
-                              key: "Column Name or Designator ",
-                              value: el.name,
-                              type: "string",
-                            },
-                            {
-                              key: "Data Type ",
-                              value: el.dataType,
-                              type: "string",
-                            },
-                            {
-                              key: "Primary Key",
-                              value: el.primaryKey,
-                              type: "boolean",
-                            },
-                            {
-                              key: "Required",
-                              value: el.required,
-                              type: "boolean",
-                            },
-                            {
-                              key: "Unique",
-                              value: el.required,
-                              type: "boolean",
-                            },
-                          ];
-
-                          // Validation Function call for column defination
-                          let clRes = helper.validation(clArray);
-                          if (clRes.length > 0) {
-                            validate.push(clRes);
-                          }
-                        }
-
-                        // If Column is not = 0 then Column Comunt is not null
-                        dsArray.push({
-                          key: "Column Count",
-                          value: obj.columncount,
-                          type: "number",
+                        validate.push({
+                          err: " In JDBC characterMin, characterMax, position, lov should be blank ",
                         });
-
-                        // Validation Function call for column Number fields
-                        let cnRes = helper.validation(dsArray);
-                        if (cnRes.length > 0) {
-                          validate.push(cnRes);
-                        }
                       }
+                    }
+
+                    // If Column is not = 0 then Column Comunt is not null
+                    dsArray.push({
+                      key: "columncount",
+                      value: obj.columncount,
+                      type: "number",
+                    });
+
+                    // Validation Function call for column Number fields
+                    let cnRes = helper.validation(dsArray);
+                    if (cnRes.length > 0) {
+                      validate.push(cnRes);
                     }
                   }
                 }
@@ -548,426 +519,482 @@ exports.insertValidation = (req) => {
   return validate;
 };
 
-exports.packageLevelInsert = async (data, DFId, version, ConnectionType) => {
+exports.packageLevelInsert = async (
+  data,
+  DFId,
+  version,
+  ConnectionType,
+  externalSysName
+) => {
   try {
-    // console.log(data, externalID, DFId, version, ConnectionType);
     const { externalID } = data;
     var LocationType = ConnectionType;
-    let msg = [];
-    let status = true;
     let ts = new Date().toLocaleString();
-    var ResponseBody = {};
+    let errorPackage = [];
+    var dataPackage = [];
 
-    if (externalID !== null && externalID !== "" && externalID !== undefined) {
-      console.log("data need to validate");
+    if (helper.isSftp(LocationType)) {
+      // if (LocationType === "MySQL") {
+      const dpArray = [
+        {
+          key: "No Package Level Config ",
+          value: data.noPackageConfig,
+          type: "boolean",
+        },
+        {
+          key: "Package Naming Convention",
+          value: data.name,
+          type: "string",
+        },
+        {
+          key: "active",
+          value: data.active,
+          type: "boolean",
+        },
+        {
+          key: "Package Path  ",
+          value: data.path,
+          type: "string",
+        },
+      ];
 
-      if (helper.isSftp(LocationType)) {
-        // if (LocationType === "Hive CDH") {
-        const dpArray = [
+      if (!helper.stringToBoolean(data.noPackageConfig)) {
+        const dpArrayST = [
+          { key: "Package type", value: data.type, type: "string" },
           {
-            key: "No Package Level Config ",
-            value: data.noPackageConfig,
-            type: "boolean",
-          },
-          {
-            key: "Package Naming Convention",
-            value: data.name,
-            type: "string",
-          },
-          {
-            key: "active",
-            value: data.active,
-            type: "boolean",
-          },
-          {
-            key: "Package Path  ",
-            value: data.path,
+            key: "SAS XPT Method ",
+            value: data.sasXptMethod,
             type: "string",
           },
         ];
-
-        if (!helper.stringToBoolean(data.noPackageConfig)) {
-          const dpArrayST = [
-            { key: "Package type", value: data.type, type: "string" },
-            {
-              key: "SAS XPT Method ",
-              value: data.sasXptMethod,
-              type: "string",
-            },
-          ];
-          if (!helper.isPackageType(data.type)) {
-            return {
-              validate: [
-                " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
-              ],
-            };
-          }
-
-          let dpResST = helper.validation(dpArrayST);
-
-          if (dpResST.length > 0) {
-            return { validate: dpResST };
-          }
+        if (!helper.isPackageType(data.type)) {
+          errorPackage.push(
+            " Package type's Supported values : 7Z, ZIP, RAR, SAS "
+          );
         }
 
-        if (data.type) {
-          if (!helper.isPackageType(data.type)) {
-            return {
-              validate: [
-                " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
-              ],
-            };
-          }
-        }
+        let dpResST = helper.validation(dpArrayST);
 
-        let dpRes = helper.validation(dpArray);
-
-        if (dpRes.length > 0) {
-          return { validate: dpRes };
-        }
-      } else {
-        if (
-          !helper.stringToBoolean(data.noPackageConfig) ||
-          !helper.stringToBoolean(data.active)
-        ) {
-          return {
-            validate: [" In JDBC noPackageConfig, active should be True "],
-          };
-        }
-
-        if (data.type || data.sasXptMethod || data.path || data.name) {
-          return {
-            validate: [
-              " In JDBC type, sasXptMethod path name should be blank ",
-            ],
-          };
+        if (dpResST.length > 0) {
+          errorPackage.push(dpResST);
         }
       }
 
-      ResponseBody.data_packages = [];
-      let DpObj = {};
-      const dpUid = createUniqueID();
-      let passwordStatus = "No";
-      let dPTimestamp = new Date();
-      let { password } = data;
-
-      if (password) {
-        passwordStatus = "Yes";
-        helper.writeVaultData(`${DFId}/${dpUid}`, {
-          password,
-        });
+      if (data.type) {
+        if (!helper.isPackageType(data.type)) {
+          errorPackage.push(
+            " Package type's Supported values : 7Z, ZIP, RAR, SAS "
+          );
+        }
       }
 
-      let dPBody = [
-        dpUid,
-        data.type || null,
-        data.name || null,
-        data.path || null,
-        data.sasXptMethod || null,
-        passwordStatus,
-        helper.stringToBoolean(data.active) ? 1 : 0,
-        helper.stringToBoolean(data.noPackageConfig) ? 1 : 0,
-        data.externalID || null,
-        dPTimestamp,
-        DFId,
-      ];
+      let dpRes = helper.validation(dpArray);
 
-      let createDP = await DB.executeQuery(
-        `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(datapackageid, type, name, path, sasxptmethod, password, active, nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid)
+      if (dpRes.length > 0) {
+        errorPackage.push(dpRes);
+      }
+    } else {
+      if (
+        !helper.stringToBoolean(data.noPackageConfig) ||
+        !helper.stringToBoolean(data.active)
+      ) {
+        errorPackage.push(" In JDBC noPackageConfig, active should be True ");
+      }
+
+      if (data.type || data.sasXptMethod || data.path || data.name) {
+        errorPackage.push(
+          " In JDBC type, sasXptMethod path name should be blank "
+        );
+      }
+    }
+
+    if (errorPackage.length > 0) {
+      errorPackage.splice(0, 0, `Datapackage External Id -${externalID} `);
+      return { sucRes: dataPackage, errRes: errorPackage };
+    }
+
+    let DpObj = {};
+    const dpUid = createUniqueID();
+    let passwordStatus = "No";
+    let dPTimestamp = new Date();
+    let { password } = data;
+
+    if (password) {
+      passwordStatus = "Yes";
+      helper.writeVaultData(`${DFId}/${dpUid}`, {
+        password,
+      });
+    }
+
+    let dPBody = [
+      dpUid,
+      data.type || null,
+      data.name || null,
+      data.path || null,
+      data.sasXptMethod || null,
+      passwordStatus,
+      helper.stringToBoolean(data.active) ? 1 : 0,
+      helper.stringToBoolean(data.noPackageConfig) ? 1 : 0,
+      data.externalID || null,
+      dPTimestamp,
+      DFId,
+    ];
+
+    let createDP = await DB.executeQuery(
+      `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(datapackageid, type, name, path, sasxptmethod, password, active, nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid)
             VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10, $11)`,
-        dPBody
-      );
+      dPBody
+    );
 
-      DpObj.timestamp = ts;
-      DpObj.externalId = externalID;
-      DpObj.datapackageid = dpUid;
-      DpObj.action = "Data package created successfully.";
-      ResponseBody.data_packages.push(DpObj);
-      // // each.datapackageid = dpUid;
+    DpObj.externalId = externalID;
+    DpObj.datapackageid = dpUid;
+    DpObj.action = "Data package created successfully.";
+    DpObj.timestamp = ts;
+    dataPackage.push(DpObj);
+    // // each.datapackageid = dpUid;
 
-      await DB.executeQuery(
-        `INSERT INTO ${schemaName}.dataflow_audit_log
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_audit_log
           ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
           VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-        [
-          DFId,
-          dpUid,
-          null,
-          null,
-          version,
-          "New Datapackage",
-          "",
-          "",
-          null,
-          new Date(),
-        ]
-      );
+      [
+        DFId,
+        dpUid,
+        null,
+        null,
+        version,
+        "New Datapackage",
+        "",
+        "",
+        externalSysName,
+        new Date(),
+      ]
+    );
 
-      if (data.dataSet && data.dataSet.length > 0) {
-        ResponseBody.data_sets = [];
-        for (let obj of data.dataSet) {
-          if (helper.isSftp(LocationType)) {
-            // if (LocationType === "Hive CDH") {
-            const dsArray = [
+    if (data.dataSet && data.dataSet.length > 0) {
+      dataPackage.data_sets = [];
+
+      for (let obj of data.dataSet) {
+        if (helper.isSftp(LocationType)) {
+          // if (LocationType === "MySQL") {
+          const dsArray = [
+            {
+              key: "Data Set Name (Mnemonic) ",
+              value: obj.mnemonic,
+              type: "string",
+            },
+            {
+              key: "Clinical Data Type ",
+              value: obj.dataKind,
+              type: "string",
+            },
+            { key: "File Type", value: obj.type, type: "string" },
+            {
+              key: "File Naming Convention ",
+              value: obj.name,
+              type: "string",
+            },
+
+            {
+              key: "Data Set Level, Path",
+              value: obj.path,
+              type: "string",
+            },
+            {
+              key: "Row Decrease Allowed",
+              value: obj.rowDecreaseAllowed,
+              type: "number",
+            },
+
+            {
+              key: "New Data Frequency (Days)",
+              value: obj.dataTransferFrequency,
+              type: "number",
+            },
+            {
+              key: "active",
+              value: obj.active,
+              type: "boolean",
+            },
+            {
+              key: "columncount",
+              value: obj.columncount,
+              type: "number",
+            },
+          ];
+
+          const dsreqSftp = helper.validation(dsArray);
+          if (dsreqSftp.length > 0) {
+            errorPackage.push(dsreqSftp);
+          }
+
+          if (obj.type.toLowerCase() === "delimited") {
+            const dsArrayDt = [
               {
-                key: "Data Set Name (Mnemonic) ",
-                value: obj.mnemonic,
+                key: "Delimiter",
+                value: obj.delimiter,
                 type: "string",
               },
-              {
-                key: "Clinical Data Type ",
-                value: obj.dataKind,
-                type: "string",
-              },
-              { key: "File Type", value: obj.type, type: "string" },
-              {
-                key: "File Naming Convention ",
-                value: obj.name,
-                type: "string",
-              },
+              { key: "Quote", value: obj.quote, type: "string" },
 
               {
-                key: "Data Set Level, Path",
-                value: obj.path,
+                key: "Escape Character",
+                value: obj.escapeCode,
                 type: "string",
-              },
-              {
-                key: "Row Decrease Allowed",
-                value: obj.rowDecreaseAllowed,
-                type: "number",
-              },
-
-              {
-                key: "New Data Frequency (Days)",
-                value: obj.dataTransferFrequency,
-                type: "number",
-              },
-              {
-                key: "active",
-                value: obj.active,
-                type: "boolean",
               },
             ];
 
-            if (obj.type.toLowerCase() === "delimited") {
-              const dsArrayDt = [
+            let dsResdt = helper.validation(dsArrayDt);
+            if (dsResdt.length > 0) {
+              errorPackage.push(dsResdt);
+            }
+          }
+          if (
+            obj.customQuery ||
+            obj.customSql ||
+            obj.incremental ||
+            obj.conditionalExpression ||
+            obj.offsetColumn
+          ) {
+            errorPackage.push(
+              "For SFTP/FTPS customQuery, customSql, incremental, conditionalExpression, offsetColumn fields should be Blank "
+            );
+          }
+
+          if (typeof obj.incremental != "undefined") {
+            if (obj.incremental === 0) {
+              errorPackage.push(" In SFTP/FTPS incremental should be blank ");
+            }
+          }
+        } else {
+          if (
+            obj.type ||
+            obj.name ||
+            obj.delimiter ||
+            obj.quote ||
+            obj.rowDecreaseAllowed ||
+            obj.dataTransferFrequency ||
+            obj.path ||
+            obj.escapeCode
+          ) {
+            errorPackage.push(
+              " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, path, escapeCode should be Blank "
+            );
+          }
+
+          const dsArray = [
+            {
+              key: "Data Set Name (Mnemonic) ",
+              value: obj.mnemonic,
+              type: "string",
+            },
+            {
+              key: "Clinical Data Type ",
+              value: obj.dataKind,
+              type: "string",
+            },
+            {
+              key: "active",
+              value: obj.active,
+              type: "boolean",
+            },
+            {
+              key: "Custom Query",
+              value: obj.customQuery,
+              type: "boolean",
+            },
+            {
+              key: "columncount",
+              value: obj.columncount,
+              type: "number",
+            },
+          ];
+
+          const dsreq = helper.validation(dsArray);
+          if (dsreq.length > 0) {
+            errorPackage.push(dsreq);
+          }
+
+          if (obj.customQuery.toLowerCase() == "yes") {
+            if (!obj.customSql) {
+              errorPackage.push(" Custom Sql  is required  ");
+            }
+          }
+          if (obj.customQuery.toLowerCase() == "no") {
+            if (!obj.tableName) {
+              errorPackage.push(" Table Name  is required  ");
+            } else {
+              if (obj.tableName.length >= 255) {
+                errorPackage.push(" Table Name  Max of 255 characters  ");
+              }
+            }
+            if (helper.stringToBoolean(obj.incremental)) {
+              if (!obj.offsetColumn) {
+                errorPackage.push(
+                  " offsetColumn  is required and data type should be string  "
+                );
+              }
+            }
+          }
+        }
+        // console.log("insert data set");
+
+        if (errorPackage.length > 0) {
+          errorPackage.splice(0, 0, `Dataset External Id -${obj.externalID} `);
+          return { sucRes: dataPackage, errRes: errorPackage };
+        }
+
+        let dsObj = {};
+
+        let dataKind = null;
+        if (obj.dataKind) {
+          let checkDataKind = await DB.executeQuery(
+            `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
+          );
+          dataKind = checkDataKind.rows[0].datakindid;
+        }
+
+        const dsUid = createUniqueID();
+        let dsPasswordStatus;
+        if (obj.filePwd) {
+          let { filePwd } = obj;
+          dsPasswordStatus = "Yes";
+          helper.writeVaultData(`${DFId}/${dpUid}/${dsUid}`, {
+            password: filePwd,
+          });
+        } else {
+          dsPasswordStatus = "No";
+        }
+
+        let sqlQuery = "";
+        if (obj.customQuery.toLowerCase() === "no") {
+          if (obj.columnDefinition?.length > 0) {
+            const cList = obj.columnDefinition.map(
+              (el) => el.name || el.columnName
+            );
+            sqlQuery = helper.createCustomSql(
+              cList,
+              obj.tableName,
+              obj.conditionalExpression
+            );
+          }
+        } else {
+          sqlQuery = obj.customSql;
+        }
+
+        let DSBody = [
+          dsUid,
+          dpUid,
+          dataKind || null,
+          obj.mnemonic || obj.datasetName || null,
+          obj.fileNamingConvention || "",
+          helper.stringToBoolean(obj.active) ? 1 : 0,
+          typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
+          helper.stringToBoolean(obj.incremental) ? "Y" : "N",
+          obj.offsetColumn || null,
+          obj.type || obj.fileType || null,
+          obj.path || null,
+          obj.OverrideStaleAlert || null,
+          obj.headerRowNumber && obj.headerRowNumber != "" ? 1 : 0,
+          obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
+          obj.headerRowNumber || 0,
+          obj.footerRowNumber || 0,
+          sqlQuery || null,
+          obj.customQuery || null,
+          obj.tableName || null,
+          obj.externalID || null,
+          dsPasswordStatus || "No",
+          new Date(),
+          obj.delimiter || "",
+          helper.convertEscapeChar(obj.escapeCode || obj.escapeCharacter) || "",
+          obj.quote || "",
+          obj.rowDecreaseAllowed || 0,
+          obj.dataTransferFrequency || "",
+          obj.conditionalExpression,
+        ];
+        let createDS = await DB.executeQuery(
+          `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
+            offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
+            customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
+          DSBody
+        );
+
+        dsObj.externalId = obj.externalID;
+        dsObj.datasetid = dsUid;
+        dsObj.PackageExternalId = externalID;
+        dsObj.action = "Data set created successfully.";
+        dsObj.timestamp = ts;
+        dataPackage.data_sets.push(dsObj);
+
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_audit_log
+                ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+          [
+            DFId,
+            dpUid,
+            dsUid,
+            null,
+            version,
+            "New Dataset",
+            "",
+            "",
+            externalSysName,
+            new Date(),
+          ]
+        );
+
+        if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+          dataPackage.column_definition = [];
+          for (let el of obj.columnDefinition) {
+            // console.log("insert Column Definition");
+
+            if (helper.isSftp(LocationType)) {
+              const clArrayif = [
                 {
-                  key: "Delimiter",
-                  value: obj.delimiter,
+                  key: "Column Name or Designator ",
+                  value: el.name,
                   type: "string",
                 },
-                { key: "Quote", value: obj.quote, type: "string" },
+                {
+                  key: "Data Type",
+                  value: el.dataType,
+                  type: "string",
+                },
 
                 {
-                  key: "Escape Character",
-                  value: obj.escapeCode,
-                  type: "string",
+                  key: "Primary Key",
+                  value: el.primaryKey,
+                  type: "boolean",
+                },
+                {
+                  key: "Required",
+                  value: el.required,
+                  type: "boolean",
+                },
+                {
+                  key: "Unique",
+                  value: el.unique,
+                  type: "boolean",
                 },
               ];
 
-              let dsResdt = helper.validation(dsArrayDt);
-              if (dsResdt.length > 0) {
-                return {
-                  validate: dsResdt,
-                };
+              let clResif = helper.validation(clArrayif);
+              if (clResif.length > 0) {
+                errorPackage.push(clResif);
               }
-            }
 
-            if (obj.customQuery) {
-              // console.log(val.key, val.value);
-              return {
-                validate: [" customQuery fields should be Blank "],
-              };
-            }
-          } else {
-            console.log("else data set");
-            if (
-              obj.type ||
-              obj.name ||
-              obj.delimiter ||
-              obj.quote ||
-              obj.rowDecreaseAllowed ||
-              obj.dataTransferFrequency
-            )
-              return {
-                validate: [
-                  " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency should be Blank ",
-                ],
-              };
-
-            const dsArray = [
-              {
-                key: "Data Set Name (Mnemonic) ",
-                value: obj.mnemonic,
-                type: "string",
-              },
-              {
-                key: "Clinical Data Type ",
-                value: obj.dataKind,
-                type: "string",
-              },
-              {
-                key: "active",
-                value: obj.active,
-                type: "boolean",
-              },
-              {
-                key: "Custom Query",
-                value: obj.customQuery,
-                type: "boolean",
-              },
-              {
-                key: "columncount",
-                value: obj.columncount,
-                type: "number",
-              },
-            ];
-
-            const dsreq = helper.validation(dsArray);
-            console.log("dsreq", dsreq);
-
-            if (dsreq.length > 0) {
-              return {
-                validate: dsreq,
-              };
-            }
-
-            if (obj.customQuery.toLowerCase() == "yes") {
-              if (!obj.customSql) {
-                return {
-                  validate: [" Custom Sql  is required  "],
-                };
-              }
-            }
-            if (obj.customQuery.toLowerCase() == "no") {
-              if (!obj.tableName) {
-                return {
-                  validate: [" Table Name  is required   "],
-                };
-              } else {
-                if (obj.tableName.length >= 255) {
-                  return {
-                    validate: [" Table Name  Max of 255 characters   "],
-                  };
+              if (
+                typeof el.characterMin !== "undefined" &&
+                typeof el.characterMax !== "undefined"
+              ) {
+                if (el.characterMin <= el.characterMax) {
+                  errorPackage.push(
+                    "MinCharacter always less than MaxCharacter "
+                  );
                 }
               }
-              if (helper.stringToBoolean(obj.incremental)) {
-                if (!obj.offsetColumn) {
-                  return {
-                    validate: [
-                      " offsetColumn  is required and data type should be string   ",
-                    ],
-                  };
-                }
-              }
-            }
-          }
-          console.log("insert data set");
-
-          let dsObj = {};
-
-          let dataKind = null;
-          if (obj.dataKind) {
-            let checkDataKind = await DB.executeQuery(
-              `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
-            );
-            dataKind = checkDataKind.rows[0].datakindid;
-          }
-
-          const dsUid = createUniqueID();
-          let dsPasswordStatus;
-          if (obj.filePwd) {
-            let { filePwd } = obj;
-            dsPasswordStatus = "Yes";
-            helper.writeVaultData(`${DFId}/${dpUid}/${dsUid}`, {
-              password: filePwd,
-            });
-          } else {
-            dsPasswordStatus = "No";
-          }
-
-          let sqlQuery = "";
-          if (obj.customQuery.toLowerCase() === "no") {
-            if (obj.columnDefinition?.length > 0) {
-              const cList = obj.columnDefinition.map(
-                (el) => el.name || el.columnName
-              );
-              sqlQuery = helper.createCustomSql(
-                cList,
-                obj.tableName,
-                obj.conditionalExpression
-              );
-            }
-          } else {
-            sqlQuery = obj.customSql;
-          }
-
-          let DSBody = [
-            dsUid,
-            dpUid,
-            dataKind || null,
-            obj.mnemonic || obj.datasetName || null,
-            obj.fileNamingConvention || "",
-            helper.stringToBoolean(obj.active) ? 1 : 0,
-            typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
-            helper.stringToBoolean(obj.incremental) ? "Y" : "N",
-            obj.offsetColumn || null,
-            obj.type || obj.fileType || null,
-            obj.path || null,
-            obj.OverrideStaleAlert || null,
-            obj.headerRowNumber && obj.headerRowNumber != "" ? 1 : 0,
-            obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
-            obj.headerRowNumber || 0,
-            obj.footerRowNumber || 0,
-            sqlQuery || null,
-            obj.customQuery || null,
-            obj.tableName || null,
-            obj.externalID || null,
-            dsPasswordStatus || "No",
-            new Date(),
-            obj.delimiter || "",
-            helper.convertEscapeChar(obj.escapeCode || obj.escapeCharacter) ||
-              "",
-            obj.quote || "",
-            obj.rowDecreaseAllowed || 0,
-            obj.dataTransferFrequency || "",
-            obj.conditionalExpression,
-          ];
-          let createDS = await DB.executeQuery(
-            `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
-            offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
-            customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
-            DSBody
-          );
-          dsObj.timestamp = ts;
-          dsObj.externalId = obj.externalID;
-          dsObj.datasetid = dsUid;
-          dsObj.action = "Data set created successfully.";
-          ResponseBody.data_sets.push(dsObj);
-
-          await DB.executeQuery(
-            `INSERT INTO ${schemaName}.dataflow_audit_log
-                ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-            [
-              DFId,
-              dpUid,
-              dsUid,
-              null,
-              version,
-              "New Dataset",
-              "",
-              "",
-              null,
-              new Date(),
-            ]
-          );
-
-          if (obj.columnDefinition && obj.columnDefinition.length > 0) {
-            ResponseBody.column_definition = [];
-            for (let el of obj.columnDefinition) {
-              console.log("insert Column Definition");
-
+            } else {
               const clArray = [
                 {
                   key: "Column Name or Designator ",
@@ -978,6 +1005,11 @@ exports.packageLevelInsert = async (data, DFId, version, ConnectionType) => {
                   key: "Data Type",
                   value: el.dataType,
                   type: "string",
+                },
+                {
+                  key: "Include Flag",
+                  value: el.includeFlag,
+                  type: "boolean",
                 },
                 {
                   key: "Primary Key",
@@ -991,83 +1023,92 @@ exports.packageLevelInsert = async (data, DFId, version, ConnectionType) => {
                 },
                 {
                   key: "Unique",
-                  value: el.required,
+                  value: el.unique,
                   type: "boolean",
                 },
               ];
 
               let clRes = helper.validation(clArray);
               if (clRes.length > 0) {
-                return { validate: clRes };
+                errorPackage.push(clRes);
               }
 
-              let cdObj = {};
-              const CDUid = createUniqueID();
+              if (el.characterMin || el.characterMax || el.lov || el.position) {
+                // console.log(val.key, val.value);
+                errorPackage.push(
+                  "For JBDC characterMin, characterMax, lov, position fields should be Blank "
+                );
+              }
+            }
 
-              let CDBody = [
-                dsUid,
-                CDUid,
-                el.name || el.columnName || null,
-                el.dataType || null,
-                helper.stringToBoolean(el.primaryKey) ? 1 : 0,
-                helper.stringToBoolean(el.required) ? 1 : 0,
-                el.characterMin || el.minLength || 0,
-                el.characterMax || el.maxLength || 0,
-                el.position || 0,
-                el.format || null,
-                el.lov || el.values || null,
-                helper.stringToBoolean(el.unique) ? 1 : 0,
-                el.requiredfield || null,
-                new Date(),
-              ];
-              await DB.executeQuery(
-                `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
+            if (errorPackage.length > 0) {
+              errorPackage.splice(
+                0,
+                0,
+                `Dataset External Id -${obj.externalID} `
+              );
+              return { sucRes: dataPackage, errRes: errorPackage };
+            }
+
+            let cdObj = {};
+            const CDUid = createUniqueID();
+
+            let CDBody = [
+              dsUid,
+              CDUid,
+              el.name || el.columnName || null,
+              el.dataType || null,
+              helper.stringToBoolean(el.primaryKey) ? 1 : 0,
+              helper.stringToBoolean(el.required) ? 1 : 0,
+              el.characterMin || el.minLength || 0,
+              el.characterMax || el.maxLength || 0,
+              el.position || 0,
+              el.format || null,
+              el.lov || el.values || null,
+              helper.stringToBoolean(el.unique) ? 1 : 0,
+              el.requiredfield || null,
+              new Date(),
+            ];
+            await DB.executeQuery(
+              `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
                   primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
                   insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
-                CDBody
-              );
+              CDBody
+            );
 
-              cdObj.timestamp = ts;
-              cdObj.colmunid = CDUid;
-              cdObj.externalId = obj.externalID;
-              cdObj.action = "column definition created successfully.";
-              // //el.colmunid = CDUid;
-              ResponseBody.column_definition.push(cdObj);
+            cdObj.colmunid = CDUid;
+            cdObj.dataSetExternalId = obj.externalID;
+            cdObj.action = "column definition created successfully.";
+            cdObj.timestamp = ts;
+            dataPackage.column_definition.push(cdObj);
 
-              await DB.executeQuery(
-                `INSERT INTO ${schemaName}.dataflow_audit_log
+            await DB.executeQuery(
+              `INSERT INTO ${schemaName}.dataflow_audit_log
                       ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
                       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-                [
-                  DFId,
-                  dpUid,
-                  dsUid,
-                  null,
-                  version,
-                  "New Column Definition",
-                  "",
-                  "",
-                  null,
-                  new Date(),
-                ]
-              );
-            }
+              [
+                DFId,
+                dpUid,
+                dsUid,
+                null,
+                version,
+                "New Column Definition",
+                "",
+                "",
+                externalSysName,
+                new Date(),
+              ]
+            );
           }
         }
       }
-      return { validate: ResponseBody, status: status };
-      // return;
-    } else {
-      msg.push({
-        text: " Data Package, Level External Id  is required and data type should be string or Number ",
-      });
-      status = false;
-      return { validate: msg, status: status };
     }
+    return { sucRes: dataPackage, errRes: errorPackage };
+    // return;
   } catch (err) {
     console.log(err);
     //throw error in json response with status 500.
-    Logger.error("catch :createDataflow");
+    Logger.error("catch :DataPackage Level Insert");
     Logger.error(err);
   }
 };
@@ -1078,18 +1119,18 @@ exports.datasetLevelInsert = async (
   DPId,
   DFId,
   version,
-  ConnectionType
+  ConnectionType,
+  externalSysName
 ) => {
   try {
     var LocationType = ConnectionType;
-    let msg = [];
-    let status = true;
     let ts = new Date().toLocaleString();
-    var ResponseBody = {};
-    ResponseBody.data_sets = [];
+    let errorDataset = [];
+    var dataSet = [];
 
-    if (LocationType === "SFTP" || LocationType === "FTPS") {
-      // if (LocationType === "Hive CDH") {
+    if (helper.isSftp(LocationType)) {
+      // if (LocationType == "Hive CDH") {
+
       const dsArray = [
         {
           key: "Data Set Name (Mnemonic) ",
@@ -1131,6 +1172,11 @@ exports.datasetLevelInsert = async (
         },
       ];
 
+      let dsArrRes = helper.validation(dsArray);
+      if (dsArrRes.length > 0) {
+        errorDataset.push(dsArrRes);
+      }
+
       if (obj.type.toLowerCase() === "delimited") {
         const dsArrayDt = [
           {
@@ -1147,286 +1193,46 @@ exports.datasetLevelInsert = async (
           },
         ];
 
-        let dsResdt1 = helper.validation(dsArrayDt);
-        if (dsResdt1.length > 0) {
-          msg.push(dsResdt1);
-          status = false;
-          return { validate: msg, status: status };
+        let dsResdt = helper.validation(dsArrayDt);
+        if (dsResdt.length > 0) {
+          errorDataset.push(dsResdt);
         }
       }
 
       if (
-        obj.customQuery === "" ||
-        obj.customQuery === null ||
-        obj.customQuery === undefined
+        obj.customQuery ||
+        obj.customSql ||
+        obj.incremental ||
+        obj.conditionalExpression ||
+        obj.offsetColumn
       ) {
-        // console.log(val.key, val.value);
-      } else {
-        msg.push({
-          text: " customQuery fields should be Blank ",
-        });
-      }
-
-      if (
-        obj.externalID !== null &&
-        obj.externalID !== "" &&
-        obj.externalID !== undefined
-      ) {
-      } else {
-        msg.push({
-          text: " Data Set Level, External Id  is required and data type should be string or Number ",
-        });
-        status = false;
-      }
-
-      if (obj.columnDefinition.length > 0) {
-        if (
-          obj.columncount !== null &&
-          obj.columncount !== "" &&
-          obj.columncount !== undefined &&
-          typeof obj.columncount === "number"
-        ) {
-        } else {
-          msg.push({
-            text: " column count is required and data type should be Number ",
-          });
-          status = false;
-        }
-      }
-
-      let dsRes = helper.validation(dsArray);
-      if (dsRes.length > 0) {
-        msg.push(dsRes);
-        status = false;
-        return { validate: msg, status: status };
-      }
-
-      if (msg.length > 0) {
-        return { validate: msg, status: status };
-      } else {
-        // console.log("insert data");
-
-        let dsObj = {};
-
-        let dataKind = null;
-        if (obj.dataKind) {
-          let checkDataKind = await DB.executeQuery(
-            `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
-          );
-          dataKind = checkDataKind.rows[0].datakindid;
-        }
-
-        const dsUid = createUniqueID();
-        let dsPasswordStatus;
-        if (obj.filePwd) {
-          let { filePwd } = obj;
-          dsPasswordStatus = "Yes";
-          helper.writeVaultData(`${DFId}/${DPId}/${dsUid}`, {
-            password: filePwd,
-          });
-        } else {
-          dsPasswordStatus = "No";
-        }
-
-        let sqlQuery = "";
-        if (obj.customQuery === "No") {
-          if (obj.columnDefinition && obj.columnDefinition.length > 0) {
-            const cList = obj.columnDefinition
-              .map((el) => el.name || el.columnName)
-              .join(", ");
-
-            sqlQuery = `Select ${cList} from ${obj.tableName} ${
-              obj.conditionalExpression
-                ? obj.conditionalExpression
-                : "where 1=1"
-            }`;
-          } else {
-            sqlQuery = `Select from ${obj.tableName} ${
-              obj.conditionalExpression
-                ? obj.conditionalExpression
-                : "where 1=1"
-            }`;
-          }
-        } else {
-          sqlQuery = obj.customSql;
-        }
-
-        let DSBody = [
-          dsUid,
-          DPId,
-          dataKind || null,
-          obj.mnemonic || obj.datasetName || null,
-          obj.fileNamingConvention || "",
-          helper.stringToBoolean(obj.active) ? 1 : 0,
-          typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
-          helper.stringToBoolean(obj.incremental) ? "Y" : "N",
-          obj.offsetColumn || null,
-          obj.type || obj.fileType || null,
-          obj.path || null,
-          obj.OverrideStaleAlert || null,
-          obj.headerRowNumber && obj.headerRowNumber != "" ? 1 : 0,
-          obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
-          obj.headerRowNumber || 0,
-          obj.footerRowNumber || 0,
-          sqlQuery || null,
-          obj.customQuery || null,
-          obj.tableName || null,
-          obj.externalID || null,
-          dsPasswordStatus || "No",
-          new Date(),
-          obj.delimiter || "",
-          helper.convertEscapeChar(obj.escapeCode || obj.escapeCharacter) || "",
-          obj.quote || "",
-          obj.rowDecreaseAllowed || 0,
-          obj.dataTransferFrequency || "",
-          obj.conditionalExpression,
-        ];
-        let createDS = await DB.executeQuery(
-          `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
-                offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
-                customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
-          DSBody
+        errorDataset.push(
+          "For SFTP/FTPS customQuery, customSql, incremental, conditionalExpression, offsetColumn fields should be Blank "
         );
-        dsObj.timestamp = ts;
-        dsObj.externalId = obj.externalID;
-        dsObj.datasetid = dsUid;
-        dsObj.action = "Data set created successfully.";
-        ResponseBody.data_sets.push(dsObj);
-
-        await DB.executeQuery(
-          `INSERT INTO ${schemaName}.dataflow_audit_log
-                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-          [
-            DFId,
-            DPId,
-            dsUid,
-            null,
-            version,
-            "New Data set",
-            "",
-            "",
-            null,
-            new Date(),
-          ]
-        );
-        if (obj.columnDefinition && obj.columnDefinition.length > 0) {
-          ResponseBody.column_definition = [];
-          for (let el of obj.columnDefinition) {
-            const clArray = [
-              {
-                key: "Column Name or Designator ",
-                value: el.name,
-                type: "string",
-              },
-              {
-                key: "Data Type",
-                value: el.dataType,
-                type: "string",
-              },
-              {
-                key: "Primary Key",
-                value: el.primaryKey,
-                type: "boolean",
-              },
-              {
-                key: "Required",
-                value: el.required,
-                type: "boolean",
-              },
-              {
-                key: "Unique",
-                value: el.required,
-                type: "boolean",
-              },
-            ];
-
-            let clRes = helper.validation(clArray);
-            if (clRes.length > 0) {
-              msg.push(clRes);
-              status = false;
-              return { validate: msg, status: status };
-            }
-
-            let cdObj = {};
-            const CDUid = createUniqueID();
-
-            let CDBody = [
-              dsUid,
-              CDUid,
-              el.name || el.columnName || null,
-              el.dataType || null,
-              helper.stringToBoolean(el.primaryKey) ? 1 : 0,
-              helper.stringToBoolean(el.required) ? 1 : 0,
-              el.characterMin || el.minLength || 0,
-              el.characterMax || el.maxLength || 0,
-              el.position || 0,
-              el.format || null,
-              el.lov || el.values || null,
-              helper.stringToBoolean(el.unique) ? 1 : 0,
-              el.requiredfield || null,
-              new Date(),
-            ];
-            await DB.executeQuery(
-              `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
-                    primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
-                    insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
-              CDBody
-            );
-
-            cdObj.timestamp = ts;
-            cdObj.colmunid = CDUid;
-            cdObj.externalId = obj.externalID;
-            cdObj.action = "column definition created successfully.";
-            // //el.colmunid = CDUid;
-            ResponseBody.column_definition.push(cdObj);
-
-            await DB.executeQuery(
-              `INSERT INTO ${schemaName}.dataflow_audit_log
-                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-              [
-                DFId,
-                DPId,
-                dsUid,
-                null,
-                version,
-                "New Column Definition",
-                "",
-                "",
-                null,
-                new Date(),
-              ]
-            );
-          }
+      }
+      if (typeof data.incremental != "undefined") {
+        if (data.incremental === 0) {
+          errorDataset.push("In SFTP/FTPS incremental should be blank");
         }
-
-        // return { validate: msg, status: status };
       }
     } else {
-      const dsBlankArry = [
-        { key: "File Type ", value: obj.type },
-        { key: "File Naming Convention ", value: obj.name },
-        { key: "Delimiter ", value: obj.delimiter },
-        { key: "Quote ", value: obj.quote },
-        {
-          key: "Row Decrease Allowed ",
-          value: obj.rowDecreaseAllowed,
-        },
-        { key: "Escape Character ", value: obj.escapeCode },
-        {
-          key: "New Data Frequency ",
-          value: obj.dataTransferFrequency,
-        },
-        { key: "Path ", value: obj.path },
-      ];
-
-      let DSBlank = helper.validationBlank(dsBlankArry);
-      if (DSBlank.length > 0) {
-        msg.push(DSBlank);
-        status = false;
+      // console.log("else data set1");
+      if (
+        obj.type ||
+        obj.name ||
+        obj.delimiter ||
+        obj.quote ||
+        obj.rowDecreaseAllowed ||
+        obj.dataTransferFrequency ||
+        obj.path ||
+        obj.escapeCode
+      ) {
+        errorDataset.push(
+          " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCode should be Blank "
+        );
       }
-      const dsArray = [
+
+      const dsElse = [
         {
           key: "Data Set Name (Mnemonic) ",
           value: obj.mnemonic,
@@ -1447,300 +1253,300 @@ exports.datasetLevelInsert = async (
           value: obj.customQuery,
           type: "boolean",
         },
+        {
+          key: "columncount",
+          value: obj.columncount,
+          type: "number",
+        },
       ];
 
+      const dsreqElse = helper.validation(dsElse);
+
+      if (dsreqElse.length > 0) {
+        errorDataset.push(dsreqElse);
+      }
+
       if (obj.customQuery.toLowerCase() == "yes") {
-        if (
-          obj.customSql !== null &&
-          obj.customSql !== "" &&
-          obj.customSql !== undefined
-        ) {
-        } else {
-          msg.push({
-            text: " Custom Sql  is required  ",
-          });
-          status = false;
+        if (!obj.customSql) {
+          errorDataset.push(" Custom Sql  is required  ");
         }
       }
       if (obj.customQuery.toLowerCase() == "no") {
-        if (
-          obj.tableName !== null &&
-          obj.tableName !== "" &&
-          obj.tableName !== undefined
-        ) {
-          if (obj.tableName.length <= 255) {
-          } else {
-            msg.push({
-              text: " Table Name  Max of 255 characters  ",
-            });
-            status = false;
-          }
+        if (!obj.tableName) {
+          errorDataset.push(" Table Name  is required  ");
         } else {
-          msg.push({
-            text: " Table Name  is required ",
-          });
-          status = false;
+          if (obj.tableName.length >= 255) {
+            errorDataset.push(" Table Name  Max of 255 characters  ");
+          }
         }
-        if (helper.stringToBoolean(obj.incremental) === true) {
-          if (
-            obj.offsetColumn !== null &&
-            obj.offsetColumn !== "" &&
-            obj.offsetColumn !== undefined &&
-            typeof obj.offsetColumn === "string"
-          ) {
-          } else {
-            msg.push({
-              text: " offsetColumn  is required and data type should be string ",
-            });
-            status = false;
+        if (helper.stringToBoolean(obj.incremental)) {
+          if (!obj.offsetColumn) {
+            errorDataset.push(
+              " offsetColumn  is required and data type should be string  "
+            );
           }
         }
       }
+    }
+    // console.log("insert data set");
+    if (errorDataset.length > 0) {
+      errorDataset.splice(0, 0, `DataSet External Id -${externalID} `);
+      return { sucRes: dataSet, errRes: errorDataset };
+    }
 
-      if (obj.columnDefinition.length > 0) {
-        if (
-          obj.columncount !== null &&
-          obj.columncount !== "" &&
-          obj.columncount !== undefined &&
-          typeof obj.columncount === "number"
-        ) {
-        } else {
-          msg.push({
-            text: " column count is required and data type should be Number ",
-          });
-          status = false;
-        }
-      }
+    let dsObj = {};
 
-      if (
-        obj.externalID !== null &&
-        obj.externalID !== "" &&
-        obj.externalID !== undefined
-      ) {
-      } else {
-        msg.push({
-          text: " Data Set Level, External Id  is required and data type should be string or Number ",
-        });
-        status = false;
-      }
+    let dataKind = null;
+    if (obj.dataKind) {
+      let checkDataKind = await DB.executeQuery(
+        `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
+      );
+      dataKind = checkDataKind.rows[0].datakindid;
+    }
 
-      let dsRes = helper.validation(dsArray);
-      if (dsRes.length > 0) {
-        msg.push(dsRes);
-        status = false;
-        return { validate: msg, status: status };
-      }
+    const dsUid = createUniqueID();
+    let dsPasswordStatus;
+    if (obj.filePwd) {
+      let { filePwd } = obj;
+      dsPasswordStatus = "Yes";
+      helper.writeVaultData(`${DFId}/${dpUid}/${dsUid}`, {
+        password: filePwd,
+      });
+    } else {
+      dsPasswordStatus = "No";
+    }
 
-      if (msg.length > 0) {
-        return { validate: msg, status: status };
-      } else {
-        // console.log("else tesst insert data");
-        let dsObj = {};
-
-        let dataKind = null;
-        if (obj.dataKind) {
-          let checkDataKind = await DB.executeQuery(
-            `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
-          );
-          dataKind = checkDataKind.rows[0].datakindid;
-        }
-
-        const dsUid = createUniqueID();
-        let dsPasswordStatus;
-        if (obj.filePwd) {
-          let { filePwd } = obj;
-          dsPasswordStatus = "Yes";
-          helper.writeVaultData(`${DFId}/${DPId}/${dsUid}`, {
-            password: filePwd,
-          });
-        } else {
-          dsPasswordStatus = "No";
-        }
-
-        let sqlQuery = "";
-        if (obj.customQuery === "No") {
-          if (obj.columnDefinition && obj.columnDefinition.length > 0) {
-            const cList = obj.columnDefinition
-              .map((el) => el.name || el.columnName)
-              .join(", ");
-
-            sqlQuery = `Select ${cList} from ${obj.tableName} ${
-              obj.conditionalExpression
-                ? obj.conditionalExpression
-                : "where 1=1"
-            }`;
-          } else {
-            sqlQuery = `Select from ${obj.tableName} ${
-              obj.conditionalExpression
-                ? obj.conditionalExpression
-                : "where 1=1"
-            }`;
-          }
-        } else {
-          sqlQuery = obj.customSql;
-        }
-
-        let DSBody = [
-          dsUid,
-          DPId,
-          dataKind || null,
-          obj.mnemonic || obj.datasetName || null,
-          obj.fileNamingConvention || "",
-          helper.stringToBoolean(obj.active) ? 1 : 0,
-          typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
-          helper.stringToBoolean(obj.incremental) ? "Y" : "N",
-          obj.offsetColumn || null,
-          obj.type || obj.fileType || null,
-          obj.path || null,
-          obj.OverrideStaleAlert || null,
-          obj.headerRowNumber && obj.headerRowNumber != "" ? 1 : 0,
-          obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
-          obj.headerRowNumber || 0,
-          obj.footerRowNumber || 0,
-          sqlQuery || null,
-          obj.customQuery || null,
-          obj.tableName || null,
-          obj.externalID || null,
-          dsPasswordStatus || "No",
-          new Date(),
-          obj.delimiter || "",
-          helper.convertEscapeChar(obj.escapeCode || obj.escapeCharacter) || "",
-          obj.quote || "",
-          obj.rowDecreaseAllowed || 0,
-          obj.dataTransferFrequency || "",
-          obj.conditionalExpression,
-        ];
-        let createDS = await DB.executeQuery(
-          `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
-                offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
-                customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
-          DSBody
+    let sqlQuery = "";
+    if (obj.customQuery.toLowerCase() === "no") {
+      if (obj.columnDefinition?.length > 0) {
+        const cList = obj.columnDefinition.map(
+          (el) => el.name || el.columnName
         );
-        dsObj.timestamp = ts;
-        dsObj.externalId = obj.externalID;
-        dsObj.datasetid = dsUid;
-        dsObj.action = "Data set created successfully.";
-        ResponseBody.data_sets.push(dsObj);
+        sqlQuery = helper.createCustomSql(
+          cList,
+          obj.tableName,
+          obj.conditionalExpression
+        );
+      }
+    } else {
+      sqlQuery = obj.customSql;
+    }
+
+    let DSBody = [
+      dsUid,
+      DPId,
+      dataKind || null,
+      obj.mnemonic || obj.datasetName || null,
+      obj.fileNamingConvention || "",
+      helper.stringToBoolean(obj.active) ? 1 : 0,
+      typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
+      helper.stringToBoolean(obj.incremental) ? "Y" : "N",
+      obj.offsetColumn || null,
+      obj.type || obj.fileType || null,
+      obj.path || null,
+      obj.OverrideStaleAlert || null,
+      obj.headerRowNumber && obj.headerRowNumber != "" ? 1 : 0,
+      obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
+      obj.headerRowNumber || 0,
+      obj.footerRowNumber || 0,
+      sqlQuery || null,
+      obj.customQuery || null,
+      obj.tableName || null,
+      obj.externalID || null,
+      dsPasswordStatus || "No",
+      new Date(),
+      obj.delimiter || "",
+      helper.convertEscapeChar(obj.escapeCode || obj.escapeCharacter) || "",
+      obj.quote || "",
+      obj.rowDecreaseAllowed || 0,
+      obj.dataTransferFrequency || "",
+      obj.conditionalExpression,
+    ];
+    let createDS = await DB.executeQuery(
+      `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
+            offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
+            customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
+      DSBody
+    );
+    dsObj.externalId = obj.externalID;
+    dsObj.datasetid = dsUid;
+    dsObj.action = "Data set created successfully.";
+    dsObj.timestamp = ts;
+    dataSet.push(dsObj);
+
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_audit_log
+                ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+      [
+        DFId,
+        DPId,
+        dsUid,
+        null,
+        version,
+        "New Dataset",
+        "",
+        "",
+        externalSysName,
+        new Date(),
+      ]
+    );
+
+    if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+      dataSet.column_definition = [];
+      for (let el of obj.columnDefinition) {
+        if (helper.isSftp(LocationType)) {
+          const clArrayIf = [
+            {
+              key: "Column Name or Designator ",
+              value: el.name,
+              type: "string",
+            },
+            {
+              key: "Data Type",
+              value: el.dataType,
+              type: "string",
+            },
+            {
+              key: "Primary Key",
+              value: el.primaryKey,
+              type: "boolean",
+            },
+            {
+              key: "Required",
+              value: el.required,
+              type: "boolean",
+            },
+            {
+              key: "Unique",
+              value: el.unique,
+              type: "boolean",
+            },
+          ];
+
+          let clResIf = helper.validation(clArrayIf);
+          if (clResIf.length > 0) {
+            errorDataset.push(clResIf);
+          }
+
+          if (
+            typeof el.characterMin != "undefined" &&
+            typeof el.characterMax != "undefined"
+          ) {
+            if (el.characterMin >= el.characterMax) {
+              errorDataset.push("MinCharacter always less than MaxCharacter ");
+            }
+          }
+        } else {
+          const clArray = [
+            {
+              key: "Column Name or Designator ",
+              value: el.name,
+              type: "string",
+            },
+            {
+              key: "Data Type",
+              value: el.dataType,
+              type: "string",
+            },
+            {
+              key: "Primary Key",
+              value: el.primaryKey,
+              type: "boolean",
+            },
+            {
+              key: "Required",
+              value: el.required,
+              type: "boolean",
+            },
+            {
+              key: "Unique",
+              value: el.unique,
+              type: "boolean",
+            },
+            {
+              key: "includeFlag",
+              value: el.includeFlag,
+              type: "boolean",
+            },
+          ];
+
+          let clRes = helper.validation(clArray);
+          if (clRes.length > 0) {
+            errorDataset.push(clRes);
+          }
+
+          if (el.characterMin || el.characterMax || el.lov || el.position) {
+            // console.log(val.key, val.value);
+            errorDataset.push(
+              "For JBDC characterMin, characterMax, lov, position fields should be Blank "
+            );
+          }
+        }
+
+        if (errorDataset.length > 0) {
+          errorDataset.splice(0, 0, `Dataset External Id -${obj.externalID} `);
+          return { sucRes: dataSet, errRes: errorDataset };
+        }
+
+        let cdObj = {};
+        const CDUid = createUniqueID();
+
+        let CDBody = [
+          dsUid,
+          CDUid,
+          el.name || el.columnName || null,
+          el.dataType || null,
+          helper.stringToBoolean(el.primaryKey) ? 1 : 0,
+          helper.stringToBoolean(el.required) ? 1 : 0,
+          el.characterMin || el.minLength || 0,
+          el.characterMax || el.maxLength || 0,
+          el.position || 0,
+          el.format || null,
+          el.lov || el.values || null,
+          helper.stringToBoolean(el.unique) ? 1 : 0,
+          el.requiredfield || null,
+          new Date(),
+        ];
+        await DB.executeQuery(
+          `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
+                  primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
+                  insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
+          CDBody
+        );
+
+        cdObj.colmunid = CDUid;
+        cdObj.externalId = obj.externalID;
+        cdObj.action = "column definition created successfully.";
+        cdObj.timestamp = ts;
+        dataSet.column_definition.push(cdObj);
 
         await DB.executeQuery(
           `INSERT INTO ${schemaName}.dataflow_audit_log
-                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+                      ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
           [
             DFId,
             DPId,
             dsUid,
             null,
             version,
-            "New Data Set",
+            "New Column Definition",
             "",
             "",
-            null,
+            externalSysName,
             new Date(),
           ]
         );
-
-        if (obj.columnDefinition && obj.columnDefinition.length > 0) {
-          ResponseBody.column_definition = [];
-          for (let el of obj.columnDefinition) {
-            const clArray = [
-              {
-                key: "Column Name or Designator ",
-                value: el.name,
-                type: "string",
-              },
-              {
-                key: "Data Type",
-                value: el.dataType,
-                type: "string",
-              },
-              {
-                key: "Primary Key",
-                value: el.primaryKey,
-                type: "boolean",
-              },
-              {
-                key: "Required",
-                value: el.required,
-                type: "boolean",
-              },
-              {
-                key: "Unique",
-                value: el.required,
-                type: "boolean",
-              },
-            ];
-
-            let clRes = helper.validation(clArray);
-            if (clRes.length > 0) {
-              msg.push(clRes);
-              status = false;
-              return { validate: msg, status: status };
-            }
-
-            let cdObj = {};
-            const CDUid = createUniqueID();
-
-            let CDBody = [
-              dsUid,
-              CDUid,
-              el.name || el.columnName || null,
-              el.dataType || null,
-              helper.stringToBoolean(el.primaryKey) ? 1 : 0,
-              helper.stringToBoolean(el.required) ? 1 : 0,
-              el.characterMin || el.minLength || 0,
-              el.characterMax || el.maxLength || 0,
-              el.position || 0,
-              el.format || null,
-              el.lov || el.values || null,
-              helper.stringToBoolean(el.unique) ? 1 : 0,
-              el.requiredfield || null,
-              new Date(),
-            ];
-            await DB.executeQuery(
-              `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
-                    primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
-                    insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
-              CDBody
-            );
-
-            cdObj.timestamp = ts;
-            cdObj.colmunid = CDUid;
-            cdObj.externalId = obj.externalID;
-            cdObj.action = "column definition created successfully.";
-            // //el.colmunid = CDUid;
-            ResponseBody.column_definition.push(cdObj);
-
-            await DB.executeQuery(
-              `INSERT INTO ${schemaName}.dataflow_audit_log
-                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-              [
-                DFId,
-                DPId,
-                dsUid,
-                null,
-                version,
-                "New Column Definition",
-                "",
-                "",
-                null,
-                new Date(),
-              ]
-            );
-          }
-        }
       }
-      // test
     }
 
-    return { validate: ResponseBody, status: status };
+    return { sucRes: dataSet, errRes: errorDataset };
   } catch (err) {
     console.log(err);
     //throw error in json response with status 500.
-    Logger.error("catch :createDataflow");
+    Logger.error("catch :Data Set Level Insert");
     Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
   }
 };
 
@@ -1766,23 +1572,22 @@ exports.columnLevelInsert = async (req, res) => {
   }
 };
 
-exports.dataflowUpdate = async (data, externalID, DFId, version) => {
+exports.dataflowUpdate = async (
+  data,
+  externalID,
+  DFId,
+  version,
+  externalSysName
+) => {
   try {
-    const columnArray = [];
-    const valueArry = [];
-
-    let msg = [];
-    let status = true;
     let ts = new Date().toLocaleString();
-    var ResponseBody = {};
     var dataflow = [];
-    var newDfobj = {};
     let studyId;
     let vendorId;
     let vName;
     let ptNum;
     let desc;
-    let comparisionObj = {};
+    var newDfobj = {};
 
     const q1 = `select * from ${schemaName}.dataflow where externalid='${externalID}'`;
     let q3 = `select vend_nm from ${schemaName}.vendor where vend_id=$1;`;
@@ -1834,120 +1639,88 @@ exports.dataflowUpdate = async (data, externalID, DFId, version) => {
     }
 
     let updateQueryDF = `update ${schemaName}.dataflow set updt_tm=NOW(), refreshtimestamp=NOW()`;
-    console.log("line 2177");
+
     if (data.type) {
       updateQueryDF += `,type='${data.type}'`;
-      comparisionObj.type = data.type;
     }
-    console.log("line 2182");
+
     if (data.description) {
       updateQueryDF += `,description='${data.description}'`;
-      comparisionObj.description = data.description;
     }
     if (data.externalSystemName) {
       updateQueryDF += `,externalsystemname='${data.externalSystemName}'`;
-      comparisionObj.externalSystemName = data.externalSystemName;
     }
     if (data.exptDtOfFirstProdFile) {
       updateQueryDF += `,expt_fst_prd_dt='${data.exptDtOfFirstProdFile}'`;
-      comparisionObj.exptDtOfFirstProdFile = data.exptDtOfFirstProdFile;
     }
     if (typeof data.testFlag != undefined) {
       updateQueryDF += `,testflag=${
         helper.stringToBoolean(data.testFlag) ? 1 : 0
       }`;
-      comparisionObj.testFlag = helper.stringToBoolean(data.testFlag) ? 1 : 0;
     }
     if (typeof data.active != undefined) {
       updateQueryDF += `,active=${helper.stringToBoolean(data.active) ? 1 : 0}`;
-      comparisionObj.active = helper.stringToBoolean(data.active) ? 1 : 0;
     }
     if (data.protocolNumberStandard) {
       updateQueryDF += ` ,prot_id='${studyId}'`;
-      comparisionObj.protocolNumberStandard = studyId;
     }
     if (data.vendorName) {
       updateQueryDF += ` ,vend_id= '${vendorId}'`;
-      comparisionObj.vend_id = vendorId;
     }
     if (data.protocolNumberStandard || data.type || data.vendorName) {
       updateQueryDF += `,name='${DFTestname}'`;
-      comparisionObj.name = DFTestname;
     }
 
     updateQueryDF += ` where externalid='${externalID}' returning *;`;
 
-    console.log(updateQueryDF);
-
     const { rows: existDfRows } = await DB.executeQuery(
-      `SELECT type, description, externalsystemname as "externalSystemName", expt_fst_prd_dt as "exptDtOfFirstProdFile",
-       testflag as "testFlag", active, prot_id as "protocolNumberStandard", vend_id , name
+      `SELECT type, description, externalsystemname , expt_fst_prd_dt ,
+       testflag , active, prot_id , vend_id , name
        from ${schemaName}.dataflow where externalid='${externalID}';`
     );
     const existDf = existDfRows[0];
     const dataflowupdate = await DB.executeQuery(updateQueryDF);
     const dataflowObj = dataflowupdate.rows[0];
-    const diffObj = helper.getdiffKeys(comparisionObj, existDf);
+    const diffObj = helper.getdiffKeys(existDf, dataflowObj);
 
-    const externalSystemName = dataflowObj.externalSystemName;
-    const updatedLogs = await addDataflowHistory({
-      DFId,
-      externalSystemName,
-      userId,
-      config_json: dataflowObj,
-      diffObj,
-      existDf,
-    });
+    // console.log("dada", diffObj);
 
-    const update = [
-      "1 . dataflow update",
-      "2 . package update",
-      "3 . dataset update",
-      "4 . package insert",
-      "5 . dataset insert",
-      "6 . column update",
-      "7 . column insert",
-    ];
+    for (let key of Object.keys(diffObj)) {
+      let oldData = diffObj[key];
+      let newData = dataflowObj[key];
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+        [
+          DFId,
+          null,
+          null,
+          null,
+          version,
+          key,
+          oldData,
+          newData,
+          externalSysName,
+          new Date(),
+        ]
+      );
+    }
 
-    console.log("dadadadadadad", diffObj);
-
-    // ResponseBody.data_set = [];
-    // newDfobj.timestamp = ts;
-    // newDfobj.externalId = externalID;
-    // newDfobj.dataSetid = DFId;
-    // newDfobj.action = "Data Flow update successfully.";
-    // // ResponseBody.data_set.push(newObj);
-    // dataflow.push(newDfobj);
-
-    // const logAttribute = columnArray.slice(0, -2);
-    // const logValue = valueArry.slice(0, -2);
-
-    // logAttribute.forEach(async (e, index) => {
-    //   const key = e;
-    //   const val = logValue[index];
-
-    //   await DB.executeQuery(
-    //     `INSERT INTO ${schemaName}.dataflow_audit_log
-    //                     ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-    //                     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-    //     [
-    //       DFId,
-    //       null,
-    //       null,
-    //       null,
-    //       version,
-    //       key,
-    //       dataflowData.rows[0][key],
-    //       val,
-    //       null,
-    //       new Date(),
-    //     ]
-    //   );
-    // });
-
-    // return { dataflow };
+    if (Object.keys(diffObj).length === 0) {
+      return { sucRes: dataflow };
+    } else {
+      newDfobj.externalId = externalID;
+      newDfobj.dataSetid = DFId;
+      newDfobj.action = "Data Flow update successfully.";
+      newDfobj.timestamp = ts;
+      dataflow.push(newDfobj);
+      return { sucRes: dataflow };
+    }
   } catch (e) {
     console.log(e);
+    Logger.error("catch :Data Flow Update");
+    Logger.error(e);
   }
 };
 
@@ -1957,249 +1730,163 @@ exports.packageUpdate = async (
   DPId,
   DFId,
   version,
-  ConnectionType
+  ConnectionType,
+  externalSysName
 ) => {
   try {
-    const dpColumn = [];
-    const dpColumnData = [];
-    const columnArray = [];
-    const valueArry = [];
     var LocationType = ConnectionType;
-    let msg = [];
-    let status = true;
     let ts = new Date().toLocaleString();
-
+    const valData = [];
+    let errorPackage = [];
     var newObj = {};
-    const dpObj = {
-      type: "type",
-      name: "name",
-      path: "path",
-      sasXptMethod: "sasxptmethod",
-      password: "password",
-      noPackageConfig: "nopackageconfig",
-    };
+    var data_packages = [];
 
-    for (let key in data) {
-      if (LocationType === "SFTP" || LocationType === "FTPS") {
-        // if (LocationType === "Hive CDH") {
-        if (key === "path" || key === "name") {
-          if (
-            data[key] !== null &&
-            data[key] !== "" &&
-            data[key] !== undefined &&
-            typeof data[key] === "string"
-          ) {
-          } else {
-            msg.push({
-              text: ` ${key} is required and data type should be string `,
-            });
-            status = false;
+    if (helper.isSftp(LocationType)) {
+      // if (LocationType == "Hive CDH") {
+      if (typeof data.path != "undefined") {
+        valData.push({ key: "path ", value: data.path, type: "string" });
+      }
+      if (typeof data.name != "undefined") {
+        valData.push({ key: "name ", value: data.name, type: "string" });
+      }
+      if (typeof data.noPackageConfig != "undefined") {
+        valData.push({
+          key: "noPackageConfig ",
+          value: data.noPackageConfig,
+          type: "boolean",
+        });
+      }
+
+      let dpResUpdate = helper.validation(valData);
+
+      if (dpResUpdate.length > 0) {
+        errorPackage.push(dpResUpdate);
+      }
+
+      if (!helper.stringToBoolean(data.noPackageConfig)) {
+        const TypeSas = [];
+        if (typeof data.type != "undefined") {
+          TypeSas.push({
+            key: "Package type",
+            value: data.type,
+            type: "string",
+          });
+        }
+        if (typeof data.sasXptMethod != "undefined") {
+          TypeSas.push({
+            key: "sasXptMethod",
+            value: data.sasXptMethod,
+            type: "string",
+          });
+        }
+
+        if (typeof data.type != "undefined") {
+          if (!helper.isPackageType(data.type)) {
+            errorPackage.push(
+              " Package type's Supported values : 7Z, ZIP, RAR, SAS "
+            );
           }
         }
 
-        if (
-          helper.stringToBoolean(data.noPackageConfig) === false &&
-          key === "type"
-        ) {
-          if (
-            data[key] !== null &&
-            data[key] !== "" &&
-            data[key] !== undefined &&
-            typeof data[key] === "string"
-          ) {
-            if (
-              data[key] === "7Z" ||
-              data[key] === "ZIP" ||
-              data[key] === "RAR" ||
-              data[key] === "SAS"
-            ) {
-            } else {
-              msg.push({
-                text: " Package type's is required and Supported values : 7Z, ZIP, RAR, SAS ",
-              });
-              status = false;
-            }
-          } else {
-            msg.push({
-              text: ` ${key} is required and data type should be string `,
-            });
-            status = false;
-          }
-        }
+        let TypeSasRes = helper.validation(TypeSas);
 
-        if (
-          helper.stringToBoolean(data.noPackageConfig) === true &&
-          key === "type"
-        ) {
-          if (
-            data[key] === "" ||
-            data[key] === null ||
-            data[key] === undefined
-          ) {
-            // console.log("kk");
-          } else {
-            if (
-              data[key] === "7Z" ||
-              data[key] === "ZIP" ||
-              data[key] === "RAR" ||
-              data[key] === "SAS"
-            ) {
-            } else {
-              msg.push({
-                text: " Package type's is required and Supported values : 7Z, ZIP, RAR, SAS ",
-              });
-              status = false;
-            }
-          }
-        }
-
-        if (
-          helper.stringToBoolean(data.noPackageConfig) === false &&
-          key === "sasXptMethod"
-        ) {
-          if (
-            data[key] !== null &&
-            data[key] !== "" &&
-            data[key] !== undefined &&
-            typeof data[key] === "string"
-          ) {
-          } else {
-            msg.push({
-              text: ` ${key} is required and data type should be string `,
-            });
-            status = false;
-          }
-        }
-
-        if (key === "noPackageConfig") {
-          keyValue = helper.stringToBoolean(data[key]);
-          console.log("status", key, keyValue);
-
-          if (
-            data[key] != null &&
-            data[key] != undefined
-            // &&
-            // typeof keyValue === "boolean"
-          ) {
-          } else {
-            msg.push({
-              text: ` ${key} is required and data type should be boolean `,
-            });
-            status = false;
-          }
-        }
-
-        if (key === "password") {
-          if (
-            data[key] === "" ||
-            data[key] === null ||
-            data[key] === undefined
-          ) {
-          } else {
-          }
-        }
-      } else {
-        if (key === "noPackageConfig") {
-          if (helper.stringToBoolean(data[key]) === true) {
-          } else {
-            msg.push({
-              text: `For RDMBS, ${key} its always true `,
-            });
-            status = false;
-          }
-        }
-        if (
-          key === "type" ||
-          key === "sasXptMethod" ||
-          key === "path" ||
-          key === "name"
-        ) {
-          if (
-            data[key] === "" ||
-            data[key] === null ||
-            data[key] === undefined
-          ) {
-          } else {
-            msg.push({
-              text: `For RDMBS, ${key} its always blank `,
-            });
-            status = false;
-          }
+        if (TypeSasRes.length > 0) {
+          errorPackage.push(TypeSasRes);
         }
       }
-    }
 
-    for (let k in dpObj) {
-      if (data.hasOwnProperty(k)) {
-        if (data[k] != null && data[k] != undefined) {
-          columnArray.push(dpObj[k]);
-          valueArry.push(data[k]);
+      if (typeof data.type != "undefined") {
+        if (!helper.isPackageType(data.type)) {
+          errorPackage.push(
+            " Package type's Supported values : 7Z, ZIP, RAR, SAS "
+          );
         }
       }
-    }
-
-    columnArray.push("updt_tm");
-    valueArry.push(new Date());
-
-    let Count = 1;
-    const resultData = columnArray.reduce((prev, cur) => {
-      prev += cur.toString() + " =$" + Count + ", ";
-      Count += 1;
-      return prev;
-    }, "");
-
-    const fData = resultData.slice(0, -2);
-
-    let updateQueryDP = `UPDATE ${schemaName}.datapackage set ${fData} where externalid='${externalID}'`;
-    let selectQueryDP = `select * from ${schemaName}.datapackage where externalid='${externalID}'`;
-
-    // console.log(DpData.rows[0]);
-
-    if (msg.length > 0) {
-      return { validate: msg, status: status };
     } else {
-      let dataPackageUpdate = await DB.executeQuery(updateQueryDP, [
-        ...valueArry,
-      ]);
-      var data_packages = [];
-      newObj.timestamp = ts;
-      newObj.externalId = externalID;
-      newObj.datapackageid = DPId;
-      newObj.action = "Data package update successfully.";
-      data_packages.push(newObj);
+      if (
+        !helper.stringToBoolean(data.noPackageConfig) ||
+        !helper.stringToBoolean(data.active)
+      ) {
+        errorPackage.push(" In JDBC noPackageConfig, active should be True ");
+      }
+      if (data.type || data.sasXptMethod || data.path || data.name) {
+        errorPackage.push(
+          " In JDBC type, sasXptMethod, path, name should be blank "
+        );
+      }
+    }
 
-      let DpData = await DB.executeQuery(selectQueryDP);
+    if (errorPackage.length > 0) {
+      errorPackage.splice(0, 0, `Datapackage External Id -${externalID} `);
+      return { sucRes: data_packages, errRes: errorPackage };
+    }
 
-      const logAttribute = columnArray.slice(0, -1);
-      const logValue = valueArry.slice(0, -1);
+    let updateQueryDP = `update ${schemaName}.datapackage set updt_tm=NOW()`;
+    if (data.type) {
+      updateQueryDP += `, type='${data.type}'`;
+    }
+    if (data.name) {
+      updateQueryDP += `, name='${data.name}'`;
+    }
+    if (data.path) {
+      updateQueryDP += `, path='${data.path}'`;
+    }
+    if (data.sasXptMethod) {
+      updateQueryDP += `, sasxptmethod='${data.sasXptMethod}'`;
+    }
+    if (data.password) {
+      updateQueryDP += `, password='${data.password}'`;
+    }
+    if (data.noPackageConfig) {
+      updateQueryDP += `, nopackageconfig='${data.noPackageConfig}'`;
+    }
+    updateQueryDP += ` where externalid='${externalID}' returning *;`;
 
-      logAttribute.forEach(async (e, index) => {
-        const key = e;
-        const val = logValue[index];
+    const { rows: existDPRows } = await DB.executeQuery(
+      `SELECT type, name, path, sasxptmethod ,password, nopackageconfig 
+       from ${schemaName}.datapackage where externalid='${externalID}';`
+    );
 
-        await DB.executeQuery(
-          `INSERT INTO ${schemaName}.dataflow_audit_log
+    const existDP = existDPRows[0];
+    const dataPackageupdate = await DB.executeQuery(updateQueryDP);
+    const dataPackageObj = dataPackageupdate.rows[0];
+    const diffObj = helper.getdiffKeys(existDP, dataPackageObj);
+
+    // console.log("dada", diffObj);
+
+    for (let key of Object.keys(diffObj)) {
+      let oldData = diffObj[key];
+      let newData = dataPackageObj[key];
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.dataflow_audit_log
                         ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
                         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-          [
-            DFId,
-            DPId,
-            null,
-            null,
-            version,
-            key,
-            DpData.rows[0][key],
-            val,
-            null,
-            new Date(),
-          ]
-        );
-      });
-
-      return { validate: data_packages, status: status };
+        [
+          DFId,
+          DPId,
+          null,
+          null,
+          version,
+          key,
+          oldData,
+          newData,
+          externalSysName,
+          new Date(),
+        ]
+      );
     }
+
+    newObj.externalId = externalID;
+    newObj.datapackageid = DPId;
+    newObj.action = "Data package update successfully.";
+    newObj.timestamp = ts;
+    data_packages.push(newObj);
+
+    return { sucRes: data_packages, errRes: errorPackage };
   } catch (e) {
     console.log(e);
+    Logger.error("catch :Data package update");
+    Logger.error(e);
   }
 };
 
@@ -2210,362 +1897,369 @@ exports.datasetUpdate = async (
   DPId,
   DFId,
   version,
-  ConnectionType
+  ConnectionType,
+  custSql,
+  externalSysName
 ) => {
   try {
-    // console.log(data, externalID, DSId, DPId, DFId, version, ConnectionType);
-    const columnArray = [];
-    const valueArry = [];
     var LocationType = ConnectionType;
-    let msg = [];
-    let status = true;
     let ts = new Date().toLocaleString();
     var dataset_update = [];
-
     var newObj = {};
-    const dsObj = {
-      // dataKind: "datakindid",
-      mnemonic: "mnemonic",
-      name: "name",
-
-      columnCount: "columncount",
-      incremental: "incremental",
-      offsetColumn: "offsetcolumn",
-      type: "type",
-      path: "path",
-      OverrideStaleAlert: "ovrd_stale_alert",
-      headerRowNumber: "headerrow",
-      footerRowNumber: "footerrow",
-      headerRowNumber: "headerrownumber",
-      footerRowNumber: "footerrownumber",
-      customSql: "customsql",
-      customQuery: "customsql_yn",
-      tableName: "tbl_nm",
-
-      delimiter: "delimiter",
-      escapeCode: "escapecode",
-      quote: "quote",
-      rowDecreaseAllowed: "rowdecreaseallowed",
-      dataTransferFrequency: "data_freq",
-    };
+    const valDataset = [];
+    var dataKi_Id;
+    let errorDataset = [];
 
     if (data.dataKind) {
       let checkDataKind = await DB.executeQuery(
         `select datakindid from ${schemaName}.datakind where name='${data.dataKind}';`
       );
-      dataKind = checkDataKind.rows[0].datakindid;
-      columnArray.push("datakindid");
-      valueArry.push(dataKind);
+      if (checkDataKind.rows.length > 0) {
+        dataKi_Id = checkDataKind.rows[0].datakindid;
+      } else {
+        errorDataset.push(" This datakindid is not exist ");
+      }
     }
 
     // Request Filed validation loop
-    for (let key in data) {
-      if (LocationType === "SFTP" || LocationType === "FTPS") {
-        // if (LocationType === "Hive CDH") {
-        if (
-          key == "mnemonic" ||
-          key == "dataKind" ||
-          key == "type" ||
-          key == "name" ||
-          key == "path"
-        ) {
-          if (
-            data[key] !== null &&
-            data[key] !== "" &&
-            data[key] !== undefined &&
-            typeof data[key] === "string"
-          ) {
-            // console.log("Fields Validation Success");
-          } else {
-            msg.push({
-              text: ` ${key} is required and data type should be string `,
-            });
-            status = false;
-          }
+
+    if (helper.isSftp(LocationType)) {
+      // if (LocationType === "Hive CDH") {
+      if (typeof data.mnemonic != "undefined") {
+        valDataset.push({
+          key: "mnemonic ",
+          value: data.mnemonic,
+          type: "string",
+        });
+      }
+      if (typeof data.dataKind != "undefined") {
+        valDataset.push({
+          key: "dataKind ",
+          value: data.dataKind,
+          type: "string",
+        });
+      }
+      if (typeof data.type != "undefined") {
+        valDataset.push({
+          key: "type ",
+          value: data.type,
+          type: "string",
+        });
+      }
+      if (typeof data.name != "undefined") {
+        valDataset.push({
+          key: "name ",
+          value: data.name,
+          type: "string",
+        });
+      }
+      if (typeof data.path != "undefined") {
+        valDataset.push({
+          key: "path ",
+          value: data.path,
+          type: "string",
+        });
+      }
+      if (typeof data.rowDecreaseAllowed != "undefined") {
+        valDataset.push({
+          key: "rowDecreaseAllowed ",
+          value: data.rowDecreaseAllowed,
+          type: "number",
+        });
+      }
+      if (typeof data.dataTransferFrequency != "undefined") {
+        valDataset.push({
+          key: "dataTransferFrequency ",
+          value: data.dataTransferFrequency,
+          type: "number",
+        });
+      }
+      if (typeof data.columncount != "undefined") {
+        valDataset.push({
+          key: "columncount ",
+          value: data.columncount,
+          type: "number",
+        });
+      }
+      if (typeof data.active != "undefined") {
+        valDataset.push({
+          key: "active ",
+          value: data.active,
+          type: "boolean",
+        });
+      }
+
+      let dataSetRes = helper.validation(valDataset);
+
+      if (dataSetRes.length > 0) {
+        errorDataset.push(dataSetRes);
+      }
+
+      if (data.type.toLowerCase() === "delimited") {
+        const dlData = [];
+        if (typeof data.delimiter != "undefined") {
+          dlData.push({
+            key: "delimiter ",
+            value: data.delimiter,
+            type: "string",
+          });
+        }
+        if (typeof data.quote != "undefined") {
+          dlData.push({
+            key: "quote ",
+            value: data.quote,
+            type: "string",
+          });
+        }
+        if (typeof data.escapeCode != "undefined") {
+          dlData.push({
+            key: "escapeCode ",
+            value: data.escapeCode,
+            type: "string",
+          });
         }
 
-        if (key == "delimiter" || key == "quote" || key == "escapeCode") {
-          if (data.type.toLowerCase() === "delimited") {
-            if (
-              data[key] !== null &&
-              data[key] !== "" &&
-              data[key] !== undefined &&
-              typeof data[key] === "string"
-            ) {
-            } else {
-              msg.push({
-                text: ` ${key} is required and data type should be string `,
-              });
-              status = false;
+        let dlRes = helper.validation(dlData);
+        if (dlRes.length > 0) {
+          errorDataset.push(dlRes);
+        }
+      }
+
+      if (
+        data.customQuery ||
+        data.customSql ||
+        data.incremental ||
+        data.conditionalExpression ||
+        data.offsetColumn
+      ) {
+        errorDataset.push(
+          " For SFTP/FTPS, customQuery, customSql incremental, conditionalExpression, offsetColumn fields should be Blank "
+        );
+      }
+
+      if (typeof data.incremental != "undefined") {
+        if (data.incremental === 0) {
+          errorDataset.push("In SFTP/FTPS incremental should be blank");
+        }
+      }
+    } else {
+      if (typeof data.mnemonic != "undefined") {
+        valDataset.push({
+          key: "mnemonic ",
+          value: data.mnemonic,
+          type: "string",
+        });
+      }
+      if (typeof data.dataKind != "undefined") {
+        valDataset.push({
+          key: "dataKind ",
+          value: data.dataKind,
+          type: "string",
+        });
+      }
+      if (typeof data.columncount != "undefined") {
+        valDataset.push({
+          key: "columncount ",
+          value: data.columncount,
+          type: "number",
+        });
+      }
+      if (typeof data.customQuery != "undefined") {
+        valDataset.push({
+          key: "customQuery ",
+          value: data.customQuery,
+          type: "boolean",
+        });
+      }
+
+      let dataSetRes = helper.validation(valDataset);
+
+      if (dataSetRes.length > 0) {
+        errorDataset.push(dataSetRes);
+      }
+
+      if (
+        data.type ||
+        data.name ||
+        data.delimiter ||
+        data.quote ||
+        data.rowDecreaseAllowed ||
+        data.dataTransferFrequency ||
+        data.path ||
+        data.escapeCode
+      ) {
+        errorDataset.push(
+          " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCode should be Blank "
+        );
+      }
+
+      if (data.customQuery) {
+        if (data.customQuery.toLowerCase() == "yes") {
+          if (!data.customSql) {
+            errorDataset.push(" Custom Sql  is required  ");
+          }
+        }
+        if (data.customQuery.toLowerCase() == "no") {
+          if (!data.tableName) {
+            errorDataset.push(" Table Name  is required  ");
+          } else {
+            if (data.tableName.length >= 255) {
+              errorDataset.push(" Table Name  Max of 255 characters  ");
+            }
+          }
+          if (helper.stringToBoolean(data.incremental)) {
+            if (!data.offsetColumn) {
+              errorDataset.push(
+                " offsetColumn  is required and data type should be string "
+              );
             }
           }
         }
+      }
+    }
 
-        if (key == "customQuery") {
-          if (
-            data[key] === null ||
-            data[key] === "" ||
-            data[key] === undefined
-          ) {
-          } else {
-            msg.push({
-              text: ` customQuery fields should be Blank `,
-            });
-            status = false;
-          }
-        }
+    if (errorDataset.length > 0) {
+      errorDataset.splice(0, 0, `DataSet External Id -${externalID} `);
+      return { sucRes: dataset_update, errRes: errorDataset };
+    }
 
-        if (
-          key == "rowDecreaseAllowed" ||
-          key == "dataTransferFrequency" ||
-          key == "columncount"
-        ) {
-          if (
-            data[key] !== null &&
-            data[key] !== "" &&
-            data[key] !== undefined &&
-            typeof data[key] === "number"
-          ) {
-            // console.log("Fields Validation Success");
-          } else {
-            msg.push({
-              text: ` ${key} is required and data type should be number `,
-            });
-            status = false;
-          }
-        }
-
-        if (key === "active") {
-          keyValue = helper.stringToBoolean(data[key]);
-          if (
-            data[key] !== null &&
-            data[key] !== "" &&
-            data[key] !== undefined &&
-            typeof keyValue === "boolean"
-          ) {
-            // console.log("Fields Validation Success");
-          } else {
-            msg.push({
-              text: ` ${key} is required and data type should be boolean `,
-            });
-            status = false;
-          }
+    let sqlQuery = custSql;
+    if (data.customQuery) {
+      if (data.customQuery.toLowerCase() === "no") {
+        if (data.columnDefinition?.length > 0) {
+          const cList = data.columnDefinition.map(
+            (el) => el.name || el.columnName
+          );
+          sqlQuery = helper.createCustomSql(
+            cList,
+            data.tableName,
+            data.conditionalExpression
+          );
         }
       } else {
-        if (key == "mnemonic" || key == "dataKind") {
-          if (
-            data[key] !== null &&
-            data[key] !== "" &&
-            data[key] !== undefined &&
-            typeof data[key] === "string"
-          ) {
-            // console.log("Fields Validation Success");
-          } else {
-            msg.push({
-              text: ` ${key} is required and data type should be string `,
-            });
-            status = false;
-          }
-        }
-
-        if (
-          key == "type" ||
-          key == "name" ||
-          key == "delimiter" ||
-          key == "quote" ||
-          key == "rowDecreaseAllowed" ||
-          key == "escapeCode" ||
-          key == "dataTransferFrequency" ||
-          key == "path"
-        ) {
-          if (
-            data[key] === "" ||
-            data[key] === null ||
-            data[key] === undefined
-          ) {
-            // console.log("Fields Validation Success");
-          } else {
-            msg.push({
-              text: ` This ${key} fields should be Blank`,
-            });
-            status = false;
-          }
-        }
-
-        if (key == "columncount") {
-          if (
-            data[key] !== null &&
-            data[key] !== "" &&
-            data[key] !== undefined &&
-            typeof data[key] === "number"
-          ) {
-            // console.log("Fields Validation Success");
-          } else {
-            msg.push({
-              text: ` ${key} is required and data type should be string `,
-            });
-            status = false;
-          }
-        }
-
-        if (key === "active" || key === "customQuery") {
-          keyValue = helper.stringToBoolean(data[key]);
-          if (
-            data[key] !== null &&
-            data[key] !== "" &&
-            data[key] !== undefined &&
-            typeof keyValue === "boolean"
-          ) {
-            // console.log("Fields Validation Success");
-          } else {
-            msg.push({
-              text: ` ${key} is required and data type should be boolean `,
-            });
-            status = false;
-          }
-        }
-
-        if (key === "customQuery") {
-          if (data[key].toLowerCase() === "yes") {
-            if (
-              data.customSql !== null &&
-              data.customSql !== "" &&
-              data.customSql !== undefined
-            ) {
-              // console.log("Fields Validation Success");
-            } else {
-              msg.push({
-                text: ` Custom Sql is required  `,
-              });
-              status = false;
-            }
-            if (data.customSql.length <= 131072) {
-              // console.log("Fields Validation Success");
-            } else {
-              msg.push({
-                text: ` Custom Sql Max of 131072 characters  `,
-              });
-              status = false;
-            }
-          }
-          if (data[key].toLowerCase() == "no") {
-            if (
-              data.tableName !== null &&
-              data.tableName !== "" &&
-              data.tableName !== undefined
-            ) {
-              // console.log("Fields Validation Success");
-            } else {
-              msg.push({
-                text: ` Table Name is required `,
-              });
-              status = false;
-            }
-            if (data.tableName.length <= 255) {
-              // console.log("Fields Validation Success");
-            } else {
-              msg.push({
-                text: ` Table Name  Max of 255 characters  `,
-              });
-              status = false;
-            }
-          }
-        }
-
-        if (key === "offsetColumn") {
-          if (
-            helper.stringToBoolean(data.incremental) === true &&
-            data.customQuery.toLowerCase() == "no"
-          ) {
-            if (
-              data.offsetColumn !== null &&
-              data.offsetColumn !== "" &&
-              data.offsetColumn !== undefined &&
-              typeof data.offsetColumn === "string"
-            ) {
-            } else {
-              msg.push({
-                text: " offsetColumn  is required and data type should be string ",
-              });
-              status = false;
-            }
-          }
-        }
+        sqlQuery = data.customSql;
       }
     }
 
-    for (let k in dsObj) {
-      if (data.hasOwnProperty(k)) {
-        if (data[k] != null && data[k] != undefined && data[k] != "") {
-          columnArray.push(dsObj[k]);
-          valueArry.push(data[k]);
-        }
-      }
+    let updateQueryDS = `UPDATE ${schemaName}.dataset set updt_tm=NOW() `;
+
+    if (data.dataKind) {
+      updateQueryDS += `,datakindid='${dataKi_Id}'`;
+    }
+    if (data.mnemonic) {
+      updateQueryDS += `,mnemonic='${data.mnemonic}'`;
+    }
+    if (data.name) {
+      updateQueryDS += `,name='${data.name}'`;
+    }
+    if (data.columnCount) {
+      updateQueryDS += `,columncount='${data.columnCount}'`;
+    }
+    if (data.incremental) {
+      updateQueryDS += `,incremental='${
+        helper.stringToBoolean(data.incremental) ? "Y" : "N"
+      }'`;
+    }
+    if (data.offsetColumn) {
+      updateQueryDS += `,offsetcolumn='${data.offsetColumn}'`;
+    }
+    if (data.type) {
+      updateQueryDS += `,type='${data.type}'`;
+    }
+    if (data.path) {
+      updateQueryDS += `,path='${data.path}'`;
+    }
+    if (data.OverrideStaleAlert) {
+      updateQueryDS += `,ovrd_stale_alert='${data.OverrideStaleAlert}'`;
+    }
+    if (data.headerRowNumber) {
+      updateQueryDS += `,headerrow='${data.headerRowNumber}'`;
+      updateQueryDS += `,headerrownumber='${data.headerRowNumber}'`;
+    }
+    if (data.footerRowNumber) {
+      updateQueryDS += `,footerrow='${data.footerRowNumber}'`;
+      updateQueryDS += `,footerrownumber='${data.footerRowNumber}'`;
+    }
+    if (data.customSql) {
+      updateQueryDS += `,customsql='${sqlQuery}'`;
     }
 
-    // console.log(columnArray, valueArry);
-    columnArray.push("updt_tm");
-    valueArry.push(new Date());
+    if (data.customQuery) {
+      updateQueryDS += `,customsql_yn='${data.customQuery}'`;
+    }
+    if (data.tableName) {
+      updateQueryDS += `,tbl_nm='${data.tableName}'`;
+    }
+    if (data.delimiter) {
+      updateQueryDS += `,delimiter='${data.delimiter}'`;
+    }
+    if (data.escapeCode) {
+      updateQueryDS += `,escapecode='${helper.convertEscapeChar(
+        data.escapeCode
+      )}'`;
+    }
+    if (data.quote) {
+      updateQueryDS += `,quote='${data.quote}'`;
+    }
+    if (data.rowDecreaseAllowed) {
+      updateQueryDS += `,rowdecreaseallowed='${data.rowDecreaseAllowed}'`;
+    }
+    if (data.dataTransferFrequency) {
+      updateQueryDS += `,data_freq='${data.dataTransferFrequency}'`;
+    }
 
-    let Count = 1;
-    const resultData = columnArray.reduce((prev, cur) => {
-      prev += cur.toString() + " =$" + Count + ", ";
-      Count += 1;
-      return prev;
-    }, "");
+    updateQueryDS += ` where externalid='${externalID}' returning *;`;
 
-    const fData = resultData.slice(0, -2);
-    // console.log(fData);
+    // console.log(updateQueryDS);
 
-    let updateQueryDS = `UPDATE ${schemaName}.dataset set ${fData} where externalid='${externalID}'`;
-    let slectQueryDS = `select * from ${schemaName}.dataset where externalid='${externalID}'`;
+    const { rows: existDSRows } = await DB.executeQuery(
+      `SELECT datakindid , mnemonic, name, columncount, incremental, offsetcolumn , type, 
+       path, ovrd_stale_alert ,headerrow , headerrownumber ,footerrow , footerrownumber ,
+       customsql ,customsql_yn , tbl_nm , delimiter, escapecode ,quote, 
+       rowdecreaseallowed , data_freq from ${schemaName}.dataset where externalid='${externalID}';`
+    );
 
-    if (msg.length > 0) {
-      return { validate: msg, status: status };
-    } else {
-      let dataSetUpdate = await DB.executeQuery(updateQueryDS, [...valueArry]);
-      let DsData = await DB.executeQuery(slectQueryDS);
+    const existDs = existDSRows[0];
+    const dataSetupdate = await DB.executeQuery(updateQueryDS);
+    const dataSetObj = dataSetupdate.rows[0];
+    const diffObj = helper.getdiffKeys(existDs, dataSetObj);
 
-      newObj.timestamp = ts;
-      newObj.externalId = externalID;
-      newObj.dataSetid = DSId;
-      newObj.action = "Data Set update successfully.";
-      // ResponseBody.data_set.push(newObj);
-      dataset_update.push(newObj);
+    // console.log("dada", diffObj);
 
-      const logAttribute = columnArray.slice(0, -1);
-      const logValue = valueArry.slice(0, -1);
-
-      logAttribute.forEach(async (e, index) => {
-        const key = e;
-        const val = logValue[index];
-
-        await DB.executeQuery(
-          `INSERT INTO ${schemaName}.dataflow_audit_log
+    for (let key of Object.keys(diffObj)) {
+      let oldData = diffObj[key];
+      let newData = dataSetObj[key];
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.dataflow_audit_log
                         ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
                         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-          [
-            DFId,
-            DPId,
-            DSId,
-            null,
-            version,
-            key,
-            DsData.rows[0][key],
-            val,
-            null,
-            new Date(),
-          ]
-        );
-      });
-
-      return { validate: dataset_update, status: status };
+        [
+          DFId,
+          DPId,
+          DSId,
+          null,
+          version,
+          key,
+          oldData,
+          newData,
+          externalSysName,
+          new Date(),
+        ]
+      );
     }
+
+    newObj.externalId = externalID;
+    newObj.dataSetid = DSId;
+    newObj.action = "Data Set update successfully.";
+    newObj.timestamp = ts;
+    dataset_update.push(newObj);
+
+    return { sucRes: dataset_update, errRes: errorDataset };
   } catch (e) {
     console.log(e);
+    Logger.error("catch :Data set update");
+    Logger.error(e);
   }
 };
 
 const columnUpdate = async (data, externalID, DFId, version) => {};
-
-const versionUpdate = async (data, externalID, DFId, version) => {};

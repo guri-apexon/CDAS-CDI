@@ -134,6 +134,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
     if (req.body.externalSystemName !== "CDI") {
       // var dataRes = insertValidation(req.body);
       var dataRes = externalFunction.insertValidation(req.body);
+
       if (dataRes.length > 0) {
         validate.push(dataRes);
         return apiResponse.ErrorResponse(res, validate);
@@ -600,13 +601,38 @@ exports.updateDataFlow = async (req, res) => {
       protocolNumberStandard,
     } = req.body;
 
+    // Dataflow External Id validation
     if (!externalID) {
       return apiResponse.ErrorResponse(
         res,
-        "External Id required Data flow Level"
+        "Data flow Level External Id required and data type should be string or Number"
       );
     }
 
+    // Data Package External Id validation
+    if (dataPackage && dataPackage.length > 0) {
+      for (let each of dataPackage) {
+        if (!each.externalID) {
+          return apiResponse.ErrorResponse(
+            res,
+            "Data Package Level External Id required and data type should be string or Number"
+          );
+        }
+        // Data Set External Id validation
+        if (each.dataSet && each.dataSet.length > 0) {
+          for (let obj of each.dataSet) {
+            if (!obj.externalID) {
+              return apiResponse.ErrorResponse(
+                res,
+                "Data Set Level External Id required and data type should be string or Number"
+              );
+            }
+          }
+        }
+      }
+    }
+
+    // return;
     if (vendorName) {
       let q2 = `select vend_id from ${schemaName}.vendor where vend_nm=$1;`;
       let { rows } = await DB.executeQuery(q2, [vendorName]);
@@ -634,17 +660,17 @@ exports.updateDataFlow = async (req, res) => {
     if (typeof type != "undefined") {
       valData.push({ key: "Type ", value: type, type: "string" });
     }
-    if (name != "") {
+    if (typeof name != "undefined") {
       valData.push({ key: "name ", value: name, type: "string" });
     }
-    if (externalSystemName != "") {
+    if (typeof externalSystemName != "undefined") {
       valData.push({
         key: "externalSystemName ",
         value: externalSystemName,
         type: "string",
       });
     }
-    if (description != "") {
+    if (typeof description != "undefined") {
       valData.push({
         key: "description ",
         value: description,
@@ -652,14 +678,14 @@ exports.updateDataFlow = async (req, res) => {
         maxLength: 30,
       });
     }
-    if (testFlag != "" || testFlag != undefined) {
+    if (typeof testFlag != "undefined") {
       valData.push({
         key: "testFlag ",
         value: testFlag,
         type: "boolean",
       });
     }
-    if (active != "" || testFlag != undefined) {
+    if (typeof active != "undefined") {
       valData.push({
         key: "active ",
         value: active,
@@ -668,7 +694,7 @@ exports.updateDataFlow = async (req, res) => {
     }
 
     const returnData = helper.validation(valData);
-    console.log(returnData);
+
     if (returnData.length > 0) {
       return apiResponse.ErrorResponse(res, returnData);
     }
@@ -686,34 +712,21 @@ exports.updateDataFlow = async (req, res) => {
       const Ver = versions[0].version || 0;
       const DFVer = Ver + 1;
       const ConnectionType = rows[0].connectiontype;
+      const externalSysName = rows[0].externalsystemname;
 
       var ResponseBody = {};
-      ResponseBody.dataflow = [];
+      ResponseBody.success = [];
+      ResponseBody.errors = [];
+
       //dataFlow update function Call
-      // var updateDataflow = await externalFunction.dataflowUpdate(
-      //   req.body,
-      //   externalID,
-      //   DFId,
-      //   DFVer
-      // );
+      var updateDataflow = await externalFunction
+        .dataflowUpdate(req.body, externalID, DFId, DFVer, externalSysName)
+        .then((res) => {
+          ResponseBody.success.push(res.sucRes);
+        });
 
-      // if (updateDataflow.validate?.length) {
-      //   return apiResponse.ErrorResponse(res, updateDataflow.validate);
-      // } else {
-      //   ResponseBody.dataflow.push(updateDataflow.dataflow);
-      // }
-
-      // return;
       if (dataPackage && dataPackage.length > 0) {
-        ResponseBody.data_packages = [];
-        // if datapackage exists
         for (let each of dataPackage) {
-          if (!each.externalID) {
-            return apiResponse.ErrorResponse(
-              res,
-              "Data Package Level External Id required Data flow Level"
-            );
-          }
           let selectDP = `select * from ${schemaName}.datapackage where externalid='${each.externalID}'`;
           let dpRows = await DB.executeQuery(selectDP);
           const packageExternalId = each.externalID;
@@ -721,154 +734,119 @@ exports.updateDataFlow = async (req, res) => {
           if (dpRows.rows.length > 0) {
             const DPId = dpRows.rows[0].datapackageid;
 
-            //Function call for update dataPackage data
-            var updatePackage = await externalFunction.packageUpdate(
-              each,
-              packageExternalId,
-              DPId,
-              DFId,
-              DFVer,
-              ConnectionType
-            );
-
-            // console.log(updatePackage);
-            if (updatePackage.status == false) {
-              return apiResponse.ErrorResponse(res, updatePackage.validate);
-            } else {
-              // console.log("success", updatePackage.validate);
-              ResponseBody.data_packages.push(updatePackage.validate);
-            }
+            var updatePackage = await externalFunction
+              .packageUpdate(
+                each,
+                packageExternalId,
+                DPId,
+                DFId,
+                DFVer,
+                ConnectionType,
+                externalSysName
+              )
+              .then((res) => {
+                ResponseBody.errors.push(res.errRes);
+                ResponseBody.success.push(res.sucRes);
+              });
 
             if (each.dataSet && each.dataSet.length > 0) {
-              ResponseBody.dataSets = [];
               // if datasets exists
               for (let obj of each.dataSet) {
-                if (!obj.externalID) {
-                  return apiResponse.ErrorResponse(
-                    res,
-                    "Data Set Level External Id required Data flow Level"
-                  );
-                }
-                var newobj = {};
                 let selectDS = `select * from ${schemaName}.dataset where externalid='${obj.externalID}'`;
                 let { rows: dsRows } = await DB.executeQuery(selectDS);
 
                 const datasetExternalId = obj.externalID;
                 if (dsRows.length > 0) {
                   const DSId = dsRows[0].datasetid;
+                  const custSql = dsRows[0].customsql;
                   //Function call for update dataSet data
-                  var updateDataset = await externalFunction.datasetUpdate(
-                    obj,
-                    datasetExternalId,
-                    DSId,
-                    DPId,
-                    DFId,
-                    DFVer,
-                    ConnectionType
-                  );
-
-                  if (updateDataset.status == false) {
-                    return apiResponse.ErrorResponse(
-                      res,
-                      updateDataset.validate
-                    );
-                  } else {
-                    // console.log("success", updateDataset.validate);
-                    ResponseBody.dataSets.push(updateDataset.validate);
-                  }
+                  var updateDataset = await externalFunction
+                    .datasetUpdate(
+                      obj,
+                      datasetExternalId,
+                      DSId,
+                      DPId,
+                      DFId,
+                      DFVer,
+                      ConnectionType,
+                      custSql,
+                      externalSysName
+                    )
+                    .then((res) => {
+                      ResponseBody.errors.push(res.errRes);
+                      ResponseBody.success.push(res.sucRes);
+                    });
 
                   // if (obj.columnDefinition && obj.columnDefinition.length > 0) {
                   //   ResponseBody.column_definition = [];
                   //   for (let el of obj.columnDefinition) {
-                  //     let clobj = {};
-                  //     let selectDS = `select * from ${schemaName}.dataset where externalid='${obj.externalID}'`;
-                  //     let { rows: dsRows } = await DB.executeQuery(selectDS);
+
                   //   }
                   // }
                 } else {
                   // Function call for insert dataSet level data
-                  var DatasetInsert = await externalFunction.datasetLevelInsert(
-                    obj,
-                    datasetExternalId,
-                    DPId,
-                    DFId,
-                    DFVer,
-                    ConnectionType
-                  );
-
-                  if (DatasetInsert.status == false) {
-                    return apiResponse.ErrorResponse(
-                      res,
-                      DatasetInsert.validate
-                    );
-                  } else {
-                    // console.log("success", DatasetInsert.validate);
-                    ResponseBody.dataSets.push(DatasetInsert.validate);
-                  }
+                  var DatasetInsert = await externalFunction
+                    .datasetLevelInsert(
+                      obj,
+                      datasetExternalId,
+                      DPId,
+                      DFId,
+                      DFVer,
+                      ConnectionType,
+                      externalSysName
+                    )
+                    .then((res) => {
+                      ResponseBody.errors.push(res.errRes);
+                      ResponseBody.success.push(res.sucRes);
+                    });
                 }
               }
             }
           } else {
-            var PackageInsert = await externalFunction.packageLevelInsert(
-              each,
-              DFId,
-              DFVer,
-              ConnectionType
-            );
-
-            console.log("error", PackageInsert);
-
-            if (PackageInsert.validate) {
-              return apiResponse.ErrorResponse(res, PackageInsert.validate);
-            }
-
-            ResponseBody.data_packages.push(PackageInsert.validate);
+            var PackageInsert = await externalFunction
+              .packageLevelInsert(
+                each,
+                DFId,
+                DFVer,
+                ConnectionType,
+                externalSysName
+              )
+              .then((res) => {
+                ResponseBody.errors.push(res.errRes);
+                ResponseBody.success.push(res.sucRes);
+              });
           }
         }
       }
 
-      // let config_json = {
-      //   dataFlowId: DFId,
-      //   vendorName: vendorName || null,
-      //   protocolNumber: studyId || null,
-      //   type: type,
-      //   name: name,
-      //   externalID: externalID,
-      //   externalSystemName: externalSystemName,
-      //   connectionType: connectionType,
-      //   location: src_loc_id,
-      //   exptDtOfFirstProdFile: exptDtOfFirstProdFile,
-      //   testFlag: testFlag ? 1 : 0,
-      //   prodFlag: testFlag,
-      //   description: description,
-      //   fsrstatus: fsrstatus,
-      //   dataPackage,
-      // };
+      const auditLog = await DB.executeQuery(
+        `SELECT * from ${schemaName}.dataflow_audit_log where dataflowid='${DFId}' and audit_vers = '${DFVer}';`
+      );
 
-      const cData = { dataFlowId: DFId };
-      const conf_data = Object.assign(cData, req.body);
+      if (auditLog.rows.length > 0) {
+        const cData = { dataFlowId: DFId };
+        const conf_data = Object.assign(cData, req.body);
 
-      //insert into dataflow version config log table
-      let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
+        //insert into dataflow version config log table
+        let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
         ( dataflowid, "version", config_json, created_by, created_on)
         VALUES($1,$2,$3,$4,$5);`;
-      let aduit_version_body = [
-        DFId,
-        DFVer,
-        // JSON.stringify(config_json),
-        JSON.stringify(conf_data),
-        // null,
-        null,
-        new Date(),
-      ];
-      await DB.executeQuery(dataflow_version_query, aduit_version_body);
+        let aduit_version_body = [
+          DFId,
+          DFVer,
+          // JSON.stringify(config_json),
+          JSON.stringify(conf_data),
+          externalSysName,
+          new Date(),
+        ];
+        await DB.executeQuery(dataflow_version_query, aduit_version_body);
+      }
 
       return apiResponse.successResponseWithData(
         res,
         "Data flow Update successfully.",
         ResponseBody
       );
-      // return apiResponse.successResponseWithData(res, "Success", rows);
     } else {
       var dataRes = creatDataflow(req, res);
     }
