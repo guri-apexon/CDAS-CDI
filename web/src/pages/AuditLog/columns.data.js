@@ -38,7 +38,7 @@ const columns = [
   {
     header: "Audit Version",
     accessor: "log_version",
-    sortFunction: compareStrings,
+    sortFunction: compareNumbers,
     // customCell: VersionCell,
     filterFunction: createStringSearchFilter("log_version"),
     filterComponent: TextFieldFilter,
