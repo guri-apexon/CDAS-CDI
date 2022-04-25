@@ -273,7 +273,8 @@ export const ActionCell = ({ row }) => {
     maxLength,
     minLength,
   } = row;
-  const checkMinMax = Number(minLength) < Number(maxLength);
+  const min = Number(minLength);
+  const max = Number(maxLength);
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
       <Button
@@ -287,7 +288,9 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={!(isHavingColumnName && checkMinMax)}
+        disabled={
+          !(min && max ? isHavingColumnName && min < max : isHavingColumnName)
+        }
       >
         Save
       </Button>
