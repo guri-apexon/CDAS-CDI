@@ -170,6 +170,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   }, [haveHeader]);
 
   useEffect(() => {
+    console.log("datasetColumns", datasetColumns);
     if (datasetColumns.length > 0) {
       setShowColumns(true);
       formatDBColumns(datasetColumns);

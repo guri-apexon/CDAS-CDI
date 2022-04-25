@@ -68,7 +68,10 @@ exports.saveDatasetColumns = async (req, res) => {
         ];
 
         const inserted = await DB.executeQuery(insertQuery, body);
-        datasetColumns.push(inserted.rows[0]);
+        datasetColumns.push({
+          ...inserted.rows[0],
+          frontendUniqueRef: value.uniqueId,
+        });
 
         const jsonObj = { datasetid: dsId, columnId, ...value };
         const config_json = JSON.stringify(jsonObj);

@@ -21,6 +21,10 @@ import {
   DATAFLOW_UPDATE_API,
   ADD_PACKAGE,
 } from "../constants";
+import {
+  columnsCreated,
+  columnsCreatedFailure,
+} from "../store/actions/DataSetsAction";
 import { getUserId } from "../utils/index";
 
 const userId = getUserId();
@@ -33,6 +37,27 @@ export const checkLocationExistsInDataFlow = async (locId) => {
       `${baseURL}/${LOCATIONAPI}/check-in-df/${locId}`
     );
     return res.data?.data || 0;
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const createColumns = async (payload) => {
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${baseURL}/${COLUMNSAPI}/create`, payload)
+        .then((res) => {
+          columnsCreated({ ...res.data, nQuery: payload.nQuery });
+          resolve(res.data);
+        })
+        .catch((err) => {
+          if (err.response) {
+            columnsCreatedFailure(err.response?.data);
+            resolve(err.response.data);
+          }
+        });
+    });
   } catch (err) {
     return console.log("Error", err);
   }
