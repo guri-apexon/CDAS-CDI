@@ -533,10 +533,8 @@ export default function DSColumnTable({
   }, [selectedRows]);
 
   useEffect(() => {
-    if (rows?.length) {
-      setFilteredRows(rows);
-      messageContext?.setDataflow({ columnDefinition: rows });
-    }
+    setFilteredRows(rows);
+    messageContext?.setDataflow({ columnDefinition: rows });
   }, [rows]);
 
   useEffect(() => {
