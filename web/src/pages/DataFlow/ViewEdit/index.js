@@ -9,6 +9,7 @@ import { useDispatch, useSelector, connect } from "react-redux";
 import { submit, reset, getFormValues } from "redux-form";
 import Loader from "apollo-react/components/Loader";
 import { values } from "lodash";
+import moment from "moment";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
 import LeftPanel from "./LeftPanel";
@@ -22,7 +23,6 @@ import {
   changeFormFieldData,
   hideErrorMessage,
   getLocationByType,
-  addDataFlow,
   getDataFlowDetail,
 } from "../../../store/actions/DataFlowAction";
 
@@ -82,27 +82,13 @@ const DataFlow = ({ FormValues, dashboard }) => {
     dataFlowdetail,
     updated,
   } = dataFlowData;
-  const [locType, setLocType] = useState("SFTP");
+  const [locType, setLocType] = useState("");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
   const [dataflowSource, setDataFlowSource] = useState({});
+  const [ffDate, setFfDate] = useState(null);
   const { dataflowId } = useParams();
   const userInfo = getUserInfo();
-
-  const pullVendorandLocation = () => {
-    dispatch(getVendorsData());
-    dispatch(getLocationByType(locType));
-    dispatch(getServiceOwnersData());
-  };
-
-  const getDataFlowSource = async (dataflowid) => {
-    dispatch(getDataFlowDetail(dataflowid));
-  };
-
-  useEffect(() => {
-    getDataFlowSource(dataflowId);
-    pullVendorandLocation();
-  }, [dataflowId]);
 
   const breadcrumbItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -113,13 +99,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
     },
   ];
 
-  useEffect(() => {
-    if (modalLocType === locType) {
-      dispatch(getLocationByType(locType));
-    }
-  }, [createTriggered]);
-
   const changeLocationData = (value) => {
+    if (selectedLocation && value === selectedLocation.value) return;
     const locationsRec = dataFlowData.locations?.records ?? [];
     const location = locationsRec?.find(
       // eslint-disable-next-line eqeqeq
@@ -127,61 +108,97 @@ const DataFlow = ({ FormValues, dashboard }) => {
     );
     dispatch(updateSelectedLocation(location));
   };
+
+  const pullVendorandLocation = () => {
+    dispatch(getVendorsData());
+    dispatch(getServiceOwnersData());
+  };
+
+  useEffect(() => {
+    dispatch(getDataFlowDetail(dataflowId));
+  }, [dataflowId]);
+
+  useEffect(() => {
+    if (modalLocType === locType) {
+      dispatch(getLocationByType(locType));
+    }
+  }, [createTriggered]);
+
+  useEffect(() => {
+    if (locType) dispatch(getLocationByType(locType));
+  }, [locType]);
+
   const changeFormField = (value, field) => {
     dispatch(changeFormFieldData(value, field));
   };
   const changeLocationType = (value) => {
-    dispatch(getLocationByType(value));
     setLocType(value);
   };
+
   const modalLocationType = (value) => {
     setModalLocType(value);
   };
+
   const closeForm = async () => {
     await dispatch(reset("DataFlowForm"));
     history.push("/dashboard");
   };
+
+  useEffect(() => {
+    if (dataFlowdetail) {
+      pullVendorandLocation();
+      if (dataFlowdetail.loctyp && locType !== dataFlowdetail.loctyp) {
+        changeLocationType(dataFlowdetail.loctyp);
+      }
+    }
+  }, [dataFlowdetail]);
 
   // useEffect(() => {
   //   if (!dashboard?.selectedCard?.prot_id) {
   //     history.push("/dashboard");
   //   }
   // }, [dashboard?.selectedCard]);
-
+  const changeFirstFlDt = (dt) => {
+    console.log("dt", dt);
+    setFfDate(dt);
+  };
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
-    // console.log("FormValues?", FormValues);
-    // console.log("protId", protId, dataflowId, FormValues);
+    // console.log("FormValues", FormValues);
     if (
-      FormValues.vendors &&
-      FormValues.locationName &&
-      FormValues.description !== "" &&
+      FormValues?.vendors &&
+      selectedLocation &&
+      FormValues?.description !== "" &&
       protId !== "" &&
       dataflowId
     ) {
+      const firstFileDate = moment(ffDate || FormValues.firstFileDate).format(
+        "DD-MMM-yyyy"
+      );
       const payload = {
         vendorID: FormValues.vendors[0],
-        locationName: FormValues.locationName[0],
+        locationName: selectedLocation.value,
         dataStructure: FormValues.dataStructure,
-        connectionType: FormValues.dataflowType,
+        connectionType: FormValues.locationType,
         testFlag: FormValues.dataflowType === "test" ? "true" : "false",
         prodFlag: FormValues.dataflowType === "production" ? "true" : "false",
         description: FormValues.description,
-        firstFileDate: FormValues.firstFileDate,
-        locationType: FormValues.locationType,
-        serviceOwnerValue: FormValues.serviceOwnerValue?.length
-          ? FormValues.serviceOwnerValue[0].label
-          : "",
+        firstFileDate,
+        serviceOwners: FormValues.serviceOwner?.length
+          ? FormValues.serviceOwner
+          : null,
         protocolNumberStandard: protId,
         externalSystemName: "CDI",
         dataflowId,
         userId: userInfo.userId,
       };
       const result = await updateDataflow(payload);
-      if (result.status === 1) {
+      if (result?.status === 1) {
         messageContext.showSuccessMessage(result.message);
       } else {
-        messageContext.showErrorMessage(result.message);
+        messageContext.showErrorMessage(
+          result?.message || "Something went wrong"
+        );
       }
     } else {
       messageContext.showErrorMessage("Please fill all fields to proceed");
@@ -195,6 +212,11 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const handleOpen = () => {
     setIsPanelOpen(true);
   };
+  useEffect(() => {
+    if (!selectedLocation?.value && dataFlowData?.dataFlowdetail?.srclocid) {
+      changeLocationData(dataFlowData?.dataFlowdetail?.srclocid);
+    }
+  }, [dataFlowData]);
 
   return (
     <div className={classes.root}>
@@ -251,6 +273,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
                 userName={selectedLocation?.usr_nm}
                 password={selectedLocation?.pswd}
                 connLink={selectedLocation?.cnn_url}
+                firstFileDate={ffDate}
+                changeFirstFlDt={changeFirstFlDt}
               />
             </div>
           </div>

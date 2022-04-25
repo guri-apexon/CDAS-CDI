@@ -13,7 +13,7 @@ async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
   let searchQuery = `select distinct d3.mnemonic from ${schemaName}.study s left join ${schemaName}.dataflow d on s.prot_id = d.prot_id left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid left join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where s.prot_id=$1 and d.testflag=$2`;
   let dep = [studyId, testFlag];
   if (dsId) {
-    searchQuery = `select d3.mnemonic from ${schemaName}.study s left join ${schemaName}.dataflow d on s.prot_id = d.prot_id left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid left join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where s.prot_id=$1 and d.testflag=$2 and d3.datasetid != $3`;
+    searchQuery = `select d3.mnemonic from ${schemaName}.study s left join ${schemaName}.dataflow d on s.prot_id = d.prot_id left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid left join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where s.prot_id=$1 and d.testflag=$2 and d3.datasetid!=$3`;
     dep = [studyId, testFlag, dsId];
   }
   const { rows } = await DB.executeQuery(searchQuery, dep);
@@ -77,7 +77,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
       dpId,
       datasetId,
       jsonData,
-      "New Entry"
+      "New Dataset"
     );
     if (!historyVersion) throw new Error("History not updated");
 
@@ -121,9 +121,14 @@ exports.saveDatasetData = async (req, res) => {
 
     if (values.filePwd) {
       passwordStatus = "Yes";
-      await helper.writeVaultData(`${dfId}/${dpId}/${datasetId}`, {
-        password: values.filePwd,
-      });
+      try {
+        await helper.writeVaultData(`${dfId}/${dpId}/${datasetId}`, {
+          password: values.filePwd,
+        });
+      } catch (error) {
+        Logger.error(error);
+        return apiResponse.ErrorResponse(res, "Something Wrong with Vault");
+      }
     }
 
     Logger.info({ message: "create Dataset" });
@@ -181,14 +186,13 @@ exports.saveDatasetData = async (req, res) => {
         dpId,
         datasetId,
         jsonData,
-        "New Entry"
+        "New Dataset"
       );
       if (!historyVersion) throw new Error("History not updated");
-      return apiResponse.successResponseWithData(
-        res,
-        "Created Successfully",
-        response.rows[0]
-      );
+      return apiResponse.successResponseWithData(res, "Created Successfully", {
+        ...response.rows[0],
+        filePwd: values.filePwd,
+      });
     });
   } catch (err) {
     Logger.error("catch :storeDataset");
@@ -200,35 +204,45 @@ exports.saveDatasetData = async (req, res) => {
 async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
   try {
     Logger.info({ message: "update SQL Dataset" });
-
+    const {
+      datasetName,
+      active,
+      clinicalDataType,
+      isCustomSQL,
+      tableName,
+      filterCondition,
+      dataType,
+      offsetColumn,
+      sQLQuery,
+    } = values;
     let sqlQuery = "";
-    if (values.isCustomSQL === "No") {
-      if (values.filterCondition) {
-        sqlQuery = `Select from ${values.tableName} ${values.filterCondition}`;
+    if (isCustomSQL === "No") {
+      const splitted = sQLQuery.split("from");
+      if (filterCondition) {
+        sqlQuery = `${splitted[0].trim()} from ${tableName} ${filterCondition}`;
       } else {
-        sqlQuery = `Select from ${values.tableName} where 1=1`;
+        sqlQuery = `${splitted[0].trim()} from ${tableName} where 1=1`;
       }
     } else {
-      sqlQuery = values.sQLQuery;
+      sqlQuery = sQLQuery;
     }
 
     const body = [
-      values.datasetName,
-      values.active === true ? 1 : 0,
-      values.clinicalDataType ? values.clinicalDataType[0] : null,
-      values.isCustomSQL,
+      datasetName,
+      active === true ? 1 : 0,
+      clinicalDataType ? clinicalDataType[0] : null,
+      isCustomSQL,
       sqlQuery,
-      values.tableName || null,
-      values.filterCondition || null,
-      values.dataType == "Incremental" ? "Y" : "N" || null,
-      values.offsetColumn || null,
-      new Date(),
-      values.datasetid,
+      tableName || null,
+      filterCondition || null,
+      dataType == "Incremental" ? "Y" : "N" || null,
+      offsetColumn || null,
+      datasetid,
     ];
     const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
     dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const insertQuery = `UPDATE into ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, offset_val = $7, offsetcolumn = $8, incremental = $9, updt_tm = $10 where datasetid = $11`;
+    const insertQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $8, incremental = $9, updt_tm=Now() where datasetid = $10`;
 
     const requestData = {
       datasetid: datasetid,
@@ -282,9 +296,10 @@ exports.updateDatasetData = async (req, res) => {
     const values = req.body;
 
     Logger.info({ message: "update Dataset" });
-    const { dfId, studyId, dpId, testFlag, datasetid, userId } = req.body;
+    const { dfId, studyId, dpId, testFlag, datasetid, userId, datasetName } =
+      req.body;
     const isExist = await checkMnemonicExists(
-      values.datasetName,
+      datasetName,
       studyId,
       testFlag,
       datasetid
@@ -296,12 +311,16 @@ exports.updateDatasetData = async (req, res) => {
 
     const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $19`;
     if (isExist) {
-      return apiResponse.ErrorResponse(res, "Mnemonic is not unique.");
+      return apiResponse.ErrorResponse(
+        res,
+        `Mnemonic ${datasetName} is not unique.`
+      );
     }
 
     if (values.locationType.toLowerCase() === "jdbc") {
       return updateSQLDataset(res, values, dfId, userId, dpId, datasetid);
     }
+    const incremental = values.loadType === "Incremental" ? "Y" : "N";
 
     var requestData = {
       datasetid: datasetid,
@@ -314,38 +333,20 @@ exports.updateDatasetData = async (req, res) => {
       quote: values.quote || null,
       headerrownumber: values.headerRowNumber || 0,
       footerrownumber: values.footerRowNumber || 0,
-      active: true ? 1 : 0,
-      naming_convention: values.fileNamingConvention || null,
+      active: helper.stringToBoolean(values.active) ? 1 : 0,
+      name: values.fileNamingConvention || null,
       path: values.folderPath || null,
       datakindid: values.clinicalDataType[0],
       data_freq: values.transferFrequency || null,
       ovrd_stale_alert: values.overrideStaleAlert || null,
       rowdecreaseallowed: values.rowDecreaseAllowed || 0,
-      incremental: "Incremental" ? "Y" : "N",
+      incremental,
     };
 
     const jsonData = JSON.stringify(requestData);
 
     const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
     const oldData = tempData[0];
-
-    for (const key in requestData) {
-      if (`${requestData[key]}` != oldData[key]) {
-        if (oldData[key] != null) {
-          const historyVersion = await CommonController.addDatasetHistory(
-            dfId,
-            userId,
-            dpId,
-            datasetid,
-            jsonData,
-            key,
-            oldData[key],
-            `${requestData[key]}`
-          );
-          if (!historyVersion) throw new Error("History not updated");
-        }
-      }
-    }
 
     let passwordStatus = "No";
 
@@ -364,7 +365,7 @@ exports.updateDatasetData = async (req, res) => {
       values.quote || null,
       values.headerRowNumber || 0,
       values.footerRowNumber || 0,
-      values.active === true ? 1 : 0,
+      helper.stringToBoolean(values.active) ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
       values.clinicalDataType[0],
@@ -372,7 +373,7 @@ exports.updateDatasetData = async (req, res) => {
       values.overrideStaleAlert || null,
       values.rowDecreaseAllowed || 0,
       new Date(),
-      values.loadType == "Incremental" ? "Y" : "N",
+      incremental,
       passwordStatus,
     ];
 
@@ -380,6 +381,22 @@ exports.updateDatasetData = async (req, res) => {
       ...body,
       values.datasetid,
     ]);
+    for (const key in requestData) {
+      if (requestData[key] != oldData[key]) {
+        console.log("requestData", requestData[key], oldData[key]);
+        const historyVersion = await CommonController.addDatasetHistory(
+          dfId,
+          userId,
+          dpId,
+          datasetid,
+          jsonData,
+          key,
+          oldData[key] || null,
+          requestData[key]
+        );
+        if (!historyVersion) throw new Error("History not updated");
+      }
+    }
 
     return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {
@@ -418,14 +435,33 @@ exports.getDatasetDetail = async (req, res) => {
     const { dfId, dpId, dsId } = req.body;
     const query = `SELECT * from ${schemaName}.dataset WHERE datasetid = $1`;
     Logger.info({ message: "getDatasetDetail" });
+    let filePwd;
+    try {
+      filePwd = await helper.readVaultData(`${dfId}/${dpId}/${dsId}`);
+    } catch {
+      Logger.error("catch :vault error");
+    }
     const datasetDetail = await DB.executeQuery(query, [dsId]);
 
     if (datasetDetail.rows[0].file_pwd === "Yes") {
-      const filePwd = helper.readVaultData(`${dfId}/${dpId}/${dsId}`);
       if (filePwd) {
-        datasetDetail.rows[0].file_pwd = filePwd.password;
+        return apiResponse.successResponseWithData(res, "Operation success", {
+          ...datasetDetail.rows[0],
+          file_pwd: filePwd.password,
+        });
       }
+      return apiResponse.successResponseWithData(
+        res,
+        "Operation success",
+        datasetDetail.rows[0]
+      );
+    } else if (datasetDetail.rows[0].file_pwd === "No") {
+      return apiResponse.successResponseWithData(res, "Operation success", {
+        ...datasetDetail.rows[0],
+        file_pwd: "",
+      });
     }
+
     return apiResponse.successResponseWithData(
       res,
       "Operation success",

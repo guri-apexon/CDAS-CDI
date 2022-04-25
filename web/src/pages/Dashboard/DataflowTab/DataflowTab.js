@@ -42,7 +42,6 @@ import {
 import Clone from "../../DataFlow/CloneDataFlow";
 import {
   SelectedDataflow,
-  updateSelectedDataflow,
   updateSelectedStudy,
 } from "../../../store/actions/DashboardAction";
 
@@ -257,7 +256,6 @@ export default function DataflowTab({ updateData }) {
   };
 
   const handleLink = (dataFlowId, dataFlow) => {
-    dispatch(updateSelectedDataflow(dataFlowId));
     dispatch(SelectedDataflow(dataFlow));
     history.push(`/dashboard/dataflow-management/${dataFlowId}`);
   };
@@ -775,15 +773,15 @@ export default function DataflowTab({ updateData }) {
         ]}
         id="syncDataFlow"
       />
-      <Clone
-        open={openClone}
-        handleModalClose={handleModalClose}
-        handleBack={handleBack}
-        handleSelect={handleSelect}
-        selectedStudy={selectedStudy}
-        studyList={studyList}
-        dataflowList={dataflowList}
-      />
+      {openClone && (
+        <Clone
+          open={openClone}
+          handleModalClose={handleModalClose}
+          handleBack={handleBack}
+          studyList={studyList}
+          dataflowList={dataflowList}
+        />
+      )}
     </div>
   );
 }

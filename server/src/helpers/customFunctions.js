@@ -1,6 +1,11 @@
 const uuid = require("uuid");
 const crypto = require("crypto");
 const moment = require("moment");
+// const { forEach } = require("lodash");
+const _ = require("lodash");
+const logger = require("../config/logger");
+
+// const joi = require("joi");
 
 const endpoint = process.env.VAULT_END_POINT;
 const token = process.env.ROOT_TOKEN;
@@ -46,18 +51,27 @@ exports.readVaultData = async (vaultPath) => {
   }
 };
 
-// { user: usr_nm, password: pswd }
 exports.writeVaultData = async (vaultPath, data) => {
-  await vault.write(`kv/${vaultPath}`, data);
-  return true;
+  try {
+    await vault.write(`kv/${vaultPath}`, data);
+    return true;
+  } catch (error) {
+    logger.error("vault error", error);
+    return false;
+  }
 };
 
 exports.deleteVaultData = async (vaultPath) => {
-  await vault.delete(vaultPath);
-  return true;
+  try {
+    await vault.delete(vaultPath);
+    return true;
+  } catch (error) {
+    logger.error("vault error", error);
+    return false;
+  }
 };
 
-exports.stringToBoolean = (string) => {
+const stringToBoolean = (exports.stringToBoolean = (string) => {
   switch (string?.toString().toLowerCase().trim()) {
     case "true":
     case "yes":
@@ -69,10 +83,48 @@ exports.stringToBoolean = (string) => {
     case null:
       return false;
     default:
-      return Boolean(string);
+      return "not_boolean";
   }
-};
+});
 
 exports.convertEscapeChar = (str) => {
   return str ? String.raw`${str}`.replace(/\\/g, "\\\\") : "";
+};
+
+exports.validation = (data) => {
+  let msg = [];
+  data.forEach((val) => {
+    if (val.type == "boolean") {
+      val.value = stringToBoolean(val.value);
+    }
+    if (
+      val.value !== null &&
+      val.value !== "" &&
+      val.value !== undefined &&
+      typeof val.value === val.type
+    ) {
+      // console.log(val.key);
+    } else {
+      msg.push({
+        text: ` ${val.key} is required and data type should be ${val.type} `,
+        status: false,
+      });
+    }
+  });
+  // console.log(msg);
+  return msg;
+};
+
+exports.getdiffKeys = (newObj, oldObj) => {
+  if (
+    typeof newObj === "object" &&
+    !Array.isArray(newObj) &&
+    newObj !== null &&
+    typeof oldObj === "object" &&
+    !Array.isArray(oldObj) &&
+    oldObj !== null
+  ) {
+    return _.pickBy(newObj, (v, k) => !_.isEqual(oldObj[k], v));
+  }
+  return {};
 };

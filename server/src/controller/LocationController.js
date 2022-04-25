@@ -5,27 +5,6 @@ const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
-async function updateDataflowVersion(locationId, location, userId) {
-  const searchQuery = `select d.src_loc_id, d.dataflowid, max(dv."version") as "version" from ${schemaName}.dataflow d inner join ${schemaName}.dataflow_version dv on dv.dataflowid = d.dataflowid where d.src_loc_id = $1 group by d.dataflowid `;
-  const dep = [locationId];
-  const res = await DB.executeQuery(searchQuery, dep);
-  if (res.rowCount > 0) {
-    const rows = res.rows;
-    rows.forEach((row) => {
-      const version = row.version + 1;
-      const dataflowid = row.dataflowid;
-      const config_json = {
-        dataflowid,
-        location,
-      };
-      const insertBody = [dataflowid, version, config_json, userId, new Date()];
-      const insertQuery = `INSERT into ${schemaName}.dataflow_version (dataflowid, "version", config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
-      DB.executeQuery(insertQuery, insertBody);
-    });
-  }
-  return null;
-}
-
 async function checkLocationExists(
   locationType = "",
   cnUnl = "",
@@ -83,9 +62,7 @@ exports.searchLocationList = function (req, res) {
             WHERE LOWER(loc_typ) LIKE $1 OR 
             LOWER(loc_alias_nm) LIKE $2
             `;
-    Logger.info({
-      message: "locationList",
-    });
+    Logger.info({ message: "searchLocationList" });
 
     DB.executeQuery(searchQuery, [`%${searchParam}%`, `%${searchParam}%`])
       .then((response) => {
@@ -100,9 +77,8 @@ exports.searchLocationList = function (req, res) {
       });
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :locationList");
+    Logger.error("catch :searchLocationList");
     Logger.error(err);
-
     return apiResponse.ErrorResponse(res, err);
   }
 };
@@ -110,44 +86,44 @@ exports.searchLocationList = function (req, res) {
 exports.getLocationList = function (req, res) {
   try {
     let type = req.query.type || null;
-    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label, usr_nm, pswd, loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
+    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
     let searchQuery = `SELECT ${select} from ${schemaName}.source_location where active=1 order by label asc`;
-    let dbQuery = DB.executeQuery(searchQuery);
-    Logger.info({ message: "locationList" });
+    Logger.info({ message: "getLocationList" });
     if (type) {
       switch (type) {
         case "rdbms_only":
           searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ NOT IN('SFTP','FTPS') and active=1 order by label asc`;
-          dbQuery = DB.executeQuery(searchQuery);
           break;
         case "ftp_only":
           searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ IN('SFTP','FTPS') and active=1 order by label asc`;
-          dbQuery = DB.executeQuery(searchQuery);
           break;
         case "all":
           searchQuery = `SELECT ${select} from ${schemaName}.source_location order by label asc`;
-          dbQuery = DB.executeQuery(searchQuery);
           break;
         default:
-          searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ = $1 and active=1 order by label asc`;
-          dbQuery = DB.executeQuery(searchQuery, [type]);
+          searchQuery = `SELECT ${select} from ${schemaName}.source_location where loc_typ = '${type}' and active=1 order by label asc`;
       }
     }
 
+    Logger.info({ message: "locationList" });
+
+    let dbQuery = DB.executeQuery(searchQuery, []);
     dbQuery
       .then(async (response) => {
         const locations = response.rows || [];
+
         const withCredentials = locations.map((d) => {
-          const credentials = helper.readVaultData(d.src_loc_id);
-          if (credentials) {
-            d.usr_nm = credentials.user;
-            d.pswd = credentials.password;
-          } else {
-            d.usr_nm = "Dummy";
-            d.pswd = "DummyPassword";
+          if (d.pswd === "Yes") {
+            // const credentials = helper.readVaultData(d.src_loc_id);
+            // if (credentials) {
+            //   d.pswd = credentials.password;
+            // }
+          } else if (d.pswd === "No") {
+            d.pswd = "";
           }
           return d;
         });
+
         return apiResponse.successResponseWithData(res, "Operation success", {
           records: withCredentials,
           totalSize: response.rowCount,
@@ -158,9 +134,25 @@ exports.getLocationList = function (req, res) {
       });
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :locationList");
+    Logger.error("catch :getLocationList");
     Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
 
+exports.getPassword = async function (req, res) {
+  try {
+    const id = req.params.location_id;
+    Logger.info({ message: "getPasswordOfLocation" });
+    const response = await helper.readVaultData(id);
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      response
+    );
+  } catch (err) {
+    Logger.error("catch :getPasswordOfLocation");
+    Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
 };
@@ -169,7 +161,7 @@ exports.getLocationById = async function (req, res) {
   try {
     const id = req.params.location_id;
     const searchQuery = `SELECT src_loc_id,loc_typ,ip_servr,port,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm from ${schemaName}.source_location WHERE src_loc_id = $1`;
-    Logger.info({ message: "locationList" });
+    Logger.info({ message: "getLocationById" });
     const response = await DB.executeQuery(searchQuery, [id]);
     if (response.rows[0]) {
       const credentials = await helper.readVaultData(id);
@@ -181,67 +173,7 @@ exports.getLocationById = async function (req, res) {
     }
     return apiResponse.successResponseWithData(res, "Operation success", null);
   } catch (err) {
-    Logger.error("catch :locationList");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
-  }
-};
-
-exports.updateLocationData = async function (req, res) {
-  try {
-    const values = req.body;
-    const isExist = await checkLocationExists(
-      values.locationType,
-      values.connURL,
-      values.userName,
-      values.dbName,
-      values.externalSytemName,
-      values.locationID
-    );
-    if (isExist > 0) {
-      return apiResponse.ErrorResponse(
-        res,
-        "No duplicate locations are allowed"
-      );
-    }
-    var userId = values.userId || req.headers["userid"];
-    const body = [
-      values.locationType || null,
-      values.ipServer || null,
-      values.port || null,
-      values.dataStructure || null,
-      values.active == true ? 1 : 0,
-      values.externalSytemName,
-      values.locationName || null,
-      helper.getCurrentTime(),
-      values.dbName || null,
-      values.connURL || null,
-      values.userName,
-      values.password ? "Yes" : "No",
-      values.locationID,
-    ];
-    const searchQuery = `UPDATE ${schemaName}.source_location set loc_typ=$1, ip_servr=$2, port=$3, data_strc=$4, active=$5, extrnl_sys_nm=$6, loc_alias_nm=$7, updt_tm=$8, db_nm=$9, cnn_url=$10, usr_nm=$11, pswd=$12  where src_loc_id=$13`;
-    Logger.info({ message: "updateLocation" });
-    DB.executeQuery(searchQuery, body)
-      .then(async (response) => {
-        await updateDataflowVersion(values.locationID, values, userId);
-        const vaultData = {
-          user: values.userName || null,
-          password: values.password || null,
-        };
-        await helper.writeVaultData(values.locationID, vaultData);
-        return apiResponse.successResponseWithData(
-          res,
-          "Operation success",
-          true
-        );
-      })
-      .catch((err) => {
-        return apiResponse.ErrorResponse(res, err.message);
-      });
-  } catch (err) {
-    //throw error in json response with status 500.
-    Logger.error("catch :updateLocation");
+    Logger.error("catch :getLocationById");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
@@ -335,32 +267,159 @@ exports.getServiceOwnersList = function (req, res) {
   }
 };
 
+exports.updateLocationData = async function (req, res) {
+  try {
+    const values = req.body;
+    const { locationID } = values;
+    Logger.info({ message: "updateLocation" });
+
+    const isExist = await checkLocationExists(
+      values.locationType,
+      values.connURL,
+      values.userName,
+      values.dbName,
+      values.externalSytemName,
+      locationID
+    );
+    if (isExist > 0) {
+      return apiResponse.ErrorResponse(
+        res,
+        "No duplicate locations are allowed"
+      );
+    }
+
+    const vaultData = {
+      user: values.userName || null,
+      password: values.password || null,
+    };
+
+    await helper.writeVaultData(locationID, vaultData);
+
+    const body = [
+      values.locationType,
+      values.ipServer || null,
+      values.port || null,
+      values.dataStructure || null,
+      values.active === true ? 1 : 0,
+      values.externalSytemName,
+      values.locationName || null,
+      values.dbName || null,
+      values.connURL || null,
+      values.userName,
+      values.password ? "Yes" : "No",
+      locationID,
+    ];
+
+    const selectQuery = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm FROM ${schemaName}.source_location where src_loc_id=$1`;
+
+    const updateQuery = `UPDATE ${schemaName}.source_location set loc_typ=$1, ip_servr=$2, port=$3, data_strc=$4, active=$5, extrnl_sys_nm=$6, loc_alias_nm=$7, updt_tm=NOW(), db_nm=$8, cnn_url=$9, usr_nm=$10, pswd=$11 where src_loc_id=$12 returning *`;
+    const updateLocation = await DB.executeQuery(updateQuery, body);
+    const oldLocation = await DB.executeQuery(selectQuery, [locationID]);
+
+    if (!updateLocation?.rowCount || !oldLocation?.rowCount) {
+      return apiResponse.ErrorResponse(res, "Something went wrong on update");
+    }
+
+    const dfList = await DB.executeQuery(
+      `select d.dataflowid from ${schemaName}.dataflow d where d.src_loc_id = $1`,
+      [locationID]
+    );
+
+    if (dfList.rowCount > 0) {
+      const locationObj = updateLocation.rows[0];
+      const existingObj = oldLocation.rows[0];
+      dfList?.rows?.forEach(async (row) => {
+        const dataflowId = row.dataflowid;
+        const comparisionObj = {
+          loc_typ: values.locationType,
+          ip_servr: values.ipServer || null,
+          port: values.port || null,
+          data_strc: values.dataStructure || null,
+          active: values.active === true ? 1 : 0,
+          extrnl_sys_nm: values.externalSytemName,
+          loc_alias_nm: values.locationName || null,
+          db_nm: values.dbName || null,
+          cnn_url: values.connURL || null,
+          usr_nm: values.userName || null,
+          pswd: values.password ? "Yes" : "No",
+        };
+        const diffObj = helper.getdiffKeys(comparisionObj, existingObj);
+        await addDataflowHistory({
+          dataflowId,
+          externalSystemName: "CDI",
+          userId,
+          config_json: locationObj,
+          diffObj,
+          existingObj,
+        });
+      });
+    }
+
+    return apiResponse.successResponseWithData(res, "Operation success", true);
+  } catch (err) {
+    //throw error in json response with status 500.
+    Logger.error("catch :updateLocation");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
 exports.statusUpdate = async (req, res) => {
   try {
     const { id, status, userId } = req.body;
-    const curDate = helper.getCurrentTime();
-    Logger.info({
-      message: "statusUpdate",
-    });
-    const $query = `UPDATE ${schemaName}.source_location SET active=$1, updt_tm=$2 WHERE src_loc_id=$3`;
-    const details = await DB.executeQuery($query, [
-      status == true ? 1 : 0,
-      curDate,
-      id,
-    ]);
-    var userid = userId || req.headers["userid"];
-    await updateDataflowVersion(id, { active: status == true ? 1 : 0 }, userid);
+    const activeStatus = status === true ? 1 : 0;
+    Logger.info({ message: "Location status Update" });
+
+    const updateLocation = await DB.executeQuery(
+      `UPDATE ${schemaName}.source_location SET updt_tm=NOW(), active=$1 WHERE src_loc_id=$2 returning *`,
+      [activeStatus, id]
+    );
+    const oldLocation = await DB.executeQuery(
+      `SELECT active FROM ${schemaName}.source_location where src_loc_id=$1`,
+      [id]
+    );
+
+    if (!updateLocation?.rowCount || !oldLocation?.rowCount) {
+      return apiResponse.ErrorResponse(res, "Something went wrong on update");
+    }
+
+    const dfList = await DB.executeQuery(
+      `select d.dataflowid from ${schemaName}.dataflow d where d.src_loc_id = $1`,
+      [id]
+    );
+
+    if (dfList.rowCount > 0) {
+      const locationObj = updateLocation.rows[0];
+      const existingObj = oldLocation.rows[0];
+      dfList?.rows?.forEach(async (row) => {
+        const dataflowId = row.dataflowid;
+        const diffObj = helper.getdiffKeys(
+          {
+            active: activeStatus,
+          },
+          existingObj
+        );
+        await addDataflowHistory({
+          dataflowId,
+          externalSystemName: "CDI",
+          userId,
+          config_json: locationObj,
+          diffObj,
+          existingObj,
+        });
+      });
+    }
+
     return apiResponse.successResponseWithData(
       res,
       "Operation success",
-      details.row || null
+      updateLocation.rows
     );
   } catch (err) {
     //throw error in json response with status 500.
     console.log(err);
-    Logger.error("catch :statusUpdate");
+    Logger.error("catch :location status Update");
     Logger.error(err);
-
     return apiResponse.ErrorResponse(res, err);
   }
 };

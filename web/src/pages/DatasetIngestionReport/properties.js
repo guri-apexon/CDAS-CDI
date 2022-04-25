@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import moment from "moment";
 import Paper from "apollo-react/components/Box";
 import Grid from "apollo-react/components/Grid";
@@ -11,6 +12,8 @@ import Tooltip from "apollo-react/components/Tooltip";
 import Modal from "apollo-react/components/Modal";
 import { ReactComponent as DataFlowIcon } from "../../components/Icons/dataflow.svg";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
+import { redirectToDataSet } from "../../store/actions/DataPackageAction";
+import { updateDSState } from "../../store/actions/DataFlowAction";
 
 const formatDate = (v) => {
   return v && moment(v, "YYYY-MM-DD HH:mm:ss").isValid()
@@ -21,16 +24,42 @@ const formatDate = (v) => {
 const Properties = ({ datasetProperties }) => {
   const history = useHistory();
   const params = useParams();
+  const dispatch = useDispatch();
   const [copyText, setCopyText] = useState("Copy");
   const [modalOpen, setModalOpen] = useState(false);
   const { datasetId } = params;
   const connectionTypeCheck = ["sftp", "ftps"];
-  const copyVendor = () => {
-    navigator.clipboard.writeText(datasetProperties?.VendorContactInformation);
-    setCopyText("Copied");
+  const copyVendor = async () => {
+    await navigator.clipboard
+      .writeText(datasetProperties?.VendorContactInformation)
+      .then(() => {
+        setCopyText("Copied");
+      })
+      .catch((err) => {
+        console.log("clipboard err", err);
+      });
   };
-  const redirectToDataset = () => {
-    history.push(`/dashboard/dataset/${datasetId}`);
+  const {
+    DatasetName,
+    DataFlowName,
+    datapackageid,
+    dataflowid,
+    DataPackageNamingConvention,
+  } = datasetProperties;
+  const goToDataset = () => {
+    dispatch(
+      redirectToDataSet(
+        dataflowid,
+        DataFlowName,
+        datapackageid,
+        DataPackageNamingConvention,
+        datasetId,
+        DatasetName,
+        "IngestionProperties"
+      )
+    );
+    dispatch(updateDSState(false));
+    history.push(`/dashboard/dataset/${datasetId}`, datasetId);
   };
   return (
     <div style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24 }}>
@@ -141,7 +170,7 @@ const Properties = ({ datasetProperties }) => {
           id="neutral"
           buttonProps={[
             {},
-            { label: "Continue", onClick: () => redirectToDataset() },
+            { label: "Continue", onClick: () => goToDataset() },
           ]}
         />
       </Paper>

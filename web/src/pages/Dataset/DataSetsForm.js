@@ -10,10 +10,7 @@ import {
 } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
-import Divider from "apollo-react/components/Divider";
-import Status from "apollo-react/components/Status";
 import Radio from "apollo-react/components/Radio";
-import RadioError from "apollo-react-icons/RadioError";
 import Typography from "apollo-react/components/Typography";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
@@ -23,8 +20,11 @@ import {
   ReduxFormSwitch,
   ReduxFormSelect,
   ReduxFormTextField,
+  ReduxFormPassword,
 } from "../../components/FormComponents/FormComponents";
-import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
+import dataSetsValidation, {
+  passwordWarnings,
+} from "../../components/FormComponents/DataSetsValidation";
 
 import { fileTypes, delimeters, loadTypes } from "../../utils";
 
@@ -54,6 +54,8 @@ const DataSetsFormBase = (props) => {
     values,
   } = props;
   const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
+
+  const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
 
   const setDefaultValues = (e) => {
     const fileValue = e.target.value;
@@ -91,6 +93,15 @@ const DataSetsFormBase = (props) => {
     }
   }, [values]);
 
+  useEffect(() => {
+    setRenderClinicalDataType(false);
+  }, [datakind, formValues.clinicalDataType]);
+
+  useEffect(() => {
+    if (!renderClinicalDataType)
+      setTimeout(() => setRenderClinicalDataType(true), 50);
+  }, [renderClinicalDataType]);
+
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
@@ -107,20 +118,6 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 labelPlacement="start"
               />
-              {formValues.active && (
-                <Status
-                  variant="positive"
-                  icon={RadioError}
-                  size="small"
-                  style={{ marginLeft: 35 }}
-                  label={
-                    // eslint-disable-next-line react/jsx-wrap-multilines
-                    <Typography variant="body2" style={{ color: "#595959" }}>
-                      Ready
-                    </Typography>
-                  }
-                />
-              )}
             </div>
           </div>
 
@@ -224,6 +221,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="File Naming Convention"
+                required
               />
               <ReduxFormTextField
                 fullWidth
@@ -239,28 +237,26 @@ const DataSetsFormBase = (props) => {
               </div>
             </Grid>
             <Grid item md={5}>
-              {/* {selectedClinicalData.length ? ( */}
-              <ReduxFormAutocomplete
-                name="clinicalDataType"
-                autoSelect
-                id="clinicalDataType"
-                label="Clinical Data Type"
-                source={datakind}
-                className="smallSize_autocomplete"
-                variant="search"
-                singleSelect
-                fullWidth
-                required
-                disabled={prodLock}
-              />
-              {/* ) : null} */}
-              {formValues.fileType === "Excel" && (
-                <ReduxFormTextField
+              {datakind && renderClinicalDataType && (
+                <ReduxFormAutocomplete
+                  name="clinicalDataType"
+                  autoSelect
+                  id="clinicalDataType"
+                  label="Clinical Data Type"
+                  source={datakind}
+                  className="smallSize_autocomplete"
+                  variant="search"
+                  singleSelect
                   fullWidth
+                  required
+                  disabled={prodLock}
+                />
+              )}
+              {formValues.fileType === "Excel" && (
+                <ReduxFormPassword
                   name="filePwd"
                   size="small"
                   type="password"
-                  inputProps={{ minLength: 8, maxLength: 30 }}
                   label="File Password"
                   disabled={prodLock}
                 />
@@ -272,6 +268,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="Transfer Frequency"
+                required
               />
               <ReduxFormTextField
                 fullWidth
@@ -296,6 +293,8 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Load Type"
                 canDeselect={false}
+                disabled={prodLock}
+                required
               >
                 {loadTypes?.map((type) => (
                   <MenuItem value={type}>{type}</MenuItem>
@@ -314,6 +313,7 @@ const ReduxForm = compose(
   reduxForm({
     form: "DataSetsForm",
     validate: dataSetsValidation,
+    warn: passwordWarnings,
   }),
   connect((state) => ({ values: getFormValues("DataSetsForm")(state) }))
 )(DataSetsFormBase);
@@ -322,7 +322,7 @@ const selector = formValueSelector("DataSetsForm");
 const DataSetsForm = connect((state) => ({
   initialValues: state.dataSets.formData, // pull initial values from account reducer
   enableReinitialize: true,
-  formValues: selector(state, "fileType", "active"),
+  formValues: selector(state, "fileType", "active", "clinicalDataType"),
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
   defaultQuote: state.dataSets.defaultQuote,

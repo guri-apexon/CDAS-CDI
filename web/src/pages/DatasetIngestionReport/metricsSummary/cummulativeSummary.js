@@ -94,9 +94,12 @@ const CummulativeSummary = ({
             </>
           }
         />
-        <div className="right-se">
-          <Typography gutterBottom darkMode style={{ marginBottom: 14 }}>
-            {`${datasetProperties?.totalRecords || 0} Total Records`}
+        <div className="post-ingestion-issues">
+          <Typography variant="h2" gutterBottom darkMode>
+            {`${datasetProperties?.totalRecords || 0}`}
+          </Typography>
+          <Typography gutterBottom darkMode style={{ marginBottom: 32 }}>
+            Total Records
           </Typography>
           <Link
             onClick={() => handleChangeTab("ingestion_issues")}

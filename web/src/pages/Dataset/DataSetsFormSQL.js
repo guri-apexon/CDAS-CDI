@@ -5,9 +5,7 @@ import { connect, useDispatch } from "react-redux";
 import { reduxForm, getFormValues, formValueSelector } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
-import Status from "apollo-react/components/Status";
 import Radio from "apollo-react/components/Radio";
-import RadioError from "apollo-react-icons/RadioError";
 import Typography from "apollo-react/components/Typography";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
@@ -57,7 +55,7 @@ const DataSetsFormBase = (props) => {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const [showPreview, setShowPreview] = useState(false);
-
+  const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
   const handlePreview = () => {
     setShowPreview(true);
     dispatch(getPreviewSQL(formValues.sQLQuery));
@@ -107,6 +105,15 @@ const DataSetsFormBase = (props) => {
     );
   };
 
+  useEffect(() => {
+    setRenderClinicalDataType(false);
+  }, [datakind, formValues.clinicalDataType]);
+
+  useEffect(() => {
+    if (!renderClinicalDataType)
+      setTimeout(() => setRenderClinicalDataType(true), 50);
+  }, [renderClinicalDataType]);
+
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
@@ -123,20 +130,6 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 labelPlacement="start"
               />
-              {formValues.active && (
-                <Status
-                  variant="positive"
-                  icon={RadioError}
-                  size="small"
-                  style={{ marginLeft: 35 }}
-                  label={
-                    // eslint-disable-next-line react/jsx-wrap-multilines
-                    <Typography variant="body2" style={{ color: "#595959" }}>
-                      Ready
-                    </Typography>
-                  }
-                />
-              )}
             </div>
           </div>
           <Grid container spacing={3}>
@@ -154,19 +147,21 @@ const DataSetsFormBase = (props) => {
               />
             </Grid>
             <Grid item md={6}>
-              <ReduxFormAutocomplete
-                name="clinicalDataType"
-                id="clinicalDataType"
-                label="Clinical Data Type"
-                source={datakind}
-                className="smallSize_autocomplete"
-                variant="search"
-                singleSelect
-                size="small"
-                fullWidth
-                required
-                disabled={prodLock}
-              />
+              {datakind && renderClinicalDataType && (
+                <ReduxFormAutocomplete
+                  name="clinicalDataType"
+                  id="clinicalDataType"
+                  label="Clinical Data Type"
+                  source={datakind}
+                  className="smallSize_autocomplete"
+                  variant="search"
+                  singleSelect
+                  size="small"
+                  fullWidth
+                  required
+                  disabled={prodLock}
+                />
+              )}
             </Grid>
           </Grid>
           <ReduxFormSelect
@@ -322,7 +317,8 @@ const DataSetsFormSQL = connect((state) => ({
     "sQLQuery",
     "tableName",
     "dataType",
-    "offsetColumn"
+    "offsetColumn",
+    "clinicalDataType"
   ),
   datakind: state.dataSets.datakind?.records,
   sqlTables: state.dataSets.sqlTables,

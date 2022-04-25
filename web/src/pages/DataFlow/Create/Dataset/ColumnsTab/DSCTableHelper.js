@@ -35,7 +35,7 @@ import {
   checkFormat,
   checkRequiredValue,
   checkCharacterLength,
-  checkMaxLength,
+  checkAlphaNumericFileName,
 } from "../../../../../components/FormComponents/validators";
 
 const fieldStyles = {
@@ -146,6 +146,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
       fullWidth
       value={row[key]}
       onChange={(e) =>
+        !e.target.value.includes(".") &&
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
       error={!row.isInitLoad && errorText ? true : false}
@@ -158,8 +159,13 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
-  const { editMode } = row;
-  const errorText = checkRequired(row[key]) && checkMaxLength(row[key], 32);
+  const { editMode, haveHeader } = row;
+  let errorText;
+  if (haveHeader) {
+    errorText = checkRequired(row[key]) || checkAlphaNumeric(row[key]);
+  } else {
+    errorText = checkAlphaNumeric(row[key]);
+  }
   return editMode ? (
     <TextField
       size="small"
@@ -171,9 +177,38 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText ? true : false}
-      helperText={!row.isInitLoad ? errorText : ""}
+      error={
+        (!row.isInitLoad || row.isHavingColumnName) && errorText ? true : false
+      }
+      helperText={!row.isInitLoad || row.isHavingColumnName ? errorText : ""}
       {...fieldStyles}
+    />
+  ) : (
+    row[key]
+  );
+};
+
+export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
+  const { editMode, haveHeader } = row;
+  let errorText;
+  if (!haveHeader) {
+    errorText = checkRequired(row[key]) || checkNumeric(row[key]);
+  } else {
+    errorText = checkNumeric(row[key]);
+  }
+
+  return editMode ? (
+    <TextField
+      size="small"
+      fullWidth
+      value={row[key]}
+      onChange={(e) =>
+        row.editRow(row.uniqueId, key, e.target.value, errorText)
+      }
+      disabled={row.dsProdLock}
+      error={!row.isInitLoad && errorText}
+      helperText={!row.isInitLoad ? errorText : ""}
+      {...fieldStylesNo}
     />
   ) : (
     row[key]
@@ -235,8 +270,10 @@ export const ActionCell = ({ row }) => {
     editMode: eMode,
     isHavingColumnName,
     onRowSave,
+    maxLength,
+    minLength,
   } = row;
-
+  const checkMinMax = Number(minLength) < Number(maxLength);
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
       <Button
@@ -250,7 +287,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={!isHavingColumnName}
+        disabled={!(isHavingColumnName && checkMinMax)}
       >
         Save
       </Button>
@@ -297,10 +334,11 @@ export const columns = [
   {
     header: "Position",
     accessor: "position",
-    customCell: EditableCell,
-    sortFunction: compareStrings,
+    customCell: PositionEditableCell,
+    sortFunction: compareNumbers,
     filterFunction: createStringSearchFilter("position"),
     filterComponent: TextFieldFilter,
+    hidden: true,
   },
   {
     header: "Format",
@@ -406,6 +444,7 @@ export const CustomHeader = ({
   disableSaveAll,
   toggleFilters,
   changeHandler,
+  haveHeader,
 }) => (
   <div>
     <Grid container alignItems="center">
@@ -471,13 +510,13 @@ export const CustomHeader = ({
       )}
       {isSftp(locationType) && (
         <Tooltip
-          title={!isEditAll && "Import dataset column settings"}
+          title={(!isEditAll || haveHeader) && "Import dataset column settings"}
           disableFocusListener
         >
           <IconButton
             color="primary"
             size="small"
-            disabled={isEditAll}
+            disabled={isEditAll || !haveHeader}
             onClick={changeHandler}
           >
             <Upload />

@@ -55,6 +55,7 @@ const defaultData = {
   overrideStaleAlert: 3,
   rowDecreaseAllowed: 0,
   loadType: "Cumulative",
+  clinicalDataType: null,
 };
 
 const defaultDataSQL = {
@@ -62,6 +63,7 @@ const defaultDataSQL = {
   active: true,
   isCustomSQL: "Yes",
   dataType: "Cumulative",
+  clinicalDataType: null,
 };
 
 export const initialState = {
@@ -91,6 +93,9 @@ export const initialState = {
   sqlColumns: [],
   sqlTables: [],
   previewSQL: [],
+  dsCreatedSuccessfully: false,
+  isDatasetFetched: false,
+  haveHeader: false,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -124,30 +129,69 @@ const DataFlowReducer = (state = initialState, action) =>
 
       case UPDATE_DS_STATUS:
         newState.isDatasetCreated = action.status;
+        newState.dsCreatedSuccessfully = false;
         break;
 
       case STORE_DATASET_SUCCESS:
         newState.loading = false;
         newState.isDatasetCreated = !state.isDatasetCreated;
+        newState.isDatasetFetched = true;
+        const { dataset } = action;
         newState.selectedDataset = {
           ...action.values,
-          datasetid: action.dataset.datasetid,
-          customsql_yn: action.dataset.customsql_yn,
-          customsql: action.dataset.customsql,
-          fileType: action.dataset.type,
-          headerrownumber: action.dataset.headerrownumber,
-          tbl_nm: action.dataset.tbl_nm,
-          dataset_fltr: action.dataset.dataset_fltr,
+          datasetid: dataset.datasetid,
+          customsql_yn: dataset.customsql_yn,
+          customsql: dataset.customsql,
+          fileType: dataset.type,
+          headerrownumber: dataset.headerrownumber,
+          tbl_nm: dataset.tbl_nm,
+          dataset_fltr: dataset.dataset_fltr,
         };
-        if (action.values.fileType) {
-          newState.formData = action.values;
-        } else {
-          newState.formDataSQL = action.values;
+        if (dataset.type) {
+          newState.formData.fileType = dataset.type;
+          newState.formData.datasetName = dataset.mnemonic;
+          newState.formData.active = dataset.active === 1 ? true : false;
+          newState.formData.encoding = dataset.charset;
+          newState.formData.delimiter = dataset.delimiter;
+          newState.formData.escapeCharacter = dataset.escapecode;
+          newState.formData.quote = dataset.quote;
+          newState.formData.headerRowNumber = dataset.headerrownumber;
+          newState.formData.footerRowNumber = dataset.footerrownumber;
+          newState.formData.fileNamingConvention = dataset.name;
+          newState.formData.folderPath = dataset.path;
+          newState.formData.clinicalDataType = [dataset.datakindid];
+          newState.formData.transferFrequency = dataset.data_freq;
+          newState.formData.overrideStaleAlert = dataset.ovrd_stale_alert;
+          newState.formData.rowDecreaseAllowed =
+            dataset.rowdecreaseallowed || 0;
+          newState.formData.loadType =
+            dataset.incremental === "Y" ? "Incremental" : "Cumulative";
+          newState.formData.datasetid = dataset.datasetid;
+          newState.formData.filePwd = dataset.filePwd;
+          newState.haveHeader =
+            parseInt(action.dataset.headerrownumber, 10) > 0;
         }
+        if (dataset.customsql_yn) {
+          newState.formDataSQL.active = dataset.active === 1 ? true : false;
+          newState.formDataSQL.clinicalDataType = [dataset.datakindid];
+          newState.formDataSQL.datasetName = dataset.mnemonic;
+          newState.formDataSQL.isCustomSQL = dataset.customsql_yn;
+          newState.formDataSQL.sQLQuery = dataset.customsql;
+          newState.formDataSQL.offsetColumn = dataset.offsetcolumn;
+          newState.formDataSQL.tableName = dataset.tbl_nm;
+          newState.formDataSQL.filterCondition = dataset.dataset_fltr;
+          newState.formDataSQL.dataType =
+            dataset.incremental === "N" ? "Cumulative" : "Incremental";
+          newState.formDataSQL.datasetid = dataset.datasetid;
+          newState.haveHeader = true;
+        }
+
+        newState.dsCreatedSuccessfully = true;
         break;
       case STORE_DATASET_FAILURE:
         newState.loading = false;
         newState.error = action.message;
+        newState.isDatasetFetched = false;
         if (action.values.fileType) {
           newState.formData = action.values;
         } else {
@@ -171,7 +215,7 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.isColumnsConfigured =
           action.datasetColumns.length > 0 ? true : false;
         newState.error = null;
-        newState.sucessMsg = "Column Defination created Successfully";
+        newState.sucessMsg = "Column Definition created Successfully";
         break;
       case STORE_DATASET_COLUMNS_FAILURE:
         newState.loading = false;
@@ -255,6 +299,7 @@ const DataFlowReducer = (state = initialState, action) =>
       case FETCH_DATASET_DETAIL_FAILURE:
         newState.loading = false;
         newState.error = action.message;
+        newState.isDatasetFetched = false;
         break;
       case FETCH_DATASET_DETAIL_SUCCESS:
         newState.loading = false;
@@ -277,6 +322,7 @@ const DataFlowReducer = (state = initialState, action) =>
           rowdecreaseallowed,
           incremental,
           datasetid,
+          file_pwd,
           customsql_yn,
           customsql,
           offsetcolumn,
@@ -299,13 +345,15 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formData.transferFrequency = data_freq;
           newState.formData.overrideStaleAlert = ovrd_stale_alert;
           newState.formData.rowDecreaseAllowed = rowdecreaseallowed || 0;
+          newState.formData.filePwd = file_pwd;
           newState.formData.loadType =
             incremental === "Y" ? "Incremental" : "Cumulative";
           newState.formData.datasetid = datasetid;
+          newState.haveHeader = parseInt(headerrownumber, 10) > 0;
         }
         if (customsql_yn) {
           newState.formDataSQL.active = active === 1 ? true : false;
-          newState.formData.clinicalDataType = [datakindid];
+          newState.formDataSQL.clinicalDataType = [datakindid];
           newState.formDataSQL.datasetName = mnemonic;
           newState.formDataSQL.isCustomSQL = customsql_yn;
           newState.formDataSQL.sQLQuery = customsql;
@@ -314,8 +362,12 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL.filterCondition = dataset_fltr;
           newState.formDataSQL.dataType =
             incremental === "N" ? "Cumulative" : "Incremental";
+          newState.formDataSQL.datasetid = datasetid;
+          newState.haveHeader = true;
         }
-        newState.selectedDataset = action.datasetDetail;
+
+        newState.isDatasetFetched = true;
+        newState.selectedDataset = { ...datasetDetail };
         break;
       case GET_DATASET_COLUMNS:
         newState.loading = true;

@@ -11,10 +11,9 @@ import { TextFieldFilter, DateFilter } from "../../utils/index";
 
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
-  const date =
-    rowValue && moment(rowValue, "MM/DD/YYYY").isValid()
-      ? moment(rowValue).format("DD-MMM-YYYY HH:mm A")
-      : moment().format("DD-MMM-YYYY HH:mm A");
+  const date = rowValue
+    ? moment.utc(rowValue).local().format("DD-MMM-YYYY hh:mm A")
+    : moment().local().format("DD-MMM-YYYY hh:mm A");
 
   return <span>{date}</span>;
 };

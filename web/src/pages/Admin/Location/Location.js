@@ -18,7 +18,10 @@ import Tooltip from "apollo-react/components/Tooltip";
 import Switch from "apollo-react/components/Switch";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import LocationModal from "../../../components/Common/LocationModal";
-import { getLocationsData } from "../../../store/actions/CDIAdminAction";
+import {
+  getLocationsData,
+  getLocationPasswordData,
+} from "../../../store/actions/CDIAdminAction";
 import {
   TextFieldFilter,
   createAutocompleteFilter,
@@ -146,12 +149,13 @@ const generateColumns = (tableRows = [], handleStatusChange = null) => {
 const Location = () => {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
-  const { locations, loading, upserted, upsertLoading } = useSelector(
-    (state) => state.cdiadmin
-  );
+  const { locations, loading, upserted, upsertLoading, locationPassword } =
+    useSelector((state) => state.cdiadmin);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [totalLocations, setTotalLocations] = useState(0);
   const [tableRows, setTableRows] = useState([]);
+  const [password, setPassword] = useState("");
+
   const [, setHasUpdated] = useState(false);
   const columns = generateColumns(tableRows);
   const [columnsState, setColumns] = useState([...columns]);
@@ -163,6 +167,11 @@ const Location = () => {
     dispatch(getLocationsData("all"));
   };
 
+  const LocationPasswordData = async (val) => {
+    await dispatch(getLocationPasswordData(val));
+    setPassword(locationPassword);
+  };
+
   const onRowCick = (row) => {
     setSelectedLoc(row);
     dispatch(change("AddLocationForm", "locationID", row?.src_loc_id));
@@ -172,7 +181,13 @@ const Location = () => {
     dispatch(change("AddLocationForm", "ipServer", row?.ip_servr));
     dispatch(change("AddLocationForm", "dataStructure", row?.data_strc));
     dispatch(change("AddLocationForm", "userName", row?.usr_nm));
-    dispatch(change("AddLocationForm", "password", row?.pswd));
+    dispatch(
+      change(
+        "AddLocationForm",
+        "password",
+        row?.pswd === "Yes" ? LocationPasswordData(row?.src_loc_id) : row.pswd
+      )
+    );
     dispatch(change("AddLocationForm", "connURL", row?.cnn_url));
     dispatch(change("AddLocationForm", "port", row?.port));
     dispatch(change("AddLocationForm", "dbName", row?.db_nm));

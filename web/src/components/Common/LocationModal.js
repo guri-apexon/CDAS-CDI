@@ -286,7 +286,7 @@ const LocationModal = (props) => {
   const selector = formValueSelector("AddLocationForm");
   const [connectionResponse, setConnectionResponse] = useState(null);
   const [loadingConn, setLoadingConn] = useState(false);
-  const { error, success, createTriggered } = useSelector(
+  const { error, success, createTriggered, locationPassword } = useSelector(
     (state) => state.cdiadmin
   );
   const [existErr, setExistErr] = useState("");
@@ -299,13 +299,14 @@ const LocationModal = (props) => {
       const checkInDf = await checkLocationExistsInDataFlow(values.locationID);
       if (checkInDf > 0) {
         setExistErr(locationExistInDFMsg);
+        return null;
       }
-      return null;
     }
     setExistErr("");
     dispatch(saveLocationData(values));
     return null;
   };
+
   useEffect(() => {
     if (error || success || existErr) {
       setTimeout(() => {
@@ -356,7 +357,10 @@ const LocationModal = (props) => {
     }
     let reqBody = {
       username: userName || "",
-      password: password || "",
+      password:
+        password === "Yes" || typeof password === "object"
+          ? locationPassword
+          : password || "",
       host: ipServer || "",
       endPoint: "/checkconnection/sftp",
     };
@@ -374,7 +378,6 @@ const LocationModal = (props) => {
     }
     setLoadingConn(true);
     const result = await testConnectionFSR(reqBody);
-    console.log("result", result);
     setLoadingConn(false);
     if (result.status === "OK") {
       showLocationMessage(

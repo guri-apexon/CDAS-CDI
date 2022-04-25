@@ -101,18 +101,27 @@ const JDBCForm = forwardRef((props, ref) => {
   const [dsActive, setDsActive] = useState(true);
   const [datasetName, setDatasetName] = useState("");
   const [clinicalDataType, setClinicalDataType] = useState(null);
+  const [dataKindReady, setDatakindReady] = useState(true);
   const [isCustomSQL, setIsCustomSQL] = useState("Yes");
   const [sQLQuery, setSQLQuery] = useState("");
   const [tableName, setTableName] = useState(null);
   const [filterCondition, setFilterCondition] = useState("");
   const [dataType, setDataType] = useState("Cumulative");
   const [offsetColumn, setOffsetColumn] = useState(null);
+  const [triggeredSqlData, setTriggerSqlData] = useState(false);
   const messageContext = useContext(MessageContext);
 
   const { datakind, selectedDataset, previewSQL, sqlTables, sqlColumns } =
     dataSets;
 
-  const { datasetId, dfTestFlag, onSubmit, moveNext } = props;
+  const {
+    datasetId,
+    dfTestFlag,
+    onSubmit,
+    moveNext,
+    initialValue,
+    onChangeSql,
+  } = props;
 
   const setDefaultValues = () => {
     setDsActive(true);
@@ -164,14 +173,7 @@ const JDBCForm = forwardRef((props, ref) => {
     }
   }, [datasetId]);
 
-  useEffect(() => {
-    setLoading(false);
-    if (isPreviewReady && previewSQL?.length) {
-      moveNext();
-    }
-  }, [previewSQL]);
-
-  const submitJDBCForm = () => {
+  const submitJDBCForm = (ready = false) => {
     const data = {
       datasetName,
       active: dsActive,
@@ -183,17 +185,43 @@ const JDBCForm = forwardRef((props, ref) => {
       offsetColumn: offsetColumn?.length ? offsetColumn[0] : "",
       dfTestFlag,
       conditionalExpression: filterCondition || "",
+      sqlReady: ready,
     };
     onSubmit(data);
   };
+  useEffect(() => {
+    if (sqlColumns?.length && triggeredSqlData) {
+      submitJDBCForm(true);
+      setTriggerSqlData(false);
+    }
+  }, [sqlColumns]);
+
+  useEffect(() => {
+    setLoading(false);
+    if (isPreviewReady && previewSQL?.length) {
+      if (isCustomSQL.toLowerCase() === "no") {
+        moveNext();
+      } else if (isCustomSQL.toLowerCase() === "yes") {
+        submitJDBCForm(true);
+      }
+    }
+  }, [previewSQL]);
+
   const handlePreview = async () => {
+    if (sQLQuery === "") {
+      messageContext.showErrorMessage(`Please add your query to proceed.`);
+      return false;
+    }
+    if (sQLQuery.indexOf("*") >= 0) {
+      messageContext.showErrorMessage(`Please remove * from query to proceed.`);
+      return false;
+    }
     if (clinicalDataType === null || datasetName === "") {
       messageContext.showErrorMessage(
         `Please fill required fields to proceed.`
       );
       return false;
     }
-    submitJDBCForm();
     setIsPreviewReady(true);
     setLoading(true);
     await dispatch(getPreviewSQL(sQLQuery));
@@ -206,7 +234,7 @@ const JDBCForm = forwardRef((props, ref) => {
   const handleSelection = (e) => {
     const { value } = e.target;
     setIsCustomSQL(value);
-    props.onChangeSql(value);
+    onChangeSql(value);
   };
 
   const handleCDT = (e) => {
@@ -248,12 +276,40 @@ const JDBCForm = forwardRef((props, ref) => {
   useEffect(() => {
     if (dataType === "Incremental") {
       dispatch(getSQLColumns(tableName));
+      setTriggerSqlData(true);
     }
   }, [dataType]);
 
+  useEffect(() => {
+    if (initialValue) {
+      if (initialValue.dataKind) {
+        const dataKindId =
+          datakind.records.find((x) => x.name === initialValue.dataKind)
+            ?.value || null;
+        if (dataKindId) {
+          setClinicalDataType([dataKindId]);
+        }
+        setDatakindReady((x) => x + 1);
+      }
+      if (initialValue.datasetName) setDatasetName(initialValue.datasetName);
+      if (initialValue.customQuery) setIsCustomSQL(initialValue.customQuery);
+      if (initialValue.customSql) setSQLQuery(initialValue.customSql);
+      if (initialValue.tableName) setTableName(initialValue.tableName);
+      if (initialValue.offsetColumn) setOffsetColumn(initialValue.offsetColumn);
+      if (initialValue.incremental === 1) setDataType("Incremental");
+      if (initialValue.conditionalExpression)
+        setFilterCondition(initialValue.conditionalExpression);
+    }
+  }, []);
+
   useImperativeHandle(ref, () => ({
     handleSubmit() {
-      submitJDBCForm();
+      if (isCustomSQL === "No" && tableName) {
+        dispatch(getSQLColumns(tableName));
+        setTriggerSqlData(true);
+      } else {
+        submitJDBCForm();
+      }
     },
     handleCancel() {
       setDefaultValues();
@@ -331,6 +387,7 @@ const JDBCForm = forwardRef((props, ref) => {
             </Grid>
             <Grid item md={6}>
               <Autocomplete
+                key={dataKindReady}
                 name="clinicalDataType"
                 value={clinicalDataType}
                 label="Clinical Data Type"

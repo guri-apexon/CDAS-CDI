@@ -2,8 +2,7 @@ import { Route, Switch, Redirect, useRouteMatch } from "react-router";
 import { useLocation, useHistory } from "react-router-dom";
 import { lazy, Suspense, useState, useEffect } from "react";
 import Loader from "apollo-react/components/Loader";
-
-import { getCookie } from "./utils";
+import { getUserId } from "./utils";
 import TopNavbar from "./components/AppHeader/TopNavbar/TopNavbar";
 import AppFooter from "./components/AppFooter/AppFooter";
 import Logout from "./pages/Logout/Logout";
@@ -14,11 +13,8 @@ import PageHeader from "./components/Common/PageHeader";
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
 const DataFlowCreate = lazy(() => import("./pages/DataFlow/Create"));
-
-// const DataSets = lazy(() => import("./pages/DataSets/DataSets"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
 // const ColumnsTab = lazy(() => import("./pages/Dataset/ColumnsTab/ColumnsTab"));
-// const JDBCForm = lazy(() => import("./pages/Dataset/JDBCForm"));
 const CDIAdmin = lazy(() => import("./pages/Admin/CDIAdmin"));
 const DatasetIngestionReport = lazy(() =>
   import("./pages/DatasetIngestionReport")
@@ -94,8 +90,7 @@ const CDIWrapper = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const userId = getCookie("user.id");
-    // console.log("Wrapper-props:", JSON.stringify(props));
+    const userId = getUserId(true);
     if (userId) {
       setLoggedIn(true);
     } else {
@@ -104,8 +99,7 @@ const CDIWrapper = () => {
   }, [history]);
 
   useEffect(() => {
-    const userId = getCookie("user.id");
-    // console.log(userId);
+    const userId = getUserId(true);
     if (userId) {
       history.push(location.pathname);
       if (location.pathname === "/") {
