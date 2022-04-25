@@ -507,15 +507,15 @@ export default function DSColumnTable({
   };
 
   useEffect(() => {
-    console.log(
-      "editedRows",
-      editedRows,
-      dataOrigin,
-      formattedData,
-      locationType,
-      headerValue
-    );
-    if (editedRows.map((e) => e.isHavingColumnName).every((e) => e === true)) {
+    // console.log(
+    //   "editedRows",
+    //   editedRows,
+    //   dataOrigin,
+    //   formattedData,
+    //   locationType,
+    //   headerValue
+    // );
+    if (editedRows.every((e) => e.isHavingColumnName === true && e.dataType)) {
       setDisableSaveAll(false);
     } else {
       setDisableSaveAll(true);
@@ -533,11 +533,8 @@ export default function DSColumnTable({
   }, [selectedRows]);
 
   useEffect(() => {
-    if (rows?.length) {
-      console.log("rows", rows);
-      setFilteredRows(rows);
-      messageContext?.setDataflow({ columnDefinition: rows });
-    }
+    setFilteredRows(rows);
+    messageContext?.setDataflow({ columnDefinition: rows });
   }, [rows]);
 
   useEffect(() => {
@@ -587,8 +584,8 @@ export default function DSColumnTable({
           title="Dataset Column Settings"
           subtitle={`${
             rows.length > 1
-              ? `${editedRows.length} dataset columns`
-              : `${editedRows.length} dataset column`
+              ? `${rows.length} dataset columns`
+              : `${rows.length} dataset column`
           }`}
           columns={moreColumns}
           initialSortedColumn="uniqueId"

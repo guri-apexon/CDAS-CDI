@@ -68,7 +68,10 @@ exports.saveDatasetColumns = async (req, res) => {
         ];
 
         const inserted = await DB.executeQuery(insertQuery, body);
-        datasetColumns.push(inserted.rows[0]);
+        datasetColumns.push({
+          ...inserted.rows[0],
+          frontendUniqueRef: value.uniqueId,
+        });
 
         const jsonObj = { datasetid: dsId, columnId, ...value };
         const config_json = JSON.stringify(jsonObj);
@@ -154,7 +157,7 @@ exports.updateColumns = async (req, res) => {
           unique: value.unique == "Yes" ? 1 : 0,
           charactermin: value.minLength || 0,
           charactermax: value.maxLength || 0,
-          position: value.position.trim() || 0,
+          position: value.position || 0,
           format: value.format.trim() || null,
           lov: value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
         };

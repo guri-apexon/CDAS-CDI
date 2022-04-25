@@ -43,6 +43,7 @@ import Clone from "../../DataFlow/CloneDataFlow";
 import {
   SelectedDataflow,
   updateSelectedStudy,
+  updateHeaderCount,
 } from "../../../store/actions/DashboardAction";
 
 import {
@@ -158,6 +159,8 @@ export default function DataflowTab({ updateData }) {
   const dispatch = useDispatch();
   const dashboard = useSelector((state) => state.dashboard);
   const [tableRows, setTableRows] = useState([...rowData]);
+  const { selectedCard } = dashboard;
+  const { dfCount, dsCount } = selectedCard;
 
   const [expandedRows, setExpandedRows] = useState([]);
 
@@ -242,8 +245,16 @@ export default function DataflowTab({ updateData }) {
   const changeStatusAction = async (e) => {
     if (e.status === "Inactive") {
       const updateStataus = await activateDF(e.dataFlowId, e.version);
-      if (updateStataus?.success) {
+      console.log(updateStataus, "");
+      if (updateStataus?.status === 1) {
+        messageContext.showSuccessMessage(updateStataus.message);
         await updateData();
+        await dispatch(
+          updateHeaderCount(
+            parseInt(dfCount, 10) + 1,
+            parseInt(dsCount, 10) + parseInt(e.dataSets, 10)
+          )
+        );
       } else {
         messageContext.showErrorMessage(
           `Activate the dataflow is cannot be completed and the dataflow having the issue`
@@ -252,6 +263,12 @@ export default function DataflowTab({ updateData }) {
     } else {
       await inActivateDF(e.dataFlowId, e.version);
       await updateData();
+      await dispatch(
+        updateHeaderCount(
+          parseInt(dfCount, 10) - 1,
+          parseInt(dsCount, 10) - parseInt(e.dataSets, 10)
+        )
+      );
     }
   };
 
@@ -267,7 +284,7 @@ export default function DataflowTab({ updateData }) {
   };
 
   const ActionCell = ({ row }) => {
-    const { dataFlowId, status, version } = row;
+    const { dataFlowId, status, version, dataSets } = row;
     const activeText =
       status === "Active"
         ? "Change status to inactive"
@@ -281,7 +298,8 @@ export default function DataflowTab({ updateData }) {
       {
         text: activeText,
         id: 2,
-        onClick: () => changeStatusAction({ dataFlowId, status, version }),
+        onClick: () =>
+          changeStatusAction({ dataFlowId, status, version, dataSets }),
       },
       {
         text: "Send sync request",
@@ -317,7 +335,7 @@ export default function DataflowTab({ updateData }) {
       {
         text: "Create data flow",
         onClick: () => {
-          if (dashboard.selectedCard.prot_id !== "") {
+          if (selectedCard.prot_id !== "") {
             history.push("/dashboard/dataflow/create");
           } else {
             messageContext.showErrorMessage(
