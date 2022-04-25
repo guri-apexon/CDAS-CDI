@@ -113,11 +113,19 @@ const DashboardReducer = (state = initialState, action) =>
           dsCount: action.dsCount,
         };
         newState.userStudies = state?.userStudies?.map((e) => {
-          if (e?.prot_id === state?.selectedCard?.prot_id) {
-            e.dfCount = action.dfCount;
-            e.dsCount = action.dsCount;
+          let newObj = {};
+          if (e.prot_id === state?.selectedCard?.prot_id) {
+            newObj = {
+              ...e,
+              dfCount: action.dfCount,
+              dsCount: action.dsCount,
+            };
+          } else {
+            newObj = {
+              ...e,
+            };
           }
-          return e;
+          return newObj;
         });
         break;
 
