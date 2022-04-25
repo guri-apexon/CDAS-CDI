@@ -241,6 +241,7 @@ const JDBCForm = forwardRef((props, ref) => {
         conditionalExpression: null,
       })
     );
+    setLoading(false);
   };
 
   const handleStatusUpdate = () => {
@@ -456,7 +457,7 @@ const JDBCForm = forwardRef((props, ref) => {
           )}
           {isCustomSQL === "No" && (
             <>
-              <TextField
+              {/* <TextField
                 fullWidth
                 name="tableName"
                 id="tableName"
@@ -467,8 +468,8 @@ const JDBCForm = forwardRef((props, ref) => {
                 onChange={(e) => handleTableSelect([e.target.value])}
                 inputProps={{ maxLength: 255 }}
                 label="Table Name"
-              />
-              {/* <Autocomplete
+              /> */}
+              <Autocomplete
                 name="tableName"
                 id="tableName"
                 size="small"
@@ -484,7 +485,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 singleSelect
                 required
                 fullWidth
-              /> */}
+              />
               <TextField
                 fullWidth
                 name="filterCondition"
