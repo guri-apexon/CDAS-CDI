@@ -378,7 +378,6 @@ exports.updateDatasetData = async (req, res) => {
     ]);
     for (const key in requestData) {
       if (requestData[key] != oldData[key]) {
-        console.log("requestData", requestData[key], oldData[key]);
         const historyVersion = await CommonController.addDatasetHistory(
           dfId,
           userId,
