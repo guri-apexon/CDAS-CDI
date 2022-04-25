@@ -44,7 +44,15 @@ export const deletePackage = (payload) => {
   };
 };
 
-export const redirectToDataSet = (dfId, dfName, dpId, dpName, dsId, dsName) => {
+export const redirectToDataSet = (
+  dfId,
+  dfName,
+  dpId,
+  dpName,
+  dsId,
+  dsName,
+  fromWhere = null
+) => {
   return {
     type: REDIRECT_TO_DATASET,
     dfId,
@@ -53,6 +61,7 @@ export const redirectToDataSet = (dfId, dfName, dpId, dpName, dsId, dsName) => {
     dpName,
     dsId,
     dsName,
+    fromWhere,
   };
 };
 

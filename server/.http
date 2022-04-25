@@ -415,12 +415,19 @@ POST http://localhost:4001/v1/api/dataset/getTables HTTP/1.1
 content-type: application/json
 
 {
-	"externalSystem":"GDMPM-DAS",
-	"connectionPassword":"ParkWay432", 
-	"connectionUserName":"IDP", 
-	"driverName":"oracle.jdbc.driver.OracleDriver", 
-	"locationType":"Oracle", 
-	"connectionUrl":"jdbc:oracle:thin:@db-cdr1d:1521:CDR1D"
+	"tableName":null,
+	"externalSystem":"TDSE",
+	"columnCount":null,
+	"driverName":"com.mysql.jdbc.Driver",      
+	"locationType":"MySQL",
+	"customQuery":"YES",
+   	"connectionPassword":"vault",
+   	"connectionUserName":"vault",
+	"columnDefinition":null,
+	"customSql":"SELECT vault_value FROM vault",
+	"conditionalExpression":null,
+        "connectionUrl":"jdbc:mysql://ca2uhdtsd001vd:3306/vault"
+        
 }
 
 ### getColumns
