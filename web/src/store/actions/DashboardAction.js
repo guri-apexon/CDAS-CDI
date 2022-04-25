@@ -6,6 +6,7 @@ import {
   GET_DATASET_INGESTION_SUMMARY,
   GET_STUDIES_LIST,
   GET_PINNED_LIST,
+  UPDATE_HEADER_COUNT,
 } from "../../constants";
 
 export const getStudyboardData = (protocolId) => {
@@ -60,5 +61,13 @@ export const SelectedDataflow = (dataflow) => {
   return {
     type: SELECTED_DATAFLOW,
     dataflow,
+  };
+};
+
+export const updateHeaderCount = (dfCount, dsCount) => {
+  return {
+    type: UPDATE_HEADER_COUNT,
+    dfCount,
+    dsCount,
   };
 };
