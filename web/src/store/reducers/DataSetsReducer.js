@@ -45,7 +45,7 @@ import {
   FETCH_LOCATION_DETAIL_SUCCESS,
 } from "../../constants";
 
-import { dataTypeForPostgres } from "../../utils/index";
+import { dataTypeForPostgres, dataTypeForOracle } from "../../utils/index";
 
 const defaultData = {
   active: true,
@@ -359,6 +359,12 @@ const DataFlowReducer = (state = initialState, action) =>
         if (action.payload.locationType === "PostgreSQL") {
           newState.sqlColumns = action.sqlColumns.map((e) => {
             e.dataType = dataTypeForPostgres(e.datatype);
+            return e;
+          });
+        }
+        if (action.payload.locationType === "Oracle") {
+          newState.sqlColumns = action.sqlColumns.map((e) => {
+            e.dataType = dataTypeForOracle(e.datatype);
             return e;
           });
         }

@@ -483,6 +483,7 @@ export default function DSColumnTable({
   };
 
   const onSaveAll = async () => {
+    setDisableSaveAll(true);
     const removeSpaces = _.map(editedRows, (e) => {
       e.values = e.values.trim();
       e.columnName = e.columnName.trim();
@@ -555,6 +556,7 @@ export default function DSColumnTable({
       }
 
       await dispatch(getDatasetColumns(dsId));
+      setDisableSaveAll(false);
       // setTimeout(() => {
       //   updatingData();
       // }, 2000);

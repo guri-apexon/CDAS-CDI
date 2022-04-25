@@ -108,7 +108,7 @@ exports.tablecolumns = async (res, req) => {
         break;
 
       case "oracle":
-        q = `SELECT a.COLUMN_NAME AS "columnName",a.DATA_TYPE AS "dataType",
+        q = `SELECT a.COLUMN_NAME AS "columnName",a.DATA_TYPE AS "datatype",
       CASE WHEN c.CONSTRAINT_TYPE ='P' THEN 'true'
       ELSE 'false' END AS "primaryKey",
       CASE WHEN c.CONSTRAINT_TYPE IN ('U','P') THEN 'true'

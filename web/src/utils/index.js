@@ -666,3 +666,20 @@ export const dataTypeForPostgres = (datatype) => {
   }
   return "Alphanumeric";
 };
+
+export const dataTypeForOracle = (datatype) => {
+  if (
+    datatype.includes("VARCHAR2") ||
+    datatype.includes("ANYDATA") ||
+    datatype.includes("RAW")
+  ) {
+    return "Alphanumeric";
+  }
+  if (datatype.includes("NUMBER")) {
+    return "Numeric";
+  }
+  if (datatype.includes("TIMESTAMP")) {
+    return "Date";
+  }
+  return "Alphanumeric";
+};
