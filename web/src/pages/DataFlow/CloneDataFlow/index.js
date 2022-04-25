@@ -72,7 +72,6 @@ const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
   const [isActive, setIsActive] = useState(false);
   const [selectedStudy, setSelectedStudy] = useState(null);
   const [searchTxt, setSearchTxt] = useState("");
-
   const [dfReady, setDfReady] = useState("");
   const [studies, setStudies] = useState([]);
   const [datflows, setDatflows] = useState([]);
@@ -118,6 +117,8 @@ const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
   };
   const handleBack = () => {
     setSelectedStudy(null);
+    setSearchTxt("");
+    setDfReady("");
   };
 
   const FormatCell = ({ row, column: { accessor } }) => {

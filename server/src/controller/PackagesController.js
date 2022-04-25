@@ -50,7 +50,6 @@ exports.searchList = async (req, res) => {
 exports.addPackage = function (req, res) {
   try {
     const packageID = helper.createUniqueID();
-    const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
     const {
       compression_type,
       naming_convention,
