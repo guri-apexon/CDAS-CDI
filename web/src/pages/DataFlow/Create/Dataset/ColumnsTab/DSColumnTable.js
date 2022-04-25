@@ -456,8 +456,12 @@ export default function DSColumnTable({
   };
 
   const onRowDelete = async (uniqueId) => {
-    setRows(rows.filter((row) => row.uniqueId !== uniqueId));
-    setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
+    setRows((state) => [
+      ...(state?.filter((row) => row.uniqueId !== uniqueId) || []),
+    ]);
+    setEditedRows((state) => [
+      ...(state?.filter((row) => row.uniqueId !== uniqueId) || []),
+    ]);
   };
 
   const haveHeader = parseInt(headerValue, 10) > 0;
@@ -533,11 +537,10 @@ export default function DSColumnTable({
   }, [selectedRows]);
 
   useEffect(() => {
-    if (rows?.length) {
-      console.log("rows", rows);
-      setFilteredRows(rows);
-      messageContext?.setDataflow({ columnDefinition: rows });
-    }
+    //    if (rows?.length) {
+    setFilteredRows(rows);
+    messageContext?.setDataflow({ columnDefinition: rows });
+    //    }
   }, [rows]);
 
   useEffect(() => {
@@ -573,6 +576,23 @@ export default function DSColumnTable({
     }
   }, []);
 
+  const getRows = () => {
+    const rws = (editMode ? editedRows : filteredRows).map((row, i) => ({
+      ...row,
+      onRowDelete,
+      editRow,
+      onRowSave,
+      columnNo: parseInt(i, 10) + parseInt(1, 10),
+      editMode: selectedRows?.includes(row.uniqueId),
+      fileType,
+      isEditAll,
+      onRowCancel,
+      onRowEdit,
+      locationType,
+      haveHeader,
+    }));
+    return rws;
+  };
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
@@ -595,20 +615,7 @@ export default function DSColumnTable({
           initialSortOrder="asc"
           rowId="uniqueId"
           hasScroll={true}
-          rows={(editMode ? editedRows : filteredRows).map((row, i) => ({
-            ...row,
-            onRowDelete,
-            editRow,
-            onRowSave,
-            columnNo: parseInt(i, 10) + parseInt(1, 10),
-            editMode: selectedRows?.includes(row.uniqueId),
-            fileType,
-            isEditAll,
-            onRowCancel,
-            onRowEdit,
-            locationType,
-            haveHeader,
-          }))}
+          rows={getRows()}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}
           tablePaginationProps={{
