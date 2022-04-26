@@ -5,7 +5,7 @@ const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
-const { addDataflowHistory } = require("./CommonController");
+const { addLocationCDHHistory } = require("./CommonController");
 
 async function checkIsExistInDF(dkId) {
   let listQuery = `select distinct (d3.datakindid) from ${schemaName}.dataflow d 
@@ -117,6 +117,7 @@ exports.updateDataKind = async (req, res) => {
     const { dkId, dkName, dkDesc, dkStatus, dkESName, dkExternalId, userId } =
       req.body;
     Logger.info({ message: "updateDataKind" });
+    const curDate = helper.getCurrentTime();
     const isExist = await checkIsExistInDF(dkId);
 
     if (isExist) {
@@ -126,14 +127,10 @@ exports.updateDataKind = async (req, res) => {
       right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid
       where d.active = 1 and d2.active = 1 and d3.active = 1 and d3.datakindid=$1 group by d.dataflowid`;
 
-      const query = `UPDATE ${schemaName}.datakind SET "name"=$2, extrnl_sys_nm=$3, extrnl_id=$4, updt_tm=NOW(), dk_desc=$5 WHERE datakindid=$1 returning *`;
-      const updatedData = await DB.executeQuery(query, [
-        dkId,
-        dkName,
-        dkESName,
-        dkExternalId,
-        dkDesc,
-      ]);
+      const updatedData = await DB.executeQuery(
+        `UPDATE ${schemaName}.datakind SET "name"=$1, extrnl_sys_nm=$2, extrnl_id=$3, dk_desc=$5, updt_tm=$4 WHERE datakindid=$6 RETURNING *`,
+        [dkName, dkESName, dkExternalId, curDate, dkDesc, dkId]
+      );
 
       if (!updatedData?.rowCount) {
         return apiResponse.ErrorResponse(res, "Something went wrong on update");
@@ -156,7 +153,7 @@ exports.updateDataKind = async (req, res) => {
           dk_desc: dkDesc,
         };
         const diffObj = helper.getdiffKeys(comparisionObj, existingObj);
-        await addDataflowHistory({
+        await addLocationCDHHistory({
           dataflowId,
           externalSystemName: "CDI",
           userId,
@@ -168,20 +165,19 @@ exports.updateDataKind = async (req, res) => {
 
       return apiResponse.successResponse(res, "Updated successfully");
     } else {
-      const updateQuery = `UPDATE ${schemaName}.datakind SET "name"=$2, extrnl_sys_nm=$3, active=$4, extrnl_id=$5, updt_tm=NOW(), dk_desc=$6 WHERE datakindid=$1`;
-      DB.executeQuery(updateQuery, [
-        dkId,
-        dkName,
-        dkESName,
-        dkStatus,
-        dkExternalId,
-        dkDesc,
-      ])
+      DB.executeQuery(
+        `UPDATE ${schemaName}.datakind SET "name"=$2, extrnl_sys_nm=$3, active=$4, extrnl_id=$5, updt_tm=$6, dk_desc=$7 WHERE datakindid=$1`,
+        [dkId, dkName, dkESName, dkStatus, dkExternalId, curDate, dkDesc]
+      )
         .then(() => {
           return apiResponse.successResponse(res, "Operation success");
         })
         .catch((err) => {
-          console.log(err);
+          return apiResponse.validationErrorWithData(
+            res,
+            "Operation failed",
+            err
+          );
         });
     }
   } catch (err) {
@@ -195,14 +191,15 @@ exports.updateDataKind = async (req, res) => {
         "Clinical data type name and external system name combination already exists."
       );
     }
-    return apiResponse.ErrorResponse(res, err);
+    return apiResponse.ErrorResponse(res, "Something went wrong try again");
   }
 };
 
 exports.dkStatusUpdate = async (req, res) => {
   try {
     const { dkId, dkStatus } = req.body;
-    const query = `UPDATE ${schemaName}.datakind SET updt_tm=NOW(), active=$1 WHERE datakindid=$2`;
+    const curDate = helper.getCurrentTime();
+    const query = `UPDATE ${schemaName}.datakind SET updt_tm=$3, active=$1 WHERE datakindid=$2`;
     Logger.info({ message: "dkStatusUpdate" });
     const isExist = await checkIsExistInDF(dkId);
     if (isExist) {
@@ -212,7 +209,7 @@ exports.dkStatusUpdate = async (req, res) => {
         "Clinical Data Type Name cannot be inactivated until removed from all datasets using this Clinical Data Type."
       );
     } else {
-      const up = await DB.executeQuery(query, [dkStatus, dkId]);
+      const up = await DB.executeQuery(query, [dkStatus, dkId, curDate]);
       return apiResponse.successResponseWithData(res, "Operation success", up);
     }
   } catch (err) {
