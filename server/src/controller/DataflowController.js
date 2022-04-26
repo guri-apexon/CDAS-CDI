@@ -55,13 +55,13 @@ exports.getStudyDataflows = async (req, res) => {
       d.refreshtimestamp as "lastSyncDate"
       from
       ${schemaName}.dataflow d
-      inner join ${schemaName}.vendor v on d.vend_id = v.vend_id
-      inner join ${schemaName}.source_location sl on d.src_loc_id = sl.src_loc_id
-      inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
-      inner join ${schemaName}.study s on d.prot_id = s.prot_id
+      left join ${schemaName}.vendor v on d.vend_id = v.vend_id
+      left join ${schemaName}.source_location sl on d.src_loc_id = sl.src_loc_id
+      left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
+      left join ${schemaName}.study s on d.prot_id = s.prot_id
       left join ${schemaName}.datapackage d3 on (d.dataflowid=d3.dataflowid)
       left join ${schemaName}.dataset d4 on (d3.datapackageid=d4.datapackageid)
-      inner join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid = d.dataflowid
+      left join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid = d.dataflowid
       where s.prot_id = $1
       and coalesce (d.del_flg,0) != 1
       ) as df
