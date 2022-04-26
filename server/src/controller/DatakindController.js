@@ -127,15 +127,10 @@ exports.updateDataKind = async (req, res) => {
       right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid
       where d.active = 1 and d2.active = 1 and d3.active = 1 and d3.datakindid=$1 group by d.dataflowid`;
 
-      const query = `UPDATE ${schemaName}.datakind SET "name"=$2, extrnl_sys_nm=$3, extrnl_id=$4, updt_tm=$5, dk_desc=$6 WHERE datakindid=$1 returning *`;
-      const updatedData = await DB.executeQuery(query, [
-        dkId,
-        dkName,
-        dkESName,
-        dkExternalId,
-        curDate,
-        dkDesc,
-      ]);
+      const updatedData = await DB.executeQuery(
+        `UPDATE ${schemaName}.datakind SET "name"=$1, extrnl_sys_nm=$2, extrnl_id=$3, dk_desc=$5, updt_tm=$4 WHERE datakindid=$6 RETURNING *`,
+        [dkName, dkESName, dkExternalId, curDate, dkDesc, dkId]
+      );
 
       if (!updatedData?.rowCount) {
         return apiResponse.ErrorResponse(res, "Something went wrong on update");
@@ -170,21 +165,19 @@ exports.updateDataKind = async (req, res) => {
 
       return apiResponse.successResponse(res, "Updated successfully");
     } else {
-      const updateQuery = `UPDATE ${schemaName}.datakind SET "name"=$2, extrnl_sys_nm=$3, active=$4, extrnl_id=$5, updt_tm=$6, dk_desc=$7 WHERE datakindid=$1`;
-      DB.executeQuery(updateQuery, [
-        dkId,
-        dkName,
-        dkESName,
-        dkStatus,
-        dkExternalId,
-        curDate,
-        dkDesc,
-      ])
+      DB.executeQuery(
+        `UPDATE ${schemaName}.datakind SET "name"=$2, extrnl_sys_nm=$3, active=$4, extrnl_id=$5, updt_tm=$6, dk_desc=$7 WHERE datakindid=$1`,
+        [dkId, dkName, dkESName, dkStatus, dkExternalId, curDate, dkDesc]
+      )
         .then(() => {
           return apiResponse.successResponse(res, "Operation success");
         })
         .catch((err) => {
-          console.log(err);
+          return apiResponse.validationErrorWithData(
+            res,
+            "Operation failed",
+            err
+          );
         });
     }
   } catch (err) {
@@ -198,7 +191,7 @@ exports.updateDataKind = async (req, res) => {
         "Clinical data type name and external system name combination already exists."
       );
     }
-    return apiResponse.ErrorResponse(res, err);
+    return apiResponse.ErrorResponse(res, "Something went wrong try again");
   }
 };
 
