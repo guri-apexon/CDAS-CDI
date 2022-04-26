@@ -616,6 +616,16 @@ export const generateConnectionURL = (locType, hostName, port, dbName) => {
   return "";
 };
 
+export const generatedBName = (locType) => {
+  if (locType === "SQL Server") {
+    return "MSSQLSERVER";
+  }
+  if (locType === "Hive CDP" || locType === "Hive CDH") {
+    return "HIVE";
+  }
+  return locType.toUpperCase();
+};
+
 export const dateFilterCustom = (accessor) => (row, filters) => {
   if (!filters[accessor]) {
     return true;

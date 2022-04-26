@@ -112,6 +112,7 @@ const Dataset = () => {
     datapackageid: dpId,
     datapackageName,
     datasetName,
+    fromWhere,
   } = selectedDSDetails;
   const {
     loading,
@@ -132,7 +133,7 @@ const Dataset = () => {
     dsTestProdLock,
     isDatasetCreation,
   } = dataFlow;
-  const { name: dataflowName, loctyp, testflag } = dataFlowdetail;
+  const { name, loctyp, testflag, srclocid } = dataFlowdetail;
   const { datasetid: dsId } = selectedDataset;
   const { isCustomSQL, tableName } = formDataSQL;
 
@@ -163,9 +164,12 @@ const Dataset = () => {
       history.push("/dashboard");
     }
     dispatch(getDataKindData());
-    if (!dataFlowdetail.name) {
+    if (fromWhere === "IngestionProperties") {
       if (selectedDSDetails.dataflowid) {
         dispatch(getDataFlowDetail(selectedDSDetails.dataflowid));
+        // setTimeout(() => {
+        //   dispatch(getLocationDetails(srclocid));
+        // }, 1000);
       } else {
         history.push("/dashboard");
       }
@@ -180,11 +184,9 @@ const Dataset = () => {
     if (datasetid === null || datasetid === "new") {
       dispatch(resetFTP());
       dispatch(resetJDBC());
-    } else if (!dsCreatedSuccessfully) {
-      dispatch(getDataSetDetail(datasetid, dfId, dpId));
-      dispatch(getDatasetColumns(datasetid));
     } else {
       dispatch(getDataSetDetail(datasetid, dfId, dpId));
+      dispatch(getDatasetColumns(datasetid));
     }
   }, [datasetid, dsCreatedSuccessfully]);
 
@@ -244,7 +246,7 @@ const Dataset = () => {
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
       href: "javascript:void(0)",
-      title: dataflowName ?? "Dataflow Name",
+      title: name ?? "Dataflow Name",
       onClick: goToDataflow,
     },
     {

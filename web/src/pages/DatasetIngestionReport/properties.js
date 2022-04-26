@@ -54,7 +54,8 @@ const Properties = ({ datasetProperties }) => {
         datapackageid,
         DataPackageNamingConvention,
         datasetId,
-        DatasetName
+        DatasetName,
+        "IngestionProperties"
       )
     );
     dispatch(updateDSState(false));
