@@ -88,8 +88,8 @@ export const DataTypeEditableSelectCell =
         fullWidth
         canDeselect={false}
         value={row[key]}
-        error={!row.isInitLoad && errorText}
-        helperText={!row.isInitLoad ? errorText : ""}
+        error={!row.isInitLoad && !row.isFormatLoad && errorText}
+        helperText={!row.isInitLoad && !row.isFormatLoad ? errorText : ""}
         onChange={(e) =>
           row.editRow(row.uniqueId, key, e.target.value, errorText)
         }
