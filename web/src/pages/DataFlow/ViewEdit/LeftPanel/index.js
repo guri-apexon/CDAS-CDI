@@ -209,9 +209,7 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
                   {packagesList.length}
                   {packagesList.length > 1 ? " Data Packages" : " Data Package"}
                 </Typography>
-                <div style={{ marginLeft: "-6px" }}>
-                  <PackagesList userInfo={userInfo} data={packageData} />
-                </div>
+                <PackagesList userInfo={userInfo} data={packageData} />
               </>
             )}
           </div>
