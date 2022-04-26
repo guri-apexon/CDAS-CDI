@@ -6,7 +6,6 @@ router.post("/studyDataflowList", DataflowController.getStudyDataflows);
 router.get("/detail/:dataFlowId", DataflowController.getDataflowDetail);
 router.post("/create", DataflowController.createDataflow);
 router.post("/update-config", DataflowController.updateDataflowConfig);
-// router.post("/hard-delete", DataflowController.hardDelete);
 router.post("/hard-delete", DataflowController.hardDeleteNew);
 router.post("/activate", DataflowController.activateDataFlow);
 router.post("/inActivate", DataflowController.inActivateDataFlow);

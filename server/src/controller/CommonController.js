@@ -134,7 +134,7 @@ module.exports = {
   ) {
     return new Promise((resolve, reject) => {
       if (!package) resolve(false);
-      const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+      const currentTime = helper.getCurrentTime();
       DB.executeQuery(
         `SELECT version from ${schemaName}.dataflow_version
       WHERE dataflowid = '${package.dataflowid}' order by version DESC limit 1`
@@ -235,7 +235,7 @@ module.exports = {
         ];
         DB.executeQuery(addHistoryQuery, values).then(async (response) => {
           const auditId = helper.createUniqueID();
-          const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+          const currentTime = helper.getCurrentTime();
           const addAuditLogQuery = `INSERT INTO ${schemaName}.dataflow_audit_log(dataflow_audit_log_id, dataflowid, datapackageid, audit_vers, audit_updt_dt, usr_id, attribute, old_val, new_val) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
           const auditValues = [
             auditId,
@@ -302,7 +302,7 @@ module.exports = {
   ) {
     return new Promise((resolve, reject) => {
       if (!dfId) resolve(false);
-      const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+      const currentTime = helper.getCurrentTime();
       DB.executeQuery(
         `SELECT version from ${schemaName}.dataflow_version
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`
@@ -370,7 +370,7 @@ module.exports = {
   ) {
     return new Promise((resolve, reject) => {
       if (!dfId) resolve(false);
-      const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+      const currentTime = helper.getCurrentTime();
       DB.executeQuery(
         `SELECT version from ${schemaName}.dataflow_version
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`

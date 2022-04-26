@@ -22,7 +22,7 @@ const columns = [
   {
     header: "Data Package Name",
     accessor: "name",
-    sortFunction: compareNumbers,
+    sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("name"),
     filterComponent: TextFieldFilter,
     frozen: true,
