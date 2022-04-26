@@ -11,10 +11,10 @@ exports.listtables = async (res, req) => {
       connectionUserName,
       connectionUrl,
       driverName,
-      externalSystem,
+      // externalSystem,
     } = req.req.body;
     //get connection
-    let dbname = connectionUrl.split("/")[3];
+    // let dbname = connectionUrl.split("/")[3];
     //let q = `select table_name as tableName from information_schema.tables where table_schema = 'cdascfg'`;
     //let q = "SELECT table_name as tableName FROM information_schema.tables;";
     //let q = "SELECT table_name as tableName FROM all_tables";
