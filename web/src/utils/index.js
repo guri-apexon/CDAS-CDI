@@ -69,8 +69,10 @@ export const getHeaderValue = (accessor) => {
 export function getLastLogin() {
   const currentLogin = getCookie("user.last_login_ts");
   if (!currentLogin || currentLogin === "first_time") return null;
-  const localDate = moment.unix(currentLogin).local();
-  return localDate.format("DD-MMM-YYYY hh:mm A");
+  return moment
+    .utc(moment.unix(currentLogin))
+    .local()
+    .format("DD-MMM-YYYY hh:mm A");
 }
 const getDomainName = () => {
   const urlParts = window.location.hostname.split(".");
