@@ -341,7 +341,7 @@ module.exports = {
     } catch (err) {
       Logger.error(err);
       console.log("err:", err);
-      return apiResponse.ErrorResponse(res, err);
+      return apiResponse.ErrorResponse(res, "Something went wrong");
     }
   },
 

@@ -1137,10 +1137,10 @@ exports.syncDataFlow = async (req, res) => {
     VALUES($1, 'SYNC', $2, 'QUEUE', $4, $4, '', $3, '', 1, '', 0)`;
     await DB.executeQuery(q, [dataFlowId, userId, version, curDate]);
 
-    await DB.executeQuery(
-      `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
-      [dataFlowId, curDate]
-    );
+    // await DB.executeQuery(
+    //   `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
+    //   [dataFlowId, curDate]
+    // );
 
     return apiResponse.successResponse(
       res,
