@@ -25,7 +25,7 @@ import {
   columnsCreated,
   columnsCreatedFailure,
 } from "../store/actions/DataSetsAction";
-import { getUserId } from "../utils/index";
+import { deleteAllCookies, getUserId } from "../utils/index";
 
 const userId = getUserId();
 
@@ -369,8 +369,12 @@ export const getPinnedStudies = async () => {
 export const userLogOut = () => {
   return axios
     .get(`${baseURL}/logout`)
-    .then((res) => {
-      return res.data || false;
+    .then(async (res) => {
+      if (res.data) {
+        const deleted = await deleteAllCookies();
+        return deleted;
+      }
+      return false;
     })
     .catch((err) => {
       console.log(err);
