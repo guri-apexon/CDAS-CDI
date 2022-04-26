@@ -959,16 +959,17 @@ exports.createDataflow = async (req, res) => {
 
     let q = `INSERT INTO ${schemaName}.cdr_ta_queue
     (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
-    VALUES($1, 'CONFIG', $2, 'QUEUE', NOW(),NOW(), '', 1, '', 1, '', 0)`;
+    VALUES($1, 'CONFIG', $2, 'QUEUE', $3, $3, '', 1, '', 1, '', 0)`;
 
     await DB.executeQuery(q, [
       uid,
       externalSystemName === "CDI" ? userId : externalSystemName,
+      dFTimestamp,
     ]);
 
     await DB.executeQuery(
-      `UPDATE ${schemaName}.dataflow SET updt_tm=NOW(), configured=0 WHERE dataflowid=$1`,
-      [uid]
+      `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
+      [uid, dFTimestamp]
     );
 
     return apiResponse.successResponseWithData(
@@ -1257,14 +1258,15 @@ exports.inActivateDataFlow = async (req, res) => {
 exports.syncDataFlow = async (req, res) => {
   try {
     let { version, userId, dataFlowId } = req.body;
+    const curDate = helper.getCurrentTime();
     let q = `INSERT INTO ${schemaName}.cdr_ta_queue
     (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
-    VALUES($1, 'SYNC', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0)`;
-    await DB.executeQuery(q, [dataFlowId, userId, version]);
+    VALUES($1, 'SYNC', $2, 'QUEUE', $4, $4, '', $3, '', 1, '', 0)`;
+    await DB.executeQuery(q, [dataFlowId, userId, version, curDate]);
 
     await DB.executeQuery(
-      `UPDATE ${schemaName}.dataflow SET updt_tm=NOW(), configured=0 WHERE dataflowid=$1`,
-      [dataFlowId]
+      `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
+      [dataFlowId, curDate]
     );
 
     return apiResponse.successResponse(
@@ -1970,12 +1972,13 @@ exports.hardDeleteNew = async (req, res) => {
   try {
     const { dataFlowId, userId, version, studyId, dataFlowName, fsrStatus } =
       req.body;
-    const $q2 = `UPDATE ${schemaName}.dataflow SET updt_tm=Now(), del_flg=1 WHERE dataflowid=$1`;
+    const curDate = helper.getCurrentTime();
+    const $q2 = `UPDATE ${schemaName}.dataflow SET updt_tm=$2, del_flg=1 WHERE dataflowid=$1`;
     const $q4 = `INSERT INTO ${schemaName}.dataflow_audit_log (dataflowid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt) 
-    VALUES($1, $2, $3, $4, $5, $6, Now())`;
+    VALUES($1, $2, $3, $4, $5, $6, $7)`;
 
     Logger.info({ message: "hardDeleteNew" });
-    const q2 = await DB.executeQuery($q2, [dataFlowId]);
+    const q2 = await DB.executeQuery($q2, [dataFlowId, curDate]);
     const q4 = await DB.executeQuery($q4, [
       dataFlowId,
       version,
@@ -1983,6 +1986,7 @@ exports.hardDeleteNew = async (req, res) => {
       0,
       1,
       userId,
+      curDate,
     ]);
     // await DB.executeQuery(
     //   `DELETE from ${schemaName}.dataflow_action WHERE df_id = $1`,
@@ -1990,13 +1994,14 @@ exports.hardDeleteNew = async (req, res) => {
     // );
     const q3 = await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_action (df_id, df_nm, action_typ, df_status, action_usr, insrt_tmstmp, prot_id, df_versn)
-      VALUES($1, $2, $3, $4, $5, Now(), $6, $7)`,
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
       [
         dataFlowId,
         dataFlowName,
         "delete",
         fsrStatus || "QUEUE", //"temp", //fsrStatus, // we are not getting any fsr status as of now
         userId,
+        curDate,
         studyId,
         version,
       ]
