@@ -66,6 +66,7 @@ export default function DSColumnTable({
       maxLength: "",
       values: "",
       isInitLoad: true,
+      isFormatLoad: true,
       isHavingError: false,
       isHavingColumnName: false,
       isHavingDataType: false,
@@ -352,6 +353,7 @@ export default function DSColumnTable({
           maxLength: "",
           values: "",
           isInitLoad: true,
+          isFormatLoad: true,
           isHavingError: false,
           isHavingColumnName: false,
           isHavingDataType: false,
@@ -390,6 +392,7 @@ export default function DSColumnTable({
         maxLength: "",
         values: "",
         isInitLoad: true,
+        isFormatLoad: true,
         isHavingError: false,
         isHavingColumnName: false,
         isHavingDataType: false,
@@ -694,6 +697,7 @@ export default function DSColumnTable({
               ...row,
               [key]: value,
               isHavingColumnName: false,
+              isInitLoad: false,
             };
           }
           if (key === "dataType") {
@@ -702,22 +706,41 @@ export default function DSColumnTable({
                 ...row,
                 [key]: value,
                 isHavingDataType: true,
+                isInitLoad: false,
               };
             }
             return {
               ...row,
               [key]: value,
               isHavingDataType: false,
-            };
-          }
-          if (row.isInitLoad) {
-            return {
-              ...row,
-              [key]: value,
               isInitLoad: false,
-              isHavingError: true,
             };
           }
+
+          if (row.isInitLoad || row.isFormatLoad) {
+            if (key !== "variableLabel") {
+              return {
+                ...row,
+                [key]: value,
+                isInitLoad: false,
+                isHavingError: true,
+                isFormatLoad:
+                  key === "format" || key === "columnName" ? true : false,
+              };
+            }
+          }
+
+          // if (row.isFormatLoad) {
+          //   if (key === "format") {
+          //     return {
+          //       ...row,
+          //       [key]: value,
+          //       isInitLoad: false,
+          //       isFormatLoad: false,
+          //       isHavingError: true,
+          //     };
+          //   }
+          // }
 
           return {
             ...row,
