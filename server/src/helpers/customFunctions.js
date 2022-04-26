@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const moment = require("moment");
 // const { forEach } = require("lodash");
 const _ = require("lodash");
+const logger = require("../config/logger");
 
 // const joi = require("joi");
 
@@ -50,15 +51,24 @@ exports.readVaultData = async (vaultPath) => {
   }
 };
 
-// { user: usr_nm, password: pswd }
 exports.writeVaultData = async (vaultPath, data) => {
-  await vault.write(`kv/${vaultPath}`, data);
-  return true;
+  try {
+    await vault.write(`kv/${vaultPath}`, data);
+    return true;
+  } catch (error) {
+    logger.error("vault error", error);
+    return false;
+  }
 };
 
 exports.deleteVaultData = async (vaultPath) => {
-  await vault.delete(vaultPath);
-  return true;
+  try {
+    await vault.delete(vaultPath);
+    return true;
+  } catch (error) {
+    logger.error("vault error", error);
+    return false;
+  }
 };
 
 const stringToBoolean = (exports.stringToBoolean = (string) => {
@@ -114,18 +124,6 @@ exports.validation = (data) => {
   return msg;
 };
 
-exports.validationBlank = (data) => {
-  let msg = [];
-
-  data.forEach((val) => {
-    if (val.value === "" || val.value === null || val.value === undefined) {
-    } else {
-      msg.push([`In JDBC ${val.key} fields should be Blank `]);
-    }
-  });
-
-  return msg;
-};
 exports.getdiffKeys = (newObj, oldObj) => {
   // console.log("line 131");
   if (

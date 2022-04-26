@@ -174,6 +174,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
     if (!type && dataStructure) type = dataStructure;
 
     let studyId = null;
+    let dFTimestamp = helper.getCurrentTime();
     if (
       vendorName !== null &&
       protocolNumberStandard !== null &&
@@ -210,7 +211,6 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       let { rows } = await DB.executeQuery(q);
       let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${location}';`;
       let { rows: data } = await DB.executeQuery(q1);
-      let dFTimestamp = new Date();
       // if (rows.length > 0 && data.length > 0) {
       DFBody = [
         uid,
@@ -243,7 +243,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
         ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17, $18) returning dataflowid as "dataFlowId", name as "dataFlowName", type as adapter, description, active as status, testflag, connectiontype as "locationType", fsrstatus as "fsrStatus", prot_id as "studyId", externalsystemname as "externalSourceSystem";`,
         DFBody
       );
-      let ts = new Date().toLocaleString();
+      let ts = dFTimestamp;
       ResponseBody.action = "Data flow created successfully.";
       ResponseBody.status = helper.stringToBoolean(active)
         ? "Active"
@@ -263,7 +263,6 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
           // if (each.name !== "" && each.path !== "" && each.type !== "") {
 
           let passwordStatus = "No";
-          let dPTimestamp = new Date();
           let { password } = each;
 
           if (password) {
@@ -283,7 +282,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
             helper.stringToBoolean(each.active) ? 1 : 0,
             helper.stringToBoolean(each.noPackageConfig) ? 1 : 0,
             each.externalID || null,
-            dPTimestamp,
+            dFTimestamp,
             uid,
           ];
           let createDP = await DB.executeQuery(
@@ -312,7 +311,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
               "",
               "",
               externalSystemName === "CDI" ? userId : externalSystemName,
-              new Date(),
+              dFTimestamp,
             ]
           );
           if (each.dataSet && each.dataSet.length > 0) {
@@ -331,7 +330,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                 let checkDataKind = await DB.executeQuery(
                   `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
                 );
-                dataKind = checkDataKind.rows[0].datakindid;
+                dataKind = checkDataKind.rows[0]?.datakindid;
               }
 
               const dsUid = createUniqueID();
@@ -391,7 +390,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                 obj.tableName || null,
                 obj.externalID || null,
                 dsPasswordStatus || "No",
-                new Date(),
+                dFTimestamp,
                 obj.delimiter || "",
                 helper.convertEscapeChar(
                   obj.escapeCode || obj.escapeCharacter
@@ -427,7 +426,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                   "",
                   "",
                   externalSystemName === "CDI" ? userId : externalSystemName,
-                  new Date(),
+                  dFTimestamp,
                 ]
               );
 
@@ -451,7 +450,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                     el.lov || el.values || null,
                     helper.stringToBoolean(el.unique) ? 1 : 0,
                     el.requiredfield || null,
-                    new Date(),
+                    dFTimestamp,
                   ];
                   await DB.executeQuery(
                     `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
@@ -474,7 +473,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                     "",
                     "",
                     externalSystemName === "CDI" ? userId : externalSystemName,
-                    new Date(),
+                    dFTimestamp,
                   ];
                   await DB.executeQuery(dataflow_aduit_query, audit_body);
 
@@ -511,7 +510,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
         "",
         "",
         externalSystemName === "CDI" ? userId : externalSystemName,
-        new Date(),
+        dFTimestamp,
       ]
     );
     let config_json = {
@@ -541,7 +540,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       1,
       JSON.stringify(config_json),
       externalSystemName === "CDI" ? userId : externalSystemName,
-      new Date(),
+      dFTimestamp,
     ];
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
 
@@ -553,6 +552,11 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       uid,
       externalSystemName === "CDI" ? userId : externalSystemName,
     ]);
+
+    await DB.executeQuery(
+      `UPDATE ${schemaName}.dataflow SET updt_tm=NOW(), configured=0 WHERE dataflowid=$1`,
+      [uid]
+    );
 
     return apiResponse.successResponseWithData(
       res,
@@ -714,13 +718,23 @@ exports.updateDataFlow = async (req, res) => {
       const ConnectionType = rows[0].connectiontype;
       const externalSysName = rows[0].externalsystemname;
 
+      const cData = { dataFlowId: DFId };
+      const conf_data = Object.assign(cData, req.body);
+
       var ResponseBody = {};
       ResponseBody.success = [];
       ResponseBody.errors = [];
 
       //dataFlow update function Call
       var updateDataflow = await externalFunction
-        .dataflowUpdate(req.body, externalID, DFId, DFVer, externalSysName)
+        .dataflowUpdate(
+          req.body,
+          externalID,
+          DFId,
+          DFVer,
+          externalSysName,
+          conf_data
+        )
         .then((res) => {
           ResponseBody.success.push(res.sucRes);
         });
@@ -819,29 +833,14 @@ exports.updateDataFlow = async (req, res) => {
         }
       }
 
-      const auditLog = await DB.executeQuery(
-        `SELECT * from ${schemaName}.dataflow_audit_log where dataflowid='${DFId}' and audit_vers = '${DFVer}';`
-      );
+      const sucData = ResponseBody.success;
+      let isEmpty = (arr) => Array.isArray(arr) && arr.every(isEmpty);
 
-      if (auditLog.rows.length > 0) {
-        const cData = { dataFlowId: DFId };
-        const conf_data = Object.assign(cData, req.body);
-
-        //insert into dataflow version config log table
-        let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
-        ( dataflowid, "version", config_json, created_by, created_on)
-        VALUES($1,$2,$3,$4,$5);`;
-        let aduit_version_body = [
-          DFId,
-          DFVer,
-          // JSON.stringify(config_json),
-          JSON.stringify(conf_data),
-          externalSysName,
-          new Date(),
-        ];
-        await DB.executeQuery(dataflow_version_query, aduit_version_body);
+      if (isEmpty(sucData)) {
+        const deleteQuery = `delete from ${schemaName}.dataflow_version where dataflowid='${DFId}' and 
+        version ='${DFVer}'`;
+        await DB.executeQuery(deleteQuery);
       }
-
       return apiResponse.successResponseWithData(
         res,
         "Data flow Update successfully.",
@@ -859,181 +858,181 @@ exports.updateDataFlow = async (req, res) => {
   }
 };
 
-const hardDeleteTrigger = async (dataflowId, user) => {
-  const values = [dataflowId];
-  let result, dataFlow;
-  await DB.executeQuery(
-    `SELECT * from ${schemaName}.dataflow WHERE dataflowid=$1`,
-    values
-  ).then(async (response) => {
-    dataFlow = response.rows ? response.rows[0] : null;
-  });
-  if (!dataFlow) {
-    return "not_found";
-  }
-  const deleteQuery = `DELETE FROM ${schemaName}.dataflow_audit_log da
-      WHERE da.dataflowid = $1`;
-  await DB.executeQuery(deleteQuery, values)
-    .then(async (response) => {
-      const deleteQuery2 = `DELETE FROM ${schemaName}.temp_json_log da
-      WHERE da.dataflowid = '${dataflowId}';
-      DELETE FROM ${schemaName}.columndefinition cd WHERE cd.datasetid in (select datasetid FROM ${schemaName}.dataset ds
-      WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}'));
-      DELETE FROM ${schemaName}.columndefinition_history cd WHERE cd.datasetid in (select datasetid FROM ${schemaName}.dataset ds
-      WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}'));
-      DELETE FROM ${schemaName}.dataset ds
-      WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}');
-      DELETE FROM ${schemaName}.dataset_history ds
-      WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}');
-      DELETE FROM ${schemaName}.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
-      DELETE FROM ${schemaName}.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
+// const hardDeleteTrigger = async (dataflowId, user) => {
+//   const values = [dataflowId];
+//   let result, dataFlow;
+//   await DB.executeQuery(
+//     `SELECT * from ${schemaName}.dataflow WHERE dataflowid=$1`,
+//     values
+//   ).then(async (response) => {
+//     dataFlow = response.rows ? response.rows[0] : null;
+//   });
+//   if (!dataFlow) {
+//     return "not_found";
+//   }
+//   const deleteQuery = `DELETE FROM ${schemaName}.dataflow_audit_log da
+//       WHERE da.dataflowid = $1`;
+//   await DB.executeQuery(deleteQuery, values)
+//     .then(async (response) => {
+//       const deleteQuery2 = `DELETE FROM ${schemaName}.temp_json_log da
+//       WHERE da.dataflowid = '${dataflowId}';
+//       DELETE FROM ${schemaName}.columndefinition cd WHERE cd.datasetid in (select datasetid FROM ${schemaName}.dataset ds
+//       WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}'));
+//       DELETE FROM ${schemaName}.columndefinition_history cd WHERE cd.datasetid in (select datasetid FROM ${schemaName}.dataset ds
+//       WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}'));
+//       DELETE FROM ${schemaName}.dataset ds
+//       WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}');
+//       DELETE FROM ${schemaName}.dataset_history ds
+//       WHERE ds.datapackageid in (select datapackageid from ${schemaName}.datapackage dp where dp.dataflowid='${dataflowId}');
+//       DELETE FROM ${schemaName}.datapackage dp WHERE dp.dataflowid = '${dataflowId}';
+//       DELETE FROM ${schemaName}.datapackage_history dph WHERE dph.dataflowid = '${dataflowId}';`;
 
-      await DB.executeQuery(deleteQuery2)
-        .then(async (response2) => {
-          const deleteQuery3 = `DELETE FROM ${schemaName}.dataflow
-      WHERE dataflowid = $1`;
-          await DB.executeQuery(deleteQuery3, values)
-            .then(async (response3) => {
-              if (response3.rowCount && response3.rowCount > 0) {
-                const insertDeletedQuery = `INSERT INTO ${schemaName}.deleted_dataflow(df_del_id, dataflow_nm, del_by, del_dt, del_req_dt, prot_id) VALUES($1, $2, $3, $4, $5, $6)`;
-                const deleteDfId = helper.createUniqueID();
-                const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-                const deletedValues = [
-                  deleteDfId,
-                  dataFlow.data_flow_nm,
-                  user.usr_id,
-                  currentTime,
-                  currentTime,
-                  "",
-                ];
-                await DB.executeQuery(insertDeletedQuery, deletedValues)
-                  .then(async (response) => {
-                    result = true;
-                  })
-                  .catch((err) => {
-                    result = false;
-                  });
-                result = "deleted";
-              } else {
-                result = "not_found";
-              }
-            })
-            .catch((err) => {
-              result = false;
-            });
-        })
-        .catch((err) => {
-          result = false;
-        });
-    })
-    .catch((err) => {
-      result = false;
-    });
-  return result;
-};
+//       await DB.executeQuery(deleteQuery2)
+//         .then(async (response2) => {
+//           const deleteQuery3 = `DELETE FROM ${schemaName}.dataflow
+//       WHERE dataflowid = $1`;
+//           await DB.executeQuery(deleteQuery3, values)
+//             .then(async (response3) => {
+//               if (response3.rowCount && response3.rowCount > 0) {
+//                 const insertDeletedQuery = `INSERT INTO ${schemaName}.deleted_dataflow(df_del_id, dataflow_nm, del_by, del_dt, del_req_dt, prot_id) VALUES($1, $2, $3, $4, $5, $6)`;
+//                 const deleteDfId = helper.createUniqueID();
+//                 const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+//                 const deletedValues = [
+//                   deleteDfId,
+//                   dataFlow.data_flow_nm,
+//                   user.usr_id,
+//                   currentTime,
+//                   currentTime,
+//                   "",
+//                 ];
+//                 await DB.executeQuery(insertDeletedQuery, deletedValues)
+//                   .then(async (response) => {
+//                     result = true;
+//                   })
+//                   .catch((err) => {
+//                     result = false;
+//                   });
+//                 result = "deleted";
+//               } else {
+//                 result = "not_found";
+//               }
+//             })
+//             .catch((err) => {
+//               result = false;
+//             });
+//         })
+//         .catch((err) => {
+//           result = false;
+//         });
+//     })
+//     .catch((err) => {
+//       result = false;
+//     });
+//   return result;
+// };
 
-const addDeleteTempLog = async (dataflowId, user) => {
-  const insertTempQuery = `INSERT INTO ${schemaName}.temp_json_log(temp_json_log_id, dataflowid, trans_typ, trans_stat, no_of_retry_attempted, del_flg, created_by, created_on, updated_by, updated_on) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-  const tempId = helper.createUniqueID();
-  let result;
-  const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-  const values = [
-    tempId,
-    dataflowId,
-    "DELETE",
-    "FAILURE",
-    1,
-    "N",
-    user.usr_id,
-    currentTime,
-    user.usr_id,
-    currentTime,
-  ];
-  await DB.executeQuery(insertTempQuery, values)
-    .then(async (response) => {
-      result = true;
-    })
-    .catch((err) => {
-      result = false;
-    });
-  return result;
-};
+// const addDeleteTempLog = async (dataflowId, user) => {
+//   const insertTempQuery = `INSERT INTO ${schemaName}.temp_json_log(temp_json_log_id, dataflowid, trans_typ, trans_stat, no_of_retry_attempted, del_flg, created_by, created_on, updated_by, updated_on) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+//   const tempId = helper.createUniqueID();
+//   let result;
+//   const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+//   const values = [
+//     tempId,
+//     dataflowId,
+//     "DELETE",
+//     "FAILURE",
+//     1,
+//     "N",
+//     user.usr_id,
+//     currentTime,
+//     user.usr_id,
+//     currentTime,
+//   ];
+//   await DB.executeQuery(insertTempQuery, values)
+//     .then(async (response) => {
+//       result = true;
+//     })
+//     .catch((err) => {
+//       result = false;
+//     });
+//   return result;
+// };
 
-exports.cronHardDelete = async () => {
-  DB.executeQuery(`SELECT * FROM ${schemaName}.temp_json_log`).then(
-    async (response) => {
-      const logs = response.rows || [];
-      if (logs.length) {
-        logs.forEach((log) => {
-          const { dataflowid: dataflowId, created_by: user_id } = log;
-          DB.executeQuery(
-            `SELECT * FROM ${schemaName}.user where usr_id = $1`,
-            [user_id]
-          ).then(async (response) => {
-            if (response.rows && response.rows.length) {
-              const user = response.rows[0];
-              const deleted = await hardDeleteTrigger(dataflowId, user);
-              if (deleted) {
-                return true;
-              }
-              return false;
-            }
-          });
-        });
-      }
-    }
-  );
-};
+// exports.cronHardDelete = async () => {
+//   DB.executeQuery(`SELECT * FROM ${schemaName}.temp_json_log`).then(
+//     async (response) => {
+//       const logs = response.rows || [];
+//       if (logs.length) {
+//         logs.forEach((log) => {
+//           const { dataflowid: dataflowId, created_by: user_id } = log;
+//           DB.executeQuery(
+//             `SELECT * FROM ${schemaName}.user where usr_id = $1`,
+//             [user_id]
+//           ).then(async (response) => {
+//             if (response.rows && response.rows.length) {
+//               const user = response.rows[0];
+//               const deleted = await hardDeleteTrigger(dataflowId, user);
+//               if (deleted) {
+//                 return true;
+//               }
+//               return false;
+//             }
+//           });
+//         });
+//       }
+//     }
+//   );
+// };
 
-exports.hardDelete = async (req, res) => {
-  try {
-    const { dataFlowId, userId } = req.body;
-    DB.executeQuery(`SELECT * FROM ${schemaName}.user where usr_id = $1`, [
-      userId,
-    ]).then(async (response) => {
-      if (response.rows && response.rows.length) {
-        const user = response.rows[0];
-        const deleted = await hardDeleteTrigger(dataFlowId, user);
-        if (deleted == "deleted") {
-          return apiResponse.successResponseWithData(
-            res,
-            "Deleted successfully",
-            {
-              success: true,
-            }
-          );
-        } else if (deleted == "not_found") {
-          return apiResponse.successResponseWithData(
-            res,
-            "Dataflow not found",
-            {}
-          );
-        } else {
-          const inserted = await addDeleteTempLog(dataFlowId, user);
-          if (inserted) {
-            return apiResponse.successResponseWithData(
-              res,
-              "Deleted is in queue. System will delete it automatically after sometime.",
-              {
-                success: false,
-              }
-            );
-          } else {
-            return apiResponse.successResponseWithData(
-              res,
-              "Something wrong. Please try again",
-              {}
-            );
-          }
-        }
-      } else {
-        return apiResponse.ErrorResponse(res, "User not found");
-      }
-    });
-  } catch (err) {
-    return apiResponse.ErrorResponse(res, err);
-  }
-};
+// exports.hardDelete = async (req, res) => {
+//   try {
+//     const { dataFlowId, userId } = req.body;
+//     DB.executeQuery(`SELECT * FROM ${schemaName}.user where usr_id = $1`, [
+//       userId,
+//     ]).then(async (response) => {
+//       if (response.rows && response.rows.length) {
+//         const user = response.rows[0];
+//         const deleted = await hardDeleteTrigger(dataFlowId, user);
+//         if (deleted == "deleted") {
+//           return apiResponse.successResponseWithData(
+//             res,
+//             "Deleted successfully",
+//             {
+//               success: true,
+//             }
+//           );
+//         } else if (deleted == "not_found") {
+//           return apiResponse.successResponseWithData(
+//             res,
+//             "Dataflow not found",
+//             {}
+//           );
+//         } else {
+//           const inserted = await addDeleteTempLog(dataFlowId, user);
+//           if (inserted) {
+//             return apiResponse.successResponseWithData(
+//               res,
+//               "Deleted is in queue. System will delete it automatically after sometime.",
+//               {
+//                 success: false,
+//               }
+//             );
+//           } else {
+//             return apiResponse.successResponseWithData(
+//               res,
+//               "Something wrong. Please try again",
+//               {}
+//             );
+//           }
+//         }
+//       } else {
+//         return apiResponse.ErrorResponse(res, "User not found");
+//       }
+//     });
+//   } catch (err) {
+//     return apiResponse.ErrorResponse(res, err);
+//   }
+// };
 
 exports.activateDataFlow = async (req, res) => {
   try {
@@ -1044,38 +1043,40 @@ exports.activateDataFlow = async (req, res) => {
     inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid  
     inner join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1 and d2.active=1`;
     const $q0 = await DB.executeQuery(q0, [dataFlowId]);
-    const q1 = `SELECT dataflowid, "version" FROM ${schemaName}.dataflow_version where dataflowid = $1 order by version DESC limit 1`;
-    const $q1 = await DB.executeQuery(q1, [dataFlowId]);
-    const newVersion = parseInt($q1.rows.length ? $q1.rows[0]?.version : 1) + 1;
 
     if ($q0.rows.map((e) => e.active).includes(1)) {
       const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1 returning *`;
-      const q3 = `INSERT INTO ${schemaName}.dataflow_audit_log
-      (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
-      VALUES($1, $2, Now(), $3, $4, $5, $6)`;
-      const q4 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on, config_json)
-      VALUES($1, $2, $3, Now(), $4)`;
-      const $q2 = await DB.executeQuery(q2, [dataFlowId]);
-      const $q3 = await DB.executeQuery(q3, [
-        dataFlowId,
-        newVersion,
-        userId,
-        "active",
-        0,
-        1,
-      ]);
+      const updatedDF = await DB.executeQuery(q2, [dataFlowId]);
 
-      const $q4 = await DB.executeQuery(q4, [
-        dataFlowId,
-        newVersion,
+      if (!updatedDF?.rowCount) {
+        return apiResponse.ErrorResponse(res, "Something went wrong on update");
+      }
+      const dataflowObj = updatedDF.rows[0];
+      const existDf = { active: 0 };
+      const diffObj = { active: 1 };
+
+      const updatedLogs = await addDataflowHistory({
+        dataflowId: dataFlowId,
+        externalSystemName: "CDI",
         userId,
-        $q2.rows[0] || null,
-      ]);
+        config_json: dataflowObj,
+        diffObj,
+        existDf,
+      });
+
+      if (updatedLogs) {
+        return apiResponse.successResponseWithData(
+          res,
+          "Dataflow config updated successfully.",
+          { ...dataflowObj, version: updatedLogs }
+        );
+      }
 
       return apiResponse.successResponseWithData(res, "Operation success", {
         success: true,
       });
     }
+
     return apiResponse.validationErrorWithData(res, "Dataflow Having Issue", {
       success: false,
     });
@@ -1090,33 +1091,32 @@ exports.inActivateDataFlow = async (req, res) => {
     const { dataFlowId, userId } = req.body;
     Logger.info({ message: "inActivateDataFlow" });
 
-    const q0 = `SELECT dataflowid, "version" FROM ${schemaName}.dataflow_version where dataflowid = $1 order by version DESC limit 1`;
-    const $q0 = await DB.executeQuery(q0, [dataFlowId]);
-    const newVersion = parseInt($q0.rows.length ? $q0.rows[0]?.version : 1) + 1;
-
     const q1 = `UPDATE ${schemaName}.dataflow set active=0 WHERE dataflowid=$1 returning *`;
-    const q2 = `INSERT INTO ${schemaName}.dataflow_audit_log
-    (dataflowid, audit_vers, audit_updt_dt, audit_updt_by, "attribute", old_val, new_val)
-    VALUES($1, $2, Now(), $3, $4, $5, $6)`;
-    const q3 = `INSERT INTO ${schemaName}.dataflow_version (dataflowid, "version",  created_by, created_on, config_json)
-    VALUES($1, $2, $3, Now(), $4)`;
+    const updatedDF = await DB.executeQuery(q1, [dataFlowId]);
 
-    const $q1 = await DB.executeQuery(q1, [dataFlowId]);
-    const $q2 = await DB.executeQuery(q2, [
-      dataFlowId,
-      newVersion,
-      userId,
-      "active",
-      1,
-      0,
-    ]);
+    if (!updatedDF?.rowCount) {
+      return apiResponse.ErrorResponse(res, "Something went wrong on update");
+    }
+    const dataflowObj = updatedDF.rows[0];
+    const existDf = { active: 1 };
+    const diffObj = { active: 0 };
 
-    const $q3 = await DB.executeQuery(q3, [
-      dataFlowId,
-      newVersion,
+    const updatedLogs = await addDataflowHistory({
+      dataflowId: dataFlowId,
+      externalSystemName: "CDI",
       userId,
-      $q1.rows[0] || null,
-    ]);
+      config_json: dataflowObj,
+      diffObj,
+      existDf,
+    });
+
+    if (updatedLogs) {
+      return apiResponse.successResponseWithData(
+        res,
+        "Dataflow config updated successfully.",
+        { ...dataflowObj, version: updatedLogs }
+      );
+    }
 
     return apiResponse.successResponseWithData(res, "Operation success", {
       success: true,
@@ -1134,6 +1134,12 @@ exports.syncDataFlow = async (req, res) => {
     (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
     VALUES($1, 'SYNC', $2, 'QUEUE', NOW(),NOW(), '', $3, '', 1, '', 0)`;
     await DB.executeQuery(q, [dataFlowId, userId, version]);
+
+    await DB.executeQuery(
+      `UPDATE ${schemaName}.dataflow SET updt_tm=NOW(), configured=0 WHERE dataflowid=$1`,
+      [dataFlowId]
+    );
+
     return apiResponse.successResponse(
       res,
       "Sync Pipeline configs successfully written to Kafka",
@@ -1408,7 +1414,6 @@ exports.updateDataflowConfig = async (req, res) => {
       externalSystemName,
       firstFileDate,
       locationName,
-      locationType,
       protocolNumberStandard,
       serviceOwners,
       testFlag,
@@ -1425,7 +1430,7 @@ exports.updateDataflowConfig = async (req, res) => {
       userId
     ) {
       const { rows: existDfRows } = await DB.executeQuery(
-        `SELECT vend_id as "vendorID", src_loc_id as "locationName", testflag as "testFlag", type as "dataStructure", description, connectiontype as "connectionType", serv_ownr as "serviceOwners" from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}';`
+        `SELECT vend_id as "vendorID", src_loc_id as "locationName", testflag as "testFlag", type as "dataStructure", description, connectiontype as "connectionType", serv_ownr as "serviceOwners", expt_fst_prd_dt as "firstFileDate" from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}';`
       );
       if (!existDfRows?.length) {
         return apiResponse.ErrorResponse(res, "Dataflow doesn't exist");
@@ -1433,12 +1438,12 @@ exports.updateDataflowConfig = async (req, res) => {
       const existDf = existDfRows[0];
       const dFTimestamp = helper.getCurrentTime();
       if (testFlag) testFlag = helper.stringToBoolean(testFlag) ? 1 : 0;
-      if (serviceOwners)
-        serviceOwners =
-          serviceOwners && Array.isArray(serviceOwners)
-            ? serviceOwners.join()
-            : "";
+      serviceOwners =
+        serviceOwners && Array.isArray(serviceOwners)
+          ? serviceOwners.join()
+          : "";
       const dFBody = [
+        dataflowId,
         vendorID,
         dataStructure,
         description,
@@ -1448,11 +1453,11 @@ exports.updateDataflowConfig = async (req, res) => {
         externalSystemName,
         dFTimestamp,
         serviceOwners,
-        dataflowId,
+        moment(firstFileDate).isValid() ? firstFileDate : null,
       ];
       // update dataflow schema into db
       const updatedDF = await DB.executeQuery(
-        `update ${schemaName}.dataflow set vend_id=$1, type=$2, description=$3, src_loc_id=$4, testflag=$5, connectiontype=$6, externalsystemname=$7, updt_tm=$8, serv_ownr=$9 WHERE dataflowid=$10 returning *;`,
+        `update ${schemaName}.dataflow set vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, externalsystemname=$8, updt_tm=$9, serv_ownr=$10, expt_fst_prd_dt=$11 WHERE dataflowid=$1 returning *;`,
         dFBody
       );
       if (!updatedDF?.rowCount) {
@@ -1468,6 +1473,9 @@ exports.updateDataflowConfig = async (req, res) => {
         connectionType,
         serviceOwners,
       };
+      if (!moment(firstFileDate).isSame(existDf.firstFileDate, "day")) {
+        comparisionObj.firstFileDate = firstFileDate;
+      }
       const diffObj = helper.getdiffKeys(comparisionObj, existDf);
       const updatedLogs = await addDataflowHistory({
         dataflowId,

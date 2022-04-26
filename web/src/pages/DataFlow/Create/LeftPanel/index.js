@@ -84,7 +84,7 @@ const LeftPanel = ({ protId, packages, setFormType, myform }) => {
   const messageContext = useContext(MessageContext);
   let dataflowName = "";
   const viewAuditLog = () => {
-    history.push("/dashboard/audit-logs");
+    history.push(`/dashboard/audit-logs/${dfId}`);
   };
   // const getPackages = (query = "") => {
   //   if (dfId) {

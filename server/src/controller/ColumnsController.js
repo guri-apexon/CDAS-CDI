@@ -119,11 +119,13 @@ exports.updateColumns = async (req, res) => {
 
     const updateQuery = `UPDATE ${schemaName}.columndefinition
     SET "name"=$1, "datatype"=$2, primarykey=$3, "required"=$4, charactermin=$5, charactermax=$6, "position"=$7, "format"=$8, lov=$9, "unique"=$10, "variable"=$11, updt_tm=Now() WHERE datasetid=$12 AND columnid=$13`;
-    const selectQuery = `SELECT "name", datasetid, columnid, "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable FROM ${schemaName}.columndefinition where columnid=$1`;
+    const selectQuery = `SELECT "name", "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable FROM ${schemaName}.columndefinition where columnid=$1`;
 
     if (values && values.length > 0) {
       for (let value of values) {
         const columnid = value.dbColumnId.trim();
+        const tempData = await DB.executeQuery(selectQuery, [columnid]);
+        const oldData = tempData?.rows[0];
 
         const body = [
           value.columnName.trim() || null,
@@ -144,8 +146,6 @@ exports.updateColumns = async (req, res) => {
         await DB.executeQuery(updateQuery, body);
 
         const requestData = {
-          datasetid: dsId,
-          columnid: columnid,
           variable: value.variableLabel.trim() || null,
           name: value.columnName.trim() || null,
           datatype: value.dataType.trim() || null,
@@ -154,18 +154,12 @@ exports.updateColumns = async (req, res) => {
           unique: value.unique == "Yes" ? 1 : 0,
           charactermin: value.minLength || 0,
           charactermax: value.maxLength || 0,
-          position: value.position.trim() || 0,
+          position: value.position || 0,
           format: value.format.trim() || null,
           lov: value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
         };
 
         const config_json = JSON.stringify(requestData);
-
-        const tempData = await DB.executeQuery(selectQuery, [
-          requestData.columnid,
-        ]);
-
-        const oldData = tempData?.rows[0];
 
         for (const key in requestData) {
           if (requestData[key] != oldData[key]) {

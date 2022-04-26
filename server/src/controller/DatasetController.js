@@ -121,9 +121,14 @@ exports.saveDatasetData = async (req, res) => {
 
     if (values.filePwd) {
       passwordStatus = "Yes";
-      await helper.writeVaultData(`${dfId}/${dpId}/${datasetId}`, {
-        password: values.filePwd,
-      });
+      try {
+        await helper.writeVaultData(`${dfId}/${dpId}/${datasetId}`, {
+          password: values.filePwd,
+        });
+      } catch (error) {
+        Logger.error(error);
+        return apiResponse.ErrorResponse(res, "Something Wrong with Vault");
+      }
     }
 
     Logger.info({ message: "create Dataset" });
@@ -315,6 +320,7 @@ exports.updateDatasetData = async (req, res) => {
     if (values.locationType.toLowerCase() === "jdbc") {
       return updateSQLDataset(res, values, dfId, userId, dpId, datasetid);
     }
+    const incremental = values.loadType === "Incremental" ? "Y" : "N";
 
     var requestData = {
       datasetid: datasetid,
@@ -327,38 +333,20 @@ exports.updateDatasetData = async (req, res) => {
       quote: values.quote || null,
       headerrownumber: values.headerRowNumber || 0,
       footerrownumber: values.footerRowNumber || 0,
-      active: true ? 1 : 0,
-      naming_convention: values.fileNamingConvention || null,
+      active: helper.stringToBoolean(values.active) ? 1 : 0,
+      name: values.fileNamingConvention || null,
       path: values.folderPath || null,
       datakindid: values.clinicalDataType[0],
       data_freq: values.transferFrequency || null,
       ovrd_stale_alert: values.overrideStaleAlert || null,
       rowdecreaseallowed: values.rowDecreaseAllowed || 0,
-      incremental: "Incremental" ? "Y" : "N",
+      incremental,
     };
 
     const jsonData = JSON.stringify(requestData);
 
     const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
     const oldData = tempData[0];
-
-    for (const key in requestData) {
-      if (`${requestData[key]}` != oldData[key]) {
-        if (oldData[key] != null) {
-          const historyVersion = await CommonController.addDatasetHistory(
-            dfId,
-            userId,
-            dpId,
-            datasetid,
-            jsonData,
-            key,
-            oldData[key],
-            `${requestData[key]}`
-          );
-          if (!historyVersion) throw new Error("History not updated");
-        }
-      }
-    }
 
     let passwordStatus = "No";
 
@@ -377,7 +365,7 @@ exports.updateDatasetData = async (req, res) => {
       values.quote || null,
       values.headerRowNumber || 0,
       values.footerRowNumber || 0,
-      values.active === true ? 1 : 0,
+      helper.stringToBoolean(values.active) ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
       values.clinicalDataType[0],
@@ -385,7 +373,7 @@ exports.updateDatasetData = async (req, res) => {
       values.overrideStaleAlert || null,
       values.rowDecreaseAllowed || 0,
       new Date(),
-      values.loadType == "Incremental" ? "Y" : "N",
+      incremental,
       passwordStatus,
     ];
 
@@ -393,6 +381,22 @@ exports.updateDatasetData = async (req, res) => {
       ...body,
       values.datasetid,
     ]);
+    for (const key in requestData) {
+      if (requestData[key] != oldData[key]) {
+        console.log("requestData", requestData[key], oldData[key]);
+        const historyVersion = await CommonController.addDatasetHistory(
+          dfId,
+          userId,
+          dpId,
+          datasetid,
+          jsonData,
+          key,
+          oldData[key] || null,
+          requestData[key]
+        );
+        if (!historyVersion) throw new Error("History not updated");
+      }
+    }
 
     return apiResponse.successResponseWithData(res, "Operation success", inset);
   } catch (err) {

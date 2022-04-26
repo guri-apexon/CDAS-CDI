@@ -55,22 +55,18 @@ exports.insertValidation = (req) => {
       err: " External Id  is required and data type should be string or Number ",
     });
   }
-  if (
-    ConnectionType !== null &&
-    ConnectionType !== "" &&
-    ConnectionType !== undefined &&
-    typeof ConnectionType === "string"
-  ) {
+  if (!ConnectionType) {
+    validate.push({
+      err: " ConnectionType is required and data type should be string ",
+    });
+  } else {
     if (!helper.isConnectionType(ConnectionType)) {
       validate.push({
         err: " ConnectionType's Supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server ",
       });
     }
-  } else {
-    validate.push({
-      err: " ConnectionType is required and data type should be string ",
-    });
   }
+
   if (description.length <= 30) {
   } else {
     validate.push({
@@ -667,7 +663,7 @@ exports.packageLevelInsert = async (
         "",
         "",
         externalSysName,
-        new Date(),
+        helper.getCurrentTime(),
       ]
     );
 
@@ -904,7 +900,7 @@ exports.packageLevelInsert = async (
           obj.tableName || null,
           obj.externalID || null,
           dsPasswordStatus || "No",
-          new Date(),
+          helper.getCurrentTime(),
           obj.delimiter || "",
           helper.convertEscapeChar(obj.escapeCode || obj.escapeCharacter) || "",
           obj.quote || "",
@@ -940,7 +936,7 @@ exports.packageLevelInsert = async (
             "",
             "",
             externalSysName,
-            new Date(),
+            helper.getCurrentTime(),
           ]
         );
 
@@ -1067,7 +1063,7 @@ exports.packageLevelInsert = async (
               el.lov || el.values || null,
               helper.stringToBoolean(el.unique) ? 1 : 0,
               el.requiredfield || null,
-              new Date(),
+              helper.getCurrentTime(),
             ];
             await DB.executeQuery(
               `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
@@ -1096,7 +1092,7 @@ exports.packageLevelInsert = async (
                 "",
                 "",
                 externalSysName,
-                new Date(),
+                helper.getCurrentTime(),
               ]
             );
           }
@@ -1354,7 +1350,7 @@ exports.datasetLevelInsert = async (
       obj.tableName || null,
       obj.externalID || null,
       dsPasswordStatus || "No",
-      new Date(),
+      helper.getCurrentTime(),
       obj.delimiter || "",
       helper.convertEscapeChar(obj.escapeCode || obj.escapeCharacter) || "",
       obj.quote || "",
@@ -1388,7 +1384,7 @@ exports.datasetLevelInsert = async (
         "",
         "",
         externalSysName,
-        new Date(),
+        helper.getCurrentTime(),
       ]
     );
 
@@ -1506,7 +1502,7 @@ exports.datasetLevelInsert = async (
           el.lov || el.values || null,
           helper.stringToBoolean(el.unique) ? 1 : 0,
           el.requiredfield || null,
-          new Date(),
+          helper.getCurrentTime(),
         ];
         await DB.executeQuery(
           `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
@@ -1535,7 +1531,7 @@ exports.datasetLevelInsert = async (
             "",
             "",
             externalSysName,
-            new Date(),
+            helper.getCurrentTime(),
           ]
         );
       }
@@ -1577,7 +1573,8 @@ exports.dataflowUpdate = async (
   externalID,
   DFId,
   version,
-  externalSysName
+  externalSysName,
+  conf_data
 ) => {
   try {
     let ts = new Date().toLocaleString();
@@ -1653,7 +1650,7 @@ exports.dataflowUpdate = async (
     if (data.exptDtOfFirstProdFile) {
       updateQueryDF += `,expt_fst_prd_dt='${data.exptDtOfFirstProdFile}'`;
     }
-    if (typeof data.testFlag != undefined) {
+    if (typeof data.testFlag != undefined && data.testFlag === null) {
       updateQueryDF += `,testflag=${
         helper.stringToBoolean(data.testFlag) ? 1 : 0
       }`;
@@ -1685,6 +1682,20 @@ exports.dataflowUpdate = async (
 
     // console.log("dada", diffObj);
 
+    // Version Table enrty
+    let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
+        ( dataflowid, "version", config_json, created_by, created_on)
+        VALUES($1,$2,$3,$4,$5);`;
+    let aduit_version_body = [
+      DFId,
+      version,
+      JSON.stringify(conf_data),
+      externalSysName,
+      new Date(),
+    ];
+    await DB.executeQuery(dataflow_version_query, aduit_version_body);
+
+    // Audit Log Table enrty
     for (let key of Object.keys(diffObj)) {
       let oldData = diffObj[key];
       let newData = dataflowObj[key];
@@ -1702,7 +1713,7 @@ exports.dataflowUpdate = async (
           oldData,
           newData,
           externalSysName,
-          new Date(),
+          helper.getCurrentTime(),
         ]
       );
     }
@@ -1871,18 +1882,22 @@ exports.packageUpdate = async (
           oldData,
           newData,
           externalSysName,
-          new Date(),
+          helper.getCurrentTime(),
         ]
       );
     }
 
-    newObj.externalId = externalID;
-    newObj.datapackageid = DPId;
-    newObj.action = "Data package update successfully.";
-    newObj.timestamp = ts;
-    data_packages.push(newObj);
+    if (Object.keys(diffObj).length === 0) {
+      return { sucRes: data_packages, errRes: errorPackage };
+    } else {
+      newObj.externalId = externalID;
+      newObj.datapackageid = DPId;
+      newObj.action = "Data package update successfully.";
+      newObj.timestamp = ts;
+      data_packages.push(newObj);
 
-    return { sucRes: data_packages, errRes: errorPackage };
+      return { sucRes: data_packages, errRes: errorPackage };
+    }
   } catch (e) {
     console.log(e);
     Logger.error("catch :Data package update");
@@ -2243,18 +2258,22 @@ exports.datasetUpdate = async (
           oldData,
           newData,
           externalSysName,
-          new Date(),
+          helper.getCurrentTime(),
         ]
       );
     }
 
-    newObj.externalId = externalID;
-    newObj.dataSetid = DSId;
-    newObj.action = "Data Set update successfully.";
-    newObj.timestamp = ts;
-    dataset_update.push(newObj);
+    if (Object.keys(diffObj).length === 0) {
+      return { sucRes: dataset_update, errRes: errorDataset };
+    } else {
+      newObj.externalId = externalID;
+      newObj.dataSetid = DSId;
+      newObj.action = "Data Set update successfully.";
+      newObj.timestamp = ts;
+      dataset_update.push(newObj);
 
-    return { sucRes: dataset_update, errRes: errorDataset };
+      return { sucRes: dataset_update, errRes: errorDataset };
+    }
   } catch (e) {
     console.log(e);
     Logger.error("catch :Data set update");
