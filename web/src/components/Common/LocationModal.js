@@ -23,6 +23,7 @@ import {
   dataStruct,
   extSysName,
   generateConnectionURL,
+  generatedBName,
 } from "../../utils";
 import {
   ReduxFormSelect,
@@ -371,7 +372,7 @@ const LocationModal = (props) => {
           endPoint: "/checkconnection/jdbc",
           databaseName: dbName || "",
           userId: "",
-          database: locationType.toUpperCase(),
+          database: generatedBName(locationType),
           port: port ? port : "",
         };
       }
