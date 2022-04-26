@@ -97,17 +97,22 @@ exports.validation = (data) => {
     if (val.type == "boolean") {
       val.value = stringToBoolean(val.value);
     }
+
     if (
       val.value !== null &&
       val.value !== "" &&
       val.value !== undefined &&
       typeof val.value === val.type
     ) {
+      if (val.maxLength && val.value.length > val.maxLength) {
+        msg.push({
+          err: ` ${val.key} should be less than ${val.maxLength} characters  `,
+        });
+      }
       // console.log(val.key);
     } else {
       msg.push({
-        text: ` ${val.key} is required and data type should be ${val.type} `,
-        status: false,
+        err: ` ${val.key} is required and data type should be ${val.type} `,
       });
     }
   });
@@ -116,6 +121,7 @@ exports.validation = (data) => {
 };
 
 exports.getdiffKeys = (newObj, oldObj) => {
+  // console.log("line 131");
   if (
     typeof newObj === "object" &&
     !Array.isArray(newObj) &&
@@ -127,4 +133,34 @@ exports.getdiffKeys = (newObj, oldObj) => {
     return _.pickBy(newObj, (v, k) => !_.isEqual(oldObj[k], v));
   }
   return {};
+};
+
+exports.isSftp = (str) => {
+  return ["SFTP", "FTPS"].includes(str.toUpperCase());
+};
+
+exports.isPackageType = (str) => {
+  return ["7Z", "ZIP", "RAR", "SAS"].includes(str.toUpperCase());
+};
+
+exports.isConnectionType = (str) => {
+  return [
+    "SFTP",
+    "FTPS",
+    "ORACLE",
+    "HIVE CDP",
+    "HIVE CDH",
+    "IMPALA",
+    "MYSQL",
+    "POSTGRESQL",
+    "SQL SERVER",
+  ].includes(str.toUpperCase());
+};
+
+exports.createCustomSql = (clname, tableName, condition) => {
+  sqlQuery = `Select ${clname.join(", ")} from ${tableName} ${
+    condition ? condition : "where 1=1"
+  }`;
+
+  return sqlQuery;
 };
