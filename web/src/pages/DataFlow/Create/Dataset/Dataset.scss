@@ -98,13 +98,15 @@
 .lov-modal {
   width: 340px;
   max-height: 600px;
-  overflow: auto;
   .lov-quote {
     color: "#595959";
     font-size: 13px;
     line-height: 14px;
   }
   .lov-edit-mode {
+    textarea {
+      max-width: 300px;
+    }
   }
   .lov-view-mode {
     height: 272px;
