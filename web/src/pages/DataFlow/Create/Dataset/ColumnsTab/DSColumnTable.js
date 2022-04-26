@@ -15,6 +15,7 @@ import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
+import { checkMinMaxWithText } from "../../../../../components/FormComponents/validators";
 
 const maxSize = 150000;
 
@@ -515,7 +516,13 @@ export default function DSColumnTable({
       locationType,
       headerValue
     );
-    if (editedRows.map((e) => e.isHavingColumnName).every((e) => e === true)) {
+    if (
+      editedRows
+        .map(({ isHavingColumnName, minLength, maxLength }) =>
+          checkMinMaxWithText(isHavingColumnName, minLength, maxLength)
+        )
+        .every((e) => e === true)
+    ) {
       setDisableSaveAll(false);
     } else {
       setDisableSaveAll(true);

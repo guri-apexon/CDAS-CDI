@@ -170,3 +170,13 @@ export const removeUndefined = (arr) =>
       res[key] = arr[key];
       return res;
     }, {});
+
+export const checkMinMaxWithText = (
+  isHavingColumnName,
+  minLength,
+  maxLength
+) => {
+  const min = Number(minLength);
+  const max = Number(maxLength);
+  return min && max ? isHavingColumnName && min < max : isHavingColumnName;
+};
