@@ -718,17 +718,7 @@ export default function DSColumnTable({
           }
 
           if (row.isInitLoad || row.isFormatLoad) {
-            if (
-              key === "primaryKey" ||
-              key === "unique" ||
-              key === "required" ||
-              key === "minLength" ||
-              key === "maxLength" ||
-              key === "values" ||
-              key === "format" ||
-              key === "dataType" ||
-              key === "columnName"
-            ) {
+            if (key !== "variableLabel") {
               return {
                 ...row,
                 [key]: value,
