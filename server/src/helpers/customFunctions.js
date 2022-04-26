@@ -97,11 +97,7 @@ exports.validation = (data) => {
     if (val.type == "boolean") {
       val.value = stringToBoolean(val.value);
     }
-    if (val.key === "columncount") {
-      if (val.value === 0) {
-        msg.push({ err: ` Column Count should be greater than 0  ` });
-      }
-    }
+
     if (
       val.value !== null &&
       val.value !== "" &&
