@@ -16,6 +16,7 @@ import {
   GET_PINNED_LIST_SUCCESS,
   GET_PINNED_LIST_FAILURE,
   SELECTED_DATAFLOW,
+  UPDATE_HEADER_COUNT,
 } from "../../constants";
 
 export const initialState = {
@@ -25,15 +26,19 @@ export const initialState = {
   ingestionData: {},
   flowData: [],
   selectedCard: {
-    phase: "",
-    projectcode: "",
     prot_id: "",
     protocolnumber: "",
     protocolnumberstandard: "",
-    protocolstatus: "",
     sponsorname: "",
-    vCount: "",
+    phase: "",
+    protocolstatus: "",
+    projectcode: "",
+    ingestionCount: "",
+    priorityCount: "",
+    staleFilesCount: "",
     dfCount: "",
+    vCount: "",
+    dpCount: "",
     dsCount: "",
   },
   dfId: "",
@@ -99,6 +104,29 @@ const DashboardReducer = (state = initialState, action) =>
 
       case GET_DATASET_INGESTION_SUMMARY_FAILURE:
         newState.summaryLoading = false;
+        break;
+
+      case UPDATE_HEADER_COUNT:
+        newState.selectedCard = {
+          ...state?.selectedCard,
+          dfCount: action.dfCount,
+          dsCount: action.dsCount,
+        };
+        newState.userStudies = state?.userStudies?.map((e) => {
+          let newObj = {};
+          if (e.prot_id === state?.selectedCard?.prot_id) {
+            newObj = {
+              ...e,
+              dfCount: action.dfCount,
+              dsCount: action.dsCount,
+            };
+          } else {
+            newObj = {
+              ...e,
+            };
+          }
+          return newObj;
+        });
         break;
 
       case SELECTED_DATAFLOW:

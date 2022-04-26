@@ -15,6 +15,8 @@ import {
   UPDATE_COLUMNS_DATA,
   UPDATE_DS_STATUS,
   GET_LOCATION_DETAIL,
+  STORE_DATASET_COLUMNS_SUCCESS,
+  STORE_DATASET_COLUMNS_FAILURE,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -153,4 +155,14 @@ export const getLocationDetails = (id) => {
     type: GET_LOCATION_DETAIL,
     id,
   };
+};
+export const columnsCreated = (resp) => {
+  return {
+    type: STORE_DATASET_COLUMNS_SUCCESS,
+    datasetColumns: resp.data,
+    nQuery: resp.nQuery,
+  };
+};
+export const columnsCreatedFailure = (errText) => {
+  return { type: STORE_DATASET_COLUMNS_FAILURE, message: errText };
 };

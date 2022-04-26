@@ -30,8 +30,8 @@ const AuditLog = () => {
   const auditData = auditLogs.data;
   const dataSetCount = dashboard?.selectedDataFlow?.dataSets;
   const dataflowName = dashboard?.selectedDataFlow?.dataFlowName || "";
-  const [sortedColumnValue, setSortedColumnValue] = useState("user_name");
-  const [sortOrderValue, setSortOrderValue] = useState("asc");
+  const [sortedColumnValue, setSortedColumnValue] = useState("log_version");
+  const [sortOrderValue, setSortOrderValue] = useState("dsc");
   const [inlineFilters, setInlineFilters] = useState([]);
 
   const [tableRows, setTableRows] = useState([...auditData]);
@@ -161,7 +161,7 @@ const AuditLog = () => {
         title="Data Flow Audit Log"
         columns={tableColumns}
         rows={tableRows}
-        initialSortedColumn="user_name"
+        initialSortedColumn="log_version"
         sortedColumn={sortedColumnValue}
         sortOrder={sortOrderValue}
         rowsPerPageOptions={[10, 20, 50, "All"]}

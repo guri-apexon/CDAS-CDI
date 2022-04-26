@@ -36,12 +36,12 @@ exports.saveDatasetColumns = async (req, res) => {
       req.body;
 
     if (isUpdateQuery) {
-      const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=Now() where datasetid=$1`;
-      await DB.executeQuery(update, [dsId, nQuery]);
+      const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=$3 where datasetid=$1`;
+      await DB.executeQuery(update, [dsId, nQuery, curDate]);
     }
 
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, "name", "datatype", primarykey, "required", "unique", charactermin, charactermax, "position", "format", lov, "variable", del_flg, insrt_tm, updt_tm)
-     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, Now(), Now()) RETURNING *;`;
+     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $15) RETURNING *;`;
 
     Logger.info({ message: "storeDatasetColumns" });
 
@@ -65,10 +65,14 @@ exports.saveDatasetColumns = async (req, res) => {
           value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
           value.variableLabel.trim() || null,
           0,
+          curDate,
         ];
 
         const inserted = await DB.executeQuery(insertQuery, body);
-        datasetColumns.push(inserted.rows[0]);
+        datasetColumns.push({
+          ...inserted.rows[0],
+          frontendUniqueRef: value.uniqueId,
+        });
 
         const jsonObj = { datasetid: dsId, columnId, ...value };
         const config_json = JSON.stringify(jsonObj);
@@ -111,14 +115,14 @@ exports.updateColumns = async (req, res) => {
       req.body;
 
     if (isUpdateQuery) {
-      const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=Now() where datasetid=$1`;
-      await DB.executeQuery(update, [dsId, nQuery]);
+      const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=$3 where datasetid=$1`;
+      await DB.executeQuery(update, [dsId, nQuery, curDate]);
     }
 
     Logger.info({ message: "update set columns" });
 
     const updateQuery = `UPDATE ${schemaName}.columndefinition
-    SET "name"=$1, "datatype"=$2, primarykey=$3, "required"=$4, charactermin=$5, charactermax=$6, "position"=$7, "format"=$8, lov=$9, "unique"=$10, "variable"=$11, updt_tm=Now() WHERE datasetid=$12 AND columnid=$13`;
+    SET "name"=$1, "datatype"=$2, primarykey=$3, "required"=$4, charactermin=$5, charactermax=$6, "position"=$7, "format"=$8, lov=$9, "unique"=$10, "variable"=$11, updt_tm=$12 WHERE datasetid=$13 AND columnid=$14`;
     const selectQuery = `SELECT "name", "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable FROM ${schemaName}.columndefinition where columnid=$1`;
 
     if (values && values.length > 0) {
@@ -139,6 +143,7 @@ exports.updateColumns = async (req, res) => {
           value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
           value.unique === "Yes" ? 1 : 0,
           value.variableLabel.trim() || null,
+          curDate,
           dsId,
           columnid,
         ];
@@ -210,8 +215,8 @@ exports.deleteColumns = async (req, res) => {
     const updateQuery = `update ${schemaName}.columndefinition set del_flg = 1 where columnid = $1`;
 
     if (isUpdateQuery) {
-      const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=Now() where datasetid=$1`;
-      await DB.executeQuery(update, [dsId, nQuery]);
+      const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=$3 where datasetid=$1`;
+      await DB.executeQuery(update, [dsId, nQuery, curDate]);
     }
 
     DB.executeQuery(updateQuery, [columnId]).then(async (response) => {

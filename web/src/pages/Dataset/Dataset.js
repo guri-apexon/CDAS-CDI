@@ -186,11 +186,9 @@ const Dataset = () => {
     if (datasetid === null || datasetid === "new") {
       dispatch(resetFTP());
       dispatch(resetJDBC());
-    } else if (!dsCreatedSuccessfully) {
-      dispatch(getDataSetDetail(datasetid, dfId, dpId));
-      dispatch(getDatasetColumns(datasetid));
     } else {
       dispatch(getDataSetDetail(datasetid, dfId, dpId));
+      dispatch(getDatasetColumns(datasetid));
     }
   }, [datasetid, dsCreatedSuccessfully]);
 

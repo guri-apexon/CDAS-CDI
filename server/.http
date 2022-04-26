@@ -229,11 +229,11 @@ content-type: application/json
 
 {
     "dkId": 1,
-    "dkName": "Gene_Expression_Profiling",
-    "dkDesc": "test test",
-    "dkExternalId": 2,
+    "dkName": "Gene_Expression_Prof",
+    "dkDesc": "dsfasd_sa",
+    "dkExternalId": 1,
+    "dkESName": "SDTM Designer",
     "dkStatus": 1,
-    "dkESName": "GDMPM-DAS",
     "userId": "u1105372"
 }
 

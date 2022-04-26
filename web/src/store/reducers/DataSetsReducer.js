@@ -213,6 +213,7 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = true;
         break;
       case STORE_DATASET_COLUMNS_SUCCESS:
+        console.log("STORE_DATASET_COLUMNS_SUCCESS", action);
         newState.loading = false;
         newState.datasetColumns = action.datasetColumns;
         newState.selectedDataset = {
