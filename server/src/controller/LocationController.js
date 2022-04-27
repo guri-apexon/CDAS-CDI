@@ -196,6 +196,7 @@ exports.saveLocationData = async function (req, res) {
       );
     }
     const newId = helper.generateUniqueID();
+    const curDate = helper.getCurrentTime();
 
     const body = [
       newId,
@@ -209,9 +210,12 @@ exports.saveLocationData = async function (req, res) {
       values.locationName || null,
       values.userName,
       values.password ? "Yes" : "No",
+      curDate,
+      curDate,
       values.dbName || null,
     ];
-    const searchQuery = `INSERT into ${schemaName}.source_location (src_loc_id, loc_typ, ip_servr, port, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, usr_nm, pswd, insrt_tm, updt_tm, db_nm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, Now(), Now(), $12)`;
+
+    const searchQuery = `INSERT into ${schemaName}.source_location (src_loc_id, loc_typ, ip_servr, port, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, usr_nm, pswd, insrt_tm, updt_tm, db_nm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`;
     Logger.info({ message: "storeLocation" });
 
     DB.executeQuery(searchQuery, body)
@@ -288,6 +292,8 @@ exports.updateLocationData = async function (req, res) {
       );
     }
 
+    const curDate = helper.getCurrentTime();
+
     const vaultData = {
       user: values.userName || null,
       password: values.password || null,
@@ -308,11 +314,12 @@ exports.updateLocationData = async function (req, res) {
       values.userName,
       values.password ? "Yes" : "No",
       locationID,
+      curDate,
     ];
 
     const selectQuery = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm FROM ${schemaName}.source_location where src_loc_id=$1`;
 
-    const updateQuery = `UPDATE ${schemaName}.source_location set loc_typ=$1, ip_servr=$2, port=$3, data_strc=$4, active=$5, extrnl_sys_nm=$6, loc_alias_nm=$7, updt_tm=NOW(), db_nm=$8, cnn_url=$9, usr_nm=$10, pswd=$11 where src_loc_id=$12 returning *`;
+    const updateQuery = `UPDATE ${schemaName}.source_location set loc_typ=$1, ip_servr=$2, port=$3, data_strc=$4, active=$5, extrnl_sys_nm=$6, loc_alias_nm=$7, updt_tm=$13, db_nm=$8, cnn_url=$9, usr_nm=$10, pswd=$11 where src_loc_id=$12 returning *`;
     const updateLocation = await DB.executeQuery(updateQuery, body);
     const oldLocation = await DB.executeQuery(selectQuery, [locationID]);
 
@@ -344,7 +351,7 @@ exports.updateLocationData = async function (req, res) {
           pswd: values.password ? "Yes" : "No",
         };
         const diffObj = helper.getdiffKeys(comparisionObj, existingObj);
-        await addDataflowHistory({
+        await addLocationCDHHistory({
           dataflowId,
           externalSystemName: "CDI",
           userId,
@@ -369,10 +376,11 @@ exports.statusUpdate = async (req, res) => {
     const { id, status, userId } = req.body;
     const activeStatus = status === true ? 1 : 0;
     Logger.info({ message: "Location status Update" });
+    const curDate = helper.getCurrentTime();
 
     const updateLocation = await DB.executeQuery(
-      `UPDATE ${schemaName}.source_location SET updt_tm=NOW(), active=$1 WHERE src_loc_id=$2 returning *`,
-      [activeStatus, id]
+      `UPDATE ${schemaName}.source_location SET updt_tm=$3, active=$1 WHERE src_loc_id=$2 returning *`,
+      [activeStatus, id, curDate]
     );
     const oldLocation = await DB.executeQuery(
       `SELECT active FROM ${schemaName}.source_location where src_loc_id=$1`,
@@ -399,7 +407,7 @@ exports.statusUpdate = async (req, res) => {
           },
           existingObj
         );
-        await addDataflowHistory({
+        await addLocationCDHHistory({
           dataflowId,
           externalSystemName: "CDI",
           userId,

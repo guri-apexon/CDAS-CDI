@@ -172,9 +172,10 @@ const DataFlow = ({ FormValues, dashboard }) => {
       protId !== "" &&
       dataflowId
     ) {
-      const firstFileDate = moment(ffDate || FormValues.firstFileDate).format(
-        "DD-MMM-yyyy"
-      );
+      let firstFileDate = ffDate || FormValues.firstFileDate;
+      firstFileDate = moment(firstFileDate).isValid()
+        ? moment(firstFileDate).format("DD-MMM-yyyy")
+        : null;
       const payload = {
         vendorID: FormValues.vendors[0],
         locationName: selectedLocation.value,
@@ -236,11 +237,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
         open={isPanelOpen}
         width={446}
       >
-        <LeftPanel
-          dataflowId={dataflowId}
-          dataflowSource={dataFlowdetail}
-          headerTitle={dataFlowdetail.name}
-        />
+        <LeftPanel />
       </Panel>
       <Panel
         className={
