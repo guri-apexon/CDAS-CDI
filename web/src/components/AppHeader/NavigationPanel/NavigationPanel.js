@@ -39,31 +39,31 @@ const styles = {
 const linksArr = [
   {
     title: "Clinical Data Ingestion",
-    imgUrl: "assets/svg/CDI_ICON_96x96.svg",
+    imgUrl: "/assets/svg/CDI_ICON_96x96.svg",
     haveAccess: true,
     url: "cdi",
   },
   {
     title: "Clinical Data Mapper",
-    imgUrl: "assets/svg/CDM_ICON_96x96.svg",
+    imgUrl: "/assets/svg/CDM_ICON_96x96.svg",
     haveAccess: false,
     url: "cdm",
   },
   {
     title: "Clinical Data Review",
-    imgUrl: "assets/svg/CDR_ICON_96x96.svg",
+    imgUrl: "/assets/svg/CDR_ICON_96x96.svg",
     haveAccess: false,
     url: "cdr",
   },
   {
     title: "Clinical Analytics",
-    imgUrl: "assets/svg/CA_ICON_96x96.svg",
+    imgUrl: "/assets/svg/CA_ICON_96x96.svg",
     haveAccess: false,
     url: "ca",
   },
   {
     title: "Data Science Workbench",
-    imgUrl: "assets/svg/DSW_ICON_96x96.svg",
+    imgUrl: "/assets/svg/DSW_ICON_96x96.svg",
     haveAccess: false,
     url: "dsw",
   },
@@ -110,7 +110,7 @@ const NavigationPanel = ({
         title=""
       >
         <div className="waves">
-          <img src="assets/svg/waves.svg" alt="waves" />
+          <img src="/assets/svg/waves.svg" alt="waves" />
         </div>
         <App onClick={closePanel} className="close-panel" />
         <Box display="flex" m={1} mt={5}>

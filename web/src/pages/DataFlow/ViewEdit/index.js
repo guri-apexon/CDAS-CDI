@@ -246,11 +246,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
         open={isPanelOpen}
         width={446}
       >
-        <LeftPanel
-          dataflowId={dataflowId}
-          dataflowSource={dataFlowdetail}
-          headerTitle={dataFlowdetail.name}
-        />
+        <LeftPanel />
       </Panel>
       <Panel
         className={
