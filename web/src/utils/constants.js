@@ -6,3 +6,5 @@ export const packageComprTypes = [
   { text: "SAS XPT", value: "sas" },
   { text: "RAR", value: "rar" },
 ];
+
+export const IDLE_LOGOUT_TIME = 900000;

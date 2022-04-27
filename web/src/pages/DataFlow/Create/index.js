@@ -166,13 +166,14 @@ const DataFlow = ({
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
-    console.log("FormValues", FormValues, selectedCard);
+    // console.log("FormValues", FormValues, selectedCard);
     if (
       FormValues &&
       FormValues?.dataflowType &&
       FormValues?.dataStructure &&
       FormValues?.vendor?.length > 0 &&
-      FormValues?.locationName &&
+      FormValues?.locationName?.length &&
+      FormValues?.description &&
       FormValues?.description !== "" &&
       selectedCard?.protocolnumberstandard !== ""
     ) {

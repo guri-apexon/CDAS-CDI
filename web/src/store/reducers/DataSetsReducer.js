@@ -126,12 +126,14 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.formData = {
           ...defaultData,
         };
+        newState.datasetColumns = [];
         break;
 
       case RESET_JDBC_FORM:
         newState.formDataSQL = {
           ...defaultDataSQL,
         };
+        newState.datasetColumns = [];
         break;
 
       case UPDATE_DS_STATUS:
