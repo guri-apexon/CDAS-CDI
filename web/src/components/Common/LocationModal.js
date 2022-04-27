@@ -23,6 +23,7 @@ import {
   dataStruct,
   extSysName,
   generateConnectionURL,
+  generatedBName,
 } from "../../utils";
 import {
   ReduxFormSelect,
@@ -299,13 +300,14 @@ const LocationModal = (props) => {
       const checkInDf = await checkLocationExistsInDataFlow(values.locationID);
       if (checkInDf > 0) {
         setExistErr(locationExistInDFMsg);
+        return null;
       }
-      return null;
     }
     setExistErr("");
     dispatch(saveLocationData(values));
     return null;
   };
+
   useEffect(() => {
     if (error || success || existErr) {
       setTimeout(() => {
@@ -370,7 +372,7 @@ const LocationModal = (props) => {
           endPoint: "/checkconnection/jdbc",
           databaseName: dbName || "",
           userId: "",
-          database: locationType.toUpperCase(),
+          database: generatedBName(locationType),
           port: port ? port : "",
         };
       }

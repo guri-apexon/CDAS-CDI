@@ -229,11 +229,11 @@ content-type: application/json
 
 {
     "dkId": 1,
-    "dkName": "Gene_Expression_Profiling",
-    "dkDesc": "test test",
-    "dkExternalId": 2,
+    "dkName": "Gene_Expression_Prof",
+    "dkDesc": "dsfasd_sa",
+    "dkExternalId": 1,
+    "dkESName": "SDTM Designer",
     "dkStatus": 1,
-    "dkESName": "GDMPM-DAS",
     "userId": "u1105372"
 }
 
@@ -404,7 +404,19 @@ POST http://localhost:4001/v1/api/dataset/getTables HTTP/1.1
 content-type: application/json
 
 {
-  "query": "string"
+	"tableName":null,
+	"externalSystem":"TDSE",
+	"columnCount":null,
+	"driverName":"com.mysql.jdbc.Driver",      
+	"locationType":"MySQL",
+	"customQuery":"YES",
+   	"connectionPassword":"vault",
+   	"connectionUserName":"vault",
+	"columnDefinition":null,
+	"customSql":"SELECT vault_value FROM vault",
+	"conditionalExpression":null,
+        "connectionUrl":"jdbc:mysql://ca2uhdtsd001vd:3306/vault"
+        
 }
 
 ### getColumns

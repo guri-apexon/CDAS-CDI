@@ -7,8 +7,6 @@ const constants = require("../config/constants");
 const helper = require("../helpers/customFunctions");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
-//const getVersion = `select version from ${schemaName}.dataflow_version where dataflowid =$1 order by  version desc limit 1`;
-
 exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
@@ -52,7 +50,6 @@ exports.searchList = async (req, res) => {
 exports.addPackage = function (req, res) {
   try {
     const packageID = helper.createUniqueID();
-    const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
     const {
       compression_type,
       naming_convention,

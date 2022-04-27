@@ -15,7 +15,7 @@ import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
-import { checkMinMaxWithText } from "../../../../../components/FormComponents/validators";
+import { validateRow } from "../../../../../components/FormComponents/validators";
 
 const maxSize = 150000;
 
@@ -56,6 +56,7 @@ export default function DSColumnTable({
       maxLength: "",
       values: "",
       isInitLoad: true,
+      isFormatLoad: true,
       isHavingError: false,
       isHavingColumnName: false,
       isHavingDataType: false,
@@ -245,6 +246,7 @@ export default function DSColumnTable({
           maxLength: "",
           values: "",
           isInitLoad: true,
+          isFormatLoad: true,
           isHavingError: false,
           isHavingColumnName: false,
         },
@@ -282,6 +284,7 @@ export default function DSColumnTable({
         maxLength: "",
         values: "",
         isInitLoad: true,
+        isFormatLoad: true,
         isHavingError: false,
         isHavingColumnName: false,
       }));
@@ -488,13 +491,18 @@ export default function DSColumnTable({
               isHavingColumnName: false,
             };
           }
-          if (row.isInitLoad) {
-            return {
-              ...row,
-              [key]: value,
-              isInitLoad: false,
-              isHavingError: true,
-            };
+
+          if (row.isInitLoad || row.isFormatLoad) {
+            if (key !== "variableLabel") {
+              return {
+                ...row,
+                [key]: value,
+                isInitLoad: false,
+                isHavingError: true,
+                isFormatLoad:
+                  key === "format" || key === "columnName" ? true : false,
+              };
+            }
           }
 
           return {
@@ -516,13 +524,7 @@ export default function DSColumnTable({
       locationType,
       headerValue
     );
-    if (
-      editedRows
-        .map(({ isHavingColumnName, minLength, maxLength }) =>
-          checkMinMaxWithText(isHavingColumnName, minLength, maxLength)
-        )
-        .every((e) => e === true)
-    ) {
+    if (editedRows.map((row) => validateRow(row)).every((e) => e === true)) {
       setDisableSaveAll(false);
     } else {
       setDisableSaveAll(true);
@@ -540,11 +542,8 @@ export default function DSColumnTable({
   }, [selectedRows]);
 
   useEffect(() => {
-    if (rows?.length) {
-      console.log("rows", rows);
-      setFilteredRows(rows);
-      messageContext?.setDataflow({ columnDefinition: rows });
-    }
+    setFilteredRows(rows);
+    messageContext?.setDataflow({ columnDefinition: rows });
   }, [rows]);
 
   useEffect(() => {
@@ -594,8 +593,8 @@ export default function DSColumnTable({
           title="Dataset Column Settings"
           subtitle={`${
             rows.length > 1
-              ? `${editedRows.length} dataset columns`
-              : `${editedRows.length} dataset column`
+              ? `${rows.length} dataset columns`
+              : `${rows.length} dataset column`
           }`}
           columns={moreColumns}
           initialSortedColumn="uniqueId"

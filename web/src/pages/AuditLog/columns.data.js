@@ -12,8 +12,8 @@ import { TextFieldFilter, DateFilter } from "../../utils/index";
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
   const date = rowValue
-    ? moment(rowValue).format("DD-MMM-YYYY HH:mm A")
-    : moment().format("DD-MMM-YYYY HH:mm A");
+    ? moment.utc(rowValue).local().format("DD-MMM-YYYY hh:mm A")
+    : moment().local().format("DD-MMM-YYYY hh:mm A");
 
   return <span>{date}</span>;
 };
@@ -22,7 +22,7 @@ const columns = [
   {
     header: "Data Package Name",
     accessor: "name",
-    sortFunction: compareNumbers,
+    sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("name"),
     filterComponent: TextFieldFilter,
     frozen: true,
@@ -38,7 +38,7 @@ const columns = [
   {
     header: "Audit Version",
     accessor: "log_version",
-    sortFunction: compareStrings,
+    sortFunction: compareNumbers,
     // customCell: VersionCell,
     filterFunction: createStringSearchFilter("log_version"),
     filterComponent: TextFieldFilter,

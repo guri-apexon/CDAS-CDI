@@ -146,7 +146,6 @@ const DataFlowFormBase = (props) => {
                 dateFormat="DD MMM YYYY"
                 placeholder="DD MMM YYYY"
                 label="Expected First File Date"
-                required
               />
             </div>
 
@@ -173,6 +172,7 @@ const DataFlowFormBase = (props) => {
                 id="dataStructure"
                 label="Data Structure"
                 fullWidth
+                required
               >
                 {dataStruct?.map((type) => (
                   <MenuItem key={type.value} value={type.value}>
@@ -183,6 +183,7 @@ const DataFlowFormBase = (props) => {
               <ReduxFormSelect
                 name="locationType"
                 label="Location Type"
+                required
                 onChange={(e) => changeLocationType(e.target.value)}
                 fullWidth
               >
@@ -201,6 +202,7 @@ const DataFlowFormBase = (props) => {
                 onChange={changeLocationData}
                 singleSelect
                 fullWidth
+                required
               />
               <Link
                 onClick={() => openLocationModal()}

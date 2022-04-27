@@ -16,7 +16,7 @@ import {
   updateDatasetColumns,
   getDatasetColumns,
 } from "../../../store/actions/DataSetsAction";
-import { deleteCD } from "../../../services/ApiServices";
+import { createColumns, deleteCD } from "../../../services/ApiServices";
 import {
   getUserInfo,
   checkHeaders,
@@ -67,6 +67,7 @@ export default function DSColumnTable({
       maxLength: "",
       values: "",
       isInitLoad: true,
+      isFormatLoad: true,
       isHavingError: false,
       isHavingColumnName: false,
       isHavingDataType: false,
@@ -356,6 +357,7 @@ export default function DSColumnTable({
           maxLength: "",
           values: "",
           isInitLoad: true,
+          isFormatLoad: true,
           isHavingError: false,
           isHavingColumnName: false,
           isHavingDataType: false,
@@ -394,6 +396,7 @@ export default function DSColumnTable({
         maxLength: "",
         values: "",
         isInitLoad: true,
+        isFormatLoad: true,
         isHavingError: false,
         isHavingColumnName: false,
         isHavingDataType: false,
@@ -531,17 +534,21 @@ export default function DSColumnTable({
       }
 
       if (newCD && newCD.length > 0) {
-        await dispatch(
-          createDatasetColumns(
-            newCD,
-            dsId,
-            dfId,
-            dpId,
-            userInfo.userId,
-            isCustomSQL === "No",
-            newQuery
-          )
-        );
+        const created = await createColumns({
+          values: newCD,
+          dsId,
+          dfId,
+          dpId,
+          userId: userInfo.userId,
+          isUpdateQuery: isCustomSQL === "No",
+          newQuery,
+        });
+        if (created?.status) {
+          created.data?.forEach((d) => {
+            const obj = newCD.find((x) => x.uniqueId === d.frontendUniqueRef);
+            if (obj) obj.dbColumnId = d.columnid;
+          });
+        }
       }
 
       if (existingCD && existingCD.length > 0) {
@@ -634,17 +641,22 @@ export default function DSColumnTable({
           )
         );
       } else {
-        await dispatch(
-          createDatasetColumns(
-            [editedRowData],
-            dsId,
-            dfId,
-            dpId,
-            userInfo.userId,
-            isCustomSQL === "No",
-            newQuery
-          )
-        );
+        const created = await createColumns({
+          values: [editedRowData],
+          dsId,
+          dfId,
+          dpId,
+          userId: userInfo.userId,
+          isUpdateQuery: isCustomSQL === "No",
+          newQuery,
+        });
+        if (created?.status) {
+          const createdId = created.data[0]?.columnid;
+          if (createdId) {
+            editedRowData.dbColumnId = createdId;
+          }
+        }
+        console.log("editedRowData::::", editedRowData);
       }
 
       setRows([...removeExistingRowData, editedRowData]);
@@ -689,6 +701,7 @@ export default function DSColumnTable({
               ...row,
               [key]: value,
               isHavingColumnName: false,
+              isInitLoad: false,
             };
           }
           if (key === "dataType") {
@@ -697,22 +710,41 @@ export default function DSColumnTable({
                 ...row,
                 [key]: value,
                 isHavingDataType: true,
+                isInitLoad: false,
               };
             }
             return {
               ...row,
               [key]: value,
               isHavingDataType: false,
-            };
-          }
-          if (row.isInitLoad) {
-            return {
-              ...row,
-              [key]: value,
               isInitLoad: false,
-              isHavingError: true,
             };
           }
+
+          if (row.isInitLoad || row.isFormatLoad) {
+            if (key !== "variableLabel") {
+              return {
+                ...row,
+                [key]: value,
+                isInitLoad: false,
+                isHavingError: true,
+                isFormatLoad:
+                  key === "format" || key === "columnName" ? true : false,
+              };
+            }
+          }
+
+          // if (row.isFormatLoad) {
+          //   if (key === "format") {
+          //     return {
+          //       ...row,
+          //       [key]: value,
+          //       isInitLoad: false,
+          //       isFormatLoad: false,
+          //       isHavingError: true,
+          //     };
+          //   }
+          // }
 
           return {
             ...row,

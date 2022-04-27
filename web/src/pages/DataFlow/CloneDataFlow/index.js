@@ -7,7 +7,7 @@ import { useHistory } from "react-router-dom";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Grid from "apollo-react/components/Grid";
 import Modal from "apollo-react/components/Modal";
-import Tooltip from "apollo-react/components/Tooltip";
+// import Tooltip from "apollo-react/components/Tooltip";
 import Button from "apollo-react/components/Button";
 import Typography from "apollo-react/components/Typography";
 import Search from "apollo-react/components/Search";
@@ -15,9 +15,9 @@ import Search from "apollo-react/components/Search";
 import Accordion from "apollo-react/components/Accordion";
 import AccordionDetails from "apollo-react/components/AccordionDetails";
 import AccordionSummary from "apollo-react/components/AccordionSummary";
-import OpenNew from "apollo-react-icons/OpenNew";
-import Pencil from "apollo-react-icons/Pencil";
-import IconButton from "apollo-react/components/IconButton";
+// import OpenNew from "apollo-react-icons/OpenNew";
+// import Pencil from "apollo-react-icons/Pencil";
+// import IconButton from "apollo-react/components/IconButton";
 import Table from "apollo-react/components/Table";
 import ChevronLeft from "apollo-react-icons/ChevronLeft";
 import ApolloProgress from "apollo-react/components/ApolloProgress";
@@ -72,6 +72,7 @@ const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
   const [isActive, setIsActive] = useState(false);
   const [selectedStudy, setSelectedStudy] = useState(null);
   const [searchTxt, setSearchTxt] = useState("");
+  const [dfReady, setDfReady] = useState("");
   const [studies, setStudies] = useState([]);
   const [datflows, setDatflows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -116,6 +117,8 @@ const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
   };
   const handleBack = () => {
     setSelectedStudy(null);
+    setSearchTxt("");
+    setDfReady("");
   };
 
   const FormatCell = ({ row, column: { accessor } }) => {
@@ -345,7 +348,7 @@ const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
   };
 
   const RenderSelectDataFlowModal = React.memo(() => {
-    const [searchText, setSearchText] = useState("");
+    const [dfSearchText, setDfSearchText] = useState(dfReady);
     const selectedStudyColumns = [
       {
         header: "Protocol Number",
@@ -390,22 +393,34 @@ const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
         customCell: DfFormatCell,
       },
     ];
-    const searchDataflow = (e) => {
-      const newValue = e ? e.target.value : "";
-      setSearchText(newValue);
-      debounceFunction(async () => {
-        setLoading(true);
-        const newDataflows = await searchDataflows(
-          newValue,
-          selectedStudy?.prot_id
-        );
-        setDatflows(newDataflows.dataflows ? newDataflows.dataflows : []);
-        setLoading(false);
-      }, 1000);
-    };
+
+    const searchDataflow = useCallback(
+      (e, el) => {
+        e.preventDefault();
+        const newValue = e.target.value;
+        setDfSearchText(e.target.value);
+        if (newValue !== "") {
+          if (el === "dataflow") {
+            debounceFunction(async () => {
+              setDfReady(newValue);
+              setLoading(true);
+              const newDataflows = await searchDataflows(
+                newValue,
+                selectedStudy?.prot_id
+              );
+              setDatflows(newDataflows.dataflows ? newDataflows.dataflows : []);
+              setLoading(false);
+            }, 1000);
+          }
+        }
+      },
+      [dfSearchText]
+    );
+
     useEffect(() => {
       console.log("RenderDataflowTable");
     }, []);
+
     return (
       <div id="selectDataFlowModal" className="scrollable-table">
         {selectedStudy.dataflow ? (
@@ -427,8 +442,8 @@ const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
             <Search
               className="search-box"
               placeholder="Search"
-              value={searchText}
-              onChange={searchDataflow}
+              value={dfSearchText}
+              onChange={(e) => searchDataflow(e, "dataflow")}
               fullWidth
             />
             {loading ? (
@@ -453,7 +468,7 @@ const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
         )}
       </div>
     );
-  });
+  }, [dfReady]);
 
   // eslint-disable-next-line consistent-return
   const handleClone = async () => {
@@ -490,9 +505,10 @@ const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
       setSelectedStudy(null);
     };
   }, []);
+
   return (
     <>
-      {selectedStudy ? (
+      {selectedStudy && (
         <>
           <Modal
             open={open}
@@ -520,7 +536,8 @@ const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
             <RenderSelectDataFlowModal onSubmit={onSubmit} />
           </Modal>
         </>
-      ) : (
+      )}
+      {!selectedStudy && (
         <Modal
           open={open}
           onClose={() => handleModalClose()}

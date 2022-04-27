@@ -25,6 +25,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
   try {
     Logger.info({ message: "create SQL Dataset" });
     const datasetId = helper.generateUniqueID();
+    const curDate = helper.getCurrentTime();
     let sqlQuery = "";
     if (values.isCustomSQL === "No") {
       if (values.filterCondition) {
@@ -47,6 +48,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
       values.tableName || null,
       values.offsetColumn || null,
       values.filterCondition || null,
+      curDate,
       dpId,
     ];
 
@@ -68,7 +70,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
 
     const jsonData = JSON.stringify(conf_Data);
 
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, Now(), Now(), $11) returning *`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11, $12) returning *`;
     const data = await DB.executeQuery(insertQuery, body);
 
     const historyVersion = await CommonController.addDatasetHistory(
@@ -116,18 +118,24 @@ exports.saveDatasetData = async (req, res) => {
     }
 
     const datasetId = helper.generateUniqueID();
+    const curDate = helper.getCurrentTime();
 
     let passwordStatus = "No";
 
     if (values.filePwd) {
       passwordStatus = "Yes";
-      await helper.writeVaultData(`${dfId}/${dpId}/${datasetId}`, {
-        password: values.filePwd,
-      });
+      try {
+        await helper.writeVaultData(`${dfId}/${dpId}/${datasetId}`, {
+          password: values.filePwd,
+        });
+      } catch (error) {
+        Logger.error(error);
+        return apiResponse.ErrorResponse(res, "Something Wrong with Vault");
+      }
     }
 
     Logger.info({ message: "create Dataset" });
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, name, path,file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, Now(), Now(), $18, $19) returning *`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, name, path,file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $18, $19, $20) returning *`;
 
     const body = [
       datasetId,
@@ -147,6 +155,7 @@ exports.saveDatasetData = async (req, res) => {
       values.transferFrequency || null,
       values.overrideStaleAlert || null,
       values.rowDecreaseAllowed || 0,
+      curDate,
       dpId,
       values.loadType == "Incremental" ? "Y" : "N",
     ];
@@ -199,6 +208,7 @@ exports.saveDatasetData = async (req, res) => {
 async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
   try {
     Logger.info({ message: "update SQL Dataset" });
+    const curDate = helper.getCurrentTime();
     const {
       datasetName,
       active,
@@ -232,12 +242,13 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
       filterCondition || null,
       dataType == "Incremental" ? "Y" : "N" || null,
       offsetColumn || null,
+      curDate,
       datasetid,
     ];
     const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
     dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const insertQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $8, incremental = $9, updt_tm=Now() where datasetid = $10`;
+    const insertQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $8, incremental = $9, updt_tm=$10 where datasetid = $11`;
 
     const requestData = {
       datasetid: datasetid,
@@ -289,7 +300,7 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
 exports.updateDatasetData = async (req, res) => {
   try {
     const values = req.body;
-
+    const curDate = helper.getCurrentTime();
     Logger.info({ message: "update Dataset" });
     const { dfId, studyId, dpId, testFlag, datasetid, userId, datasetName } =
       req.body;
@@ -328,7 +339,7 @@ exports.updateDatasetData = async (req, res) => {
       quote: values.quote || null,
       headerrownumber: values.headerRowNumber || 0,
       footerrownumber: values.footerRowNumber || 0,
-      active: true ? 1 : 0,
+      active: helper.stringToBoolean(values.active) ? 1 : 0,
       name: values.fileNamingConvention || null,
       path: values.folderPath || null,
       datakindid: values.clinicalDataType[0],
@@ -360,14 +371,14 @@ exports.updateDatasetData = async (req, res) => {
       values.quote || null,
       values.headerRowNumber || 0,
       values.footerRowNumber || 0,
-      values.active === true ? 1 : 0,
+      helper.stringToBoolean(values.active) ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
       values.clinicalDataType[0],
       values.transferFrequency || null,
       values.overrideStaleAlert || null,
       values.rowDecreaseAllowed || 0,
-      new Date(),
+      curDate,
       incremental,
       passwordStatus,
     ];
@@ -376,7 +387,6 @@ exports.updateDatasetData = async (req, res) => {
       ...body,
       values.datasetid,
     ]);
-
     for (const key in requestData) {
       if (requestData[key] != oldData[key]) {
         const historyVersion = await CommonController.addDatasetHistory(
