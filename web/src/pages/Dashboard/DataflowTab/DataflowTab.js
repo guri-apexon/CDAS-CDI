@@ -159,7 +159,7 @@ export default function DataflowTab({ updateData }) {
   const dispatch = useDispatch();
   const dashboard = useSelector((state) => state.dashboard);
   const [tableRows, setTableRows] = useState([...rowData]);
-  const { selectedCard } = dashboard;
+  const { selectedCard, loading: dLoading } = dashboard;
   const { dfCount, dsCount } = selectedCard;
 
   const [expandedRows, setExpandedRows] = useState([]);
@@ -197,6 +197,10 @@ export default function DataflowTab({ updateData }) {
     setSelectedFlow(null);
     setShowHardDelete(false);
   };
+
+  useEffect(() => {
+    setLoading(dLoading);
+  }, [dLoading]);
 
   const handleHardDelete = async () => {
     // console.log("delete", selectedFlow);

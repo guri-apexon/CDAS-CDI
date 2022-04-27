@@ -15,6 +15,7 @@ import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
+import { validateRow } from "../../../../../components/FormComponents/validators";
 
 const maxSize = 150000;
 
@@ -515,15 +516,7 @@ export default function DSColumnTable({
   };
 
   useEffect(() => {
-    // console.log(
-    //   "editedRows",
-    //   editedRows,
-    //   dataOrigin,
-    //   formattedData,
-    //   locationType,
-    //   headerValue
-    // );
-    if (editedRows.every((e) => e.isHavingColumnName === true && e.dataType)) {
+    if (editedRows.map((row) => validateRow(row)).every((e) => e === true)) {
       setDisableSaveAll(false);
     } else {
       setDisableSaveAll(true);

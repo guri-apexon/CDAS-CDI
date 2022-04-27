@@ -17,7 +17,7 @@ import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Tooltip from "apollo-react/components/Tooltip";
 import { ReactComponent as DataFlowIcon } from "../../../../components/Icons/dataflow.svg";
 import PackagesList from "../../../DataPackages/PackagesTable";
-import { getUserInfo, debounceFunction } from "../../../../utils";
+import { getUserInfo, debounceFunction, isSftp } from "../../../../utils";
 import {
   getPackagesList,
   addPackageBtnAction,
@@ -67,19 +67,28 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
+const LeftPanel = () => {
   const classes = useStyles();
   const history = useHistory();
   const dispatch = useDispatch();
   const [searchTxt, setSearchTxt] = useState("");
   const packageData = useSelector((state) => state.dataPackage);
   const dashboard = useSelector((state) => state.dashboard);
-  const { description, vendorname, testflag, active } = dataflowSource;
+  // const dataflow = useSelector((state) => state.dataFlow);
+  const {
+    dataFlowId,
+    dataFlowName,
+    description,
+    vendorSource,
+    type,
+    status,
+    locationType,
+  } = dashboard?.selectedDataFlow;
   const { loading, packagesList } = packageData;
   const userInfo = getUserInfo();
   const location = useLocation();
   const viewAuditLog = () => {
-    history.push(`/dashboard/audit-logs/${dataflowId}`);
+    history.push(`/dashboard/audit-logs/${dataFlowId}`);
   };
   const getPackages = (dfid, query = "") => {
     if (dfid) {
@@ -89,8 +98,8 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
     }
   };
   useEffect(() => {
-    getPackages(dataflowId);
-  }, [dataflowId]);
+    getPackages(dataFlowId);
+  }, [dataFlowId]);
   const searchTrigger = (e) => {
     const newValue = e.target.value;
     setSearchTxt(newValue);
@@ -139,7 +148,7 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
               <Switch
                 color="primary"
                 size="small"
-                checked={active === 0 ? false : true}
+                checked={status === "Active" ? true : false}
               />
             }
             label="Active"
@@ -151,12 +160,12 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
       <Divider />
       <Box className="sidebar-content">
         <Tag
-          label={testflag === 1 ? "Test" : "Production"}
+          label={type}
           variant="grey"
           style={{ textTransform: "capitalize", marginBottom: 20 }}
         />
-        <Typography className={classes.LeftTitle}>{headerTitle}</Typography>
-        <Typography className={classes.LeftSubTitle}>{vendorname}</Typography>
+        <Typography className={classes.LeftTitle}>{dataFlowName}</Typography>
+        <Typography className={classes.LeftSubTitle}>{vendorSource}</Typography>
         <Typography className={classes.description}>
           {/* <ArrowRight className={classes.icon} /> */}
           {description}
@@ -180,6 +189,7 @@ const LeftPanel = ({ dataflowId, headerTitle, dataflowSource }) => {
             icon={<PlusIcon />}
             size="small"
             onClick={redirectDataPackage}
+            disabled={!isSftp(locationType)}
           >
             Add Data Package
           </Button>
