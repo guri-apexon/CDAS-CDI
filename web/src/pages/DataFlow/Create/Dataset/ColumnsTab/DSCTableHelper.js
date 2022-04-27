@@ -36,7 +36,7 @@ import {
   checkRequiredValue,
   checkCharacterLength,
   checkAlphaNumericFileName,
-  checkMinMaxWithText,
+  validateRow,
 } from "../../../../../components/FormComponents/validators";
 
 const fieldStyles = {
@@ -273,7 +273,9 @@ export const ActionCell = ({ row }) => {
     onRowSave,
     maxLength,
     minLength,
+    dataType,
   } = row;
+  console.log("Row list", row);
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
       <Button
@@ -287,9 +289,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={
-          !checkMinMaxWithText(isHavingColumnName, minLength, maxLength)
-        }
+        disabled={!validateRow(row)}
       >
         Save
       </Button>
