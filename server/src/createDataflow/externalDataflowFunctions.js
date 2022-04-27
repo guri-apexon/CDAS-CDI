@@ -2010,33 +2010,35 @@ exports.datasetUpdate = async (
         errorDataset.push(dataSetRes);
       }
 
-      if (data.type.toLowerCase() === "delimited") {
-        const dlData = [];
-        if (typeof data.delimiter != "undefined") {
-          dlData.push({
-            key: "delimiter ",
-            value: data.delimiter,
-            type: "string",
-          });
-        }
-        if (typeof data.quote != "undefined") {
-          dlData.push({
-            key: "quote ",
-            value: data.quote,
-            type: "string",
-          });
-        }
-        if (typeof data.escapeCode != "undefined") {
-          dlData.push({
-            key: "escapeCode ",
-            value: data.escapeCode,
-            type: "string",
-          });
-        }
+      if (data.type) {
+        if (data.type.toLowerCase() === "delimited") {
+          const dlData = [];
+          if (typeof data.delimiter != "undefined") {
+            dlData.push({
+              key: "delimiter ",
+              value: data.delimiter,
+              type: "string",
+            });
+          }
+          if (typeof data.quote != "undefined") {
+            dlData.push({
+              key: "quote ",
+              value: data.quote,
+              type: "string",
+            });
+          }
+          if (typeof data.escapeCode != "undefined") {
+            dlData.push({
+              key: "escapeCode ",
+              value: data.escapeCode,
+              type: "string",
+            });
+          }
 
-        let dlRes = helper.validation(dlData);
-        if (dlRes.length > 0) {
-          errorDataset.push(dlRes);
+          let dlRes = helper.validation(dlData);
+          if (dlRes.length > 0) {
+            errorDataset.push(dlRes);
+          }
         }
       }
 
