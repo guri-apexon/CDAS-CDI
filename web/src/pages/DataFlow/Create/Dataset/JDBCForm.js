@@ -381,7 +381,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 value={datasetName}
                 onChange={handleChange}
                 inputProps={{ maxLength: 30 }}
-                label="Data Set Name (Mnemonic)"
+                label="Dataset Name (Mnemonic)"
                 size="small"
               />
             </Grid>

@@ -262,7 +262,7 @@ const Location = () => {
         size="small"
         style={{ marginRight: 16 }}
       >
-        Add Location
+        Add location
       </Button>
       <Button
         size="small"
