@@ -24,7 +24,7 @@ import {
   isSftp,
 } from "../../../utils/index";
 import { allowedTypes } from "../../../constants";
-import { checkMinMaxWithText } from "../../../components/FormComponents/validators";
+import { validateRow } from "../../../components/FormComponents/validators";
 
 const maxSize = 150000;
 
@@ -149,15 +149,7 @@ export default function DSColumnTable({
   }, [datasetColumns]);
 
   useEffect(() => {
-    const allColumnNames = editedRows.map(
-      ({ isHavingColumnName, minLength, maxLength }) =>
-        checkMinMaxWithText(isHavingColumnName, minLength, maxLength)
-    );
-    const allDataTypes = editedRows.map((e) => e.isHavingDataType);
-    if (
-      allColumnNames.every((e) => e === true) &&
-      allDataTypes.every((e) => e === true)
-    ) {
+    if (editedRows.map((row) => validateRow(row)).every((e) => e === true)) {
       setDisableSaveAll(false);
     } else {
       setDisableSaveAll(true);

@@ -35,7 +35,7 @@ import {
   checkFormat,
   checkRequiredValue,
   checkCharacterLength,
-  checkMinMaxWithText,
+  validateRow,
 } from "../../../components/FormComponents/validators";
 
 const fieldStyles = {
@@ -205,7 +205,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       onChange={(e) =>
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
-      error={!row.isInitLoad && errorText}
+      error={!row.isInitLoad && errorText ? true : false}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
       disabled={row.dsProdLock}
@@ -268,11 +268,8 @@ export const ActionCell = ({ row }) => {
     onRowCancel,
     onRowDelete,
     editMode: eMode,
-    isHavingColumnName,
     isHavingDataType,
     onRowSave,
-    minLength,
-    maxLength,
   } = row;
 
   return eMode ? (
@@ -288,10 +285,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={
-          !checkMinMaxWithText(isHavingColumnName, minLength, maxLength) ||
-          !isHavingDataType
-        }
+        disabled={!validateRow(row) || !isHavingDataType}
       >
         Save
       </Button>

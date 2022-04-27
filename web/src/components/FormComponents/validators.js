@@ -173,18 +173,23 @@ export const removeUndefined = (arr) =>
       return res;
     }, {});
 
-export const checkMinMaxWithText = (
-  isHavingColumnName,
-  minLength,
-  maxLength
-) => {
-  const min = Number(minLength);
-  const max = Number(maxLength);
+export const validateRow = (row) => {
+  const { isHavingColumnName, minLength, maxLength, dataType, columnName } =
+    row;
+
+  const min = Number.parseInt(minLength, 10);
+  const max = Number.parseInt(maxLength, 10);
+
   let check = isHavingColumnName;
-  if (isHavingColumnName && min && max) {
-    check = min < max;
-  } else if ((min && isEmpty(maxLength)) || (max && isEmpty(minLength))) {
+  if (!dataType || !columnName) {
     check = false;
+  } else if (
+    (minLength || maxLength) &&
+    (Number.isNaN(min) || Number.isNaN(max))
+  ) {
+    check = false;
+  } else if (isHavingColumnName && !Number.isNaN(min) && !Number.isNaN(max)) {
+    check = min < max;
   }
   return check;
 };

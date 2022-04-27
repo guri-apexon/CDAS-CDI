@@ -516,14 +516,6 @@ export default function DSColumnTable({
   };
 
   useEffect(() => {
-    console.log(
-      "editedRows",
-      editedRows,
-      dataOrigin,
-      formattedData,
-      locationType,
-      headerValue
-    );
     if (editedRows.map((row) => validateRow(row)).every((e) => e === true)) {
       setDisableSaveAll(false);
     } else {
