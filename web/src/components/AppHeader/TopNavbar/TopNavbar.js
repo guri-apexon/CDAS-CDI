@@ -16,7 +16,7 @@ import Modal from "apollo-react/components/Modal";
 import NavigationPanel from "../NavigationPanel/NavigationPanel";
 import { MessageContext } from "../../Providers/MessageProvider";
 // eslint-disable-next-line import/named
-import { deleteAllCookies, getUserInfo } from "../../../utils/index";
+import { getUserInfo } from "../../../utils/index";
 // eslint-disable-next-line import/named
 import { userLogOut } from "../../../services/ApiServices";
 
@@ -139,12 +139,9 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
     setOpen(true);
     const isLogout = await userLogOut();
     if (isLogout) {
-      const deleted = await deleteAllCookies();
-      if (deleted) {
-        setLoggedIn(false);
-        history.push("/logout");
-        setOpen(false);
-      }
+      setLoggedIn(false);
+      history.push("/logout");
+      setOpen(false);
     } else {
       setNotLoggedOutErr(true);
       setOpen(false);

@@ -55,6 +55,7 @@ export default function DSColumnTable({
       maxLength: "",
       values: "",
       isInitLoad: true,
+      isFormatLoad: true,
       isHavingError: false,
       isHavingColumnName: false,
       isHavingDataType: false,
@@ -244,6 +245,7 @@ export default function DSColumnTable({
           maxLength: "",
           values: "",
           isInitLoad: true,
+          isFormatLoad: true,
           isHavingError: false,
           isHavingColumnName: false,
         },
@@ -281,6 +283,7 @@ export default function DSColumnTable({
         maxLength: "",
         values: "",
         isInitLoad: true,
+        isFormatLoad: true,
         isHavingError: false,
         isHavingColumnName: false,
       }));
@@ -487,13 +490,18 @@ export default function DSColumnTable({
               isHavingColumnName: false,
             };
           }
-          if (row.isInitLoad) {
-            return {
-              ...row,
-              [key]: value,
-              isInitLoad: false,
-              isHavingError: true,
-            };
+
+          if (row.isInitLoad || row.isFormatLoad) {
+            if (key !== "variableLabel") {
+              return {
+                ...row,
+                [key]: value,
+                isInitLoad: false,
+                isHavingError: true,
+                isFormatLoad:
+                  key === "format" || key === "columnName" ? true : false,
+              };
+            }
           }
 
           return {

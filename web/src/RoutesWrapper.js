@@ -2,13 +2,14 @@ import { Route, Switch, Redirect, useRouteMatch } from "react-router";
 import { useLocation, useHistory } from "react-router-dom";
 import { lazy, Suspense, useState, useEffect } from "react";
 import Loader from "apollo-react/components/Loader";
-import { getUserId } from "./utils";
+import { getUserId, setIdleLogout } from "./utils";
 import TopNavbar from "./components/AppHeader/TopNavbar/TopNavbar";
 import AppFooter from "./components/AppFooter/AppFooter";
 import Logout from "./pages/Logout/Logout";
 import DataPackages from "./pages/DataPackages/DataPackages";
 import AuditLog from "./pages/AuditLog/AuditLog";
 import PageHeader from "./components/Common/PageHeader";
+import { userLogOut } from "./services/ApiServices";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
@@ -114,6 +115,20 @@ const CDIWrapper = () => {
       }
     }
   }, [checkedOnce, history]);
+
+  const logoutOnIdle = async () => {
+    const isLogout = await userLogOut();
+    if (isLogout) {
+      setLoggedIn(false);
+      history.push("/logout");
+    }
+  };
+
+  useEffect(() => {
+    setIdleLogout(() => {
+      logoutOnIdle();
+    });
+  }, []);
 
   return (
     <Suspense fallback={<Loader isInner />}>
