@@ -192,7 +192,6 @@ export default function CDTList() {
     e.preventDefault();
     const selected = cdtList.find((d) => d.dkId === Id);
     await getENSlists();
-    console.log(selected);
     const { dkName, dkStatus, dkDesc, dkESName } = selected;
     const picked = ensList.find((d) => d.label === dkESName);
     // console.log("handleLink", "test", selected, picked);

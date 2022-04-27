@@ -136,7 +136,7 @@ const LeftPanel = () => {
         <div className={classes.leftPanel}>
           <DataFlowIcon className={classes.dataflowLeft} />
           <Typography style={{ marginLeft: 7, color: "#595959" }}>
-            Data Flows
+            Data Flow
           </Typography>
         </div>
         <div className="right-panel top-status-checkbox">
