@@ -35,6 +35,7 @@ import {
   checkFormat,
   checkRequiredValue,
   checkCharacterLength,
+  checkMinMaxWithText,
 } from "../../../components/FormComponents/validators";
 
 const fieldStyles = {
@@ -145,6 +146,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
       fullWidth
       value={row[key]}
       onChange={(e) =>
+        !e.target.value.includes(".") &&
         row.editRow(row.uniqueId, key, e.target.value, errorText)
       }
       error={!row.isInitLoad && errorText}
@@ -269,6 +271,8 @@ export const ActionCell = ({ row }) => {
     isHavingColumnName,
     isHavingDataType,
     onRowSave,
+    minLength,
+    maxLength,
   } = row;
 
   return eMode ? (
@@ -284,7 +288,10 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={!isHavingColumnName || !isHavingDataType}
+        disabled={
+          !checkMinMaxWithText(isHavingColumnName, minLength, maxLength) ||
+          !isHavingDataType
+        }
       >
         Save
       </Button>

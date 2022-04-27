@@ -1,3 +1,5 @@
+import { isEmpty } from "lodash";
+
 export const checkRequired = (value) => {
   if (!value || (typeof value === "string" && !value.trim())) {
     return "Required";
@@ -178,5 +180,11 @@ export const checkMinMaxWithText = (
 ) => {
   const min = Number(minLength);
   const max = Number(maxLength);
-  return min && max ? isHavingColumnName && min < max : isHavingColumnName;
+  let check = isHavingColumnName;
+  if (isHavingColumnName && min && max) {
+    check = min < max;
+  } else if ((min && isEmpty(maxLength)) || (max && isEmpty(minLength))) {
+    check = false;
+  }
+  return check;
 };
