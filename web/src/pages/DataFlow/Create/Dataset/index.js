@@ -93,21 +93,6 @@ const Dataset = (props, ref) => {
   const classes = useStyles();
   const columnFunc = React.useRef(null);
 
-  const handleChangeTab = (event, v) => {
-    setValue(v);
-    switch (v) {
-      case 1:
-        updateStep(4);
-        break;
-      case 2:
-        updateStep(5);
-        break;
-      default:
-        updateStep(3);
-        break;
-    }
-  };
-
   const onChangeSql = (val) => {
     setColumnsActive(val === "No");
     setCustomSql(val);
@@ -139,15 +124,18 @@ const Dataset = (props, ref) => {
   }, [dataFlowdetail]);
 
   const jdbcRef = useRef();
+  const handleSubmitTrigger = () => {
+    if (isSftp(locationType)) {
+      dispatch(submit("CreateDataSetsForm"));
+    } else {
+      // messageContext?.setDataflow({ datasetSubmit: true });
+      jdbcRef.current.handleSubmit();
+    }
+  };
 
   useImperativeHandle(ref, () => ({
     submitForm() {
-      if (isSftp(locationType)) {
-        dispatch(submit("CreateDataSetsForm"));
-      } else {
-        // messageContext?.setDataflow({ datasetSubmit: true });
-        jdbcRef.current.handleSubmit();
-      }
+      handleSubmitTrigger();
     },
     checkvalidation() {
       if (isSftp(locationType)) {
@@ -156,6 +144,21 @@ const Dataset = (props, ref) => {
     },
   }));
 
+  const handleChangeTab = (event, v) => {
+    switch (v) {
+      case 1:
+        handleSubmitTrigger();
+        // updateStep(4);
+        break;
+      case 2:
+        // updateStep(5);
+        break;
+      default:
+        setValue(v);
+        updateStep(3);
+        break;
+    }
+  };
   const onSubmit = (formValue) => {
     const data = {
       ...formValue,
