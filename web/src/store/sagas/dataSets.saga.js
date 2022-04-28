@@ -113,7 +113,10 @@ export function* fetchPreviewSQL(action) {
       payload: action.payload,
     });
   } catch (e) {
-    yield put({ type: FETCH_PREVIEW_SQL_FAILURE, message: e.message });
+    yield put({
+      type: FETCH_PREVIEW_SQL_FAILURE,
+      message: e.response?.data?.message || e.message,
+    });
   }
 }
 

@@ -13,11 +13,6 @@ exports.listtables = async (res, req) => {
       driverName,
       // externalSystem,
     } = req.req.body;
-    //get connection
-    // let dbname = connectionUrl.split("/")[3];
-    //let q = `select table_name as tableName from information_schema.tables where table_schema = 'cdascfg'`;
-    //let q = "SELECT table_name as tableName FROM information_schema.tables;";
-    //let q = "SELECT table_name as tableName FROM all_tables";
     let q = ``;
     switch (locationType?.toLowerCase()) {
       case "oracle":
@@ -87,6 +82,12 @@ exports.tablecolumns = async (res, req) => {
       externalSystem,
     } = req.req.body;
     let q = ``;
+    if (!tableName) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Table name is missing. Please provide table name to get columns"
+      );
+    }
     switch (locationType?.toLowerCase()) {
       case "postgresql":
         q = `SELECT c.COLUMN_NAME as "columnName",c.DATA_TYPE as "datatype"

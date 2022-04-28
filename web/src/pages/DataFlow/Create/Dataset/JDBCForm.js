@@ -22,6 +22,7 @@ import RadioGroup from "apollo-react/components/RadioGroup";
 import Switch from "apollo-react/components/Switch";
 import Select from "apollo-react/components/Select";
 import TextField from "apollo-react/components/TextField";
+import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import Table from "apollo-react/components/Table";
 
 import dataSetsValidation from "../../../../components/FormComponents/DataSetsValidation";
@@ -31,8 +32,7 @@ import {
   getSQLTables,
   getSQLColumns,
   getPreviewSQL,
-  saveDatasetData,
-  updateDatasetData,
+  hideErrorMessage,
 } from "../../../../store/actions/DataSetsAction";
 
 import { inputAlphaNumericWithUnderScore, YesNo } from "../../../../utils";
@@ -118,6 +118,8 @@ const JDBCForm = forwardRef((props, ref) => {
     sqlTables,
     sqlColumns,
     locationDetail,
+    error,
+    success,
   } = dataSets;
 
   const {
@@ -188,7 +190,7 @@ const JDBCForm = forwardRef((props, ref) => {
       customQuery: isCustomSQL,
       customSql: sQLQuery,
       tableName: tableName?.length ? tableName[0] : "",
-      offsetColumn: offsetColumn?.length ? offsetColumn[0] : "",
+      offsetColumn: offsetColumn?.value || "",
       dfTestFlag,
       conditionalExpression: filterCondition || "",
       sqlReady: ready,
@@ -196,6 +198,7 @@ const JDBCForm = forwardRef((props, ref) => {
     onSubmit(data);
   };
   useEffect(() => {
+    console.log("sqlColumns", sqlColumns, triggeredSqlData);
     if (sqlColumns?.length && triggeredSqlData) {
       submitJDBCForm(true);
       setTriggerSqlData(false);
@@ -260,10 +263,16 @@ const JDBCForm = forwardRef((props, ref) => {
 
   const handleTableSelect = (e) => {
     setTableName(e);
+    if (!e[0]) return false;
+    const colPayload = {
+      ...locationDetail,
+      tableName: e[0],
+    };
+    dispatch(getSQLColumns(colPayload));
   };
 
-  const handleColumnSelect = (e) => {
-    setOffsetColumn(e);
+  const handleColumnSelect = (e, v) => {
+    setOffsetColumn(v);
   };
 
   const handleDTChange = (e) => {
@@ -290,12 +299,26 @@ const JDBCForm = forwardRef((props, ref) => {
     }
   }, [isCustomSQL]);
 
+  // useEffect(() => {
+  //   if (dataType === "Incremental" && tableName?.length) {
+  //     dispatch(getSQLColumns({ ...locationDetail, tableName: tableName[0] }));
+  //     setTriggerSqlData(true);
+  //   }
+  // }, [dataType]);
+
   useEffect(() => {
-    if (dataType === "Incremental") {
-      dispatch(getSQLColumns({ ...locationDetail, tableName }));
-      setTriggerSqlData(true);
+    if (error) {
+      messageContext.showErrorMessage(error);
     }
-  }, [dataType]);
+    if (success) {
+      messageContext.showSuccessMessage(success);
+    }
+    if (error || success) {
+      setTimeout(() => {
+        dispatch(hideErrorMessage());
+      }, 5000);
+    }
+  }, [error, success]);
 
   useEffect(() => {
     if (initialValue) {
@@ -333,21 +356,6 @@ const JDBCForm = forwardRef((props, ref) => {
     },
   }));
 
-  const locationChange = () => {
-    messageContext.showErrorMessage(
-      `No Tables Returned. Pls reach out to admins`
-    );
-  };
-
-  const queryCompilationError = () => {
-    messageContext.showErrorMessage(
-      `Query Compilation Error, check query syntax.`
-    );
-  };
-
-  const noRecordsFound = () => {
-    messageContext.showErrorMessage(`No records found.`);
-  };
   // useEffect(() => {
   //   if (messageContext?.dataflowObj?.datasetSubmit) {
   //     console.log("datasetSubmit", messageContext.dataflowObj);
@@ -485,12 +493,16 @@ const JDBCForm = forwardRef((props, ref) => {
                 singleSelect
                 required
                 fullWidth
+                blurOnSelect={false}
+                clearOnBlur={false}
+                filterSelectedOptions={false}
+                enableVirtualization
               />
               <TextField
                 fullWidth
                 name="filterCondition"
                 id="filterCondition"
-                style={{ width: "200px", display: "flex" }}
+                style={{ width: "400px", display: "flex" }}
                 size="small"
                 value={filterCondition}
                 minHeight={32}
@@ -513,35 +525,39 @@ const JDBCForm = forwardRef((props, ref) => {
                 <Radio value="Incremental" label="Incremental" />
               </RadioGroup>
               {dataType === "Incremental" && (
-                <TextField
-                  fullWidth
-                  name="offsetColumn"
-                  id="offsetColumn"
-                  style={{ width: "200px", display: "flex" }}
-                  size="small"
-                  value={offsetColumn}
-                  minHeight={32}
-                  onChange={(e) => handleColumnSelect([e.target.value])}
-                  inputProps={{ maxLength: 255 }}
-                  label="Offset Column"
-                />
-                // <Autocomplete
+                // <TextField
+                //   fullWidth
                 //   name="offsetColumn"
                 //   id="offsetColumn"
+                //   style={{ width: "200px", display: "flex" }}
                 //   size="small"
-                //   label="Offset Column"
                 //   value={offsetColumn}
-                //   source={sqlColumns.map((e) => ({
-                //     label: e.columnName,
-                //     value: e.columnName,
-                //   }))}
-                //   className="smallSize_autocomplete"
-                //   onChange={handleColumnSelect}
-                //   variant="search"
-                //   singleSelect
-                //   required
-                //   fullWidth
+                //   minHeight={32}
+                //   onChange={(e) => handleColumnSelect([e.target.value])}
+                //   inputProps={{ maxLength: 255 }}
+                //   label="Offset Column"
                 // />
+                <AutocompleteV2
+                  name="offsetColumn"
+                  id="offsetColumn"
+                  size="small"
+                  label="Offset Column"
+                  value={offsetColumn}
+                  source={sqlColumns
+                    .filter((x) =>
+                      ["numeric", "date"].includes(x.dataType?.toLowerCase())
+                    )
+                    .map((e) => ({
+                      label: e.columnName,
+                      value: e.columnName,
+                    }))}
+                  className="smallSize_autocomplete"
+                  onChange={handleColumnSelect}
+                  variant="search"
+                  singleSelect
+                  required
+                  fullWidth
+                />
               )}
             </>
           )}

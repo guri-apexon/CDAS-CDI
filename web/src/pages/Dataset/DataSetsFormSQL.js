@@ -60,15 +60,38 @@ const DataSetsFormBase = (props) => {
   const [showPreview, setShowPreview] = useState(false);
   const dataSets = useSelector((state) => state.dataSets);
   const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
+  // const [offsetColsRender, setOffsetColsRender] = useState(0);
   const { locationDetail } = dataSets;
   const [selectedOffsetColumns, setSelectedOffsetColumns] = useState(null);
-  const onChangeOffsetColumn = (values) => {
-    setSelectedOffsetColumns(values);
-    change(
-      "serviceOwner",
-      values.map((x) => x.value)
-    );
+  const [sqlColumnsArr, setSqlColumnsArr] = useState([]);
+
+  const onChangeOffsetColumn = (obj) => {
+    setSelectedOffsetColumns(obj);
+    change("offsetColumn", obj.value);
   };
+  const changeTableName = () => {
+    change("offsetColumn", null);
+    setSelectedOffsetColumns(null);
+  };
+  useEffect(() => {
+    if (sqlColumns.length) {
+      const filtered = sqlColumns
+        .filter((x) => ["numeric", "date"].includes(x.dataType?.toLowerCase()))
+        .map((e) => ({
+          label: e.columnName,
+          value: e.columnName,
+        }));
+      setSqlColumnsArr(filtered);
+      const selected = filtered.find(
+        (x) => x.value === initialValues.offsetColumn
+      );
+      if (selected) {
+        setSelectedOffsetColumns(selected);
+      } else {
+        setSelectedOffsetColumns(null);
+      }
+    }
+  }, [sqlColumns]);
 
   useEffect(() => {
     if (formValues && ["Yes", "No"].includes(formValues)) {
@@ -85,6 +108,7 @@ const DataSetsFormBase = (props) => {
   }, [formValues.isCustomSQL]);
 
   useEffect(() => {
+    setSqlColumnsArr([]);
     dispatch(
       getSQLColumns({
         ...locationDetail,
@@ -104,34 +128,6 @@ const DataSetsFormBase = (props) => {
         customSql: formValues.sQLQuery,
         customQuery: formValues.isCustomSQL,
       })
-    );
-  };
-
-  const locationChange = () => {
-    messageContext.showErrorMessage(
-      `No Tables Returned. Pls reach out to admins`
-    );
-  };
-
-  const queryCompilationError = () => {
-    messageContext.showErrorMessage(
-      `Query Compilation Error, check query syntax.`
-    );
-  };
-
-  const noRecordsFound = () => {
-    messageContext.showErrorMessage(`No records found.`);
-  };
-
-  const notAllowIncremental = () => {
-    messageContext.showErrorMessage(
-      `Cannot switch to Incremental as the dataset that has been synched does not have any primary key defined`
-    );
-  };
-
-  const firstSyncHappened = () => {
-    messageContext.showErrorMessage(
-      `Custom SQL Query setting cannot be changed after the dataset has been sync'd`
     );
   };
 
@@ -236,10 +232,12 @@ const DataSetsFormBase = (props) => {
                 name="tableName"
                 id="tableName"
                 label="Table Name"
+                fullWidth
                 size="small"
                 style={{ width: 300, display: "block" }}
                 canDeselect={false}
                 disabled={prodLock}
+                onChange={changeTableName}
               >
                 {sqlTables?.map((e) => (
                   <MenuItem value={e.tableName}>{e.tableName}</MenuItem>
@@ -283,27 +281,21 @@ const DataSetsFormBase = (props) => {
                 <ReduxFormAutocompleteV2
                   name="offsetColumn"
                   input={{
-                    // value:
-                    //   selectedOffsetColumns ||
-                    //   sqlColumns.filter((x) =>
-                    //     initialValues?.offsetColumns.includes(x.value)
-                    //   ),
+                    value: selectedOffsetColumns || null,
                     onChange: onChangeOffsetColumn,
                   }}
-                  source={sqlColumns ?? []}
+                  source={sqlColumnsArr || []}
                   label="Offset Column"
                   size="small"
                   fullWidth
-                  showCheckboxes
+                  style={{ width: 300, display: "block" }}
                   blurOnSelect={false}
                   clearOnBlur={false}
-                  disableCloseOnSelect
                   filterSelectedOptions={false}
                   enableVirtualization
                   limitChips={5}
                   alwaysLimitChips
                   chipColor="white"
-                  multiple
                   disabled={prodLock}
                 />
 
@@ -371,10 +363,7 @@ const DataSetsFormSQL = connect((state) => ({
   ),
   datakind: state.dataSets.datakind?.records,
   sqlTables: state.dataSets.sqlTables,
-  sqlColumns: state.dataSets.sqlColumns.map((e) => ({
-    label: e.columnName,
-    value: e.columnName,
-  })),
+  sqlColumns: state.dataSets.sqlColumns,
   previewSQL: state.dataSets.previewSQL,
 }))(ReduxForm);
 

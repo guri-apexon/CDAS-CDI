@@ -206,7 +206,7 @@ exports.saveDatasetData = async (req, res) => {
   }
 };
 
-async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
+async function updateSQLDataset(res, values) {
   try {
     Logger.info({ message: "update SQL Dataset" });
     const curDate = helper.getCurrentTime();
@@ -220,25 +220,35 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
       dataType,
       offsetColumn,
       sQLQuery,
+      dfId,
+      userId,
+      dpId,
+      datasetid,
     } = values;
-    let sqlQuery = "";
+    let updatedSqlQuery = "";
     if (isCustomSQL === "No") {
       const splitted = sQLQuery.split("from");
       if (filterCondition) {
-        sqlQuery = `${splitted[0].trim()} from ${tableName} ${filterCondition}`;
+        if (!filterCondition?.toLowerCase()?.includes("where ")) {
+          return apiResponse.ErrorResponse(
+            res,
+            "Please correct your filter condition"
+          );
+        }
+        updatedSqlQuery = `${splitted[0].trim()} from ${tableName} ${filterCondition}`;
       } else {
-        sqlQuery = `${splitted[0].trim()} from ${tableName} where 1=1`;
+        updatedSqlQuery = `${splitted[0].trim()} from ${tableName} where 1=1`;
       }
     } else {
-      sqlQuery = sQLQuery;
+      updatedSqlQuery = sQLQuery;
     }
 
     const body = [
       datasetName,
-      active === true ? 1 : 0,
+      helper.stringToBoolean(active) ? 1 : 0,
       clinicalDataType ? clinicalDataType[0] : null,
       isCustomSQL,
-      sqlQuery,
+      updatedSqlQuery,
       tableName || null,
       filterCondition || null,
       dataType == "Incremental" ? "Y" : "N" || null,
@@ -247,11 +257,8 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
       datasetid,
     ];
 
-    const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
-    dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
-
     const updateDS = await DB.executeQuery(
-      `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $8, incremental = $9, updt_tm=$10 where datasetid = $11 returning *`,
+      `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, incremental = $8, offsetcolumn = $9, updt_tm=$10 where datasetid = $11 returning *`,
       body
     );
 
@@ -274,6 +281,9 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
     };
 
     const jsonData = JSON.stringify(requestData);
+
+    const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
+    dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
 
     const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
     const oldData = tempData[0];
@@ -298,14 +308,13 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
 
     return apiResponse.successResponseWithData(
       res,
-      "Operation success",
+      "Dataset updated successfully",
       updateDS.rows[0]
     );
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :update SQL Dataset");
     Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    return apiResponse.ErrorResponse(res, err?.message || "Something wrong");
   }
 }
 
@@ -335,10 +344,10 @@ exports.updateDatasetData = async (req, res) => {
       );
     }
 
-    if (values.locationType.toLowerCase() === "jdbc") {
-      return updateSQLDataset(res, values, dfId, userId, dpId, datasetid);
+    if (!helper.isSftp(values.locationType)) {
+      return updateSQLDataset(res, values);
     }
-
+    // For SFTP Datasets update
     const incremental = values.loadType === "Incremental" ? "Y" : "N";
 
     let passwordStatus = "No";
@@ -424,15 +433,15 @@ exports.updateDatasetData = async (req, res) => {
 
     return apiResponse.successResponseWithData(
       res,
-      "Operation success",
+      "Dataset updated successfully",
       updateDS.rows[0]
     );
   } catch (err) {
-    //throw error in json response with status 500.
-    console.log(err, "err");
-    Logger.error("catch :storeDataset");
     Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    return apiResponse.ErrorResponse(
+      res,
+      err.message || "Something went wrong"
+    );
   }
 };
 
@@ -582,9 +591,11 @@ exports.previewSql = async (req, res) => {
       return apiResponse.ErrorResponse(res, "Custom query is not true");
     }
   } catch (error) {
-    console.log(err);
-    Logger.error("catch :datasetpreviewSql");
-    Logger.error(err);
+    Logger.error(error);
+    return apiResponse.ErrorResponse(
+      res,
+      error.message || "Catch: Something went wrong"
+    );
   }
 };
 

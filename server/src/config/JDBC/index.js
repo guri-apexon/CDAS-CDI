@@ -1,6 +1,7 @@
 var JDBC = require("jdbc");
 var jinst = require("jdbc/lib/jinst");
 const path = require("path");
+const apiResponse = require("../../helpers/apiResponse");
 
 //driver imports
 const mysqlDriver = path.join(
@@ -54,7 +55,7 @@ module.exports = async (
 
   jdbc.initialize(function (err) {
     if (err) {
-      console.log(err);
+      return apiResponse.ErrorResponse(res, "Location config is wrong");
     }
     jdbc.reserve(function (err, connObj) {
       if (connObj) {
@@ -63,6 +64,7 @@ module.exports = async (
 
         conn.createStatement(function (err, statement) {
           if (err) {
+            console.log("err:createStatement:::: ", createStatement);
             res.status(500).json({
               status: 0,
               message: "",
@@ -71,6 +73,7 @@ module.exports = async (
           } else {
             statement.setFetchSize(100, function (err) {
               if (err) {
+                console.log("err:setFetchSize:::: ", createStatement);
                 res.status(500).json({
                   status: 0,
                   message: "",
@@ -79,20 +82,27 @@ module.exports = async (
               } else {
                 //Execute a query
                 statement.executeQuery(query, function (err, resultset) {
-                  console.log("err", err);
                   if (err) {
                     res.status(500).json({
                       status: 0,
-                      message: "",
+                      message: "Something wrong with query",
                       error: err,
                     });
                   } else {
                     resultset.toObjArray(function (err, results) {
-                      res.status(200).json({
-                        status: 1,
-                        message: msg,
-                        data: results,
-                      });
+                      if (results?.length) {
+                        res.status(200).json({
+                          status: 1,
+                          message: msg,
+                          data: results,
+                        });
+                      } else {
+                        res.status(500).json({
+                          status: 0,
+                          message:
+                            "No data returned. Please reach out to admin.",
+                        });
+                      }
                     });
                   }
                 });
