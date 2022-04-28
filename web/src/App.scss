@@ -228,6 +228,9 @@ label.table-checkbox {
   .MuiGrid-spacing-xs-2 > .MuiGrid-item {
     padding: 0 8px;
   }
+  .MuiGrid-spacing-xs-2 #testConnectionButton {
+    padding-top: 42px !important;
+  }
 }
 
 input[readonly] {
