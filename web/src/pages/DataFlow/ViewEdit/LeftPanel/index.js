@@ -176,7 +176,7 @@ const LeftPanel = () => {
           fullWidth
           size="small"
         >
-          View Settings
+          View settings
         </Button>
       </Box>
 
@@ -225,7 +225,7 @@ const LeftPanel = () => {
           </div>
         ) : (
           <div className="flex no-result">
-            <img src="assets/svg/datapackage.svg" alt="datapackage" />
+            <img src="/assets/svg/datapackage.svg" alt="datapackage" />
             <Typography>No Data Package or Datasets Added</Typography>
           </div>
         )}

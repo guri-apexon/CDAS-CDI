@@ -217,6 +217,7 @@ const AuditLog = () => {
                 buttonProps={[
                   {
                     label: "Back",
+                    variant: "secondary",
                     size: "small",
                     onClick: () => history.push("/dashboard"),
                   },
