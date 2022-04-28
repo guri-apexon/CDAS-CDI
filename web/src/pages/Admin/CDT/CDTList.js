@@ -390,7 +390,6 @@ export default function CDTList() {
                     value={cName}
                     name="name"
                     onChange={(e) => handleChange(e)}
-                    required
                     fullWidth
                     helperText={
                       (nameError && "Only Alphanumeric and '_' are allowed") ||

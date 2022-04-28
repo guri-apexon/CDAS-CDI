@@ -98,11 +98,13 @@ const SettingCell = ({ row }) => {
                 buttonProps={[
                   {
                     variant: "text",
+                    size: "small",
                     label: "Cancel",
                     onClick: () => row.onCancel(),
                   },
                   {
                     variant: "primary",
+                    size: "small",
                     label: "Save",
                     disabled: !row.editedRow.name || !row.editedRow.value,
                     onClick: () => row.onSave(),
@@ -187,7 +189,7 @@ const SystemSettings = () => {
         newValue: true,
       },
     ];
-    setRows([...rows, ...r]);
+    setRows([...r, ...rows]);
     setEditedRow(r[0]);
     setDisableCreateMode(true);
   };
