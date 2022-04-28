@@ -24,7 +24,7 @@ async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
 async function saveSQLDataset(res, values, dpId, userId, dfId) {
   try {
     Logger.info({ message: "create SQL Dataset" });
-    const datasetId = helper.generateUniqueID();
+    const dsId = helper.generateUniqueID();
     const curDate = helper.getCurrentTime();
     let sqlQuery = "";
     if (values.isCustomSQL === "No") {
@@ -38,7 +38,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     }
 
     const body = [
-      datasetId,
+      dsId,
       values.datasetName,
       values.active === true ? 1 : 0,
       values.clinicalDataType[0] ? values.clinicalDataType[0] : null,
@@ -53,7 +53,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     ];
 
     const conf_Data = {
-      datasetId: datasetId,
+      datasetId: dsId,
       datapackageid: dpId,
       mnemonic: values.datasetName,
       active: values.active === true ? 1 : 0,
@@ -77,7 +77,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
       dfId,
       userId,
       dpId,
-      datasetId,
+      dsId,
       jsonData,
       "New Dataset"
     );
@@ -117,7 +117,7 @@ exports.saveDatasetData = async (req, res) => {
       return saveSQLDataset(res, values, dpId, userId, dfId);
     }
 
-    const datasetId = helper.generateUniqueID();
+    const dsId = helper.generateUniqueID();
     const curDate = helper.getCurrentTime();
 
     let passwordStatus = "No";
@@ -125,7 +125,7 @@ exports.saveDatasetData = async (req, res) => {
     if (values.filePwd) {
       passwordStatus = "Yes";
       try {
-        await helper.writeVaultData(`${dfId}/${dpId}/${datasetId}`, {
+        await helper.writeVaultData(`${dfId}/${dpId}/${dsId}`, {
           password: values.filePwd,
         });
       } catch (error) {
@@ -135,10 +135,10 @@ exports.saveDatasetData = async (req, res) => {
     }
 
     Logger.info({ message: "create Dataset" });
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrow, footerrow, headerrownumber, footerrownumber, active, name, path,file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $18, $19, $20, $21, $22) returning *`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) returning *`;
 
     const body = [
-      datasetId,
+      dsId,
       values.datasetName,
       values.fileType,
       values.encoding || null,
@@ -163,7 +163,7 @@ exports.saveDatasetData = async (req, res) => {
     ];
 
     const conf_Data = {
-      datasetId: datasetId,
+      datasetId: dsId,
       datapackageid: dpId,
       mnemonic: values.datasetName,
       type: values.fileType,
@@ -192,7 +192,7 @@ exports.saveDatasetData = async (req, res) => {
         dfId,
         userId,
         dpId,
-        datasetId,
+        dsId,
         jsonData,
         "New Dataset"
       );
