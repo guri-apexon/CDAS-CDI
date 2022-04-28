@@ -356,24 +356,14 @@ exports.insertValidation = (req) => {
                   obj.delimiter ||
                   obj.quote ||
                   obj.rowDecreaseAllowed ||
+                  obj.rowDecreaseAllowed === 0 ||
+                  obj.dataTransferFrequency === 0 ||
                   obj.dataTransferFrequency ||
                   obj.escapeCode ||
                   obj.path
                 ) {
                   validate.push({
                     err: " In JDBC Data Set Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, escapeCode, path should be blank ",
-                  });
-                }
-
-                if (obj.rowDecreaseAllowed === 0) {
-                  validate.push({
-                    err: " In JDBC rowDecreaseAllowed should be blank ",
-                  });
-                }
-
-                if (obj.dataTransferFrequency === 0) {
-                  validate.push({
-                    err: " In JDBC dataTransferFrequency should be blank ",
                   });
                 }
 
@@ -800,6 +790,8 @@ exports.packageLevelInsert = async (
             obj.delimiter ||
             obj.quote ||
             obj.rowDecreaseAllowed ||
+            obj.dataTransferFrequency === 0 ||
+            obj.rowDecreaseAllowed === 0 ||
             obj.dataTransferFrequency ||
             obj.path ||
             obj.escapeCode
@@ -807,14 +799,6 @@ exports.packageLevelInsert = async (
             errorPackage.push(
               " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, path, escapeCode should be Blank "
             );
-          }
-
-          if (obj.rowDecreaseAllowed === 0) {
-            errorPackage.push(" In JDBC rowDecreaseAllowed should be blank");
-          }
-
-          if (obj.dataTransferFrequency === 0) {
-            errorPackage.push(" In JDBC dataTransferFrequency should be blank");
           }
 
           const dsArray = [
@@ -1282,20 +1266,14 @@ exports.datasetLevelInsert = async (
         obj.quote ||
         obj.rowDecreaseAllowed ||
         obj.dataTransferFrequency ||
+        obj.rowDecreaseAllowed === 0 ||
+        obj.dataTransferFrequency === 0 ||
         obj.path ||
         obj.escapeCode
       ) {
         errorDataset.push(
           " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCode should be Blank "
         );
-      }
-
-      if (obj.rowDecreaseAllowed === 0) {
-        errorDataset.push(" In JDBC rowDecreaseAllowed should be blank");
-      }
-
-      if (obj.dataTransferFrequency === 0) {
-        errorDataset.push(" In JDBC dataTransferFrequency should be blank");
       }
 
       const dsElse = [
@@ -2203,6 +2181,8 @@ exports.datasetUpdate = async (
         data.delimiter ||
         data.quote ||
         data.rowDecreaseAllowed ||
+        data.rowDecreaseAllowed === 0 ||
+        data.dataTransferFrequency === 0 ||
         data.dataTransferFrequency ||
         data.path ||
         data.escapeCode
@@ -2210,20 +2190,6 @@ exports.datasetUpdate = async (
         errorDataset.push(
           " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCode should be Blank "
         );
-      }
-
-      if (typeof data.rowDecreaseAllowed != "undefined") {
-        if (data.rowDecreaseAllowed === 0) {
-          errorDataset.push("In SFTP/FTPS rowDecreaseAllowed should be blank");
-        }
-      }
-
-      if (typeof data.dataTransferFrequency != "undefined") {
-        if (data.dataTransferFrequency === 0) {
-          errorDataset.push(
-            "In SFTP/FTPS dataTransferFrequency should be blank"
-          );
-        }
       }
 
       if (data.customQuery) {
