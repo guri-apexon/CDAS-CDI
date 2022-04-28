@@ -845,7 +845,7 @@ export default function DSColumnTable({
                     value={selectedRow.values}
                     onChange={(e) => onChangeLOV(e)}
                     sizeAdjustable
-                    // minWidth={300}
+                    minWidth={300}
                     minHeight={278}
                   />
                 </div>
