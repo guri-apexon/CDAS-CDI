@@ -20,7 +20,7 @@ const CDIAdmin = () => {
   return (
     <main className="cdi-page-wrapper">
       <div className="page-header">
-        <Typography variant="h2" gutterBottom>
+        <Typography style={{ fontSize: "24px" }} variant="h2" gutterBottom>
           CDI Admin
         </Typography>
         <Tabs

@@ -101,16 +101,7 @@ exports.insertValidation = (req) => {
                 value: each.noPackageConfig,
                 type: "boolean",
               },
-              {
-                key: "Package Path  ",
-                value: each.path,
-                type: "string",
-              },
-              {
-                key: "Package Naming Convention",
-                value: each.name,
-                type: "string",
-              },
+
               {
                 key: "active",
                 value: each.active,
@@ -124,6 +115,16 @@ exports.insertValidation = (req) => {
                 {
                   key: "SAS XPT Method ",
                   value: each.sasXptMethod,
+                  type: "string",
+                },
+                {
+                  key: "Package Naming Convention",
+                  value: each.name,
+                  type: "string",
+                },
+                {
+                  key: "Package Path  ",
+                  value: each.path,
                   type: "string",
                 },
               ];
@@ -537,20 +538,11 @@ exports.packageLevelInsert = async (
           value: data.noPackageConfig,
           type: "boolean",
         },
-        {
-          key: "Package Naming Convention",
-          value: data.name,
-          type: "string",
-        },
+
         {
           key: "active",
           value: data.active,
           type: "boolean",
-        },
-        {
-          key: "Package Path  ",
-          value: data.path,
-          type: "string",
         },
       ];
 
@@ -560,6 +552,16 @@ exports.packageLevelInsert = async (
           {
             key: "SAS XPT Method ",
             value: data.sasXptMethod,
+            type: "string",
+          },
+          {
+            key: "Package Naming Convention",
+            value: data.name,
+            type: "string",
+          },
+          {
+            key: "Package Path  ",
+            value: data.path,
             type: "string",
           },
         ];
@@ -1754,12 +1756,7 @@ exports.packageUpdate = async (
 
     if (helper.isSftp(LocationType)) {
       // if (LocationType == "Hive CDH") {
-      if (typeof data.path != "undefined") {
-        valData.push({ key: "path ", value: data.path, type: "string" });
-      }
-      if (typeof data.name != "undefined") {
-        valData.push({ key: "name ", value: data.name, type: "string" });
-      }
+
       if (typeof data.noPackageConfig != "undefined") {
         valData.push({
           key: "noPackageConfig ",
@@ -1787,6 +1784,21 @@ exports.packageUpdate = async (
           TypeSas.push({
             key: "sasXptMethod",
             value: data.sasXptMethod,
+            type: "string",
+          });
+        }
+        if (typeof data.name != "undefined") {
+          TypeSas.push({
+            key: "name",
+            value: data.name,
+            type: "string",
+          });
+        }
+
+        if (typeof data.path != "undefined") {
+          TypeSas.push({
+            key: "path",
+            value: data.path,
             type: "string",
           });
         }
@@ -2010,33 +2022,35 @@ exports.datasetUpdate = async (
         errorDataset.push(dataSetRes);
       }
 
-      if (data.type.toLowerCase() === "delimited") {
-        const dlData = [];
-        if (typeof data.delimiter != "undefined") {
-          dlData.push({
-            key: "delimiter ",
-            value: data.delimiter,
-            type: "string",
-          });
-        }
-        if (typeof data.quote != "undefined") {
-          dlData.push({
-            key: "quote ",
-            value: data.quote,
-            type: "string",
-          });
-        }
-        if (typeof data.escapeCode != "undefined") {
-          dlData.push({
-            key: "escapeCode ",
-            value: data.escapeCode,
-            type: "string",
-          });
-        }
+      if (data.type) {
+        if (data.type.toLowerCase() === "delimited") {
+          const dlData = [];
+          if (typeof data.delimiter != "undefined") {
+            dlData.push({
+              key: "delimiter ",
+              value: data.delimiter,
+              type: "string",
+            });
+          }
+          if (typeof data.quote != "undefined") {
+            dlData.push({
+              key: "quote ",
+              value: data.quote,
+              type: "string",
+            });
+          }
+          if (typeof data.escapeCode != "undefined") {
+            dlData.push({
+              key: "escapeCode ",
+              value: data.escapeCode,
+              type: "string",
+            });
+          }
 
-        let dlRes = helper.validation(dlData);
-        if (dlRes.length > 0) {
-          errorDataset.push(dlRes);
+          let dlRes = helper.validation(dlData);
+          if (dlRes.length > 0) {
+            errorDataset.push(dlRes);
+          }
         }
       }
 

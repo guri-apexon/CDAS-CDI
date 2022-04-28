@@ -159,7 +159,7 @@ export default function DataflowTab({ updateData }) {
   const dispatch = useDispatch();
   const dashboard = useSelector((state) => state.dashboard);
   const [tableRows, setTableRows] = useState([...rowData]);
-  const { selectedCard } = dashboard;
+  const { selectedCard, loading: dLoading } = dashboard;
   const { dfCount, dsCount } = selectedCard;
 
   const [expandedRows, setExpandedRows] = useState([]);
@@ -197,6 +197,10 @@ export default function DataflowTab({ updateData }) {
     setSelectedFlow(null);
     setShowHardDelete(false);
   };
+
+  useEffect(() => {
+    setLoading(dLoading);
+  }, [dLoading]);
 
   const handleHardDelete = async () => {
     // console.log("delete", selectedFlow);
@@ -528,7 +532,7 @@ export default function DataflowTab({ updateData }) {
       header: "Datasets",
       accessor: "dataSets",
       frozen: false,
-      align: "right",
+      // align: "right",
       sortFunction: compareNumbers,
       customCell: LinkCell,
       filterFunction: numberSearchFilter("dataSets"),
@@ -547,7 +551,7 @@ export default function DataflowTab({ updateData }) {
       header: "Version",
       accessor: "version",
       frozen: false,
-      align: "right",
+      // align: "right",
       sortFunction: compareNumbers,
       filterFunction: numberSearchFilter("version"),
       filterComponent: IntegerFilter,

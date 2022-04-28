@@ -261,7 +261,7 @@ const LocationForm = (props) => {
                 disabled={loading}
                 onClick={() => props.testConnection(formState)}
               >
-                Test Connection
+                Test connection
               </Button>
             </Grid>
           )}
