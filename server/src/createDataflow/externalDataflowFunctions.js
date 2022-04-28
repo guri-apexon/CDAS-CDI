@@ -290,23 +290,17 @@ exports.insertValidation = (req) => {
                             value: el.unique,
                             type: "boolean",
                           },
+                          {
+                            key: "Alphanumeric, Numeric or Date",
+                            value: el.dataType,
+                            type: "string",
+                          },
                         ];
 
                         // Validation Function call for column defination
                         let clRes = helper.validation(clArray);
                         if (clRes.length > 0) {
                           validate.push(clRes);
-                        }
-
-                        if (
-                          el.dataType !== null &&
-                          el.dataType !== "" &&
-                          el.dataType !== "undefined"
-                        ) {
-                        } else {
-                          validate.push({
-                            err: " Data Type is required and data type should be Alphanumeric, Numeric or Date ",
-                          });
                         }
 
                         if (
@@ -497,18 +491,12 @@ exports.insertValidation = (req) => {
                           value: el.unique,
                           type: "boolean",
                         },
+                        {
+                          key: "Alphanumeric, Numeric or Date",
+                          value: el.dataType,
+                          type: "string",
+                        },
                       ];
-
-                      if (
-                        el.dataType !== null &&
-                        el.dataType !== "" &&
-                        el.dataType !== "undefined"
-                      ) {
-                      } else {
-                        validate.push({
-                          err: " Data Type is required and data type should be Alphanumeric, Numeric or Date ",
-                        });
-                      }
 
                       // Validation Function call for column defination
                       let clRes = helper.validation(clArray);
@@ -1023,22 +1011,16 @@ exports.packageLevelInsert = async (
                   value: el.unique,
                   type: "boolean",
                 },
+                {
+                  key: "Alphanumeric, Numeric or Date",
+                  value: el.dataType,
+                  type: "string",
+                },
               ];
 
               let clResif = helper.validation(clArrayif);
               if (clResif.length > 0) {
                 errorPackage.push(clResif);
-              }
-
-              if (
-                el.dataType !== null &&
-                el.dataType !== "" &&
-                el.dataType !== "undefined"
-              ) {
-              } else {
-                errorPackage.push(
-                  " Data Type is required and data type should be Alphanumeric, Numeric or Date "
-                );
               }
 
               if (
@@ -1079,22 +1061,16 @@ exports.packageLevelInsert = async (
                   value: el.unique,
                   type: "boolean",
                 },
+                {
+                  key: "Alphanumeric, Numeric or Date",
+                  value: el.dataType,
+                  type: "string",
+                },
               ];
 
               let clRes = helper.validation(clArray);
               if (clRes.length > 0) {
                 errorPackage.push(clRes);
-              }
-
-              if (
-                el.dataType !== null &&
-                el.dataType !== "" &&
-                el.dataType !== "undefined"
-              ) {
-              } else {
-                errorPackage.push(
-                  " Data Type is required and data type should be Alphanumeric, Numeric or Date "
-                );
               }
 
               if (el.characterMin || el.characterMax || el.lov || el.position) {
@@ -1512,22 +1488,16 @@ exports.datasetLevelInsert = async (
               value: el.unique,
               type: "boolean",
             },
+            {
+              key: "Alphanumeric, Numeric or Date",
+              value: el.dataType,
+              type: "string",
+            },
           ];
 
           let clResIf = helper.validation(clArrayIf);
           if (clResIf.length > 0) {
             errorDataset.push(clResIf);
-          }
-
-          if (
-            el.dataType !== null &&
-            el.dataType !== "" &&
-            el.dataType !== "undefined"
-          ) {
-          } else {
-            errorDataset.push(
-              " Data Type is required and data type should be Alphanumeric, Numeric or Date "
-            );
           }
 
           if (
@@ -1566,22 +1536,16 @@ exports.datasetLevelInsert = async (
               value: el.includeFlag,
               type: "boolean",
             },
+            {
+              key: "Alphanumeric, Numeric or Date",
+              value: el.dataType,
+              type: "string",
+            },
           ];
 
           let clRes = helper.validation(clArray);
           if (clRes.length > 0) {
             errorDataset.push(clRes);
-          }
-
-          if (
-            el.dataType !== null &&
-            el.dataType !== "" &&
-            el.dataType !== "undefined"
-          ) {
-          } else {
-            errorDataset.push(
-              " Data Type is required and data type should be Alphanumeric, Numeric or Date "
-            );
           }
 
           if (el.characterMin || el.characterMax || el.lov || el.position) {
