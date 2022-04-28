@@ -139,6 +139,7 @@ const LeftPanel = () => {
             control={
               <Switch
                 color="primary"
+                className="MuiSwitch"
                 size="small"
                 checked={active === 0 ? false : true}
               />

@@ -691,8 +691,8 @@ export default function DataflowTab({ updateData }) {
         variant="secondary"
         icon={<PlusIcon />}
         size="small"
+        style={{ marginLeft: "8px" }}
         onClick={() => history.push("/dashboard/dataflow-management")}
-        style={{ marginRight: 10 }}
       >
         Add a data flow
       </Button>

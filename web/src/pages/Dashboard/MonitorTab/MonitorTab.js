@@ -148,16 +148,18 @@ export default function MonitorTab({ fetchLatestData, protId }) {
           >
             Study Monitor Summary
           </Typography>
-          <SegmentedControlGroup
-            value={control}
-            exclusive
-            style={{ margin: "auto 20%" }}
-            onChange={(event, value) => onSegmentChange(value)}
-          >
-            <SegmentedControl value="all">All</SegmentedControl>
-            <SegmentedControl value="0">Production</SegmentedControl>
-            <SegmentedControl value="1">Test</SegmentedControl>
-          </SegmentedControlGroup>
+          <div style={{ textAlign: "center" }}>
+            <SegmentedControlGroup
+              value={control}
+              exclusive
+              style={{ margin: "auto 20%" }}
+              onChange={(event, value) => onSegmentChange(value)}
+            >
+              <SegmentedControl value="all">All</SegmentedControl>
+              <SegmentedControl value="0">Production</SegmentedControl>
+              <SegmentedControl value="1">Test</SegmentedControl>
+            </SegmentedControlGroup>
+          </div>
         </div>
         <div className="dashboardSummary">
           <div className="dashInfo">

@@ -205,7 +205,7 @@ const AuditLog = () => {
                 {dataflowName}
               </Typography>
             </div>
-            <div className="flex flex-center justify-between">
+            <div style={{ display: "flex", flexDirection: "column" }}>
               <Typography variant="body2" className="b-font">
                 {dataSetCount && dataSetCount > 1
                   ? `${dataSetCount} datasets`
@@ -213,7 +213,6 @@ const AuditLog = () => {
               </Typography>
 
               <ButtonGroup
-                alignItems="right"
                 buttonProps={[
                   {
                     label: "Back",
