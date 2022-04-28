@@ -224,6 +224,8 @@ exports.insertValidation = (req) => {
 
                   if (
                     obj.customQuery ||
+                    obj.customQuery === 0 ||
+                    obj.incremental === 0 ||
                     obj.customSql ||
                     obj.conditionalExpression ||
                     obj.incremental ||
@@ -231,18 +233,6 @@ exports.insertValidation = (req) => {
                   ) {
                     validate.push({
                       err: " In SFTP/FTPS customQuery, customSQL, conditionalExpression, incremental, offsetColumn should be blank ",
-                    });
-                  }
-
-                  if (obj.incremental === 0) {
-                    validate.push({
-                      err: " In SFTP/FTPS incremental should be blank ",
-                    });
-                  }
-
-                  if (obj.customQuery === 0) {
-                    validate.push({
-                      err: " In SFTP/FTPS customQuery should be blank ",
                     });
                   }
 
@@ -804,25 +794,16 @@ exports.packageLevelInsert = async (
           }
           if (
             obj.customQuery ||
+            obj.customQuery === 0 ||
             obj.customSql ||
             obj.incremental ||
+            obj.incremental === 0 ||
             obj.conditionalExpression ||
             obj.offsetColumn
           ) {
             errorPackage.push(
               "For SFTP/FTPS customQuery, customSql, incremental, conditionalExpression, offsetColumn fields should be Blank "
             );
-          }
-
-          if (typeof obj.incremental != "undefined") {
-            if (obj.incremental === 0) {
-              errorPackage.push(" In SFTP/FTPS incremental should be blank ");
-            }
-          }
-          if (typeof obj.customQuery != "undefined") {
-            if (obj.customQuery === 0) {
-              errorPackage.push(" In SFTP/FTPS customQuery should be blank ");
-            }
           }
         } else {
           if (
@@ -1305,24 +1286,16 @@ exports.datasetLevelInsert = async (
 
       if (
         obj.customQuery ||
+        obj.customQuery === 0 ||
         obj.customSql ||
         obj.incremental ||
+        obj.incremental === 0 ||
         obj.conditionalExpression ||
         obj.offsetColumn
       ) {
         errorDataset.push(
           "For SFTP/FTPS customQuery, customSql, incremental, conditionalExpression, offsetColumn fields should be Blank "
         );
-      }
-      if (typeof obj.incremental != "undefined") {
-        if (obj.incremental === 0) {
-          errorDataset.push("In SFTP/FTPS incremental should be blank");
-        }
-      }
-      if (typeof obj.customQuery != "undefined") {
-        if (obj.customQuery === 0) {
-          errorDataset.push("In SFTP/FTPS customQuery should be blank");
-        }
       }
     } else {
       // console.log("else data set1");
@@ -2001,11 +1974,7 @@ exports.packageUpdate = async (
     if (data.password) {
       updateQueryDP += `, password='${data.password}'`;
     }
-    // if (
-    //   data.noPackageConfig ||
-    //   data.noPackageConfig === 0 ||
-    //   data.noPackageConfig === false
-    // ) {
+
     if (typeof data.noPackageConfig != "undefined") {
       updateQueryDP += `, nopackageconfig='
       ${helper.stringToBoolean(data.noPackageConfig) ? 1 : 0}'`;
@@ -2099,7 +2068,7 @@ exports.datasetUpdate = async (
 
     if (helper.isSftp(LocationType)) {
       // if (LocationType === "Hive CDH") {
-      console.log("dadad");
+
       if (typeof data.mnemonic != "undefined") {
         valDataset.push({
           key: "mnemonic ",
@@ -2156,7 +2125,6 @@ exports.datasetUpdate = async (
         }
       }
       if (typeof data.columnCount != "undefined") {
-        console.log("333");
         valDataset.push({
           key: "columnCount ",
           value: data.columnCount,
@@ -2214,25 +2182,16 @@ exports.datasetUpdate = async (
 
       if (
         data.customQuery ||
+        data.customQuery === 0 ||
         data.customSql ||
         data.incremental ||
+        data.incremental === 0 ||
         data.conditionalExpression ||
         data.offsetColumn
       ) {
         errorDataset.push(
           " For SFTP/FTPS, customQuery, customSql incremental, conditionalExpression, offsetColumn fields should be Blank "
         );
-      }
-
-      if (typeof data.incremental != "undefined") {
-        if (data.incremental === 0) {
-          errorDataset.push("In SFTP/FTPS incremental should be blank");
-        }
-      }
-      if (typeof data.customQuery != "undefined") {
-        if (data.customQuery === 0) {
-          errorDataset.push("In SFTP/FTPS customQuery should be blank");
-        }
       }
     } else {
       if (typeof data.mnemonic != "undefined") {
