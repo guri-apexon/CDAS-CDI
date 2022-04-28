@@ -1,3 +1,5 @@
+import { isEmpty } from "lodash";
+
 export const checkRequired = (value) => {
   if (!value || (typeof value === "string" && !value.trim())) {
     return "Required";
@@ -170,3 +172,24 @@ export const removeUndefined = (arr) =>
       res[key] = arr[key];
       return res;
     }, {});
+
+export const validateRow = (row) => {
+  const { isHavingColumnName, minLength, maxLength, dataType, columnName } =
+    row;
+
+  const min = Number.parseInt(minLength, 10);
+  const max = Number.parseInt(maxLength, 10);
+
+  let check = isHavingColumnName;
+  if (!dataType || !columnName) {
+    check = false;
+  } else if (
+    (minLength || maxLength) &&
+    (Number.isNaN(min) || Number.isNaN(max))
+  ) {
+    check = false;
+  } else if (isHavingColumnName && !Number.isNaN(min) && !Number.isNaN(max)) {
+    check = min < max;
+  }
+  return check;
+};
