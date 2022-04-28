@@ -165,7 +165,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 inputProps={{ maxLength: 30 }}
                 required
-                label="Data Set Name (Mnemonic)"
+                label="Dataset Name (Mnemonic)"
               />
               <ReduxFormSelect
                 name="fileType"

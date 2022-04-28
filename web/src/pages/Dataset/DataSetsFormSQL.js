@@ -170,7 +170,7 @@ const DataSetsFormBase = (props) => {
                 style={{ width: 275 }}
                 name="datasetName"
                 inputProps={{ maxLength: 30 }}
-                label="Data Set Name (Mnemonic)"
+                label="Dataset Name (Mnemonic)"
                 size="small"
                 required
                 disabled={prodLock}
