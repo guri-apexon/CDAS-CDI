@@ -190,15 +190,15 @@ export default function CDTList() {
 
   const handleLink = async (e, Id) => {
     e.preventDefault();
-    const selected = await cdtList.find((d) => d.dkId === Id);
+    const selected = cdtList.find((d) => d.dkId === Id);
     await getENSlists();
-    const { dkName, dkStatus, dkDesc, dkESName } = await selected;
+    const { dkName, dkStatus, dkDesc, dkESName } = selected;
     const picked = ensList.find((d) => d.label === dkESName);
     // console.log("handleLink", "test", selected, picked);
     setSelectedRow(Id);
-    setENS(dkESName);
-    setCName(dkName);
-    setDesc(dkDesc);
+    setENS(dkESName || "");
+    setCName(dkName || "");
+    setDesc(dkDesc || "");
     setStatus(dkStatus === 1 ? true : false);
     if (picked) {
       setENSId(picked.value);

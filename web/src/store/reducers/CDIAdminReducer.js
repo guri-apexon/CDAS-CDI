@@ -133,7 +133,7 @@ const CDIAdminReducer = (state = initialState, action) =>
       case CREARE_SETTINGS_SUCCESS:
         newState.upsertLoading = false;
         newState.upserted = !state.upserted;
-        newState.success = "Settigns inserted succesfully";
+        newState.success = "Settings inserted succesfully";
         break;
       case CREARE_SETTINGS_FAILURE:
         newState.upsertLoading = false;
