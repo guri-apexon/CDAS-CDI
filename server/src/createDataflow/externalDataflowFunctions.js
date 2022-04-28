@@ -284,11 +284,7 @@ exports.insertValidation = (req) => {
                             value: el.name,
                             type: "string",
                           },
-                          {
-                            key: "Data Type",
-                            value: el.dataType,
-                            type: "string",
-                          },
+
                           {
                             key: "Primary Key",
                             value: el.primaryKey,
@@ -310,6 +306,17 @@ exports.insertValidation = (req) => {
                         let clRes = helper.validation(clArray);
                         if (clRes.length > 0) {
                           validate.push(clRes);
+                        }
+
+                        if (
+                          el.dataType !== null &&
+                          el.dataType !== "" &&
+                          el.dataType !== "undefined"
+                        ) {
+                        } else {
+                          validate.push({
+                            err: " Data Type is required and data type should be Alphanumeric, Numeric or Date ",
+                          });
                         }
 
                         if (
@@ -484,11 +491,7 @@ exports.insertValidation = (req) => {
                           value: el.name,
                           type: "string",
                         },
-                        {
-                          key: "Data Type ",
-                          value: el.dataType,
-                          type: "string",
-                        },
+
                         {
                           key: "Primary Key",
                           value: el.primaryKey,
@@ -505,6 +508,17 @@ exports.insertValidation = (req) => {
                           type: "boolean",
                         },
                       ];
+
+                      if (
+                        el.dataType !== null &&
+                        el.dataType !== "" &&
+                        el.dataType !== "undefined"
+                      ) {
+                      } else {
+                        validate.push({
+                          err: " Data Type is required and data type should be Alphanumeric, Numeric or Date ",
+                        });
+                      }
 
                       // Validation Function call for column defination
                       let clRes = helper.validation(clArray);
@@ -1012,11 +1026,6 @@ exports.packageLevelInsert = async (
                   value: el.name,
                   type: "string",
                 },
-                {
-                  key: "Data Type",
-                  value: el.dataType,
-                  type: "string",
-                },
 
                 {
                   key: "Primary Key",
@@ -1041,6 +1050,17 @@ exports.packageLevelInsert = async (
               }
 
               if (
+                el.dataType !== null &&
+                el.dataType !== "" &&
+                el.dataType !== "undefined"
+              ) {
+              } else {
+                errorPackage.push(
+                  " Data Type is required and data type should be Alphanumeric, Numeric or Date "
+                );
+              }
+
+              if (
                 typeof el.characterMin !== "undefined" &&
                 typeof el.characterMax !== "undefined"
               ) {
@@ -1057,11 +1077,7 @@ exports.packageLevelInsert = async (
                   value: el.name,
                   type: "string",
                 },
-                {
-                  key: "Data Type",
-                  value: el.dataType,
-                  type: "string",
-                },
+
                 {
                   key: "Include Flag",
                   value: el.includeFlag,
@@ -1087,6 +1103,17 @@ exports.packageLevelInsert = async (
               let clRes = helper.validation(clArray);
               if (clRes.length > 0) {
                 errorPackage.push(clRes);
+              }
+
+              if (
+                el.dataType !== null &&
+                el.dataType !== "" &&
+                el.dataType !== "undefined"
+              ) {
+              } else {
+                errorPackage.push(
+                  " Data Type is required and data type should be Alphanumeric, Numeric or Date "
+                );
               }
 
               if (el.characterMin || el.characterMax || el.lov || el.position) {
@@ -1496,11 +1523,7 @@ exports.datasetLevelInsert = async (
               value: el.name,
               type: "string",
             },
-            {
-              key: "Data Type",
-              value: el.dataType,
-              type: "string",
-            },
+
             {
               key: "Primary Key",
               value: el.primaryKey,
@@ -1524,6 +1547,17 @@ exports.datasetLevelInsert = async (
           }
 
           if (
+            el.dataType !== null &&
+            el.dataType !== "" &&
+            el.dataType !== "undefined"
+          ) {
+          } else {
+            errorDataset.push(
+              " Data Type is required and data type should be Alphanumeric, Numeric or Date "
+            );
+          }
+
+          if (
             typeof el.characterMin != "undefined" &&
             typeof el.characterMax != "undefined"
           ) {
@@ -1538,11 +1572,7 @@ exports.datasetLevelInsert = async (
               value: el.name,
               type: "string",
             },
-            {
-              key: "Data Type",
-              value: el.dataType,
-              type: "string",
-            },
+
             {
               key: "Primary Key",
               value: el.primaryKey,
@@ -1568,6 +1598,17 @@ exports.datasetLevelInsert = async (
           let clRes = helper.validation(clArray);
           if (clRes.length > 0) {
             errorDataset.push(clRes);
+          }
+
+          if (
+            el.dataType !== null &&
+            el.dataType !== "" &&
+            el.dataType !== "undefined"
+          ) {
+          } else {
+            errorDataset.push(
+              " Data Type is required and data type should be Alphanumeric, Numeric or Date "
+            );
           }
 
           if (el.characterMin || el.characterMax || el.lov || el.position) {
