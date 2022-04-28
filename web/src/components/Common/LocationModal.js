@@ -254,7 +254,12 @@ const LocationForm = (props) => {
             />
           </Grid>
           {!props.locationViewMode && (
-            <Grid item md={2} style={{ paddingTop: 54 }}>
+            <Grid
+              item
+              md={2}
+              id="testConnectionButton"
+              style={{ paddingTop: 50 }}
+            >
               <Button
                 variant="secondary"
                 size="small"
