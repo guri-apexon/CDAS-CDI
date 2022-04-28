@@ -210,11 +210,12 @@ exports.insertValidation = (req) => {
                     },
                   ];
 
-                  if (obj.columnCount === 0) {
-                    validate.push({
-                      err: " columnCount must be greater than zero ",
-                    });
-                  }
+                  // point - 28 story - 7277
+                  // if (obj.columnCount === 0) {
+                  //   validate.push({
+                  //     err: " columnCount must be greater than zero ",
+                  //   });
+                  // }
 
                   if (obj.dataTransferFrequency === 0) {
                     validate.push({
@@ -395,11 +396,12 @@ exports.insertValidation = (req) => {
                   },
                 ];
 
-                if (obj.columnCount === 0) {
-                  validate.push({
-                    err: " columnCount must be greater than zero ",
-                  });
-                }
+                // point - 28 story - 7277
+                // if (obj.columnCount === 0) {
+                //   validate.push({
+                //     err: " columnCount must be greater than zero ",
+                //   });
+                // }
 
                 if (obj.customQuery.toLowerCase() == "yes") {
                   if (
@@ -497,22 +499,13 @@ exports.insertValidation = (req) => {
                       if (
                         el.characterMin ||
                         el.characterMax ||
+                        el.characterMin === 0 ||
+                        el.characterMax === 0 ||
                         el.lov ||
                         el.position
                       ) {
                         validate.push({
                           err: " In JDBC characterMin, characterMax, position, lov should be blank ",
-                        });
-                      }
-
-                      if (el.characterMin === 0) {
-                        validate.push({
-                          err: " In JDBC characterMin should be blank ",
-                        });
-                      }
-                      if (el.characterMax === 0) {
-                        validate.push({
-                          err: " In JDBC characterMax should be blank ",
                         });
                       }
                     }
@@ -734,9 +727,10 @@ exports.packageLevelInsert = async (
             },
           ];
 
-          if (obj.columnCount === 0) {
-            errorPackage.push("columnCount must be greater than zero");
-          }
+          // point - 28 story - 7277
+          // if (obj.columnCount === 0) {
+          //   errorPackage.push("columnCount must be greater than zero");
+          // }
 
           if (obj.dataTransferFrequency === 0) {
             errorPackage.push(
@@ -829,9 +823,10 @@ exports.packageLevelInsert = async (
             },
           ];
 
-          if (obj.columnCount === 0) {
-            errorPackage.push("columnCount must be greater than zero");
-          }
+          // point - 28 story - 7277
+          // if (obj.columnCount === 0) {
+          //   errorPackage.push("columnCount must be greater than zero");
+          // }
 
           const dsreq = helper.validation(dsArray);
           if (dsreq.length > 0) {
@@ -1057,19 +1052,18 @@ exports.packageLevelInsert = async (
                 errorPackage.push(clRes);
               }
 
-              if (el.characterMin || el.characterMax || el.lov || el.position) {
+              if (
+                el.characterMin ||
+                el.characterMin === 0 ||
+                el.characterMax === 0 ||
+                el.characterMax ||
+                el.lov ||
+                el.position
+              ) {
                 // console.log(val.key, val.value);
                 errorPackage.push(
                   "For JBDC characterMin, characterMax, lov, position fields should be Blank "
                 );
-              }
-
-              if (el.characterMin === 0) {
-                errorPackage.push(" In JDBC characterMin should be blank");
-              }
-
-              if (el.characterMax === 0) {
-                errorPackage.push(" In JDBC characterMax should be blank");
               }
             }
 
@@ -1209,9 +1203,10 @@ exports.datasetLevelInsert = async (
         },
       ];
 
-      if (obj.columnCount === 0) {
-        errorDataset.push("columnCount must be greater than zero");
-      }
+      // point - 28 story - 7277
+      // if (obj.columnCount === 0) {
+      //   errorDataset.push("columnCount must be greater than zero");
+      // }
 
       if (obj.dataTransferFrequency === 0) {
         errorDataset.push("dataTransferFrequency must be greater than zero");
@@ -1304,9 +1299,10 @@ exports.datasetLevelInsert = async (
         },
       ];
 
-      if (obj.columnCount === 0) {
-        errorDataset.push("columnCount must be greater than zero");
-      }
+      // point - 28 story - 7277
+      // if (obj.columnCount === 0) {
+      //   errorDataset.push("columnCount must be greater than zero");
+      // }
 
       const dsreqElse = helper.validation(dsElse);
 
@@ -1526,19 +1522,18 @@ exports.datasetLevelInsert = async (
             errorDataset.push(clRes);
           }
 
-          if (el.characterMin || el.characterMax || el.lov || el.position) {
+          if (
+            el.characterMin ||
+            el.characterMin === 0 ||
+            el.characterMax ||
+            el.characterMax === 0 ||
+            el.lov ||
+            el.position
+          ) {
             // console.log(val.key, val.value);
             errorDataset.push(
               "For JBDC characterMin, characterMax, lov, position fields should be Blank "
             );
-          }
-
-          if (el.characterMin === 0) {
-            errorDataset.push(" In JDBC characterMin should be blank");
-          }
-
-          if (el.characterMax === 0) {
-            errorDataset.push(" In JDBC characterMax should be blank");
           }
         }
 
@@ -2072,9 +2067,10 @@ exports.datasetUpdate = async (
           value: data.columnCount,
           type: "number",
         });
-        if (data.columnCount === 0) {
-          errorDataset.push("columnCount must be greater than zero ");
-        }
+        // point - 28 story - 7277
+        // if (data.columnCount === 0) {
+        //   errorDataset.push("columnCount must be greater than zero ");
+        // }
       }
       if (typeof data.active != "undefined") {
         valDataset.push({
