@@ -203,7 +203,24 @@ exports.insertValidation = (req) => {
                       value: obj.active,
                       type: "boolean",
                     },
+                    {
+                      key: "columnCount",
+                      value: obj.columnCount,
+                      type: "number",
+                    },
                   ];
+
+                  if (obj.columnCount === 0) {
+                    validate.push({
+                      err: " columnCount must be greater than zero ",
+                    });
+                  }
+
+                  if (obj.dataTransferFrequency === 0) {
+                    validate.push({
+                      err: " dataTransferFrequency must be greater than zero ",
+                    });
+                  }
 
                   if (
                     obj.customQuery ||
@@ -220,6 +237,12 @@ exports.insertValidation = (req) => {
                   if (obj.incremental === 0) {
                     validate.push({
                       err: " In SFTP/FTPS incremental should be blank ",
+                    });
+                  }
+
+                  if (obj.customQuery === 0) {
+                    validate.push({
+                      err: " In SFTP/FTPS customQuery should be blank ",
                     });
                   }
 
@@ -301,19 +324,6 @@ exports.insertValidation = (req) => {
                           }
                         }
                       }
-
-                      // If Column is not = 0 then Column Comunt is not null
-                      dsArray.push({
-                        key: "columncount",
-                        value: obj.columncount,
-                        type: "number",
-                      });
-
-                      // Validation Function call for column Number fields
-                      let cnRes = helper.validation(dsArray);
-                      if (cnRes.length > 0) {
-                        validate.push(cnRes);
-                      }
                     }
                   }
                 }
@@ -364,6 +374,18 @@ exports.insertValidation = (req) => {
                   });
                 }
 
+                if (obj.rowDecreaseAllowed === 0) {
+                  validate.push({
+                    err: " In JDBC rowDecreaseAllowed should be blank ",
+                  });
+                }
+
+                if (obj.dataTransferFrequency === 0) {
+                  validate.push({
+                    err: " In JDBC dataTransferFrequency should be blank ",
+                  });
+                }
+
                 const dsArray = [
                   {
                     key: "Data Set Name (Mnemonic) ",
@@ -385,7 +407,18 @@ exports.insertValidation = (req) => {
                     value: obj.customQuery,
                     type: "boolean",
                   },
+                  {
+                    key: "columnCount",
+                    value: obj.columnCount,
+                    type: "number",
+                  },
                 ];
+
+                if (obj.columnCount === 0) {
+                  validate.push({
+                    err: " columnCount must be greater than zero ",
+                  });
+                }
 
                 if (obj.customQuery.toLowerCase() == "yes") {
                   if (
@@ -489,19 +522,17 @@ exports.insertValidation = (req) => {
                           err: " In JDBC characterMin, characterMax, position, lov should be blank ",
                         });
                       }
-                    }
 
-                    // If Column is not = 0 then Column Comunt is not null
-                    dsArray.push({
-                      key: "columncount",
-                      value: obj.columncount,
-                      type: "number",
-                    });
-
-                    // Validation Function call for column Number fields
-                    let cnRes = helper.validation(dsArray);
-                    if (cnRes.length > 0) {
-                      validate.push(cnRes);
+                      if (el.characterMin === 0) {
+                        validate.push({
+                          err: " In JDBC characterMin should be blank ",
+                        });
+                      }
+                      if (el.characterMax === 0) {
+                        validate.push({
+                          err: " In JDBC characterMax should be blank ",
+                        });
+                      }
                     }
                   }
                 }
@@ -715,11 +746,21 @@ exports.packageLevelInsert = async (
               type: "boolean",
             },
             {
-              key: "columncount",
-              value: obj.columncount,
+              key: "columnCount",
+              value: obj.columnCount,
               type: "number",
             },
           ];
+
+          if (obj.columnCount === 0) {
+            errorPackage.push("columnCount must be greater than zero");
+          }
+
+          if (obj.dataTransferFrequency === 0) {
+            errorPackage.push(
+              "dataTransferFrequency must be greater than zero"
+            );
+          }
 
           const dsreqSftp = helper.validation(dsArray);
           if (dsreqSftp.length > 0) {
@@ -764,6 +805,11 @@ exports.packageLevelInsert = async (
               errorPackage.push(" In SFTP/FTPS incremental should be blank ");
             }
           }
+          if (typeof obj.customQuery != "undefined") {
+            if (obj.customQuery === 0) {
+              errorPackage.push(" In SFTP/FTPS customQuery should be blank ");
+            }
+          }
         } else {
           if (
             obj.type ||
@@ -778,6 +824,14 @@ exports.packageLevelInsert = async (
             errorPackage.push(
               " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, path, escapeCode should be Blank "
             );
+          }
+
+          if (obj.rowDecreaseAllowed === 0) {
+            errorPackage.push(" In JDBC rowDecreaseAllowed should be blank");
+          }
+
+          if (obj.dataTransferFrequency === 0) {
+            errorPackage.push(" In JDBC dataTransferFrequency should be blank");
           }
 
           const dsArray = [
@@ -802,11 +856,15 @@ exports.packageLevelInsert = async (
               type: "boolean",
             },
             {
-              key: "columncount",
-              value: obj.columncount,
+              key: "columnCount",
+              value: obj.columnCount,
               type: "number",
             },
           ];
+
+          if (obj.columnCount === 0) {
+            errorPackage.push("columnCount must be greater than zero");
+          }
 
           const dsreq = helper.validation(dsArray);
           if (dsreq.length > 0) {
@@ -1037,6 +1095,14 @@ exports.packageLevelInsert = async (
                   "For JBDC characterMin, characterMax, lov, position fields should be Blank "
                 );
               }
+
+              if (el.characterMin === 0) {
+                errorPackage.push(" In JDBC characterMin should be blank");
+              }
+
+              if (el.characterMax === 0) {
+                errorPackage.push(" In JDBC characterMax should be blank");
+              }
             }
 
             if (errorPackage.length > 0) {
@@ -1168,7 +1234,20 @@ exports.datasetLevelInsert = async (
           value: obj.active,
           type: "boolean",
         },
+        {
+          key: "columnCount",
+          value: obj.columnCount,
+          type: "number",
+        },
       ];
+
+      if (obj.columnCount === 0) {
+        errorDataset.push("columnCount must be greater than zero");
+      }
+
+      if (obj.dataTransferFrequency === 0) {
+        errorDataset.push("dataTransferFrequency must be greater than zero");
+      }
 
       let dsArrRes = helper.validation(dsArray);
       if (dsArrRes.length > 0) {
@@ -1208,9 +1287,14 @@ exports.datasetLevelInsert = async (
           "For SFTP/FTPS customQuery, customSql, incremental, conditionalExpression, offsetColumn fields should be Blank "
         );
       }
-      if (typeof data.incremental != "undefined") {
-        if (data.incremental === 0) {
+      if (typeof obj.incremental != "undefined") {
+        if (obj.incremental === 0) {
           errorDataset.push("In SFTP/FTPS incremental should be blank");
+        }
+      }
+      if (typeof obj.customQuery != "undefined") {
+        if (obj.customQuery === 0) {
+          errorDataset.push("In SFTP/FTPS customQuery should be blank");
         }
       }
     } else {
@@ -1228,6 +1312,14 @@ exports.datasetLevelInsert = async (
         errorDataset.push(
           " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCode should be Blank "
         );
+      }
+
+      if (obj.rowDecreaseAllowed === 0) {
+        errorDataset.push(" In JDBC rowDecreaseAllowed should be blank");
+      }
+
+      if (obj.dataTransferFrequency === 0) {
+        errorDataset.push(" In JDBC dataTransferFrequency should be blank");
       }
 
       const dsElse = [
@@ -1252,11 +1344,15 @@ exports.datasetLevelInsert = async (
           type: "boolean",
         },
         {
-          key: "columncount",
-          value: obj.columncount,
+          key: "columnCount",
+          value: obj.columnCount,
           type: "number",
         },
       ];
+
+      if (obj.columnCount === 0) {
+        errorDataset.push("columnCount must be greater than zero");
+      }
 
       const dsreqElse = helper.validation(dsElse);
 
@@ -1480,6 +1576,14 @@ exports.datasetLevelInsert = async (
               "For JBDC characterMin, characterMax, lov, position fields should be Blank "
             );
           }
+
+          if (el.characterMin === 0) {
+            errorDataset.push(" In JDBC characterMin should be blank");
+          }
+
+          if (el.characterMax === 0) {
+            errorDataset.push(" In JDBC characterMax should be blank");
+          }
         }
 
         if (errorDataset.length > 0) {
@@ -1652,12 +1756,12 @@ exports.dataflowUpdate = async (
     if (data.exptDtOfFirstProdFile) {
       updateQueryDF += `,expt_fst_prd_dt='${data.exptDtOfFirstProdFile}'`;
     }
-    if (typeof data.testFlag != undefined && data.testFlag === null) {
+    if (typeof data.testFlag != "undefined") {
       updateQueryDF += `,testflag=${
         helper.stringToBoolean(data.testFlag) ? 1 : 0
       }`;
     }
-    if (typeof data.active != undefined) {
+    if (typeof data.active != "undefined") {
       updateQueryDF += `,active=${helper.stringToBoolean(data.active) ? 1 : 0}`;
     }
     if (data.protocolNumberStandard) {
@@ -1671,6 +1775,7 @@ exports.dataflowUpdate = async (
     }
 
     updateQueryDF += ` where externalid='${externalID}' returning *;`;
+    // console.log(updateQueryDF);
 
     const { rows: existDfRows } = await DB.executeQuery(
       `SELECT type, description, externalsystemname , expt_fst_prd_dt ,
@@ -1773,35 +1878,30 @@ exports.packageUpdate = async (
 
       if (!helper.stringToBoolean(data.noPackageConfig)) {
         const TypeSas = [];
-        if (typeof data.type != "undefined") {
-          TypeSas.push({
-            key: "Package type",
-            value: data.type,
-            type: "string",
-          });
-        }
-        if (typeof data.sasXptMethod != "undefined") {
-          TypeSas.push({
-            key: "sasXptMethod",
-            value: data.sasXptMethod,
-            type: "string",
-          });
-        }
-        if (typeof data.name != "undefined") {
-          TypeSas.push({
-            key: "name",
-            value: data.name,
-            type: "string",
-          });
-        }
 
-        if (typeof data.path != "undefined") {
-          TypeSas.push({
-            key: "path",
-            value: data.path,
-            type: "string",
-          });
-        }
+        TypeSas.push({
+          key: "Package type",
+          value: data.type,
+          type: "string",
+        });
+
+        TypeSas.push({
+          key: "sasXptMethod",
+          value: data.sasXptMethod,
+          type: "string",
+        });
+
+        TypeSas.push({
+          key: "name",
+          value: data.name,
+          type: "string",
+        });
+
+        TypeSas.push({
+          key: "path",
+          value: data.path,
+          type: "string",
+        });
 
         if (typeof data.type != "undefined") {
           if (!helper.isPackageType(data.type)) {
@@ -1860,8 +1960,14 @@ exports.packageUpdate = async (
     if (data.password) {
       updateQueryDP += `, password='${data.password}'`;
     }
-    if (data.noPackageConfig) {
-      updateQueryDP += `, nopackageconfig='${data.noPackageConfig}'`;
+    // if (
+    //   data.noPackageConfig ||
+    //   data.noPackageConfig === 0 ||
+    //   data.noPackageConfig === false
+    // ) {
+    if (typeof data.noPackageConfig != "undefined") {
+      updateQueryDP += `, nopackageconfig='
+      ${helper.stringToBoolean(data.noPackageConfig) ? 1 : 0}'`;
     }
     updateQueryDP += ` where externalid='${externalID}' returning *;`;
 
@@ -1952,6 +2058,7 @@ exports.datasetUpdate = async (
 
     if (helper.isSftp(LocationType)) {
       // if (LocationType === "Hive CDH") {
+      console.log("dadad");
       if (typeof data.mnemonic != "undefined") {
         valDataset.push({
           key: "mnemonic ",
@@ -2000,13 +2107,23 @@ exports.datasetUpdate = async (
           value: data.dataTransferFrequency,
           type: "number",
         });
+
+        if (data.dataTransferFrequency === 0) {
+          errorDataset.push(
+            "dataTransferFrequency nmust be greater than zero "
+          );
+        }
       }
-      if (typeof data.columncount != "undefined") {
+      if (typeof data.columnCount != "undefined") {
+        console.log("333");
         valDataset.push({
-          key: "columncount ",
-          value: data.columncount,
+          key: "columnCount ",
+          value: data.columnCount,
           type: "number",
         });
+        if (data.columnCount === 0) {
+          errorDataset.push("columnCount must be greater than zero ");
+        }
       }
       if (typeof data.active != "undefined") {
         valDataset.push({
@@ -2071,6 +2188,11 @@ exports.datasetUpdate = async (
           errorDataset.push("In SFTP/FTPS incremental should be blank");
         }
       }
+      if (typeof data.customQuery != "undefined") {
+        if (data.customQuery === 0) {
+          errorDataset.push("In SFTP/FTPS customQuery should be blank");
+        }
+      }
     } else {
       if (typeof data.mnemonic != "undefined") {
         valDataset.push({
@@ -2086,12 +2208,16 @@ exports.datasetUpdate = async (
           type: "string",
         });
       }
-      if (typeof data.columncount != "undefined") {
+      if (typeof data.columnCount != "undefined") {
         valDataset.push({
-          key: "columncount ",
-          value: data.columncount,
+          key: "columnCount ",
+          value: data.columnCount,
           type: "number",
         });
+
+        if (data.columnCount === 0) {
+          errorDataset.push("columnCount not equal to zero ");
+        }
       }
       if (typeof data.customQuery != "undefined") {
         valDataset.push({
@@ -2122,13 +2248,27 @@ exports.datasetUpdate = async (
         );
       }
 
+      if (typeof data.rowDecreaseAllowed != "undefined") {
+        if (data.rowDecreaseAllowed === 0) {
+          errorDataset.push("In SFTP/FTPS rowDecreaseAllowed should be blank");
+        }
+      }
+
+      if (typeof data.dataTransferFrequency != "undefined") {
+        if (data.dataTransferFrequency === 0) {
+          errorDataset.push(
+            "In SFTP/FTPS dataTransferFrequency should be blank"
+          );
+        }
+      }
+
       if (data.customQuery) {
-        if (data.customQuery.toLowerCase() == "yes") {
+        if (helper.stringToBoolean(data.customQuery)) {
           if (!data.customSql) {
             errorDataset.push(" Custom Sql  is required  ");
           }
         }
-        if (data.customQuery.toLowerCase() == "no") {
+        if (!helper.stringToBoolean(data.customQuery)) {
           if (!data.tableName) {
             errorDataset.push(" Table Name  is required  ");
           } else {
@@ -2154,7 +2294,7 @@ exports.datasetUpdate = async (
 
     let sqlQuery = custSql;
     if (data.customQuery) {
-      if (data.customQuery.toLowerCase() === "no") {
+      if (!helper.stringToBoolean(data.customQuery)) {
         if (data.columnDefinition?.length > 0) {
           const cList = data.columnDefinition.map(
             (el) => el.name || el.columnName
@@ -2184,7 +2324,7 @@ exports.datasetUpdate = async (
     if (data.columnCount) {
       updateQueryDS += `,columncount='${data.columnCount}'`;
     }
-    if (data.incremental) {
+    if (typeof data.incremental != "undefined") {
       updateQueryDS += `,incremental='${
         helper.stringToBoolean(data.incremental) ? "Y" : "N"
       }'`;
@@ -2213,7 +2353,7 @@ exports.datasetUpdate = async (
       updateQueryDS += `,customsql='${sqlQuery}'`;
     }
 
-    if (data.customQuery) {
+    if (typeof data.customQuery != "undefined") {
       updateQueryDS += `,customsql_yn='${data.customQuery}'`;
     }
     if (data.tableName) {
