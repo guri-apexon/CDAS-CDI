@@ -78,10 +78,16 @@ exports.getDKList = async (req, res) => {
     let dbQuery = await DB.executeQuery(selectQuery);
     Logger.info({ message: "getDKList" });
     const datakind = (await dbQuery.rows) || [];
+    const replaceNullDataWithBlank=datakind.map(el=>{
+      if(!el.dkESName){
+        el.dkESName="Blank";
+      }
+      return el
+    })
     return apiResponse.successResponseWithData(
       res,
       "Operation success",
-      datakind
+      replaceNullDataWithBlank
     );
   } catch (err) {
     //throw error in json response with status 500.

@@ -86,6 +86,7 @@ export const DataTypeEditableSelectCell =
     const errorText = checkRequired(row[key], key);
     return row.editMode ? (
       <Select
+        className="dsctablehelper_select"
         size="small"
         fullWidth
         canDeselect={false}
