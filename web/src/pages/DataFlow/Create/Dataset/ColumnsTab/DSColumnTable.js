@@ -447,10 +447,10 @@ export default function DSColumnTable({
       return false;
     }
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+    // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
     setRows([...removeExistingRowData, editedRowData]);
-    setEditedRows([...removeEdited]);
+    // setEditedRows([...removeEdited]);
     setSelectedRows([...removeRow]);
   };
 
