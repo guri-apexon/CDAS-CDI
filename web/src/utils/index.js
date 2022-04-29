@@ -697,3 +697,13 @@ export const setIdleLogout = (logout) => {
   document.onkeypress = resetTimer;
   window.onload = resetTimer;
 };
+
+export const scrollIntoView = () => {
+  const body = document.querySelector("#root");
+  body.scrollIntoView(
+    {
+      behavior: "smooth",
+    },
+    1500
+  );
+};

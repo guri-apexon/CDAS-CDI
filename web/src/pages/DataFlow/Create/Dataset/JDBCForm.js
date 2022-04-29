@@ -35,7 +35,11 @@ import {
   hideErrorMessage,
 } from "../../../../store/actions/DataSetsAction";
 
-import { inputAlphaNumericWithUnderScore, YesNo } from "../../../../utils";
+import {
+  inputAlphaNumericWithUnderScore,
+  scrollIntoView,
+  YesNo,
+} from "../../../../utils";
 
 const styles = {
   paper: {
@@ -199,10 +203,10 @@ const JDBCForm = forwardRef((props, ref) => {
   };
   useEffect(() => {
     console.log("sqlColumns", sqlColumns, triggeredSqlData);
-    if (sqlColumns?.length && triggeredSqlData) {
-      submitJDBCForm(true);
-      setTriggerSqlData(false);
-    }
+    // if (sqlColumns?.length && triggeredSqlData) {
+    //   submitJDBCForm(true);
+    //   setTriggerSqlData(false);
+    // }
   }, [sqlColumns]);
 
   useEffect(() => {
@@ -215,7 +219,8 @@ const JDBCForm = forwardRef((props, ref) => {
         messageContext.showSuccessMessage(
           `Your query looks good. Please proceed to save dataflow.`
         );
-        // submitJDBCForm(true);
+        submitJDBCForm(true);
+        scrollIntoView();
       }
     }
   }, [previewSQL]);
