@@ -139,6 +139,7 @@ const LeftPanel = () => {
             control={
               <Switch
                 color="primary"
+                className="MuiSwitch"
                 size="small"
                 checked={active === 0 ? false : true}
               />
@@ -168,7 +169,7 @@ const LeftPanel = () => {
           fullWidth
           size="small"
         >
-          View Settings
+          View settings
         </Button>
       </Box>
 
@@ -216,7 +217,7 @@ const LeftPanel = () => {
           </div>
         ) : (
           <div className="flex no-result">
-            <img src="assets/svg/datapackage.svg" alt="datapackage" />
+            <img src="/assets/svg/datapackage.svg" alt="datapackage" />
             <Typography>No Data Package or Datasets Added</Typography>
           </div>
         )}

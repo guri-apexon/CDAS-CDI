@@ -489,7 +489,7 @@ export const createSourceFromKey = (tableRows, key) => {
     )
   )
     .map((label) => {
-      return { label };
+      return { label: label || "" };
     })
     .sort((a, b) => {
       if (a.label < b.label) {

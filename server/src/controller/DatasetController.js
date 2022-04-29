@@ -126,7 +126,7 @@ exports.saveDatasetData = async (req, res) => {
     if (values.filePwd !== "" || values.filePwd !== undefined) {
       passwordStatus = "Yes";
       try {
-        await helper.writeVaultData(`${dfId}/${dpId}/${datasetId}`, {
+        await helper.writeVaultData(`${dfId}/${dpId}/${dsId}`, {
           password: values.filePwd,
         });
       } catch (error) {
@@ -136,7 +136,7 @@ exports.saveDatasetData = async (req, res) => {
     }
 
     Logger.info({ message: "create Dataset" });
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrownumber, footerrownumber, active, name, path,file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, updt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $18, $19, $20) returning *`;
+    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) returning *`;
 
     const body = [
       dsId,
@@ -146,6 +146,8 @@ exports.saveDatasetData = async (req, res) => {
       values.delimiter || null,
       values.escapeCharacter || null,
       values.quote || null,
+      values.headerRowNumber > 0 ? 1 : 0,
+      values.footerRowNumber > 0 ? 1 : 0,
       values.headerRowNumber || 0,
       values.footerRowNumber || 0,
       values.active === true ? 1 : 0,
@@ -170,6 +172,8 @@ exports.saveDatasetData = async (req, res) => {
       delimiter: values.delimiter || null,
       escapecode: values.escapeCharacter || null,
       quote: values.quote || null,
+      headerrow: values.headerRowNumber > 0 ? 1 : 0,
+      footerrow: values.footerRowNumber > 0 ? 1 : 0,
       headerrownumber: values.headerRowNumber || 0,
       footerrownumber: values.footerRowNumber || 0,
       active: true ? 1 : 0,
@@ -332,11 +336,10 @@ exports.updateDatasetData = async (req, res) => {
       datasetid
     );
     const selectQuery = `select datasetid, datapackageid, mnemonic, type, charset, delimiter , escapecode, quote,
-                         headerrownumber, footerrownumber, active, name, path, 
-                         datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, 
-                         incremental from ${schemaName}.dataset where datasetid = $1`;
+    headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, 
+    incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $19 returning *`;
+    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrow = $19, footerrow = $20, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $21`;
     if (isExist) {
       return apiResponse.ErrorResponse(
         res,
@@ -378,6 +381,8 @@ exports.updateDatasetData = async (req, res) => {
       curDate,
       incremental,
       passwordStatus,
+      values.headerRowNumber > 0 ? 1 : 0,
+      values.footerRowNumber > 0 ? 1 : 0,
     ];
 
     const updateDS = await DB.executeQuery(updateQuery, [
@@ -398,6 +403,8 @@ exports.updateDatasetData = async (req, res) => {
       delimiter: values.delimiter || null,
       escapecode: values.escapeCharacter || null,
       quote: values.quote || null,
+      headerrow: values.headerRowNumber > 0 ? 1 : 0,
+      footerrow: values.footerRowNumber > 0 ? 1 : 0,
       headerrownumber: values.headerRowNumber || 0,
       footerrownumber: values.footerRowNumber || 0,
       active: helper.stringToBoolean(values.active) ? 1 : 0,
