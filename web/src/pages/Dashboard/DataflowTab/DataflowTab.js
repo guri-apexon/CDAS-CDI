@@ -677,7 +677,7 @@ export default function DataflowTab({ updateData }) {
   }, [rowData]);
 
   const EmptyTableComponent = () => (
-    <>
+    <div style={{ textAlign: "center" }}>
       <DataFlowIcon
         style={{ color: neutral7, marginBottom: 4, height: 60, width: 60 }}
       />
@@ -696,7 +696,7 @@ export default function DataflowTab({ updateData }) {
       >
         Add a data flow
       </Button>
-    </>
+    </div>
   );
 
   const handleSelect = async (data) => {

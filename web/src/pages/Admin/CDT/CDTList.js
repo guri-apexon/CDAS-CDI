@@ -423,6 +423,7 @@ export default function CDTList() {
                     placeholder="Select system name"
                     fullWidth
                     required
+                    size="small"
                     helperText={
                       reqENSError && "External System shouldn't be empty"
                     }
@@ -441,7 +442,8 @@ export default function CDTList() {
                     placeholder="Enter Description"
                     value={desc}
                     name="desc"
-                    minHeight={40}
+                    minHeight={32}
+                    size="small"
                     onChange={(e) => handleChange(e)}
                     optional
                     sizeAdjustable
