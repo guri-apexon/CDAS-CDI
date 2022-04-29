@@ -154,7 +154,9 @@ const LeftPanel = ({ protId, packages, setFormType, myform }) => {
           <FormControlLabel
             style={{ fontSize: 14 }}
             value="true"
-            control={<Switch color="primary" size="small" />}
+            control={
+              <Switch className="MuiSwitch" color="primary" size="small" />
+            }
             label="Active"
             labelPlacement="start"
           />
@@ -182,7 +184,7 @@ const LeftPanel = ({ protId, packages, setFormType, myform }) => {
           fullWidth
           size="small"
         >
-          View Settings
+          View settings
         </Button>
       </Box>
 
@@ -228,7 +230,7 @@ const LeftPanel = ({ protId, packages, setFormType, myform }) => {
           </div>
         ) : (
           <div className="flex no-result">
-            <img src="assets/svg/datapackage.svg" alt="datapackage" />
+            <img src="/assets/svg/datapackage.svg" alt="datapackage" />
             <Typography>No Data Package or Datasets Added</Typography>
           </div>
         )}
