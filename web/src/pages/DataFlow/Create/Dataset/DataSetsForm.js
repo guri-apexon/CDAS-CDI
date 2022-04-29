@@ -194,56 +194,66 @@ const DataSetsFormBase = (props) => {
               )}
               {(formValues === "SAS" || formValues === "Delimited") && (
                 <>
-                  <ReduxFormSelect
-                    name="delimiter"
-                    id="delimiter"
-                    label="Delimiter"
-                    size="small"
-                    disabled={formValues === "SAS"}
-                    fullWidth
-                  >
-                    {delimeters?.map((type) => (
-                      <MenuItem value={type}>{type}</MenuItem>
-                    ))}
-                  </ReduxFormSelect>
-                  <ReduxFormTextField
-                    fullWidth
-                    name="escapeCharacter"
-                    id="escapeCharacter"
-                    disabled={formValues === "SAS"}
-                    inputProps={{ maxLength: 255 }}
-                    size="small"
-                    label="Escape Character"
-                  />
-                  <ReduxFormTextField
-                    fullWidth
-                    name="quote"
-                    id="quote"
-                    disabled={formValues === "SAS"}
-                    size="small"
-                    inputProps={{ maxLength: 255 }}
-                    label="Quote"
-                  />
+                  {formValues !== "SAS" && (
+                    <ReduxFormSelect
+                      name="delimiter"
+                      id="delimiter"
+                      label="Delimiter"
+                      size="small"
+                      disabled={formValues === "SAS"}
+                      fullWidth
+                    >
+                      {delimeters?.map((type) => (
+                        <MenuItem value={type}>{type}</MenuItem>
+                      ))}
+                    </ReduxFormSelect>
+                  )}
+                  {formValues !== "SAS" && (
+                    <ReduxFormTextField
+                      fullWidth
+                      name="escapeCharacter"
+                      id="escapeCharacter"
+                      disabled={formValues === "SAS"}
+                      inputProps={{ maxLength: 255 }}
+                      size="small"
+                      label="Escape Character"
+                    />
+                  )}
+                  {formValues !== "SAS" && (
+                    <ReduxFormTextField
+                      fullWidth
+                      name="quote"
+                      id="quote"
+                      disabled={formValues === "SAS"}
+                      size="small"
+                      inputProps={{ maxLength: 255 }}
+                      label="Quote"
+                    />
+                  )}
                 </>
               )}
-              <ReduxFormTextField
-                fullWidth
-                name="headerRowNumber"
-                id="headerRowNumber"
-                disabled={formValues === "SAS"}
-                inputProps={{ maxLength: 255 }}
-                size="small"
-                label="Header Row Number"
-              />
-              <ReduxFormTextField
-                fullWidth
-                name="footerRowNumber"
-                id="footerRowNumber"
-                disabled={formValues === "SAS"}
-                inputProps={{ maxLength: 255 }}
-                size="small"
-                label="Footer Row Number"
-              />
+              {formValues !== "SAS" && (
+                <ReduxFormTextField
+                  fullWidth
+                  name="headerRowNumber"
+                  id="headerRowNumber"
+                  disabled={formValues === "SAS"}
+                  inputProps={{ maxLength: 255 }}
+                  size="small"
+                  label="Header Row Number"
+                />
+              )}
+              {formValues !== "SAS" && (
+                <ReduxFormTextField
+                  fullWidth
+                  name="footerRowNumber"
+                  id="footerRowNumber"
+                  disabled={formValues === "SAS"}
+                  inputProps={{ maxLength: 255 }}
+                  size="small"
+                  label="Footer Row Number"
+                />
+              )}
               <ReduxFormTextField
                 fullWidth
                 name="fileNamingConvention"

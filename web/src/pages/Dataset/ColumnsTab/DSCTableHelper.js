@@ -87,6 +87,7 @@ export const DataTypeEditableSelectCell =
       <Select
         size="small"
         fullWidth
+        className="dsc"
         canDeselect={false}
         value={row[key]}
         error={!row.isInitLoad && !row.isFormatLoad && errorText}
