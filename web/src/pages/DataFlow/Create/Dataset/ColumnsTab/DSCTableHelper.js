@@ -275,7 +275,6 @@ export const ActionCell = ({ row }) => {
     minLength,
     dataType,
   } = row;
-  console.log("Row list", row);
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
       <Button

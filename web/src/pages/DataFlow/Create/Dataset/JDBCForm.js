@@ -195,7 +195,6 @@ const JDBCForm = forwardRef((props, ref) => {
       conditionalExpression: filterCondition || "",
       sqlReady: ready,
     };
-    console.log("data", data);
     onSubmit(data);
   };
   useEffect(() => {
@@ -208,11 +207,15 @@ const JDBCForm = forwardRef((props, ref) => {
 
   useEffect(() => {
     setLoading(false);
+    console.log("previewSQL", previewSQL, isPreviewReady, isCustomSQL);
     if (isPreviewReady && previewSQL?.length) {
       if (isCustomSQL.toLowerCase() === "no") {
         moveNext();
       } else if (isCustomSQL.toLowerCase() === "yes") {
-        submitJDBCForm(true);
+        messageContext.showSuccessMessage(
+          `Your query looks good. Please proceed to save dataflow.`
+        );
+        // submitJDBCForm(true);
       }
     }
   }, [previewSQL]);
@@ -294,6 +297,7 @@ const JDBCForm = forwardRef((props, ref) => {
   };
 
   useEffect(() => {
+    console.log("isCustomSQL", isCustomSQL);
     if (isCustomSQL === "No") {
       dispatch(getSQLTables({ ...locationDetail }));
       setIsPreviewReady(false);
@@ -310,16 +314,11 @@ const JDBCForm = forwardRef((props, ref) => {
   useEffect(() => {
     if (error) {
       messageContext.showErrorMessage(error);
-    }
-    if (success) {
-      messageContext.showSuccessMessage(success);
-    }
-    if (error || success) {
       setTimeout(() => {
         dispatch(hideErrorMessage());
       }, 5000);
     }
-  }, [error, success]);
+  }, [error]);
 
   useEffect(() => {
     if (initialValue) {
