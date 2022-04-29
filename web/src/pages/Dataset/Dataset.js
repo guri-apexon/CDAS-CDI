@@ -251,7 +251,7 @@ const Dataset = () => {
     },
     {
       href: "javascript:void(0)",
-      title: datapackageName ?? "Datapackage Name",
+      title: datapackageName || "No Package",
       onClick: gotoDataPackage,
     },
     {

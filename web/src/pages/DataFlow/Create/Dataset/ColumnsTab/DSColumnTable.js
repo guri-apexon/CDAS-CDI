@@ -360,9 +360,13 @@ export default function DSColumnTable({
   const onSaveAll = async () => {
     const removeSpaces = editedRows
       .map((e) => {
-        e.values = e.values.trim();
-        e.columnName = e.columnName.trim();
-        return e;
+        const d = {
+          ...e,
+          isSaved: true,
+          values: e.values.trim(),
+          columnName: e.columnName.trim(),
+        };
+        return d;
       })
       .map((e) => {
         const isFirst = e.values.charAt(0) === "~";
@@ -393,8 +397,11 @@ export default function DSColumnTable({
 
   const onRowCancel = (uniqueId) => {
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
-    setEditedRows(removeEdited);
+    const editedData = editedRows.find((e) => e.uniqueId === uniqueId);
+    if (!editedData?.isSaved) {
+      const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+      setEditedRows(removeEdited);
+    }
     setSelectedRows([...removeRow]);
   };
 
@@ -410,9 +417,13 @@ export default function DSColumnTable({
   const onRowSave = async (uniqueId) => {
     const editedRowData = _.filter(editedRows, (e) => e.uniqueId === uniqueId)
       .map((e) => {
-        e.values = e.values.trim();
-        e.columnName = e.columnName.trim();
-        return e;
+        const d = {
+          ...e,
+          isSaved: true,
+          values: e.values.trim(),
+          columnName: e.columnName.trim(),
+        };
+        return d;
       })
       .map((e) => {
         const isFirst = e.values.charAt(0) === "~";
@@ -447,10 +458,10 @@ export default function DSColumnTable({
       return false;
     }
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+    // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
     setRows([...removeExistingRowData, editedRowData]);
-    setEditedRows([...removeEdited]);
+    // setEditedRows([...removeEdited]);
     setSelectedRows([...removeRow]);
   };
 
