@@ -195,6 +195,7 @@ const JDBCForm = forwardRef((props, ref) => {
       conditionalExpression: filterCondition || "",
       sqlReady: ready,
     };
+    console.log("data", data);
     onSubmit(data);
   };
   useEffect(() => {
@@ -344,12 +345,12 @@ const JDBCForm = forwardRef((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     handleSubmit() {
-      if (isCustomSQL === "No" && tableName) {
-        dispatch(getSQLColumns(tableName));
-        setTriggerSqlData(true);
-      } else {
-        submitJDBCForm();
-      }
+      // if (isCustomSQL === "No" && tableName) {
+      //   dispatch(getSQLColumns(tableName));
+      //   setTriggerSqlData(true);
+      // } else {
+      submitJDBCForm();
+      // }
     },
     handleCancel() {
       setDefaultValues();
