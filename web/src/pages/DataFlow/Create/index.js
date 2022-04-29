@@ -476,8 +476,8 @@ const DataFlow = ({
         open={saveSuccess}
         variant="success"
         onClose={() => closeForm()}
-        title="Data Flow saved successfully"
-        message="Data Flow saved successfully"
+        title="Dataflow saved successfully"
+        message="Dataflow saved successfully"
         buttonProps={[
           {
             label: "Continue editing data flow",
