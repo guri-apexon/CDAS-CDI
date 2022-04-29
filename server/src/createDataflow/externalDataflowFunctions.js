@@ -1265,28 +1265,6 @@ const saveDataset = (exports.datasetLevelInsert = async (
   }
 });
 
-exports.columnLevelInsert = async (req, res) => {
-  try {
-    var validate = [];
-
-    if (validate.length > 0) {
-      console.log("testt 245");
-
-      return apiResponse.ErrorResponse(res, validate);
-    } else {
-      console.log("Column Inseert Function");
-      // return;
-      //  commonInsertFunction(req, res);
-    }
-  } catch (err) {
-    console.log(err);
-    //throw error in json response with status 500.
-    Logger.error("catch :createDataflow");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
-  }
-};
-
 exports.dataflowUpdate = async (
   data,
   externalID,
@@ -2055,5 +2033,3 @@ exports.datasetUpdate = async (
     Logger.error(e);
   }
 };
-
-const columnUpdate = async (data, externalID, DFId, version) => {};
