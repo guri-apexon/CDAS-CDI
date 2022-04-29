@@ -318,13 +318,13 @@ const JDBCForm = forwardRef((props, ref) => {
 
   const locationChange = () => {
     messageContext.showErrorMessage(
-      `No Tables Returned. Pls reach out to admins`
+      `No tables returned. Please reach out to admins`
     );
   };
 
   const queryCompilationError = () => {
     messageContext.showErrorMessage(
-      `Query Compilation Error, check query syntax.`
+      `Query compilation error, check query syntax.`
     );
   };
 

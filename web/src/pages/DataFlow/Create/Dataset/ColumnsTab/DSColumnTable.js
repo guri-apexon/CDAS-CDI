@@ -150,7 +150,7 @@ export default function DSColumnTable({
         }
       } else {
         messageContext.showErrorMessage(
-          `The Selected File Does Not Match the Template`
+          `The selected file does not match the template`
         );
         hideOverWrite();
       }
@@ -254,7 +254,7 @@ export default function DSColumnTable({
       setSelectedRows([...selectedRows, `u${rows.length}`]);
       setEditedRows([...rows, ...singleRow]);
     } else {
-      messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
+      messageContext.showErrorMessage(`Not allowed more than 500 columns`);
     }
   };
 
@@ -304,7 +304,7 @@ export default function DSColumnTable({
     if (total < 500) {
       setNewRows(parseInt(value, 10));
     } else if (total) {
-      messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
+      messageContext.showErrorMessage(`Not allowed more than 500 columns`);
     }
   };
 
@@ -352,7 +352,7 @@ export default function DSColumnTable({
       setIsEditAll(true);
     } else {
       messageContext.showErrorMessage(
-        `No Data In Table, Please Add Data and try again`
+        `No data in table, please add data and try again`
       );
     }
   };
@@ -381,7 +381,7 @@ export default function DSColumnTable({
       });
     if (removeSpaces?.length && removeSpaces.find((x) => x.dataType === "")) {
       messageContext.showErrorMessage(
-        `Please select Data Type for all records to save.`
+        `Please select data type for all records to save.`
       );
       return false;
     }
@@ -453,7 +453,7 @@ export default function DSColumnTable({
 
     if (editedRowData && editedRowData.dataType === "") {
       messageContext.showErrorMessage(
-        `Please select Data Type for this record to save.`
+        `Please select data type for this record to save.`
       );
       return false;
     }

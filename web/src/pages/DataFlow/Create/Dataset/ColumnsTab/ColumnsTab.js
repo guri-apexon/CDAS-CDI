@@ -67,7 +67,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
           setImportedData(dataParse);
         } else {
           messageContext.showErrorMessage(
-            `The Selected File Does Not Match the Template`
+            `The Selected file does not match the template`
           );
           setSelectedFile([]);
         }
@@ -158,7 +158,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
         }
       } else {
         messageContext.showErrorMessage(
-          `The Selected File Does Not Match the Template`
+          `The selected file does not match the template`
         );
         handleDelete();
       }
