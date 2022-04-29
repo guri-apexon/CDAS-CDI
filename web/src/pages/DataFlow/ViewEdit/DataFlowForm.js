@@ -118,7 +118,7 @@ const DataFlowFormBase = (props) => {
   const [renderLocation, setRenderLocation] = useState(false);
 
   useEffect(() => {
-    // console.log("initialValues", initialValues);
+    console.log("initialValues", initialValues);
     if (initialValues) {
       const { dataflowType } = initialValues;
       setDataLoaded(true);
@@ -269,7 +269,10 @@ const DataFlowFormBase = (props) => {
               />
             </Grid>
             <Grid item md={7}>
-              <Paper className={classes.locationBox}>
+              <Paper
+                style={{ marginTop: "16px" }}
+                className={classes.locationBox}
+              >
                 <Typography>Location</Typography>
                 <Typography className={classes.formLabel}>Username</Typography>
                 <Typography className={classes.formText}>{userName}</Typography>

@@ -677,7 +677,7 @@ export default function DataflowTab({ updateData }) {
   }, [rowData]);
 
   const EmptyTableComponent = () => (
-    <>
+    <div style={{ textAlign: "center" }}>
       <DataFlowIcon
         style={{ color: neutral7, marginBottom: 4, height: 60, width: 60 }}
       />
@@ -691,12 +691,12 @@ export default function DataflowTab({ updateData }) {
         variant="secondary"
         icon={<PlusIcon />}
         size="small"
+        style={{ marginLeft: "8px" }}
         onClick={() => history.push("/dashboard/dataflow-management")}
-        style={{ marginRight: 10 }}
       >
         Add a data flow
       </Button>
-    </>
+    </div>
   );
 
   const handleSelect = async (data) => {

@@ -186,7 +186,9 @@ const DataFlowReducer = (state = initialState, action) =>
         // eslint-disable-next-line no-case-declarations
         const formData = {};
         formData.description = description;
-        formData.firstFileDate = moment(exptfstprddt);
+        formData.firstFileDate = moment(exptfstprddt).isValid()
+          ? moment(exptfstprddt)
+          : null;
         formData.locationType = loctyp;
         formData.name = name;
         formData.dataflowType = testflag === 1 ? "test" : "production";
