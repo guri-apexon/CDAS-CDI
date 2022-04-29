@@ -131,7 +131,7 @@ export default function DSColumnTable({
 
   const handleOverWrite = () => {
     if (isFilePicked && importedData.length > 1) {
-      console.log(importedData);
+      // console.log(importedData);
       setShowOverWrite(false);
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
