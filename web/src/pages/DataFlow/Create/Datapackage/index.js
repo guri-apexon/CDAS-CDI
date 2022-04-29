@@ -116,7 +116,7 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
                 </Select>
                 <TextField
                   error={notMatchedType}
-                  required
+                  // required
                   className="mb-20"
                   label="Package Naming Convention"
                   placeholder=""

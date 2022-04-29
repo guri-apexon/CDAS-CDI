@@ -235,7 +235,7 @@ const LeftPanel = () => {
             </div>
           )}
           {unPinnedStudies.length === 0 && (
-            <div className="no-data-found"> No Studies Found </div>
+            <div className="no-data-found"> No Studies Found</div>
           )}
         </div>
       )}
