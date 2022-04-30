@@ -36,7 +36,7 @@ import {
   addDataFlow,
   setDataflowLocal,
 } from "../../../store/actions/DataFlowAction";
-import { getSQLColumns } from "../../../store/actions/DataSetsAction";
+import { getSQLColumns, resetFTP } from "../../../store/actions/DataSetsAction";
 import DataPackages from "./Datapackage";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
@@ -414,13 +414,6 @@ const DataFlow = ({
   };
 
   useEffect(() => {
-    pullVendorandLocation();
-    return () => {
-      console.log("MyForm", myform);
-      messageContext?.resetDataflow();
-    };
-  }, []);
-  useEffect(() => {
     console.log("myform:", modalLocType, myform);
   }, [myform]);
   useEffect(() => {
@@ -428,6 +421,13 @@ const DataFlow = ({
       dispatch(getLocationByType(locType));
     }
   }, [createTriggered]);
+  useEffect(() => {
+    pullVendorandLocation();
+    dispatch(resetFTP());
+    return () => {
+      messageContext?.resetDataflow();
+    };
+  }, []);
   return (
     <div className={classes.root}>
       {(loading || upsertLoading) && <Loader />}
