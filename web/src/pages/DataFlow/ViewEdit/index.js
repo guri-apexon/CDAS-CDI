@@ -230,7 +230,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
   }, [dataFlowData]);
 
   return (
-    <div className={classes.root}>
+    <div className={classes.root} style={{ height: `calc(100vh - 120px)` }}>
       {loading && <Loader />}
       {error && (
         <Banner

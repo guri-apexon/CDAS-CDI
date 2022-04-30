@@ -146,8 +146,14 @@ exports.saveDatasetData = async (req, res) => {
       values.delimiter || null,
       values.escapeCharacter || null,
       values.quote || null,
-      values.headerRowNumber > 0 ? 1 : 0,
-      values.footerRowNumber > 0 ? 1 : 0,
+      typeof values.headerRowNumber != "undefined" &&
+      values.headerRowNumber != ""
+        ? 1
+        : 0,
+      typeof values.footerRowNumber != "undefined" &&
+      values.footerRowNumber != ""
+        ? 1
+        : 0,
       values.headerRowNumber || 0,
       values.footerRowNumber || 0,
       values.active === true ? 1 : 0,
@@ -172,8 +178,16 @@ exports.saveDatasetData = async (req, res) => {
       delimiter: values.delimiter || null,
       escapecode: values.escapeCharacter || null,
       quote: values.quote || null,
-      headerrow: values.headerRowNumber > 0 ? 1 : 0,
-      footerrow: values.footerRowNumber > 0 ? 1 : 0,
+      headerrow:
+        typeof values.headerRowNumber != "undefined" &&
+        values.headerRowNumber != ""
+          ? 1
+          : 0,
+      footerrow:
+        typeof values.footerRowNumber != "undefined" &&
+        values.footerRowNumber != ""
+          ? 1
+          : 0,
       headerrownumber: values.headerRowNumber || 0,
       footerrownumber: values.footerRowNumber || 0,
       active: true ? 1 : 0,
@@ -353,6 +367,42 @@ exports.updateDatasetData = async (req, res) => {
     // For SFTP Datasets update
     const incremental = values.loadType === "Incremental" ? "Y" : "N";
 
+    var requestData = {
+      datasetid: datasetid,
+      datapackageid: dpId,
+      mnemonic: values.datasetName,
+      type: values.fileType || null,
+      charset: values.encoding || null,
+      delimiter: values.delimiter || null,
+      escapecode: values.escapeCharacter || null,
+      quote: values.quote || null,
+      headerrow:
+        typeof values.headerRowNumber != "undefined" &&
+        values.headerRowNumber != ""
+          ? 1
+          : 0,
+      footerrow:
+        typeof values.footerRowNumber != "undefined" &&
+        values.footerRowNumber != ""
+          ? 1
+          : 0,
+      headerrownumber: values.headerRowNumber || 0,
+      footerrownumber: values.footerRowNumber || 0,
+      active: helper.stringToBoolean(values.active) ? 1 : 0,
+      name: values.fileNamingConvention || null,
+      path: values.folderPath || null,
+      datakindid: values.clinicalDataType[0],
+      data_freq: values.transferFrequency || null,
+      ovrd_stale_alert: values.overrideStaleAlert || null,
+      rowdecreaseallowed: values.rowDecreaseAllowed || 0,
+      incremental,
+    };
+
+    const jsonData = JSON.stringify(requestData);
+
+    const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
+    const oldData = tempData[0];
+
     let passwordStatus = "No";
 
     if (values.filePwd) {
@@ -381,8 +431,14 @@ exports.updateDatasetData = async (req, res) => {
       curDate,
       incremental,
       passwordStatus,
-      values.headerRowNumber > 0 ? 1 : 0,
-      values.footerRowNumber > 0 ? 1 : 0,
+      typeof values.headerRowNumber != "undefined" &&
+      values.headerRowNumber != ""
+        ? 1
+        : 0,
+      typeof values.footerRowNumber != "undefined" &&
+      values.footerRowNumber != ""
+        ? 1
+        : 0,
     ];
 
     const updateDS = await DB.executeQuery(updateQuery, [
@@ -393,34 +449,6 @@ exports.updateDatasetData = async (req, res) => {
     if (!updateDS?.rowCount) {
       return apiResponse.ErrorResponse(res, "Something went wrong on update");
     }
-
-    var requestData = {
-      datasetid: datasetid,
-      datapackageid: dpId,
-      mnemonic: values.datasetName,
-      type: values.fileType || null,
-      charset: values.encoding || null,
-      delimiter: values.delimiter || null,
-      escapecode: values.escapeCharacter || null,
-      quote: values.quote || null,
-      headerrow: values.headerRowNumber > 0 ? 1 : 0,
-      footerrow: values.footerRowNumber > 0 ? 1 : 0,
-      headerrownumber: values.headerRowNumber || 0,
-      footerrownumber: values.footerRowNumber || 0,
-      active: helper.stringToBoolean(values.active) ? 1 : 0,
-      name: values.fileNamingConvention || null,
-      path: values.folderPath || null,
-      datakindid: values.clinicalDataType[0],
-      data_freq: values.transferFrequency || null,
-      ovrd_stale_alert: values.overrideStaleAlert || null,
-      rowdecreaseallowed: values.rowDecreaseAllowed || 0,
-      incremental,
-    };
-
-    const jsonData = JSON.stringify(requestData);
-
-    const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
-    const oldData = tempData[0];
 
     for (const key in requestData) {
       if (requestData[key] != oldData[key]) {

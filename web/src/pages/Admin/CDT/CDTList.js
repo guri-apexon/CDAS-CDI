@@ -67,6 +67,14 @@ const LinkCell =
     return <Link onClick={(e) => handleLink(e, row.dkId)}>{rowValue}</Link>;
   };
 
+const CustomDkesCell = ({ row, column: { accessor } }) => {
+  let rowValue = row[accessor];
+  if (rowValue === "Blank") {
+    rowValue = "";
+  }
+  return <span>{rowValue}</span>;
+};
+
 const generateColumns = (
   tableRows = [],
   handleStatusChange = null,
@@ -97,6 +105,7 @@ const generateColumns = (
       header: "External System Name",
       accessor: "dkESName",
       sortFunction: compareStrings,
+      customCell: CustomDkesCell,
       filterFunction: createStringArraySearchFilter("dkESName"),
       filterComponent: createAutocompleteFilter(
         createSourceFromKey(tableRows, "dkESName")
@@ -423,6 +432,7 @@ export default function CDTList() {
                     placeholder="Select system name"
                     fullWidth
                     required
+                    size="small"
                     helperText={
                       reqENSError && "External System shouldn't be empty"
                     }
@@ -441,7 +451,8 @@ export default function CDTList() {
                     placeholder="Enter Description"
                     value={desc}
                     name="desc"
-                    minHeight={40}
+                    minHeight={32}
+                    size="small"
                     onChange={(e) => handleChange(e)}
                     optional
                     sizeAdjustable

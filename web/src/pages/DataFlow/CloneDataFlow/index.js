@@ -513,7 +513,7 @@ const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
           <Modal
             open={open}
             onClose={() => handleModalClose()}
-            title="Select Data Flow from Study"
+            title="Select Dataflow from Study"
             className="custom-modal"
             buttonProps={[
               {

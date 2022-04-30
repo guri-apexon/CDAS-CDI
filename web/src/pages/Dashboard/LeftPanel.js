@@ -235,7 +235,18 @@ const LeftPanel = () => {
             </div>
           )}
           {unPinnedStudies.length === 0 && (
-            <div className="no-data-found"> No Studies Found</div>
+            <Typography
+              variant="title1"
+              style={{
+                color: neutral7,
+                lineHeight: "32px",
+                padding: "20px",
+                textAlign: "center",
+              }}
+            >
+              No studies found
+            </Typography>
+            // <div className="no-data-found"> No studies found</div>
           )}
         </div>
       )}

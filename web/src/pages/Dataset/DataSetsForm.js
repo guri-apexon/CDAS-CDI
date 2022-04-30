@@ -176,6 +176,7 @@ const DataSetsFormBase = (props) => {
                       <MenuItem value={type}>{type}</MenuItem>
                     ))}
                   </ReduxFormSelect>
+
                   <ReduxFormTextField
                     fullWidth
                     name="escapeCharacter"
@@ -185,6 +186,7 @@ const DataSetsFormBase = (props) => {
                     size="small"
                     label="Escape Character"
                   />
+
                   <ReduxFormTextField
                     fullWidth
                     name="quote"
@@ -214,6 +216,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Footer Row Number"
               />
+
               <ReduxFormTextField
                 fullWidth
                 name="fileNamingConvention"

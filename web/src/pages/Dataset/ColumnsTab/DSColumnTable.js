@@ -238,7 +238,7 @@ export default function DSColumnTable({
         }
       } else {
         messageContext.showErrorMessage(
-          `The Selected File Does Not Match the Template`
+          `The Selected file does not match the template`
         );
         hideOverWrite();
       }
@@ -358,7 +358,7 @@ export default function DSColumnTable({
       setSelectedRows([...selectedRows, `u${rows.length}`]);
       setEditedRows([...rows, ...singleRow]);
     } else {
-      messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
+      messageContext.showErrorMessage(`Not allowed more than 500 columns`);
     }
   };
 
@@ -409,18 +409,18 @@ export default function DSColumnTable({
     if (total < 500) {
       setNewRows(parseInt(value, 10));
     } else if (total) {
-      messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
+      messageContext.showErrorMessage(`Not allowed more than 500 Columns`);
     }
   };
 
   const menuItems = [
     {
-      text: "Download Template",
+      text: "Download template",
       onClick: downloadTemplate,
       disabled: !haveHeader,
     },
     {
-      text: "Download Table",
+      text: "Download table",
       onClick: downloadTable,
     },
   ];
@@ -476,7 +476,7 @@ export default function DSColumnTable({
       setIsEditAll(true);
     } else {
       messageContext.showErrorMessage(
-        `No Data In Table, Please Add Data and try again`
+        `No data in table, please add data and try again`
       );
     }
   };
