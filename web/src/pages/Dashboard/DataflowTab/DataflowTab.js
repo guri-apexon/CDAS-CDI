@@ -215,10 +215,10 @@ export default function DataflowTab({ updateData }) {
     );
     // console.log(deleteStatus);
     if (deleteStatus?.success) {
-      messageContext.showSuccessMessage("Dataflow deleted Successfully");
+      messageContext.showSuccessMessage("Dataflow deleted successfully");
       await updateData();
     } else {
-      messageContext.showErrorMessage("Something went Wrong");
+      messageContext.showErrorMessage("Something went wrong");
     }
     setShowHardDelete(false);
   };
@@ -261,7 +261,7 @@ export default function DataflowTab({ updateData }) {
         );
       } else {
         messageContext.showErrorMessage(
-          `Activate the dataflow is cannot be completed and the dataflow having the issue`
+          `Dataflow activation cannot be completed.`
         );
       }
     } else {
@@ -677,7 +677,7 @@ export default function DataflowTab({ updateData }) {
   }, [rowData]);
 
   const EmptyTableComponent = () => (
-    <>
+    <div style={{ textAlign: "center" }}>
       <DataFlowIcon
         style={{ color: neutral7, marginBottom: 4, height: 60, width: 60 }}
       />
@@ -696,7 +696,7 @@ export default function DataflowTab({ updateData }) {
       >
         Add a data flow
       </Button>
-    </>
+    </div>
   );
 
   const handleSelect = async (data) => {

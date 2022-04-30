@@ -86,6 +86,7 @@ export const DataTypeEditableSelectCell =
     const errorText = checkRequired(row[key], key);
     return row.editMode ? (
       <Select
+        className="dsctablehelper_select"
         size="small"
         fullWidth
         canDeselect={false}
@@ -453,7 +454,7 @@ export const CustomHeader = ({
       {isEditAll && (
         <>
           <Button size="small" style={{ marginRight: 8 }} onClick={onCancelAll}>
-            Cancel All
+            Cancel all
           </Button>
           <Button
             size="small"
@@ -461,7 +462,7 @@ export const CustomHeader = ({
             onClick={onSaveAll}
             disabled={disableSaveAll}
           >
-            Save All
+            Save all
           </Button>
         </>
       )}

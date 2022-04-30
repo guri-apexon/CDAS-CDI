@@ -150,7 +150,7 @@ export default function DSColumnTable({
         }
       } else {
         messageContext.showErrorMessage(
-          `The Selected File Does Not Match the Template`
+          `The selected file does not match the template`
         );
         hideOverWrite();
       }
@@ -254,7 +254,7 @@ export default function DSColumnTable({
       setSelectedRows([...selectedRows, `u${rows.length}`]);
       setEditedRows([...rows, ...singleRow]);
     } else {
-      messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
+      messageContext.showErrorMessage(`Not allowed more than 500 columns`);
     }
   };
 
@@ -304,7 +304,7 @@ export default function DSColumnTable({
     if (total < 500) {
       setNewRows(parseInt(value, 10));
     } else if (total) {
-      messageContext.showErrorMessage(`Not Allowed More than 500 Columns`);
+      messageContext.showErrorMessage(`Not allowed more than 500 columns`);
     }
   };
 
@@ -352,7 +352,7 @@ export default function DSColumnTable({
       setIsEditAll(true);
     } else {
       messageContext.showErrorMessage(
-        `No Data In Table, Please Add Data and try again`
+        `No data in table, please add data and try again`
       );
     }
   };
@@ -360,9 +360,13 @@ export default function DSColumnTable({
   const onSaveAll = async () => {
     const removeSpaces = editedRows
       .map((e) => {
-        e.values = e.values.trim();
-        e.columnName = e.columnName.trim();
-        return e;
+        const d = {
+          ...e,
+          isSaved: true,
+          values: e.values.trim(),
+          columnName: e.columnName.trim(),
+        };
+        return d;
       })
       .map((e) => {
         const isFirst = e.values.charAt(0) === "~";
@@ -377,7 +381,7 @@ export default function DSColumnTable({
       });
     if (removeSpaces?.length && removeSpaces.find((x) => x.dataType === "")) {
       messageContext.showErrorMessage(
-        `Please select Data Type for all records to save.`
+        `Please select data type for all records to save.`
       );
       return false;
     }
@@ -393,8 +397,11 @@ export default function DSColumnTable({
 
   const onRowCancel = (uniqueId) => {
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
-    setEditedRows(removeEdited);
+    const editedData = editedRows.find((e) => e.uniqueId === uniqueId);
+    if (!editedData?.isSaved) {
+      const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+      setEditedRows(removeEdited);
+    }
     setSelectedRows([...removeRow]);
   };
 
@@ -410,9 +417,13 @@ export default function DSColumnTable({
   const onRowSave = async (uniqueId) => {
     const editedRowData = _.filter(editedRows, (e) => e.uniqueId === uniqueId)
       .map((e) => {
-        e.values = e.values.trim();
-        e.columnName = e.columnName.trim();
-        return e;
+        const d = {
+          ...e,
+          isSaved: true,
+          values: e.values.trim(),
+          columnName: e.columnName.trim(),
+        };
+        return d;
       })
       .map((e) => {
         const isFirst = e.values.charAt(0) === "~";
@@ -442,15 +453,15 @@ export default function DSColumnTable({
 
     if (editedRowData && editedRowData.dataType === "") {
       messageContext.showErrorMessage(
-        `Please select Data Type for this record to save.`
+        `Please select data type for this record to save.`
       );
       return false;
     }
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+    // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
     setRows([...removeExistingRowData, editedRowData]);
-    setEditedRows([...removeEdited]);
+    // setEditedRows([...removeEdited]);
     setSelectedRows([...removeRow]);
   };
 

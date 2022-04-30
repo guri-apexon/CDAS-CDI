@@ -381,8 +381,14 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                 obj.type || obj.fileType || null,
                 obj.path || null,
                 obj.OverrideStaleAlert || null,
-                obj.headerRowNumber && obj.headerRowNumber != "" ? 1 : 0,
-                obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
+                typeof obj.headerRowNumber != "undefined" &&
+                obj.headerRowNumber != ""
+                  ? 1
+                  : 0,
+                typeof obj.footerRowNumber != "undefined" &&
+                obj.footerRowNumber != ""
+                  ? 1
+                  : 0,
                 obj.headerRowNumber || 0,
                 obj.footerRowNumber || 0,
                 sqlQuery || null,
