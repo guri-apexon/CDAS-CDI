@@ -269,7 +269,7 @@ export default function DSColumnTable({
       const removeExistingRowData = rows.filter(
         (e) => e.uniqueId !== selectedRow.uniqueId
       );
-      const newData = [{ ...selectedRow }]
+      const editedRowData = [{ ...selectedRow }]
         .map((e) => {
           e.values = e.values.trim();
           return e;
@@ -288,7 +288,7 @@ export default function DSColumnTable({
 
       dispatch(
         updateDatasetColumns(
-          newData,
+          editedRowData,
           dsId,
           dfId,
           dpId,
@@ -297,7 +297,14 @@ export default function DSColumnTable({
           newQuery
         )
       );
-      setRows([...removeExistingRowData, ...newData]);
+
+      const newData = _.orderBy(
+        [...removeExistingRowData, ...editedRowData],
+        ["uniqueId"],
+        ["asc"]
+      );
+
+      setRows([...newData]);
     }
     hideViewLOVs();
   };
@@ -559,10 +566,13 @@ export default function DSColumnTable({
       }
 
       setSelectedRows([]);
-      setEditedRows([...removeSpaces]);
-      setRows([...removeSpaces]);
 
-      await dispatch(getDatasetColumns(dsId));
+      const newData = _.orderBy([...removeSpaces], ["uniqueId"], ["asc"]);
+
+      setEditedRows([...newData]);
+      setRows([...newData]);
+
+      // await dispatch(getDatasetColumns(dsId));
       // setTimeout(() => {
       //   updatingData();
       // }, 2000);
@@ -648,13 +658,17 @@ export default function DSColumnTable({
         }
       }
 
-      const newData = [...removeExistingRowData, editedRowData];
+      const newData = _.orderBy(
+        [...removeExistingRowData, editedRowData],
+        ["uniqueId"],
+        ["asc"]
+      );
 
       setRows([...newData]);
       setEditedRows([...newData]);
       setSelectedRows([...removeRow]);
     }
-    await dispatch(getDatasetColumns(dsId));
+    // await dispatch(getDatasetColumns(dsId));
   };
 
   const onCancelAll = () => {
@@ -684,8 +698,18 @@ export default function DSColumnTable({
         await deleteCD(isInDB.dbColumnId, dsId, dpId, dfId, false, "");
       }
     }
-    setRows(rows.filter((row) => row.uniqueId !== uniqueId));
-    setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
+
+    const newData = rows
+      .filter((row) => row.uniqueId !== uniqueId)
+      .map((e, i) => {
+        const d = {
+          ...e,
+          uniqueId: `u${i}`,
+        };
+        return d;
+      });
+    setRows([...newData]);
+    setEditedRows([...newData]);
   };
 
   const editRow = (uniqueId, key, value, errorTxt) => {
@@ -765,7 +789,7 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {/* {console.log("on render", rows, editedRows, selectedRows)} */}
+        {console.log("on render", rows, editedRows, selectedRows)}
         <input
           type="file"
           id="file"
