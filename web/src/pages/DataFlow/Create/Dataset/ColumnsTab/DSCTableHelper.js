@@ -35,7 +35,6 @@ import {
   checkFormat,
   checkRequiredValue,
   checkCharacterLength,
-  checkAlphaNumericFileName,
   validateRow,
 } from "../../../../../components/FormComponents/validators";
 

@@ -5,6 +5,7 @@ import {
   checkNumbers,
   checkExceSupport,
   checkAlphaNumericFileName,
+  checkAlphaNumericMnemonic,
   checkValidQuery,
   checkfilterCondition,
   checkExecptSpace,
@@ -28,7 +29,8 @@ const dataSetsValidation = ({
   tableName,
 }) =>
   removeUndefined({
-    datasetName: checkRequired(datasetName) || checkAlphaNumeric(datasetName),
+    datasetName:
+      checkRequired(datasetName) || checkAlphaNumericMnemonic(datasetName),
     clinicalDataType: checkRequired(clinicalDataType),
     fileType: checkRequired(fileType),
     transferFrequency:
