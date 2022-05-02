@@ -402,9 +402,11 @@ export const formatDataNew = (incomingData, protNo) => {
   const data = incomingData.slice(1); // removing header
   let isAllDataMatch = false;
   if (data.length === 1) {
-    isAllDataMatch = data[0][0] === protNo;
+    isAllDataMatch = data[0][0].toString() === protNo.toString();
   } else if (data.length > 1) {
-    isAllDataMatch = data.map((e) => e[0]).every((ele) => ele === protNo); // checking for protocol match
+    isAllDataMatch = data
+      .map((e) => e[0])
+      .every((ele) => ele.toString() === protNo.toString()); // checking for protocol match
   }
   if (isAllDataMatch) {
     const newData =

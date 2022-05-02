@@ -11,7 +11,7 @@ exports.getColumnsSet = async (req, res) => {
   try {
     const { datasetid } = req.body;
     Logger.info({ message: "getColumnsSet" });
-    const searchQuery = `SELECT "columnid", "variable", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "format", "lov", "unique", insrt_tm from ${schemaName}.columndefinition WHERE coalesce (del_flg,0) != 1 AND datasetid = $1`;
+    const searchQuery = `SELECT "columnid", "variable", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "format", "lov", "unique", insrt_tm from ${schemaName}.columndefinition WHERE coalesce (del_flg,0) != 1 AND datasetid = $1 ORDER BY insrt_tm`;
     DB.executeQuery(searchQuery, [datasetid]).then((response) => {
       const datasetColumns = response.rows || null;
       return apiResponse.successResponseWithData(
@@ -244,54 +244,6 @@ exports.deleteColumns = async (req, res) => {
   } catch (err) {
     Logger.error("catch: deleteColumns");
     Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
-  }
-};
-
-exports.lovUpdate = async (req, res) => {
-  try {
-    const { columnId, dsId, dpId, dfId, userId, lov } = req.body;
-
-    Logger.info({ message: "lovUpdate" });
-    const selectQuery = `SELECT  "lov" from ${schemaName}.columndefinition WHERE columnid = $1`;
-    const updateQuery = `UPDATE ${schemaName}.columndefinition set lov=$2,updt_tm=$3 WHERE columnid=$1`;
-
-    const lovData = await DB.executeQuery(selectQuery, [columnId]);
-
-    DB.executeQuery(updateQuery, [columnId, lov, new Date()]).then(
-      async (response) => {
-        const datasetColumns = response.rows || null;
-
-        const historyVersion = await CommonController.addColumnHistory(
-          columnId,
-          dsId,
-          dfId,
-          dpId,
-          userId,
-          null,
-          "lov",
-          lovData.rows[0].lov,
-          lov
-        );
-        if (!historyVersion) throw new Error("History not updated");
-
-        return apiResponse.successResponseWithData(
-          res,
-          "Operation success",
-          datasetColumns
-        );
-      }
-    );
-  } catch (err) {
-    Logger.error("catch: lovUpdate");
-    Logger.error(err);
-    if (err.code === "23505") {
-      return apiResponse.validationErrorWithData(
-        res,
-        "Column name should be unique for a dataset",
-        "Operation failed"
-      );
-    }
     return apiResponse.ErrorResponse(res, err);
   }
 };

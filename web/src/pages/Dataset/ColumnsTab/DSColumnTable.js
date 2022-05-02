@@ -276,7 +276,7 @@ export default function DSColumnTable({
       const removeExistingRowData = rows.filter(
         (e) => e.uniqueId !== selectedRow.uniqueId
       );
-      const newData = [{ ...selectedRow }]
+      const editedRowData = [{ ...selectedRow }]
         .map((e) => {
           e.values = e.values.trim();
           return e;
@@ -295,7 +295,7 @@ export default function DSColumnTable({
 
       dispatch(
         updateDatasetColumns(
-          newData,
+          editedRowData,
           dsId,
           dfId,
           dpId,
@@ -304,7 +304,14 @@ export default function DSColumnTable({
           newQuery
         )
       );
-      setRows([...removeExistingRowData, ...newData]);
+
+      const newData = _.orderBy(
+        [...removeExistingRowData, ...editedRowData],
+        ["uniqueId"],
+        ["asc"]
+      );
+
+      setRows([...newData]);
     }
     hideViewLOVs();
   };
@@ -490,9 +497,13 @@ export default function DSColumnTable({
 
   const onSaveAll = async () => {
     const removeSpaces = _.map(editedRows, (e) => {
-      e.values = e.values.trim();
-      e.columnName = e.columnName.trim();
-      return e;
+      const d = {
+        ...e,
+        isSaved: true,
+        values: e.values.trim(),
+        columnName: e.columnName.trim(),
+      };
+      return d;
     }).map((e) => {
       const isFirst = e.values.charAt(0) === "~";
       const isLast = e.values.charAt(e.values.length - 1) === "~";
@@ -562,34 +573,29 @@ export default function DSColumnTable({
       }
 
       setSelectedRows([]);
-      setEditedRows([...removeSpaces]);
-      setRows([...removeSpaces]);
 
-      await dispatch(getDatasetColumns(dsId));
+      const newData = _.orderBy([...removeSpaces], ["uniqueId"], ["asc"]);
+
+      setEditedRows([...newData]);
+      setRows([...newData]);
+
+      // await dispatch(getDatasetColumns(dsId));
       // setTimeout(() => {
       //   updatingData();
       // }, 2000);
     }
   };
 
-  const onCancelAll = () => {
-    setSelectedRows([]);
-    setEditedRows([...rows]);
-  };
-
-  const onRowCancel = (uniqueId) => {
-    const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
-    setEditedRows(removeEdited);
-    setSelectedRows([...removeRow]);
-  };
-
   const onRowSave = async (uniqueId) => {
     const editedRowData = _.filter(editedRows, (e) => e.uniqueId === uniqueId)
       .map((e) => {
-        e.values = e.values.trim();
-        e.columnName = e.columnName.trim();
-        return e;
+        const d = {
+          ...e,
+          isSaved: true,
+          values: e.values.trim(),
+          columnName: e.columnName.trim(),
+        };
+        return d;
       })
       .map((e) => {
         const isFirst = e.values.charAt(0) === "~";
@@ -659,12 +665,32 @@ export default function DSColumnTable({
         }
       }
 
-      const newData = [...removeExistingRowData, editedRowData];
+      const newData = _.orderBy(
+        [...removeExistingRowData, editedRowData],
+        ["uniqueId"],
+        ["asc"]
+      );
 
-      // setEditedRows([...removeEdited]);
+      setRows([...newData]);
+      setEditedRows([...newData]);
       setSelectedRows([...removeRow]);
     }
-    await dispatch(getDatasetColumns(dsId));
+    // await dispatch(getDatasetColumns(dsId));
+  };
+
+  const onCancelAll = () => {
+    setSelectedRows([]);
+    setEditedRows([...rows]);
+  };
+
+  const onRowCancel = (uniqueId) => {
+    const removeRow = selectedRows.filter((e) => e !== uniqueId);
+    const editedData = editedRows.find((e) => e.uniqueId === uniqueId);
+    if (!editedData?.isSaved) {
+      const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+      setEditedRows(removeEdited);
+    }
+    setSelectedRows([...removeRow]);
   };
 
   const onRowEdit = (uniqueId) => {
@@ -679,8 +705,18 @@ export default function DSColumnTable({
         await deleteCD(isInDB.dbColumnId, dsId, dpId, dfId, false, "");
       }
     }
-    setRows(rows.filter((row) => row.uniqueId !== uniqueId));
-    setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
+
+    const newData = rows
+      .filter((row) => row.uniqueId !== uniqueId)
+      .map((e, i) => {
+        const d = {
+          ...e,
+          uniqueId: `u${i}`,
+        };
+        return d;
+      });
+    setRows([...newData]);
+    setEditedRows([...newData]);
   };
 
   const editRow = (uniqueId, key, value, errorTxt) => {

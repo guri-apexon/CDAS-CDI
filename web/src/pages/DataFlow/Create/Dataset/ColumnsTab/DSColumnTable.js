@@ -478,8 +478,18 @@ export default function DSColumnTable({
   };
 
   const onRowDelete = async (uniqueId) => {
-    setRows(rows.filter((row) => row.uniqueId !== uniqueId));
-    setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
+    const newData = rows
+      .filter((row) => row.uniqueId !== uniqueId)
+      .map((e, i) => {
+        const d = {
+          ...e,
+          uniqueId: `u${i}`,
+        };
+        return d;
+      });
+
+    setRows([...newData]);
+    setEditedRows([...newData]);
   };
 
   const haveHeader = parseInt(headerValue, 10) > 0;
