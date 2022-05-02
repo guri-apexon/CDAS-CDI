@@ -511,9 +511,6 @@ export default function DSColumnTable({
         .filter((e) => selectedRows.includes(e.uniqueId))
         .filter((e) => !e.dbColumnId);
 
-      setSelectedRows([]);
-      setRows([...removeSpaces]);
-      setEditedRows(rows);
       let newQuery = "";
       if (isCustomSQL === "No") {
         const columnList = removeSpaces.map((e) => e.columnName).join(", ");
@@ -556,6 +553,10 @@ export default function DSColumnTable({
           )
         );
       }
+
+      setSelectedRows([]);
+      setEditedRows([...removeSpaces]);
+      setRows([...removeSpaces]);
 
       await dispatch(getDatasetColumns(dsId));
       // setTimeout(() => {
@@ -608,7 +609,7 @@ export default function DSColumnTable({
       );
     } else {
       const removeRow = selectedRows.filter((e) => e !== uniqueId);
-      const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+      // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
       const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
       let newQuery = "";
       if (isCustomSQL === "No") {
@@ -642,17 +643,18 @@ export default function DSColumnTable({
           isUpdateQuery: isCustomSQL === "No",
           newQuery,
         });
+
         if (created?.status) {
           const createdId = created.data[0]?.columnid;
           if (createdId) {
             editedRowData.dbColumnId = createdId;
           }
         }
-        console.log("editedRowData::::", editedRowData);
       }
 
-      setRows([...removeExistingRowData, editedRowData]);
-      setEditedRows([...removeEdited]);
+      const newData = [...removeExistingRowData, editedRowData];
+
+      // setEditedRows([...removeEdited]);
       setSelectedRows([...removeRow]);
     }
     await dispatch(getDatasetColumns(dsId));
@@ -751,6 +753,7 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
+        {/* {console.log("on render", rows, editedRows, selectedRows)} */}
         <input
           type="file"
           id="file"

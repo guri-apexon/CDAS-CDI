@@ -86,15 +86,23 @@ export const checkAlphaNumeric = (value, key = "") => {
 };
 
 export const checkAlphaNumericFileName = (value) => {
-  const regexp = /^[A-Za-z0-9_<.> \b]+$/;
+  const regexp = /^[A-Za-z0-9-_.%@&()!# \b]+$/;
   if (value && value.search(regexp) === -1) {
     return "Special characters are not allowed";
   }
   return false;
 };
 
+export const checkAlphaNumericMnemonic = (value) => {
+  const regexp = /^[\w]+$/;
+  if (value && value.search(regexp) === -1) {
+    return "Only alphanumeric format values are allowed";
+  }
+  return false;
+};
+
 export const checkExecptSpace = (value) => {
-  const regexp = /^[A-Za-z0-9_<.>@#/|$%&*()+]+$/;
+  const regexp = /^[A-Za-z0-9_<.>!@#/|$%&*()+]+$/;
   if (value && value.search(regexp) === -1) {
     return "Space is not allowed";
   }
