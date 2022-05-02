@@ -4,7 +4,6 @@ import { useHistory, useLocation } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Box from "apollo-react/components/Box";
 import Typography from "apollo-react/components/Typography";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Divider from "apollo-react/components/Divider";
 import Switch from "apollo-react/components/Switch";
 import Button from "apollo-react/components/Button";
@@ -140,20 +139,12 @@ const LeftPanel = () => {
           </Typography>
         </div>
         <div className="right-panel top-status-checkbox">
-          <FormControlLabel
-            style={{ fontSize: 14 }}
-            value="true"
-            control={
-              // eslint-disable-next-line react/jsx-wrap-multilines
-              <Switch
-                color="primary"
-                size="small"
-                className="MuiSwitch"
-                checked={status === "Active" ? true : false}
-              />
-            }
+          <Switch
             label="Active"
-            labelPlacement="start"
+            className="inline-checkbox"
+            checked={status === "Active"}
+            // onChange={handleActive}
+            size="small"
           />
           <ContextMenu />
         </div>
