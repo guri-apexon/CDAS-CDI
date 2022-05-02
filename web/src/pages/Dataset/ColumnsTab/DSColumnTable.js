@@ -86,6 +86,7 @@ export default function DSColumnTable({
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [noOfValues, setNoOfvalues] = useState("No");
   const [isEditAll, setIsEditAll] = useState(false);
   const [isEditLOVs, setIsEditLOVs] = useState(false);
   const [isMultiAdd, setIsMultiAdd] = useState(false);
@@ -166,8 +167,13 @@ export default function DSColumnTable({
     }
   }, [selectedRows]);
 
+  const changeValuesTitle = (newValues) => {
+    const noOf = newValues?.split("~")?.filter(Boolean)?.length || "No";
+    setNoOfvalues(noOf);
+  };
   const handleViewLOV = (row) => {
     setShowViewLOVs(true);
+    changeValuesTitle(row.values);
     setSelectedRow(row);
   };
 
@@ -255,6 +261,7 @@ export default function DSColumnTable({
   const onChangeLOV = (e) => {
     const newValues = e.target.value;
     setSelectedRow({ ...selectedRow, values: newValues });
+    changeValuesTitle(newValues);
   };
 
   const hideViewLOVs = () => {
@@ -269,7 +276,7 @@ export default function DSColumnTable({
       const removeExistingRowData = rows.filter(
         (e) => e.uniqueId !== selectedRow.uniqueId
       );
-      const newData = [{ ...selectedRow }]
+      const editedRowData = [{ ...selectedRow }]
         .map((e) => {
           e.values = e.values.trim();
           return e;
@@ -288,7 +295,7 @@ export default function DSColumnTable({
 
       dispatch(
         updateDatasetColumns(
-          newData,
+          editedRowData,
           dsId,
           dfId,
           dpId,
@@ -297,7 +304,14 @@ export default function DSColumnTable({
           newQuery
         )
       );
-      setRows([...removeExistingRowData, ...newData]);
+
+      const newData = _.orderBy(
+        [...removeExistingRowData, ...editedRowData],
+        ["uniqueId"],
+        ["asc"]
+      );
+
+      setRows([...newData]);
     }
     hideViewLOVs();
   };
@@ -483,9 +497,13 @@ export default function DSColumnTable({
 
   const onSaveAll = async () => {
     const removeSpaces = _.map(editedRows, (e) => {
-      e.values = e.values.trim();
-      e.columnName = e.columnName.trim();
-      return e;
+      const d = {
+        ...e,
+        isSaved: true,
+        values: e.values.trim(),
+        columnName: e.columnName.trim(),
+      };
+      return d;
     }).map((e) => {
       const isFirst = e.values.charAt(0) === "~";
       const isLast = e.values.charAt(e.values.length - 1) === "~";
@@ -511,9 +529,6 @@ export default function DSColumnTable({
         .filter((e) => selectedRows.includes(e.uniqueId))
         .filter((e) => !e.dbColumnId);
 
-      setSelectedRows([]);
-      setRows([...removeSpaces]);
-      setEditedRows(rows);
       let newQuery = "";
       if (isCustomSQL === "No") {
         const columnList = removeSpaces.map((e) => e.columnName).join(", ");
@@ -557,31 +572,30 @@ export default function DSColumnTable({
         );
       }
 
-      await dispatch(getDatasetColumns(dsId));
+      setSelectedRows([]);
+
+      const newData = _.orderBy([...removeSpaces], ["uniqueId"], ["asc"]);
+
+      setEditedRows([...newData]);
+      setRows([...newData]);
+
+      // await dispatch(getDatasetColumns(dsId));
       // setTimeout(() => {
       //   updatingData();
       // }, 2000);
     }
   };
 
-  const onCancelAll = () => {
-    setSelectedRows([]);
-    setEditedRows([...rows]);
-  };
-
-  const onRowCancel = (uniqueId) => {
-    const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
-    setEditedRows(removeEdited);
-    setSelectedRows([...removeRow]);
-  };
-
   const onRowSave = async (uniqueId) => {
     const editedRowData = _.filter(editedRows, (e) => e.uniqueId === uniqueId)
       .map((e) => {
-        e.values = e.values.trim();
-        e.columnName = e.columnName.trim();
-        return e;
+        const d = {
+          ...e,
+          isSaved: true,
+          values: e.values.trim(),
+          columnName: e.columnName.trim(),
+        };
+        return d;
       })
       .map((e) => {
         const isFirst = e.values.charAt(0) === "~";
@@ -608,7 +622,7 @@ export default function DSColumnTable({
       );
     } else {
       const removeRow = selectedRows.filter((e) => e !== uniqueId);
-      const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+      // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
       const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
       let newQuery = "";
       if (isCustomSQL === "No") {
@@ -642,20 +656,41 @@ export default function DSColumnTable({
           isUpdateQuery: isCustomSQL === "No",
           newQuery,
         });
+
         if (created?.status) {
           const createdId = created.data[0]?.columnid;
           if (createdId) {
             editedRowData.dbColumnId = createdId;
           }
         }
-        console.log("editedRowData::::", editedRowData);
       }
 
-      setRows([...removeExistingRowData, editedRowData]);
-      setEditedRows([...removeEdited]);
+      const newData = _.orderBy(
+        [...removeExistingRowData, editedRowData],
+        ["uniqueId"],
+        ["asc"]
+      );
+
+      setRows([...newData]);
+      setEditedRows([...newData]);
       setSelectedRows([...removeRow]);
     }
-    await dispatch(getDatasetColumns(dsId));
+    // await dispatch(getDatasetColumns(dsId));
+  };
+
+  const onCancelAll = () => {
+    setSelectedRows([]);
+    setEditedRows([...rows]);
+  };
+
+  const onRowCancel = (uniqueId) => {
+    const removeRow = selectedRows.filter((e) => e !== uniqueId);
+    const editedData = editedRows.find((e) => e.uniqueId === uniqueId);
+    if (!editedData?.isSaved) {
+      const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+      setEditedRows(removeEdited);
+    }
+    setSelectedRows([...removeRow]);
   };
 
   const onRowEdit = (uniqueId) => {
@@ -670,8 +705,18 @@ export default function DSColumnTable({
         await deleteCD(isInDB.dbColumnId, dsId, dpId, dfId, false, "");
       }
     }
-    setRows(rows.filter((row) => row.uniqueId !== uniqueId));
-    setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
+
+    const newData = rows
+      .filter((row) => row.uniqueId !== uniqueId)
+      .map((e, i) => {
+        const d = {
+          ...e,
+          uniqueId: `u${i}`,
+        };
+        return d;
+      });
+    setRows([...newData]);
+    setEditedRows([...newData]);
   };
 
   const editRow = (uniqueId, key, value, errorTxt) => {
@@ -751,6 +796,7 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
+        {/* {console.log("on render", rows, editedRows, selectedRows)} */}
         <input
           type="file"
           id="file"
@@ -826,7 +872,7 @@ export default function DSColumnTable({
           // eslint-disable-next-line react/jsx-wrap-multilines
           <>
             <div className="lov-title">List of Values</div>
-            <div className="lov-count">No of Values</div>
+            <div className="lov-count">{`${noOfValues} of Values`}</div>
           </>
         }
         onClose={hideViewLOVs}
@@ -845,7 +891,7 @@ export default function DSColumnTable({
                     value={selectedRow.values}
                     onChange={(e) => onChangeLOV(e)}
                     sizeAdjustable
-                    minWidth={300}
+                    minWidth={340}
                     minHeight={278}
                   />
                 </div>
