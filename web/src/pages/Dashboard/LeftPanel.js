@@ -244,9 +244,9 @@ const LeftPanel = () => {
                 textAlign: "center",
               }}
             >
-              No Studies Found
+              No studies found
             </Typography>
-            // <div className="no-data-found"> No Studies Found</div>
+            // <div className="no-data-found"> No studies found</div>
           )}
         </div>
       )}

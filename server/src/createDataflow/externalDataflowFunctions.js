@@ -13,6 +13,8 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 
 exports.insertValidation = (req) => {
   var validate = [];
+  var str1 = /[~]/;
+  var str2 = /[.]/;
   var error = [];
 
   const Data = [
@@ -128,11 +130,6 @@ exports.insertValidation = (req) => {
                   type: "string",
                 },
               ];
-              if (!helper.isPackageType(each.type)) {
-                validate.push({
-                  err: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
-                });
-              }
 
               let dpResST = helper.validation(dpArrayST);
               if (dpResST.length > 0) {
@@ -147,6 +144,23 @@ exports.insertValidation = (req) => {
                 });
               }
             }
+
+            if (each.name) {
+              const last = each.name.charAt(each.name.length - 1);
+              const first = each.name.charAt(each.name.charAt(0));
+              if (str2.test(each.name) === false) {
+                validate.push({
+                  err: " package naming convention should be end with dot Extension ",
+                });
+              } else {
+                if (last === "." || first === ".") {
+                  validate.push({
+                    err: " Dot(.) can't be used start or end of string ",
+                  });
+                }
+              }
+            }
+
             let dpRes = helper.validation(dpArray);
             if (dpRes.length > 0) {
               validate.push(dpRes);
@@ -216,6 +230,22 @@ exports.insertValidation = (req) => {
                   //     err: " columnCount must be greater than zero ",
                   //   });
                   // }
+
+                  if (obj.name) {
+                    const last = obj.name.charAt(obj.name.length - 1);
+                    const first = obj.name.charAt(obj.name.charAt(0));
+                    if (str2.test(obj.name) === false) {
+                      validate.push({
+                        err: " File Naming Convention should be end with dot Extension ",
+                      });
+                    } else {
+                      if (last === "." || first === ".") {
+                        validate.push({
+                          err: " Dot(.) can't be used start or end of string ",
+                        });
+                      }
+                    }
+                  }
 
                   if (obj.dataTransferFrequency === 0) {
                     validate.push({
@@ -303,16 +333,33 @@ exports.insertValidation = (req) => {
                         if (clRes.length > 0) {
                           validate.push(clRes);
                         }
+                        if (el.characterMin) {
+                          if (
+                            typeof el.characterMin != "undefined" &&
+                            typeof el.characterMax != "undefined"
+                          ) {
+                            if (el.characterMin <= el.characterMax) {
+                            } else {
+                              validate.push({
+                                err: " MinCharacter always less than MaxCharacter  ",
+                              });
+                            }
+                          }
+                        }
+                        if (el.lov) {
+                          const last = el.lov.charAt(el.lov.length - 1);
+                          const first = el.lov.charAt(el.lov.charAt(0));
 
-                        if (
-                          typeof el.characterMin != "undefined" &&
-                          typeof el.characterMax != "undefined"
-                        ) {
-                          if (el.characterMin <= el.characterMax) {
-                          } else {
+                          if (str1.test(el.lov) === false) {
                             validate.push({
-                              err: " MinCharacter always less than MaxCharacter  ",
+                              err: " LOV should be seperated by tilde(~) ",
                             });
+                          } else {
+                            if (last === "~" || first === "~") {
+                              validate.push({
+                                err: " Tilde(~) can't be used start or end of string ",
+                              });
+                            }
                           }
                         }
                       }
@@ -535,6 +582,8 @@ exports.packageLevelInsert = async (
     let ts = new Date().toLocaleString();
     let errorPackage = [];
     var dataPackage = [];
+    var str1 = /[~]/;
+    var str2 = /[.]/;
 
     if (helper.isSftp(LocationType)) {
       // if (LocationType === "MySQL") {
@@ -581,6 +630,20 @@ exports.packageLevelInsert = async (
 
         if (dpResST.length > 0) {
           errorPackage.push(dpResST);
+        }
+      }
+
+      if (data.name) {
+        const last = data.name.charAt(data.name.length - 1);
+        const first = data.name.charAt(data.name.charAt(0));
+        if (str2.test(data.name) === false) {
+          errorPackage.push(
+            " package naming convention should be end with dot Extension "
+          );
+        } else {
+          if (last === "." || first === ".") {
+            errorPackage.push(" Dot(.) can't be used start or end of string ");
+          }
         }
       }
 
@@ -677,456 +740,20 @@ exports.packageLevelInsert = async (
 
     if (data.dataSet && data.dataSet.length > 0) {
       dataPackage.data_sets = [];
-
       for (let obj of data.dataSet) {
-        if (helper.isSftp(LocationType)) {
-          // if (LocationType === "MySQL") {
-          const dsArray = [
-            {
-              key: "Data Set Name (Mnemonic) ",
-              value: obj.mnemonic,
-              type: "string",
-            },
-            {
-              key: "Clinical Data Type ",
-              value: obj.dataKind,
-              type: "string",
-            },
-            { key: "File Type", value: obj.type, type: "string" },
-            {
-              key: "File Naming Convention ",
-              value: obj.name,
-              type: "string",
-            },
-
-            {
-              key: "Data Set Level, Path",
-              value: obj.path,
-              type: "string",
-            },
-            {
-              key: "Row Decrease Allowed",
-              value: obj.rowDecreaseAllowed,
-              type: "number",
-            },
-
-            {
-              key: "New Data Frequency (Days)",
-              value: obj.dataTransferFrequency,
-              type: "number",
-            },
-            {
-              key: "active",
-              value: obj.active,
-              type: "boolean",
-            },
-            {
-              key: "columnCount",
-              value: obj.columnCount,
-              type: "number",
-            },
-          ];
-
-          // point - 28 story - 7277
-          // if (obj.columnCount === 0) {
-          //   errorPackage.push("columnCount must be greater than zero");
-          // }
-
-          if (obj.dataTransferFrequency === 0) {
-            errorPackage.push(
-              "dataTransferFrequency must be greater than zero"
-            );
-          }
-
-          const dsreqSftp = helper.validation(dsArray);
-          if (dsreqSftp.length > 0) {
-            errorPackage.push(dsreqSftp);
-          }
-
-          if (obj.type.toLowerCase() === "delimited") {
-            const dsArrayDt = [
-              {
-                key: "Delimiter",
-                value: obj.delimiter,
-                type: "string",
-              },
-              { key: "Quote", value: obj.quote, type: "string" },
-
-              {
-                key: "Escape Character",
-                value: obj.escapeCode,
-                type: "string",
-              },
-            ];
-
-            let dsResdt = helper.validation(dsArrayDt);
-            if (dsResdt.length > 0) {
-              errorPackage.push(dsResdt);
-            }
-          }
-          if (
-            obj.customQuery ||
-            obj.customQuery === 0 ||
-            obj.customSql ||
-            obj.incremental ||
-            obj.incremental === 0 ||
-            obj.conditionalExpression ||
-            obj.offsetColumn
-          ) {
-            errorPackage.push(
-              "For SFTP/FTPS customQuery, customSql, incremental, conditionalExpression, offsetColumn fields should be Blank "
-            );
-          }
-        } else {
-          if (
-            obj.type ||
-            obj.name ||
-            obj.delimiter ||
-            obj.quote ||
-            obj.rowDecreaseAllowed ||
-            obj.dataTransferFrequency === 0 ||
-            obj.rowDecreaseAllowed === 0 ||
-            obj.dataTransferFrequency ||
-            obj.path ||
-            obj.escapeCode
-          ) {
-            errorPackage.push(
-              " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, path, escapeCode should be Blank "
-            );
-          }
-
-          const dsArray = [
-            {
-              key: "Data Set Name (Mnemonic) ",
-              value: obj.mnemonic,
-              type: "string",
-            },
-            {
-              key: "Clinical Data Type ",
-              value: obj.dataKind,
-              type: "string",
-            },
-            {
-              key: "active",
-              value: obj.active,
-              type: "boolean",
-            },
-            {
-              key: "Custom Query",
-              value: obj.customQuery,
-              type: "boolean",
-            },
-            {
-              key: "columnCount",
-              value: obj.columnCount,
-              type: "number",
-            },
-          ];
-
-          // point - 28 story - 7277
-          // if (obj.columnCount === 0) {
-          //   errorPackage.push("columnCount must be greater than zero");
-          // }
-
-          const dsreq = helper.validation(dsArray);
-          if (dsreq.length > 0) {
-            errorPackage.push(dsreq);
-          }
-
-          if (obj.customQuery.toLowerCase() == "yes") {
-            if (!obj.customSql) {
-              errorPackage.push(" Custom Sql  is required  ");
-            }
-          }
-          if (obj.customQuery.toLowerCase() == "no") {
-            if (!obj.tableName) {
-              errorPackage.push(" Table Name  is required  ");
-            } else {
-              if (obj.tableName.length >= 255) {
-                errorPackage.push(" Table Name  Max of 255 characters  ");
-              }
-            }
-            if (helper.stringToBoolean(obj.incremental)) {
-              if (!obj.offsetColumn) {
-                errorPackage.push(
-                  " offsetColumn  is required and data type should be string  "
-                );
-              }
-            }
-          }
-        }
-        // console.log("insert data set");
-
-        if (errorPackage.length > 0) {
-          errorPackage.splice(0, 0, `Dataset External Id -${obj.externalID} `);
-          return { sucRes: dataPackage, errRes: errorPackage };
-        }
-
-        let dsObj = {};
-
-        let dataKind = null;
-        if (obj.dataKind) {
-          let checkDataKind = await DB.executeQuery(
-            `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
-          );
-          dataKind = checkDataKind.rows[0].datakindid;
-        }
-
-        const dsUid = createUniqueID();
-        let dsPasswordStatus;
-        if (obj.filePwd) {
-          let { filePwd } = obj;
-          dsPasswordStatus = "Yes";
-          helper.writeVaultData(`${DFId}/${dpUid}/${dsUid}`, {
-            password: filePwd,
-          });
-        } else {
-          dsPasswordStatus = "No";
-        }
-
-        let sqlQuery = "";
-        if (obj.customQuery.toLowerCase() === "no") {
-          if (obj.columnDefinition?.length > 0) {
-            const cList = obj.columnDefinition.map(
-              (el) => el.name || el.columnName
-            );
-            sqlQuery = helper.createCustomSql(
-              cList,
-              obj.tableName,
-              obj.conditionalExpression
-            );
-          }
-        } else {
-          sqlQuery = obj.customSql;
-        }
-
-        let DSBody = [
-          dsUid,
+        const dataSetExternalId = obj.externalID;
+        await saveDataset(
+          obj,
+          dataSetExternalId,
           dpUid,
-          dataKind || null,
-          obj.mnemonic || obj.datasetName || null,
-          obj.fileNamingConvention || "",
-          helper.stringToBoolean(obj.active) ? 1 : 0,
-          typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
-          helper.stringToBoolean(obj.incremental) ? "Y" : "N",
-          obj.offsetColumn || null,
-          obj.type || obj.fileType || null,
-          obj.path || null,
-          obj.OverrideStaleAlert || null,
-          obj.headerRowNumber && obj.headerRowNumber != "" ? 1 : 0,
-          obj.footerRowNumber && obj.footerRowNumber != "" ? 1 : 0,
-          obj.headerRowNumber || 0,
-          obj.footerRowNumber || 0,
-          sqlQuery || null,
-          obj.customQuery || null,
-          obj.tableName || null,
-          obj.externalID || null,
-          dsPasswordStatus || "No",
-          helper.getCurrentTime(),
-          obj.delimiter || "",
-          helper.convertEscapeChar(obj.escapeCode || obj.escapeCharacter) || "",
-          obj.quote || "",
-          obj.rowDecreaseAllowed || 0,
-          obj.dataTransferFrequency || "",
-          obj.conditionalExpression,
-        ];
-        let createDS = await DB.executeQuery(
-          `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
-            offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
-            customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
-          DSBody
-        );
-
-        dsObj.externalId = obj.externalID;
-        dsObj.datasetid = dsUid;
-        dsObj.PackageExternalId = externalID;
-        dsObj.action = "Data set created successfully.";
-        dsObj.timestamp = ts;
-        dataPackage.data_sets.push(dsObj);
-
-        await DB.executeQuery(
-          `INSERT INTO ${schemaName}.dataflow_audit_log
-                ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-          [
-            DFId,
-            dpUid,
-            dsUid,
-            null,
-            version,
-            "New Dataset",
-            "",
-            "",
-            externalSysName,
-            helper.getCurrentTime(),
-          ]
-        );
-
-        if (obj.columnDefinition && obj.columnDefinition.length > 0) {
-          dataPackage.column_definition = [];
-          for (let el of obj.columnDefinition) {
-            // console.log("insert Column Definition");
-
-            if (helper.isSftp(LocationType)) {
-              const clArrayif = [
-                {
-                  key: "Column Name or Designator ",
-                  value: el.name,
-                  type: "string",
-                },
-
-                {
-                  key: "Primary Key",
-                  value: el.primaryKey,
-                  type: "boolean",
-                },
-                {
-                  key: "Required",
-                  value: el.required,
-                  type: "boolean",
-                },
-                {
-                  key: "Unique",
-                  value: el.unique,
-                  type: "boolean",
-                },
-                {
-                  key: "Alphanumeric, Numeric or Date",
-                  value: el.dataType,
-                  type: "string",
-                },
-              ];
-
-              let clResif = helper.validation(clArrayif);
-              if (clResif.length > 0) {
-                errorPackage.push(clResif);
-              }
-
-              if (
-                typeof el.characterMin !== "undefined" &&
-                typeof el.characterMax !== "undefined"
-              ) {
-                if (el.characterMin <= el.characterMax) {
-                  errorPackage.push(
-                    "MinCharacter always less than MaxCharacter "
-                  );
-                }
-              }
-            } else {
-              const clArray = [
-                {
-                  key: "Column Name or Designator ",
-                  value: el.name,
-                  type: "string",
-                },
-
-                {
-                  key: "Include Flag",
-                  value: el.includeFlag,
-                  type: "boolean",
-                },
-                {
-                  key: "Primary Key",
-                  value: el.primaryKey,
-                  type: "boolean",
-                },
-                {
-                  key: "Required",
-                  value: el.required,
-                  type: "boolean",
-                },
-                {
-                  key: "Unique",
-                  value: el.unique,
-                  type: "boolean",
-                },
-                {
-                  key: "Alphanumeric, Numeric or Date",
-                  value: el.dataType,
-                  type: "string",
-                },
-              ];
-
-              let clRes = helper.validation(clArray);
-              if (clRes.length > 0) {
-                errorPackage.push(clRes);
-              }
-
-              if (
-                el.characterMin ||
-                el.characterMin === 0 ||
-                el.characterMax === 0 ||
-                el.characterMax ||
-                el.lov ||
-                el.position
-              ) {
-                // console.log(val.key, val.value);
-                errorPackage.push(
-                  "For JBDC characterMin, characterMax, lov, position fields should be Blank "
-                );
-              }
-            }
-
-            if (errorPackage.length > 0) {
-              errorPackage.splice(
-                0,
-                0,
-                `Dataset External Id -${obj.externalID} `
-              );
-              return { sucRes: dataPackage, errRes: errorPackage };
-            }
-
-            let cdObj = {};
-            const CDUid = createUniqueID();
-
-            let CDBody = [
-              dsUid,
-              CDUid,
-              el.name || el.columnName || null,
-              el.dataType || null,
-              helper.stringToBoolean(el.primaryKey) ? 1 : 0,
-              helper.stringToBoolean(el.required) ? 1 : 0,
-              el.characterMin || el.minLength || 0,
-              el.characterMax || el.maxLength || 0,
-              el.position || 0,
-              el.format || null,
-              el.lov || el.values || null,
-              helper.stringToBoolean(el.unique) ? 1 : 0,
-              el.requiredfield || null,
-              helper.getCurrentTime(),
-            ];
-            await DB.executeQuery(
-              `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
-                  primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
-                  insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
-              CDBody
-            );
-
-            cdObj.colmunid = CDUid;
-            cdObj.dataSetExternalId = obj.externalID;
-            cdObj.action = "column definition created successfully.";
-            cdObj.timestamp = ts;
-            dataPackage.column_definition.push(cdObj);
-
-            await DB.executeQuery(
-              `INSERT INTO ${schemaName}.dataflow_audit_log
-                      ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-                      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-              [
-                DFId,
-                dpUid,
-                dsUid,
-                null,
-                version,
-                "New Column Definition",
-                "",
-                "",
-                externalSysName,
-                helper.getCurrentTime(),
-              ]
-            );
-          }
-        }
+          DFId,
+          version,
+          ConnectionType,
+          externalSysName
+        ).then((res) => {
+          errorPackage.push(res.errRes);
+          dataPackage.push(res.sucRes);
+        });
       }
     }
     return { sucRes: dataPackage, errRes: errorPackage };
@@ -1139,7 +766,7 @@ exports.packageLevelInsert = async (
   }
 };
 
-exports.datasetLevelInsert = async (
+const saveDataset = (exports.datasetLevelInsert = async (
   obj,
   externalID,
   DPId,
@@ -1153,6 +780,8 @@ exports.datasetLevelInsert = async (
     let ts = new Date().toLocaleString();
     let errorDataset = [];
     var dataSet = [];
+    var str1 = /[~]/;
+    var str2 = /[.]/;
 
     if (helper.isSftp(LocationType)) {
       // if (LocationType == "Hive CDH") {
@@ -1210,6 +839,20 @@ exports.datasetLevelInsert = async (
 
       if (obj.dataTransferFrequency === 0) {
         errorDataset.push("dataTransferFrequency must be greater than zero");
+      }
+
+      if (obj.name) {
+        const last = obj.name.charAt(obj.name.length - 1);
+        const first = obj.name.charAt(obj.name.charAt(0));
+        if (str2.test(obj.name) === false) {
+          errorDataset.push(
+            " File Naming Convention should be end with dot Extension "
+          );
+        } else {
+          if (last === "." || first === ".") {
+            errorDataset.push(" Dot(.) can't be used start or end of string ");
+          }
+        }
       }
 
       let dsArrRes = helper.validation(dsArray);
@@ -1474,12 +1117,31 @@ exports.datasetLevelInsert = async (
             errorDataset.push(clResIf);
           }
 
-          if (
-            typeof el.characterMin != "undefined" &&
-            typeof el.characterMax != "undefined"
-          ) {
-            if (el.characterMin >= el.characterMax) {
-              errorDataset.push("MinCharacter always less than MaxCharacter ");
+          if (el.characterMin) {
+            if (
+              typeof el.characterMin != "undefined" &&
+              typeof el.characterMax != "undefined"
+            ) {
+              if (el.characterMin >= el.characterMax) {
+                errorDataset.push(
+                  "MinCharacter always less than MaxCharacter "
+                );
+              }
+            }
+          }
+
+          if (el.lov) {
+            const last = el.lov.charAt(el.lov.length - 1);
+            const first = el.lov.charAt(el.lov.charAt(0));
+
+            if (str1.test(el.lov) === false) {
+              errorDataset.push(" LOV should be seperated by tilde(~) ");
+            } else {
+              if (last === "~" || first === "~") {
+                errorDataset.push(
+                  " Tilde(~) can't be used start or end of string "
+                );
+              }
             }
           }
         } else {
@@ -1572,7 +1234,7 @@ exports.datasetLevelInsert = async (
         cdObj.externalId = obj.externalID;
         cdObj.action = "column definition created successfully.";
         cdObj.timestamp = ts;
-        dataSet.column_definition.push(cdObj);
+        dataSet.push(cdObj);
 
         await DB.executeQuery(
           `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -1601,29 +1263,7 @@ exports.datasetLevelInsert = async (
     Logger.error("catch :Data Set Level Insert");
     Logger.error(err);
   }
-};
-
-exports.columnLevelInsert = async (req, res) => {
-  try {
-    var validate = [];
-
-    if (validate.length > 0) {
-      console.log("testt 245");
-
-      return apiResponse.ErrorResponse(res, validate);
-    } else {
-      console.log("Column Inseert Function");
-      // return;
-      //  commonInsertFunction(req, res);
-    }
-  } catch (err) {
-    console.log(err);
-    //throw error in json response with status 500.
-    Logger.error("catch :createDataflow");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
-  }
-};
+});
 
 exports.dataflowUpdate = async (
   data,
@@ -1809,6 +1449,8 @@ exports.packageUpdate = async (
     let errorPackage = [];
     var newObj = {};
     var data_packages = [];
+    var str1 = /[~]/;
+    var str2 = /[.]/;
 
     if (helper.isSftp(LocationType)) {
       // if (LocationType == "Hive CDH") {
@@ -1874,6 +1516,20 @@ exports.packageUpdate = async (
           errorPackage.push(
             " Package type's Supported values : 7Z, ZIP, RAR, SAS "
           );
+        }
+      }
+
+      if (typeof data.name != "undefined") {
+        const last = data.name.charAt(data.name.length - 1);
+        const first = data.name.charAt(data.name.charAt(0));
+        if (str2.test(data.name) === false) {
+          errorPackage.push(
+            " package naming convention should be end with dot Extension "
+          );
+        } else {
+          if (last === "." || first === ".") {
+            errorPackage.push(" Dot(.) can't be used start or end of string ");
+          }
         }
       }
     } else {
@@ -1989,6 +1645,7 @@ exports.datasetUpdate = async (
     const valDataset = [];
     var dataKi_Id;
     let errorDataset = [];
+    var str2 = /[.]/;
 
     if (data.dataKind) {
       let checkDataKind = await DB.executeQuery(
@@ -2033,6 +1690,22 @@ exports.datasetUpdate = async (
           value: data.name,
           type: "string",
         });
+
+        if (data.name) {
+          const last = data.name.charAt(data.name.length - 1);
+          const first = data.name.charAt(data.name.charAt(0));
+          if (str2.test(data.name) === false) {
+            errorDataset.push(
+              " File Naming Convention should be end with dot Extension "
+            );
+          } else {
+            if (last === "." || first === ".") {
+              errorDataset.push(
+                " Dot(.) can't be used start or end of string "
+              );
+            }
+          }
+        }
       }
       if (typeof data.path != "undefined") {
         valDataset.push({
@@ -2360,5 +2033,3 @@ exports.datasetUpdate = async (
     Logger.error(e);
   }
 };
-
-const columnUpdate = async (data, externalID, DFId, version) => {};
