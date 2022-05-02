@@ -789,7 +789,7 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {console.log("on render", rows, editedRows, selectedRows)}
+        {/* {console.log("on render", rows, editedRows, selectedRows)} */}
         <input
           type="file"
           id="file"
