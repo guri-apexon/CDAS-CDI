@@ -86,6 +86,7 @@ export default function DSColumnTable({
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [noOfValues, setNoOfvalues] = useState("No");
   const [isEditAll, setIsEditAll] = useState(false);
   const [isEditLOVs, setIsEditLOVs] = useState(false);
   const [isMultiAdd, setIsMultiAdd] = useState(false);
@@ -166,8 +167,13 @@ export default function DSColumnTable({
     }
   }, [selectedRows]);
 
+  const changeValuesTitle = (newValues) => {
+    const noOf = newValues?.split("~")?.filter(Boolean)?.length || "No";
+    setNoOfvalues(noOf);
+  };
   const handleViewLOV = (row) => {
     setShowViewLOVs(true);
+    changeValuesTitle(row.values);
     setSelectedRow(row);
   };
 
@@ -255,6 +261,7 @@ export default function DSColumnTable({
   const onChangeLOV = (e) => {
     const newValues = e.target.value;
     setSelectedRow({ ...selectedRow, values: newValues });
+    changeValuesTitle(newValues);
   };
 
   const hideViewLOVs = () => {
@@ -865,7 +872,7 @@ export default function DSColumnTable({
           // eslint-disable-next-line react/jsx-wrap-multilines
           <>
             <div className="lov-title">List of Values</div>
-            <div className="lov-count">No of Values</div>
+            <div className="lov-count">{`${noOfValues} of Values`}</div>
           </>
         }
         onClose={hideViewLOVs}
@@ -884,7 +891,7 @@ export default function DSColumnTable({
                     value={selectedRow.values}
                     onChange={(e) => onChangeLOV(e)}
                     sizeAdjustable
-                    minWidth={300}
+                    minWidth={340}
                     minHeight={278}
                   />
                 </div>

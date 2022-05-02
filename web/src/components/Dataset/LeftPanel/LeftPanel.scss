@@ -2,7 +2,7 @@
   padding: 15px 25px 20px;
 }
 .packages-list-header {
-  padding: 20px 25px;
+  padding: 20px 25px 0px;
 }
 .packages-list {
   height: calc(100% - 500px);
@@ -79,12 +79,6 @@
     tr:nth-child(odd) {
       height: 32px !important;
       background-color: #ffffff;
-    }
-    td:first-child {
-      padding-left: 5px;
-    }
-    td:last-child {
-      padding-right: 4px;
     }
     thead {
       display: none;

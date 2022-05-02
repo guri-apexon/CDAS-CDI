@@ -326,7 +326,11 @@ export default function DataflowTab({ updateData }) {
     return (
       <div style={{ display: "flex", justifyContent: "end" }}>
         <Tooltip title="Actions" disableFocusListener>
-          <IconMenuButton id="actions" menuItems={menuItems} size="small">
+          <IconMenuButton
+            id="actionsDropdown"
+            menuItems={menuItems}
+            size="small"
+          >
             <EllipsisVertical />
           </IconMenuButton>
         </Tooltip>
