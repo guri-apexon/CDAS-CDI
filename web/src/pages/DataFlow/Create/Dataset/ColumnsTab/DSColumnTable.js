@@ -392,9 +392,10 @@ export default function DSColumnTable({
       );
       return false;
     }
-    setRows([...removeSpaces]);
+    const newData = _.orderBy([...removeSpaces], ["uniqueId"], ["asc"]);
     setSelectedRows([]);
-    setEditedRows(rows);
+    setRows([...newData]);
+    setEditedRows([...newData]);
   };
 
   const onCancelAll = () => {
@@ -465,10 +466,17 @@ export default function DSColumnTable({
       return false;
     }
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
-    setRows([...removeExistingRowData, editedRowData]);
-    // setEditedRows([...removeEdited]);
+
+    const newData = _.orderBy(
+      [...removeExistingRowData, editedRowData],
+      ["uniqueId"],
+      ["asc"]
+    );
+
+    setRows([...newData]);
+    setEditedRows([...removeEdited]);
     setSelectedRows([...removeRow]);
   };
 
