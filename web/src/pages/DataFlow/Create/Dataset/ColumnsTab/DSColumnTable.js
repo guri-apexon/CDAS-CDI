@@ -466,7 +466,7 @@ export default function DSColumnTable({
       return false;
     }
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+    // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
 
     const newData = _.orderBy(
@@ -476,7 +476,7 @@ export default function DSColumnTable({
     );
 
     setRows([...newData]);
-    setEditedRows([...removeEdited]);
+    // setEditedRows([...removeEdited]);
     setSelectedRows([...removeRow]);
   };
 
