@@ -622,7 +622,7 @@ export default function DSColumnTable({
       );
     } else {
       const removeRow = selectedRows.filter((e) => e !== uniqueId);
-      const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+      // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
       const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
       let newQuery = "";
       if (isCustomSQL === "No") {
@@ -672,7 +672,7 @@ export default function DSColumnTable({
       );
 
       setRows([...newData]);
-      setEditedRows([...removeEdited]);
+      // setEditedRows([...removeEdited]);
       setSelectedRows([...removeRow]);
     }
     // await dispatch(getDatasetColumns(dsId));
