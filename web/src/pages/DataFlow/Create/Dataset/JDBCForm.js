@@ -197,6 +197,15 @@ const JDBCForm = forwardRef((props, ref) => {
         );
         return false;
       }
+      if (
+        filterCondition &&
+        !filterCondition?.toLowerCase().includes("where ")
+      ) {
+        messageContext.showErrorMessage(
+          `Please correct your filter condition.`
+        );
+        return false;
+      }
     }
     const data = {
       datasetName,
