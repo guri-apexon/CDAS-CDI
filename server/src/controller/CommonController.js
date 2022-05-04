@@ -352,8 +352,8 @@ module.exports = {
     datasetid,
     config_json,
     column,
-    old_val = "",
-    new_val = ""
+    oldData,
+    diffObj
   ) {
     return new Promise((resolve, reject) => {
       if (!dfId) resolve(false);
@@ -362,50 +362,74 @@ module.exports = {
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`
       ).then(async (response) => {
         const historyVersion = response.rows[0]?.version || 0;
-        const version = Number(historyVersion) + 1;
         const curDate = helper.getCurrentTime();
-        const addHistoryQuery = `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
+        const version = Number(historyVersion) + 1;
         const values = [dfId, version, config_json, userId, curDate];
-        DB.executeQuery(addHistoryQuery, values).then(async (response) => {
-          const addAuditLogQuery = `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid,datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
-          const auditValues = [
-            dfId,
-            datapackageid,
-            datasetid,
-            version,
-            column,
-            old_val,
-            new_val,
-            userId,
-            curDate,
-          ];
-          DB.executeQuery(addAuditLogQuery, auditValues)
-            .then(async (response) => {
+        DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`,
+          values
+        ).then(async (response) => {
+          const anditLogsQueries = [];
+          if (column) {
+            anditLogsQueries.push(
               DB.executeQuery(
-                `INSERT INTO ${schemaName}.cdr_ta_queue
+                `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid, datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                [
+                  dfId,
+                  datapackageid,
+                  datasetid,
+                  version,
+                  column,
+                  null,
+                  null,
+                  userId,
+                  curDate,
+                ]
+              )
+            );
+          } else {
+            Object.keys(diffObj).map((key) => {
+              anditLogsQueries.push(
+                DB.executeQuery(
+                  `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid, datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                  [
+                    dfId,
+                    datapackageid,
+                    datasetid,
+                    version,
+                    key,
+                    oldData[key],
+                    diffObj[key],
+                    userId,
+                    curDate,
+                  ]
+                )
+              );
+            });
+          }
+          Promise.all(anditLogsQueries).then((values) => {
+            DB.executeQuery(
+              `INSERT INTO ${schemaName}.cdr_ta_queue
               (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count, datapackageid, datasetid)
               VALUES($1, 'CONFIG', $2, 'QUEUE', $6, $6, '', $3, '', 1, '', 0, $4, $5)`,
-                [dfId, userId, version, datapackageid, datasetid, curDate]
-              )
-                .then(async (response) => {
-                  DB.executeQuery(
-                    `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
-                    [dfId, curDate]
-                  )
-                    .then((res) => {
-                      resolve(version);
-                    })
-                    .catch((err) => {
-                      resolve(false);
-                    });
-                })
-                .catch((err) => {
-                  resolve(false);
-                });
-            })
-            .catch((err) => {
-              resolve(version);
-            });
+              [dfId, userId, version, datapackageid, datasetid, curDate]
+            )
+              .then(async (response) => {
+                DB.executeQuery(
+                  `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
+                  [dfId, curDate]
+                )
+                  .then((res) => {
+                    resolve(version);
+                  })
+                  .catch((err) => {
+                    resolve(false);
+                  });
+              })
+              .catch((err) => {
+                resolve(false);
+              });
+          });
         });
       });
     });
@@ -419,62 +443,86 @@ module.exports = {
     userId,
     config_json,
     column,
-    old_val = "",
-    new_val = ""
+    oldData,
+    diffObj
   ) {
     return new Promise((resolve, reject) => {
       if (!dfId) resolve(false);
-      const curDate = helper.getCurrentTime();
       DB.executeQuery(
         `SELECT version from ${schemaName}.dataflow_version
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`
       ).then(async (response) => {
         const historyVersion = response.rows[0]?.version || 0;
-
+        const curDate = helper.getCurrentTime();
         const version = Number(historyVersion) + 1;
-        const addHistoryQuery = `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
         const values = [dfId, version, config_json, userId, curDate];
-        DB.executeQuery(addHistoryQuery, values).then(async (response) => {
-          const addAuditLogQuery = `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid,datasetid,columnid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-          const auditValues = [
-            dfId,
-            dpId,
-            datasetid,
-            columnId,
-            version,
-            column,
-            old_val,
-            new_val,
-            userId,
-            curDate,
-          ];
-          DB.executeQuery(addAuditLogQuery, auditValues)
-            .then(async (response) => {
+        DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`,
+          values
+        ).then(async (response) => {
+          const anditLogsQueries = [];
+          if (column) {
+            anditLogsQueries.push(
               DB.executeQuery(
-                `INSERT INTO ${schemaName}.cdr_ta_queue
+                `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid,datasetid,columnid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                [
+                  dfId,
+                  dpId,
+                  datasetid,
+                  columnId,
+                  version,
+                  column,
+                  null,
+                  null,
+                  userId,
+                  curDate,
+                ]
+              )
+            );
+          } else {
+            Object.keys(diffObj).map((key) => {
+              anditLogsQueries.push(
+                DB.executeQuery(
+                  `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid,datasetid,columnid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                  [
+                    dfId,
+                    dpId,
+                    datasetid,
+                    columnId,
+                    version,
+                    key,
+                    oldData[key],
+                    diffObj[key],
+                    userId,
+                    curDate,
+                  ]
+                )
+              );
+            });
+          }
+          Promise.all(anditLogsQueries).then((values) => {
+            DB.executeQuery(
+              `INSERT INTO ${schemaName}.cdr_ta_queue
               (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count, datapackageid, datasetid)
               VALUES($1, 'CONFIG', $2, 'QUEUE', $6, $6, '', $3, '', 1, '', 0, $4, $5)`,
-                [dfId, userId, version, dpId, datasetid, curDate]
-              )
-                .then(async (response) => {
-                  DB.executeQuery(
-                    `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
-                    [dfId, curDate]
-                  )
-                    .then((res) => {
-                      resolve(version);
-                    })
-                    .catch((err) => {
-                      resolve(false);
-                    });
-                })
-                .catch((err) => {
-                  resolve(false);
-                });
-            })
-            .catch((err) => {
-              resolve(version);
-            });
+              [dfId, userId, version, dpId, datasetid, curDate]
+            )
+              .then(async (response) => {
+                DB.executeQuery(
+                  `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
+                  [dfId, curDate]
+                )
+                  .then((res) => {
+                    resolve(version);
+                  })
+                  .catch((err) => {
+                    resolve(false);
+                  });
+              })
+              .catch((err) => {
+                resolve(false);
+              });
+          });
         });
       });
     });
