@@ -51,19 +51,19 @@ export const checkExceSupport = (value, fileType) => {
     !regexpExcel.test(value.toLowerCase()) &&
     fileType.toLowerCase() === "excel"
   ) {
-    msg = "Only .xlsx and .xls Excel formats are Supported";
+    msg = "Only .xlsx and .xls excel formats are supported";
   } else if (
     value !== "" &&
     !regexpSAS.test(value.toLowerCase()) &&
     fileType.toLowerCase() === "sas"
   ) {
-    msg = "Only .sas7bdat formats are Supported";
+    msg = "Only .sas7bdat formats are supported";
   } else if (
     value !== "" &&
     !regexpDelimited.test(value.toLowerCase()) &&
     fileType.toLowerCase() === "delimited"
   ) {
-    msg = "Only .csv or .txt formats are Supported";
+    msg = "Only .csv or .txt formats are supported";
   } else if (
     value !== "" &&
     !regexpFixed.test(value.toLowerCase()) &&
@@ -80,21 +80,29 @@ export const checkAlphaNumeric = (value, key = "") => {
     return false;
   }
   if (value && value.search(regexp) === -1) {
-    return "Only Alphanumeric format values are allowed";
+    return "Only alphanumeric format values are allowed";
   }
   return false;
 };
 
 export const checkAlphaNumericFileName = (value) => {
-  const regexp = /^[A-Za-z0-9_<.> \b]+$/;
+  const regexp = /^[A-Za-z0-9-_.%@&()!# \b]+$/;
   if (value && value.search(regexp) === -1) {
     return "Special characters are not allowed";
   }
   return false;
 };
 
+export const checkAlphaNumericMnemonic = (value) => {
+  const regexp = /^[\w]+$/;
+  if (value && value.search(regexp) === -1) {
+    return "Only alphanumeric format values are allowed";
+  }
+  return false;
+};
+
 export const checkExecptSpace = (value) => {
-  const regexp = /^[A-Za-z0-9_<.>@#/|$%&*()+]+$/;
+  const regexp = /^[A-Za-z0-9_<.>!@#/|$%&*()+]+$/;
   if (value && value.search(regexp) === -1) {
     return "Space is not allowed";
   }
@@ -107,7 +115,7 @@ export const checkRequiredValue = (value, key = "", primary = "") => {
     key === "required" &&
     value !== primary &&
     primary === "Yes" &&
-    "Columns with primary keys with value Y should also have Required value Y"
+    "Columns with primary keys with value Y should also have required value Y"
   );
 };
 
@@ -126,7 +134,7 @@ export const checkFormat = (value, key = "", dataType = "") => {
     if (value !== "" && !regexp.test(value)) {
       return (
         key === "format" &&
-        "Only Alphanumeric format values are allowed for Alphanumeric Data Type"
+        "Only alphanumeric format values are allowed for alphanumeric data type"
       );
     }
   }
@@ -135,7 +143,7 @@ export const checkFormat = (value, key = "", dataType = "") => {
     if (value !== "" && !regexp.test(value)) {
       return (
         key === "format" &&
-        "Only numeric format values are allowed for Numeric Data Type"
+        "Only numeric format values are allowed for numeric data type"
       );
     }
   }
@@ -144,7 +152,7 @@ export const checkFormat = (value, key = "", dataType = "") => {
     if (value !== "" && !regexp.test(value)) {
       return (
         key === "format" &&
-        "Only Date format (YYYYMMDD) values are allowed for Date Data Type "
+        "Only date format (YYYYMMDD) values are allowed for date data type "
       );
     }
   }

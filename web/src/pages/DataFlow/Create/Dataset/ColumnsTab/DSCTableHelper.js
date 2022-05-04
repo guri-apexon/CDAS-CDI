@@ -35,7 +35,6 @@ import {
   checkFormat,
   checkRequiredValue,
   checkCharacterLength,
-  checkAlphaNumericFileName,
   validateRow,
 } from "../../../../../components/FormComponents/validators";
 
@@ -276,7 +275,7 @@ export const ActionCell = ({ row }) => {
     minLength,
     dataType,
   } = row;
-  console.log("Row list", row);
+  // console.log("Row list", row);
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
       <Button
@@ -454,7 +453,7 @@ export const CustomHeader = ({
       {isEditAll && (
         <>
           <Button size="small" style={{ marginRight: 8 }} onClick={onCancelAll}>
-            Cancel All
+            Cancel all
           </Button>
           <Button
             size="small"
@@ -462,7 +461,7 @@ export const CustomHeader = ({
             onClick={onSaveAll}
             disabled={disableSaveAll}
           >
-            Save All
+            Save all
           </Button>
         </>
       )}

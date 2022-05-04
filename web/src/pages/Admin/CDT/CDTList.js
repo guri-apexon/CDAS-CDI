@@ -398,6 +398,7 @@ export default function CDTList() {
                     placeholder="Enter Clinical Data Name"
                     value={cName}
                     name="name"
+                    size="small"
                     onChange={(e) => handleChange(e)}
                     fullWidth
                     helperText={
@@ -407,22 +408,20 @@ export default function CDTList() {
                     error={nameError || reqNameError}
                   />
                 </div>
-                {!selectedRow && (
-                  <div style={{ display: "flex" }}>
-                    <div className="switch-label">Active</div>
-                    <div className="switch">
-                      <Switch
-                        className="MuiSwitch"
-                        checked={status}
-                        name="status"
-                        onChange={handleStatusUpdate}
-                        size="small"
-                      />
-                    </div>
+                <div style={{ display: "flex" }}>
+                  <div className="switch-label">Active</div>
+                  <div className="switch">
+                    <Switch
+                      className="MuiSwitch"
+                      checked={status}
+                      name="status"
+                      onChange={handleStatusUpdate}
+                      size="small"
+                    />
                   </div>
-                )}
+                </div>
               </div>
-              <div style={{ display: "flex" }}>
+              <div className="flex flex-center">
                 <div className="esn-box">
                   <Select
                     label="External System Name"
