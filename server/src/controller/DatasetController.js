@@ -73,13 +73,15 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11, $12) returning *`;
     const data = await DB.executeQuery(insertQuery, body);
 
+    const attributeName = "New Dataset";
+
     const historyVersion = await CommonController.addDatasetHistory(
       dfId,
       userId,
       dpId,
       dsId,
       jsonData,
-      "New Dataset"
+      attributeName
     );
     if (!historyVersion) throw new Error("History not updated");
 
@@ -186,6 +188,7 @@ exports.saveDatasetData = async (req, res) => {
     };
 
     const jsonData = JSON.stringify(conf_Data);
+    const attributeName = "New Dataset";
 
     DB.executeQuery(insertQuery, body).then(async (response) => {
       const historyVersion = await CommonController.addDatasetHistory(
@@ -194,7 +197,7 @@ exports.saveDatasetData = async (req, res) => {
         dpId,
         dsId,
         jsonData,
-        "New Dataset"
+        attributeName
       );
       if (!historyVersion) throw new Error("History not updated");
       return apiResponse.successResponseWithData(res, "Created Successfully", {
@@ -252,7 +255,7 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
     const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
     dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const insertQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $8, incremental = $9, updt_tm=$10 where datasetid = $11`;
+    const insertQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $9, incremental = $8, updt_tm=$10 where datasetid = $11`;
 
     const requestData = {
       datasetid: datasetid,
@@ -264,7 +267,7 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
       customsql: values.sQLQuery || null,
       tbl_nm: values.tableName || null,
       dataset_fltr: values.filterCondition || null,
-      offsetcolumn: values.offsetColumn || null,
+      offsetcolumn: values.offsetColumn,
       incremental: values.dataType == "Incremental" ? "Y" : "N" || null,
     };
 
@@ -273,25 +276,30 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
     const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
     const oldData = tempData[0];
 
-    for (const key in requestData) {
-      if (`${requestData[key]}` != oldData[key]) {
-        if (oldData[key] != null) {
-          const historyVersion = await CommonController.addDatasetHistory(
-            dfId,
-            userId,
-            dpId,
-            datasetid,
-            jsonData,
-            key,
-            oldData[key],
-            `${requestData[key]}`
-          );
-          if (!historyVersion) throw new Error("History not updated");
-        }
-      }
+    const data = await DB.executeQuery(updateQuery, body);
+
+    const diffObj = helper.getdiffKeys(requestData, oldData);
+    var idObj = {
+      dataflowid: dfId,
+      datasetid: datasetid,
+      datapackageid: dpId,
+    };
+    const updateConfg = Object.assign(idObj, diffObj);
+
+    if (Object.keys(diffObj).length != 0) {
+      const historyVersion = await CommonController.addDatasetHistory(
+        dfId,
+        userId,
+        dpId,
+        datasetid,
+        JSON.stringify(updateConfg),
+        null,
+        oldData,
+        diffObj
+      );
+      if (!historyVersion) throw new Error("History not updated");
     }
 
-    const data = await DB.executeQuery(insertQuery, body);
     return apiResponse.successResponseWithData(res, "Operation success", data);
   } catch (err) {
     //throw error in json response with status 500.
@@ -318,7 +326,7 @@ exports.updateDatasetData = async (req, res) => {
     headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, 
     incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrow = $19, footerrow = $20, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $21`;
+    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrow = $19, footerrow = $20, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $21 `;
     if (isExist) {
       return apiResponse.ErrorResponse(
         res,
@@ -394,20 +402,32 @@ exports.updateDatasetData = async (req, res) => {
       ...body,
       values.datasetid,
     ]);
-    for (const key in requestData) {
-      if (requestData[key] != oldData[key]) {
-        const historyVersion = await CommonController.addDatasetHistory(
-          dfId,
-          userId,
-          dpId,
-          datasetid,
-          jsonData,
-          key,
-          oldData[key] || null,
-          requestData[key]
-        );
-        if (!historyVersion) throw new Error("History not updated");
-      }
+
+    const diffObj = helper.getdiffKeys(requestData, oldData);
+
+    var idObj = {
+      dataflowid: dfId,
+      datasetid: datasetid,
+      datapackageid: dpId,
+    };
+
+    const updateConfg = Object.assign(idObj, diffObj);
+
+    // console.log(JSON.stringify(updateConfg));
+    // console.log(dfId);
+
+    if (Object.keys(diffObj).length != 0) {
+      const historyVersion = await CommonController.addDatasetHistory(
+        dfId,
+        userId,
+        dpId,
+        datasetid,
+        JSON.stringify(updateConfg),
+        null,
+        oldData,
+        diffObj
+      );
+      if (!historyVersion) throw new Error("History not updated");
     }
 
     return apiResponse.successResponseWithData(res, "Operation success", inset);

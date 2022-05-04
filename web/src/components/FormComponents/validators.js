@@ -86,7 +86,8 @@ export const checkAlphaNumeric = (value, key = "") => {
 };
 
 export const checkAlphaNumericFileName = (value) => {
-  const regexp = /^[A-Za-z0-9-_.%@&()!# \b]+$/;
+  const regexp = /^[A-Za-z0-9-_.%@&()!#~;+,{}<>[\] \b]+$/;
+
   if (value && value.search(regexp) === -1) {
     return "Special characters are not allowed";
   }

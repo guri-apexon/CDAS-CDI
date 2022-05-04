@@ -203,7 +203,13 @@ export default function DSColumnTable({
     const removeExistingRowData = rows.filter(
       (e) => e.uniqueId !== selectedRow.uniqueId
     );
-    setRows([...removeExistingRowData, ...newData]);
+
+    const newRowData = _.orderBy(
+      [...removeExistingRowData, ...newData],
+      ["uniqueId"],
+      ["asc"]
+    );
+    setRows([...newRowData]);
     hideViewLOVs();
   };
 
