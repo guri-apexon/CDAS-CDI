@@ -186,6 +186,18 @@ const JDBCForm = forwardRef((props, ref) => {
   }, [datasetId]);
 
   const submitJDBCForm = (ready = false) => {
+    if (isCustomSQL === "No") {
+      if (!tableName?.length) {
+        messageContext.showErrorMessage(`Please select table name to proceed.`);
+        return false;
+      }
+      if (dataType === "Incremental" && !offsetColumn) {
+        messageContext.showErrorMessage(
+          `Please select offset column to proceed.`
+        );
+        return false;
+      }
+    }
     const data = {
       datasetName,
       active: dsActive,
@@ -193,25 +205,25 @@ const JDBCForm = forwardRef((props, ref) => {
       clinicalDataType,
       customQuery: isCustomSQL,
       customSql: sQLQuery,
-      tableName: tableName?.length ? tableName[0] : "",
-      offsetColumn: offsetColumn?.value || "",
+      tableName: tableName?.length ? tableName : "",
+      offsetColumn: offsetColumn || "",
       dfTestFlag,
       conditionalExpression: filterCondition || "",
       sqlReady: ready,
     };
     onSubmit(data);
   };
-  useEffect(() => {
-    console.log("sqlColumns", sqlColumns, triggeredSqlData);
-    // if (sqlColumns?.length && triggeredSqlData) {
-    //   submitJDBCForm(true);
-    //   setTriggerSqlData(false);
-    // }
-  }, [sqlColumns]);
+  // useEffect(() => {
+  //   console.log("sqlColumns", sqlColumns, triggeredSqlData);
+  //   // if (sqlColumns?.length && triggeredSqlData) {
+  //   //   submitJDBCForm(true);
+  //   //   setTriggerSqlData(false);
+  //   // }
+  // }, [sqlColumns]);
 
   useEffect(() => {
     setLoading(false);
-    console.log("previewSQL", previewSQL, isPreviewReady, isCustomSQL);
+    // console.log("previewSQL", previewSQL, isPreviewReady, isCustomSQL);
     if (isPreviewReady && previewSQL?.length) {
       if (isCustomSQL.toLowerCase() === "no") {
         moveNext();
@@ -226,18 +238,18 @@ const JDBCForm = forwardRef((props, ref) => {
   }, [previewSQL]);
 
   const handlePreview = async () => {
+    if (!clinicalDataType?.length || datasetName === "") {
+      messageContext.showErrorMessage(
+        `Please fill required fields to proceed.`
+      );
+      return false;
+    }
     if (sQLQuery === "") {
       messageContext.showErrorMessage(`Please add your query to proceed.`);
       return false;
     }
-    if (sQLQuery.indexOf("*") >= 0) {
+    if (sQLQuery.includes("*")) {
       messageContext.showErrorMessage(`Please remove * from query to proceed.`);
-      return false;
-    }
-    if (clinicalDataType === null || datasetName === "") {
-      messageContext.showErrorMessage(
-        `Please fill required fields to proceed.`
-      );
       return false;
     }
     setIsPreviewReady(true);
@@ -259,15 +271,22 @@ const JDBCForm = forwardRef((props, ref) => {
   const handleStatusUpdate = () => {
     setDsActive(!dsActive);
   };
-
+  const resetDfStep = () => {
+    if (isPreviewReady) {
+      messageContext.setCreateDfConfig({ currentStep: 3 });
+      setIsPreviewReady(false);
+    }
+  };
   const handleSelection = (e) => {
     const { value } = e.target;
     setIsCustomSQL(value);
     onChangeSql(value);
+    resetDfStep();
   };
 
   const handleCDT = (e) => {
     setClinicalDataType(e);
+    resetDfStep();
   };
 
   const handleTableSelect = (e) => {
@@ -278,6 +297,7 @@ const JDBCForm = forwardRef((props, ref) => {
       tableName: e[0],
     };
     dispatch(getSQLColumns(colPayload));
+    setOffsetColumn(null);
   };
 
   const handleColumnSelect = (e, v) => {
@@ -299,10 +319,10 @@ const JDBCForm = forwardRef((props, ref) => {
     } else if (name === "filterCondition") {
       setFilterCondition(value);
     }
+    resetDfStep();
   };
 
   useEffect(() => {
-    console.log("isCustomSQL", isCustomSQL);
     if (isCustomSQL === "No") {
       dispatch(getSQLTables({ ...locationDetail }));
       setIsPreviewReady(false);
@@ -335,15 +355,22 @@ const JDBCForm = forwardRef((props, ref) => {
           setClinicalDataType([dataKindId]);
         }
         setDatakindReady((x) => x + 1);
+      } else if (initialValue.clinicalDataType?.length) {
+        setClinicalDataType(initialValue.clinicalDataType);
+        setDatakindReady((x) => x + 1);
       }
       if (initialValue.datasetName) setDatasetName(initialValue.datasetName);
       if (initialValue.customQuery) setIsCustomSQL(initialValue.customQuery);
       if (initialValue.customSql) setSQLQuery(initialValue.customSql);
-      if (initialValue.tableName) setTableName(initialValue.tableName);
-      if (initialValue.offsetColumn) setOffsetColumn(initialValue.offsetColumn);
       if (initialValue.incremental === 1) setDataType("Incremental");
       if (initialValue.conditionalExpression)
         setFilterCondition(initialValue.conditionalExpression);
+      if (initialValue.tableName) {
+        setTableName(initialValue.tableName);
+      }
+      if (initialValue.offsetColumn) {
+        setOffsetColumn(initialValue.offsetColumn);
+      }
     }
   }, []);
 
@@ -470,18 +497,6 @@ const JDBCForm = forwardRef((props, ref) => {
           )}
           {isCustomSQL === "No" && (
             <>
-              {/* <TextField
-                fullWidth
-                name="tableName"
-                id="tableName"
-                style={{ width: "70%", display: "flex" }}
-                size="small"
-                value={tableName}
-                minHeight={32}
-                onChange={(e) => handleTableSelect([e.target.value])}
-                inputProps={{ maxLength: 255 }}
-                label="Table Name"
-              /> */}
               <Autocomplete
                 name="tableName"
                 id="tableName"
@@ -530,18 +545,6 @@ const JDBCForm = forwardRef((props, ref) => {
                 <Radio value="Incremental" label="Incremental" />
               </RadioGroup>
               {dataType === "Incremental" && (
-                // <TextField
-                //   fullWidth
-                //   name="offsetColumn"
-                //   id="offsetColumn"
-                //   style={{ width: "200px", display: "flex" }}
-                //   size="small"
-                //   value={offsetColumn}
-                //   minHeight={32}
-                //   onChange={(e) => handleColumnSelect([e.target.value])}
-                //   inputProps={{ maxLength: 255 }}
-                //   label="Offset Column"
-                // />
                 <AutocompleteV2
                   name="offsetColumn"
                   id="offsetColumn"

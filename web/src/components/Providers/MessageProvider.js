@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useReducer, useState } from "react";
 import { Success, Warning, Info, Err } from "../../constants";
 
 export const MessageContext = createContext();
@@ -12,6 +12,14 @@ const MessageProvider = ({ children }) => {
   const [dataflowObj, setdataflowObj] = useState({
     datasetSubmit: false,
   });
+  const [createDfConfig, setCreateDfConfig] = useReducer(
+    (state, action) => {
+      return { ...state, ...action };
+    },
+    {
+      currentStep: 0,
+    }
+  );
 
   const bannerCloseHandle = () => {
     setErrorMessage({ show: false });
@@ -67,6 +75,8 @@ const MessageProvider = ({ children }) => {
         setDataflow,
         dataflowObj,
         resetDataflow,
+        createDfConfig,
+        setCreateDfConfig,
       }}
     >
       {children}
