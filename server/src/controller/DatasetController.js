@@ -252,7 +252,7 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
     const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
     dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const insertQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $8, incremental = $9, updt_tm=$10 where datasetid = $11`;
+    const insertQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $9, incremental = $8, updt_tm=$10 where datasetid = $11`;
 
     const requestData = {
       datasetid: datasetid,
