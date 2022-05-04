@@ -102,6 +102,21 @@ const DataSetsFormBase = (props) => {
       setTimeout(() => setRenderClinicalDataType(true), 50);
   }, [renderClinicalDataType]);
 
+  // useEffect(() => {
+  //   if (formValues.fileNamingConvention) {
+  //     const str = formValues.fileNamingConvention;
+  //     const regexp = /</g;
+  //     let match;
+
+  //     // eslint-disable-next-line no-cond-assign
+  //     while ((match = regexp.exec(str)) !== null) {
+  //       console.log(
+  //         `Found ${match[0]} start=${match.index} end=${regexp.lastIndex}.`
+  //       );
+  //     }
+  //   }
+  // }, [formValues.fileNamingConvention]);
+
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
@@ -176,6 +191,7 @@ const DataSetsFormBase = (props) => {
                       <MenuItem value={type}>{type}</MenuItem>
                     ))}
                   </ReduxFormSelect>
+
                   <ReduxFormTextField
                     fullWidth
                     name="escapeCharacter"
@@ -185,6 +201,7 @@ const DataSetsFormBase = (props) => {
                     size="small"
                     label="Escape Character"
                   />
+
                   <ReduxFormTextField
                     fullWidth
                     name="quote"
@@ -214,6 +231,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Footer Row Number"
               />
+
               <ReduxFormTextField
                 fullWidth
                 name="fileNamingConvention"
@@ -322,7 +340,13 @@ const selector = formValueSelector("DataSetsForm");
 const DataSetsForm = connect((state) => ({
   initialValues: state.dataSets.formData, // pull initial values from account reducer
   enableReinitialize: true,
-  formValues: selector(state, "fileType", "active", "clinicalDataType"),
+  formValues: selector(
+    state,
+    "fileType",
+    "active",
+    "clinicalDataType",
+    "fileNamingConvention"
+  ),
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
   defaultQuote: state.dataSets.defaultQuote,

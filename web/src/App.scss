@@ -20,6 +20,19 @@
 *[customtooltip] {
   position: relative;
 }
+label.inline-checkbox {
+  flex-direction: row-reverse;
+  align-items: center;
+  .MuiSwitch-sizeSmall .MuiSwitch-switchBase {
+    top: -8px;
+    left: -8px;
+  }
+  > span:last-child {
+    margin: 0;
+    padding: 0;
+    margin-right: 10px;
+  }
+}
 *[customtooltip]:hover:after {
   content: "";
   position: absolute;
@@ -244,3 +257,5 @@ div.readOnly_Dropdown {
     display: none;
   }
 }
+
+// .dsctablehelper_select

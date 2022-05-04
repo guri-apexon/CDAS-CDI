@@ -235,6 +235,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Header Row Number"
               />
+
               <ReduxFormTextField
                 fullWidth
                 name="footerRowNumber"
@@ -244,6 +245,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Footer Row Number"
               />
+
               <ReduxFormTextField
                 fullWidth
                 name="fileNamingConvention"

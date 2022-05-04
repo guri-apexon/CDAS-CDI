@@ -147,14 +147,8 @@ exports.saveDatasetData = async (req, res) => {
       values.delimiter || null,
       values.escapeCharacter || null,
       values.quote || null,
-      typeof values.headerRowNumber != "undefined" &&
-      values.headerRowNumber != ""
-        ? 1
-        : 0,
-      typeof values.footerRowNumber != "undefined" &&
-      values.footerRowNumber != ""
-        ? 1
-        : 0,
+      values.headerRowNumber > 0 ? 1 : 0,
+      values.footerRowNumber > 0 ? 1 : 0,
       values.headerRowNumber || 0,
       values.footerRowNumber || 0,
       values.active === true ? 1 : 0,
@@ -179,16 +173,8 @@ exports.saveDatasetData = async (req, res) => {
       delimiter: values.delimiter || null,
       escapecode: values.escapeCharacter || null,
       quote: values.quote || null,
-      headerrow:
-        typeof values.headerRowNumber != "undefined" &&
-        values.headerRowNumber != ""
-          ? 1
-          : 0,
-      footerrow:
-        typeof values.footerRowNumber != "undefined" &&
-        values.footerRowNumber != ""
-          ? 1
-          : 0,
+      headerrow: values.headerRowNumber > 0 ? 1 : 0,
+      footerrow: values.footerRowNumber > 0 ? 1 : 0,
       headerrownumber: values.headerRowNumber || 0,
       footerrownumber: values.footerRowNumber || 0,
       active: true ? 1 : 0,
@@ -269,9 +255,7 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
     const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
     dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, 
-    customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $9, incremental = $8, 
-    updt_tm=$10 where datasetid = $11`;
+    const insertQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $9, incremental = $8, updt_tm=$10 where datasetid = $11`;
 
     const requestData = {
       datasetid: datasetid,
@@ -364,16 +348,8 @@ exports.updateDatasetData = async (req, res) => {
       delimiter: values.delimiter || null,
       escapecode: values.escapeCharacter || null,
       quote: values.quote || null,
-      headerrow:
-        typeof values.headerRowNumber != "undefined" &&
-        values.headerRowNumber != ""
-          ? 1
-          : 0,
-      footerrow:
-        typeof values.footerRowNumber != "undefined" &&
-        values.footerRowNumber != ""
-          ? 1
-          : 0,
+      headerrow: values.headerRowNumber > 0 ? 1 : 0,
+      footerrow: values.footerRowNumber > 0 ? 1 : 0,
       headerrownumber: values.headerRowNumber || 0,
       footerrownumber: values.footerRowNumber || 0,
       active: helper.stringToBoolean(values.active) ? 1 : 0,
@@ -418,14 +394,8 @@ exports.updateDatasetData = async (req, res) => {
       curDate,
       incremental,
       passwordStatus,
-      typeof values.headerRowNumber != "undefined" &&
-      values.headerRowNumber != ""
-        ? 1
-        : 0,
-      typeof values.footerRowNumber != "undefined" &&
-      values.footerRowNumber != ""
-        ? 1
-        : 0,
+      values.headerRowNumber > 0 ? 1 : 0,
+      values.footerRowNumber > 0 ? 1 : 0,
     ];
 
     const inset = await DB.executeQuery(updateQuery, [

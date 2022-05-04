@@ -67,7 +67,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
           setImportedData(dataParse);
         } else {
           messageContext.showErrorMessage(
-            `The Selected File Does Not Match the Template`
+            `The Selected file does not match the template`
           );
           setSelectedFile([]);
         }
@@ -145,7 +145,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        const newData = formatData(importedData, protocolnumber, true);
+        const newData = formatData(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
         if (newData.length > 0) {
           setFormattedData(newData);
@@ -158,7 +158,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
         }
       } else {
         messageContext.showErrorMessage(
-          `The Selected File Does Not Match the Template`
+          `The selected file does not match the template`
         );
         handleDelete();
       }

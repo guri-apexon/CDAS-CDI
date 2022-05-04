@@ -110,7 +110,7 @@ export const DataTypeEditableSelectCell =
 export const editableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText = checkRequiredValue(row[key], key, row.primary);
+    const errorText = checkRequiredValue(row[key], key, row.primaryKey);
     return row.editMode ? (
       <Select
         size="small"
@@ -451,7 +451,7 @@ export const CustomHeader = ({
       {isEditAll && (
         <>
           <Button size="small" style={{ marginRight: 8 }} onClick={onCancelAll}>
-            Cancel All
+            Cancel all
           </Button>
           <Button
             size="small"
@@ -459,7 +459,7 @@ export const CustomHeader = ({
             onClick={onSaveAll}
             disabled={disableSaveAll}
           >
-            Save All
+            Save all
           </Button>
         </>
       )}
