@@ -541,6 +541,11 @@ export default function DSColumnTable({
         }
       }
 
+      setSelectedRows([]);
+      const newData = _.orderBy([...removeSpaces], ["uniqueId"], ["asc"]);
+      setEditedRows([...newData]);
+      setRows([...newData]);
+
       if (newCD && newCD.length > 0) {
         const created = await createColumns({
           values: newCD,
@@ -573,17 +578,7 @@ export default function DSColumnTable({
         );
       }
 
-      setSelectedRows([]);
-
-      const newData = _.orderBy([...removeSpaces], ["uniqueId"], ["asc"]);
-
-      setEditedRows([...newData]);
-      setRows([...newData]);
-
       // await dispatch(getDatasetColumns(dsId));
-      // setTimeout(() => {
-      //   updatingData();
-      // }, 2000);
     }
   };
 

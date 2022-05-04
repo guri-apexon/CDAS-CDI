@@ -5,7 +5,6 @@ const helper = require("../helpers/customFunctions");
 const CommonController = require("./CommonController");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
-const curDate = helper.getCurrentTime();
 
 exports.getColumnsSet = async (req, res) => {
   try {
@@ -34,6 +33,7 @@ exports.saveDatasetColumns = async (req, res) => {
   try {
     const { dsId, dpId, dfId, isUpdateQuery, nQuery, userId, values } =
       req.body;
+    const curDate = helper.getCurrentTime();
 
     if (isUpdateQuery) {
       const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=$3 where datasetid=$1`;
@@ -76,6 +76,10 @@ exports.saveDatasetColumns = async (req, res) => {
 
         const jsonObj = { datasetid: dsId, columnId, ...value };
         const config_json = JSON.stringify(jsonObj);
+        const attributeName = "New Column Definition ";
+
+        // console.log(dfId, columnId);
+
         await CommonController.addColumnHistory(
           columnId,
           dsId,
@@ -83,7 +87,7 @@ exports.saveDatasetColumns = async (req, res) => {
           dpId,
           userId,
           config_json,
-          "New Column Definition"
+          attributeName
         );
       }
 
@@ -113,6 +117,7 @@ exports.updateColumns = async (req, res) => {
   try {
     const { dsId, dpId, dfId, isUpdateQuery, nQuery, userId, values } =
       req.body;
+    const curDate = helper.getCurrentTime();
 
     if (isUpdateQuery) {
       const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=$3 where datasetid=$1`;
@@ -165,22 +170,23 @@ exports.updateColumns = async (req, res) => {
         };
 
         const config_json = JSON.stringify(requestData);
+        const diffObj = helper.getdiffKeys(requestData, oldData);
 
-        for (const key in requestData) {
-          if (requestData[key] != oldData[key]) {
-            const historyVersion = await CommonController.addColumnHistory(
-              value.dbColumnId.trim(),
-              dsId,
-              dfId,
-              dpId,
-              userId,
-              config_json,
-              key,
-              oldData[key] || "",
-              requestData[key] || ""
-            );
-            if (!historyVersion) throw new Error("History not updated");
-          }
+        // console.log(diffObj, dfId, columnid);
+
+        if (Object.keys(diffObj).length != 0) {
+          const historyVersion = await CommonController.addColumnHistory(
+            value.dbColumnId.trim(),
+            dsId,
+            dfId,
+            dpId,
+            userId,
+            config_json,
+            null,
+            oldData,
+            diffObj
+          );
+          if (!historyVersion) throw new Error("History not updated");
         }
       }
 
@@ -210,6 +216,7 @@ exports.deleteColumns = async (req, res) => {
   try {
     const { columnId, dsId, dfId, dpId, isUpdateQuery, nQuery, userId } =
       req.body;
+    const curDate = helper.getCurrentTime();
 
     Logger.info({ message: "deleteColumns" });
     const updateQuery = `update ${schemaName}.columndefinition set del_flg = 1 where columnid = $1`;
@@ -222,6 +229,9 @@ exports.deleteColumns = async (req, res) => {
     DB.executeQuery(updateQuery, [columnId]).then(async (response) => {
       const datasetColumns = response.rows || null;
 
+      // console.log(dfId, columnId);
+      const attributeName = "del_flg ";
+
       const historyVersion = await CommonController.addColumnHistory(
         columnId,
         dsId,
@@ -229,7 +239,7 @@ exports.deleteColumns = async (req, res) => {
         dpId,
         userId,
         null,
-        "del_flg ",
+        attributeName,
         0,
         1
       );
