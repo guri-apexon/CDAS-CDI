@@ -5,7 +5,6 @@ const helper = require("../helpers/customFunctions");
 const CommonController = require("./CommonController");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
-const curDate = helper.getCurrentTime();
 
 exports.getColumnsSet = async (req, res) => {
   try {
@@ -34,6 +33,7 @@ exports.saveDatasetColumns = async (req, res) => {
   try {
     const { dsId, dpId, dfId, isUpdateQuery, nQuery, userId, values } =
       req.body;
+    const curDate = helper.getCurrentTime();
 
     if (isUpdateQuery) {
       const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=$3 where datasetid=$1`;
@@ -113,6 +113,7 @@ exports.updateColumns = async (req, res) => {
   try {
     const { dsId, dpId, dfId, isUpdateQuery, nQuery, userId, values } =
       req.body;
+    const curDate = helper.getCurrentTime();
 
     if (isUpdateQuery) {
       const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=$3 where datasetid=$1`;
@@ -210,6 +211,7 @@ exports.deleteColumns = async (req, res) => {
   try {
     const { columnId, dsId, dfId, dpId, isUpdateQuery, nQuery, userId } =
       req.body;
+    const curDate = helper.getCurrentTime();
 
     Logger.info({ message: "deleteColumns" });
     const updateQuery = `update ${schemaName}.columndefinition set del_flg = 1 where columnid = $1`;
