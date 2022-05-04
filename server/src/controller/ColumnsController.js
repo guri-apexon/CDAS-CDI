@@ -76,6 +76,10 @@ exports.saveDatasetColumns = async (req, res) => {
 
         const jsonObj = { datasetid: dsId, columnId, ...value };
         const config_json = JSON.stringify(jsonObj);
+        const attributeName = "New Column Definition ";
+
+        // console.log(dfId, columnId);
+
         await CommonController.addColumnHistory(
           columnId,
           dsId,
@@ -83,7 +87,7 @@ exports.saveDatasetColumns = async (req, res) => {
           dpId,
           userId,
           config_json,
-          "New Column Definition"
+          attributeName
         );
       }
 
@@ -166,22 +170,23 @@ exports.updateColumns = async (req, res) => {
         };
 
         const config_json = JSON.stringify(requestData);
+        const diffObj = helper.getdiffKeys(requestData, oldData);
 
-        for (const key in requestData) {
-          if (requestData[key] != oldData[key]) {
-            const historyVersion = await CommonController.addColumnHistory(
-              value.dbColumnId.trim(),
-              dsId,
-              dfId,
-              dpId,
-              userId,
-              config_json,
-              key,
-              oldData[key] || "",
-              requestData[key] || ""
-            );
-            if (!historyVersion) throw new Error("History not updated");
-          }
+        // console.log(diffObj, dfId, columnid);
+
+        if (Object.keys(diffObj).length != 0) {
+          const historyVersion = await CommonController.addColumnHistory(
+            value.dbColumnId.trim(),
+            dsId,
+            dfId,
+            dpId,
+            userId,
+            config_json,
+            null,
+            oldData,
+            diffObj
+          );
+          if (!historyVersion) throw new Error("History not updated");
         }
       }
 
@@ -224,6 +229,9 @@ exports.deleteColumns = async (req, res) => {
     DB.executeQuery(updateQuery, [columnId]).then(async (response) => {
       const datasetColumns = response.rows || null;
 
+      // console.log(dfId, columnId);
+      const attributeName = "del_flg ";
+
       const historyVersion = await CommonController.addColumnHistory(
         columnId,
         dsId,
@@ -231,7 +239,7 @@ exports.deleteColumns = async (req, res) => {
         dpId,
         userId,
         null,
-        "del_flg ",
+        attributeName,
         0,
         1
       );
