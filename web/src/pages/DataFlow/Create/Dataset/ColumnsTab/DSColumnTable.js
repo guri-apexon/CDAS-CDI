@@ -203,7 +203,13 @@ export default function DSColumnTable({
     const removeExistingRowData = rows.filter(
       (e) => e.uniqueId !== selectedRow.uniqueId
     );
-    setRows([...removeExistingRowData, ...newData]);
+
+    const newRowData = _.orderBy(
+      [...removeExistingRowData, ...newData],
+      ["uniqueId"],
+      ["asc"]
+    );
+    setRows([...newRowData]);
     hideViewLOVs();
   };
 
@@ -392,9 +398,10 @@ export default function DSColumnTable({
       );
       return false;
     }
-    setRows([...removeSpaces]);
+    const newData = _.orderBy([...removeSpaces], ["uniqueId"], ["asc"]);
     setSelectedRows([]);
-    setEditedRows(rows);
+    setRows([...newData]);
+    setEditedRows([...newData]);
   };
 
   const onCancelAll = () => {
@@ -467,7 +474,14 @@ export default function DSColumnTable({
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
-    setRows([...removeExistingRowData, editedRowData]);
+
+    const newData = _.orderBy(
+      [...removeExistingRowData, editedRowData],
+      ["uniqueId"],
+      ["asc"]
+    );
+
+    setRows([...newData]);
     // setEditedRows([...removeEdited]);
     setSelectedRows([...removeRow]);
   };

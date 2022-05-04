@@ -110,7 +110,7 @@ export const DataTypeEditableSelectCell =
 export const editableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText = checkRequiredValue(row[key], key, row.primary);
+    const errorText = checkRequiredValue(row[key], key, row.primaryKey);
     return row.editMode ? (
       <Select
         size="small"

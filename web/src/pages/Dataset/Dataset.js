@@ -150,6 +150,9 @@ const Dataset = () => {
 
   const handleChangeTab = (event, v) => {
     setValue(v);
+    if (v === 1) {
+      dispatch(getDatasetColumns(datasetid));
+    }
   };
 
   const getDataSetType = (type) => {
