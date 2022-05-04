@@ -125,10 +125,11 @@ label + div[class^="MuiInput-formControl"] {
     color: "#595959";
     font-size: 13px;
     line-height: 14px;
+    margin-bottom: 10px;
   }
   .lov-edit-mode {
     textarea {
-      max-width: 300px;
+      max-width: 340px;
       min-height: 100px;
       max-height: 300px;
     }

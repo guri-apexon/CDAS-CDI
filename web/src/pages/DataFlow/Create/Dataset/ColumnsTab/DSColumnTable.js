@@ -81,9 +81,15 @@ export default function DSColumnTable({
   const [disableSaveAll, setDisableSaveAll] = useState(true);
   const [moreColumns, setMoreColumns] = useState([...columns]);
   const [importedData, setImportedData] = useState([]);
+  const [noOfValues, setNoOfvalues] = useState("No");
 
+  const changeValuesTitle = (newValues) => {
+    const noOf = newValues?.split("~")?.filter(Boolean)?.length || "No";
+    setNoOfvalues(noOf);
+  };
   const handleViewLOV = (row) => {
     setShowViewLOVs(true);
+    changeValuesTitle(row.values);
     setSelectedRow(row);
   };
 
@@ -131,7 +137,7 @@ export default function DSColumnTable({
 
   const handleOverWrite = () => {
     if (isFilePicked && importedData.length > 1) {
-      console.log(importedData);
+      // console.log(importedData);
       setShowOverWrite(false);
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
@@ -167,6 +173,7 @@ export default function DSColumnTable({
   const onChangeLOV = (e) => {
     const newValues = e.target.value;
     setSelectedRow({ ...selectedRow, values: newValues });
+    changeValuesTitle(newValues);
   };
 
   const hideViewLOVs = () => {
@@ -385,9 +392,10 @@ export default function DSColumnTable({
       );
       return false;
     }
-    setRows([...removeSpaces]);
+    const newData = _.orderBy([...removeSpaces], ["uniqueId"], ["asc"]);
     setSelectedRows([]);
-    setEditedRows(rows);
+    setRows([...newData]);
+    setEditedRows([...newData]);
   };
 
   const onCancelAll = () => {
@@ -460,7 +468,14 @@ export default function DSColumnTable({
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
-    setRows([...removeExistingRowData, editedRowData]);
+
+    const newData = _.orderBy(
+      [...removeExistingRowData, editedRowData],
+      ["uniqueId"],
+      ["asc"]
+    );
+
+    setRows([...newData]);
     // setEditedRows([...removeEdited]);
     setSelectedRows([...removeRow]);
   };
@@ -471,8 +486,18 @@ export default function DSColumnTable({
   };
 
   const onRowDelete = async (uniqueId) => {
-    setRows(rows.filter((row) => row.uniqueId !== uniqueId));
-    setEditedRows(editedRows.filter((row) => row.uniqueId !== uniqueId));
+    const newData = rows
+      .filter((row) => row.uniqueId !== uniqueId)
+      .map((e, i) => {
+        const d = {
+          ...e,
+          uniqueId: `u${i}`,
+        };
+        return d;
+      });
+
+    setRows([...newData]);
+    setEditedRows([...newData]);
   };
 
   const haveHeader = parseInt(headerValue, 10) > 0;
@@ -655,7 +680,7 @@ export default function DSColumnTable({
           // eslint-disable-next-line react/jsx-wrap-multilines
           <>
             <div className="lov-title">List of Values</div>
-            <div className="lov-count">No of Values</div>
+            <div className="lov-count">{`${noOfValues} of Values`}</div>
           </>
         }
         onClose={hideViewLOVs}
@@ -674,7 +699,7 @@ export default function DSColumnTable({
                     value={selectedRow.values}
                     onChange={(e) => onChangeLOV(e)}
                     sizeAdjustable
-                    minWidth={300}
+                    minWidth={340}
                     minHeight={278}
                   />
                 </div>

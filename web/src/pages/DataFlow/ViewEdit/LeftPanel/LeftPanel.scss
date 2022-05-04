@@ -2,7 +2,7 @@
   padding: 15px 25px 20px;
 }
 .packages-list-header {
-  padding: 20px 25px;
+  padding: 20px 25px 0px;
 }
 .search-package {
   input {
@@ -86,13 +86,13 @@
       background-color: #ffffff;
     }
     td:first-child {
-      padding-left: 5px;
+      padding-left: 0;
     }
     tr {
       border-bottom: none !important;
     }
     td:last-child {
-      padding-right: 4px;
+      padding-right: 0;
     }
     thead {
       display: none;
