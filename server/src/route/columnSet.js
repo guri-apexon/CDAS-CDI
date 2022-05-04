@@ -6,6 +6,5 @@ router.post("/create", ColumnSetController.saveDatasetColumns);
 router.post("/list", ColumnSetController.getColumnsSet);
 router.post("/update", ColumnSetController.updateColumns);
 router.post("/delete", ColumnSetController.deleteColumns);
-router.post("/lov-update", ColumnSetController.lovUpdate);
 
 module.exports = router;

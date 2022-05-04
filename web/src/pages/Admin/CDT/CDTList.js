@@ -67,6 +67,14 @@ const LinkCell =
     return <Link onClick={(e) => handleLink(e, row.dkId)}>{rowValue}</Link>;
   };
 
+const CustomDkesCell = ({ row, column: { accessor } }) => {
+  let rowValue = row[accessor];
+  if (rowValue === "Blank") {
+    rowValue = "";
+  }
+  return <span>{rowValue}</span>;
+};
+
 const generateColumns = (
   tableRows = [],
   handleStatusChange = null,
@@ -97,6 +105,7 @@ const generateColumns = (
       header: "External System Name",
       accessor: "dkESName",
       sortFunction: compareStrings,
+      customCell: CustomDkesCell,
       filterFunction: createStringArraySearchFilter("dkESName"),
       filterComponent: createAutocompleteFilter(
         createSourceFromKey(tableRows, "dkESName")
@@ -389,6 +398,7 @@ export default function CDTList() {
                     placeholder="Enter Clinical Data Name"
                     value={cName}
                     name="name"
+                    size="small"
                     onChange={(e) => handleChange(e)}
                     fullWidth
                     helperText={
@@ -398,22 +408,20 @@ export default function CDTList() {
                     error={nameError || reqNameError}
                   />
                 </div>
-                {!selectedRow && (
-                  <div style={{ display: "flex" }}>
-                    <div className="switch-label">Active</div>
-                    <div className="switch">
-                      <Switch
-                        className="MuiSwitch"
-                        checked={status}
-                        name="status"
-                        onChange={handleStatusUpdate}
-                        size="small"
-                      />
-                    </div>
+                <div style={{ display: "flex" }}>
+                  <div className="switch-label">Active</div>
+                  <div className="switch">
+                    <Switch
+                      className="MuiSwitch"
+                      checked={status}
+                      name="status"
+                      onChange={handleStatusUpdate}
+                      size="small"
+                    />
                   </div>
-                )}
+                </div>
               </div>
-              <div style={{ display: "flex" }}>
+              <div className="flex flex-center">
                 <div className="esn-box">
                   <Select
                     label="External System Name"
