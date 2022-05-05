@@ -131,7 +131,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 30 }}
                 label="Dataset Name (Mnemonic)"
                 disabled={prodLock}
-                required
+                // required
               />
               <ReduxFormSelect
                 name="fileType"
@@ -140,7 +140,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 onChange={setDefaultValues}
                 fullWidth
-                required
+                // required
                 disabled={prodLock}
                 canDeselect={false}
               >
@@ -224,7 +224,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="File Naming Convention"
-                required
+                // required
               />
               <ReduxFormTextField
                 fullWidth
@@ -251,7 +251,7 @@ const DataSetsFormBase = (props) => {
                   variant="search"
                   singleSelect
                   fullWidth
-                  required
+                  // required
                   disabled={prodLock}
                 />
               )}
@@ -271,7 +271,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="Transfer Frequency"
-                required
+                // required
               />
               <ReduxFormTextField
                 fullWidth
@@ -297,7 +297,7 @@ const DataSetsFormBase = (props) => {
                 label="Load Type"
                 canDeselect={false}
                 disabled={prodLock}
-                required
+                // required
               >
                 {loadTypes?.map((type) => (
                   <MenuItem value={type}>{type}</MenuItem>

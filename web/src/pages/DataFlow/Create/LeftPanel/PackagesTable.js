@@ -272,23 +272,26 @@ const PackagesList = ({ data, userInfo }) => {
     // console.log("newData", newData);
   }, [data]);
   return (
-    <Table
-      columns={columns}
-      rowId="packageName"
-      rows={tableData.map((row) => ({
-        ...row,
-        expanded: expandedRows.includes(row.datapackageid),
-        handleToggleRow,
-      }))}
-      rowProps={{ hover: false }}
-      hidePagination={true}
-      // tablePaginationProps={{
-      //   labelDisplayedRows: ({ from, to, count }) =>
-      //     `${count === 1 ? "Package" : "Packages"} ${from}-${to} of ${count}`,
-      //   truncate: true,
-      // }}
-      ExpandableComponent={DetailRow}
-    />
+    <div className="remove-table-border-bottom">
+      <Table
+        columns={columns}
+        rowId="packageName"
+        style={{ borderCollapse: "separate" }}
+        rows={tableData.map((row) => ({
+          ...row,
+          expanded: expandedRows.includes(row.datapackageid),
+          handleToggleRow,
+        }))}
+        rowProps={{ hover: false }}
+        hidePagination={true}
+        // tablePaginationProps={{
+        //   labelDisplayedRows: ({ from, to, count }) =>
+        //     `${count === 1 ? "Package" : "Packages"} ${from}-${to} of ${count}`,
+        //   truncate: true,
+        // }}
+        ExpandableComponent={DetailRow}
+      />
+    </div>
   );
 };
 export default PackagesList;

@@ -258,4 +258,7 @@ div.readOnly_Dropdown {
   }
 }
 
+div.readOnly_Dropdown div[class^="MuiSelect-root-"],label {
+  cursor: inherit;
+  }
 // .dsctablehelper_select

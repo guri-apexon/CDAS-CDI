@@ -203,7 +203,7 @@ const AuditLog = () => {
             <Button
               icon={<ChevronLeft />}
               size="small"
-              style={{ marginLeft: "-10px", marginBottom: "10px" }}
+              style={{ marginLeft: "-10px", marginBottom: "25px" }}
               onClick={() => history.push("/dashboard")}
             >
               Back
