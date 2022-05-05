@@ -13,7 +13,12 @@ import _ from "lodash";
 import { MessageContext } from "../../../../../components/Providers/MessageProvider";
 import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../../../utils/downloadData";
-import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
+import {
+  checkHeaders,
+  formatData,
+  isSftp,
+  columnObj,
+} from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
 import { validateRow } from "../../../../../components/FormComponents/validators";
 
@@ -25,7 +30,6 @@ export default function DSColumnTable({
   locationType,
   headerValue,
 }) {
-  const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
@@ -41,31 +45,12 @@ export default function DSColumnTable({
     customsql_yn: customQuery,
     tbl_nm: tableName,
   } = selectedDataset;
-  const initialRows = [
-    {
-      uniqueId: `u0`,
-      variableLabel: "",
-      columnName: "",
-      position: "",
-      format: "",
-      dataType: "",
-      primaryKey: "No",
-      unique: "No",
-      required: "No",
-      minLength: "",
-      maxLength: "",
-      values: "",
-      isInitLoad: true,
-      isFormatLoad: true,
-      isHavingError: false,
-      isHavingColumnName: false,
-      isHavingDataType: false,
-    },
-  ];
 
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
-  const [editedRows, setEditedRows] = useState(initialRows);
+  const [editedRows, setEditedRows] = useState([
+    { uniqueId: `u0`, ...columnObj },
+  ]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [editMode, setEditMode] = useState(false);
@@ -247,21 +232,7 @@ export default function DSColumnTable({
       const singleRow = [
         {
           uniqueId: `u${rows.length}`,
-          variableLabel: "",
-          columnName: "",
-          position: "",
-          format: "",
-          dataType: "",
-          primaryKey: "No",
-          unique: "No",
-          required: "No",
-          minLength: "",
-          maxLength: "",
-          values: "",
-          isInitLoad: true,
-          isFormatLoad: true,
-          isHavingError: false,
-          isHavingColumnName: false,
+          ...columnObj,
         },
       ];
       setSelectedRows([...selectedRows, `u${rows.length}`]);
@@ -285,21 +256,7 @@ export default function DSColumnTable({
     if (newRows > 0) {
       const multiRows = Array.from({ length: newRows }, (i, index) => ({
         uniqueId: `u${rows.length + index}`,
-        variableLabel: "",
-        columnName: "",
-        position: "",
-        format: "",
-        dataType: "",
-        primaryKey: "No",
-        unique: "No",
-        required: "No",
-        minLength: "",
-        maxLength: "",
-        values: "",
-        isInitLoad: true,
-        isFormatLoad: true,
-        isHavingError: false,
-        isHavingColumnName: false,
+        ...columnObj,
       }));
       const moreRows = multiRows.map((e) => e.uniqueId);
       setSelectedRows([...moreRows]);
@@ -597,7 +554,6 @@ export default function DSColumnTable({
     } else {
       setMoreColumns(allColumns);
     }
-    const initRows = initialRows.map((e) => e.uniqueId);
     const formatRows = formattedData.map((e) => e.uniqueId);
     if (dataOrigin === "fileUpload") {
       setSelectedRows(formatRows);
@@ -606,8 +562,8 @@ export default function DSColumnTable({
       // setSelectedRows(formatRows);
       setRows([...formattedData]);
     } else if (dataOrigin === "manually") {
-      setSelectedRows([...initRows]);
-      setEditedRows(initialRows);
+      setSelectedRows([`u0`]);
+      setEditedRows([{ uniqueId: `u0`, ...columnObj }]);
     }
     if (previewSQL?.length) {
       addMulti(previewSQL);

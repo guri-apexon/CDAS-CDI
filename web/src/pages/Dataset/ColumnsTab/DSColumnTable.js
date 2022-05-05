@@ -22,6 +22,7 @@ import {
   checkHeaders,
   formatDataNew,
   isSftp,
+  columnObj,
 } from "../../../utils/index";
 import { allowedTypes } from "../../../constants";
 import { validateRow } from "../../../components/FormComponents/validators";
@@ -52,31 +53,11 @@ export default function DSColumnTable({
   const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
 
-  const initialRows = [
-    {
-      uniqueId: `u0`,
-      variableLabel: "",
-      columnName: "",
-      position: "",
-      format: "",
-      dataType: "",
-      primaryKey: "No",
-      unique: "No",
-      required: "No",
-      minLength: "",
-      maxLength: "",
-      values: "",
-      isInitLoad: true,
-      isFormatLoad: true,
-      isHavingError: false,
-      isHavingColumnName: false,
-      isHavingDataType: false,
-    },
-  ];
-
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
-  const [editedRows, setEditedRows] = useState(initialRows);
+  const [editedRows, setEditedRows] = useState([
+    { uniqueId: `u0`, ...columnObj },
+  ]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [editMode, setEditMode] = useState(false);
@@ -100,7 +81,7 @@ export default function DSColumnTable({
   useEffect(() => {
     if (dataOrigin === "manually") {
       setSelectedRows([`u0`]);
-      setEditedRows(initialRows);
+      setEditedRows([{ uniqueId: `u0`, ...columnObj }]);
     } else if (dataOrigin === "fromDB") {
       setRows(formattedData);
       setEditedRows(formattedData);
@@ -351,22 +332,7 @@ export default function DSColumnTable({
       const singleRow = [
         {
           uniqueId: `u${rows.length}`,
-          variableLabel: "",
-          columnName: "",
-          position: "",
-          format: "",
-          dataType: "",
-          primaryKey: "No",
-          unique: "No",
-          required: "No",
-          minLength: "",
-          maxLength: "",
-          values: "",
-          isInitLoad: true,
-          isFormatLoad: true,
-          isHavingError: false,
-          isHavingColumnName: false,
-          isHavingDataType: false,
+          ...columnObj,
         },
       ];
       setSelectedRows([...selectedRows, `u${rows.length}`]);
@@ -390,22 +356,7 @@ export default function DSColumnTable({
     if (newRows > 0) {
       const multiRows = Array.from({ length: newRows }, (i, index) => ({
         uniqueId: `u${rows.length + index}`,
-        variableLabel: "",
-        columnName: "",
-        position: "",
-        format: "",
-        dataType: "",
-        primaryKey: "No",
-        unique: "No",
-        required: "No",
-        minLength: "",
-        maxLength: "",
-        values: "",
-        isInitLoad: true,
-        isFormatLoad: true,
-        isHavingError: false,
-        isHavingColumnName: false,
-        isHavingDataType: false,
+        ...columnObj,
       }));
       const moreRows = multiRows.map((e) => e.uniqueId);
       setSelectedRows([...moreRows]);
@@ -565,7 +516,7 @@ export default function DSColumnTable({
       }
 
       if (existingCD && existingCD.length > 0) {
-        await dispatch(
+        dispatch(
           updateDatasetColumns(
             existingCD,
             dsId,
@@ -578,7 +529,7 @@ export default function DSColumnTable({
         );
       }
 
-      // await dispatch(getDatasetColumns(dsId));
+      dispatch(getDatasetColumns(dsId));
     }
   };
 
@@ -716,6 +667,11 @@ export default function DSColumnTable({
   };
 
   const editRow = (uniqueId, key, value, errorTxt) => {
+    // console.log(
+    //   "data",
+    //   errorTxt,
+    //   errorTxt !== (null || false || undefined || "")
+    // );
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
@@ -760,7 +716,6 @@ export default function DSColumnTable({
                 ...row,
                 [key]: value,
                 isInitLoad: false,
-                isHavingError: true,
                 isFormatLoad:
                   key === "format" || key === "columnName" ? true : false,
               };
@@ -782,6 +737,7 @@ export default function DSColumnTable({
           return {
             ...row,
             [key]: value,
+            isHavingError: errorTxt !== (null || false || undefined || ""),
           };
         }
         return row;
