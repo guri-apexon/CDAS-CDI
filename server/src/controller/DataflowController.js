@@ -373,7 +373,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                 dpUid,
                 dataKind || null,
                 obj.mnemonic || obj.datasetName || null,
-                obj.fileNamingConvention || "",
+                obj.fileNamingConvention || obj.name || "",
                 helper.stringToBoolean(obj.active) ? 1 : 0,
                 typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
                 helper.stringToBoolean(obj.incremental) ? "Y" : "N",

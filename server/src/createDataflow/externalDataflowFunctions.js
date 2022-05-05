@@ -145,7 +145,41 @@ exports.insertValidation = (req) => {
               }
             }
 
-            if (each.name) {
+            if (each.name && each.type) {
+              const name = each.name.split(".")[1];
+
+              // if (each.type.toLowerCase() === "rar") {
+              //   if (name.toLowerCase() !== "rar") {
+              //     validate.push({
+              //       err: " If Package type is RAR then package naming convention should be end with (.rar) ",
+              //     });
+              //   }
+              // }
+
+              // if (each.type.toLowerCase() === "7z") {
+              //   if (name.toLowerCase() !== "7z") {
+              //     validate.push({
+              //       err: " If Package type is 7z then package naming convention should be end with (.7z) ",
+              //     });
+              //   }
+              // }
+
+              // if (each.type.toLowerCase() === "zip") {
+              //   if (name.toLowerCase() !== "zip") {
+              //     validate.push({
+              //       err: " If Package type is Zip then package naming convention should be end with (.zip) ",
+              //     });
+              //   }
+              // }
+
+              // if (each.type.toLowerCase() === "sas") {
+              //   if (name.toLowerCase() !== "xpt") {
+              //     validate.push({
+              //       err: " If Package type is SAS then package naming convention should be end with (.xpt) ",
+              //     });
+              //   }
+              // }
+
               const last = each.name.charAt(each.name.length - 1);
               const first = each.name.charAt(each.name.charAt(0));
               if (str2.test(each.name) === false) {
@@ -327,6 +361,12 @@ exports.insertValidation = (req) => {
                             type: "string",
                           },
                         ];
+
+                        if (!helper.isColumnType(el.dataType)) {
+                          validate.push({
+                            err: " Data type's Supported values : Numeric, Alphanumeric or Date",
+                          });
+                        }
 
                         // Validation Function call for column defination
                         let clRes = helper.validation(clArray);
@@ -537,6 +577,12 @@ exports.insertValidation = (req) => {
                         },
                       ];
 
+                      if (!helper.isColumnType(el.dataType)) {
+                        validate.push({
+                          err: " Data type's Supported values : Numeric, Alphanumeric or Date",
+                        });
+                      }
+
                       // Validation Function call for column defination
                       let clRes = helper.validation(clArray);
                       if (clRes.length > 0) {
@@ -633,7 +679,40 @@ exports.packageLevelInsert = async (
         }
       }
 
-      if (data.name) {
+      if (data.name && data.type) {
+        const name = data.name.split(".")[1];
+        // if (data.type.toLowerCase() === "rar") {
+        //   if (name.toLowerCase() !== "rar") {
+        //     errorPackage.push(
+        //       " If Package type is RAR then package naming convention should be end with (.rar) "
+        //     );
+        //   }
+        // }
+
+        // if (data.type.toLowerCase() === "7z") {
+        //   if (name.toLowerCase() !== "7z") {
+        //     errorPackage.push(
+        //       " If Package type is 7z then package naming convention should be end with (.7z) "
+        //     );
+        //   }
+        // }
+
+        // if (data.type.toLowerCase() === "zip") {
+        //   if (name.toLowerCase() !== "zip") {
+        //     errorPackage.push(
+        //       " If Package type is Zip then package naming convention should be end with (.zip) "
+        //     );
+        //   }
+        // }
+
+        // if (data.type.toLowerCase() === "sas") {
+        //   if (name.toLowerCase() !== "xpt") {
+        //     errorPackage.push(
+        //       " If Package type is SAS then package naming convention should be end with (.xpt) "
+        //     );
+        //   }
+        // }
+
         const last = data.name.charAt(data.name.length - 1);
         const first = data.name.charAt(data.name.charAt(0));
         if (str2.test(data.name) === false) {
@@ -1112,6 +1191,12 @@ const saveDataset = (exports.datasetLevelInsert = async (
             },
           ];
 
+          if (!helper.isColumnType(el.dataType)) {
+            errorDataset.push(
+              " Data type's Supported values : Numeric, Alphanumeric or Date"
+            );
+          }
+
           let clResIf = helper.validation(clArrayIf);
           if (clResIf.length > 0) {
             errorDataset.push(clResIf);
@@ -1178,6 +1263,12 @@ const saveDataset = (exports.datasetLevelInsert = async (
               type: "string",
             },
           ];
+
+          if (!helper.isColumnType(el.dataType)) {
+            errorDataset.push(
+              " Data type's Supported values : Numeric, Alphanumeric or Date"
+            );
+          }
 
           let clRes = helper.validation(clArray);
           if (clRes.length > 0) {
