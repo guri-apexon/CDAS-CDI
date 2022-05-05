@@ -86,7 +86,8 @@ export const checkAlphaNumeric = (value, key = "") => {
 };
 
 export const checkAlphaNumericFileName = (value) => {
-  const regexp = /^[A-Za-z0-9-_.%@&()!# \b]+$/;
+  const regexp = /^[A-Za-z0-9-_.%@&()!#~;+,{}<>[\] \b]+$/;
+
   if (value && value.search(regexp) === -1) {
     return "Special characters are not allowed";
   }
@@ -123,8 +124,8 @@ export const checkCharacterLength = (value, key, minLength, maxLength) => {
   return (
     (key === "minLength" || key === "maxLength") &&
     // eslint-disable-next-line no-undef
-    parseInt(minLength, 10) >= parseInt(maxLength, 10) &&
-    "Max length should be greater than the min length"
+    parseInt(minLength, 10) > parseInt(maxLength, 10) &&
+    "Max length should be greater than or equal to min length"
   );
 };
 
@@ -197,7 +198,7 @@ export const validateRow = (row) => {
   ) {
     check = false;
   } else if (isHavingColumnName && !Number.isNaN(min) && !Number.isNaN(max)) {
-    check = min < max;
+    check = min <= max;
   }
   return check;
 };
