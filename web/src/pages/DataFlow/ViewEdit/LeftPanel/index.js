@@ -175,9 +175,7 @@ const LeftPanel = () => {
       <Divider />
       <div className="packages-list-header">
         <div className="flex flex-center justify-between">
-          <Typography className="b-font">
-            Data Packages & Datasetszzz
-          </Typography>
+          <Typography className="b-font">Data Packages & Datasets</Typography>
           <Button
             variant="secondary"
             icon={<PlusIcon />}
