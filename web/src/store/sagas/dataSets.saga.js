@@ -83,7 +83,10 @@ export function* fetchSQLTables(action) {
       payload: action.payload,
     });
   } catch (e) {
-    yield put({ type: FETCH_SQL_TABLES_FAILURE, message: e.message });
+    yield put({
+      type: FETCH_SQL_TABLES_FAILURE,
+      message: e.response?.data?.message || e.message,
+    });
   }
 }
 

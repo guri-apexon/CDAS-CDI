@@ -45,7 +45,7 @@ import {
   FETCH_LOCATION_DETAIL_SUCCESS,
 } from "../../constants";
 
-import { dataTypeForPostgres, dataTypeForOracle } from "../../utils/index";
+import { dateTypeForJDBC, parseBool } from "../../utils/index";
 
 const defaultData = {
   active: true,
@@ -319,6 +319,7 @@ const DataFlowReducer = (state = initialState, action) =>
       case FETCH_SQL_TABLES_FAILURE:
         newState.loading = false;
         newState.error = action.message;
+        newState.sqlTables = initialState.sqlTables;
         break;
       case FETCH_SQL_TABLES_SUCCESS:
         newState.loading = false;
@@ -359,18 +360,11 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case FETCH_SQL_COLUMNS_SUCCESS:
         newState.loading = false;
-        if (action.payload.locationType === "PostgreSQL") {
-          newState.sqlColumns = action.sqlColumns.map((e) => {
-            e.dataType = dataTypeForPostgres(e.datatype);
-            return e;
-          });
-        }
-        if (action.payload.locationType === "Oracle") {
-          newState.sqlColumns = action.sqlColumns.map((e) => {
-            e.dataType = dataTypeForOracle(e.datatype);
-            return e;
-          });
-        }
+        newState.sqlColumns = action.sqlColumns.map((e) => {
+          e.dataType = dateTypeForJDBC(e.datatype);
+          e.primaryKey = parseBool(e.primaryKey || "false");
+          return e;
+        });
         newState.sqlColumns = action.sqlColumns;
         break;
       case GET_DATASET_DETAIL:

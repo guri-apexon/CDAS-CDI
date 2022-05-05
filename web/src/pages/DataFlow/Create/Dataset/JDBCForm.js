@@ -199,7 +199,7 @@ const JDBCForm = forwardRef((props, ref) => {
       }
       if (
         filterCondition &&
-        !filterCondition?.toLowerCase().includes("where ")
+        !filterCondition?.toLowerCase().includes("where")
       ) {
         messageContext.showErrorMessage(
           `Please correct your filter condition.`
@@ -330,11 +330,14 @@ const JDBCForm = forwardRef((props, ref) => {
     }
     resetDfStep();
   };
+  const getJdbcTables = () => {
+    dispatch(getSQLTables({ ...locationDetail }));
+    setIsPreviewReady(false);
+  };
 
   useEffect(() => {
     if (isCustomSQL === "No") {
-      dispatch(getSQLTables({ ...locationDetail }));
-      setIsPreviewReady(false);
+      getJdbcTables();
     }
   }, [isCustomSQL]);
 
@@ -353,6 +356,15 @@ const JDBCForm = forwardRef((props, ref) => {
       }, 5000);
     }
   }, [error]);
+
+  useEffect(() => {
+    console.log("locationDetail", locationDetail);
+    if (locationDetail && isCustomSQL === "No") {
+      setTableName(null);
+      setOffsetColumn(null);
+      getJdbcTables();
+    }
+  }, [locationDetail]);
 
   useEffect(() => {
     if (initialValue) {
@@ -397,26 +409,6 @@ const JDBCForm = forwardRef((props, ref) => {
     },
   }));
 
-  // useEffect(() => {
-  //   if (messageContext?.dataflowObj?.datasetSubmit) {
-  //     console.log("datasetSubmit", messageContext.dataflowObj);
-  //     messageContext?.setDataflow({
-  //       datasetSubmit: false,
-  //       dataset: {
-  //         datapackageid,
-  //         datasetName,
-  //         active: dsActive,
-  //         incremental: dataType,
-  //         clinicalDataType,
-  //         customSQLQuery: isCustomSQL,
-  //         sQLQuery,
-  //         tableName,
-  //         offsetColumn,
-  //         dfTestFlag,
-  //       },
-  //     });
-  //   }
-  // }, [messageContext?.dataflowObj?.datasetSubmit]);
   return (
     <form className="jdbc-form">
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
@@ -508,6 +500,7 @@ const JDBCForm = forwardRef((props, ref) => {
             <>
               <Autocomplete
                 name="tableName"
+                key={tableName}
                 id="tableName"
                 size="small"
                 label="Table Name"

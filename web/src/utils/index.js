@@ -4,7 +4,7 @@ import React from "react";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import { TextField } from "apollo-react/components/TextField/TextField";
-import { IDLE_LOGOUT_TIME } from "./constants";
+import { DATA_TYPES, IDLE_LOGOUT_TIME } from "./constants";
 // import { hive2CDH, hive2CDP, impala, oracle, SQLServer } from "../constants";
 
 export const getCookie = (key) => {
@@ -659,34 +659,21 @@ export const goToCore = () => {
     window.location.href = process.env.REACT_APP_CORE_URL;
 };
 
-export const dataTypeForPostgres = (datatype) => {
-  if (datatype.includes("character")) {
+export const dateTypeForJDBC = (datatype) => {
+  const type = datatype?.toUpperCase();
+  if (DATA_TYPES.alphanumeric.includes(type)) {
     return "Alphanumeric";
   }
-  if (datatype.includes("integer")) {
+  if (DATA_TYPES.numeric.includes(type)) {
     return "Numeric";
   }
-  if (datatype.includes("timestamp")) {
+  if (DATA_TYPES.date.includes(type)) {
     return "Date";
   }
   return "Alphanumeric";
 };
-
-export const dataTypeForOracle = (datatype) => {
-  if (
-    datatype.includes("VARCHAR2") ||
-    datatype.includes("ANYDATA") ||
-    datatype.includes("RAW")
-  ) {
-    return "Alphanumeric";
-  }
-  if (datatype.includes("NUMBER")) {
-    return "Numeric";
-  }
-  if (datatype.includes("TIMESTAMP")) {
-    return "Date";
-  }
-  return "Alphanumeric";
+export const parseBool = (b) => {
+  return !/^(false|0)$/i.test(b) && !!b;
 };
 export const setIdleLogout = (logout) => {
   let time;

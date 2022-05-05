@@ -48,7 +48,7 @@ exports.locationDetails = async (req, res) => {
       const credentials = await helper.readVaultData(locationId);
       result = {
         ...rows[0],
-        connectionPassword: credentials.password,
+        connectionPassword: credentials?.password,
       };
     } else {
       result = {
