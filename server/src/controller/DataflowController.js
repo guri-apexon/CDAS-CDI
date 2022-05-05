@@ -216,7 +216,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
         uid,
         DFTestname,
         externalSystemName === "CDI" ? vend_id : rows[0].vend_id,
-        type || null,
+        type.toLowerCase() || null,
         description || null,
         externalSystemName === "CDI" ? src_loc_id : data[0]?.src_loc_id || null,
         helper.stringToBoolean(active) ? 1 : 0,
