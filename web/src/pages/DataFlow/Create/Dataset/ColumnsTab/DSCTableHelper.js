@@ -163,9 +163,9 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
   const { editMode, haveHeader } = row;
   let errorText;
   if (haveHeader) {
-    errorText = checkRequired(row[key]) || checkAlphaNumeric(row[key]);
+    errorText = checkRequired(row[key]);
   } else {
-    errorText = checkAlphaNumeric(row[key]);
+    errorText = false;
   }
   return editMode ? (
     <TextField
