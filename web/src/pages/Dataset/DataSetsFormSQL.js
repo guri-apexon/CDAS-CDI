@@ -142,7 +142,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 30 }}
                 label="Dataset Name (Mnemonic)"
                 size="small"
-                required
+                // required
                 disabled={prodLock}
               />
             </Grid>

@@ -96,3 +96,7 @@
 .add-dataset svg {
   fill: #595959;
 }
+
+.remove-table-border-bottom table{
+  border-collapse: separate !important;
+}
