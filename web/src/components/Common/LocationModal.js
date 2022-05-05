@@ -104,7 +104,6 @@ const LocationForm = (props) => {
               label="External System Name"
               InputProps={{ readOnly: props.locationViewMode }}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
-              style={{ cursor: "inherit !important" }}
               canDeselect={false}
               size="small"
               fullWidth
