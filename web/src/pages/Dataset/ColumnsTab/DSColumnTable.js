@@ -467,7 +467,8 @@ export default function DSColumnTable({
       }
       return e;
     });
-    const columnNames = removeSpaces.map((e) => e.columnName);
+
+    const columnNames = removeSpaces.map((e) => e.columnName.toLowerCase());
 
     if (removeSpaces.length !== _.uniq(columnNames).length) {
       messageContext.showErrorMessage(
@@ -560,7 +561,8 @@ export default function DSColumnTable({
     if (
       rows.some(
         (r) =>
-          r.columnName === editedRowData.columnName &&
+          r.columnName.toLowerCase() ===
+            editedRowData.columnName.toLowerCase() &&
           r.uniqueId !== editedRowData.uniqueId
       )
     ) {
