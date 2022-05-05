@@ -74,7 +74,7 @@ const LocationForm = (props) => {
 
   return (
     <form onSubmit={props.handleSubmit}>
-      <div className={classes.section}>
+      <div className={`${classes.section} removeClickFromMenu`}>
         <Grid container spacing={2}>
           <Grid item md={8}>
             <ReduxFormTextField
