@@ -146,11 +146,11 @@ const DataFlowFormBase = (props) => {
         </div>
         <Divider className={classes.divider} />
         <div className={classes.section}>
-          <Typography variant="title1" id="locationDetailTitile">
-            Location Details
-          </Typography>
           <Grid container spacing={2}>
             <Grid item md={5}>
+              <Typography variant="title1" id="locationDetailTitile">
+                Location Details
+              </Typography>
               <ReduxFormSelect
                 name="dataStructure"
                 id="dataStructure"
@@ -201,10 +201,7 @@ const DataFlowFormBase = (props) => {
               />
             </Grid>
             <Grid item md={7}>
-              <Paper
-                style={{ marginTop: "16px" }}
-                className={classes.locationBox}
-              >
+              <Paper className={classes.locationBox}>
                 <Typography>Location</Typography>
                 <Typography className={classes.formLabel}>Username</Typography>
                 <Typography className={classes.formText}>{userName}</Typography>

@@ -98,7 +98,6 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
             {configShow && !disabled && (
               <div className="package-form">
                 <Select
-                  required
                   error={notMatchedType}
                   label="Package Compression Type"
                   value={compression}

@@ -15,7 +15,7 @@ import Table from "apollo-react/components/Table";
 import Button from "apollo-react/components/Button";
 import DownloadIcon from "apollo-react-icons/Download";
 import FilterIcon from "apollo-react-icons/Filter";
-import ButtonGroup from "apollo-react/components/ButtonGroup";
+import ChevronLeft from "apollo-react-icons/ChevronLeft";
 import columns from "./columns.data";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import { getAuditLogs } from "../../store/actions/AuditLogsAction";
@@ -200,6 +200,18 @@ const AuditLog = () => {
         <Box className="top-content">
           <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />
           <>
+            <Button
+              icon={<ChevronLeft />}
+              size="small"
+              style={{
+                marginLeft: "-10px",
+                marginTop: "-15px",
+                marginBottom: "22px",
+              }}
+              onClick={() => history.push("/dashboard")}
+            >
+              Back
+            </Button>
             <div className="flex title">
               <Typography className="b-font" variant="title">
                 {dataflowName}
@@ -211,17 +223,6 @@ const AuditLog = () => {
                   ? `${dataSetCount} datasets`
                   : `${dataSetCount} dataset`}
               </Typography>
-
-              <ButtonGroup
-                buttonProps={[
-                  {
-                    label: "Back",
-                    variant: "secondary",
-                    size: "small",
-                    onClick: () => history.push("/dashboard"),
-                  },
-                ]}
-              />
             </div>
           </>
         </Box>
