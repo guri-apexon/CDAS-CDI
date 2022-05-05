@@ -436,6 +436,7 @@ export default function DSColumnTable({
     {
       text: "Download table",
       onClick: downloadTable,
+      disabled: true,
     },
   ];
 
