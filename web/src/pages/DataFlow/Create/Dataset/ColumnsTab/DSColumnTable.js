@@ -350,12 +350,22 @@ export default function DSColumnTable({
         }
         return e;
       });
+
     if (removeSpaces?.length && removeSpaces.find((x) => x.dataType === "")) {
       messageContext.showErrorMessage(
         `Please select data type for all records to save.`
       );
       return false;
     }
+    const columnNames = removeSpaces.map((e) => e.columnName.toLowerCase());
+
+    if (removeSpaces.length !== _.uniq(columnNames).length) {
+      messageContext.showErrorMessage(
+        "Column name should be unique for a dataset"
+      );
+      return false;
+    }
+
     const newData = _.orderBy([...removeSpaces], ["uniqueId"], ["asc"]);
     setSelectedRows([]);
     setRows([...newData]);
@@ -413,7 +423,8 @@ export default function DSColumnTable({
     if (
       rows.some(
         (r) =>
-          r.columnName === editedRowData.columnName &&
+          r.columnName.toLowerCase() ===
+            editedRowData.columnName.toLowerCase() &&
           r.uniqueId !== editedRowData.uniqueId
       )
     ) {
