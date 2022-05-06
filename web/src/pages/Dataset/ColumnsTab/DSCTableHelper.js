@@ -186,7 +186,7 @@ export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
-  const { editMode, haveHeader } = row;
+  const { editMode, haveHeader, primaryKey } = row;
   let errorText;
   if (haveHeader) {
     errorText = checkRequired(row[key]);
@@ -210,7 +210,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       error={!row.isInitLoad && errorText ? true : false}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
-      disabled={row.dsProdLock}
+      disabled={primaryKey === "Yes" && row.dsProdLock}
     />
   ) : (
     row[key]
@@ -271,7 +271,6 @@ export const ActionCell = ({ row }) => {
     onRowDelete,
     editMode: eMode,
     isHavingDataType,
-    // isHavingError,
     onRowSave,
   } = row;
 

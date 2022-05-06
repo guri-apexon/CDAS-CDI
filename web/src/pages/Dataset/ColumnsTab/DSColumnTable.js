@@ -731,7 +731,6 @@ export default function DSColumnTable({
           //       [key]: value,
           //       isInitLoad: false,
           //       isFormatLoad: false,
-          //       isHavingError: true,
           //     };
           //   }
           // }
@@ -739,7 +738,6 @@ export default function DSColumnTable({
           return {
             ...row,
             [key]: value,
-            isHavingError: errorTxt !== (null || false || undefined || ""),
           };
         }
         return row;
