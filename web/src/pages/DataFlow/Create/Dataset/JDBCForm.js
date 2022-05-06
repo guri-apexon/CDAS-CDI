@@ -199,7 +199,7 @@ const JDBCForm = forwardRef((props, ref) => {
       }
       if (
         filterCondition &&
-        !filterCondition?.toLowerCase().includes("where")
+        !filterCondition?.toLowerCase().startsWith("where")
       ) {
         messageContext.showErrorMessage(
           `Please correct your filter condition.`
@@ -358,7 +358,6 @@ const JDBCForm = forwardRef((props, ref) => {
   }, [error]);
 
   useEffect(() => {
-    console.log("locationDetail", locationDetail);
     if (locationDetail && isCustomSQL === "No") {
       setTableName(null);
       setOffsetColumn(null);

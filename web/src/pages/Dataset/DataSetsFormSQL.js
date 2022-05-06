@@ -140,6 +140,21 @@ const DataSetsFormBase = (props) => {
       setTimeout(() => setRenderClinicalDataType(true), 50);
   }, [renderClinicalDataType]);
 
+  useEffect(() => {
+    console.log("sqlTables", sqlTables, formValues);
+    // if (sqlTables.length) {
+    //   if (!sqlTables.find((x) => x.tableName === formValues.tableName)) {
+    //     change("offsetColumn", null);
+    //     change("tableName", null);
+    //     setSelectedOffsetColumns(null);
+    //   }
+    // } else {
+    //   change("offsetColumn", null);
+    //   change("tableName", null);
+    //   setSelectedOffsetColumns(null);
+    // }
+  }, [sqlTables]);
+
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
