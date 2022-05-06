@@ -360,7 +360,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 inputProps={{ maxLength: 30 }}
                 label="Dataset Name (Mnemonic)"
                 size="small"
-                required
+                // required
                 disabled={prodLock}
               />
             </Grid>
@@ -374,7 +374,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 onChange={handleCDT}
                 variant="search"
                 singleSelect
-                required
+                // required
                 size="small"
                 fullWidth
                 disabled={prodLock}
