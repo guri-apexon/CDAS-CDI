@@ -212,9 +212,9 @@ export const validateRow = (row) => {
   const min = Number.parseInt(minLength, 10);
   const max = Number.parseInt(maxLength, 10);
 
-  if (isNotValid) {
-    return false;
-  }
+  // if (isNotValid) {
+  //   return false;
+  // }
 
   let check = isHavingColumnName;
   if (!dataType || !columnName) {
