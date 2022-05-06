@@ -25,7 +25,11 @@ import {
   columnObj,
 } from "../../../utils/index";
 import { allowedTypes } from "../../../constants";
-import { validateRow } from "../../../components/FormComponents/validators";
+import {
+  checkFormat,
+  checkRequiredValue,
+  validateRow,
+} from "../../../components/FormComponents/validators";
 
 const maxSize = 150000;
 
@@ -668,78 +672,37 @@ export default function DSColumnTable({
     setEditedRows([...newData]);
   };
 
-  const editRow = (uniqueId, key, value, errorTxt) => {
-    // console.log(
-    //   "data",
-    //   errorTxt,
-    //   errorTxt !== (null || false || undefined || "")
-    // );
+  const editRow = (uniqueId, key, value) => {
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
+          const data = {
+            ...row,
+            [key]: value,
+            isInitLoad: Boolean(key === "variableLabel"),
+          };
           if (
             (key === "columnName" && haveHeader) ||
             (!haveHeader && key === "position")
           ) {
-            if (value.length >= 1) {
-              return {
-                ...row,
-                [key]: value,
-                isHavingColumnName: true,
-              };
-            }
             return {
-              ...row,
-              [key]: value,
-              isHavingColumnName: false,
-              isInitLoad: false,
-            };
-          }
-          if (key === "dataType") {
-            if (value.length >= 1) {
-              return {
-                ...row,
-                [key]: value,
-                isHavingDataType: true,
-                isInitLoad: false,
-              };
-            }
-            return {
-              ...row,
-              [key]: value,
-              isHavingDataType: false,
-              isInitLoad: false,
+              ...data,
+              isHavingColumnName: Boolean(value.length >= 1),
             };
           }
 
-          if (row.isInitLoad || row.isFormatLoad) {
+          if (data.isInitLoad || data.isFormatLoad) {
             if (key !== "variableLabel") {
               return {
-                ...row,
-                [key]: value,
-                isInitLoad: false,
+                ...data,
                 isFormatLoad:
                   key === "format" || key === "columnName" ? true : false,
               };
             }
           }
 
-          // if (row.isFormatLoad) {
-          //   if (key === "format") {
-          //     return {
-          //       ...row,
-          //       [key]: value,
-          //       isInitLoad: false,
-          //       isFormatLoad: false,
-          //       isHavingError: true,
-          //     };
-          //   }
-          // }
-
           return {
-            ...row,
-            [key]: value,
-            isHavingError: errorTxt !== (null || false || undefined || ""),
+            ...data,
           };
         }
         return row;

@@ -1,4 +1,6 @@
-import { isEmpty } from "lodash";
+/* eslint-disable no-useless-escape */
+/* eslint-disable consistent-return */
+import { includes, isEmpty } from "lodash";
 
 export const checkRequired = (value) => {
   if (!value || (typeof value === "string" && !value.trim())) {
@@ -33,7 +35,7 @@ export const checkNumbers = (value) => {
 };
 
 export const checkNumeric = (value) => {
-  const regexp = /^[0-9]+$/;
+  const regexp = /^[\d]+$/;
   if (value !== "" && !regexp.test(value)) {
     return "Only numeric values are allowed";
   }
@@ -87,6 +89,21 @@ export const checkAlphaNumeric = (value, key = "") => {
 
 export const checkAlphaNumericFileName = (value) => {
   const regexp = /^[A-Za-z0-9-_.%@&()!#~;+,{}<>[\] \b]+$/;
+  const regexp2 = /[^hmsdyinx%-\s]/gi;
+  const regexp1 = /\<(.*?)\>/g;
+  const matched = value.match(regexp1);
+
+  const inValid = (element) => element === true;
+
+  if (matched?.length > 0) {
+    const allValidation = matched.map((e) => {
+      const ele = e.substr(1, e.length - 2).toLowerCase();
+      return !!(ele && ele.match(regexp2));
+    });
+    if (allValidation.some(inValid)) {
+      return "Incorrect format entered file name";
+    }
+  }
 
   if (value && value.search(regexp) === -1) {
     return "Special characters are not allowed";
@@ -183,8 +200,16 @@ export const removeUndefined = (arr) =>
     }, {});
 
 export const validateRow = (row) => {
-  const { isHavingColumnName, minLength, maxLength, dataType, columnName } =
-    row;
+  const {
+    isHavingColumnName,
+    minLength,
+    maxLength,
+    dataType,
+    columnName,
+    primaryKey,
+    required,
+    format,
+  } = row;
 
   const min = Number.parseInt(minLength, 10);
   const max = Number.parseInt(maxLength, 10);
@@ -199,6 +224,13 @@ export const validateRow = (row) => {
     check = false;
   } else if (isHavingColumnName && !Number.isNaN(min) && !Number.isNaN(max)) {
     check = min <= max;
+  } else if (
+    primaryKey?.toLowerCase() === "yes" &&
+    required?.toLowerCase() === "no"
+  ) {
+    check = false;
+  } else if (dataType && format) {
+    check = !checkFormat(format, "format", dataType);
   }
   return check;
 };

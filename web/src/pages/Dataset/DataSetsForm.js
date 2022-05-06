@@ -102,21 +102,6 @@ const DataSetsFormBase = (props) => {
       setTimeout(() => setRenderClinicalDataType(true), 50);
   }, [renderClinicalDataType]);
 
-  // useEffect(() => {
-  //   if (formValues.fileNamingConvention) {
-  //     const str = formValues.fileNamingConvention;
-  //     const regexp = /</g;
-  //     let match;
-
-  //     // eslint-disable-next-line no-cond-assign
-  //     while ((match = regexp.exec(str)) !== null) {
-  //       console.log(
-  //         `Found ${match[0]} start=${match.index} end=${regexp.lastIndex}.`
-  //       );
-  //     }
-  //   }
-  // }, [formValues.fileNamingConvention]);
-
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper} style={{ paddingTop: 0 }}>
