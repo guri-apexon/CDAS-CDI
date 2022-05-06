@@ -272,7 +272,7 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={!validateRow(row) || !isHavingDataType}
+        disabled={!validateRow(row)}
       >
         Save
       </Button>
