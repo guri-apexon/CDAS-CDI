@@ -63,9 +63,7 @@ export const makeEditableSelectCell =
         fullWidth
         canDeselect={false}
         value={row[key]}
-        onChange={(e) =>
-          row.editRow(row.uniqueId, key, e.target.value, errorText)
-        }
+        onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
         {...fieldStyles}
       >
         {options.map((option) => (
@@ -91,9 +89,7 @@ export const DataTypeEditableSelectCell =
         value={row[key]}
         error={!row.isInitLoad && !row.isFormatLoad && errorText}
         helperText={!row.isInitLoad && !row.isFormatLoad ? errorText : ""}
-        onChange={(e) =>
-          row.editRow(row.uniqueId, key, e.target.value, errorText)
-        }
+        onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
         {...fieldStyles}
       >
         {options.map((option) => (
@@ -119,9 +115,7 @@ export const editableSelectCell =
         value={row[key]}
         error={!row.isInitLoad && errorText}
         helperText={!row.isInitLoad ? errorText : ""}
-        onChange={(e) =>
-          row.editRow(row.uniqueId, key, e.target.value, errorText)
-        }
+        onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
         {...fieldStyles}
         disabled={row.pkDisabled}
       >
@@ -147,7 +141,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
       value={row[key]}
       onChange={(e) =>
         !e.target.value.includes(".") &&
-        row.editRow(row.uniqueId, key, e.target.value, errorText)
+        row.editRow(row.uniqueId, key, e.target.value)
       }
       error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
@@ -172,9 +166,7 @@ export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
       size="small"
       fullWidth
       value={row[key]}
-      onChange={(e) =>
-        row.editRow(row.uniqueId, key, e.target.value, errorText)
-      }
+      onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
       disabled={row.dsProdLock}
       error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
@@ -204,9 +196,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       inputProps={{
         maxLength: row.fileType === "SAS" ? 32 : null,
       }}
-      onChange={(e) =>
-        row.editRow(row.uniqueId, key, e.target.value, errorText)
-      }
+      onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
       error={!row.isInitLoad && errorText ? true : false}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
@@ -225,9 +215,7 @@ export const FormatCell = ({ row, column: { accessor: key } }) => {
       size="small"
       fullWidth
       value={row[key]}
-      onChange={(e) =>
-        row.editRow(row.uniqueId, key, e.target.value, errorText)
-      }
+      onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
       error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
@@ -245,9 +233,7 @@ export const EditableCell = ({ row, column: { accessor: key } }) => {
       size="small"
       fullWidth
       value={row[key]}
-      onChange={(e) =>
-        row.editRow(row.uniqueId, key, e.target.value, errorText)
-      }
+      onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
       error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
