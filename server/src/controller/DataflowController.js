@@ -127,19 +127,8 @@ exports.getStudyDataflows = async (req, res) => {
 };
 
 const creatDataflow = (exports.createDataflow = async (req, res) => {
-  // return; // this return need to delete
   try {
     var validate = [];
-
-    if (req.body.externalSystemName !== "CDI") {
-      // var dataRes = insertValidation(req.body);
-      var dataRes = externalFunction.insertValidation(req.body);
-
-      if (dataRes.length > 0) {
-        validate.push(dataRes);
-        return apiResponse.ErrorResponse(res, validate);
-      }
-    }
 
     const uid = createUniqueID();
     let {
@@ -170,6 +159,31 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       protocolNumberStandard,
       serviceOwners,
     } = req.body;
+
+    if (req.body.externalSystemName !== "CDI") {
+      if (req.body.location) {
+        let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url=$1;`;
+        let locationData = await DB.executeQuery(q1, [req.body.location]);
+        if (locationData.rows.length > 0) {
+          src_loc_id = locationData.rows[0].src_loc_id;
+        } else {
+          return apiResponse.ErrorResponse(
+            res,
+            "This location's cnn_url is not exist in DB"
+          );
+        }
+      }
+      // var dataRes = insertValidation(req.body);
+      var dataRes = externalFunction.insertValidation(req.body);
+
+      if (dataRes.length > 0) {
+        validate.push(dataRes);
+        return apiResponse.ErrorResponse(res, validate);
+      }
+    }
+
+    console.log(src_loc_id);
+
     var ResponseBody = {};
     if (!type && dataStructure) type = dataStructure;
 
@@ -209,16 +223,14 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       }
       let q = `select vend_id from ${schemaName}.vendor where vend_nm='${vendorName}';`;
       let { rows } = await DB.executeQuery(q);
-      let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${location}';`;
-      let { rows: data } = await DB.executeQuery(q1);
-      // if (rows.length > 0 && data.length > 0) {
+
       DFBody = [
         uid,
         DFTestname,
         externalSystemName === "CDI" ? vend_id : rows[0].vend_id,
-        type || null,
+        type.toLowerCase() || null,
         description || null,
-        externalSystemName === "CDI" ? src_loc_id : data[0]?.src_loc_id || null,
+        src_loc_id || null,
         helper.stringToBoolean(active) ? 1 : 0,
         configured || 0,
         exptDtOfFirstProdFile || null,
@@ -373,7 +385,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                 dpUid,
                 dataKind || null,
                 obj.mnemonic || obj.datasetName || null,
-                obj.fileNamingConvention || "",
+                obj.fileNamingConvention || obj.name || "",
                 helper.stringToBoolean(obj.active) ? 1 : 0,
                 typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
                 helper.stringToBoolean(obj.incremental) ? "Y" : "N",
@@ -598,6 +610,7 @@ exports.updateDataFlow = async (req, res) => {
       src_loc_id,
       vend_id,
       fsrstatus,
+
       // connectiondriver,
       data_in_cdr,
       configured,
@@ -646,6 +659,17 @@ exports.updateDataFlow = async (req, res) => {
         return apiResponse.ErrorResponse(
           res,
           "This Vendor Name is not exist in DB"
+        );
+      }
+    }
+
+    if (location) {
+      let q3 = `select src_loc_id from ${schemaName}.source_location where cnn_url=$1;`;
+      let locationData = await DB.executeQuery(q3, [location]);
+      if (locationData.rows.length <= 0) {
+        return apiResponse.ErrorResponse(
+          res,
+          "This location's cnn_url is not exist in DB"
         );
       }
     }
@@ -801,6 +825,7 @@ exports.updateDataFlow = async (req, res) => {
                   // }
                 } else {
                   // Function call for insert dataSet level data
+
                   var DatasetInsert = await externalFunction
                     .datasetLevelInsert(
                       obj,

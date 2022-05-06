@@ -135,12 +135,16 @@ exports.getdiffKeys = (newObj, oldObj) => {
   return {};
 };
 
-exports.isSftp = (str) => {
+exports.isSftp = (str = "") => {
   return ["SFTP", "FTPS"].includes(str.toUpperCase());
 };
 
 exports.isPackageType = (str) => {
   return ["7Z", "ZIP", "RAR", "SAS"].includes(str.toUpperCase());
+};
+
+exports.isColumnType = (str) => {
+  return ["alphanumeric", "numeric", "date"].includes(str.toLowerCase());
 };
 
 exports.isConnectionType = (str) => {

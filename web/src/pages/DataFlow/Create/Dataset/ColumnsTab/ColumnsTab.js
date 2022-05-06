@@ -95,7 +95,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
               maxLength: column.charactermax || "",
               values: column.lov || "",
               isInitLoad: true,
-              isHavingError: false,
+              isNotValid: false,
               isHavingColumnName: true,
             };
             return newObj;
@@ -124,7 +124,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
               position: 0,
               values: column.lov || "",
               isInitLoad: true,
-              isHavingError: false,
+              isNotValid: false,
               isHavingColumnName: true,
             };
             return newObj;

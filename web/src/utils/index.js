@@ -393,8 +393,7 @@ export const columnObj = {
   values: "",
   isInitLoad: true,
   isFormatLoad: true,
-  isHavingError: true,
-  isNotValid: true,
+  isNotValid: false,
   isHavingColumnName: false,
   isHavingDataType: false,
 };
@@ -446,7 +445,7 @@ export const formatDataNew = (incomingData, protNo) => {
               maxLength: e[9] || "",
               values: e[10] || "",
               isInitLoad: true,
-              isHavingError: false,
+              isNotValid: false,
               isHavingColumnName: true,
               isHavingDataType: true,
             };
@@ -487,7 +486,7 @@ export const formatData = (incomingData, protNo) => {
               maxLength: e[9] || "",
               values: e[10] || "",
               isInitLoad: true,
-              isHavingError: false,
+              isNotValid: false,
               isHavingColumnName: true,
               isHavingDataType: true,
             };
@@ -660,7 +659,7 @@ export const dateFilterCustom = (accessor) => (row, filters) => {
   );
 };
 
-export const isSftp = (str) => {
+export const isSftp = (str = "") => {
   return ["SFTP", "FTPS"].includes(str.toUpperCase());
 };
 
