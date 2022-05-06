@@ -2573,38 +2573,38 @@ exports.updateDataFlow = async (req, res) => {
         }
       }
 
-      // if (ResponseBody.length > 0) {
-      //   let config_json = {
-      //     dataFlowId: DFId,
-      //     vendorName: vendorName,
-      //     protocolNumber: studyId,
-      //     type: type,
-      //     name: name,
-      //     externalID: externalID,
-      //     externalSystemName: externalSystemName,
-      //     connectionType: connectionType,
-      //     location: src_loc_id,
-      //     exptDtOfFirstProdFile: exptDtOfFirstProdFile,
-      //     testFlag: testFlag ? 1 : 0,
-      //     prodFlag: testFlag,
-      //     description: description,
-      //     fsrstatus: fsrstatus,
-      //     dataPackage,
-      //   };
+      // let config_json = {
+      //   dataFlowId: DFId,
+      //   vendorName: vendorName || null,
+      //   protocolNumber: studyId || null,
+      //   type: type,
+      //   name: name,
+      //   externalID: externalID,
+      //   externalSystemName: externalSystemName,
+      //   connectionType: connectionType,
+      //   location: src_loc_id,
+      //   exptDtOfFirstProdFile: exptDtOfFirstProdFile,
+      //   testFlag: testFlag ? 1 : 0,
+      //   prodFlag: testFlag,
+      //   description: description,
+      //   fsrstatus: fsrstatus,
+      //   dataPackage,
+      // };
 
-      //   //insert into dataflow version config log table
-      //   let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
-      //   ( dataflowid, "version", config_json, created_by, created_on)
-      //   VALUES($1,$2,$3,$4,$5);`;
-      //   let aduit_version_body = [
-      //     DFId,
-      //     DFVer,
-      //     JSON.stringify(config_json),
-      //     null,
-      //     new Date(),
-      //   ];
-      //   await DB.executeQuery(dataflow_version_query, aduit_version_body);
-      // }
+      //insert into dataflow version config log table
+      let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
+        ( dataflowid, "version", config_json, created_by, created_on)
+        VALUES($1,$2,$3,$4,$5);`;
+      let aduit_version_body = [
+        DFId,
+        DFVer,
+        // JSON.stringify(config_json),
+        null,
+        null,
+        new Date(),
+      ];
+      await DB.executeQuery(dataflow_version_query, aduit_version_body);
+
       return apiResponse.successResponseWithData(
         res,
         "Data flow Update successfully.",

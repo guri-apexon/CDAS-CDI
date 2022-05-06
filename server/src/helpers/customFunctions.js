@@ -143,6 +143,10 @@ exports.isPackageType = (str) => {
   return ["7Z", "ZIP", "RAR", "SAS"].includes(str.toUpperCase());
 };
 
+exports.isColumnType = (str) => {
+  return ["alphanumeric", "numeric", "date"].includes(str.toLowerCase());
+};
+
 exports.isConnectionType = (str) => {
   return [
     "SFTP",
