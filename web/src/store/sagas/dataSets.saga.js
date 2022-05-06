@@ -101,7 +101,10 @@ export function* fetchSQLColumns(action) {
       payload: action.payload,
     });
   } catch (e) {
-    yield put({ type: FETCH_SQL_COLUMNS_FAILURE, message: e.message });
+    yield put({
+      type: FETCH_SQL_COLUMNS_FAILURE,
+      message: e.response?.data?.message || e.message,
+    });
   }
 }
 

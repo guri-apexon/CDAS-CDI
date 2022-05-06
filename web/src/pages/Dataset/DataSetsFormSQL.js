@@ -108,6 +108,7 @@ const DataSetsFormBase = (props) => {
   }, [formValues.isCustomSQL]);
 
   useEffect(() => {
+    console.log("formValues.tableName::::", formValues.tableName);
     setSqlColumnsArr([]);
     dispatch(
       getSQLColumns({
@@ -117,7 +118,16 @@ const DataSetsFormBase = (props) => {
     );
   }, [formValues.tableName]);
 
+  // eslint-disable-next-line consistent-return
   const handlePreview = () => {
+    if (!formValues?.sQLQuery || formValues?.sQLQuery === "") {
+      messageContext.showErrorMessage(`Please add your query to proceed.`);
+      return false;
+    }
+    if (formValues?.sQLQuery?.includes("*")) {
+      messageContext.showErrorMessage(`Please remove * from query to proceed.`);
+      return false;
+    }
     setShowPreview(true);
     dispatch(
       getPreviewSQL({
@@ -141,18 +151,13 @@ const DataSetsFormBase = (props) => {
   }, [renderClinicalDataType]);
 
   useEffect(() => {
-    console.log("sqlTables", sqlTables, formValues);
-    // if (sqlTables.length) {
-    //   if (!sqlTables.find((x) => x.tableName === formValues.tableName)) {
-    //     change("offsetColumn", null);
-    //     change("tableName", null);
-    //     setSelectedOffsetColumns(null);
-    //   }
-    // } else {
-    //   change("offsetColumn", null);
-    //   change("tableName", null);
-    //   setSelectedOffsetColumns(null);
-    // }
+    if (sqlTables.length) {
+      // if (!sqlTables.find((x) => x.tableName === formValues.tableName)) {
+      //   change("offsetColumn", null);
+      //   change("tableName", null);
+      //   setSelectedOffsetColumns(null);
+      // }
+    }
   }, [sqlTables]);
 
   return (
@@ -258,18 +263,6 @@ const DataSetsFormBase = (props) => {
                   <MenuItem value={e.tableName}>{e.tableName}</MenuItem>
                 ))}
               </ReduxFormSelect>
-              {/* <ReduxFormTextField
-                fullWidth
-                name="tableName"
-                id="tableName"
-                style={{ width: "70%", display: "flex" }}
-                size="small"
-                minHeight={32}
-                singleline
-                inputProps={{ maxLength: 255 }}
-                label="Table Name"
-                disabled={prodLock}
-              /> */}
               <ReduxFormTextField
                 fullWidth
                 name="filterCondition"
@@ -313,27 +306,10 @@ const DataSetsFormBase = (props) => {
                   chipColor="white"
                   disabled={prodLock}
                 />
-
-                /* {sqlColumns?.map((e) => (
-                    <MenuItem value={e.columnName}>{e.columnName}</MenuItem>
-                  ))} */
-
-                // <ReduxFormTextField
-                //   fullWidth
-                //   name="offsetColumn"
-                //   id="offsetColumn"
-                //   style={{ width: "70%", display: "flex" }}
-                //   size="small"
-                //   minHeight={32}
-                //   singleline
-                //   inputProps={{ maxLength: 255 }}
-                //   label="Offset Column"
-                //   disabled={prodLock}
-                // />
               )}
             </>
           )}
-          {showPreview && (
+          {/* {showPreview && (
             <div className="preview-table">
               {previewSQL.length > 0 && (
                 <Table
@@ -346,7 +322,7 @@ const DataSetsFormBase = (props) => {
                 />
               )}
             </div>
-          )}
+          )} */}
         </div>
       </Paper>
     </form>
@@ -364,22 +340,31 @@ const ReduxForm = compose(
 )(DataSetsFormBase);
 
 const selector = formValueSelector("DataSetsFormSQL");
-const DataSetsFormSQL = connect((state) => ({
-  initialValues: state.dataSets.formDataSQL, // pull initial values from account reducer
-  enableReinitialize: true,
-  formValues: selector(
-    state,
-    "isCustomSQL",
-    "sQLQuery",
-    "tableName",
-    "dataType",
-    "offsetColumn",
-    "clinicalDataType"
-  ),
-  datakind: state.dataSets.datakind?.records,
-  sqlTables: state.dataSets.sqlTables,
-  sqlColumns: state.dataSets.sqlColumns,
-  previewSQL: state.dataSets.previewSQL,
-}))(ReduxForm);
+const DataSetsFormSQL = connect((state) => {
+  const { sqlColumns, sqlTables } = state.dataSets;
+  const initialValues = {
+    ...state.dataSets.formDataSQL,
+  };
+  if (!sqlTables.length) {
+    initialValues.tableName = "";
+  }
+  return {
+    initialValues, // pull initial values from account reducer
+    enableReinitialize: true,
+    formValues: selector(
+      state,
+      "isCustomSQL",
+      "sQLQuery",
+      "tableName",
+      "dataType",
+      "offsetColumn",
+      "clinicalDataType"
+    ),
+    datakind: state.dataSets.datakind?.records,
+    sqlTables,
+    sqlColumns,
+    previewSQL: state.dataSets.previewSQL,
+  };
+})(ReduxForm);
 
 export default DataSetsFormSQL;

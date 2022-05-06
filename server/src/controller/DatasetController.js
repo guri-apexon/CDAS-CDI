@@ -287,15 +287,11 @@ async function updateSQLDataset(res, values) {
       incremental: values.dataType == "Incremental" ? "Y" : "N" || null,
     };
 
-    const jsonData = JSON.stringify(requestData);
-
     const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
     dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
 
     const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
     const oldData = tempData[0];
-
-    const data = await DB.executeQuery(updateQuery, body);
 
     const diffObj = helper.getdiffKeys(requestData, oldData);
     var idObj = {
@@ -348,14 +344,12 @@ exports.updateDatasetData = async (req, res) => {
     headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, 
     incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrow = $19, footerrow = $20, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $21 `;
     if (isExist) {
       return apiResponse.ErrorResponse(
         res,
         `Mnemonic ${datasetName} is not unique.`
       );
     }
-
     if (!helper.isSftp(values.locationType)) {
       return updateSQLDataset(res, values);
     }
@@ -421,6 +415,8 @@ exports.updateDatasetData = async (req, res) => {
       values.headerRowNumber > 0 ? 1 : 0,
       values.footerRowNumber > 0 ? 1 : 0,
     ];
+
+    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrow = $19, footerrow = $20, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $21 `;
 
     const updateDS = await DB.executeQuery(updateQuery, [
       ...body,

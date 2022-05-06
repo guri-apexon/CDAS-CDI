@@ -281,6 +281,7 @@ const Dataset = () => {
   };
 
   const onSubmit = (formValue) => {
+    // eslint-disable-next-line consistent-return
     setTimeout(() => {
       const data = {
         ...formValue,
@@ -291,6 +292,13 @@ const Dataset = () => {
         dfId,
         studyId,
       };
+      console.log("formValue", formValue);
+      if (formValue?.sQLQuery?.includes("*")) {
+        messageContext.showErrorMessage(
+          `Please remove * from query to proceed.`
+        );
+        return false;
+      }
       if (data.datasetid) {
         dispatch(updateDatasetData(data));
       } else {

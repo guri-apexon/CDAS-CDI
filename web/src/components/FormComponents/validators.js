@@ -8,17 +8,20 @@ export const checkRequired = (value) => {
 };
 
 export const checkValidQuery = (value) => {
+  if (!value) {
+    return "Please add your query to proceed.";
+  }
   if (value !== "" && value?.toLowerCase().trim().indexOf("select *") > -1) {
-    return "Custom SQL Query should not contain select *";
+    return "Custom SQL query should not contain select *";
   }
   return false;
 };
 
 export const checkfilterCondition = (value) => {
+  if (!value) {
+    return false;
+  }
   if (!value?.toLowerCase().trim().startsWith("where")) {
-    if (value === "" || value === undefined) {
-      return false;
-    }
     return "Filter condition should start with WHERE";
   }
   return false;
