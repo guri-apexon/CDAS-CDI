@@ -26,6 +26,7 @@ exports.insertValidation = (req) => {
     { key: "Vendor Name", value: req.vendorName, type: "string" },
     { key: "Data Structure ", value: req.type, type: "string" },
     { key: "Data Flow Name ", value: req.name, type: "string" },
+    { key: "location ", value: req.location, type: "string" },
 
     {
       key: "External System Name",
@@ -1369,6 +1370,7 @@ exports.dataflowUpdate = async (
     var dataflow = [];
     let studyId;
     let vendorId;
+    let loc_id;
     let vName;
     let ptNum;
     let desc;
@@ -1382,6 +1384,12 @@ exports.dataflowUpdate = async (
       let q2 = `select vend_id from ${schemaName}.vendor where vend_nm=$1;`;
       let { rows } = await DB.executeQuery(q2, [data.vendorName]);
       vendorId = rows[0].vend_id;
+    }
+
+    if (data.location) {
+      let q5 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${data.location}';`;
+      let { rows: srcId } = await DB.executeQuery(q5);
+      loc_id = srcId[0].src_loc_id;
     }
     const dataflowData = await DB.executeQuery(q1);
 
@@ -1452,6 +1460,9 @@ exports.dataflowUpdate = async (
     if (data.vendorName) {
       updateQueryDF += ` ,vend_id= '${vendorId}'`;
     }
+    if (data.location) {
+      updateQueryDF += ` ,src_loc_id= '${loc_id}'`;
+    }
     if (data.protocolNumberStandard || data.type || data.vendorName) {
       updateQueryDF += `,name='${DFTestname}'`;
     }
@@ -1460,7 +1471,7 @@ exports.dataflowUpdate = async (
     // console.log(updateQueryDF);
 
     const { rows: existDfRows } = await DB.executeQuery(
-      `SELECT type, description, externalsystemname , expt_fst_prd_dt ,
+      `SELECT type, description,src_loc_id, externalsystemname , expt_fst_prd_dt ,
        testflag , active, prot_id , vend_id , name
        from ${schemaName}.dataflow where externalid='${externalID}';`
     );
@@ -1966,11 +1977,13 @@ exports.datasetUpdate = async (
               errorDataset.push(" Table Name  Max of 255 characters  ");
             }
           }
-          if (helper.stringToBoolean(data.incremental)) {
-            if (!data.offsetColumn) {
-              errorDataset.push(
-                " offsetColumn  is required and data type should be string "
-              );
+          if (typeof data.incremental != "undefined") {
+            if (helper.stringToBoolean(data.incremental)) {
+              if (!data.offsetColumn) {
+                errorDataset.push(
+                  " offsetColumn  is required and data type should be string "
+                );
+              }
             }
           }
         }
