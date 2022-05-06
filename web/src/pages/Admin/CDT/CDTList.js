@@ -430,7 +430,7 @@ export default function CDTList() {
                     canDeselect={false}
                     placeholder="Select system name"
                     fullWidth
-                    required
+                    // required
                     size="small"
                     helperText={
                       reqENSError && "External System shouldn't be empty"

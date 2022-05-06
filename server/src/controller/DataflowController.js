@@ -402,9 +402,10 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                 dsPasswordStatus || "No",
                 dFTimestamp,
                 obj.delimiter || "",
-                helper.convertEscapeChar(
-                  obj.escapeCode || obj.escapeCharacter
-                ) || "",
+                obj.encoding || "UTF-8",
+                // helper.convertEscapeChar(
+                obj.escapeCode || obj.escapeCharacter || "",
+                // ) || "",
                 obj.quote || "",
                 obj.rowDecreaseAllowed || 0,
                 obj.dataTransferFrequency || "",
@@ -413,7 +414,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
               let createDS = await DB.executeQuery(
                 `insert into ${schemaName}.dataset(datasetid, datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
                 offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
-                customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28)`,
+                customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", charset, escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $22, $22, $23, $24, $25, $26, $27, $28, $29)`,
                 DSBody
               );
               newobj.timestamp = ts;
