@@ -504,39 +504,6 @@ export default function DSColumnTable({
             };
           }
 
-          if (key === "dataType") {
-            return {
-              ...data,
-              isHavingDataType: value.length >= 1,
-              isNotValid: Boolean(checkFormat(row.format, "format", value)),
-            };
-          }
-
-          if (key === "format") {
-            return {
-              ...data,
-              isNotValid: Boolean(checkFormat(value, key, row.dataType)),
-            };
-          }
-
-          if (key === "required") {
-            return {
-              ...data,
-              isNotValid: Boolean(
-                checkRequiredValue(value, key, row.primaryKey)
-              ),
-            };
-          }
-
-          if (key === "primaryKey") {
-            return {
-              ...data,
-              isNotValid: Boolean(
-                checkRequiredValue(row.required, "required", value)
-              ),
-            };
-          }
-
           if (row.isInitLoad || row.isFormatLoad) {
             if (key !== "variableLabel") {
               return {
