@@ -56,7 +56,6 @@ const fieldStylesNo = {
 export const makeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText = checkRequiredValue(row[key], key, row.primaryKey);
     return row.editMode ? (
       <Select
         size="small"

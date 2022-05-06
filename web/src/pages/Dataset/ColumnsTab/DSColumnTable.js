@@ -27,6 +27,7 @@ import {
 import { allowedTypes } from "../../../constants";
 import {
   checkFormat,
+  checkRequiredValue,
   validateRow,
 } from "../../../components/FormComponents/validators";
 
@@ -702,6 +703,24 @@ export default function DSColumnTable({
             return {
               ...data,
               isNotValid: Boolean(checkFormat(value, key, row.dataType)),
+            };
+          }
+
+          if (key === "required") {
+            return {
+              ...data,
+              isNotValid: Boolean(
+                checkRequiredValue(value, key, row.primaryKey)
+              ),
+            };
+          }
+
+          if (key === "primaryKey") {
+            return {
+              ...data,
+              isNotValid: Boolean(
+                checkRequiredValue(row.required, "required", value)
+              ),
             };
           }
 
