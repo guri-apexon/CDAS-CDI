@@ -27,6 +27,7 @@ import {
 import { allowedTypes } from "../../../constants";
 import {
   checkFormat,
+  checkRequiredValue,
   validateRow,
 } from "../../../components/FormComponents/validators";
 
@@ -705,6 +706,24 @@ export default function DSColumnTable({
             };
           }
 
+          if (key === "required") {
+            return {
+              ...data,
+              isNotValid: Boolean(
+                checkRequiredValue(value, key, row.primaryKey)
+              ),
+            };
+          }
+
+          if (key === "primaryKey") {
+            return {
+              ...data,
+              isNotValid: Boolean(
+                checkRequiredValue(row.required, "required", value)
+              ),
+            };
+          }
+
           if (data.isInitLoad || data.isFormatLoad) {
             if (key !== "variableLabel") {
               return {
@@ -727,7 +746,7 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {console.log("on render", rows, editedRows, selectedRows)}
+        {/* {console.log("on render", rows, editedRows, selectedRows)} */}
         <input
           type="file"
           id="file"
