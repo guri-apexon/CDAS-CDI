@@ -453,7 +453,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 onChange={handleCDT}
                 variant="search"
                 singleSelect
-                required
+                // required
                 size="small"
                 fullWidth
               />

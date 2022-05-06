@@ -214,6 +214,11 @@ label.table-checkbox {
 .MuiSnackbar-anchorOriginTopCenter {
   top: 56px !important;
 }
+ul[class*="MuiMenu-list-"] {
+  li:focus:not(:hover) {
+    background: none;
+  }
+}
 
 .pageRoot {
   display: flex;
@@ -258,4 +263,7 @@ div.readOnly_Dropdown {
   }
 }
 
+.removeClickFromMenu .readOnly_Dropdown div[class^="MuiSelect-root-"], .removeClickFromMenu label {
+  cursor: inherit;
+  }
 // .dsctablehelper_select

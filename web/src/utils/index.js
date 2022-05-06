@@ -379,6 +379,26 @@ export const toast = (text = "", type = "success") => {
   document.dispatchEvent(customEvent);
 };
 
+export const columnObj = {
+  variableLabel: "",
+  columnName: "",
+  position: "",
+  format: "",
+  dataType: "",
+  primaryKey: "No",
+  unique: "No",
+  required: "No",
+  minLength: "",
+  maxLength: "",
+  values: "",
+  isInitLoad: true,
+  isFormatLoad: true,
+  isHavingError: true,
+  isNotValid: true,
+  isHavingColumnName: false,
+  isHavingDataType: false,
+};
+
 export const checkHeaders = (data) => {
   const header = data[0];
   const validation =
