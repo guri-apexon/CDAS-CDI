@@ -509,7 +509,6 @@ export default function DSColumnTable({
                 ...row,
                 [key]: value,
                 isInitLoad: false,
-                isHavingError: true,
                 isFormatLoad:
                   key === "format" || key === "columnName" ? true : false,
               };
