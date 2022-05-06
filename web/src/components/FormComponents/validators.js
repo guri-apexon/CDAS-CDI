@@ -183,9 +183,15 @@ export const removeUndefined = (arr) =>
     }, {});
 
 export const validateRow = (row) => {
-  const { isHavingColumnName, minLength, maxLength, dataType, columnName } =
-    row;
-
+  const {
+    isHavingColumnName,
+    minLength,
+    maxLength,
+    dataType,
+    columnName,
+    primaryKey,
+    required,
+  } = row;
   const min = Number.parseInt(minLength, 10);
   const max = Number.parseInt(maxLength, 10);
 
@@ -199,6 +205,11 @@ export const validateRow = (row) => {
     check = false;
   } else if (isHavingColumnName && !Number.isNaN(min) && !Number.isNaN(max)) {
     check = min <= max;
+  } else if (
+    primaryKey?.toLowerCase() === "yes" &&
+    required?.toLowerCase() === "no"
+  ) {
+    check = false;
   }
   return check;
 };

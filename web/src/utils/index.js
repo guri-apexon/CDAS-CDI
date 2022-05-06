@@ -660,7 +660,7 @@ export const dateFilterCustom = (accessor) => (row, filters) => {
   );
 };
 
-export const isSftp = (str) => {
+export const isSftp = (str = "") => {
   return ["SFTP", "FTPS"].includes(str.toUpperCase());
 };
 
