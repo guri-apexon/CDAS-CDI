@@ -393,7 +393,7 @@ export const columnObj = {
   values: "",
   isInitLoad: true,
   isFormatLoad: true,
-  isNotValid: true,
+  isNotValid: false,
   isHavingColumnName: false,
   isHavingDataType: false,
 };

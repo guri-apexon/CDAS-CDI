@@ -25,7 +25,10 @@ import {
   columnObj,
 } from "../../../utils/index";
 import { allowedTypes } from "../../../constants";
-import { validateRow } from "../../../components/FormComponents/validators";
+import {
+  checkFormat,
+  validateRow,
+} from "../../../components/FormComponents/validators";
 
 const maxSize = 150000;
 
@@ -668,76 +671,52 @@ export default function DSColumnTable({
     setEditedRows([...newData]);
   };
 
-  const editRow = (uniqueId, key, value, errorTxt) => {
-    // console.log(
-    //   "data",
-    //   errorTxt,
-    //   errorTxt !== (null || false || undefined || "")
-    // );
+  const editRow = (uniqueId, key, value) => {
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
+          const data = {
+            ...row,
+            [key]: value,
+            isInitLoad: Boolean(key === "variableLabel"),
+          };
           if (
             (key === "columnName" && haveHeader) ||
             (!haveHeader && key === "position")
           ) {
-            if (value.length >= 1) {
-              return {
-                ...row,
-                [key]: value,
-                isHavingColumnName: true,
-              };
-            }
             return {
-              ...row,
-              [key]: value,
-              isHavingColumnName: false,
-              isInitLoad: false,
-            };
-          }
-          if (key === "dataType") {
-            if (value.length >= 1) {
-              return {
-                ...row,
-                [key]: value,
-                isHavingDataType: true,
-                isInitLoad: false,
-              };
-            }
-            return {
-              ...row,
-              [key]: value,
-              isHavingDataType: false,
-              isInitLoad: false,
+              ...data,
+              isHavingColumnName: Boolean(value.length >= 1),
             };
           }
 
-          if (row.isInitLoad || row.isFormatLoad) {
+          if (key === "dataType") {
+            return {
+              ...data,
+              isHavingDataType: value.length >= 1,
+              isNotValid: Boolean(checkFormat(row.format, "format", value)),
+            };
+          }
+
+          if (key === "format") {
+            return {
+              ...data,
+              isNotValid: Boolean(checkFormat(value, key, row.dataType)),
+            };
+          }
+
+          if (data.isInitLoad || data.isFormatLoad) {
             if (key !== "variableLabel") {
               return {
-                ...row,
-                [key]: value,
-                isInitLoad: false,
+                ...data,
                 isFormatLoad:
                   key === "format" || key === "columnName" ? true : false,
               };
             }
           }
 
-          // if (row.isFormatLoad) {
-          //   if (key === "format") {
-          //     return {
-          //       ...row,
-          //       [key]: value,
-          //       isInitLoad: false,
-          //       isFormatLoad: false,
-          //     };
-          //   }
-          // }
-
           return {
-            ...row,
-            [key]: value,
+            ...data,
           };
         }
         return row;
@@ -748,7 +727,7 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {/* {console.log("on render", rows, editedRows, selectedRows)} */}
+        {console.log("on render", rows, editedRows, selectedRows)}
         <input
           type="file"
           id="file"

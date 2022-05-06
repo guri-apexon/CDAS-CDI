@@ -20,7 +20,10 @@ import {
   columnObj,
 } from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
-import { validateRow } from "../../../../../components/FormComponents/validators";
+import {
+  checkFormat,
+  validateRow,
+} from "../../../../../components/FormComponents/validators";
 
 const maxSize = 150000;
 
@@ -481,34 +484,44 @@ export default function DSColumnTable({
   //   messageContext.showErrorMessage("Column Name Should be there");
   // };
 
-  const editRow = (uniqueId, key, value, errorTxt) => {
+  const editRow = (uniqueId, key, value) => {
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
+          const data = {
+            ...row,
+            [key]: value,
+            isInitLoad: Boolean(key === "variableLabel"),
+          };
           if (
             (key === "columnName" && haveHeader) ||
             (!haveHeader && key === "position")
           ) {
-            if (value.length >= 1) {
-              return {
-                ...row,
-                [key]: value,
-                isHavingColumnName: true,
-              };
-            }
             return {
-              ...row,
-              [key]: value,
-              isHavingColumnName: false,
+              ...data,
+              isHavingColumnName: Boolean(value.length >= 1),
+            };
+          }
+
+          if (key === "dataType") {
+            return {
+              ...data,
+              isHavingDataType: value.length >= 1,
+              isNotValid: Boolean(checkFormat(row.format, "format", value)),
+            };
+          }
+
+          if (key === "format") {
+            return {
+              ...data,
+              isNotValid: Boolean(checkFormat(value, key, row.dataType)),
             };
           }
 
           if (row.isInitLoad || row.isFormatLoad) {
             if (key !== "variableLabel") {
               return {
-                ...row,
-                [key]: value,
-                isInitLoad: false,
+                ...data,
                 isFormatLoad:
                   key === "format" || key === "columnName" ? true : false,
               };
@@ -516,8 +529,7 @@ export default function DSColumnTable({
           }
 
           return {
-            ...row,
-            [key]: value,
+            ...data,
           };
         }
         return row;
