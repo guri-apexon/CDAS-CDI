@@ -208,15 +208,11 @@ export const validateRow = (row) => {
     columnName,
     primaryKey,
     required,
-    isNotValid,
+    format,
   } = row;
 
   const min = Number.parseInt(minLength, 10);
   const max = Number.parseInt(maxLength, 10);
-
-  if (isNotValid) {
-    return false;
-  }
 
   let check = isHavingColumnName;
   if (!dataType || !columnName) {
@@ -233,6 +229,8 @@ export const validateRow = (row) => {
     required?.toLowerCase() === "no"
   ) {
     check = false;
+  } else if (dataType && format) {
+    check = !checkFormat(format, "format", dataType);
   }
   return check;
 };
