@@ -132,6 +132,16 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
     var validate = [];
 
     if (req.body.externalSystemName !== "CDI") {
+      if (req.location) {
+        let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url=$1;`;
+        let locationData = await DB.executeQuery(q1, [req.location]);
+        if (locationData.rows.length <= 0) {
+          return apiResponse.ErrorResponse(
+            res,
+            "This location's cnn_url is not exist in DB"
+          );
+        }
+      }
       // var dataRes = insertValidation(req.body);
       var dataRes = externalFunction.insertValidation(req.body);
 
@@ -597,6 +607,7 @@ exports.updateDataFlow = async (req, res) => {
       src_loc_id,
       vend_id,
       fsrstatus,
+
       // connectiondriver,
       data_in_cdr,
       configured,
@@ -645,6 +656,17 @@ exports.updateDataFlow = async (req, res) => {
         return apiResponse.ErrorResponse(
           res,
           "This Vendor Name is not exist in DB"
+        );
+      }
+    }
+
+    if (location) {
+      let q3 = `select src_loc_id from ${schemaName}.source_location where cnn_url=$1;`;
+      let locationData = await DB.executeQuery(q3, [location]);
+      if (locationData.rows.length <= 0) {
+        return apiResponse.ErrorResponse(
+          res,
+          "This location's cnn_url is not exist in DB"
         );
       }
     }
