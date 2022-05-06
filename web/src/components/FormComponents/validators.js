@@ -206,6 +206,8 @@ export const validateRow = (row) => {
     maxLength,
     dataType,
     columnName,
+    primaryKey,
+    required,
     format,
   } = row;
 
@@ -221,7 +223,12 @@ export const validateRow = (row) => {
   ) {
     check = false;
   } else if (isHavingColumnName && !Number.isNaN(min) && !Number.isNaN(max)) {
-    check = min < max;
+    check = min <= max;
+  } else if (
+    primaryKey?.toLowerCase() === "yes" &&
+    required?.toLowerCase() === "no"
+  ) {
+    check = false;
   } else if (dataType && format) {
     check = !checkFormat(format, "format", dataType);
   }

@@ -135,7 +135,7 @@ exports.getdiffKeys = (newObj, oldObj) => {
   return {};
 };
 
-exports.isSftp = (str) => {
+exports.isSftp = (str = "") => {
   return ["SFTP", "FTPS"].includes(str.toUpperCase());
 };
 
