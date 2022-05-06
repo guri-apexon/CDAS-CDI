@@ -26,6 +26,7 @@ exports.insertValidation = (req) => {
     { key: "Vendor Name", value: req.vendorName, type: "string" },
     { key: "Data Structure ", value: req.type, type: "string" },
     { key: "Data Flow Name ", value: req.name, type: "string" },
+    { key: "location ", value: req.location, type: "string" },
 
     {
       key: "External System Name",
@@ -145,7 +146,41 @@ exports.insertValidation = (req) => {
               }
             }
 
-            if (each.name) {
+            if (each.name && each.type) {
+              const name = each.name.split(".")[1];
+
+              // if (each.type.toLowerCase() === "rar") {
+              //   if (name.toLowerCase() !== "rar") {
+              //     validate.push({
+              //       err: " If Package type is RAR then package naming convention should be end with (.rar) ",
+              //     });
+              //   }
+              // }
+
+              // if (each.type.toLowerCase() === "7z") {
+              //   if (name.toLowerCase() !== "7z") {
+              //     validate.push({
+              //       err: " If Package type is 7z then package naming convention should be end with (.7z) ",
+              //     });
+              //   }
+              // }
+
+              // if (each.type.toLowerCase() === "zip") {
+              //   if (name.toLowerCase() !== "zip") {
+              //     validate.push({
+              //       err: " If Package type is Zip then package naming convention should be end with (.zip) ",
+              //     });
+              //   }
+              // }
+
+              // if (each.type.toLowerCase() === "sas") {
+              //   if (name.toLowerCase() !== "xpt") {
+              //     validate.push({
+              //       err: " If Package type is SAS then package naming convention should be end with (.xpt) ",
+              //     });
+              //   }
+              // }
+
               const last = each.name.charAt(each.name.length - 1);
               const first = each.name.charAt(each.name.charAt(0));
               if (str2.test(each.name) === false) {
@@ -327,6 +362,12 @@ exports.insertValidation = (req) => {
                             type: "string",
                           },
                         ];
+
+                        if (!helper.isColumnType(el.dataType)) {
+                          validate.push({
+                            err: " Data type's Supported values : Numeric, Alphanumeric or Date",
+                          });
+                        }
 
                         // Validation Function call for column defination
                         let clRes = helper.validation(clArray);
@@ -537,6 +578,12 @@ exports.insertValidation = (req) => {
                         },
                       ];
 
+                      if (!helper.isColumnType(el.dataType)) {
+                        validate.push({
+                          err: " Data type's Supported values : Numeric, Alphanumeric or Date",
+                        });
+                      }
+
                       // Validation Function call for column defination
                       let clRes = helper.validation(clArray);
                       if (clRes.length > 0) {
@@ -633,7 +680,40 @@ exports.packageLevelInsert = async (
         }
       }
 
-      if (data.name) {
+      if (data.name && data.type) {
+        const name = data.name.split(".")[1];
+        // if (data.type.toLowerCase() === "rar") {
+        //   if (name.toLowerCase() !== "rar") {
+        //     errorPackage.push(
+        //       " If Package type is RAR then package naming convention should be end with (.rar) "
+        //     );
+        //   }
+        // }
+
+        // if (data.type.toLowerCase() === "7z") {
+        //   if (name.toLowerCase() !== "7z") {
+        //     errorPackage.push(
+        //       " If Package type is 7z then package naming convention should be end with (.7z) "
+        //     );
+        //   }
+        // }
+
+        // if (data.type.toLowerCase() === "zip") {
+        //   if (name.toLowerCase() !== "zip") {
+        //     errorPackage.push(
+        //       " If Package type is Zip then package naming convention should be end with (.zip) "
+        //     );
+        //   }
+        // }
+
+        // if (data.type.toLowerCase() === "sas") {
+        //   if (name.toLowerCase() !== "xpt") {
+        //     errorPackage.push(
+        //       " If Package type is SAS then package naming convention should be end with (.xpt) "
+        //     );
+        //   }
+        // }
+
         const last = data.name.charAt(data.name.length - 1);
         const first = data.name.charAt(data.name.charAt(0));
         if (str2.test(data.name) === false) {
@@ -1112,6 +1192,12 @@ const saveDataset = (exports.datasetLevelInsert = async (
             },
           ];
 
+          if (!helper.isColumnType(el.dataType)) {
+            errorDataset.push(
+              " Data type's Supported values : Numeric, Alphanumeric or Date"
+            );
+          }
+
           let clResIf = helper.validation(clArrayIf);
           if (clResIf.length > 0) {
             errorDataset.push(clResIf);
@@ -1178,6 +1264,12 @@ const saveDataset = (exports.datasetLevelInsert = async (
               type: "string",
             },
           ];
+
+          if (!helper.isColumnType(el.dataType)) {
+            errorDataset.push(
+              " Data type's Supported values : Numeric, Alphanumeric or Date"
+            );
+          }
 
           let clRes = helper.validation(clArray);
           if (clRes.length > 0) {
@@ -1278,6 +1370,7 @@ exports.dataflowUpdate = async (
     var dataflow = [];
     let studyId;
     let vendorId;
+    let loc_id;
     let vName;
     let ptNum;
     let desc;
@@ -1291,6 +1384,12 @@ exports.dataflowUpdate = async (
       let q2 = `select vend_id from ${schemaName}.vendor where vend_nm=$1;`;
       let { rows } = await DB.executeQuery(q2, [data.vendorName]);
       vendorId = rows[0].vend_id;
+    }
+
+    if (data.location) {
+      let q5 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${data.location}';`;
+      let { rows: srcId } = await DB.executeQuery(q5);
+      loc_id = srcId[0].src_loc_id;
     }
     const dataflowData = await DB.executeQuery(q1);
 
@@ -1361,6 +1460,9 @@ exports.dataflowUpdate = async (
     if (data.vendorName) {
       updateQueryDF += ` ,vend_id= '${vendorId}'`;
     }
+    if (data.location) {
+      updateQueryDF += ` ,src_loc_id= '${loc_id}'`;
+    }
     if (data.protocolNumberStandard || data.type || data.vendorName) {
       updateQueryDF += `,name='${DFTestname}'`;
     }
@@ -1369,7 +1471,7 @@ exports.dataflowUpdate = async (
     // console.log(updateQueryDF);
 
     const { rows: existDfRows } = await DB.executeQuery(
-      `SELECT type, description, externalsystemname , expt_fst_prd_dt ,
+      `SELECT type, description,src_loc_id, externalsystemname , expt_fst_prd_dt ,
        testflag , active, prot_id , vend_id , name
        from ${schemaName}.dataflow where externalid='${externalID}';`
     );
@@ -1875,11 +1977,13 @@ exports.datasetUpdate = async (
               errorDataset.push(" Table Name  Max of 255 characters  ");
             }
           }
-          if (helper.stringToBoolean(data.incremental)) {
-            if (!data.offsetColumn) {
-              errorDataset.push(
-                " offsetColumn  is required and data type should be string "
-              );
+          if (typeof data.incremental != "undefined") {
+            if (helper.stringToBoolean(data.incremental)) {
+              if (!data.offsetColumn) {
+                errorDataset.push(
+                  " offsetColumn  is required and data type should be string "
+                );
+              }
             }
           }
         }
