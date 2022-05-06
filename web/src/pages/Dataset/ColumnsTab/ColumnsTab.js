@@ -87,7 +87,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               maxLength: column.charactermax || "",
               values: column.lov || "",
               isInitLoad: true,
-              isHavingError: false,
+              isNotValid: false,
               isHavingColumnName: true,
               isHavingDataType: true,
               isSaved: true,
@@ -116,7 +116,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               maxLength: column.charactermax || "",
               values: column.lov || "",
               isInitLoad: true,
-              isHavingError: false,
+              isNotValid: false,
               isHavingColumnName: true,
               isHavingDataType: true,
             };

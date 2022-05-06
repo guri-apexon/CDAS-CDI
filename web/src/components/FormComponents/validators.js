@@ -206,11 +206,15 @@ export const validateRow = (row) => {
     maxLength,
     dataType,
     columnName,
-    isHavingError,
+    isNotValid,
   } = row;
 
   const min = Number.parseInt(minLength, 10);
   const max = Number.parseInt(maxLength, 10);
+
+  if (isNotValid) {
+    return false;
+  }
 
   let check = isHavingColumnName;
   if (!dataType || !columnName) {
@@ -222,8 +226,6 @@ export const validateRow = (row) => {
     check = false;
   } else if (isHavingColumnName && !Number.isNaN(min) && !Number.isNaN(max)) {
     check = min < max;
-    // } else if (isHavingError) {
-    //   check = false;
   }
   return check;
 };

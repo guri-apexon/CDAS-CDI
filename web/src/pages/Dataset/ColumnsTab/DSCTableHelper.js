@@ -271,7 +271,6 @@ export const ActionCell = ({ row }) => {
     onRowDelete,
     editMode: eMode,
     isHavingDataType,
-    // isHavingError,
     onRowSave,
   } = row;
 
