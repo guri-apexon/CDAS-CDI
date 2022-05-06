@@ -130,26 +130,6 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
   try {
     var validate = [];
 
-    if (req.body.externalSystemName !== "CDI") {
-      if (req.location) {
-        let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url=$1;`;
-        let locationData = await DB.executeQuery(q1, [req.location]);
-        if (locationData.rows.length <= 0) {
-          return apiResponse.ErrorResponse(
-            res,
-            "This location's cnn_url is not exist in DB"
-          );
-        }
-      }
-      // var dataRes = insertValidation(req.body);
-      var dataRes = externalFunction.insertValidation(req.body);
-
-      if (dataRes.length > 0) {
-        validate.push(dataRes);
-        return apiResponse.ErrorResponse(res, validate);
-      }
-    }
-
     const uid = createUniqueID();
     let {
       active,
@@ -179,6 +159,31 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       protocolNumberStandard,
       serviceOwners,
     } = req.body;
+
+    if (req.body.externalSystemName !== "CDI") {
+      if (req.body.location) {
+        let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url=$1;`;
+        let locationData = await DB.executeQuery(q1, [req.body.location]);
+        if (locationData.rows.length > 0) {
+          src_loc_id = locationData.rows[0].src_loc_id;
+        } else {
+          return apiResponse.ErrorResponse(
+            res,
+            "This location's cnn_url is not exist in DB"
+          );
+        }
+      }
+      // var dataRes = insertValidation(req.body);
+      var dataRes = externalFunction.insertValidation(req.body);
+
+      if (dataRes.length > 0) {
+        validate.push(dataRes);
+        return apiResponse.ErrorResponse(res, validate);
+      }
+    }
+
+    console.log(src_loc_id);
+
     var ResponseBody = {};
     if (!type && dataStructure) type = dataStructure;
 
@@ -218,16 +223,14 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       }
       let q = `select vend_id from ${schemaName}.vendor where vend_nm='${vendorName}';`;
       let { rows } = await DB.executeQuery(q);
-      let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${location}';`;
-      let { rows: data } = await DB.executeQuery(q1);
-      // if (rows.length > 0 && data.length > 0) {
+
       DFBody = [
         uid,
         DFTestname,
         externalSystemName === "CDI" ? vend_id : rows[0].vend_id,
         type.toLowerCase() || null,
         description || null,
-        externalSystemName === "CDI" ? src_loc_id : data[0]?.src_loc_id || null,
+        src_loc_id || null,
         helper.stringToBoolean(active) ? 1 : 0,
         configured || 0,
         exptDtOfFirstProdFile || null,
