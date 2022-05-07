@@ -102,9 +102,6 @@ export const checkAlphaNumericFileName = (value) => {
   if (matched?.length > 0) {
     const allValidation = matched.map((e) => {
       const ele = e.substr(1, e.length - 2).toLowerCase();
-      if (!ele || ele === "-") {
-        return true;
-      }
       return !!(ele && ele.match(regexp2));
     });
     if (allValidation.some(inValid)) {
