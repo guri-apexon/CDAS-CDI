@@ -87,6 +87,10 @@ export const checkAlphaNumeric = (value, key = "") => {
   return false;
 };
 
+export const hasSpecialCHar = (str = "") => {
+  return /[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(str);
+};
+
 export const checkAlphaNumericFileName = (value) => {
   const regexp = /^[A-Za-z0-9-_.%@&()!#~;+,{}<>[\] \b]+$/;
   const regexp2 = /[^hmsdyinx%-\s]/gi;
@@ -98,6 +102,9 @@ export const checkAlphaNumericFileName = (value) => {
   if (matched?.length > 0) {
     const allValidation = matched.map((e) => {
       const ele = e.substr(1, e.length - 2).toLowerCase();
+      if (!ele || ele === "-") {
+        return true;
+      }
       return !!(ele && ele.match(regexp2));
     });
     if (allValidation.some(inValid)) {
@@ -201,7 +208,6 @@ export const removeUndefined = (arr) =>
 
 export const validateRow = (row) => {
   const {
-    isHavingColumnName,
     minLength,
     maxLength,
     dataType,
@@ -213,24 +219,18 @@ export const validateRow = (row) => {
 
   const min = Number.parseInt(minLength, 10);
   const max = Number.parseInt(maxLength, 10);
-
-  let check = isHavingColumnName;
-  if (!dataType || !columnName) {
-    check = false;
-  } else if (
-    (minLength || maxLength) &&
-    (Number.isNaN(min) || Number.isNaN(max))
+  if (
+    !dataType ||
+    !columnName ||
+    // (columnName && hasSpecialCHar(columnName)) ||
+    (dataType && format && checkFormat(format, "format", dataType)) ||
+    ((minLength || maxLength) &&
+      (Number.isNaN(min) ||
+        Number.isNaN(max) ||
+        !(!Number.isNaN(min) && !Number.isNaN(max) && min <= max))) ||
+    (primaryKey?.toLowerCase() === "yes" && required?.toLowerCase() === "no")
   ) {
-    check = false;
-  } else if (isHavingColumnName && !Number.isNaN(min) && !Number.isNaN(max)) {
-    check = min <= max;
-  } else if (
-    primaryKey?.toLowerCase() === "yes" &&
-    required?.toLowerCase() === "no"
-  ) {
-    check = false;
-  } else if (dataType && format) {
-    check = !checkFormat(format, "format", dataType);
+    return false;
   }
-  return check;
+  return true;
 };
