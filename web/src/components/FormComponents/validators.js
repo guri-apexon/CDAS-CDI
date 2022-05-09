@@ -100,11 +100,34 @@ export const checkAlphaNumericFileName = (value) => {
   const regexp1 = /\<(.*?)\>/g;
   const matched = value.match(regexp1);
 
+  const regYear = /y/g;
+  const regDay = /d/g;
+  const regSecond = /s/g;
+  const regMin = /i/g;
+  const regMonth = /m/g;
+
   const inValid = (element) => element === true;
 
   if (matched?.length > 0) {
     const allValidation = matched.map((e) => {
       const ele = e.substr(1, e.length - 2).toLowerCase();
+      if (
+        !ele ||
+        ele === "-" ||
+        (ele.includes("%") && !ele.endsWith("%")) ||
+        (ele.includes("d") && ele.match(regDay)?.length !== 2) ||
+        (ele.includes("y") && ele.match(regYear)?.length !== 4) ||
+        (ele.includes("s") && ele.match(regSecond)?.length !== 2) ||
+        (ele.includes("i") &&
+          (ele.match(regMin)?.length !== 1 ||
+            ele.match(regMonth)?.length !== 1))
+        // ||
+        // (ele.includes("m") &&
+        //   (ele.match(regMonth)?.length !== 2 ||
+        //     ele.match(regMonth)?.length !== 3))
+      ) {
+        return true;
+      }
       return !!(ele && ele.match(regexp2));
     });
     if (allValidation.some(inValid)) {
