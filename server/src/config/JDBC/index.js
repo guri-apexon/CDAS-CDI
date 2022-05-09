@@ -2,7 +2,10 @@ var JDBC = require("jdbc");
 var jinst = require("jdbc/lib/jinst");
 const path = require("path");
 const apiResponse = require("../../helpers/apiResponse");
-const { formatDBColumns } = require("../../helpers/customFunctions");
+const {
+  formatDBColumns,
+  formatDBTables,
+} = require("../../helpers/customFunctions");
 
 //driver imports
 const mysqlDriver = path.join(
@@ -42,7 +45,7 @@ module.exports = async (
   query,
   msg,
   res,
-  getColumns
+  callSrc = null
 ) => {
   var config = {
     url: connectionurl,
@@ -94,8 +97,10 @@ module.exports = async (
                     resultset.toObjArray(function (err, results) {
                       if (results?.length) {
                         let data = [];
-                        if (getColumns) {
+                        if (callSrc === "fetchColumns") {
                           data = formatDBColumns(results);
+                        } else if (callSrc === "fetchTables") {
+                          data = formatDBTables(results);
                         } else {
                           data = results;
                         }
