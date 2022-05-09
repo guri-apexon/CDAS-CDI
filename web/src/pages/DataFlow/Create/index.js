@@ -442,6 +442,7 @@ const DataFlow = ({
     pullVendorandLocation();
     dispatch(resetFTP());
     return () => {
+      messageContext.setCreateDfConfig({ currentStep: 0 });
       messageContext?.resetDataflow();
     };
   }, []);
