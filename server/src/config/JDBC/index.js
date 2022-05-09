@@ -47,83 +47,92 @@ module.exports = async (
   res,
   callSrc = null
 ) => {
-  var config = {
-    url: connectionurl,
-    user: username,
-    password: pass,
-    minpoolsize: 2,
-    maxpoolsize: 3,
-    drivername: drivername,
-  };
+  try {
+    var config = {
+      url: connectionurl,
+      user: username,
+      password: pass,
+      minpoolsize: 2,
+      maxpoolsize: 3,
+      drivername: drivername,
+    };
 
-  var jdbc = new JDBC(config);
-
-  jdbc.initialize(function (err) {
-    if (err) {
-      return apiResponse.ErrorResponse(res, "Location config is wrong");
-    }
-    jdbc.reserve(function (err, connObj) {
-      if (connObj) {
-        console.log("Using connection: " + connObj.uuid);
-        var conn = connObj.conn;
-
-        conn.createStatement(function (err, statement) {
-          if (err) {
-            console.log("err:createStatement:::: ", createStatement);
-            res.status(500).json({
-              status: 0,
-              message: "",
-              error: err,
-            });
-          } else {
-            statement.setFetchSize(100, function (err) {
-              if (err) {
-                console.log("err:setFetchSize:::: ", createStatement);
-                res.status(500).json({
-                  status: 0,
-                  message: "",
-                  error: err.message,
-                });
-              } else {
-                //Execute a query
-                statement.executeQuery(query, function (err, resultset) {
-                  if (err) {
-                    res.status(500).json({
-                      status: 0,
-                      message: "Something wrong with query",
-                      error: err,
-                    });
-                  } else {
-                    resultset.toObjArray(function (err, results) {
-                      if (results?.length) {
-                        let data = [];
-                        if (callSrc === "fetchColumns") {
-                          data = formatDBColumns(results);
-                        } else if (callSrc === "fetchTables") {
-                          data = formatDBTables(results);
-                        } else {
-                          data = results;
-                        }
-                        res.status(200).json({
-                          status: 1,
-                          message: msg,
-                          data,
-                        });
-                      } else {
-                        res.status(500).json({
-                          status: 0,
-                          message:
-                            "No data returned. Please reach out to admin.",
-                        });
-                      }
-                    });
-                  }
-                });
-              }
-            });
-          }
-        });
+    var jdbc = new JDBC(config);
+    jdbc.initialize(function (err) {
+      console.log("err:initialize:::: ", err);
+      if (err) {
+        return apiResponse.ErrorResponse(res, "Location config is wrong");
       }
+      jdbc.reserve(function (err, connObj) {
+        console.log("err:reserve:::: ", err);
+        if (connObj) {
+          console.log("Using connection: " + connObj.uuid);
+          var conn = connObj.conn;
+
+          conn.createStatement(function (err, statement) {
+            if (err) {
+              console.log("err:createStatement:::: ", createStatement);
+              res.status(500).json({
+                status: 0,
+                message: "",
+                error: err,
+              });
+            } else {
+              statement.setFetchSize(100, function (err) {
+                if (err) {
+                  console.log("err:setFetchSize:::: ", createStatement);
+                  res.status(500).json({
+                    status: 0,
+                    message: "",
+                    error: err.message,
+                  });
+                } else {
+                  //Execute a query
+                  statement.executeQuery(query, function (err, resultset) {
+                    if (err) {
+                      console.log("err:executeQuery:::: ", err, resultset);
+                      res.status(500).json({
+                        status: 0,
+                        message: "Something wrong with query",
+                        error: err,
+                      });
+                    } else {
+                      resultset.toObjArray(function (err, results) {
+                        if (results?.length) {
+                          let data = [];
+                          if (callSrc === "fetchColumns") {
+                            data = formatDBColumns(results);
+                          } else if (callSrc === "fetchTables") {
+                            data = formatDBTables(results);
+                          } else {
+                            data = results;
+                          }
+                          res.status(200).json({
+                            status: 1,
+                            message: msg,
+                            data,
+                          });
+                        } else {
+                          res.status(500).json({
+                            status: 0,
+                            message:
+                              "No data returned. Please reach out to admin.",
+                          });
+                        }
+                      });
+                    }
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
     });
-  });
+  } catch (err) {
+    return apiResponse.ErrorResponse(
+      res,
+      "Location config is wrong. Please select correct location to proceed."
+    );
+  }
 };
