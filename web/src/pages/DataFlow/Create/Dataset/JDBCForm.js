@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable consistent-return */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, {
@@ -23,6 +24,7 @@ import Switch from "apollo-react/components/Switch";
 import Select from "apollo-react/components/Select";
 import TextField from "apollo-react/components/TextField";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
+import ApolloProgress from "apollo-react/components/ApolloProgress";
 import Table from "apollo-react/components/Table";
 
 import dataSetsValidation from "../../../../components/FormComponents/DataSetsValidation";
@@ -341,6 +343,7 @@ const JDBCForm = forwardRef((props, ref) => {
   useEffect(() => {
     if (isCustomSQL === "No") {
       getJdbcTables();
+      setLoading(true);
     }
   }, [isCustomSQL]);
 
@@ -354,6 +357,7 @@ const JDBCForm = forwardRef((props, ref) => {
   useEffect(() => {
     if (error) {
       messageContext.showErrorMessage(error);
+      setLoading(false);
       setTimeout(() => {
         dispatch(hideErrorMessage());
       }, 5000);
@@ -367,6 +371,10 @@ const JDBCForm = forwardRef((props, ref) => {
       getJdbcTables();
     }
   }, [locationDetail]);
+
+  useEffect(() => {
+    setLoading(false);
+  }, [sqlTables]);
 
   useEffect(() => {
     if (initialValue) {
@@ -474,7 +482,7 @@ const JDBCForm = forwardRef((props, ref) => {
               <MenuItem value={type}>{type}</MenuItem>
             ))}
           </Select>
-          {isCustomSQL === "Yes" && (
+          {isCustomSQL === "Yes" ? (
             <div style={{ display: "flex", alignItems: "flex-end" }}>
               <TextField
                 fullWidth
@@ -497,8 +505,9 @@ const JDBCForm = forwardRef((props, ref) => {
                 Preview SQL
               </Button>
             </div>
-          )}
-          {isCustomSQL === "No" && (
+          ) : loading ? (
+            <ApolloProgress className="center-loader" />
+          ) : (
             <>
               <Autocomplete
                 name="tableName"
