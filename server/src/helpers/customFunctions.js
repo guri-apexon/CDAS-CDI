@@ -168,3 +168,15 @@ exports.createCustomSql = (clname, tableName, condition) => {
 
   return sqlQuery;
 };
+exports.formatDBColumns = (data) => {
+  if (!data) return [];
+  return data?.map((d) => {
+    return {
+      columnName: d.columnName || d.Field,
+      datatype: d.datatype || d.Type,
+      primaryKey: d.primaryKey || d.Key === "PRI",
+      required: d.required || d.Null === "NO",
+      unique: d.unique || false,
+    };
+  });
+};
