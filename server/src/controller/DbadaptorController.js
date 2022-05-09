@@ -1,9 +1,8 @@
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const jdbc = require("../config/JDBC");
-const { response } = require("express");
 
-exports.listtables = async (res, req) => {
+exports.listTables = async (req, res) => {
   try {
     let {
       locationType,
@@ -12,39 +11,26 @@ exports.listtables = async (res, req) => {
       connectionUrl,
       driverName,
       // externalSystem,
-    } = req.req.body;
+    } = req.body;
+
     let q = ``;
     switch (locationType?.toLowerCase()) {
       case "oracle":
         q = `SELECT table_name as "tableName" FROM all_tables FETCH FIRST 10 ROWS ONLY`;
         break;
       case "sqlserver":
-        q = `SELECT name as "tableName" FROM sys.Tables LIMIT 10`;
-        break;
       case "sql server":
         q = `SELECT name as "tableName" FROM sys.Tables LIMIT 10`;
         break;
       case "hive cdh":
-        q = `show tables`;
-        break;
       case "hivecdh":
-        q = `show tables`;
-        break;
       case "hivecdp":
-        q = `show tables`;
-        break;
       case "hive cdp":
         q = `show tables`;
         break;
       case "mysql":
-        q = `SELECT TABLE_NAME as "tableName" FROM INFORMATION_SCHEMA.TABLES`;
-        break;
       case "my sql":
-        q = `SELECT TABLE_NAME as "tableName" FROM INFORMATION_SCHEMA.TABLES`;
-        break;
       case "postgresql":
-        q = `SELECT table_name as "tableName" FROM information_schema.tables LIMIT 10`;
-        break;
       case "postgre sql":
         q = `SELECT table_name as "tableName" FROM information_schema.tables LIMIT 10`;
         break;
@@ -60,18 +46,18 @@ exports.listtables = async (res, req) => {
       driverName,
       q,
       "Connectivity Successful",
-      res.res
+      res,
+      "fetchTables"
     );
   } catch (error) {
-    Logger.error("catch :listtables");
+    Logger.error("catch :listTables");
     Logger.error(error);
     return apiResponse.ErrorResponse(res, error);
   }
 };
 
-exports.tablecolumns = async (res, req) => {
+exports.tablecolumns = async (req, res) => {
   try {
-    let responseBody = {};
     let {
       locationType,
       tableName,
@@ -80,7 +66,7 @@ exports.tablecolumns = async (res, req) => {
       connectionUrl,
       driverName,
       externalSystem,
-    } = req.req.body;
+    } = req.body;
     let q = ``;
     if (!tableName) {
       return apiResponse.ErrorResponse(
@@ -153,13 +139,7 @@ exports.tablecolumns = async (res, req) => {
         break;
 
       case "hive cdp":
-        q = `describe ${tableName}`;
-        break;
-
       case "hive cdh":
-        q = `describe ${tableName}`;
-        break;
-
       case "impala":
         q = `describe ${tableName}`;
         break;
@@ -176,12 +156,12 @@ exports.tablecolumns = async (res, req) => {
       driverName,
       q,
       "Successful Execution",
-      res.res,
-      true
+      res,
+      "fetchColumns"
     );
   } catch (error) {
     console.log(error);
-    Logger.error("catch :listtables");
+    Logger.error("catch :listTables");
     Logger.error(error);
     return apiResponse.ErrorResponse(res, err);
   }

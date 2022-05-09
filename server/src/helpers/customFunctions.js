@@ -180,3 +180,11 @@ exports.formatDBColumns = (data) => {
     };
   });
 };
+exports.formatDBTables = (data) => {
+  if (!data) return [];
+  return data?.map((d) => {
+    return {
+      tableName: d.tableName || d.tab_name || "",
+    };
+  });
+};

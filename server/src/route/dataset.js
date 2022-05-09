@@ -13,7 +13,7 @@ router.post("/getVLCData", DatasetController.getVLCData);
 // router.post("/getTables", DatasetController.getTables);
 // router.post("/getColumns", DatasetController.getColumns);
 router.post("/previewSQL", DatasetController.previewSql);
-router.post("/getTables", DbadapatorController.listtables);
+router.post("/getTables", DbadapatorController.listTables);
 router.post("/getColumns", DbadapatorController.tablecolumns);
 router.get(
   "/ingestion-report/properties/:datasetid",

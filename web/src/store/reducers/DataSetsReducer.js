@@ -324,21 +324,12 @@ const DataFlowReducer = (state = initialState, action) =>
       case FETCH_SQL_TABLES_SUCCESS:
         newState.loading = false;
         if (action.payload.locationType === "Hive CDH") {
-          newState.sqlTables = action.sqlTables
-            .map((e) => ({
-              tableName: e.tab_name,
-            }))
-            .slice(0, 20);
+          newState.sqlTables = action.sqlTables.slice(0, 20);
         } else if (action.payload.locationType === "Hive CDP") {
-          newState.sqlTables = action.sqlTables
-            .map((e) => ({
-              tableName: e.tab_name,
-            }))
-            .slice(0, 20);
+          newState.sqlTables = action.sqlTables.slice(0, 20);
         } else {
           newState.sqlTables = action.sqlTables;
         }
-
         break;
       case GET_PREVIEW_SQL:
         newState.loading = true;
