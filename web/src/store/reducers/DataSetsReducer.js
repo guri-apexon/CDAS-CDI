@@ -363,6 +363,8 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.sqlColumns = action.sqlColumns.map((e) => {
           e.dataType = dateTypeForJDBC(e.datatype);
           e.primaryKey = parseBool(e.primaryKey || "false");
+          e.required = parseBool(e.required || "false");
+          e.unique = parseBool(e.unique || "false");
           return e;
         });
         newState.sqlColumns = action.sqlColumns;

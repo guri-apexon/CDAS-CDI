@@ -40,6 +40,7 @@ import {
   scrollIntoView,
   YesNo,
 } from "../../../../utils";
+import { checkfilterCondition } from "../../../../components/FormComponents/validators";
 
 const styles = {
   paper: {
@@ -113,6 +114,7 @@ const JDBCForm = forwardRef((props, ref) => {
   const [dataType, setDataType] = useState("Cumulative");
   const [offsetColumn, setOffsetColumn] = useState(null);
   const [triggeredSqlData, setTriggerSqlData] = useState(false);
+  const [filterError, setFilterError] = useState(false);
   const messageContext = useContext(MessageContext);
 
   const {
@@ -326,6 +328,7 @@ const JDBCForm = forwardRef((props, ref) => {
     } else if (name === "sQLQuery") {
       setSQLQuery(value);
     } else if (name === "filterCondition") {
+      setFilterError(checkfilterCondition(value));
       setFilterCondition(value);
     }
     resetDfStep();
@@ -532,6 +535,8 @@ const JDBCForm = forwardRef((props, ref) => {
                 sizeAdjustable
                 inputProps={{ maxLength: 255 }}
                 label="Filter Condition"
+                error={!!filterError}
+                helperText={filterError}
               />
               <RadioGroup
                 name="dataType"
