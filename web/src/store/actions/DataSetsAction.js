@@ -14,6 +14,7 @@ import {
   RESET_JDBC_FORM,
   UPDATE_COLUMNS_DATA,
   UPDATE_DS_STATUS,
+  GET_LOCATION_DETAIL,
   STORE_DATASET_COLUMNS_SUCCESS,
   STORE_DATASET_COLUMNS_FAILURE,
 } from "../../constants";
@@ -109,23 +110,24 @@ export const getDatasetColumns = (dsId) => {
   };
 };
 
-export const getSQLTables = () => {
+export const getSQLTables = (payload) => {
   return {
     type: GET_SQL_TABLES,
+    payload,
   };
 };
 
-export const getSQLColumns = (table) => {
+export const getSQLColumns = (payload) => {
   return {
     type: GET_SQL_COLUMNS,
-    table,
+    payload,
   };
 };
 
-export const getPreviewSQL = (query) => {
+export const getPreviewSQL = (payload) => {
   return {
     type: GET_PREVIEW_SQL,
-    query,
+    payload,
   };
 };
 
@@ -145,6 +147,13 @@ export const updateDSStatus = (status) => {
   return {
     type: UPDATE_DS_STATUS,
     status,
+  };
+};
+
+export const getLocationDetails = (id) => {
+  return {
+    type: GET_LOCATION_DETAIL,
+    id,
   };
 };
 export const columnsCreated = (resp) => {
