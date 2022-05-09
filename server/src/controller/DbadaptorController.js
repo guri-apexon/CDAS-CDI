@@ -37,10 +37,10 @@ exports.listtables = async (res, req) => {
         q = `show tables`;
         break;
       case "mysql":
-        q = `show tables as "tableName" LIMIT 10`;
+        q = `SELECT TABLE_NAME as "tableName" FROM INFORMATION_SCHEMA.TABLES`;
         break;
       case "my sql":
-        q = `show tables as "tableName" LIMIT 10`;
+        q = `SELECT TABLE_NAME as "tableName" FROM INFORMATION_SCHEMA.TABLES`;
         break;
       case "postgresql":
         q = `SELECT table_name as "tableName" FROM information_schema.tables LIMIT 10`;
@@ -176,7 +176,8 @@ exports.tablecolumns = async (res, req) => {
       driverName,
       q,
       "Successful Execution",
-      res.res
+      res.res,
+      true
     );
   } catch (error) {
     console.log(error);

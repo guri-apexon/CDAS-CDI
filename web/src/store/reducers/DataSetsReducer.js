@@ -329,15 +329,15 @@ const DataFlowReducer = (state = initialState, action) =>
               tableName: e.tab_name,
             }))
             .slice(0, 20);
-        }
-        if (action.payload.locationType === "Hive CDP") {
+        } else if (action.payload.locationType === "Hive CDP") {
           newState.sqlTables = action.sqlTables
             .map((e) => ({
               tableName: e.tab_name,
             }))
             .slice(0, 20);
+        } else {
+          newState.sqlTables = action.sqlTables;
         }
-        newState.sqlTables = action.sqlTables;
 
         break;
       case GET_PREVIEW_SQL:
