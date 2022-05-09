@@ -107,6 +107,8 @@
   .lov-edit-mode {
     textarea {
       max-width: 340px;
+      min-height: 100px;
+      max-height: 300px;
     }
   }
   .lov-view-mode {

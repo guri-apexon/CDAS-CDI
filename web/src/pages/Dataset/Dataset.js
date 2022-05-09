@@ -27,6 +27,7 @@ import {
   resetFTP,
   resetJDBC,
   getSQLColumns,
+  getLocationDetails,
 } from "../../store/actions/DataSetsAction";
 import { updatePanel } from "../../store/actions/DataPackageAction";
 import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
@@ -181,6 +182,7 @@ const Dataset = () => {
 
   useEffect(() => {
     setValue(0);
+    setColumnsActive(false);
   }, [params]);
 
   useEffect(() => {
@@ -217,6 +219,8 @@ const Dataset = () => {
           // dispatch(getSQLColumns(tableName));
           setColumnsActive(true);
           setValue(1);
+        } else {
+          setColumnsActive(false);
         }
       }, 2000);
     }
@@ -229,9 +233,11 @@ const Dataset = () => {
       } else if (isCustomSQL === "No") {
         // dispatch(getSQLColumns(tableName));
         setColumnsActive(true);
+      } else {
+        setColumnsActive(false);
       }
     }, 2000);
-  }, [isDatasetFetched]);
+  }, [isDatasetFetched, locationType]);
 
   const goToDataflow = () => {
     if (dfId) {
@@ -275,6 +281,7 @@ const Dataset = () => {
   };
 
   const onSubmit = (formValue) => {
+    // eslint-disable-next-line consistent-return
     setTimeout(() => {
       const data = {
         ...formValue,
@@ -285,6 +292,13 @@ const Dataset = () => {
         dfId,
         studyId,
       };
+      console.log("formValue", formValue);
+      if (formValue?.sQLQuery?.includes("*")) {
+        messageContext.showErrorMessage(
+          `Please remove * from query to proceed.`
+        );
+        return false;
+      }
       if (data.datasetid) {
         dispatch(updateDatasetData(data));
       } else {
@@ -370,7 +384,8 @@ const Dataset = () => {
                       <Tab
                         label={tab}
                         disabled={
-                          !columnsActive && tab === ("Dataset Columns" || "VLC")
+                          (!columnsActive && tab === "Dataset Columns") ||
+                          (!columnsActive && tab === "VLC")
                         }
                       />
                     ))}

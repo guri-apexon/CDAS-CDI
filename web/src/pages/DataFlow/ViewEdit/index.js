@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
-// import CssBaseline from "@material-ui/core/CssBaseline";
 import Panel from "apollo-react/components/Panel";
 import { useDispatch, useSelector, connect } from "react-redux";
 import { submit, reset, getFormValues } from "redux-form";
@@ -25,6 +24,8 @@ import {
   getLocationByType,
   getDataFlowDetail,
 } from "../../../store/actions/DataFlowAction";
+
+import { getLocationDetails } from "../../../store/actions/DataSetsAction";
 
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
@@ -123,6 +124,15 @@ const DataFlow = ({ FormValues, dashboard }) => {
       dispatch(getLocationByType(locType));
     }
   }, [createTriggered]);
+
+  useEffect(() => {
+    if (
+      selectedLocation?.src_loc_id &&
+      selectedLocation?.loc_typ !== ("SFTP" || "FTPS")
+    ) {
+      dispatch(getLocationDetails(selectedLocation?.src_loc_id));
+    }
+  }, [selectedLocation]);
 
   useEffect(() => {
     if (locType) dispatch(getLocationByType(locType));

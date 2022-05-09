@@ -32,6 +32,9 @@ import {
   FETCH_PREVIEW_SQL_FAILURE,
   FETCH_PREVIEW_SQL_SUCCESS,
   COLUMNSAPI,
+  LOCATIONAPI,
+  FETCH_LOCATION_DETAIL_FAILURE,
+  FETCH_LOCATION_DETAIL_SUCCESS,
 } from "../../constants";
 
 export function* fetchDataKindData(action = null) {
@@ -69,52 +72,57 @@ export function* fetchVLCData() {
   }
 }
 
-export function* fetchSQLTables() {
+export function* fetchSQLTables(action) {
   try {
-    const fetchSQLTable = yield call(
-      axios.post,
-      `${baseURL}/${SQLTABLESAPI}`,
-      {}
-    );
-    // console.log("fetchSQLTables", fetchSQLTables);
+    const fetchSQLTable = yield call(axios.post, `${baseURL}/${SQLTABLESAPI}`, {
+      ...action.payload,
+    });
     yield put({
       type: FETCH_SQL_TABLES_SUCCESS,
       sqlTables: fetchSQLTable.data.data,
+      payload: action.payload,
     });
   } catch (e) {
-    yield put({ type: FETCH_SQL_TABLES_FAILURE, message: e.message });
+    yield put({
+      type: FETCH_SQL_TABLES_FAILURE,
+      message: e.response?.data?.message || e.message,
+    });
   }
 }
 
 export function* fetchSQLColumns(action) {
   try {
     const getColumns = yield call(axios.post, `${baseURL}/${SQLCOLUMNSAPI}`, {
-      tableName: action.tableName,
+      ...action.payload,
     });
-    // console.log("fetchSQLColumns", getColumns);
     yield put({
       type: FETCH_SQL_COLUMNS_SUCCESS,
       sqlColumns: getColumns.data.data,
+      payload: action.payload,
     });
   } catch (e) {
-    yield put({ type: FETCH_SQL_COLUMNS_FAILURE, message: e.message });
+    yield put({
+      type: FETCH_SQL_COLUMNS_FAILURE,
+      message: e.response?.data?.message || e.message,
+    });
   }
 }
 
 export function* fetchPreviewSQL(action) {
   try {
-    const fetchPreviewSQLData = yield call(
-      axios.post,
-      `${baseURL}/${PREVIEWSQLAPI}`,
-      { query: action.query }
-    );
-    // console.log("fetchPreviewSQLData", fetchPreviewSQLData);
+    const fetchSqlData = yield call(axios.post, `${baseURL}/${PREVIEWSQLAPI}`, {
+      ...action.payload,
+    });
     yield put({
       type: FETCH_PREVIEW_SQL_SUCCESS,
-      previewSQL: fetchPreviewSQLData.data.data,
+      previewSQL: fetchSqlData.data.data,
+      payload: action.payload,
     });
   } catch (e) {
-    yield put({ type: FETCH_PREVIEW_SQL_FAILURE, message: e.message });
+    yield put({
+      type: FETCH_PREVIEW_SQL_FAILURE,
+      message: e.response?.data?.message || e.message,
+    });
   }
 }
 
@@ -190,7 +198,7 @@ export function* updateDataset(action) {
     );
     yield put({
       type: UPDATE_DATASET_SUCCESS,
-      update: saveData.data.data,
+      dsUpdate: saveData.data.data,
       values: action.values,
     });
   } catch (e) {
@@ -242,6 +250,27 @@ export function* updateDatasetColumns(action) {
       type: UPDATE_COLUMNS_FAILURE,
       message: errText,
       values: action.values,
+    });
+  }
+}
+
+export function* getLocationDetails(action) {
+  try {
+    const getData = yield call(
+      axios.get,
+      `${baseURL}/${LOCATIONAPI}/detail/${action.id}`
+    );
+    yield put({
+      type: FETCH_LOCATION_DETAIL_SUCCESS,
+      locationDetail: getData.data.data,
+    });
+  } catch (e) {
+    const errText = e.response?.data?.message
+      ? e.response.data.message
+      : e.message;
+    yield put({
+      type: FETCH_LOCATION_DETAIL_FAILURE,
+      message: errText,
     });
   }
 }

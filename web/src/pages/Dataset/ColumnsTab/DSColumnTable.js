@@ -452,6 +452,7 @@ export default function DSColumnTable({
   };
 
   const onSaveAll = async () => {
+    setDisableSaveAll(true);
     const removeSpaces = _.map(editedRows, (e) => {
       const d = {
         ...e,

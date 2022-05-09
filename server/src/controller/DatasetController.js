@@ -1,4 +1,5 @@
 const DB = require("../config/db");
+const jdbc = require("../config/JDBC");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
@@ -44,7 +45,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
       values.clinicalDataType[0] ? values.clinicalDataType[0] : null,
       values.isCustomSQL,
       sqlQuery,
-      values.dataType == "Incremental" ? "Y" : "N" || null,
+      values.dataType === "Incremental" ? "Y" : "N" || null,
       values.tableName || null,
       values.offsetColumn || null,
       values.filterCondition || null,
@@ -53,7 +54,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     ];
 
     const conf_Data = {
-      datasetId: dsId,
+      datasetid: dsId,
       datapackageid: dpId,
       mnemonic: values.datasetName,
       active: values.active === true ? 1 : 0,
@@ -62,7 +63,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
         : null,
       customsql_yn: values.isCustomSQL,
       customsql: values.sQLQuery || null,
-      incremental: values.dataType == "Incremental" ? "Y" : "N" || null,
+      incremental: values.dataType === "Incremental" ? "Y" : "N" || null,
       tbl_nm: values.tableName || null,
       offsetcolumn: values.offsetColumn || null,
       dataset_fltr: values.filterCondition || null,
@@ -92,7 +93,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     );
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :storeDataset");
+    Logger.error("catch: create SQL Dataset");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
@@ -124,7 +125,7 @@ exports.saveDatasetData = async (req, res) => {
 
     let passwordStatus = "No";
 
-    if (values.filePwd) {
+    if (values.filePwd !== "" || values.filePwd !== undefined) {
       passwordStatus = "Yes";
       try {
         await helper.writeVaultData(`${dfId}/${dpId}/${dsId}`, {
@@ -165,7 +166,7 @@ exports.saveDatasetData = async (req, res) => {
     ];
 
     const conf_Data = {
-      datasetId: dsId,
+      datasetid: dsId,
       datapackageid: dpId,
       mnemonic: values.datasetName,
       type: values.fileType,
@@ -212,7 +213,7 @@ exports.saveDatasetData = async (req, res) => {
   }
 };
 
-async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
+async function updateSQLDataset(res, values) {
   try {
     Logger.info({ message: "update SQL Dataset" });
     const curDate = helper.getCurrentTime();
@@ -226,25 +227,35 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
       dataType,
       offsetColumn,
       sQLQuery,
+      dfId,
+      userId,
+      dpId,
+      datasetid,
     } = values;
-    let sqlQuery = "";
+    let updatedSqlQuery = "";
     if (isCustomSQL === "No") {
       const splitted = sQLQuery.split("from");
       if (filterCondition) {
-        sqlQuery = `${splitted[0].trim()} from ${tableName} ${filterCondition}`;
+        if (!filterCondition?.toLowerCase()?.includes("where ")) {
+          return apiResponse.ErrorResponse(
+            res,
+            "Please correct your filter condition"
+          );
+        }
+        updatedSqlQuery = `${splitted[0].trim()} from ${tableName} ${filterCondition}`;
       } else {
-        sqlQuery = `${splitted[0].trim()} from ${tableName} where 1=1`;
+        updatedSqlQuery = `${splitted[0].trim()} from ${tableName} where 1=1`;
       }
     } else {
-      sqlQuery = sQLQuery;
+      updatedSqlQuery = sQLQuery;
     }
 
     const body = [
       datasetName,
-      active === true ? 1 : 0,
+      helper.stringToBoolean(active) ? 1 : 0,
       clinicalDataType ? clinicalDataType[0] : null,
       isCustomSQL,
-      sqlQuery,
+      updatedSqlQuery,
       tableName || null,
       filterCondition || null,
       dataType == "Incremental" ? "Y" : "N" || null,
@@ -252,10 +263,15 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
       curDate,
       datasetid,
     ];
-    const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
-    dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const insertQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $9, incremental = $8, updt_tm=$10 where datasetid = $11`;
+    const updateDS = await DB.executeQuery(
+      `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $9, incremental = $8, updt_tm=$10 where datasetid = $11 returning *`,
+      body
+    );
+
+    if (!updateDS?.rowCount) {
+      return apiResponse.ErrorResponse(res, "Something went wrong on update");
+    }
 
     const requestData = {
       datasetid: datasetid,
@@ -271,12 +287,11 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
       incremental: values.dataType == "Incremental" ? "Y" : "N" || null,
     };
 
-    const jsonData = JSON.stringify(requestData);
+    const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
+    dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
 
     const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
     const oldData = tempData[0];
-
-    const data = await DB.executeQuery(updateQuery, body);
 
     const diffObj = helper.getdiffKeys(requestData, oldData);
     var idObj = {
@@ -300,12 +315,15 @@ async function updateSQLDataset(res, values, dfId, userId, dpId, datasetid) {
       if (!historyVersion) throw new Error("History not updated");
     }
 
-    return apiResponse.successResponseWithData(res, "Operation success", data);
+    return apiResponse.successResponseWithData(
+      res,
+      "Dataset updated successfully",
+      updateDS.rows[0]
+    );
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :update SQL Dataset");
     Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    return apiResponse.ErrorResponse(res, err?.message || "Something wrong");
   }
 }
 
@@ -326,17 +344,16 @@ exports.updateDatasetData = async (req, res) => {
     headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, 
     incremental from ${schemaName}.dataset where datasetid = $1`;
 
-    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrow = $19, footerrow = $20, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $21 `;
     if (isExist) {
       return apiResponse.ErrorResponse(
         res,
         `Mnemonic ${datasetName} is not unique.`
       );
     }
-
-    if (values.locationType.toLowerCase() === "jdbc") {
-      return updateSQLDataset(res, values, dfId, userId, dpId, datasetid);
+    if (!helper.isSftp(values.locationType)) {
+      return updateSQLDataset(res, values);
     }
+    // For SFTP Datasets update
     const incremental = values.loadType === "Incremental" ? "Y" : "N";
 
     var requestData = {
@@ -375,6 +392,7 @@ exports.updateDatasetData = async (req, res) => {
         password: values.filePwd,
       });
     }
+
     const body = [
       values.datasetName,
       values.fileType || null,
@@ -398,7 +416,9 @@ exports.updateDatasetData = async (req, res) => {
       values.footerRowNumber > 0 ? 1 : 0,
     ];
 
-    const inset = await DB.executeQuery(updateQuery, [
+    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrow = $19, footerrow = $20, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $21 `;
+
+    const updateDS = await DB.executeQuery(updateQuery, [
       ...body,
       values.datasetid,
     ]);
@@ -430,13 +450,17 @@ exports.updateDatasetData = async (req, res) => {
       if (!historyVersion) throw new Error("History not updated");
     }
 
-    return apiResponse.successResponseWithData(res, "Operation success", inset);
+    return apiResponse.successResponseWithData(
+      res,
+      "Dataset updated successfully",
+      updateDS.rows[0]
+    );
   } catch (err) {
-    //throw error in json response with status 500.
-    console.log(err, "err");
-    Logger.error("catch :storeDataset");
     Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    return apiResponse.ErrorResponse(
+      res,
+      err.message || "Something went wrong"
+    );
   }
 };
 
@@ -506,25 +530,25 @@ exports.getDatasetDetail = async (req, res) => {
   }
 };
 
-exports.previewSQL = async (req, res) => {
-  try {
-    Logger.info({ message: "previewSQL" });
+// exports.previewSQL = async (req, res) => {
+//   try {
+//     Logger.info({ message: "previewSQL" });
 
-    const queryData = previewSQLMock.queryData;
-    return apiResponse.successResponseWithData(
-      res,
-      "Operation success",
-      queryData
-    );
-  } catch (err) {
-    //throw error in json response with status 500.
-    console.log(err);
-    Logger.error("catch :previewSQL");
-    Logger.error(err);
+//     const queryData = previewSQLMock.queryData;
+//     return apiResponse.successResponseWithData(
+//       res,
+//       "Operation success",
+//       queryData
+//     );
+//   } catch (err) {
+//     //throw error in json response with status 500.
+//     console.log(err);
+//     Logger.error("catch :previewSQL");
+//     Logger.error(err);
 
-    return apiResponse.ErrorResponse(res, err);
-  }
-};
+//     return apiResponse.ErrorResponse(res, err);
+//   }
+// };
 
 exports.getTables = async (req, res) => {
   try {
@@ -542,6 +566,55 @@ exports.getTables = async (req, res) => {
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.previewSql = async (req, res) => {
+  try {
+    // let _locationType = "MySQL";
+    // let responseBody = {};
+    let recordsCount = 10;
+    let {
+      locationType,
+      // tableName,
+      // columnCount,
+      customQuery,
+      connectionPassword,
+      connectionUserName,
+      connectionUrl,
+      customSql,
+      driverName,
+    } = req.body;
+    // if (locationType === _locationType) {
+    if (customQuery === "Yes") {
+      //get connection
+      let q = customSql;
+      switch (locationType?.toLowerCase()) {
+        case "oracle":
+          q = `${q} FETCH FIRST ${recordsCount} ROWS ONLY`;
+          break;
+        default:
+          q = `${q} LIMIT ${recordsCount};`;
+          break;
+      }
+      await jdbc(
+        connectionUserName,
+        connectionPassword,
+        connectionUrl,
+        driverName,
+        q,
+        "query executed successfully.",
+        res
+      );
+    } else {
+      return apiResponse.ErrorResponse(res, "Custom query is not true");
+    }
+  } catch (error) {
+    Logger.error(error);
+    return apiResponse.ErrorResponse(
+      res,
+      error.message || "Catch: Something went wrong"
+    );
   }
 };
 

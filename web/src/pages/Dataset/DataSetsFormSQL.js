@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState, useContext } from "react";
 import compose from "@hypnosphi/recompose/compose";
-import { connect, useDispatch } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import { reduxForm, getFormValues, formValueSelector } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
@@ -17,6 +17,7 @@ import {
   ReduxFormSwitch,
   ReduxFormSelect,
   ReduxFormTextField,
+  ReduxFormAutocompleteV2,
   ReduxFormMultiSelect,
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
@@ -44,6 +45,8 @@ const DataSetsFormBase = (props) => {
     classes,
     datakind,
     formValues,
+    change,
+    initialValues,
     previewSQL,
     sqlTables,
     sqlColumns,
@@ -55,53 +58,86 @@ const DataSetsFormBase = (props) => {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const [showPreview, setShowPreview] = useState(false);
+  const dataSets = useSelector((state) => state.dataSets);
   const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
-  const handlePreview = () => {
-    setShowPreview(true);
-    dispatch(getPreviewSQL(formValues.sQLQuery));
-  };
+  // const [offsetColsRender, setOffsetColsRender] = useState(0);
+  const { locationDetail } = dataSets;
+  const [selectedOffsetColumns, setSelectedOffsetColumns] = useState(null);
+  const [sqlColumnsArr, setSqlColumnsArr] = useState([]);
 
-  // useEffect(() => {
-  //   dispatch(getSQLColumns(formValues.tableName));
-  // }, [formValues.tableName]);
+  const onChangeOffsetColumn = (obj) => {
+    setSelectedOffsetColumns(obj);
+    change("offsetColumn", obj.value);
+  };
+  const changeTableName = () => {
+    change("offsetColumn", null);
+    setSelectedOffsetColumns(null);
+  };
+  useEffect(() => {
+    if (sqlColumns.length) {
+      const filtered = sqlColumns
+        .filter((x) => ["numeric", "date"].includes(x.dataType?.toLowerCase()))
+        .map((e) => ({
+          label: e.columnName,
+          value: e.columnName,
+        }));
+      setSqlColumnsArr(filtered);
+      const selected = filtered.find(
+        (x) => x.value === initialValues.offsetColumn
+      );
+      if (selected) {
+        setSelectedOffsetColumns(selected);
+      } else {
+        setSelectedOffsetColumns(null);
+      }
+    }
+  }, [sqlColumns]);
 
   useEffect(() => {
     if (formValues && ["Yes", "No"].includes(formValues)) {
       onChange(formValues);
     }
     if (formValues.isCustomSQL === "No") {
-      dispatch(getSQLTables("test"));
+      dispatch(
+        getSQLTables({
+          ...locationDetail,
+        })
+      );
       setShowPreview(false);
     }
   }, [formValues.isCustomSQL]);
 
-  useEffect(() => {}, [showPreview]);
-
-  const locationChange = () => {
-    messageContext.showErrorMessage(
-      `No Tables Returned. Pls reach out to admins`
+  useEffect(() => {
+    console.log("formValues.tableName::::", formValues.tableName);
+    setSqlColumnsArr([]);
+    dispatch(
+      getSQLColumns({
+        ...locationDetail,
+        tableName: formValues.tableName,
+      })
     );
-  };
+  }, [formValues.tableName]);
 
-  const queryCompilationError = () => {
-    messageContext.showErrorMessage(
-      `Query Compilation Error, check query syntax.`
-    );
-  };
-
-  const noRecordsFound = () => {
-    messageContext.showErrorMessage(`No records found.`);
-  };
-
-  const notAllowIncremental = () => {
-    messageContext.showErrorMessage(
-      `Cannot switch to Incremental as the dataset that has been synched does not have any primary key defined`
-    );
-  };
-
-  const firstSyncHappened = () => {
-    messageContext.showErrorMessage(
-      `Custom SQL Query setting cannot be changed after the dataset has been sync'd`
+  // eslint-disable-next-line consistent-return
+  const handlePreview = () => {
+    if (!formValues?.sQLQuery || formValues?.sQLQuery === "") {
+      messageContext.showErrorMessage(`Please add your query to proceed.`);
+      return false;
+    }
+    if (formValues?.sQLQuery?.includes("*")) {
+      messageContext.showErrorMessage(`Please remove * from query to proceed.`);
+      return false;
+    }
+    setShowPreview(true);
+    dispatch(
+      getPreviewSQL({
+        ...locationDetail,
+        tableName: null,
+        columnDefinition: null,
+        columnCount: null,
+        customSql: formValues.sQLQuery,
+        customQuery: formValues.isCustomSQL,
+      })
     );
   };
 
@@ -113,6 +149,16 @@ const DataSetsFormBase = (props) => {
     if (!renderClinicalDataType)
       setTimeout(() => setRenderClinicalDataType(true), 50);
   }, [renderClinicalDataType]);
+
+  useEffect(() => {
+    if (sqlTables.length) {
+      // if (!sqlTables.find((x) => x.tableName === formValues.tableName)) {
+      //   change("offsetColumn", null);
+      //   change("tableName", null);
+      //   setSelectedOffsetColumns(null);
+      // }
+    }
+  }, [sqlTables]);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -202,31 +248,21 @@ const DataSetsFormBase = (props) => {
           )}
           {formValues.isCustomSQL === "No" && (
             <>
-              {/* <ReduxFormSelect
+              <ReduxFormSelect
                 name="tableName"
                 id="tableName"
                 label="Table Name"
+                fullWidth
                 size="small"
                 style={{ width: 300, display: "block" }}
                 canDeselect={false}
                 disabled={prodLock}
+                onChange={changeTableName}
               >
                 {sqlTables?.map((e) => (
                   <MenuItem value={e.tableName}>{e.tableName}</MenuItem>
                 ))}
-              </ReduxFormSelect> */}
-              <ReduxFormTextField
-                fullWidth
-                name="tableName"
-                id="tableName"
-                style={{ width: "70%", display: "flex" }}
-                size="small"
-                minHeight={32}
-                singleline
-                inputProps={{ maxLength: 255 }}
-                label="Table Name"
-                disabled={prodLock}
-              />
+              </ReduxFormSelect>
               <ReduxFormTextField
                 fullWidth
                 name="filterCondition"
@@ -250,34 +286,30 @@ const DataSetsFormBase = (props) => {
                 <Radio value="Incremental" label="Incremental" />
               </ReduxFormRadioGroup>
               {formValues.dataType === "Incremental" && (
-                // <ReduxFormMultiSelect
-                //   name="offsetColumn"
-                //   id="offsetColumn"
-                //   label="Offset Column"
-                //   size="small"
-                //   canDeselect={true}
-                //   disabled={prodLock}
-                // >
-                //   {sqlColumns?.map((e) => (
-                //     <MenuItem value={e.columnName}>{e.columnName}</MenuItem>
-                //   ))}
-                // </ReduxFormMultiSelect>
-                <ReduxFormTextField
-                  fullWidth
+                <ReduxFormAutocompleteV2
                   name="offsetColumn"
-                  id="offsetColumn"
-                  style={{ width: "70%", display: "flex" }}
-                  size="small"
-                  minHeight={32}
-                  singleline
-                  inputProps={{ maxLength: 255 }}
+                  input={{
+                    value: selectedOffsetColumns || null,
+                    onChange: onChangeOffsetColumn,
+                  }}
+                  source={sqlColumnsArr || []}
                   label="Offset Column"
+                  size="small"
+                  fullWidth
+                  style={{ width: 300, display: "block" }}
+                  blurOnSelect={false}
+                  clearOnBlur={false}
+                  filterSelectedOptions={false}
+                  enableVirtualization
+                  limitChips={5}
+                  alwaysLimitChips
+                  chipColor="white"
                   disabled={prodLock}
                 />
               )}
             </>
           )}
-          {showPreview && (
+          {/* {showPreview && (
             <div className="preview-table">
               {previewSQL.length > 0 && (
                 <Table
@@ -290,7 +322,7 @@ const DataSetsFormBase = (props) => {
                 />
               )}
             </div>
-          )}
+          )} */}
         </div>
       </Paper>
     </form>
@@ -301,29 +333,38 @@ const ReduxForm = compose(
   withStyles(styles),
   reduxForm({
     form: "DataSetsFormSQL",
+    enableReinitialize: true,
     validate: dataSetsValidation,
   }),
   connect((state) => ({ values: getFormValues("DataSetsFormSQL")(state) }))
 )(DataSetsFormBase);
 
 const selector = formValueSelector("DataSetsFormSQL");
-const DataSetsFormSQL = connect((state) => ({
-  initialValues: state.dataSets.formDataSQL, // pull initial values from account reducer
-  enableReinitialize: true,
-  formValues: selector(
-    state,
-    "active",
-    "isCustomSQL",
-    "sQLQuery",
-    "tableName",
-    "dataType",
-    "offsetColumn",
-    "clinicalDataType"
-  ),
-  datakind: state.dataSets.datakind?.records,
-  sqlTables: state.dataSets.sqlTables,
-  sqlColumns: state.dataSets.sqlColumns,
-  previewSQL: state.dataSets.previewSQL,
-}))(ReduxForm);
+const DataSetsFormSQL = connect((state) => {
+  const { sqlColumns, sqlTables } = state.dataSets;
+  const initialValues = {
+    ...state.dataSets.formDataSQL,
+  };
+  if (!sqlTables.length) {
+    initialValues.tableName = "";
+  }
+  return {
+    initialValues, // pull initial values from account reducer
+    enableReinitialize: true,
+    formValues: selector(
+      state,
+      "isCustomSQL",
+      "sQLQuery",
+      "tableName",
+      "dataType",
+      "offsetColumn",
+      "clinicalDataType"
+    ),
+    datakind: state.dataSets.datakind?.records,
+    sqlTables,
+    sqlColumns,
+    previewSQL: state.dataSets.previewSQL,
+  };
+})(ReduxForm);
 
 export default DataSetsFormSQL;
