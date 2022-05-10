@@ -174,13 +174,13 @@ const DataFlow = ({
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
-    // console.log("FormValues", FormValues, selectedCard);
+    console.log("FormValues", FormValues, selectedCard);
     if (
       FormValues &&
       FormValues?.dataflowType &&
       FormValues?.dataStructure &&
-      FormValues?.vendor?.length > 0 &&
-      FormValues?.locationName?.length &&
+      FormValues?.vendor?.vend_id &&
+      FormValues?.locationName?.src_loc_id &&
       FormValues?.description &&
       FormValues?.description !== "" &&
       selectedCard?.protocolnumberstandard !== ""
@@ -192,8 +192,8 @@ const DataFlow = ({
         return false;
       }
       const payload = {
-        vend_id: FormValues.vendor[0],
-        src_loc_id: FormValues.locationName[0],
+        vend_id: FormValues.vendor.vend_id,
+        src_loc_id: FormValues.locationName.src_loc_id,
         dataStructure: FormValues.dataStructure,
         testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
@@ -205,7 +205,7 @@ const DataFlow = ({
         externalSystemName: "CDI",
         dataPackage: [{ dataSet: [] }],
         active: true,
-        vendorName: selectedVendor?.vend_nm,
+        vendorName: FormValues?.vendor?.vend_nm,
       };
       setForm(payload);
       setCurrentStep();
@@ -247,7 +247,10 @@ const DataFlow = ({
 
   const AddDatasetData = (data) => {
     const datasetObj = { ...data };
-    if (datasetObj.datasetName === "" || !datasetObj.clinicalDataType?.length) {
+    if (
+      datasetObj.datasetName === "" ||
+      !datasetObj?.clinicalDataType?.datakindid
+    ) {
       messageContext.showErrorMessage("Please fill required fields to proceed");
       return false;
     }
@@ -256,11 +259,11 @@ const DataFlow = ({
       datasetObj.incremental = datasetObj.loadType === "Incremental" ? 1 : 0;
     }
     if (datasetObj.clinicalDataType) {
-      const datakindObj = datakindArr.find((x) => {
-        return x.value === datasetObj.clinicalDataType[0];
-      });
-      delete datasetObj.clinicalDataType;
-      datasetObj.dataKind = datakindObj?.name;
+      // const datakindObj = datakindArr.find((x) => {
+      //   return x.value === datasetObj.clinicalDataType.datakindid;
+      // });
+      // delete datasetObj.clinicalDataType;
+      datasetObj.dataKind = datasetObj?.clinicalDataType?.name;
     }
     if (datasetObj.transferFrequency) {
       datasetObj.dataTransferFrequency = datasetObj.transferFrequency;

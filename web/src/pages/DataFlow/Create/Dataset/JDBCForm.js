@@ -578,6 +578,7 @@ const JDBCForm = forwardRef((props, ref) => {
                   onChange={handleColumnSelect}
                   variant="search"
                   singleSelect
+                  enableVirtualization
                   required
                   fullWidth
                 />
