@@ -16,11 +16,11 @@ exports.listTables = async (req, res) => {
     let q = ``;
     switch (locationType?.toLowerCase()) {
       case "oracle":
-        q = `SELECT table_name as "tableName" FROM all_tables FETCH FIRST 10 ROWS ONLY`;
+        q = `SELECT table_name as "tableName" FROM user_tables`;
         break;
       case "sqlserver":
       case "sql server":
-        q = `SELECT name as "tableName" FROM sys.Tables LIMIT 10`;
+        q = `SELECT name as "tableName" FROM sys.Tables`;
         break;
       case "hive cdh":
       case "hivecdh":
@@ -32,10 +32,10 @@ exports.listTables = async (req, res) => {
       case "my sql":
       case "postgresql":
       case "postgre sql":
-        q = `SELECT table_name as "tableName" FROM information_schema.tables LIMIT 10`;
+        q = `SELECT table_name as "tableName" FROM information_schema.tables`;
         break;
       default:
-        q = `SELECT table_name as "tableName" FROM information_schema.tables LIMIT 10`;
+        q = `SELECT table_name as "tableName" FROM information_schema.tables`;
         break;
     }
 
