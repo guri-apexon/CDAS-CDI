@@ -394,8 +394,19 @@ POST http://localhost:4001/v1/api/dataset/previewSQL HTTP/1.1
 content-type: application/json
 
 {
+	"tableName":null,
+	"externalSystem":"TDSE",
+	"columnCount":null,
+	"driverName":"com.mysql.jdbc.Driver",      
+	"locationType":"MySQL",
+	"customQuery":"YES",
+  "connectionPassword":"vault",
+  "connectionUserName":"vault",
+	"columnDefinition":null,
+	"customSql":"SELECT vault_value FROM vault",
+	"conditionalExpression":null,
+  "connectionUrl":"jdbc:mysql://ca2uhdtsd001vd:3306/vault"
 }
-
 ### getTables
 
 POST http://localhost:4001/v1/api/dataset/getTables HTTP/1.1
@@ -423,7 +434,14 @@ POST http://localhost:4001/v1/api/dataset/getColumns HTTP/1.1
 content-type: application/json
 
 {
-  "query": "string"
+      "tableName":"dataflow",
+	"externalSystem":"GDMPM-DAS",      
+	"locationType":"PostgreSQL",
+        "connectionPassword":"ycdas1d@cdas1d",
+        "connectionUserName":"ycdas1d",
+        "connectionUrl":"jdbc:postgresql://ca2updb249vd:5433/cdas1d",
+        "driverName":"org.postgresql.Driver"
+
 }
 
 ### create sftp dataset
@@ -656,16 +674,55 @@ content-type: application/json
 	"active": false
 }
 
+### create location
+
+POST http://localhost:4001/v1/api/location/create HTTP/1.1
+content-type: application/json
+
+{
+    "active": true,
+    "dataStructure": "tabular",
+    "locationName": "testLocation_123_vaithe",
+    "externalSytemName": "IQB",
+    "locationType": "Hive CDH",
+    "password": "Iqvia@123",
+    "userName": "ycdrssd",
+    "ipServer": "cdtdev-hive.quintiles.net",
+    "port": "10001",
+    "connURL": "jdbc:hive2://cdtdev-hive.quintiles.net:10001/db_hats0301;transportMode=https;httpPath=cliservice;ssl=1;AllowSelfSignedCerts=1;AuthMech=3",
+    "dbName": "db_hats0301",
+    "userId": "u1105372"
+}
+
+### update location
+
+POST http://localhost:4001/v1/api/location/update HTTP/1.1
+content-type: application/json
+
+{
+    "locationID": "7cex6pyiewwre7fq",
+    "locationName": "vaithe_test_MySQL",
+    "active": 1,
+    "locationType": "MySQL",
+    "ipServer": "ca2uhdtsd001vd",
+    "dataStructure": "tabular",
+    "userName": "vault",
+    "password": "",
+    "connURL": "jdbc:mysql://ca2uhdtsd001vd:3306/vault",
+    "port": "3306",
+    "dbName": "vault",
+    "externalSytemName": "IQB",
+    "userId": "u1105372"
+}
 
 ### get location detail
 
 GET http://localhost:4001/v1/api/location/list/a139214c-bf90-4d HTTP/1.1
 content-type: application/json
 
+### get location details
 
-### update dataset
-
-POST http://localhost:4001/v1/api/dataset/update HTTP/1.1
+GET http://localhost:4001/v1/api/location/detail/lgm8vo9ku3kwklcj HTTP/1.1
 content-type: application/json
 
 {
@@ -684,5 +741,33 @@ content-type: application/json
 
 POST http://localhost:4001/v1/api/location/get_password/7u6g7ihq2trdfctu HTTP/1.1
 
+### get Web API Tables
+
+POST http://localhost:4001/v1/api/dataset/getTables HTTP/1.1
+Content-Type: application/json
+
 {
+      "locationType":"oracle",
+      "tableName":"dataflow",
+      "connectionPassword":"ParkWay432",
+      "connectionUserName":"IDP",
+      "connectionUrl":"jdbc:oracle:thin:@db-cdr1d:1521:CDR1D",
+      "driverName":"oracle.jdbc.driver.OracleDriver",
+      "externalSystem":"CDR"
+}
+
+### get Web API Columns
+
+POST http://localhost:4001/v1/api/dataset/getColumns HTTP/1.1
+Content-Type: application/json
+
+{
+    "externalSystem": "TDSE",
+    "driverName": "org.postgresql.Driver",
+    "locationType": "PostgreSQL",
+    "connectionUserName": "ycdas1d",
+    "tableName": "user_login_details",
+    "pswd": "Yes",
+    "connectionUrl": "jdbc:postgresql://ca2updb249vd:5433/cdas1d",
+    "connectionPassword": "ycdas1d@cdas1d"
 }

@@ -40,7 +40,12 @@ import {
   RESET_FTP_FORM,
   RESET_JDBC_FORM,
   UPDATE_DS_STATUS,
+  GET_LOCATION_DETAIL,
+  FETCH_LOCATION_DETAIL_FAILURE,
+  FETCH_LOCATION_DETAIL_SUCCESS,
 } from "../../constants";
+
+import { dateTypeForJDBC, parseBool } from "../../utils/index";
 
 const defaultData = {
   active: true,
@@ -64,6 +69,7 @@ const defaultDataSQL = {
   isCustomSQL: "Yes",
   dataType: "Cumulative",
   clinicalDataType: null,
+  offsetColumn: [],
 };
 
 export const initialState = {
@@ -93,6 +99,7 @@ export const initialState = {
   sqlColumns: [],
   sqlTables: [],
   previewSQL: [],
+  locationDetail: {},
   dsCreatedSuccessfully: false,
   isDatasetFetched: false,
   haveHeader: false,
@@ -229,6 +236,55 @@ const DataFlowReducer = (state = initialState, action) =>
       case UPDATE_DATASET_SUCCESS:
         newState.loading = false;
         newState.error = null;
+        const { dsUpdate } = action;
+        newState.selectedDataset = {
+          ...action.values,
+          datasetid: dsUpdate.datasetid,
+          customsql_yn: dsUpdate.customsql_yn,
+          customsql: dsUpdate.customsql,
+          fileType: dsUpdate.type,
+          headerrownumber: dsUpdate.headerrownumber,
+          tbl_nm: dsUpdate.tbl_nm,
+          dataset_fltr: dsUpdate.dataset_fltr,
+        };
+        if (dsUpdate.type) {
+          newState.formData.fileType = dsUpdate.type;
+          newState.formData.datasetName = dsUpdate.mnemonic;
+          newState.formData.active = dsUpdate.active === 1 ? true : false;
+          newState.formData.encoding = dsUpdate.charset;
+          newState.formData.delimiter = dsUpdate.delimiter;
+          newState.formData.escapeCharacter = dsUpdate.escapecode;
+          newState.formData.quote = dsUpdate.quote;
+          newState.formData.headerRowNumber = dsUpdate.headerrownumber;
+          newState.formData.footerRowNumber = dsUpdate.footerrownumber;
+          newState.formData.fileNamingConvention = dsUpdate.name;
+          newState.formData.folderPath = dsUpdate.path;
+          newState.formData.clinicalDataType = [dsUpdate.datakindid];
+          newState.formData.transferFrequency = dsUpdate.data_freq;
+          newState.formData.overrideStaleAlert = dsUpdate.ovrd_stale_alert;
+          newState.formData.rowDecreaseAllowed =
+            dsUpdate.rowdecreaseallowed || 0;
+          newState.formData.loadType =
+            dsUpdate.incremental === "Y" ? "Incremental" : "Cumulative";
+          newState.formData.datasetid = dsUpdate.datasetid;
+          newState.formData.filePwd = dsUpdate.filePwd;
+          newState.haveHeader =
+            parseInt(action.dsUpdate.headerrownumber, 10) > 0;
+        }
+        if (dsUpdate.customsql_yn) {
+          newState.formDataSQL.active = dsUpdate.active === 1 ? true : false;
+          newState.formDataSQL.clinicalDataType = [dsUpdate.datakindid];
+          newState.formDataSQL.datasetName = dsUpdate.mnemonic;
+          newState.formDataSQL.isCustomSQL = dsUpdate.customsql_yn;
+          newState.formDataSQL.sQLQuery = dsUpdate.customsql;
+          newState.formDataSQL.offsetColumn = dsUpdate.offsetcolumn;
+          newState.formDataSQL.tableName = dsUpdate.tbl_nm;
+          newState.formDataSQL.filterCondition = dsUpdate.dataset_fltr;
+          newState.formDataSQL.dataType =
+            dsUpdate.incremental === "N" ? "Cumulative" : "Incremental";
+          newState.formDataSQL.datasetid = dsUpdate.datasetid;
+          newState.haveHeader = true;
+        }
         newState.sucessMsg = "Dataset updated succesfully";
         break;
       case UPDATE_DATASET_FAILURE:
@@ -263,10 +319,17 @@ const DataFlowReducer = (state = initialState, action) =>
       case FETCH_SQL_TABLES_FAILURE:
         newState.loading = false;
         newState.error = action.message;
+        newState.sqlTables = initialState.sqlTables;
         break;
       case FETCH_SQL_TABLES_SUCCESS:
         newState.loading = false;
-        newState.sqlTables = action.sqlTables;
+        if (action.payload.locationType === "Hive CDH") {
+          newState.sqlTables = action.sqlTables.slice(0, 20);
+        } else if (action.payload.locationType === "Hive CDP") {
+          newState.sqlTables = action.sqlTables.slice(0, 20);
+        } else {
+          newState.sqlTables = action.sqlTables;
+        }
         break;
       case GET_PREVIEW_SQL:
         newState.loading = true;
@@ -288,6 +351,13 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case FETCH_SQL_COLUMNS_SUCCESS:
         newState.loading = false;
+        newState.sqlColumns = action.sqlColumns.map((e) => {
+          e.dataType = dateTypeForJDBC(e.datatype);
+          e.primaryKey = parseBool(e.primaryKey || "false");
+          e.required = parseBool(e.required || "false");
+          e.unique = parseBool(e.unique || "false");
+          return e;
+        });
         newState.sqlColumns = action.sqlColumns;
         break;
       case GET_DATASET_DETAIL:
@@ -383,6 +453,19 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = false;
         newState.error = action.message;
         break;
+
+      case GET_LOCATION_DETAIL:
+        newState.loading = true;
+        break;
+      case FETCH_LOCATION_DETAIL_SUCCESS:
+        newState.loading = false;
+        newState.locationDetail = action.locationDetail;
+        break;
+      case FETCH_LOCATION_DETAIL_FAILURE:
+        newState.loading = false;
+        newState.error = action.message;
+        break;
+
       default:
         newState.loading = false;
         break;

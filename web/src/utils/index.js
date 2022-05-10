@@ -4,7 +4,7 @@ import React from "react";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import { TextField } from "apollo-react/components/TextField/TextField";
-import { IDLE_LOGOUT_TIME } from "./constants";
+import { DATA_TYPES, IDLE_LOGOUT_TIME } from "./constants";
 // import { hive2CDH, hive2CDP, impala, oracle, SQLServer } from "../constants";
 
 export const getCookie = (key) => {
@@ -679,6 +679,22 @@ export const goToCore = () => {
     window.location.href = process.env.REACT_APP_CORE_URL;
 };
 
+export const dateTypeForJDBC = (datatype) => {
+  const type = datatype?.toUpperCase();
+  if (DATA_TYPES.alphanumeric.includes(type)) {
+    return "Alphanumeric";
+  }
+  if (DATA_TYPES.numeric.includes(type)) {
+    return "Numeric";
+  }
+  if (DATA_TYPES.date.includes(type)) {
+    return "Date";
+  }
+  return "Alphanumeric";
+};
+export const parseBool = (b) => {
+  return !/^(false|0)$/i.test(b) && !!b;
+};
 export const setIdleLogout = (logout) => {
   let time;
   // DOM Events
@@ -691,4 +707,14 @@ export const setIdleLogout = (logout) => {
   document.onmousemove = resetTimer;
   document.onkeypress = resetTimer;
   window.onload = resetTimer;
+};
+
+export const scrollIntoView = () => {
+  const body = document.querySelector("#root");
+  body.scrollIntoView(
+    {
+      behavior: "smooth",
+    },
+    1500
+  );
 };

@@ -107,6 +107,8 @@
   .lov-edit-mode {
     textarea {
       max-width: 340px;
+      min-height: 100px;
+      max-height: 300px;
     }
   }
   .lov-view-mode {
@@ -139,4 +141,9 @@
     border-left: 1px solid #d9d9d9;
     height: 100%;
   }
+}
+.center-loader {
+  justify-content: center;
+  width: 100%;
+  min-height: 150px;
 }
