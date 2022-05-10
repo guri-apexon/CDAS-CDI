@@ -25,11 +25,7 @@ import {
   columnObj,
 } from "../../../utils/index";
 import { allowedTypes } from "../../../constants";
-import {
-  checkFormat,
-  checkRequiredValue,
-  validateRow,
-} from "../../../components/FormComponents/validators";
+import { validateRow } from "../../../components/FormComponents/validators";
 
 const maxSize = 150000;
 

@@ -320,7 +320,6 @@ content-type: application/json
             "values": "safsd~afdasd~as~sdfasd",
             "isInitLoad": false,
             "isHavingColumnName": true,
-            "isHavingDataType": true
         }
     ],
     "dsId": "rjufebx54heob3gt",

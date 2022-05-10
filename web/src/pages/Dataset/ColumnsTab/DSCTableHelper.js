@@ -255,7 +255,6 @@ export const ActionCell = ({ row }) => {
     onRowCancel,
     onRowDelete,
     editMode: eMode,
-    isHavingDataType,
     onRowSave,
   } = row;
 
