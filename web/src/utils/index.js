@@ -283,6 +283,7 @@ export const createAutocompleteFilter =
           showCheckboxes
           limitChips={1}
           filterSelectedOptions={false}
+          enableVirtualization
           blurOnSelect={false}
           clearOnBlur={false}
           disableCloseOnSelect
