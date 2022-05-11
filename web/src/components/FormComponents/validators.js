@@ -96,7 +96,7 @@ export const hasSpecialCHar = (str = "") => {
 
 export const checkAlphaNumericFileName = (value) => {
   const regexp = /^[A-Za-z0-9-_.%@&()!#~;+,{}<>[\] \b]+$/;
-  const regexp2 = /[^hmsdyinx%-\s]/gi;
+  const regexp2 = /[^hmsdyinx_%/-\s]/gi;
   const regexp1 = /\<(.*?)\>/g;
   const matched = value.match(regexp1);
 
