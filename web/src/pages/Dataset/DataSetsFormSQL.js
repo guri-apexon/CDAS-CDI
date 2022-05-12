@@ -224,6 +224,7 @@ const DataSetsFormBase = (props) => {
                     value: cdtValue,
                     onChange: onChangeCDT,
                   }}
+                  enableVirtualization
                   singleSelect
                   size="small"
                   fullWidth

@@ -262,6 +262,7 @@ const DataSetsFormBase = (props) => {
                     value: cdtValue,
                     onChange: onChangeCDT,
                   }}
+                  enableVirtualization
                   variant="search"
                   singleSelect
                   fullWidth
