@@ -252,7 +252,7 @@ export default function DataflowTab({ updateData }) {
 
   const changeStatusAction = async (e) => {
     if (e.status === "Inactive") {
-      const updateStataus = await activateDF(e.dataFlowId, e.version);
+      const updateStataus = await activateDF(e.dataFlowId);
       console.log(updateStataus, "");
       if (updateStataus?.status === 1) {
         messageContext.showSuccessMessage(updateStataus.message);
@@ -269,7 +269,7 @@ export default function DataflowTab({ updateData }) {
         );
       }
     } else {
-      await inActivateDF(e.dataFlowId, e.version);
+      await inActivateDF(e.dataFlowId);
       await updateData();
       await dispatch(
         updateHeaderCount(
