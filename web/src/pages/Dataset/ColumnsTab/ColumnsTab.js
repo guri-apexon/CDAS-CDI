@@ -89,6 +89,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               isInitLoad: true,
               isHavingColumnName: true,
               isSaved: true,
+              isEditMode: false,
             };
             return newObj;
           })
@@ -115,6 +116,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               values: column.lov || "",
               isInitLoad: true,
               isHavingColumnName: true,
+              isEditMode: true,
             };
             return newObj;
           })

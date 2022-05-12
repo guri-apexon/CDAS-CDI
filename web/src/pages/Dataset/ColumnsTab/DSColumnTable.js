@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react/button-has-type */
 import React, { useState, useContext, useEffect, useRef } from "react";
@@ -23,6 +24,7 @@ import {
   formatDataNew,
   isSftp,
   columnObj,
+  getInitColumnObj,
 } from "../../../utils/index";
 import { allowedTypes } from "../../../constants";
 import { validateRow } from "../../../components/FormComponents/validators";
@@ -75,21 +77,25 @@ export default function DSColumnTable({
   const [moreColumns, setMoreColumns] = useState([...columns]);
   const [selectedCN, setSelectedCN] = useState([]);
   const userInfo = getUserInfo();
+  const initColumnObj = getInitColumnObj();
 
+  const setInitRow = () => {
+    setRows([{ uniqueId: `u0`, initColumnObj }]);
+  };
   useEffect(() => {
-    console.log("dataOrigin", dataOrigin);
+    console.log("dataOrigin", dataOrigin, formattedData);
     if (dataOrigin === "manually") {
-      setSelectedRows([`u0`]);
-      setEditedRows([{ uniqueId: `u0`, ...columnObj }]);
+      // setSelectedRows([`u0`]);
+      // setEditedRows([{ uniqueId: `u0`, ...columnObj }]);
+      setInitRow();
     } else if (dataOrigin === "fromDB") {
       setRows(formattedData);
-      setEditedRows(formattedData);
+      // setEditedRows(formattedData);
       // setDisableSaveAll(false);
     } else {
-      const forImport = formattedData.map((e) => e.uniqueId);
-      setSelectedRows(forImport);
-      setEditedRows(formattedData);
-      setDisableSaveAll(false);
+      setRows(formattedData);
+      // setSelectedRows(forImport);
+      // setEditedRows(formattedData);
     }
   }, []);
 
@@ -113,40 +119,45 @@ export default function DSColumnTable({
     }
   }, [rows]);
 
-  useEffect(() => {
-    if (rows.length === datasetColumns) {
-      const updatingId = rows.map((e) => {
-        const matchingData = datasetColumns.find(
-          (d) => d.columnName === e.columnName
-        );
-        if (matchingData?.columnid) {
-          e.dbColumnId = matchingData.columnid;
-          e.values = matchingData.lov;
-        }
-        return e;
-      });
-      setRows([...updatingId]);
-    }
-  }, [datasetColumns]);
+  // useEffect(() => {
+  //   if (rows.length === datasetColumns) {
+  //     const updatingId = rows.map((e) => {
+  //       const matchingData = datasetColumns.find(
+  //         (d) => d.columnName === e.columnName
+  //       );
+  //       if (matchingData?.columnid) {
+  //         e.dbColumnId = matchingData.columnid;
+  //         e.values = matchingData.lov;
+  //       }
+  //       return e;
+  //     });
+  //     setRows([...updatingId]);
+  //   }
+  // }, [datasetColumns]);
 
-  useEffect(() => {
-    if (editedRows.map((row) => validateRow(row)).every((e) => e === true)) {
-      setDisableSaveAll(false);
-    } else {
-      setDisableSaveAll(true);
-    }
-  }, [editedRows]);
+  // useEffect(() => {
+  //   if (
+  //     rows
+  //       .filter((x) => x.isEditMode)
+  //       .map((row) => validateRow(row))
+  //       .every((e) => e === true)
+  //   ) {
+  //     setDisableSaveAll(false);
+  //   } else {
+  //     setDisableSaveAll(true);
+  //   }
+  // }, [rows]);
 
-  useEffect(() => {
-    console.log("selectedRows", selectedRows);
-    // if (selectedRows.length > 0) {
-    //   setIsEditAll(true);
-    //   setEditMode(true);
-    // } else {
-    //   setIsEditAll(false);
-    //   setEditMode(false);
-    // }
-  }, [selectedRows]);
+  // useEffect(() => {
+  //   console.log("selectedRows", selectedRows);
+  //   // if (selectedRows.length > 0) {
+  //   //   setIsEditAll(true);
+  //   //   setEditMode(true);
+  //   // } else {
+  //   //   setIsEditAll(false);
+  //   //   setEditMode(false);
+  //   // }
+  // }, [selectedRows]);
 
   const changeValuesTitle = (newValues) => {
     const noOf = newValues?.split("~")?.filter(Boolean)?.length || "No";
@@ -218,10 +229,10 @@ export default function DSColumnTable({
           );
           hideOverWrite();
         } else if (newData?.data?.length > 0) {
-          const initRows = newData?.data?.map((e) => e.uniqueId);
           setRows([...newData?.data]);
-          setEditedRows([...newData?.data]);
-          setSelectedRows([...initRows]);
+          // const initRows = newData?.data?.map((e) => e.uniqueId);
+          // setEditedRows([...newData?.data]);
+          // setSelectedRows([...initRows]);
         }
       } else {
         messageContext.showErrorMessage(
@@ -326,17 +337,20 @@ export default function DSColumnTable({
     // console.log(filteredRowsTemp, "filteredRowsTemp");
     setFilteredRows([...filteredRowsTemp]);
   };
-
+  const getNewRows = (count = 1) => {
+    const maxIndex = Math.max(...rows.map((o) => o.uniqueId), 0);
+    const data = Array.from({ length: count }, (i, index) => ({
+      uniqueId: maxIndex + index,
+      initColumnObj,
+    }));
+    return data;
+  };
   const addSingleRow = () => {
     if (rows.length < 500) {
-      const singleRow = [
-        {
-          uniqueId: `u${rows.length}`,
-          ...columnObj,
-        },
-      ];
-      setSelectedRows([...selectedRows, `u${rows.length}`]);
-      setEditedRows([...rows, ...singleRow]);
+      const singleRow = getNewRows();
+      setRows([...rows, singleRow]);
+      // setSelectedRows([...selectedRows, `u${rows.length}`]);
+      // setEditedRows([...rows, ...singleRow]);
     } else {
       messageContext.showErrorMessage(`Not allowed more than 500 columns`);
     }
@@ -354,13 +368,11 @@ export default function DSColumnTable({
   const addMulti = () => {
     setIsMultiAdd(false);
     if (newRows > 0) {
-      const multiRows = Array.from({ length: newRows }, (i, index) => ({
-        uniqueId: `u${rows.length + index}`,
-        ...columnObj,
-      }));
-      const moreRows = multiRows.map((e) => e.uniqueId);
-      setSelectedRows([...moreRows]);
-      setEditedRows([...editedRows, ...multiRows]);
+      const multiRows = getNewRows(newRows);
+      setRows([...rows, ...multiRows]);
+      // const moreRows = multiRows.map((e) => e.uniqueId);
+      // setSelectedRows([...moreRows]);
+      // setEditedRows([...editedRows, ...multiRows]);
       setNewRows("");
     }
   };
@@ -433,12 +445,21 @@ export default function DSColumnTable({
       setMoreColumns(allColumns);
     }
   }, []);
+  const toggleEditMode = (edit) => {
+    setRows((prevRows) =>
+      prevRows.map((r) => ({
+        ...r,
+        isEditMode: edit ? true : false,
+      }))
+    );
+  };
 
   const onEditAll = () => {
     if (rows.length > 0) {
-      const allRows = rows.map((e) => e.uniqueId);
-      setEditedRows(rows);
-      setSelectedRows([...allRows]);
+      // const allRows = rows.map((e) => e.uniqueId);
+      toggleEditMode(true);
+      // setEditedRows(rows);
+      // setSelectedRows([...allRows]);
       setIsEditAll(true);
     } else {
       messageContext.showErrorMessage(
@@ -446,113 +467,121 @@ export default function DSColumnTable({
       );
     }
   };
-
+  const getEditedRows = () => {
+    return rows.filter((x) => x.isEditMode);
+  };
   const onSaveAll = async () => {
     setDisableSaveAll(true);
-    const removeSpaces = _.map(editedRows, (e) => {
+    const formattedColumnData = _.map(getEditedRows(), (e) => {
       const d = {
         ...e,
         isSaved: true,
         values: e.values.trim(),
         columnName: e.columnName.trim(),
+        isEditMode: false,
       };
       return d;
     }).map((e) => {
-      const isFirst = e.values.charAt(0) === "~";
-      const isLast = e.values.charAt(e.values.length - 1) === "~";
-      if (isFirst) {
+      const hasAtFirst = e.values.charAt(0) === "~";
+      const hasAtLast = e.values.charAt(e.values.length - 1) === "~";
+      if (hasAtFirst) {
         e.values = e.values.substring(1);
       }
-      if (isLast) {
+      if (hasAtLast) {
         e.values = e.values.slice(0, -1);
       }
       return e;
     });
 
-    const columnNames = removeSpaces.map((e) => e.columnName.toLowerCase());
+    const columnNames = formattedColumnData.map((e) =>
+      e.columnName.toLowerCase()
+    );
 
-    if (removeSpaces.length !== _.uniq(columnNames).length) {
+    if (formattedColumnData.length !== _.uniq(columnNames).length) {
       messageContext.showErrorMessage(
         "Column name should be unique for a dataset"
       );
-    } else {
-      const existingCD = removeSpaces
-        .filter((e) => selectedRows.includes(e.uniqueId))
-        .filter((e) => e.dbColumnId);
-      const newCD = removeSpaces
-        .filter((e) => selectedRows.includes(e.uniqueId))
-        .filter((e) => !e.dbColumnId);
+      return false;
+    }
 
-      let newQuery = "";
-      if (isCustomSQL === "No") {
-        const columnList = removeSpaces.map((e) => e.columnName).join(", ");
-        const wherePart = customsql?.indexOf("where");
-        if (wherePart) {
-          newQuery = `Select ${columnList} from ${tableName} ${customsql.slice(
-            wherePart
-          )}`;
-        }
+    const existingCD = formattedColumnData.filter((e) => e.dbColumnId);
+    const newCD = formattedColumnData.filter((e) => !e.dbColumnId);
+
+    let newQuery = "";
+    if (isCustomSQL === "No") {
+      const columnList = formattedColumnData
+        .map((e) => e.columnName)
+        .join(", ");
+      const wherePart = customsql?.indexOf("where");
+      if (wherePart) {
+        newQuery = `Select ${columnList} from ${tableName} ${customsql.slice(
+          wherePart
+        )}`;
       }
+    }
 
-      setSelectedRows([]);
-      const newData = _.orderBy([...removeSpaces], ["uniqueId"], ["asc"]);
-      setEditedRows([...newData]);
-      setRows([...newData]);
+    // setSelectedRows([]);
+    const newData = _.orderBy([...formattedColumnData], ["uniqueId"], ["asc"]);
+    // setEditedRows([...newData]);
+    setRows([...newData]);
 
-      if (newCD && newCD.length > 0) {
-        const created = await createColumns({
-          values: newCD,
+    if (newCD && newCD.length > 0) {
+      const created = await createColumns({
+        values: newCD,
+        dsId,
+        dfId,
+        dpId,
+        userId: userInfo.userId,
+        isUpdateQuery: isCustomSQL === "No",
+        newQuery,
+      });
+      if (created?.status) {
+        created.data?.forEach((d) => {
+          const obj = newCD.find((x) => x.uniqueId === d.frontendUniqueRef);
+          if (obj) obj.dbColumnId = d.columnid;
+        });
+      }
+    }
+
+    if (existingCD && existingCD.length > 0) {
+      dispatch(
+        updateDatasetColumns(
+          existingCD,
           dsId,
           dfId,
           dpId,
-          userId: userInfo.userId,
-          isUpdateQuery: isCustomSQL === "No",
-          newQuery,
-        });
-        if (created?.status) {
-          created.data?.forEach((d) => {
-            const obj = newCD.find((x) => x.uniqueId === d.frontendUniqueRef);
-            if (obj) obj.dbColumnId = d.columnid;
-          });
-        }
-      }
-
-      if (existingCD && existingCD.length > 0) {
-        dispatch(
-          updateDatasetColumns(
-            existingCD,
-            dsId,
-            dfId,
-            dpId,
-            userInfo.userId,
-            isCustomSQL === "No",
-            newQuery
-          )
-        );
-      }
-
-      dispatch(getDatasetColumns(dsId));
+          userInfo.userId,
+          isCustomSQL === "No",
+          newQuery
+        )
+      );
     }
+
+    dispatch(getDatasetColumns(dsId));
   };
 
   const onRowSave = async (uniqueId) => {
-    const editedRowData = _.filter(editedRows, (e) => e.uniqueId === uniqueId)
+    const editedRowData = _.filter(
+      getEditedRows(),
+      (e) => e.uniqueId === uniqueId
+    )
       .map((e) => {
         const d = {
           ...e,
           isSaved: true,
           values: e.values.trim(),
           columnName: e.columnName.trim(),
+          isEditMode: false,
         };
         return d;
       })
       .map((e) => {
-        const isFirst = e.values.charAt(0) === "~";
-        const isLast = e.values.charAt(e.values.length - 1) === "~";
-        if (isFirst) {
+        const hasAtFirst = e.values.charAt(0) === "~";
+        const hasAtLast = e.values.charAt(e.values.length - 1) === "~";
+        if (hasAtFirst) {
           e.values = e.values.substring(1);
         }
-        if (isLast) {
+        if (hasAtLast) {
           e.values = e.values.slice(0, -1);
         }
         return e;
@@ -571,7 +600,7 @@ export default function DSColumnTable({
         "Column name should be unique for a dataset"
       );
     } else {
-      const removeRow = selectedRows.filter((e) => e !== uniqueId);
+      // const removeRow = selectedRows.filter((e) => e !== uniqueId);
       // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
       const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
       let newQuery = "";
@@ -615,39 +644,54 @@ export default function DSColumnTable({
         }
       }
 
-      const newData = _.orderBy(
-        [...removeExistingRowData, editedRowData],
-        ["uniqueId"],
-        ["asc"]
-      );
+      // const newData = _.orderBy(
+      //   [...removeExistingRowData, editedRowData],
+      //   ["uniqueId"],
+      //   ["asc"]
+      // );
 
-      setRows([...newData]);
+      setRows([...removeExistingRowData, editedRowData]);
       // setEditedRows([...removeEdited]);
-      setSelectedRows([...removeRow]);
+      // setSelectedRows([...removeRow]);
     }
     // await dispatch(getDatasetColumns(dsId));
   };
 
   const onCancelAll = () => {
-    setSelectedRows([]);
-    setEditedRows([...rows]);
+    // setSelectedRows([]);
+    // setEditedRows([...rows]);
+    toggleEditMode();
     setIsEditAll(false);
     setEditMode(false);
   };
 
   const onRowCancel = (uniqueId) => {
-    const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const editedData = editedRows.find((e) => e.uniqueId === uniqueId);
-    if (!editedData?.isSaved) {
-      const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
-      setEditedRows(removeEdited);
+    // const removeRow = selectedRows.filter((e) => e !== uniqueId);
+    const editedColumns = getEditedRows();
+    const alreadyInDb = editedColumns.find((e) => e.dbColumnId);
+    if (alreadyInDb) {
+      toggleEditMode();
+    } else {
+      setRows((prevRows) => prevRows.filter((e) => e.uniqueId !== uniqueId));
     }
-    setSelectedRows([...removeRow]);
+    // if (!editedData?.isSaved) {
+    //   const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+    //   setEditedRows(removeEdited);
+    // }
+    // setSelectedRows([...removeRow]);
   };
 
   const onRowEdit = (uniqueId) => {
-    setSelectedRows([...selectedRows, uniqueId]);
-    setEditedRows(rows);
+    setRows((prevRows) =>
+      prevRows.map((e) => {
+        if (e.uniqueId === uniqueId) {
+          return { ...e, isEditMode: true };
+        }
+        return e;
+      })
+    );
+    // setSelectedRows([...selectedRows, uniqueId]);
+    // setEditedRows(rows);
   };
 
   const onRowDelete = async (uniqueId) => {
@@ -657,22 +701,12 @@ export default function DSColumnTable({
         await deleteCD(isInDB.dbColumnId, dsId, dpId, dfId, false, "");
       }
     }
-
-    const newData = rows
-      .filter((row) => row.uniqueId !== uniqueId)
-      .map((e, i) => {
-        const d = {
-          ...e,
-          uniqueId: `u${i}`,
-        };
-        return d;
-      });
-    setRows([...newData]);
-    setEditedRows([...newData]);
+    setRows((prevRows) => prevRows.filter((e) => e.uniqueId !== uniqueId));
+    // setEditedRows([...newData]);
   };
 
   const editRow = (uniqueId, key, value) => {
-    setEditedRows((rws) =>
+    setRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
           const data = {
@@ -680,26 +714,15 @@ export default function DSColumnTable({
             [key]: value,
             isInitLoad: Boolean(key === "variableLabel"),
           };
-          if (
-            (key === "columnName" && haveHeader) ||
-            (!haveHeader && key === "position")
-          ) {
-            return {
-              ...data,
-              isHavingColumnName: Boolean(value.length >= 1),
-            };
-          }
-
-          if (data.isInitLoad || data.isFormatLoad) {
-            if (key !== "variableLabel") {
-              return {
-                ...data,
-                isFormatLoad:
-                  key === "format" || key === "columnName" ? true : false,
-              };
-            }
-          }
-
+          // if (
+          //   (key === "columnName" && haveHeader) ||
+          //   (!haveHeader && key === "position")
+          // ) {
+          //   return {
+          //     ...data,
+          //     isHavingColumnName: Boolean(value.length >= 1),
+          //   };
+          // }
           return {
             ...data,
           };
@@ -712,7 +735,6 @@ export default function DSColumnTable({
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        {/* {console.log("on render", rows, editedRows, selectedRows)} */}
         <input
           type="file"
           id="file"
@@ -724,21 +746,21 @@ export default function DSColumnTable({
           title="Dataset Column Settings"
           subtitle={`${
             rows.length > 1
-              ? `${editedRows.length} dataset columns`
-              : `${editedRows.length} dataset column`
+              ? `${rows.length} dataset columns`
+              : `${rows.length} dataset column`
           }`}
           columns={moreColumns}
           initialSortedColumn="uniqueId"
           initialSortOrder="asc"
           rowId="uniqueId"
           hasScroll={true}
-          rows={(editMode ? editedRows : filteredRows).map((row, i) => ({
+          rows={rows.map((row, i) => ({
             ...row,
             onRowDelete,
             editRow,
             onRowSave,
             columnNo: parseInt(i, 10) + parseInt(1, 10),
-            editMode: selectedRows?.includes(row.uniqueId),
+            // editMode: selectedRows?.includes(row.uniqueId),
             fileType,
             isEditAll,
             onRowCancel,

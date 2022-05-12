@@ -395,6 +395,11 @@ export const columnObj = {
   isInitLoad: true,
   isFormatLoad: true,
   isHavingColumnName: false,
+  isEditMode: true,
+};
+
+export const getInitColumnObj = () => {
+  return { ...columnObj };
 };
 
 export const checkHeaders = (data) => {
@@ -445,6 +450,7 @@ export const formatDataNew = (incomingData, protNo) => {
               values: e[10] || "",
               isInitLoad: true,
               isHavingColumnName: true,
+              isEditMode: true,
             };
             return newObj;
           })
