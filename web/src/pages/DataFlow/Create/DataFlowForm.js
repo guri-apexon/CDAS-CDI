@@ -100,6 +100,17 @@ const DataFlowFormBase = (props) => {
   const onChangeServiceOwner = (values) => {
     change("serviceOwner", values);
   };
+
+  const onChangeVendor = (values) => {
+    change("vendor", values);
+  };
+
+  const onChangeLocation = (values) => {
+    // console.log("location", values);
+    changeLocationData([values?.src_loc_id]);
+    change("locationName", values);
+  };
+
   const openLocationModal = () => {
     setLocationOpen(true);
   };
@@ -119,18 +130,34 @@ const DataFlowFormBase = (props) => {
         <div className={classes.section}>
           <Typography variant="title1">Flow Details</Typography>
           <div style={{ width: "50%" }}>
-            <ReduxFormAutocomplete
+            <ReduxFormAutocompleteV2
               name="vendor"
               label="Vendor"
               source={vendors}
               id="vendor"
+              className="autocomplete_field"
+              forcePopupIcon={true}
+              input={{
+                onChange: onChangeVendor,
+              }}
+              singleSelect
+              enableVirtualization
+              variant="search"
+              fullWidth
+              required
+            />
+            {/* <ReduxFormAutocomplete
+              name="vendor1"
+              label="Vendor1"
+              source={vendors}
+              id="vendor1"
               className="autocomplete_field"
               onChange={(v) => changeFormField(v, "vendor", vendors)}
               singleSelect
               variant="search"
               fullWidth
               required
-            />
+            /> */}
             <ReduxFormTextField
               fullWidth
               maxLength="30"
@@ -193,13 +220,25 @@ const DataFlowFormBase = (props) => {
                   </MenuItem>
                 ))}
               </ReduxFormSelect>
-              <ReduxFormAutocomplete
+              {/* <ReduxFormAutocomplete
                 name="locationName"
                 label="Location Name"
                 source={locations}
                 className="autocomplete_field"
                 variant="search"
                 onChange={changeLocationData}
+                singleSelect
+                fullWidth
+                required
+              /> */}
+              <ReduxFormAutocompleteV2
+                name="locationName"
+                label="Location Name"
+                source={locations}
+                input={{
+                  onChange: onChangeLocation,
+                }}
+                variant="search"
                 singleSelect
                 fullWidth
                 required
@@ -245,6 +284,7 @@ const DataFlowFormBase = (props) => {
               }}
               forcePopupIcon={true}
               fullWidth
+              enableVirtualization
               noOptionsText="No Service Owner"
               variant="search"
               chipColor="white"

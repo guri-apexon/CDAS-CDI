@@ -124,6 +124,7 @@ const createAutocompleteFilter =
           limitChips={1}
           alwaysLimitChips
           filterSelectedOptions={false}
+          enableVirtualization
           blurOnSelect={false}
           clearOnBlur={false}
           disableCloseOnSelect
