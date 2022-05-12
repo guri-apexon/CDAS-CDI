@@ -402,8 +402,8 @@ export default function CDTList() {
                     onChange={(e) => handleChange(e)}
                     fullWidth
                     helperText={
-                      (nameError && "Only Alphanumeric and '_' are allowed") ||
-                      (reqNameError && "Data Type Name shouldn't be empty")
+                      (nameError && "Only alphanumeric and '_' are allowed") ||
+                      (reqNameError && "Data type name shouldn't be empty")
                     }
                     error={nameError || reqNameError}
                   />
@@ -433,7 +433,7 @@ export default function CDTList() {
                     // required
                     size="small"
                     helperText={
-                      reqENSError && "External System shouldn't be empty"
+                      reqENSError && "External system shouldn't be empty"
                     }
                     error={reqENSError}
                   >

@@ -418,10 +418,9 @@ const LocationModal = (props) => {
           // eslint-disable-next-line no-nested-ternary
           props.locationViewMode ? (
             <div>
-              {" "}
               Location
               <Tag
-                label={props.selectedLoc?.active === 1 ? "Active" : "Inactive"}
+                label={props?.selectedLoc?.active === 1 ? "Active" : "Inactive"}
                 style={{ marginLeft: 30 }}
                 variant={props.selectedLoc?.active === 1 ? "green" : "gray"}
               />
