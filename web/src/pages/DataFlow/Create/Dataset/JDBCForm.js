@@ -251,7 +251,7 @@ const JDBCForm = forwardRef((props, ref) => {
   }, [previewSQL]);
 
   const handlePreview = async () => {
-    if (!clinicalDataType?.length || datasetName === "") {
+    if (!clinicalDataType?.value || datasetName === "") {
       messageContext.showErrorMessage(
         `Please fill required fields to proceed.`
       );
@@ -462,16 +462,13 @@ const JDBCForm = forwardRef((props, ref) => {
                 label="Clinical Data Type"
                 source={datakind.records}
                 className="smallSize_autocomplete"
-                input={{
-                  value: clinicalDataType,
-                  onChange: handleCDT,
-                }}
+                onChange={handleCDT}
+                forcePopupIcon={true}
+                singleSelect
                 enableVirtualization
                 variant="search"
-                singleSelect
-                // required
-                size="small"
                 fullWidth
+                required
               />
             </Grid>
           </Grid>
