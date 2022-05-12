@@ -382,7 +382,7 @@ const CreateDataSetsForm = connect((state, ownProps) => {
       ownProps.initialValues.datasetName || formDataStore.datasetName || "",
     path: ownProps.initialValues.path || formDataStore.path || "",
   };
-  console.log("state.dataSets", initialValues, ownProps.initialValues);
+  // console.log("state.dataSets", initialValues, ownProps.initialValues);
   return {
     initialValues, // pull initial values from account reducer
     enableReinitialize: true,

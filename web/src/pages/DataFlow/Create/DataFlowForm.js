@@ -136,10 +136,10 @@ const DataFlowFormBase = (props) => {
               source={vendors}
               id="vendor"
               className="autocomplete_field"
-              forcePopupIcon={true}
               input={{
                 onChange: onChangeVendor,
               }}
+              forcePopupIcon={true}
               singleSelect
               enableVirtualization
               variant="search"

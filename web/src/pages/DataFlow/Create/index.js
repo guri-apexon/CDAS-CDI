@@ -21,7 +21,6 @@ import Modal from "apollo-react/components/Modal";
 import { values } from "lodash";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
-import LeftPanel from "./LeftPanel";
 // eslint-disable-next-line import/no-unresolved
 import Header from "./Header";
 import "../DataFlow.scss";
@@ -262,8 +261,8 @@ const DataFlow = ({
       // const datakindObj = datakindArr.find((x) => {
       //   return x.value === datasetObj.clinicalDataType.datakindid;
       // });
-      // delete datasetObj.clinicalDataType;
       datasetObj.dataKind = datasetObj?.clinicalDataType?.name;
+      delete datasetObj.clinicalDataType;
     }
     if (datasetObj.transferFrequency) {
       datasetObj.dataTransferFrequency = datasetObj.transferFrequency;
@@ -466,13 +465,7 @@ const DataFlow = ({
         onOpen={handleOpen}
         open={isPanelOpen}
         width={20}
-      >
-        {/* <LeftPanel
-          protId={protId}
-          packages={myform.DataPackage}
-          myform={myform}
-        /> */}
-      </Panel>
+      />
       <Panel className={classes.rightPanelExtended} width="100%" hideButton>
         <main className={classes.content}>
           <div className="content">
