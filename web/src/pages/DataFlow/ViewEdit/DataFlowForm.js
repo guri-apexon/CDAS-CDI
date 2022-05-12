@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { createRef, useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
-import { connect } from "react-redux";
+import { connect, useDispatch } from "react-redux";
 import { reduxForm, getFormValues } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
@@ -13,7 +13,7 @@ import Grid from "apollo-react/components/Grid";
 import Link from "apollo-react/components/Link";
 import PlusIcon from "apollo-react-icons/Plus";
 import {
-  ReduxFormAutocomplete,
+  // ReduxFormAutocomplete,
   ReduxFormDatePickerV2,
   ReduxFormRadioGroup,
   ReduxFormSelect,
@@ -103,34 +103,42 @@ const DataFlowFormBase = (props) => {
   } = props;
   const locationNameRef = React.useRef(null);
   const [selectedSrvcOwnr, setSelectedSrvcOwnr] = useState(null);
-  const onChangeServiceOwner = (values) => {
-    setSelectedSrvcOwnr(values);
+  const [selectedVendor, setSelectedVendor] = useState(null);
+  // const [selectedLocation, setSelectedLocation] = useState(null);
+
+  const dispatch = useDispatch();
+  const onChangeServiceOwner = (v) => {
+    setSelectedSrvcOwnr(v);
     change(
       "serviceOwner",
-      values.map((x) => x.value)
+      v.map((x) => x.value)
     );
   };
   const openLocationModal = () => {
     setLocationOpen(true);
   };
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [locationId, setLocationId] = useState(null);
+  const [locationDetail, setLocationDetail] = useState(null);
   const [renderLocation, setRenderLocation] = useState(false);
 
   useEffect(() => {
     console.log("initialValues", initialValues);
     if (initialValues) {
       const { dataflowType } = initialValues;
+      const selectedV = vendors?.find(
+        (e) => e.value === initialValues.vendors[0]
+      );
       setDataLoaded(true);
-      setLocationId(initialValues?.locations[0]?.value || null);
+      setLocationDetail(initialValues?.locations[0] || null);
+      setSelectedVendor(selectedV);
       if (dataflowType) {
         // changeFormField(dataflowType, "dataflowType");
       }
     }
-  }, [initialValues]);
+  }, [initialValues, vendors]);
 
   useEffect(() => {
-    setLocationId(selectedLocation?.value || null);
+    setLocationDetail(selectedLocation || null);
   }, [selectedLocation]);
 
   useEffect(() => {
@@ -139,14 +147,20 @@ const DataFlowFormBase = (props) => {
 
   useEffect(() => {
     setRenderLocation(false);
-    changeLocationData(locationId);
-  }, [locationId, locations]);
+    changeLocationData(locationDetail);
+  }, [locationDetail, locations]);
 
   useEffect(() => {
     return () => {
       setDataLoaded(false);
     };
   }, []);
+
+  const onChangeVendor = (v) => {
+    console.log("vendor", v);
+    // change("vendor", v?.vend_id);
+    dispatch(change("vendors", [v?.vend_id]));
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -155,17 +169,18 @@ const DataFlowFormBase = (props) => {
           <Typography variant="title1">Flow Details</Typography>
           <div style={{ width: "50%" }}>
             {dataLoaded && vendors && (
-              <ReduxFormAutocomplete
+              <ReduxFormAutocompleteV2
                 name="vendor"
                 autoSelect
                 label="Vendor"
                 source={vendors}
                 id="vendor"
                 input={{
-                  value: initialValues?.vendors,
+                  value: selectedVendor,
+                  onChange: onChangeVendor,
                 }}
+                enableVirtualization
                 className="autocomplete_field"
-                onChange={(v) => changeFormField(v, "vendor")}
                 singleSelect
                 variant="search"
                 fullWidth
@@ -240,13 +255,14 @@ const DataFlowFormBase = (props) => {
                 ))}
               </ReduxFormSelect>
               {renderLocation && locations && (
-                <ReduxFormAutocomplete
+                <ReduxFormAutocompleteV2
                   name="locationName"
                   label="Location Name"
                   input={{
                     onChange: changeLocationData,
-                    value: [locationId],
+                    value: locationDetail,
                   }}
+                  enableVirtualization
                   ref={locationNameRef}
                   source={locations}
                   className="autocomplete_field"
@@ -302,6 +318,7 @@ const DataFlowFormBase = (props) => {
                 source={serviceOwners ?? []}
                 forcePopupIcon={true}
                 fullWidth
+                enableVirtualization
                 noOptionsText="No Service Owner"
                 variant="search"
                 chipColor="white"
@@ -319,14 +336,14 @@ const ReduxForm = compose(
   withStyles(styles),
   reduxForm({
     form: "DataFlowForm",
-    enableReinitialize: true,
     validate,
-  })
+  }),
+  connect((state) => ({ values: getFormValues("DataFlowForm")(state) }))
 )(DataFlowFormBase);
 
 const DataFlowForm = connect((state) => ({
   initialValues: state.dataFlow.formData, // pull initial values from account reducer
-  values: getFormValues("DataFlowForm")(state),
+  enableReinitialize: true,
   locations: state.dataFlow.locations?.records,
   vendors: state.dataFlow.vendors?.records,
   serviceOwners: state.dataFlow.serviceOwners?.records,
