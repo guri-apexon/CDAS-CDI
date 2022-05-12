@@ -281,9 +281,7 @@ exports.getServiceOwnersList = function (req, res) {
     let select = `call_back_url_id as value, serv_ownr as label`;
     let searchQuery = `SELECT ${select} from ${schemaName}.call_back_urls where actv_flg=1 order by serv_ownr asc`;
     let dbQuery = DB.executeQuery(searchQuery);
-    Logger.info({
-      message: "serviceOwnerList",
-    });
+    Logger.info({ message: "serviceOwnerList" });
 
     dbQuery
       .then((response) => {

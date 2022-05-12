@@ -93,7 +93,7 @@ exports.saveDatasetColumns = async (req, res) => {
 
       return apiResponse.successResponseWithData(
         res,
-        "Column Definition created Successfully",
+        "Column definition created successfully",
         datasetColumns
       );
     }

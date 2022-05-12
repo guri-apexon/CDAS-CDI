@@ -12,9 +12,7 @@ exports.searchList = function (req, res) {
     LEFT JOIN ${constants.DB_SCHEMA_NAME}.datapackage as dp ON dp.datapackageid = al.datapackageid
     LEFT JOIN ${constants.DB_SCHEMA_NAME}.user as u ON u.usr_id = al.audit_updt_by
     WHERE al.dataflowid='${dataflowId}'`;
-    Logger.info({
-      message: "AuditLogs",
-    });
+    Logger.info({ message: "AuditLogs" });
 
     DB.executeQuery(searchQuery).then((response) => {
       const logs = response.rows || [];

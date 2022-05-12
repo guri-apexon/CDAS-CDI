@@ -74,7 +74,7 @@ export const checkExceSupport = (value, fileType) => {
     !regexpFixed.test(value.toLowerCase()) &&
     fileType.toLowerCase() === "fixed width"
   ) {
-    msg = "Only .txt formats are Supported";
+    msg = "Only .txt formats are supported";
   }
   return msg;
 };

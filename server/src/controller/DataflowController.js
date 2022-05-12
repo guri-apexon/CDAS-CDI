@@ -114,7 +114,7 @@ exports.getStudyDataflows = async (req, res) => {
     } else {
       return apiResponse.successResponseWithData(
         res,
-        "Protocol is not Selected",
+        "Protocol is not selected",
         []
       );
     }
@@ -624,7 +624,7 @@ exports.updateDataFlow = async (req, res) => {
     if (!externalID) {
       return apiResponse.ErrorResponse(
         res,
-        "Data flow Level External Id required and data type should be string or Number"
+        "Dataflow level external id required and data type should be string or number"
       );
     }
 
@@ -634,7 +634,7 @@ exports.updateDataFlow = async (req, res) => {
         if (!each.externalID) {
           return apiResponse.ErrorResponse(
             res,
-            "Data Package Level External Id required and data type should be string or Number"
+            "Datapackage level external id required and data type should be string or number"
           );
         }
         // Data Set External Id validation
@@ -643,7 +643,7 @@ exports.updateDataFlow = async (req, res) => {
             if (!obj.externalID) {
               return apiResponse.ErrorResponse(
                 res,
-                "Data Set Level External Id required and data type should be string or Number"
+                "Dataset level external id required and data type should be string or number"
               );
             }
           }
@@ -658,7 +658,7 @@ exports.updateDataFlow = async (req, res) => {
       if (rows.length <= 0) {
         return apiResponse.ErrorResponse(
           res,
-          "This Vendor Name is not exist in DB"
+          "This vendor name is not exist in DB"
         );
       }
     }
@@ -681,7 +681,7 @@ exports.updateDataFlow = async (req, res) => {
       if (studyRows.rows.length <= 0) {
         return apiResponse.ErrorResponse(
           res,
-          "This Protocol Number doesn't exist "
+          "This protocol number doesn't exist "
         );
       }
     }
@@ -870,7 +870,7 @@ exports.updateDataFlow = async (req, res) => {
       }
       return apiResponse.successResponseWithData(
         res,
-        "Data flow Update successfully.",
+        "Dataflow update successfully.",
         ResponseBody
       );
     } else {
@@ -1104,7 +1104,7 @@ exports.activateDataFlow = async (req, res) => {
       });
     }
 
-    return apiResponse.validationErrorWithData(res, "Dataflow Having Issue", {
+    return apiResponse.validationErrorWithData(res, "Dataflow having issues", {
       success: false,
     });
   } catch (err) {
@@ -1170,7 +1170,7 @@ exports.syncDataFlow = async (req, res) => {
 
     return apiResponse.successResponse(
       res,
-      "Sync Pipeline configs successfully written to Kafka",
+      "Sync pipeline configs successfully written to kafka",
       {
         success: true,
       }
@@ -1426,9 +1426,13 @@ exports.hardDeleteNew = async (req, res) => {
         version,
       ]
     );
-    return apiResponse.successResponseWithData(res, "Operation success", {
-      success: true,
-    });
+    return apiResponse.successResponseWithData(
+      res,
+      "Dataflow deleted successfully",
+      {
+        success: true,
+      }
+    );
   } catch (err) {
     Logger.error("catch :hardDeleteNew");
     Logger.error(err);

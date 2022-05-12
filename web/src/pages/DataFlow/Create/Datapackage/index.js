@@ -156,7 +156,7 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
                 size="small"
                 onClick={setShowForm}
               >
-                Add Data Package
+                Add data package
               </Button>
             </Box>
           </>

@@ -796,7 +796,7 @@ export default function DataflowTab({ updateData }) {
         open={showSyncNow}
         title="Sync Dataflow"
         onClose={hideSyncNow}
-        message="Do you want to proceed with SYNC NOW action?"
+        message="Do you want to proceed with sync now action?"
         buttonProps={[
           { label: "Cancel", onClick: hideSyncNow },
           { label: "Ok", onClick: handleSync },
