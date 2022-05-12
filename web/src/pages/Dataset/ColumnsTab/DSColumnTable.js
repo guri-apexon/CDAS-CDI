@@ -209,7 +209,7 @@ export default function DSColumnTable({
         // eslint-disable-next-line no-unused-expressions
         if (newData?.headerNotMatching) {
           messageContext.showErrorMessage(
-            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+            `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
           );
           hideOverWrite();
         } else if (newData?.data?.length === 0) {
@@ -225,7 +225,7 @@ export default function DSColumnTable({
         }
       } else {
         messageContext.showErrorMessage(
-          `The Selected file does not match the template`
+          `The selected file does not match the template`
         );
         hideOverWrite();
       }

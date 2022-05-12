@@ -55,7 +55,7 @@ exports.insertValidation = (req) => {
   if (externalID !== null && externalID !== "" && externalID !== undefined) {
   } else {
     validate.push({
-      err: " External Id  is required and data type should be string or Number ",
+      err: " External id is required and data type should be string or number ",
     });
   }
   if (!ConnectionType) {
@@ -65,7 +65,7 @@ exports.insertValidation = (req) => {
   } else {
     if (!helper.isConnectionType(ConnectionType)) {
       validate.push({
-        err: " ConnectionType's Supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server ",
+        err: " ConnectionType's supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server ",
       });
     }
   }
@@ -73,7 +73,7 @@ exports.insertValidation = (req) => {
   if (description.length <= 30) {
   } else {
     validate.push({
-      err: " Description length , Max of 30 characters  ",
+      err: " Description length, max of 30 characters  ",
     });
   }
 
@@ -92,7 +92,7 @@ exports.insertValidation = (req) => {
           each.externalID === undefined
         ) {
           validate.push({
-            err: " Data Package, Level External Id  is required and data type should be string or Number ",
+            err: " Datapackage, level external id is required and data type should be string or number ",
           });
         } else {
           if (helper.isSftp(LocationType)) {
@@ -141,7 +141,7 @@ exports.insertValidation = (req) => {
             if (each.type) {
               if (!helper.isPackageType(each.type)) {
                 validate.push({
-                  err: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
+                  err: " Package type's supported values : 7Z, ZIP, RAR, SAS ",
                 });
               }
             }
@@ -185,7 +185,7 @@ exports.insertValidation = (req) => {
               const first = each.name.charAt(each.name.charAt(0));
               if (str2.test(each.name) === false) {
                 validate.push({
-                  err: " package naming convention should be end with dot Extension ",
+                  err: " Package naming convention should be end with dot extension ",
                 });
               } else {
                 if (last === "." || first === ".") {
@@ -209,7 +209,7 @@ exports.insertValidation = (req) => {
                   ) {
                   } else {
                     validate.push({
-                      err: " Data Set Level, External Id  is required and data type should be string or Number ",
+                      err: " Dataset level, external id is required and data type should be string or number ",
                     });
                   }
 
@@ -271,7 +271,7 @@ exports.insertValidation = (req) => {
                     const first = obj.name.charAt(obj.name.charAt(0));
                     if (str2.test(obj.name) === false) {
                       validate.push({
-                        err: " File Naming Convention should be end with dot Extension ",
+                        err: " File naming convention should be end with dot extension ",
                       });
                     } else {
                       if (last === "." || first === ".") {
@@ -284,7 +284,7 @@ exports.insertValidation = (req) => {
 
                   if (obj.dataTransferFrequency === 0) {
                     validate.push({
-                      err: " dataTransferFrequency must be greater than zero ",
+                      err: " Data transfer frequency must be greater than zero ",
                     });
                   }
 
@@ -365,7 +365,7 @@ exports.insertValidation = (req) => {
 
                         if (!helper.isColumnType(el.dataType)) {
                           validate.push({
-                            err: " Data type's Supported values : Numeric, Alphanumeric or Date",
+                            err: " Data type's supported values : Numeric, Alphanumeric or Date",
                           });
                         }
 
@@ -382,7 +382,7 @@ exports.insertValidation = (req) => {
                             if (el.characterMin <= el.characterMax) {
                             } else {
                               validate.push({
-                                err: " MinCharacter always less than MaxCharacter  ",
+                                err: " Min character always less than max character  ",
                               });
                             }
                           }
@@ -416,13 +416,13 @@ exports.insertValidation = (req) => {
             ) {
             } else {
               validate.push({
-                err: " In JDBC noPackageConfig, active should be True ",
+                err: " In jdbc no package config, active should be true ",
               });
             }
 
             if (each.type || each.sasXptMethod || each.path || each.name) {
               validate.push({
-                err: " In JDBC Data Package Level type, sasXptMethod, path, name should be blank ",
+                err: " In jdbc datapackage level type, sasXptMethod, path, name should be blank ",
               });
             }
 
@@ -435,7 +435,7 @@ exports.insertValidation = (req) => {
                 ) {
                 } else {
                   validate.push({
-                    err: " Data Set Level, External Id  is required and data type should be string or Number ",
+                    err: " Dataset level, external id is required and data type should be string or number ",
                   });
                 }
 
@@ -452,7 +452,7 @@ exports.insertValidation = (req) => {
                   obj.path
                 ) {
                   validate.push({
-                    err: " In JDBC Data Set Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, escapeCode, path should be blank ",
+                    err: " In jdbc dataset level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, escapeCode, path should be blank ",
                   });
                 }
 
@@ -499,7 +499,7 @@ exports.insertValidation = (req) => {
                   ) {
                   } else {
                     validate.push({
-                      err: " Custom Sql  is required ",
+                      err: " Custom sql is required ",
                     });
                   }
                 }
@@ -512,12 +512,12 @@ exports.insertValidation = (req) => {
                     if (obj.tableName.length <= 255) {
                     } else {
                       validate.push({
-                        err: " Table Name  Max of 255 characters  ",
+                        err: " Table name max of 255 characters  ",
                       });
                     }
                   } else {
                     validate.push({
-                      err: " Table Name  is required ",
+                      err: " Table name is required ",
                     });
                   }
                   if (helper.stringToBoolean(obj.incremental) === true) {
@@ -529,7 +529,7 @@ exports.insertValidation = (req) => {
                     ) {
                     } else {
                       validate.push({
-                        err: " offsetColumn  is required and data type should be string",
+                        err: " OffsetColumn is required and data type should be string",
                       });
                     }
                   }
@@ -580,7 +580,7 @@ exports.insertValidation = (req) => {
 
                       if (!helper.isColumnType(el.dataType)) {
                         validate.push({
-                          err: " Data type's Supported values : Numeric, Alphanumeric or Date",
+                          err: " Data type's supported values : Numeric, Alphanumeric or Date",
                         });
                       }
 
@@ -599,7 +599,7 @@ exports.insertValidation = (req) => {
                         el.position
                       ) {
                         validate.push({
-                          err: " In JDBC characterMin, characterMax, position, lov should be blank ",
+                          err: " In jdbc characterMin, characterMax, position, lov should be blank ",
                         });
                       }
                     }
@@ -669,7 +669,7 @@ exports.packageLevelInsert = async (
         ];
         if (!helper.isPackageType(data.type)) {
           errorPackage.push(
-            " Package type's Supported values : 7Z, ZIP, RAR, SAS "
+            " Package type's supported values : 7Z, ZIP, RAR, SAS "
           );
         }
 
@@ -718,7 +718,7 @@ exports.packageLevelInsert = async (
         const first = data.name.charAt(data.name.charAt(0));
         if (str2.test(data.name) === false) {
           errorPackage.push(
-            " package naming convention should be end with dot Extension "
+            " Package naming convention should be end with dot extension "
           );
         } else {
           if (last === "." || first === ".") {
@@ -730,7 +730,7 @@ exports.packageLevelInsert = async (
       if (data.type) {
         if (!helper.isPackageType(data.type)) {
           errorPackage.push(
-            " Package type's Supported values : 7Z, ZIP, RAR, SAS "
+            " Package type's supported values : 7Z, ZIP, RAR, SAS "
           );
         }
       }
@@ -745,18 +745,18 @@ exports.packageLevelInsert = async (
         !helper.stringToBoolean(data.noPackageConfig) ||
         !helper.stringToBoolean(data.active)
       ) {
-        errorPackage.push(" In JDBC noPackageConfig, active should be True ");
+        errorPackage.push(" In jdbc no package config, active should be true ");
       }
 
       if (data.type || data.sasXptMethod || data.path || data.name) {
         errorPackage.push(
-          " In JDBC type, sasXptMethod path name should be blank "
+          " In jdbc type, sasXptMethod path name should be blank "
         );
       }
     }
 
     if (errorPackage.length > 0) {
-      errorPackage.splice(0, 0, `Datapackage External Id -${externalID} `);
+      errorPackage.splice(0, 0, `Datapackage external id -${externalID} `);
       return { sucRes: dataPackage, errRes: errorPackage };
     }
 
@@ -918,7 +918,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
       // }
 
       if (obj.dataTransferFrequency === 0) {
-        errorDataset.push("dataTransferFrequency must be greater than zero");
+        errorDataset.push("Data transfer frequency must be greater than zero");
       }
 
       if (obj.name) {
@@ -926,7 +926,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
         const first = obj.name.charAt(obj.name.charAt(0));
         if (str2.test(obj.name) === false) {
           errorDataset.push(
-            " File Naming Convention should be end with dot Extension "
+            " File naming convention should be end with dot extension "
           );
         } else {
           if (last === "." || first === ".") {
@@ -972,7 +972,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
         obj.offsetColumn
       ) {
         errorDataset.push(
-          "For SFTP/FTPS customQuery, customSql, incremental, conditionalExpression, offsetColumn fields should be Blank "
+          "For SFTP/FTPS customQuery, customSql, incremental, conditionalExpression, offsetColumn fields should be blank "
         );
       }
     } else {
@@ -990,7 +990,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
         obj.escapeCode
       ) {
         errorDataset.push(
-          " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCode should be Blank "
+          " In jdbc dataset level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, path, escapeCode should be blank "
         );
       }
 
@@ -1035,21 +1035,21 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
       if (obj.customQuery.toLowerCase() == "yes") {
         if (!obj.customSql) {
-          errorDataset.push(" Custom Sql  is required  ");
+          errorDataset.push(" Custom sql is required  ");
         }
       }
       if (obj.customQuery.toLowerCase() == "no") {
         if (!obj.tableName) {
-          errorDataset.push(" Table Name  is required  ");
+          errorDataset.push(" Table name is required  ");
         } else {
           if (obj.tableName.length >= 255) {
-            errorDataset.push(" Table Name  Max of 255 characters  ");
+            errorDataset.push(" Table name max of 255 characters  ");
           }
         }
         if (helper.stringToBoolean(obj.incremental)) {
           if (!obj.offsetColumn) {
             errorDataset.push(
-              " offsetColumn  is required and data type should be string  "
+              " OffsetColumn is required and data type should be string  "
             );
           }
         }
@@ -1057,7 +1057,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
     }
     // console.log("insert data set");
     if (errorDataset.length > 0) {
-      errorDataset.splice(0, 0, `DataSet External Id -${externalID} `);
+      errorDataset.splice(0, 0, `DataSet external id -${externalID} `);
       return { sucRes: dataSet, errRes: errorDataset };
     }
 
@@ -1137,7 +1137,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
     );
     dsObj.externalId = obj.externalID;
     dsObj.datasetid = dsUid;
-    dsObj.action = "Data set created successfully.";
+    dsObj.action = "Dataset created successfully.";
     dsObj.timestamp = ts;
     dataSet.push(dsObj);
 
@@ -1194,7 +1194,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
           if (!helper.isColumnType(el.dataType)) {
             errorDataset.push(
-              " Data type's Supported values : Numeric, Alphanumeric or Date"
+              " Data type's supported values : Numeric, Alphanumeric or Date"
             );
           }
 
@@ -1210,7 +1210,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
             ) {
               if (el.characterMin >= el.characterMax) {
                 errorDataset.push(
-                  "MinCharacter always less than MaxCharacter "
+                  "Min character always less than max character "
                 );
               }
             }
@@ -1267,7 +1267,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
           if (!helper.isColumnType(el.dataType)) {
             errorDataset.push(
-              " Data type's Supported values : Numeric, Alphanumeric or Date"
+              " Data type's supported values : Numeric, Alphanumeric or Date"
             );
           }
 
@@ -1286,13 +1286,13 @@ const saveDataset = (exports.datasetLevelInsert = async (
           ) {
             // console.log(val.key, val.value);
             errorDataset.push(
-              "For JBDC characterMin, characterMax, lov, position fields should be Blank "
+              "For jdbc characterMin, characterMax, lov, position fields should be blank "
             );
           }
         }
 
         if (errorDataset.length > 0) {
-          errorDataset.splice(0, 0, `Dataset External Id -${obj.externalID} `);
+          errorDataset.splice(0, 0, `Dataset external id -${obj.externalID} `);
           return { sucRes: dataSet, errRes: errorDataset };
         }
 
@@ -1324,7 +1324,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
         cdObj.colmunid = CDUid;
         cdObj.externalId = obj.externalID;
-        cdObj.action = "column definition created successfully.";
+        cdObj.action = "Column definition created successfully.";
         cdObj.timestamp = ts;
         dataSet.push(cdObj);
 
@@ -1352,7 +1352,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
   } catch (err) {
     console.log(err);
     //throw error in json response with status 500.
-    Logger.error("catch :Data Set Level Insert");
+    Logger.error("catch :Dataset level insert");
     Logger.error(err);
   }
 });
@@ -1523,14 +1523,14 @@ exports.dataflowUpdate = async (
     } else {
       newDfobj.externalId = externalID;
       newDfobj.dataSetid = DFId;
-      newDfobj.action = "Data Flow update successfully.";
+      newDfobj.action = "Dataflow update successfully.";
       newDfobj.timestamp = ts;
       dataflow.push(newDfobj);
       return { sucRes: dataflow };
     }
   } catch (e) {
     console.log(e);
-    Logger.error("catch :Data Flow Update");
+    Logger.error("catch :Dataflow Update");
     Logger.error(e);
   }
 };
@@ -1601,7 +1601,7 @@ exports.packageUpdate = async (
         if (typeof data.type != "undefined") {
           if (!helper.isPackageType(data.type)) {
             errorPackage.push(
-              " Package type's Supported values : 7Z, ZIP, RAR, SAS "
+              " Package type's supported values : 7Z, ZIP, RAR, SAS "
             );
           }
         }
@@ -1616,7 +1616,7 @@ exports.packageUpdate = async (
       if (typeof data.type != "undefined") {
         if (!helper.isPackageType(data.type)) {
           errorPackage.push(
-            " Package type's Supported values : 7Z, ZIP, RAR, SAS "
+            " Package type's supported values : 7Z, ZIP, RAR, SAS "
           );
         }
       }
@@ -1626,7 +1626,7 @@ exports.packageUpdate = async (
         const first = data.name.charAt(data.name.charAt(0));
         if (str2.test(data.name) === false) {
           errorPackage.push(
-            " package naming convention should be end with dot Extension "
+            " Package naming convention should be end with dot extension "
           );
         } else {
           if (last === "." || first === ".") {
@@ -1639,17 +1639,17 @@ exports.packageUpdate = async (
         !helper.stringToBoolean(data.noPackageConfig) ||
         !helper.stringToBoolean(data.active)
       ) {
-        errorPackage.push(" In JDBC noPackageConfig, active should be True ");
+        errorPackage.push(" In jdbc no package config, active should be true ");
       }
       if (data.type || data.sasXptMethod || data.path || data.name) {
         errorPackage.push(
-          " In JDBC type, sasXptMethod, path, name should be blank "
+          " In jdbc type, sasXptMethod, path, name should be blank "
         );
       }
     }
 
     if (errorPackage.length > 0) {
-      errorPackage.splice(0, 0, `Datapackage External Id -${externalID} `);
+      errorPackage.splice(0, 0, `Datapackage external id -${externalID} `);
       return { sucRes: data_packages, errRes: errorPackage };
     }
 
@@ -1715,7 +1715,7 @@ exports.packageUpdate = async (
     } else {
       newObj.externalId = externalID;
       newObj.datapackageid = DPId;
-      newObj.action = "Data package update successfully.";
+      newObj.action = "Datapackage update successfully.";
       newObj.timestamp = ts;
       data_packages.push(newObj);
 
@@ -1723,7 +1723,7 @@ exports.packageUpdate = async (
     }
   } catch (e) {
     console.log(e);
-    Logger.error("catch :Data package update");
+    Logger.error("catch :Datapackage update");
     Logger.error(e);
   }
 };
@@ -1798,7 +1798,7 @@ exports.datasetUpdate = async (
           const first = data.name.charAt(data.name.charAt(0));
           if (str2.test(data.name) === false) {
             errorDataset.push(
-              " File Naming Convention should be end with dot Extension "
+              " File naming convention should be end with dot extension "
             );
           } else {
             if (last === "." || first === ".") {
@@ -1832,7 +1832,7 @@ exports.datasetUpdate = async (
 
         if (data.dataTransferFrequency === 0) {
           errorDataset.push(
-            "dataTransferFrequency nmust be greater than zero "
+            "Data transfer frequency must be greater than zero "
           );
         }
       }
@@ -1903,7 +1903,7 @@ exports.datasetUpdate = async (
         data.offsetColumn
       ) {
         errorDataset.push(
-          " For SFTP/FTPS, customQuery, customSql incremental, conditionalExpression, offsetColumn fields should be Blank "
+          " For SFTP/FTPS, customQuery, customSql incremental, conditionalExpression, offsetColumn fields should be blank "
         );
       }
     } else {
@@ -1929,7 +1929,7 @@ exports.datasetUpdate = async (
         });
 
         if (data.columnCount === 0) {
-          errorDataset.push("columnCount not equal to zero ");
+          errorDataset.push("ColumnCount not equal to zero ");
         }
       }
       if (typeof data.customQuery != "undefined") {
@@ -1959,29 +1959,29 @@ exports.datasetUpdate = async (
         data.escapeCode
       ) {
         errorDataset.push(
-          " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCode should be Blank "
+          " In jdbc dataset level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, path, escapeCode should be blank "
         );
       }
 
       if (data.customQuery) {
         if (helper.stringToBoolean(data.customQuery)) {
           if (!data.customSql) {
-            errorDataset.push(" Custom Sql  is required  ");
+            errorDataset.push(" Custom sql is required  ");
           }
         }
         if (!helper.stringToBoolean(data.customQuery)) {
           if (!data.tableName) {
-            errorDataset.push(" Table Name  is required  ");
+            errorDataset.push(" Table name is required  ");
           } else {
             if (data.tableName.length >= 255) {
-              errorDataset.push(" Table Name  Max of 255 characters  ");
+              errorDataset.push(" Table name max of 255 characters  ");
             }
           }
           if (typeof data.incremental != "undefined") {
             if (helper.stringToBoolean(data.incremental)) {
               if (!data.offsetColumn) {
                 errorDataset.push(
-                  " offsetColumn  is required and data type should be string "
+                  " OffsetColumn is required and data type should be string "
                 );
               }
             }
@@ -1991,7 +1991,7 @@ exports.datasetUpdate = async (
     }
 
     if (errorDataset.length > 0) {
-      errorDataset.splice(0, 0, `DataSet External Id -${externalID} `);
+      errorDataset.splice(0, 0, `DataSet external id -${externalID} `);
       return { sucRes: dataset_update, errRes: errorDataset };
     }
 
@@ -2125,7 +2125,7 @@ exports.datasetUpdate = async (
     } else {
       newObj.externalId = externalID;
       newObj.dataSetid = DSId;
-      newObj.action = "Data Set update successfully.";
+      newObj.action = "Dataset update successfully.";
       newObj.timestamp = ts;
       dataset_update.push(newObj);
 
@@ -2133,7 +2133,7 @@ exports.datasetUpdate = async (
     }
   } catch (e) {
     console.log(e);
-    Logger.error("catch :Data set update");
+    Logger.error("catch :Dataset update");
     Logger.error(e);
   }
 };

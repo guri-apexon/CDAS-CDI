@@ -197,7 +197,7 @@ const Dataset = () => {
 
   useEffect(() => {
     if (isDatasetCreated && isDatasetCreation) {
-      messageContext.showSuccessMessage("Dataset Created Successfully");
+      messageContext.showSuccessMessage("Dataset created successfully");
       history.push(`/dashboard/dataset/${dsId}`);
       dispatch(updatePanel());
     }

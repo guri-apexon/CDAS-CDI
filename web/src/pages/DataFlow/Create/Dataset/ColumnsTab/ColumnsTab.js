@@ -67,7 +67,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
           setImportedData(dataParse);
         } else {
           messageContext.showErrorMessage(
-            `The Selected file does not match the template`
+            `The selected file does not match the template`
           );
           setSelectedFile([]);
         }
@@ -150,7 +150,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
           setIsImportReady(true);
         } else {
           messageContext.showErrorMessage(
-            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+            `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
           );
           handleDelete();
         }

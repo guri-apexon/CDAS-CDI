@@ -17,9 +17,7 @@ exports.searchList = async (req, res) => {
       WHERE LOWER(name) LIKE '%${searchParam}%' and dataflowid='${dataflowId}';`;
     }
     const datasetQuery = `SELECT datasetid, mnemonic, active, type from ${schemaName}.dataset where datapackageid = $1`;
-    Logger.info({
-      message: "packagesList",
-    });
+    Logger.info({ message: "packagesList" });
 
     DB.executeQuery(searchQuery).then(async (response) => {
       const packages = response.rows || [];
@@ -50,6 +48,7 @@ exports.searchList = async (req, res) => {
 exports.addPackage = function (req, res) {
   try {
     const packageID = helper.createUniqueID();
+    Logger.info({ message: "addPackage" });
     const {
       compression_type,
       naming_convention,
@@ -107,6 +106,7 @@ exports.addPackage = function (req, res) {
 exports.changeStatus = function (req, res) {
   try {
     const { active, package_id, user_id } = req.body;
+    Logger.info({ message: "Package changeStatus" });
     const query = `UPDATE ${schemaName}.datapackage
     SET active = ${active}
     WHERE datapackageid = '${package_id}' RETURNING *`;
@@ -140,6 +140,8 @@ exports.deletePackage = function (req, res) {
     const query = `UPDATE ${schemaName}.datapackage
     SET del_flg = 'Y'
     WHERE datapackageid = '${package_id}' RETURNING *`;
+
+    Logger.info({ message: "deletePackage" });
 
     const dataSetQuery = `UPDATE ${schemaName}.dataset SET del_flg = 'Y' WHERE datapackageid = '${package_id}' RETURNING datasetid`;
     const columnQuery = `UPDATE ${schemaName}.columndefinition SET del_flg = 1 WHERE datasetid = $1`;
