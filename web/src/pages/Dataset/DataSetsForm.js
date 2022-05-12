@@ -15,12 +15,13 @@ import Typography from "apollo-react/components/Typography";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
 import {
-  ReduxFormAutocomplete,
+  // ReduxFormAutocomplete,
   ReduxFormRadioGroup,
   ReduxFormSwitch,
   ReduxFormSelect,
   ReduxFormTextField,
   ReduxFormPassword,
+  ReduxFormAutocompleteV2,
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation, {
   passwordWarnings,
@@ -53,7 +54,9 @@ const DataSetsFormBase = (props) => {
     prodLock,
     values,
   } = props;
-  const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
+
+  // const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
+  const [cdtValue, setCdtValue] = useState(null);
 
   const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
 
@@ -77,25 +80,32 @@ const DataSetsFormBase = (props) => {
 
   useEffect(() => {
     if (values?.clinicalDataType) {
-      const filteredDK = datakind?.filter(
+      const selectedDK = datakind?.find(
         (e) => e.value === values.clinicalDataType[0]
       );
-      if (filteredDK?.length) {
-        SetSelectedClinicalData([]);
-        setTimeout(() => {
-          SetSelectedClinicalData([filteredDK[0].value]);
-        });
-        // change("DataSetsForm", "clinicalDataType");
-      }
+      // console.log("values", values, selectedDK);
+      setCdtValue(selectedDK);
+      // if (filteredDK?.length) {
+      //   SetSelectedClinicalData([]);
+      //   setTimeout(() => {
+      //     SetSelectedClinicalData([filteredDK[0].value]);
+      //   });
+      //   // change("DataSetsForm", "clinicalDataType");
+      // }
     }
-    if (!values) {
-      SetSelectedClinicalData(["1"]);
+    if (!values || !values?.clinicalDataType) {
+      setCdtValue(null);
     }
   }, [values]);
 
   useEffect(() => {
     setRenderClinicalDataType(false);
   }, [datakind, formValues.clinicalDataType]);
+
+  const onChangeCDT = (v) => {
+    setCdtValue(v);
+    dispatch(change("DataSetsForm", "clinicalDataType", [v.datakindid]));
+  };
 
   useEffect(() => {
     if (!renderClinicalDataType)
@@ -241,13 +251,17 @@ const DataSetsFormBase = (props) => {
             </Grid>
             <Grid item md={5}>
               {datakind && renderClinicalDataType && (
-                <ReduxFormAutocomplete
+                <ReduxFormAutocompleteV2
                   name="clinicalDataType"
                   autoSelect
                   id="clinicalDataType"
                   label="Clinical Data Type"
                   source={datakind}
                   className="smallSize_autocomplete"
+                  input={{
+                    value: cdtValue,
+                    onChange: onChangeCDT,
+                  }}
                   variant="search"
                   singleSelect
                   fullWidth
