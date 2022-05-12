@@ -532,13 +532,8 @@ exports.getDatasetDetail = async (req, res) => {
 
 exports.previewSql = async (req, res) => {
   try {
-    // let _locationType = "MySQL";
-    // let responseBody = {};
-    let recordsCount = 10;
     let {
       locationType,
-      // tableName,
-      // columnCount,
       customQuery,
       connectionPassword,
       connectionUserName,
@@ -546,13 +541,16 @@ exports.previewSql = async (req, res) => {
       customSql,
       driverName,
     } = req.body;
-    // if (locationType === _locationType) {
     if (customQuery === "Yes") {
-      //get connection
       let q = customSql;
+      let recordsCount = 10;
       switch (locationType?.toLowerCase()) {
         case "oracle":
           q = `${q} FETCH FIRST ${recordsCount} ROWS ONLY`;
+          break;
+        case "sql server":
+        case "sqlserver":
+          q = `${q} SET ROWCOUNT ${recordsCount}`;
           break;
         default:
           q = `${q} LIMIT ${recordsCount};`;
@@ -568,7 +566,10 @@ exports.previewSql = async (req, res) => {
         res
       );
     } else {
-      return apiResponse.ErrorResponse(res, "Custom query is not true");
+      return apiResponse.ErrorResponse(
+        res,
+        "Please select custom query yes to proceed"
+      );
     }
   } catch (error) {
     Logger.error(error);
