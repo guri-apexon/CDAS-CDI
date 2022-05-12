@@ -55,9 +55,7 @@ export default function DSColumnTable({
 
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
-  const [editedRows, setEditedRows] = useState([
-    { uniqueId: `u0`, ...columnObj },
-  ]);
+  const [editedRows, setEditedRows] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [editMode, setEditMode] = useState(false);
@@ -79,6 +77,7 @@ export default function DSColumnTable({
   const userInfo = getUserInfo();
 
   useEffect(() => {
+    console.log("dataOrigin", dataOrigin);
     if (dataOrigin === "manually") {
       setSelectedRows([`u0`]);
       setEditedRows([{ uniqueId: `u0`, ...columnObj }]);
@@ -139,13 +138,14 @@ export default function DSColumnTable({
   }, [editedRows]);
 
   useEffect(() => {
-    if (selectedRows.length > 0) {
-      setIsEditAll(true);
-      setEditMode(true);
-    } else {
-      setIsEditAll(false);
-      setEditMode(false);
-    }
+    console.log("selectedRows", selectedRows);
+    // if (selectedRows.length > 0) {
+    //   setIsEditAll(true);
+    //   setEditMode(true);
+    // } else {
+    //   setIsEditAll(false);
+    //   setEditMode(false);
+    // }
   }, [selectedRows]);
 
   const changeValuesTitle = (newValues) => {
@@ -631,6 +631,8 @@ export default function DSColumnTable({
   const onCancelAll = () => {
     setSelectedRows([]);
     setEditedRows([...rows]);
+    setIsEditAll(false);
+    setEditMode(false);
   };
 
   const onRowCancel = (uniqueId) => {
@@ -776,6 +778,7 @@ export default function DSColumnTable({
             dsProdLock,
             changeHandler,
             haveHeader,
+            rowInEditMode: editedRows,
           }}
         />
       </div>

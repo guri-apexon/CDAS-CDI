@@ -256,7 +256,12 @@ export const ActionCell = ({ row }) => {
     onRowDelete,
     editMode: eMode,
     onRowSave,
+    isEditAll,
   } = row;
+  console.log("isEditAll", isEditAll);
+  if (isEditAll) {
+    return null;
+  }
 
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
@@ -431,118 +436,126 @@ export const CustomHeader = ({
   toggleFilters,
   changeHandler,
   haveHeader,
-}) => (
-  <div>
-    <Grid container alignItems="center">
-      {isEditAll && (
-        <>
-          <Button size="small" style={{ marginRight: 8 }} onClick={onCancelAll}>
-            Cancel all
-          </Button>
-          <Button
-            size="small"
-            variant="primary"
-            onClick={onSaveAll}
-            disabled={disableSaveAll}
-          >
-            Save all
-          </Button>
-        </>
-      )}
-      {!isMultiAdd && (
-        <>
-          {isSftp(locationType) && (
-            <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
-              <IconMenuButton
-                id="actions-1"
-                menuItems={addMenuItems}
-                size="small"
-                disabled={isEditAll}
-              >
-                <Plus />
-              </IconMenuButton>
+  rowInEditMode,
+}) => {
+  console.log("rowInEditMode", rowInEditMode);
+  return (
+    <div>
+      <Grid container alignItems="center">
+        {isEditAll && (
+          <>
+            <Button
+              size="small"
+              style={{ marginRight: 8 }}
+              onClick={onCancelAll}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="small"
+              variant="primary"
+              onClick={onSaveAll}
+              disabled={disableSaveAll}
+            >
+              Save
+            </Button>
+          </>
+        )}
+        {!isMultiAdd && (
+          <>
+            {isSftp(locationType) && (
+              <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
+                <IconMenuButton
+                  id="actions-1"
+                  menuItems={addMenuItems}
+                  size="small"
+                  disabled={isEditAll}
+                >
+                  <Plus />
+                </IconMenuButton>
+              </Tooltip>
+            )}
+            <Tooltip title={!isEditAll && "Edit all"} disableFocusListener>
+              <IconButton color="primary" size="small" disabled={isEditAll}>
+                <Pencil onClick={onEditAll} />
+              </IconButton>
             </Tooltip>
-          )}
-          <Tooltip title={!isEditAll && "Edit all"} disableFocusListener>
-            <IconButton color="primary" size="small" disabled={isEditAll}>
-              <Pencil onClick={onEditAll} />
+          </>
+        )}
+        {isMultiAdd && (
+          <>
+            <TextField
+              placeholder="# of columns"
+              type="number"
+              min="1"
+              max="499"
+              style={{ margin: "-5px 16px 0px 0px" }}
+              onChange={(e) => addNewRows(e.target.value)}
+              defaultValue={newRows}
+              size="small"
+            />
+            <Button
+              size="small"
+              style={{ marginRight: 8, width: 50 }}
+              onClick={cancelMulti}
+            >
+              Cancel
+            </Button>
+            <Button size="small" variant="primary" onClick={addMulti}>
+              Add
+            </Button>
+          </>
+        )}
+        {isSftp(locationType) && (
+          <Tooltip
+            title={
+              (!isEditAll || !dsProdLock || !dsTestLock || haveHeader) &&
+              "Import dataset column settings"
+            }
+            disableFocusListener
+          >
+            <IconButton
+              color="primary"
+              size="small"
+              disabled={isEditAll || dsProdLock || dsTestLock || !haveHeader}
+              onClick={changeHandler}
+            >
+              <Upload />
             </IconButton>
           </Tooltip>
-        </>
-      )}
-      {isMultiAdd && (
-        <>
-          <TextField
-            placeholder="# of columns"
-            type="number"
-            min="1"
-            max="499"
-            style={{ margin: "-5px 16px 0px 0px" }}
-            onChange={(e) => addNewRows(e.target.value)}
-            defaultValue={newRows}
-            size="small"
-          />
-          <Button
-            size="small"
-            style={{ marginRight: 8, width: 50 }}
-            onClick={cancelMulti}
-          >
-            Cancel
-          </Button>
-          <Button size="small" variant="primary" onClick={addMulti}>
-            Add
-          </Button>
-        </>
-      )}
-      {isSftp(locationType) && (
-        <Tooltip
-          title={
-            (!isEditAll || !dsProdLock || !dsTestLock || haveHeader) &&
-            "Import dataset column settings"
-          }
-          disableFocusListener
-        >
-          <IconButton
-            color="primary"
-            size="small"
-            disabled={isEditAll || dsProdLock || dsTestLock || !haveHeader}
-            onClick={changeHandler}
-          >
-            <Upload />
-          </IconButton>
-        </Tooltip>
-      )}
-      <Divider
-        orientation="vertical"
-        flexItem
-        style={{ marginLeft: 15, marginRight: 15 }}
-      />
+        )}
+        <Divider
+          orientation="vertical"
+          flexItem
+          style={{ marginLeft: 15, marginRight: 15 }}
+        />
 
-      <Search
-        placeholder="Search"
-        size="small"
-        style={{ margin: "-5px 16px 0px 0px" }}
-        onChange={searchRows}
-        value={searchValue}
-        disabled={isEditAll}
-      />
-      <Button
-        size="small"
-        variant="secondary"
-        icon={Filter}
-        disabled={isEditAll}
-        onClick={toggleFilters}
-      >
-        Filter
-      </Button>
-      <IconMenuButton
-        disabled={isEditAll}
-        id="actions-2"
-        menuItems={menuItems}
-        size="small"
-      >
-        <EllipsisVertical />
-      </IconMenuButton>
-    </Grid>
-  </div>
-);
+        <Search
+          placeholder="Search"
+          size="small"
+          style={{ margin: "-5px 16px 0px 0px" }}
+          onChange={searchRows}
+          value={searchValue}
+          disabled={isEditAll}
+        />
+        <Button
+          size="small"
+          variant="secondary"
+          icon={Filter}
+          disabled={isEditAll}
+          onClick={toggleFilters}
+        >
+          Filter
+        </Button>
+        <IconMenuButton
+          disabled={isEditAll}
+          id="actions-2"
+          menuItems={menuItems}
+          size="small"
+        >
+          <EllipsisVertical />
+        </IconMenuButton>
+      </Grid>
+    </div>
+  );
+};
