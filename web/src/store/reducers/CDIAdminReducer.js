@@ -75,7 +75,7 @@ const CDIAdminReducer = (state = initialState, action) =>
         break;
       case UPDATE_LOCATION_SUCCESS:
         newState.upsertLoading = false;
-        newState.success = "Location updated succesfully";
+        newState.success = "Location was updated successfully";
         newState.upserted = !state.upserted;
         break;
       case UPDATE_LOCATION_FAILURE:
@@ -88,7 +88,7 @@ const CDIAdminReducer = (state = initialState, action) =>
       case STORE_LOCATION_SUCCESS:
         newState.upsertLoading = false;
         newState.upserted = !state.upserted;
-        newState.success = "Location inserted succesfully";
+        newState.success = "Location was saved successfully";
         newState.createTriggered = !state.createTriggered;
         break;
       case STORE_LOCATION_FAILURE:
@@ -120,7 +120,7 @@ const CDIAdminReducer = (state = initialState, action) =>
         break;
       case UPDATE_SETTINGS_SUCCESS:
         newState.upsertLoading = false;
-        newState.success = "Settings updated succesfully";
+        newState.success = "Success, you've updated system setting";
         newState.upserted = !state.upserted;
         break;
       case UPDATE_SETTINGS_FAILURE:
@@ -133,7 +133,7 @@ const CDIAdminReducer = (state = initialState, action) =>
       case CREARE_SETTINGS_SUCCESS:
         newState.upsertLoading = false;
         newState.upserted = !state.upserted;
-        newState.success = "Settings inserted succesfully";
+        newState.success = "Success, you've created a new system setting";
         break;
       case CREARE_SETTINGS_FAILURE:
         newState.upsertLoading = false;

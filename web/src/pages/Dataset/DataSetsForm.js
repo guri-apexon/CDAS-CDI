@@ -122,7 +122,7 @@ const DataSetsFormBase = (props) => {
             </Typography>
             <div className="ds-status">
               <ReduxFormSwitch
-                label="Dataset Active"
+                label="Dataset active"
                 name="active"
                 className="MuiSwitch"
                 size="small"

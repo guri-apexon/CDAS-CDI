@@ -94,7 +94,7 @@ exports.addPackage = function (req, res) {
       if (!historyVersion) throw new Error("History not updated");
       return apiResponse.successResponseWithData(
         res,
-        "Datapackage created successfully",
+        "Success! Data Package saved.",
         {}
       );
     });
@@ -125,7 +125,7 @@ exports.changeStatus = function (req, res) {
       if (!historyVersion) throw new Error("History not updated");
       return apiResponse.successResponseWithData(
         res,
-        "Updated successfully",
+        "Success! Data Package updated.",
         {}
       );
     });
@@ -168,7 +168,7 @@ exports.deletePackage = function (req, res) {
 
       return apiResponse.successResponseWithData(
         res,
-        "Deleted successfully",
+        "Success! Data Package deleted.",
         {}
       );
     });

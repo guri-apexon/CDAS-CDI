@@ -430,7 +430,7 @@ const JDBCForm = forwardRef((props, ref) => {
             </Typography>
             <div className="ds-status">
               <Switch
-                label="Dataset Active"
+                label="Dataset active"
                 name="active"
                 checked={dsActive}
                 className="MuiSwitch"
