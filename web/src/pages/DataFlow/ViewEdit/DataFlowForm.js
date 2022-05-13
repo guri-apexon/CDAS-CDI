@@ -122,7 +122,7 @@ const DataFlowFormBase = (props) => {
   const [renderLocation, setRenderLocation] = useState(false);
 
   useEffect(() => {
-    console.log("initialValues", initialValues);
+    // console.log("initialValues", initialValues);
     if (initialValues) {
       const { dataflowType } = initialValues;
       const selectedV = vendors?.find(
@@ -286,7 +286,7 @@ const DataFlowFormBase = (props) => {
             </Grid>
             <Grid item md={7}>
               <Paper className={classes.locationBox}>
-                <Typography>Location</Typography>
+                <Typography>Location settings</Typography>
                 <Typography className={classes.formLabel}>Username</Typography>
                 <Typography className={classes.formText}>{userName}</Typography>
                 <Typography className={classes.formLabel}>Password</Typography>

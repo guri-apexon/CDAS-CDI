@@ -6,7 +6,6 @@ import { makeStyles } from "@material-ui/core/styles";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
-import Banner from "apollo-react/components/Banner";
 import Panel from "apollo-react/components/Panel/Panel";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
@@ -18,7 +17,6 @@ import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 import "./Dataset.scss";
 import {
-  hideErrorMessage,
   getDataKindData,
   saveDatasetData,
   updateDatasetData,
@@ -26,8 +24,6 @@ import {
   getDatasetColumns,
   resetFTP,
   resetJDBC,
-  getSQLColumns,
-  getLocationDetails,
 } from "../../store/actions/DataSetsAction";
 import { updatePanel } from "../../store/actions/DataPackageAction";
 import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
@@ -171,9 +167,6 @@ const Dataset = () => {
     if (fromWhere === "IngestionProperties") {
       if (selectedDSDetails.dataflowid) {
         dispatch(getDataFlowDetail(selectedDSDetails.dataflowid));
-        // setTimeout(() => {
-        //   dispatch(getLocationDetails(srclocid));
-        // }, 1000);
       } else {
         history.push("/dashboard");
       }
@@ -182,7 +175,7 @@ const Dataset = () => {
 
   useEffect(() => {
     setValue(0);
-    setColumnsActive(false);
+    //   setColumnsActive(false);
   }, [params]);
 
   useEffect(() => {
@@ -197,7 +190,7 @@ const Dataset = () => {
 
   useEffect(() => {
     if (isDatasetCreated && isDatasetCreation) {
-      messageContext.showSuccessMessage("Dataset created successfully");
+      messageContext.showSuccessMessage("Dataset was saved successfully");
       history.push(`/dashboard/dataset/${dsId}`);
       dispatch(updatePanel());
     }
@@ -216,7 +209,6 @@ const Dataset = () => {
           setValue(1);
           setColumnsActive(true);
         } else if (isCustomSQL === "No") {
-          // dispatch(getSQLColumns(tableName));
           setColumnsActive(true);
           setValue(1);
         } else {
@@ -231,7 +223,6 @@ const Dataset = () => {
       if (isSftp(locationType)) {
         setColumnsActive(true);
       } else if (isCustomSQL === "No") {
-        // dispatch(getSQLColumns(tableName));
         setColumnsActive(true);
       } else {
         setColumnsActive(false);
@@ -326,23 +317,11 @@ const Dataset = () => {
     []
   );
 
-  useEffect(() => {
-    setTimeout(() => {
-      dispatch(hideErrorMessage());
-    }, 7500);
-  }, [error, sucessMsg]);
-
   return (
     <>
-      {(error || sucessMsg) && (
-        <Banner
-          variant={sucessMsg ? "success" : "error"}
-          open={true}
-          onClose={() => dispatch(hideErrorMessage())}
-          style={{ zIndex: 9999, top: "5%" }}
-          message={error || sucessMsg}
-        />
-      )}
+      {error && messageContext.showErrorMessage(error)}
+      {sucessMsg && messageContext.showSuccessMessage(sucessMsg)}
+
       <div className="pageRoot">
         <Panel
           onClose={handleClose}
