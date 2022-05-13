@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import { TextField } from "apollo-react/components/TextField/TextField";
@@ -257,9 +257,9 @@ export const ActionCell = ({ row }) => {
     isEditMode: eMode,
     onRowSave,
     isEditAll,
+    editedCount,
   } = row;
-  console.log("isEditAll", isEditAll);
-  if (isEditAll) {
+  if (editedCount > 1) {
     return null;
   }
 
@@ -268,7 +268,7 @@ export const ActionCell = ({ row }) => {
       <Button
         size="small"
         style={{ marginRight: 8 }}
-        onClick={() => onRowCancel(uniqueId)}
+        onClick={() => onRowCancel(row)}
       >
         Cancel
       </Button>
@@ -283,7 +283,7 @@ export const ActionCell = ({ row }) => {
     </div>
   ) : (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
-      <IconButton size="small" onClick={() => onRowEdit(uniqueId)}>
+      <IconButton size="small" onClick={() => onRowEdit(row)}>
         <Pencil />
       </IconButton>
       <IconButton size="small" onClick={() => onRowDelete(uniqueId)}>
@@ -419,7 +419,6 @@ export const CustomHeader = ({
   onCancelAll,
   onSaveAll,
   onEditAll,
-  isEditAll,
   addMenuItems,
   menuItems,
   searchValue,
@@ -436,13 +435,12 @@ export const CustomHeader = ({
   toggleFilters,
   changeHandler,
   haveHeader,
-  rowInEditMode,
+  editedCount,
 }) => {
-  console.log("rowInEditMode", rowInEditMode);
   return (
     <div>
       <Grid container alignItems="center">
-        {isEditAll && (
+        {editedCount > 1 && (
           <>
             <Button
               size="small"
@@ -464,19 +462,22 @@ export const CustomHeader = ({
         {!isMultiAdd && (
           <>
             {isSftp(locationType) && (
-              <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
+              <Tooltip
+                title={!editedCount && "Add columns"}
+                disableFocusListener
+              >
                 <IconMenuButton
                   id="actions-1"
                   menuItems={addMenuItems}
                   size="small"
-                  disabled={isEditAll}
+                  disabled={editedCount}
                 >
                   <Plus />
                 </IconMenuButton>
               </Tooltip>
             )}
-            <Tooltip title={!isEditAll && "Edit all"} disableFocusListener>
-              <IconButton color="primary" size="small" disabled={isEditAll}>
+            <Tooltip title={!editedCount && "Edit all"} disableFocusListener>
+              <IconButton color="primary" size="small" disabled={editedCount}>
                 <Pencil onClick={onEditAll} />
               </IconButton>
             </Tooltip>
@@ -509,7 +510,7 @@ export const CustomHeader = ({
         {isSftp(locationType) && (
           <Tooltip
             title={
-              (!isEditAll || !dsProdLock || !dsTestLock || haveHeader) &&
+              (!editedCount || !dsProdLock || !dsTestLock || haveHeader) &&
               "Import dataset column settings"
             }
             disableFocusListener
@@ -517,7 +518,7 @@ export const CustomHeader = ({
             <IconButton
               color="primary"
               size="small"
-              disabled={isEditAll || dsProdLock || dsTestLock || !haveHeader}
+              disabled={editedCount || dsProdLock || dsTestLock || !haveHeader}
               onClick={changeHandler}
             >
               <Upload />
@@ -536,19 +537,19 @@ export const CustomHeader = ({
           style={{ margin: "-5px 16px 0px 0px" }}
           onChange={searchRows}
           value={searchValue}
-          disabled={isEditAll}
+          disabled={editedCount}
         />
         <Button
           size="small"
           variant="secondary"
           icon={Filter}
-          disabled={isEditAll}
+          disabled={editedCount}
           onClick={toggleFilters}
         >
           Filter
         </Button>
         <IconMenuButton
-          disabled={isEditAll}
+          disabled={editedCount}
           id="actions-2"
           menuItems={menuItems}
           size="small"

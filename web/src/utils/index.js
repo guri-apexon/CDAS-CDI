@@ -436,7 +436,7 @@ export const formatDataNew = (incomingData, protNo) => {
       data.length > 0
         ? data.map((e, i) => {
             const newObj = {
-              uniqueId: `u${i}`,
+              uniqueId: i + 1,
               variableLabel: e[1] || "",
               columnName: e[2] || "",
               position: "",
@@ -476,7 +476,7 @@ export const formatData = (incomingData, protNo) => {
       data.length > 0
         ? data.map((e, i) => {
             const newObj = {
-              uniqueId: `u${i}`,
+              uniqueId: i + 1,
               variableLabel: e[1] || "",
               columnName: e[2] || "",
               position: "",
