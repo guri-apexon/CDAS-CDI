@@ -385,13 +385,13 @@ const LocationModal = (props) => {
     setLoadingConn(true);
     const result = await testConnectionFSR(reqBody);
     setLoadingConn(false);
-    if (result.status === "OK") {
+    if (result?.status === "OK") {
       showLocationMessage(
         result.message || "Operation Successfully",
         "success"
       );
     } else {
-      showLocationMessage(result.message || "Something went wrong");
+      showLocationMessage(result?.message || "Something went wrong");
     }
   };
   return (
