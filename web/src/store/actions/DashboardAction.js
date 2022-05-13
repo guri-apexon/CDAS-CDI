@@ -7,6 +7,7 @@ import {
   GET_STUDIES_LIST,
   GET_PINNED_LIST,
   UPDATE_HEADER_COUNT,
+  UPDATE_DF_STATUS,
 } from "../../constants";
 
 export const getStudyboardData = (protocolId) => {
@@ -69,5 +70,13 @@ export const updateHeaderCount = (dfCount, dsCount) => {
     type: UPDATE_HEADER_COUNT,
     dfCount,
     dsCount,
+  };
+};
+
+export const updateDFStatus = (dfId, newStatus) => {
+  return {
+    type: UPDATE_DF_STATUS,
+    dfId,
+    newStatus,
   };
 };

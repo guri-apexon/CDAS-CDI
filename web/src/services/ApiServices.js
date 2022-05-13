@@ -222,7 +222,7 @@ export const activateDF = async (dataFlowId) => {
       dataFlowId,
       userId,
     });
-    return res.data || [];
+    return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);
   }
