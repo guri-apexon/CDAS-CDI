@@ -173,10 +173,10 @@ const Dataset = () => {
     }
   }, []);
 
-  useEffect(() => {
-    setValue(0);
-    setColumnsActive(false);
-  }, [params]);
+  // useEffect(() => {
+  //   setValue(0);
+  //   setColumnsActive(false);
+  // }, [params]);
 
   useEffect(() => {
     if (datasetid === null || datasetid === "new") {
