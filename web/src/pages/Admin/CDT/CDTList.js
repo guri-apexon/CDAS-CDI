@@ -288,7 +288,9 @@ export default function CDTList() {
       }).then((res) => {
         if (res.status === 1) {
           hideViewData();
-          messageContext.showSuccessMessage("Updated successfully");
+          messageContext.showSuccessMessage(
+            "Clinical Data Type was updated successfully"
+          );
           getData();
         }
         if (res.status === 0) {
@@ -307,7 +309,9 @@ export default function CDTList() {
       }).then((res) => {
         if (res.status === 1) {
           hideViewData();
-          messageContext.showSuccessMessage("Created successfully");
+          messageContext.showSuccessMessage(
+            "Clinical Data Type was saved successfully"
+          );
           getData();
         }
         if (res.status === 0) {
