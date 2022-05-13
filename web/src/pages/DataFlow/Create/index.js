@@ -21,7 +21,6 @@ import Modal from "apollo-react/components/Modal";
 import { values } from "lodash";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
-import LeftPanel from "./LeftPanel";
 // eslint-disable-next-line import/no-unresolved
 import Header from "./Header";
 import "../DataFlow.scss";
@@ -174,13 +173,13 @@ const DataFlow = ({
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
-    // console.log("FormValues", FormValues, selectedCard);
+    console.log("FormValues", FormValues, selectedCard);
     if (
       FormValues &&
       FormValues?.dataflowType &&
       FormValues?.dataStructure &&
-      FormValues?.vendor?.length > 0 &&
-      FormValues?.locationName?.length &&
+      FormValues?.vendor?.vend_id &&
+      FormValues?.locationName?.src_loc_id &&
       FormValues?.description &&
       FormValues?.description !== "" &&
       selectedCard?.protocolnumberstandard !== ""
@@ -192,8 +191,8 @@ const DataFlow = ({
         return false;
       }
       const payload = {
-        vend_id: FormValues.vendor[0],
-        src_loc_id: FormValues.locationName[0],
+        vend_id: FormValues.vendor.vend_id,
+        src_loc_id: FormValues.locationName.src_loc_id,
         dataStructure: FormValues.dataStructure,
         testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
@@ -205,7 +204,7 @@ const DataFlow = ({
         externalSystemName: "CDI",
         dataPackage: [{ dataSet: [] }],
         active: true,
-        vendorName: selectedVendor?.vend_nm,
+        vendorName: FormValues?.vendor?.vend_nm,
       };
       setForm(payload);
       setCurrentStep();
@@ -247,7 +246,10 @@ const DataFlow = ({
 
   const AddDatasetData = (data) => {
     const datasetObj = { ...data };
-    if (datasetObj.datasetName === "" || !datasetObj.clinicalDataType?.length) {
+    if (
+      datasetObj.datasetName === "" ||
+      !datasetObj?.clinicalDataType?.datakindid
+    ) {
       messageContext.showErrorMessage("Please fill required fields to proceed");
       return false;
     }
@@ -256,11 +258,11 @@ const DataFlow = ({
       datasetObj.incremental = datasetObj.loadType === "Incremental" ? 1 : 0;
     }
     if (datasetObj.clinicalDataType) {
-      const datakindObj = datakindArr.find((x) => {
-        return x.value === datasetObj.clinicalDataType[0];
-      });
+      // const datakindObj = datakindArr.find((x) => {
+      //   return x.value === datasetObj.clinicalDataType.datakindid;
+      // });
+      datasetObj.dataKind = datasetObj?.clinicalDataType?.name;
       delete datasetObj.clinicalDataType;
-      datasetObj.dataKind = datakindObj?.name;
     }
     if (datasetObj.transferFrequency) {
       datasetObj.dataTransferFrequency = datasetObj.transferFrequency;
@@ -463,13 +465,7 @@ const DataFlow = ({
         onOpen={handleOpen}
         open={isPanelOpen}
         width={20}
-      >
-        {/* <LeftPanel
-          protId={protId}
-          packages={myform.DataPackage}
-          myform={myform}
-        /> */}
-      </Panel>
+      />
       <Panel className={classes.rightPanelExtended} width="100%" hideButton>
         <main className={classes.content}>
           <div className="content">

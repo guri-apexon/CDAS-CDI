@@ -48,9 +48,7 @@ exports.pinStudy = async (req, res) => {
       (usr_id, prot_id, pinned_stdy, pinned_stdy_dt, insrt_tm, updt_tm)
       VALUES($1, $2, '', $3, $3, $3);
       `;
-    Logger.info({
-      message: "pinStudy",
-    });
+    Logger.info({ message: "pinStudy" });
 
     const inset = await DB.executeQuery(insertQuery, [
       userId,
@@ -71,10 +69,7 @@ exports.unPinStudy = async (req, res) => {
   try {
     const { userId, protocolId } = req.body;
     const deleteQuery = `delete from ${schemaName}.study_user_pin where usr_id = $1 and prot_id = $2`;
-    Logger.info({
-      message: "unPinStudy",
-    });
-
+    Logger.info({ message: "unPinStudy" });
     const del = await DB.executeQuery(deleteQuery, [userId, protocolId]);
     return apiResponse.successResponseWithData(res, "Operation success", del);
   } catch (err) {
@@ -91,9 +86,7 @@ exports.getUserPinnedStudies = function (req, res) {
     const userId = req.params.userId;
     const query = `select * from ${schemaName}.study_user_pin sup where usr_id = $1 order by pinned_stdy_dt desc `;
 
-    Logger.info({
-      message: "getUserPinnedStudies",
-    });
+    Logger.info({ message: "getUserPinnedStudies" });
 
     DB.executeQuery(query, [userId]).then((resp) => {
       const studies = resp.rows || [];

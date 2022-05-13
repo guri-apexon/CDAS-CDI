@@ -283,6 +283,7 @@ export const createAutocompleteFilter =
           showCheckboxes
           limitChips={1}
           filterSelectedOptions={false}
+          enableVirtualization
           blurOnSelect={false}
           clearOnBlur={false}
           disableCloseOnSelect
@@ -393,9 +394,7 @@ export const columnObj = {
   values: "",
   isInitLoad: true,
   isFormatLoad: true,
-  isNotValid: false,
   isHavingColumnName: false,
-  isHavingDataType: false,
 };
 
 export const checkHeaders = (data) => {
@@ -445,9 +444,7 @@ export const formatDataNew = (incomingData, protNo) => {
               maxLength: e[9] || "",
               values: e[10] || "",
               isInitLoad: true,
-              isNotValid: false,
               isHavingColumnName: true,
-              isHavingDataType: true,
             };
             return newObj;
           })
@@ -486,9 +483,7 @@ export const formatData = (incomingData, protNo) => {
               maxLength: e[9] || "",
               values: e[10] || "",
               isInitLoad: true,
-              isNotValid: false,
               isHavingColumnName: true,
-              isHavingDataType: true,
             };
             return newObj;
           })

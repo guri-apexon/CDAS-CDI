@@ -216,8 +216,12 @@ export default function DataflowTab({ updateData }) {
     // console.log(deleteStatus);
     if (deleteStatus?.success) {
       messageContext.showSuccessMessage("Dataflow deleted successfully");
-      await updateData();
+      const removedData = rowData.filter((df) => df.dataFlowId !== dataFlowId);
+      setRowData([...removedData]);
+      setSelectedFlow(null);
+      // await updateData();
     } else {
+      setSelectedFlow(null);
       messageContext.showErrorMessage("Something went wrong");
     }
     setShowHardDelete(false);
@@ -792,7 +796,7 @@ export default function DataflowTab({ updateData }) {
         open={showSyncNow}
         title="Sync Dataflow"
         onClose={hideSyncNow}
-        message="Do you want to proceed with SYNC NOW action?"
+        message="Do you want to proceed with sync now action?"
         buttonProps={[
           { label: "Cancel", onClick: hideSyncNow },
           { label: "Ok", onClick: handleSync },

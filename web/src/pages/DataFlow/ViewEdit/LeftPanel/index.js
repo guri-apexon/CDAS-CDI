@@ -183,7 +183,7 @@ const LeftPanel = () => {
             onClick={redirectDataPackage}
             disabled={!isSftp(locationType)}
           >
-            Add Data Package
+            Add data package
           </Button>
         </div>
 

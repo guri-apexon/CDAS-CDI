@@ -31,9 +31,7 @@ async function getTenantId(userId) {
 exports.getSettingsList = function (req, res) {
   try {
     const searchQuery = `SELECT config_id,tenant_id,"name",value from ${schemaName}.cdas_config order by config_id asc`;
-    Logger.info({
-      message: "settingsList",
-    });
+    Logger.info({ message: "getSettingsList" });
 
     DB.executeQuery(searchQuery)
       .then((response) => {
@@ -48,7 +46,7 @@ exports.getSettingsList = function (req, res) {
       });
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :settingsList");
+    Logger.error("catch :getSettingsList");
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
@@ -62,9 +60,7 @@ exports.searchSettingsList = function (req, res) {
               WHERE LOWER(name) LIKE $1 OR 
               LOWER(value) LIKE $2
               `;
-    Logger.info({
-      message: "settingsList",
-    });
+    Logger.info({ message: "searchSettingsList" });
 
     DB.executeQuery(searchQuery, [`%${searchParam}%`, `%${searchParam}%`])
       .then((response) => {
@@ -79,7 +75,7 @@ exports.searchSettingsList = function (req, res) {
       });
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error("catch :settingsList");
+    Logger.error("catch :searchSettingsList");
     Logger.error(err);
 
     return apiResponse.ErrorResponse(res, err);
@@ -111,9 +107,7 @@ exports.updateSettingsData = async function (req, res) {
       values.config_id,
     ];
     const searchQuery = `UPDATE ${schemaName}.cdas_config set name=$1, value=$2, tenant_id=$3, updated_by=$4, updated_on=$5 where config_id=$6`;
-    Logger.info({
-      message: "updateSettings",
-    });
+    Logger.info({ message: "updateSettings" });
     DB.executeQuery(searchQuery, body)
       .then((response) => {
         return apiResponse.successResponseWithData(
@@ -156,9 +150,7 @@ exports.saveSettingsData = async function (req, res) {
     ];
     console.log(body, "body");
     const searchQuery = `INSERT into ${schemaName}.cdas_config (name, value, tenant_id, created_by, created_on, updated_by, updated_on) VALUES($1, $2, $3, $4, $5, $6, $7)`;
-    Logger.info({
-      message: "storesettings",
-    });
+    Logger.info({ message: "storesettings" });
     DB.executeQuery(searchQuery, body)
       .then((response) => {
         return apiResponse.successResponseWithData(
