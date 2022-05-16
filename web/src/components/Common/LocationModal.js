@@ -41,6 +41,7 @@ import {
   testConnectionFSR,
 } from "../../services/ApiServices";
 import { locationExistInDFMsg } from "../../constants";
+import "./LocationModal.scss";
 
 const styles = {
   paper: {
@@ -52,10 +53,6 @@ const styles = {
   modal: {
     minWidth: "775px",
     zIndex: "1350 !important",
-  },
-  rightPan: {
-    paddingTop: "60px !important",
-    paddingLeft: "21px !important",
   },
 };
 const useStyles = makeStyles(styles);
@@ -73,10 +70,10 @@ const LocationForm = (props) => {
   } = props;
 
   return (
-    <form onSubmit={props.handleSubmit}>
+    <form id="location-modal" onSubmit={props.handleSubmit}>
       <div className={`${classes.section} removeClickFromMenu`}>
         <Grid container spacing={2}>
-          <Grid item md={8}>
+          <Grid item md={8} id="for-locationName">
             <ReduxFormTextField
               fullWidth
               InputProps={{ readOnly: props.locationViewMode }}
@@ -86,7 +83,7 @@ const LocationForm = (props) => {
             />
           </Grid>
           {!props.locationViewMode && (
-            <Grid item md={4} className={classes.rightPan}>
+            <Grid item md={4} id="for-active">
               <ReduxFormSwitch
                 label="Active"
                 name="active"
@@ -98,7 +95,7 @@ const LocationForm = (props) => {
               />
             </Grid>
           )}
-          <Grid item md={5}>
+          <Grid item md={5} id="for-externalSytemName">
             <ReduxFormSelect
               name="externalSytemName"
               label="External System Name"
@@ -115,7 +112,7 @@ const LocationForm = (props) => {
               ))}
             </ReduxFormSelect>
           </Grid>
-          <Grid item md={5}>
+          <Grid item md={5} id="for-dataStructure">
             <ReduxFormSelect
               name="dataStructure"
               label="Data Structure"
@@ -132,7 +129,7 @@ const LocationForm = (props) => {
               ))}
             </ReduxFormSelect>
           </Grid>
-          <Grid item md={5}>
+          <Grid item md={5} id="for-locationType">
             <ReduxFormSelect
               name="locationType"
               label="Location Type"
@@ -159,7 +156,7 @@ const LocationForm = (props) => {
           </Grid>
         </Grid>
         <Grid container spacing={2}>
-          <Grid item md={5}>
+          <Grid item md={5} id="for-ipServer">
             <ReduxFormTextField
               fullWidth
               size="small"
@@ -184,7 +181,7 @@ const LocationForm = (props) => {
         {locType !== "SFTP" && locType !== "FTPS" && (
           <>
             <Grid container spacing={2}>
-              <Grid item md={5}>
+              <Grid item md={5} id="for-port">
                 <ReduxFormTextField
                   fullWidth
                   size="small"
@@ -206,7 +203,7 @@ const LocationForm = (props) => {
               </Grid>
             </Grid>
             <Grid container spacing={2}>
-              <Grid item md={5}>
+              <Grid item md={5} id="for-dbName">
                 <ReduxFormTextField
                   fullWidth
                   name="dbName"
@@ -227,7 +224,7 @@ const LocationForm = (props) => {
           </>
         )}
         <Grid container spacing={2}>
-          <Grid item md={5}>
+          <Grid item md={5} id="for-userName">
             <ReduxFormTextField
               fullWidth
               name="userName"
@@ -236,7 +233,7 @@ const LocationForm = (props) => {
               InputProps={{ readOnly: props.locationViewMode }}
             />
           </Grid>
-          <Grid item md={5}>
+          <Grid item md={5} id="for-password">
             <ReduxFormTextField
               type="password"
               size="small"
@@ -385,13 +382,13 @@ const LocationModal = (props) => {
     setLoadingConn(true);
     const result = await testConnectionFSR(reqBody);
     setLoadingConn(false);
-    if (result.status === "OK") {
+    if (result?.status === "OK") {
       showLocationMessage(
         result.message || "Operation Successfully",
         "success"
       );
     } else {
-      showLocationMessage(result.message || "Something went wrong");
+      showLocationMessage(result?.message || "Something went wrong");
     }
   };
   return (
@@ -418,10 +415,9 @@ const LocationModal = (props) => {
           // eslint-disable-next-line no-nested-ternary
           props.locationViewMode ? (
             <div>
-              {" "}
               Location
               <Tag
-                label={props.selectedLoc?.active === 1 ? "Active" : "Inactive"}
+                label={props?.selectedLoc?.active === 1 ? "Active" : "Inactive"}
                 style={{ marginLeft: 30 }}
                 variant={props.selectedLoc?.active === 1 ? "green" : "gray"}
               />

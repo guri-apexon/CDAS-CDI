@@ -264,7 +264,7 @@ const DataPackages = React.memo(() => {
                       size="small"
                       onClick={setShowForm}
                     >
-                      Add Data Package
+                      Add data package
                     </Button>
                   </Box>
                 </>

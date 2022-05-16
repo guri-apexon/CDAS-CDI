@@ -133,7 +133,10 @@ exports.saveDatasetData = async (req, res) => {
         });
       } catch (error) {
         Logger.error(error);
-        return apiResponse.ErrorResponse(res, "Something Wrong with Vault");
+        return apiResponse.ErrorResponse(
+          res,
+          "Something went wrong with vault"
+        );
       }
     }
 
@@ -201,7 +204,7 @@ exports.saveDatasetData = async (req, res) => {
         attributeName
       );
       if (!historyVersion) throw new Error("History not updated");
-      return apiResponse.successResponseWithData(res, "Created Successfully", {
+      return apiResponse.successResponseWithData(res, "Created successfully", {
         ...response.rows[0],
         filePwd: values.filePwd,
       });
@@ -323,7 +326,10 @@ async function updateSQLDataset(res, values) {
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error(err);
-    return apiResponse.ErrorResponse(res, err?.message || "Something wrong");
+    return apiResponse.ErrorResponse(
+      res,
+      err?.message || "Something went wrong"
+    );
   }
 }
 

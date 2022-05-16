@@ -139,7 +139,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
         console.log("newData", newData);
         if (newData?.headerNotMatching) {
           messageContext.showErrorMessage(
-            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+            `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
           );
           handleDelete();
         } else if (newData?.data?.length === 0) {
@@ -153,7 +153,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
         }
       } else {
         messageContext.showErrorMessage(
-          `The Selected File Does Not Match the Template`
+          `The selected file does not match the template`
         );
         handleDelete();
       }

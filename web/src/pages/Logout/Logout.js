@@ -9,7 +9,7 @@ const Logout = () => {
       <Modal
         open={true}
         variant="error"
-        title="Logged Out"
+        title="Logged out"
         message="Thank you for using the Clinical Data Analytics Suite. You are now logged out."
         hideButtons={true}
         id="errorLogout"

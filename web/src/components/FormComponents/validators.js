@@ -74,7 +74,7 @@ export const checkExceSupport = (value, fileType) => {
     !regexpFixed.test(value.toLowerCase()) &&
     fileType.toLowerCase() === "fixed width"
   ) {
-    msg = "Only .txt formats are Supported";
+    msg = "Only .txt formats are supported";
   }
   return msg;
 };
@@ -178,8 +178,8 @@ export const checkCharacterLength = (value, key, minLength, maxLength) => {
 
 export const checkFormat = (value, key = "", dataType = "") => {
   if (dataType === "Alphanumeric") {
-    const regexp = /^[a-zA-Z0-9-_]+$/;
-    if (value !== "" && !regexp.test(value)) {
+    const regexp = /([$]|\\|\s)/gm;
+    if (value !== "" && regexp.test(value)) {
       return (
         key === "format" &&
         "Only alphanumeric format values are allowed for alphanumeric data type"

@@ -1,0 +1,39 @@
+#location-modal {
+  .MuiSwitch span[class^="MuiButtonBase-"] {
+    left: -8px;
+  }
+  #for-locationName {
+    padding: 0 8px;
+  }
+  #for-active {
+    padding: 44px 0 0 20px;
+  }
+  #for-externalSytemName {
+    padding: 0 8px;
+  }
+  #for-dataStructure {
+    padding: 0 8px;
+  }
+  #for-locationType {
+    padding: 0 8px;
+  }
+  #for-ipServer {
+    padding: 0 8px;
+  }
+  #for-port {
+    padding: 0 8px;
+  }
+  #for-dbName {
+    padding: 0 8px;
+  }
+  #for-userName {
+    padding: 0 8px;
+  }
+  #for-password {
+    padding: 0 8px;
+  }
+  #testConnectionButton {
+    padding: 0 8px;
+    padding-top: 42px !important;
+  }
+}

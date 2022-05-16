@@ -158,7 +158,7 @@ const DataSetsFormBase = (props) => {
             style={{ paddingLeft: 0, border: "none" }}
           >
             <ReduxFormSwitch
-              label="Dataset Active"
+              label="Dataset active"
               name="active"
               className="MuiSwitch"
               size="small"
