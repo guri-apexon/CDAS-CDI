@@ -527,11 +527,11 @@ export default function DSColumnTable({
     }
 
     // setSelectedRows([]);
-    const newData = _.orderBy([...formattedColumnData], ["uniqueId"], ["asc"]);
+    // const newData = _.orderBy([...formattedColumnData], ["uniqueId"], ["asc"]);
     // setEditedRows([...newData]);
-    setRows([...newData]);
+    // setRows([...newData]);
 
-    if (newCD && newCD.length > 0) {
+    if (newCD?.length) {
       const created = await createColumns({
         values: newCD,
         dsId,
@@ -541,15 +541,20 @@ export default function DSColumnTable({
         isUpdateQuery: isCustomSQL === "No",
         newQuery,
       });
-      if (created?.status) {
-        created.data?.forEach((d) => {
-          const obj = newCD.find((x) => x.uniqueId === d.frontendUniqueRef);
-          if (obj) obj.dbColumnId = d.columnid;
+      if (created?.status && created.data?.length) {
+        const prevRows = [...rows];
+        created.data.forEach((d) => {
+          const obj = prevRows.find((x) => x.uniqueId === d.frontendUniqueRef);
+          if (obj) {
+            obj.dbColumnId = d.columnid;
+            obj.isEditMode = false;
+          }
         });
+        setRows(prevRows);
       }
     }
 
-    if (existingCD && existingCD.length > 0) {
+    if (existingCD?.length) {
       dispatch(
         updateDatasetColumns(
           existingCD,
@@ -561,6 +566,7 @@ export default function DSColumnTable({
           newQuery
         )
       );
+      setRows((prevRows) => prevRows.map((x) => ({ ...x, isEditMode: false })));
     }
     setEditedBackup([]);
     dispatch(getDatasetColumns(dsId));

@@ -47,7 +47,8 @@ exports.saveDatasetColumns = async (req, res) => {
 
     const datasetColumns = [];
 
-    if (values && values.length > 0) {
+    if (values?.length) {
+      const configJsonArr = [];
       for (let value of values) {
         const columnId = helper.generateUniqueID();
         const body = [
@@ -74,22 +75,16 @@ exports.saveDatasetColumns = async (req, res) => {
           frontendUniqueRef: value.uniqueId,
         });
 
-        const jsonObj = { datasetid: dsId, columnId, ...value };
-        const config_json = JSON.stringify(jsonObj);
-        const attributeName = "New Column Definition ";
-
-        // console.log(dfId, columnId);
-
-        await CommonController.addColumnHistory(
-          columnId,
-          dsId,
-          dfId,
-          dpId,
-          userId,
-          config_json,
-          attributeName
-        );
+        configJsonArr.push({ datasetid: dsId, columnId, ...value });
       }
+      const historyVersion = await CommonController.addColumnHistory(
+        dsId,
+        dfId,
+        dpId,
+        userId,
+        JSON.stringify(configJsonArr)
+      );
+      if (!historyVersion) throw new Error("History not updated");
 
       return apiResponse.successResponseWithData(
         res,
@@ -100,6 +95,7 @@ exports.saveDatasetColumns = async (req, res) => {
 
     return apiResponse.ErrorResponse(res, "Something went wrong");
   } catch (err) {
+    console.log("err", err);
     Logger.error("catch :storeDatasetColumns");
     Logger.error(err);
     if (err.code === "23505") {
@@ -126,68 +122,73 @@ exports.updateColumns = async (req, res) => {
 
     Logger.info({ message: "update set columns" });
 
-    const updateQuery = `UPDATE ${schemaName}.columndefinition
-    SET "name"=$1, "datatype"=$2, primarykey=$3, "required"=$4, charactermin=$5, charactermax=$6, "position"=$7, "format"=$8, lov=$9, "unique"=$10, "variable"=$11, updt_tm=$12 WHERE datasetid=$13 AND columnid=$14`;
-    const selectQuery = `SELECT "name", "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable FROM ${schemaName}.columndefinition where columnid=$1`;
-
-    if (values && values.length > 0) {
+    if (values?.length) {
+      const updateQuery = `UPDATE ${schemaName}.columndefinition
+      SET "name"=$1, "datatype"=$2, primarykey=$3, "required"=$4, charactermin=$5, charactermax=$6, "position"=$7, "format"=$8, lov=$9, "unique"=$10, "variable"=$11, updt_tm=$12 WHERE datasetid=$13 AND columnid=$14`;
+      const selectQuery = `SELECT "name", "datatype", primarykey, required, charactermin, charactermax, "position", format, lov, "unique", variable FROM ${schemaName}.columndefinition where columnid=$1`;
+      const diffValuesObj = {};
+      const oldDataObj = {};
+      const configJson = [];
       for (let value of values) {
         const columnid = value.dbColumnId.trim();
-        const tempData = await DB.executeQuery(selectQuery, [columnid]);
-        const oldData = tempData?.rows[0];
+        if (columnid) {
+          const {
+            rows: [oldData],
+          } = await DB.executeQuery(selectQuery, [columnid]);
 
-        const body = [
-          value.columnName.trim() || null,
-          value.dataType.trim() || null,
-          value.primaryKey === "Yes" ? 1 : 0,
-          value.required === "Yes" ? 1 : 0,
-          value.minLength || 0,
-          value.maxLength || 0,
-          value.position || 0,
-          value.format.trim() || null,
-          value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
-          value.unique === "Yes" ? 1 : 0,
-          value.variableLabel.trim() || null,
-          curDate,
-          dsId,
-          columnid,
-        ];
+          if (oldData) {
+            const body = [
+              value.columnName.trim() || null,
+              value.dataType.trim() || null,
+              value.primaryKey === "Yes" ? 1 : 0,
+              value.required === "Yes" ? 1 : 0,
+              value.minLength || 0,
+              value.maxLength || 0,
+              value.position || 0,
+              value.format.trim() || null,
+              value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
+              value.unique === "Yes" ? 1 : 0,
+              value.variableLabel.trim() || null,
+              curDate,
+              dsId,
+              columnid,
+            ];
+            await DB.executeQuery(updateQuery, body);
 
-        await DB.executeQuery(updateQuery, body);
-
-        const requestData = {
-          variable: value.variableLabel.trim() || null,
-          name: value.columnName.trim() || null,
-          datatype: value.dataType.trim() || null,
-          primarykey: value.primaryKey == "Yes" ? 1 : 0,
-          required: value.required == "Yes" ? 1 : 0,
-          unique: value.unique == "Yes" ? 1 : 0,
-          charactermin: value.minLength || 0,
-          charactermax: value.maxLength || 0,
-          position: value.position || 0,
-          format: value.format.trim() || null,
-          lov: value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
-        };
-
-        const config_json = JSON.stringify(requestData);
-        const diffObj = helper.getdiffKeys(requestData, oldData);
-
-        // console.log(diffObj, dfId, columnid);
-
-        if (Object.keys(diffObj).length != 0) {
-          const historyVersion = await CommonController.addColumnHistory(
-            value.dbColumnId.trim(),
-            dsId,
-            dfId,
-            dpId,
-            userId,
-            config_json,
-            null,
-            oldData,
-            diffObj
-          );
-          if (!historyVersion) throw new Error("History not updated");
+            const requestData = {
+              variable: value.variableLabel.trim() || null,
+              name: value.columnName.trim() || null,
+              datatype: value.dataType.trim() || null,
+              primarykey: value.primaryKey == "Yes" ? 1 : 0,
+              required: value.required == "Yes" ? 1 : 0,
+              unique: value.unique == "Yes" ? 1 : 0,
+              charactermin: value.minLength || 0,
+              charactermax: value.maxLength || 0,
+              position: value.position || 0,
+              format: value.format.trim() || null,
+              lov: value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
+            };
+            const diffObj = helper.getdiffKeys(requestData, oldData);
+            if (diffObj && Object.keys(diffObj).length) {
+              diffValuesObj[columnid] = diffObj;
+              oldDataObj[columnid] = oldData;
+              configJson.push(requestData);
+            }
+          }
         }
+      }
+
+      if (Object.keys(diffValuesObj).length) {
+        const historyVersion = await CommonController.addColumnHistory(
+          dsId,
+          dfId,
+          dpId,
+          userId,
+          JSON.stringify(configJson),
+          oldDataObj,
+          diffValuesObj
+        );
+        if (!historyVersion) throw new Error("History not updated");
       }
 
       const datasetColumns = values;
@@ -219,7 +220,7 @@ exports.deleteColumns = async (req, res) => {
     const curDate = helper.getCurrentTime();
 
     Logger.info({ message: "deleteColumns" });
-    const updateQuery = `update ${schemaName}.columndefinition set del_flg = 1 where columnid = $1`;
+    const updateQuery = `update ${schemaName}.columndefinition set del_flg = 1 where columnid = $1 returning *;`;
 
     if (isUpdateQuery) {
       const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=$3 where datasetid=$1`;
@@ -228,20 +229,16 @@ exports.deleteColumns = async (req, res) => {
 
     DB.executeQuery(updateQuery, [columnId]).then(async (response) => {
       const datasetColumns = response.rows || null;
-
-      // console.log(dfId, columnId);
-      const attributeName = "del_flg ";
+      const configJson = datasetColumns ? datasetColumns[0] : null;
 
       const historyVersion = await CommonController.addColumnHistory(
-        columnId,
         dsId,
         dfId,
         dpId,
         userId,
-        null,
-        attributeName,
-        0,
-        1
+        JSON.stringify(configJson),
+        { [columnId]: { del_flg: 0 } },
+        { [columnId]: { del_flg: 1 } }
       );
       if (!historyVersion) throw new Error("History not updated");
 
