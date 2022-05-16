@@ -436,13 +436,11 @@ module.exports = {
   },
 
   addColumnHistory: function (
-    columnId,
     datasetid,
     dfId,
     dpId,
     userId,
     config_json,
-    column,
     oldData,
     diffObj
   ) {
@@ -452,16 +450,38 @@ module.exports = {
         `SELECT version from ${schemaName}.dataflow_version
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`
       ).then(async (response) => {
-        const historyVersion = response.rows[0]?.version || 0;
+        const version = Number(response.rows[0]?.version || 0) + 1;
         const curDate = helper.getCurrentTime();
-        const version = Number(historyVersion) + 1;
         const values = [dfId, version, config_json, userId, curDate];
         DB.executeQuery(
           `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`,
           values
         ).then(async (response) => {
           const anditLogsQueries = [];
-          if (column) {
+          if (diffObj && oldData) {
+            Object.keys(diffObj).map((columnId) => {
+              const columnsObj = diffObj[columnId];
+              Object.keys(columnsObj).map((key) => {
+                anditLogsQueries.push(
+                  DB.executeQuery(
+                    `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid,datasetid,columnid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                    [
+                      dfId,
+                      dpId,
+                      datasetid,
+                      columnId,
+                      version,
+                      key,
+                      oldData[columnId][key],
+                      diffObj[columnId][key],
+                      userId,
+                      curDate,
+                    ]
+                  )
+                );
+              });
+            });
+          } else {
             anditLogsQueries.push(
               DB.executeQuery(
                 `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid,datasetid,columnid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
@@ -469,9 +489,9 @@ module.exports = {
                   dfId,
                   dpId,
                   datasetid,
-                  columnId,
+                  null,
                   version,
-                  column,
+                  "New Column Definition",
                   null,
                   null,
                   userId,
@@ -479,26 +499,6 @@ module.exports = {
                 ]
               )
             );
-          } else {
-            Object.keys(diffObj).map((key) => {
-              anditLogsQueries.push(
-                DB.executeQuery(
-                  `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid,datasetid,columnid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-                  [
-                    dfId,
-                    dpId,
-                    datasetid,
-                    columnId,
-                    version,
-                    key,
-                    oldData[key],
-                    diffObj[key],
-                    userId,
-                    curDate,
-                  ]
-                )
-              );
-            });
           }
           Promise.all(anditLogsQueries).then((values) => {
             DB.executeQuery(
