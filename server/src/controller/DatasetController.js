@@ -88,7 +88,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
 
     return apiResponse.successResponseWithData(
       res,
-      "Operation success",
+      "Dataset was saved successfully",
       data.rows[0]
     );
   } catch (err) {
@@ -204,10 +204,14 @@ exports.saveDatasetData = async (req, res) => {
         attributeName
       );
       if (!historyVersion) throw new Error("History not updated");
-      return apiResponse.successResponseWithData(res, "Created successfully", {
-        ...response.rows[0],
-        filePwd: values.filePwd,
-      });
+      return apiResponse.successResponseWithData(
+        res,
+        "Dataset was saved successfully",
+        {
+          ...response.rows[0],
+          filePwd: values.filePwd,
+        }
+      );
     });
   } catch (err) {
     Logger.error("catch :storeDataset");
@@ -320,7 +324,7 @@ async function updateSQLDataset(res, values) {
 
     return apiResponse.successResponseWithData(
       res,
-      "Dataset updated successfully",
+      "Dataset was updated successfully",
       updateDS.rows[0]
     );
   } catch (err) {
@@ -422,7 +426,7 @@ exports.updateDatasetData = async (req, res) => {
       values.footerRowNumber > 0 ? 1 : 0,
     ];
 
-    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrow = $19, footerrow = $20, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $21 `;
+    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrow = $19, footerrow = $20, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $21 returning *`;
 
     const updateDS = await DB.executeQuery(updateQuery, [
       ...body,
@@ -458,7 +462,7 @@ exports.updateDatasetData = async (req, res) => {
 
     return apiResponse.successResponseWithData(
       res,
-      "Dataset updated successfully",
+      "Dataset was updated successfully",
       updateDS.rows[0]
     );
   } catch (err) {
