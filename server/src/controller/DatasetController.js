@@ -5,9 +5,6 @@ const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
-// const columnsMock = require("../../public/mock/listColumnsAPI.json");
-// const tablesMock = require("../../public/mock/listTablesAPIResponse.json");
-// const previewSQLMock = require("../../public/mock/responseBodyPreviewSQL.json");
 const CommonController = require("./CommonController");
 
 async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
@@ -88,7 +85,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
 
     return apiResponse.successResponseWithData(
       res,
-      "Operation success",
+      "Dataset was saved successfully",
       data.rows[0]
     );
   } catch (err) {
@@ -204,10 +201,14 @@ exports.saveDatasetData = async (req, res) => {
         attributeName
       );
       if (!historyVersion) throw new Error("History not updated");
-      return apiResponse.successResponseWithData(res, "Created successfully", {
-        ...response.rows[0],
-        filePwd: values.filePwd,
-      });
+      return apiResponse.successResponseWithData(
+        res,
+        "Dataset was saved successfully",
+        {
+          ...response.rows[0],
+          filePwd: values.filePwd,
+        }
+      );
     });
   } catch (err) {
     Logger.error("catch :storeDataset");
@@ -320,7 +321,7 @@ async function updateSQLDataset(res, values) {
 
     return apiResponse.successResponseWithData(
       res,
-      "Dataset updated successfully",
+      "Dataset was updated successfully",
       updateDS.rows[0]
     );
   } catch (err) {
@@ -385,8 +386,6 @@ exports.updateDatasetData = async (req, res) => {
       incremental,
     };
 
-    const jsonData = JSON.stringify(requestData);
-
     const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
     const oldData = tempData[0];
 
@@ -422,7 +421,7 @@ exports.updateDatasetData = async (req, res) => {
       values.footerRowNumber > 0 ? 1 : 0,
     ];
 
-    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrow = $19, footerrow = $20, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $21 `;
+    const updateQuery = `UPDATE ${schemaName}.dataset set mnemonic = $1, type = $2, charset = $3, delimiter = $4, escapecode = $5, quote = $6, headerrow = $19, footerrow = $20, headerrownumber = $7, footerrownumber = $8, active = $9, name = $10, path = $11, datakindid = $12, data_freq = $13, ovrd_stale_alert = $14, rowdecreaseallowed = $15, updt_tm = $16, incremental = $17, file_pwd = $18 where datasetid = $21 returning *`;
 
     const updateDS = await DB.executeQuery(updateQuery, [
       ...body,
@@ -438,9 +437,6 @@ exports.updateDatasetData = async (req, res) => {
     };
 
     const updateConfg = Object.assign(idObj, diffObj);
-
-    // console.log(JSON.stringify(updateConfg));
-    // console.log(dfId);
 
     if (Object.keys(diffObj).length != 0) {
       const historyVersion = await CommonController.addDatasetHistory(
@@ -458,7 +454,7 @@ exports.updateDatasetData = async (req, res) => {
 
     return apiResponse.successResponseWithData(
       res,
-      "Dataset updated successfully",
+      "Dataset was updated successfully",
       updateDS.rows[0]
     );
   } catch (err) {
@@ -585,61 +581,3 @@ exports.previewSql = async (req, res) => {
     );
   }
 };
-
-// exports.previewSQL = async (req, res) => {
-//   try {
-//     Logger.info({ message: "previewSQL" });
-
-//     const queryData = previewSQLMock.queryData;
-//     return apiResponse.successResponseWithData(
-//       res,
-//       "Operation success",
-//       queryData
-//     );
-//   } catch (err) {
-//     //throw error in json response with status 500.
-//     console.log(err);
-//     Logger.error("catch :previewSQL");
-//     Logger.error(err);
-
-//     return apiResponse.ErrorResponse(res, err);
-//   }
-// };
-
-// exports.getTables = async (req, res) => {
-//   try {
-//     Logger.info({ message: "getTables" });
-//     const tableMetadataList = tablesMock.tableMetadataList;
-//     return apiResponse.successResponseWithData(
-//       res,
-//       "Operation success",
-//       tableMetadataList
-//     );
-//   } catch (err) {
-//     //throw error in json response with status 500.
-//     console.log(err);
-//     Logger.error("catch :getTables");
-//     Logger.error(err);
-
-//     return apiResponse.ErrorResponse(res, err);
-//   }
-// };
-
-// exports.getColumns = async (req, res) => {
-//   try {
-//     Logger.info({ message: "getColumns" });
-//     const columnInfo = columnsMock.columnInfo;
-//     return apiResponse.successResponseWithData(
-//       res,
-//       "Operation success",
-//       columnInfo
-//     );
-//   } catch (err) {
-//     //throw error in json response with status 500.
-//     console.log(err);
-//     Logger.error("catch :getColumns");
-//     Logger.error(err);
-
-//     return apiResponse.ErrorResponse(res, err);
-//   }
-// };

@@ -223,7 +223,7 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.isColumnsConfigured =
           action.datasetColumns.length > 0 ? true : false;
         newState.error = null;
-        newState.sucessMsg = "Column definition created successfully";
+        newState.sucessMsg = "Column definition was saved successfully";
         break;
       case STORE_DATASET_COLUMNS_FAILURE:
         newState.loading = false;
@@ -283,7 +283,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL.datasetid = dsUpdate.datasetid;
           newState.haveHeader = true;
         }
-        newState.sucessMsg = "Dataset updated succesfully";
+        newState.sucessMsg = "Dataset was updated succesfully";
         break;
       case UPDATE_DATASET_FAILURE:
         newState.loading = false;
@@ -293,7 +293,7 @@ const DataFlowReducer = (state = initialState, action) =>
       case UPDATE_COLUMNS_SUCCESS:
         newState.loading = false;
         newState.error = null;
-        newState.sucessMsg = "Column defination updated succesfully";
+        newState.sucessMsg = "Column defination was updated succesfully";
         break;
       case UPDATE_COLUMNS_FAILURE:
         newState.loading = false;
