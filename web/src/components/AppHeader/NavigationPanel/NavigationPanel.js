@@ -104,6 +104,11 @@ const NavigationPanel = ({
       <Blade
         className="navigation-panel"
         width={331}
+        hasBackdrop
+        BackdropProps={{
+          onClick: closePanel,
+          style: { background: "transparent" },
+        }}
         onChange={onChange}
         open={openPanel}
         onClose={closePanel}

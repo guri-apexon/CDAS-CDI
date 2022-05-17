@@ -110,14 +110,18 @@ const DataSetsFormBase = (props) => {
   }, [formValues.isCustomSQL]);
 
   useEffect(() => {
-    console.log("formValues.tableName::::", formValues.tableName);
-    setSqlColumnsArr([]);
-    dispatch(
-      getSQLColumns({
-        ...locationDetail,
-        tableName: formValues.tableName,
-      })
-    );
+    // console.log("formValues.tableName::::", formValues, formValues.tableName);
+    if (formValues?.isCustomSQL === "No" && formValues?.tableName) {
+      setSqlColumnsArr([]);
+      dispatch(
+        getSQLColumns({
+          ...locationDetail,
+          tableName: formValues.tableName,
+        })
+      );
+    } else {
+      setSqlColumnsArr([]);
+    }
   }, [formValues.tableName]);
 
   // eslint-disable-next-line consistent-return
