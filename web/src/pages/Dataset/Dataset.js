@@ -310,6 +310,12 @@ const Dataset = () => {
     history.push("/dashboard");
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      dispatch(hideErrorMessage());
+    }, 7500);
+  }, [error, sucessMsg]);
+
   const getLeftPanel = React.useMemo(
     () => (
       <>
