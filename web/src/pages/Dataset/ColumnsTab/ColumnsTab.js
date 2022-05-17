@@ -74,7 +74,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
         ? datacolumns.map((column, i) => {
             const newObj = {
               dbColumnId: column.columnid,
-              uniqueId: `u${i}`,
+              uniqueId: i + 1,
               variableLabel: column.variable || "",
               columnName: column.name || "",
               position: column.position || "",
@@ -89,6 +89,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               isInitLoad: true,
               isHavingColumnName: true,
               isSaved: true,
+              isEditMode: false,
             };
             return newObj;
           })
@@ -102,7 +103,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
         ? arr.map((column, i) => {
             const newObj = {
               dbColumnId: column.columnid || "",
-              uniqueId: `u${i}`,
+              uniqueId: i + 1,
               variableLabel: column.varable || "",
               columnName: column.columnName || "",
               format: column.format || "",
@@ -115,6 +116,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               values: column.lov || "",
               isInitLoad: true,
               isHavingColumnName: true,
+              isEditMode: true,
             };
             return newObj;
           })
