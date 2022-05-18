@@ -84,7 +84,7 @@ export const checkAlphaNumeric = (value, key = "") => {
   if (key === "format") {
     return false;
   }
-  if (value && value.search(regexp) === -1) {
+  if (value && value.toString().search(regexp) === -1) {
     return "Only alphanumeric format values are allowed";
   }
   return false;
