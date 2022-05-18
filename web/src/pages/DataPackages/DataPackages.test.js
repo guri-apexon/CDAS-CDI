@@ -95,5 +95,5 @@ test("DataPackages Data Config active and package type Working fine", () => {
   expect(checkbox.getDOMNode().checked).toBeTruthy();
   const select = wrapper.find(".package-type input");
   expect(select.exists()).toBeTruthy();
-  expect(select.getDOMNode().value).toEqual("not_compressed");
+  expect(select.getDOMNode().value).toEqual("");
 });
