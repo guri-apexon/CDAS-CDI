@@ -122,7 +122,6 @@ const DataFlowFormBase = (props) => {
   const [renderLocation, setRenderLocation] = useState(false);
 
   useEffect(() => {
-    // console.log("initialValues", initialValues);
     if (initialValues) {
       const { dataflowType } = initialValues;
       const selectedV = vendors?.find(
@@ -130,6 +129,7 @@ const DataFlowFormBase = (props) => {
       );
       setDataLoaded(true);
       setLocationDetail(initialValues?.locations[0] || null);
+      // console.log("initialValues", initialValues, selectedV);
       setSelectedVendor(selectedV);
       if (dataflowType) {
         // changeFormField(dataflowType, "dataflowType");
@@ -170,6 +170,7 @@ const DataFlowFormBase = (props) => {
           <div style={{ width: "50%" }}>
             {dataLoaded && vendors && (
               <ReduxFormAutocompleteV2
+                key={selectedVendor}
                 name="vendor"
                 autoSelect
                 label="Vendor"
