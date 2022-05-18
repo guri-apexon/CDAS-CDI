@@ -48,7 +48,7 @@ const DataPackages = React.memo(() => {
   const history = useHistory();
   const [showForm, setShowForm] = useState(false);
   const [configShow, setConfigShow] = useState(false);
-  const [compression, setCompression] = useState("not_compressed");
+  const [compression, setCompression] = useState("");
   const [namingConvention, setNamingConvention] = useState("");
   const [packagePassword, setPackagePassword] = useState("");
   const [sftpPath, setSftpPath] = useState("");
@@ -105,7 +105,7 @@ const DataPackages = React.memo(() => {
     const validated = validateFields(namingConvention, compression);
     setNotMatchedType(!validated);
     if (!validated) return false;
-    if (namingConvention === "" || compression === "") {
+    if (namingConvention === "" && compression) {
       toast("Please fill all fields to proceed", "error");
       return false;
     }
@@ -229,7 +229,12 @@ const DataPackages = React.memo(() => {
                         size="small"
                         fullWidth
                         helperText="File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
-                        onChange={(e) => setNamingConvention(e.target.value)}
+                        onChange={(e) => {
+                          setNotMatchedType(
+                            !validateFields(e.target.value, compression)
+                          );
+                          setNamingConvention(e.target.value);
+                        }}
                       />
                       <PasswordInput
                         defaultValue=""
