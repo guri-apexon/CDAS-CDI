@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import { TextField } from "apollo-react/components/TextField/TextField";
@@ -56,7 +56,7 @@ const fieldStylesNo = {
 export const makeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    return row.editMode ? (
+    return row.isEditMode ? (
       <Select
         size="small"
         fullWidth
@@ -80,7 +80,7 @@ export const DataTypeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
     const errorText = checkRequired(row[key], key);
-    return row.editMode ? (
+    return row.isEditMode ? (
       <Select
         size="small"
         fullWidth
@@ -106,7 +106,7 @@ export const editableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
     const errorText = checkRequiredValue(row[key], key, row.primaryKey);
-    return row.editMode ? (
+    return row.isEditMode ? (
       <Select
         size="small"
         fullWidth
@@ -133,7 +133,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   const errorText =
     checkNumeric(row[key]) ||
     checkCharacterLength(row[key], key, row.minLength, row.maxLength);
-  return row.editMode ? (
+  return row.isEditMode ? (
     <TextField
       size="small"
       fullWidth
@@ -152,7 +152,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
-  const { editMode, haveHeader } = row;
+  const { isEditMode, haveHeader } = row;
   let errorText;
   if (!haveHeader) {
     errorText = checkRequired(row[key]) || checkNumeric(row[key]);
@@ -160,7 +160,7 @@ export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
     errorText = checkNumeric(row[key]);
   }
 
-  return editMode ? (
+  return isEditMode ? (
     <TextField
       size="small"
       fullWidth
@@ -177,7 +177,7 @@ export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
-  const { editMode, haveHeader, primaryKey } = row;
+  const { isEditMode, haveHeader, primaryKey } = row;
   let errorText;
   if (haveHeader) {
     errorText = checkRequired(row[key]);
@@ -187,7 +187,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
     // checkAlphaNumeric(row[key]);
   }
 
-  return editMode ? (
+  return isEditMode ? (
     <TextField
       size="small"
       fullWidth
@@ -207,9 +207,9 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const FormatCell = ({ row, column: { accessor: key } }) => {
-  const { editMode } = row;
+  const { isEditMode } = row;
   const errorText = checkFormat(row[key], key, row.dataType);
-  return editMode ? (
+  return isEditMode ? (
     <TextField
       size="small"
       fullWidth
@@ -225,9 +225,9 @@ export const FormatCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const EditableCell = ({ row, column: { accessor: key } }) => {
-  const { editMode } = row;
+  const { isEditMode } = row;
   const errorText = checkAlphaNumeric(row[key], key);
-  return editMode ? (
+  return isEditMode ? (
     <TextField
       size="small"
       fullWidth
@@ -243,7 +243,7 @@ export const EditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const Cell = ({ row, column }) => (
-  <div style={{ paddingTop: row.editMode ? 12 : 0 }}>
+  <div style={{ paddingTop: row.isEditMode ? 12 : 0 }}>
     {row[column.accessor]}
   </div>
 );
@@ -254,16 +254,21 @@ export const ActionCell = ({ row }) => {
     onRowEdit,
     onRowCancel,
     onRowDelete,
-    editMode: eMode,
+    isEditMode: eMode,
     onRowSave,
+    isEditAll,
+    editedCount,
   } = row;
+  if (editedCount > 1) {
+    return null;
+  }
 
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
       <Button
         size="small"
         style={{ marginRight: 8 }}
-        onClick={() => onRowCancel(uniqueId)}
+        onClick={() => onRowCancel(row)}
       >
         Cancel
       </Button>
@@ -278,7 +283,7 @@ export const ActionCell = ({ row }) => {
     </div>
   ) : (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
-      <IconButton size="small" onClick={() => onRowEdit(uniqueId)}>
+      <IconButton size="small" onClick={() => onRowEdit(row)}>
         <Pencil />
       </IconButton>
       <IconButton size="small" onClick={() => onRowDelete(uniqueId)}>
@@ -414,7 +419,6 @@ export const CustomHeader = ({
   onCancelAll,
   onSaveAll,
   onEditAll,
-  isEditAll,
   addMenuItems,
   menuItems,
   searchValue,
@@ -431,118 +435,128 @@ export const CustomHeader = ({
   toggleFilters,
   changeHandler,
   haveHeader,
-}) => (
-  <div>
-    <Grid container alignItems="center">
-      {isEditAll && (
-        <>
-          <Button size="small" style={{ marginRight: 8 }} onClick={onCancelAll}>
-            Cancel all
-          </Button>
-          <Button
-            size="small"
-            variant="primary"
-            onClick={onSaveAll}
-            disabled={disableSaveAll}
-          >
-            Save all
-          </Button>
-        </>
-      )}
-      {!isMultiAdd && (
-        <>
-          {isSftp(locationType) && (
-            <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
-              <IconMenuButton
-                id="actions-1"
-                menuItems={addMenuItems}
-                size="small"
-                disabled={isEditAll}
+  editedCount,
+}) => {
+  return (
+    <div>
+      <Grid container alignItems="center">
+        {editedCount > 1 && (
+          <>
+            <Button
+              size="small"
+              style={{ marginRight: 8 }}
+              onClick={onCancelAll}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="small"
+              variant="primary"
+              onClick={onSaveAll}
+              disabled={disableSaveAll}
+            >
+              Save
+            </Button>
+          </>
+        )}
+        {!isMultiAdd && (
+          <>
+            {isSftp(locationType) && (
+              <Tooltip
+                title={!editedCount && "Add columns"}
+                disableFocusListener
               >
-                <Plus />
-              </IconMenuButton>
+                <IconMenuButton
+                  id="actions-1"
+                  menuItems={addMenuItems}
+                  size="small"
+                  disabled={editedCount}
+                >
+                  <Plus />
+                </IconMenuButton>
+              </Tooltip>
+            )}
+            <Tooltip title={!editedCount && "Edit all"} disableFocusListener>
+              <IconButton color="primary" size="small" disabled={editedCount}>
+                <Pencil onClick={onEditAll} />
+              </IconButton>
             </Tooltip>
-          )}
-          <Tooltip title={!isEditAll && "Edit all"} disableFocusListener>
-            <IconButton color="primary" size="small" disabled={isEditAll}>
-              <Pencil onClick={onEditAll} />
+          </>
+        )}
+        {isMultiAdd && (
+          <>
+            <TextField
+              placeholder="# of columns"
+              type="number"
+              min="1"
+              max="499"
+              style={{ margin: "-5px 16px 0px 0px" }}
+              onChange={(e) => addNewRows(e.target.value)}
+              defaultValue={newRows}
+              size="small"
+            />
+            <Button
+              size="small"
+              style={{ marginRight: 8, width: 50 }}
+              onClick={cancelMulti}
+            >
+              Cancel
+            </Button>
+            <Button size="small" variant="primary" onClick={addMulti}>
+              Add
+            </Button>
+          </>
+        )}
+        {isSftp(locationType) && (
+          <Tooltip
+            title={
+              (!editedCount || !dsProdLock || !dsTestLock || haveHeader) &&
+              "Import dataset column settings"
+            }
+            disableFocusListener
+          >
+            <IconButton
+              color="primary"
+              size="small"
+              disabled={editedCount || dsProdLock || dsTestLock || !haveHeader}
+              onClick={changeHandler}
+            >
+              <Upload />
             </IconButton>
           </Tooltip>
-        </>
-      )}
-      {isMultiAdd && (
-        <>
-          <TextField
-            placeholder="# of columns"
-            type="number"
-            min="1"
-            max="499"
-            style={{ margin: "-5px 16px 0px 0px" }}
-            onChange={(e) => addNewRows(e.target.value)}
-            defaultValue={newRows}
-            size="small"
-          />
-          <Button
-            size="small"
-            style={{ marginRight: 8, width: 50 }}
-            onClick={cancelMulti}
-          >
-            Cancel
-          </Button>
-          <Button size="small" variant="primary" onClick={addMulti}>
-            Add
-          </Button>
-        </>
-      )}
-      {isSftp(locationType) && (
-        <Tooltip
-          title={
-            (!isEditAll || !dsProdLock || !dsTestLock || haveHeader) &&
-            "Import dataset column settings"
-          }
-          disableFocusListener
-        >
-          <IconButton
-            color="primary"
-            size="small"
-            disabled={isEditAll || dsProdLock || dsTestLock || !haveHeader}
-            onClick={changeHandler}
-          >
-            <Upload />
-          </IconButton>
-        </Tooltip>
-      )}
-      <Divider
-        orientation="vertical"
-        flexItem
-        style={{ marginLeft: 15, marginRight: 15 }}
-      />
+        )}
+        <Divider
+          orientation="vertical"
+          flexItem
+          style={{ marginLeft: 15, marginRight: 15 }}
+        />
 
-      <Search
-        placeholder="Search"
-        size="small"
-        style={{ margin: "-5px 16px 0px 0px" }}
-        onChange={searchRows}
-        value={searchValue}
-        disabled={isEditAll}
-      />
-      <Button
-        size="small"
-        variant="secondary"
-        icon={Filter}
-        disabled={isEditAll}
-        onClick={toggleFilters}
-      >
-        Filter
-      </Button>
-      <IconMenuButton
-        disabled={isEditAll}
-        id="actions-2"
-        menuItems={menuItems}
-        size="small"
-      >
-        <EllipsisVertical />
-      </IconMenuButton>
-    </Grid>
-  </div>
-);
+        <Search
+          placeholder="Search"
+          size="small"
+          style={{ margin: "-5px 16px 0px 0px" }}
+          onChange={searchRows}
+          value={searchValue}
+          disabled={editedCount}
+        />
+        <Button
+          size="small"
+          variant="secondary"
+          icon={Filter}
+          disabled={editedCount}
+          onClick={toggleFilters}
+        >
+          Filter
+        </Button>
+        <IconMenuButton
+          disabled={editedCount}
+          id="actions-2"
+          menuItems={menuItems}
+          size="small"
+        >
+          <EllipsisVertical />
+        </IconMenuButton>
+      </Grid>
+    </div>
+  );
+};

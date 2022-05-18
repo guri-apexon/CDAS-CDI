@@ -243,12 +243,6 @@ ul[class*="MuiMenu-list-"] {
 }
 #locationModal {
   z-index: 1350 !important;
-  .MuiGrid-spacing-xs-2 > .MuiGrid-item {
-    padding: 0 8px;
-  }
-  .MuiGrid-spacing-xs-2 #testConnectionButton {
-    padding-top: 42px !important;
-  }
 }
 
 input[readonly] {
@@ -263,7 +257,8 @@ div.readOnly_Dropdown {
   }
 }
 
-.removeClickFromMenu .readOnly_Dropdown div[class^="MuiSelect-root-"], .removeClickFromMenu label {
+.removeClickFromMenu .readOnly_Dropdown div[class^="MuiSelect-root-"],
+.removeClickFromMenu label {
   cursor: inherit;
-  }
+}
 // .dsctablehelper_select

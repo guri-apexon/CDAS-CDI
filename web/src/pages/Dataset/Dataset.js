@@ -12,11 +12,13 @@ import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
+import Banner from "apollo-react/components/Banner";
 import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 import "./Dataset.scss";
 import {
+  hideErrorMessage,
   getDataKindData,
   saveDatasetData,
   updateDatasetData,
@@ -308,6 +310,12 @@ const Dataset = () => {
     history.push("/dashboard");
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      dispatch(hideErrorMessage());
+    }, 7500);
+  }, [error, sucessMsg]);
+
   const getLeftPanel = React.useMemo(
     () => (
       <>
@@ -319,8 +327,15 @@ const Dataset = () => {
 
   return (
     <>
-      {error && messageContext.showErrorMessage(error)}
-      {sucessMsg && messageContext.showSuccessMessage(sucessMsg)}
+      {(error || sucessMsg) && (
+        <Banner
+          variant={sucessMsg ? "success" : "error"}
+          open={true}
+          onClose={() => dispatch(hideErrorMessage())}
+          style={{ zIndex: 9999, top: "5%" }}
+          message={error || sucessMsg}
+        />
+      )}
 
       <div className="pageRoot">
         <Panel
