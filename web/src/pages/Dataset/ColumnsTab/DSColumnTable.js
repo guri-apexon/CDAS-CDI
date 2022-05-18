@@ -258,7 +258,7 @@ export default function DSColumnTable({
       );
       const editedRowData = [{ ...selectedRow }]
         .map((e) => {
-          e.values = e.values.trim();
+          e.values = e.values.toString().trim();
           return e;
         })
         .map((e) => {
@@ -482,8 +482,8 @@ export default function DSColumnTable({
       const d = {
         ...e,
         isSaved: true,
-        values: e.values.trim(),
-        columnName: e.columnName.trim(),
+        values: e.values.toString().trim(),
+        columnName: e.columnName.toString().trim(),
         isEditMode: false,
       };
       return d;
@@ -581,8 +581,8 @@ export default function DSColumnTable({
         const d = {
           ...e,
           isSaved: true,
-          values: e.values.trim(),
-          columnName: e.columnName.trim(),
+          values: e.values.toString().trim(),
+          columnName: e.columnName.toString().trim(),
           isEditMode: false,
         };
         return d;

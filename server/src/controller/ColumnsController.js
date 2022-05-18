@@ -54,7 +54,7 @@ exports.saveDatasetColumns = async (req, res) => {
         const body = [
           dsId,
           columnId,
-          value.columnName.trim() || null,
+          value.columnName.toString().trim() || null,
           value.dataType.trim() || null,
           value.primaryKey === "Yes" ? 1 : 0,
           value.required === "Yes" ? 1 : 0,
@@ -62,9 +62,12 @@ exports.saveDatasetColumns = async (req, res) => {
           value.minLength || 0,
           value.maxLength || 0,
           value.position || 0,
-          value.format || null,
-          value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
-          value.variableLabel.trim() || null,
+          value.format.toString().trim() || null,
+          value.values
+            .toString()
+            .trim()
+            .replace(/(^\~+|\~+$)/, "") || null,
+          value.variableLabel.toString().trim() || null,
           0,
           curDate,
         ];
@@ -138,17 +141,17 @@ exports.updateColumns = async (req, res) => {
 
           if (oldData) {
             const body = [
-              value.columnName.trim() || null,
+              value.columnName.toString().trim() || null,
               value.dataType.trim() || null,
               value.primaryKey === "Yes" ? 1 : 0,
               value.required === "Yes" ? 1 : 0,
               value.minLength || 0,
               value.maxLength || 0,
               value.position || 0,
-              value.format.trim() || null,
+              value.format.toString().trim() || null,
               value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
               value.unique === "Yes" ? 1 : 0,
-              value.variableLabel.trim() || null,
+              value.variableLabel.toString().trim() || null,
               curDate,
               dsId,
               columnid,
