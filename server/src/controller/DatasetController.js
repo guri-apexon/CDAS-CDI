@@ -121,8 +121,7 @@ exports.saveDatasetData = async (req, res) => {
     const curDate = helper.getCurrentTime();
 
     let passwordStatus = "No";
-
-    if (values.filePwd !== "" || values.filePwd !== undefined) {
+    if (values.filePwd) {
       passwordStatus = "Yes";
       try {
         await helper.writeVaultData(`${dfId}/${dpId}/${dsId}`, {
@@ -181,6 +180,7 @@ exports.saveDatasetData = async (req, res) => {
       active: true ? 1 : 0,
       naming_convention: values.fileNamingConvention || null,
       path: values.folderPath || null,
+      password: passwordStatus,
       datakindid: values.clinicalDataType[0],
       data_freq: values.transferFrequency || null,
       ovrd_stale_alert: values.overrideStaleAlert || null,
@@ -363,6 +363,18 @@ exports.updateDatasetData = async (req, res) => {
     // For SFTP Datasets update
     const incremental = values.loadType === "Incremental" ? "Y" : "N";
 
+    const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
+    const oldData = tempData[0];
+
+    let passwordStatus = "No";
+
+    if (values.filePwd) {
+      passwordStatus = "Yes";
+      await helper.writeVaultData(`${dfId}/${dpId}/${datasetid}`, {
+        password: values.filePwd,
+      });
+    }
+
     var requestData = {
       datasetid: datasetid,
       datapackageid: dpId,
@@ -379,24 +391,13 @@ exports.updateDatasetData = async (req, res) => {
       active: helper.stringToBoolean(values.active) ? 1 : 0,
       name: values.fileNamingConvention || null,
       path: values.folderPath || null,
+      password: passwordStatus,
       datakindid: values.clinicalDataType[0],
       data_freq: values.transferFrequency || null,
       ovrd_stale_alert: values.overrideStaleAlert || null,
       rowdecreaseallowed: values.rowDecreaseAllowed || 0,
       incremental,
     };
-
-    const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
-    const oldData = tempData[0];
-
-    let passwordStatus = "No";
-
-    if (values.filePwd) {
-      passwordStatus = "Yes";
-      await helper.writeVaultData(`${dfId}/${dpId}/${datasetid}`, {
-        password: values.filePwd,
-      });
-    }
 
     const body = [
       values.datasetName,
