@@ -29,16 +29,44 @@ exports.getColumnsSet = async (req, res) => {
   }
 };
 
+const updateSqlQuery = async (datasetId, del = false) => {
+  try {
+    const {
+      rows: [dataset],
+    } = await DB.executeQuery(
+      `select * from ${schemaName}.dataset where datasetid=$1`,
+      [datasetId]
+    );
+    const curDate = helper.getCurrentTime();
+    if (dataset.customsql_yn === "No") {
+      const { rows: CDList } = await DB.executeQuery(
+        `select name from ${schemaName}.columndefinition where datasetid=$1 and (del_flg is distinct from '1');`,
+        [datasetId]
+      );
+      let newQuery = dataset.customsql || "where 1=1";
+      const columnNames = CDList?.map((x) => x.name).join(", ") || "";
+      const whereCondition = newQuery.split("where")?.pop()?.trim();
+      newQuery = `Select ${columnNames} from ${
+        dataset.tbl_nm || ""
+      } where ${whereCondition}`;
+      await DB.executeQuery(
+        `update ${schemaName}.dataset set customsql=$2, updt_tm=$3 where datasetid=$1`,
+        [datasetId, newQuery, curDate]
+      );
+    }
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
 exports.saveDatasetColumns = async (req, res) => {
   try {
-    const { dsId, dpId, dfId, isUpdateQuery, nQuery, userId, values } =
-      req.body;
-    const curDate = helper.getCurrentTime();
-
-    if (isUpdateQuery) {
-      const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=$3 where datasetid=$1`;
-      await DB.executeQuery(update, [dsId, nQuery, curDate]);
+    const { dsId, dpId, dfId, userId, values } = req.body;
+    if (!dsId) {
+      return apiResponse.ErrorResponse(res, "Please pass dataset id");
     }
+    const curDate = helper.getCurrentTime();
 
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, "name", "datatype", primarykey, "required", "unique", charactermin, charactermax, "position", "format", lov, "variable", del_flg, insrt_tm)
      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *;`;
@@ -80,6 +108,7 @@ exports.saveDatasetColumns = async (req, res) => {
 
         configJsonArr.push({ datasetid: dsId, columnId, ...value });
       }
+      await updateSqlQuery(dsId);
       const historyVersion = await CommonController.addColumnHistory(
         dsId,
         dfId,
@@ -114,14 +143,8 @@ exports.saveDatasetColumns = async (req, res) => {
 
 exports.updateColumns = async (req, res) => {
   try {
-    const { dsId, dpId, dfId, isUpdateQuery, nQuery, userId, values } =
-      req.body;
+    const { dsId, dpId, dfId, userId, values } = req.body;
     const curDate = helper.getCurrentTime();
-
-    if (isUpdateQuery) {
-      const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=$3 where datasetid=$1`;
-      await DB.executeQuery(update, [dsId, nQuery, curDate]);
-    }
 
     Logger.info({ message: "update set columns" });
 
@@ -180,6 +203,7 @@ exports.updateColumns = async (req, res) => {
           }
         }
       }
+      await updateSqlQuery(dsId);
 
       if (Object.keys(diffValuesObj).length) {
         const historyVersion = await CommonController.addColumnHistory(
@@ -218,38 +242,27 @@ exports.updateColumns = async (req, res) => {
 
 exports.deleteColumns = async (req, res) => {
   try {
-    const { columnId, dsId, dfId, dpId, isUpdateQuery, nQuery, userId } =
-      req.body;
+    const { columnId, dsId, dfId, dpId, userId } = req.body;
     const curDate = helper.getCurrentTime();
 
     Logger.info({ message: "deleteColumns" });
     const updateQuery = `update ${schemaName}.columndefinition set del_flg = 1 where columnid = $1 returning *;`;
 
-    if (isUpdateQuery) {
-      const update = `update ${schemaName}.dataset set customsql=$2, updt_tm=$3 where datasetid=$1`;
-      await DB.executeQuery(update, [dsId, nQuery, curDate]);
-    }
-
     DB.executeQuery(updateQuery, [columnId]).then(async (response) => {
-      const datasetColumns = response.rows || null;
-      const configJson = datasetColumns ? datasetColumns[0] : null;
-
+      const columnObj = response?.rows?.length ? response.rows[0] : null;
+      await updateSqlQuery(dsId, true);
       const historyVersion = await CommonController.addColumnHistory(
         dsId,
         dfId,
         dpId,
         userId,
-        JSON.stringify(configJson),
+        JSON.stringify(columnObj),
         { [columnId]: { del_flg: 0 } },
         { [columnId]: { del_flg: 1 } }
       );
       if (!historyVersion) throw new Error("History not updated");
 
-      return apiResponse.successResponseWithData(
-        res,
-        "Operation success",
-        datasetColumns
-      );
+      return apiResponse.successResponseWithData(res, "Operation success");
     });
   } catch (err) {
     Logger.error("catch: deleteColumns");
