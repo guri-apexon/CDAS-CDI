@@ -259,13 +259,17 @@ export const ActionCell = ({ row }) => {
     maxLength,
     minLength,
     dataType,
+    editedCount,
   } = row;
+  if (editedCount > 1) {
+    return null;
+  }
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
       <Button
         size="small"
         style={{ marginRight: 8 }}
-        onClick={() => onRowCancel(uniqueId)}
+        onClick={() => onRowCancel(row)}
       >
         Cancel
       </Button>
@@ -280,7 +284,7 @@ export const ActionCell = ({ row }) => {
     </div>
   ) : (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
-      <IconButton size="small" onClick={() => onRowEdit(uniqueId)}>
+      <IconButton size="small" onClick={() => onRowEdit(row)}>
         <Pencil />
       </IconButton>
       <IconButton size="small" onClick={() => onRowDelete(uniqueId)}>
@@ -431,10 +435,11 @@ export const CustomHeader = ({
   toggleFilters,
   changeHandler,
   haveHeader,
+  editedCount,
 }) => (
   <div>
     <Grid container alignItems="center">
-      {isEditAll && (
+      {editedCount > 1 && (
         <>
           <Button size="small" style={{ marginRight: 8 }} onClick={onCancelAll}>
             Cancel all
@@ -452,19 +457,19 @@ export const CustomHeader = ({
       {!isMultiAdd && (
         <>
           {isSftp(locationType) && (
-            <Tooltip title={!isEditAll && "Add columns"} disableFocusListener>
+            <Tooltip title={!editedCount && "Add columns"} disableFocusListener>
               <IconMenuButton
                 id="actions-1"
                 menuItems={addMenuItems}
                 size="small"
-                disabled={isEditAll}
+                disabled={editedCount}
               >
                 <Plus />
               </IconMenuButton>
             </Tooltip>
           )}
-          <Tooltip title={!isEditAll && "Edit all"} disableFocusListener>
-            <IconButton color="primary" size="small" disabled={isEditAll}>
+          <Tooltip title={!editedCount && "Edit all"} disableFocusListener>
+            <IconButton color="primary" size="small" disabled={editedCount}>
               <Pencil onClick={onEditAll} />
             </IconButton>
           </Tooltip>
@@ -496,13 +501,15 @@ export const CustomHeader = ({
       )}
       {isSftp(locationType) && (
         <Tooltip
-          title={(!isEditAll || haveHeader) && "Import dataset column settings"}
+          title={
+            (!editedCount || haveHeader) && "Import dataset column settings"
+          }
           disableFocusListener
         >
           <IconButton
             color="primary"
             size="small"
-            disabled={isEditAll || !haveHeader}
+            disabled={editedCount || !haveHeader}
             onClick={changeHandler}
           >
             <Upload />
@@ -521,19 +528,19 @@ export const CustomHeader = ({
         style={{ margin: "-5px 16px 0px 0px" }}
         onChange={searchRows}
         value={searchValue}
-        disabled={isEditAll}
+        disabled={editedCount}
       />
       <Button
         size="small"
         variant="secondary"
         icon={Filter}
-        disabled={isEditAll}
+        disabled={editedCount}
         onClick={toggleFilters}
       >
         Filter
       </Button>
       <IconMenuButton
-        disabled={isEditAll}
+        disabled={editedCount}
         id="actions-2"
         menuItems={menuItems}
         size="small"

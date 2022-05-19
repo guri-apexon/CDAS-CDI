@@ -18,6 +18,7 @@ import {
   formatData,
   isSftp,
   columnObj,
+  getInitColumnObj,
 } from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
 import { validateRow } from "../../../../../components/FormComponents/validators";
@@ -48,6 +49,7 @@ export default function DSColumnTable({
 
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
+  const [editedBackup, setEditedBackup] = useState([]);
   const [editedRows, setEditedRows] = useState([
     { uniqueId: `u0`, ...columnObj },
   ]);
@@ -55,6 +57,7 @@ export default function DSColumnTable({
   const [searchValue, setSearchValue] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [selectedFile, setSelectedFile] = useState();
+  const [editedCount, setEditedCount] = useState(0);
   const [isFilePicked, setIsFilePicked] = useState(false);
   const [showOverWrite, setShowOverWrite] = useState(false);
   const [showViewLOVs, setShowViewLOVs] = useState(false);
@@ -67,7 +70,11 @@ export default function DSColumnTable({
   const [moreColumns, setMoreColumns] = useState([...columns]);
   const [importedData, setImportedData] = useState([]);
   const [noOfValues, setNoOfvalues] = useState("No");
+  const initColumnObj = getInitColumnObj();
 
+  const setInitRow = () => {
+    setRows([{ uniqueId: 1, ...initColumnObj }]);
+  };
   const changeValuesTitle = (newValues) => {
     const noOf = newValues?.split("~")?.filter(Boolean)?.length || "No";
     setNoOfvalues(noOf);
@@ -129,10 +136,10 @@ export default function DSColumnTable({
         const newData = formatData(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
         if (newData.length > 0) {
-          const initRows = newData.map((e) => e.uniqueId);
+          // const initRows = newData.map((e) => e.uniqueId);
           setRows([...newData]);
-          setEditedRows([...newData]);
-          setSelectedRows([...initRows]);
+          // setEditedRows([...newData]);
+          // setSelectedRows([...initRows]);
         } else {
           messageContext.showErrorMessage(
             `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
@@ -227,16 +234,18 @@ export default function DSColumnTable({
     setFilteredRows([...filteredRowsTemp]);
   };
 
+  const getNewRows = (count = 1) => {
+    const maxIndex = Math.max(...rows.map((o) => o.uniqueId), 0);
+    const data = Array.from({ length: count }, (i, index) => ({
+      uniqueId: maxIndex + index + 1,
+      ...initColumnObj,
+    }));
+    return data;
+  };
   const addSingleRow = () => {
     if (rows.length < 500) {
-      const singleRow = [
-        {
-          uniqueId: `u${rows.length}`,
-          ...columnObj,
-        },
-      ];
-      setSelectedRows([...selectedRows, `u${rows.length}`]);
-      setEditedRows([...rows, ...singleRow]);
+      const singleRow = getNewRows();
+      setRows([...rows, ...singleRow]);
     } else {
       messageContext.showErrorMessage(`Not allowed more than 500 columns`);
     }
@@ -254,13 +263,8 @@ export default function DSColumnTable({
   const addMulti = () => {
     setIsMultiAdd(false);
     if (newRows > 0) {
-      const multiRows = Array.from({ length: newRows }, (i, index) => ({
-        uniqueId: `u${rows.length + index}`,
-        ...columnObj,
-      }));
-      const moreRows = multiRows.map((e) => e.uniqueId);
-      setSelectedRows([...moreRows]);
-      setEditedRows([...editedRows, ...multiRows]);
+      const multiRows = getNewRows(newRows);
+      setRows([...rows, ...multiRows]);
       setNewRows("");
     }
   };
@@ -315,12 +319,38 @@ export default function DSColumnTable({
     columns.slice(-1)[0],
   ];
 
+  const toggleEditMode = (cancel) => {
+    setRows((prevRows) => {
+      let data;
+      if (cancel) {
+        if (cancel === "Single" && editedBackup?.length) {
+          data = prevRows.map((x, i) =>
+            x.uniqueId === editedBackup[0].uniqueId
+              ? { ...x, ...editedBackup[0] }
+              : x
+          );
+        } else {
+          data = (editedBackup.length > 1 ? editedBackup : prevRows).filter(
+            (e) => e.dbColumnId
+          );
+        }
+      } else {
+        data = prevRows;
+      }
+      return data.map((r) => ({
+        ...r,
+        isEditMode: cancel ? false : true,
+      }));
+    });
+    setEditedBackup([]);
+  };
+  const getEditedRows = () => {
+    return rows.filter((x) => x.isEditMode);
+  };
   const onEditAll = () => {
     if (rows.length > 0) {
-      const allRows = rows.map((e) => e.uniqueId);
-      setEditedRows(rows);
-      setSelectedRows([...allRows]);
-      setIsEditAll(true);
+      toggleEditMode();
+      setEditedBackup([...rows]);
     } else {
       messageContext.showErrorMessage(
         `No data in table, please add data and try again`
@@ -329,62 +359,53 @@ export default function DSColumnTable({
   };
 
   const onSaveAll = async () => {
-    const removeSpaces = editedRows
+    const formattedColumnData = getEditedRows()
       .map((e) => {
         const d = {
           ...e,
           isSaved: true,
           values: e.values.toString().trim(),
           columnName: e.columnName.toString().trim(),
+          isEditMode: false,
         };
         return d;
       })
       .map((e) => {
-        const isFirst = e.values.charAt(0) === "~";
-        const isLast = e.values.charAt(e.values.length - 1) === "~";
-        if (isFirst) {
+        const hasAtFirst = e.values.charAt(0) === "~";
+        const hasAtLast = e.values.charAt(e.values.length - 1) === "~";
+        if (hasAtFirst) {
           e.values = e.values.substring(1);
         }
-        if (isLast) {
+        if (hasAtLast) {
           e.values = e.values.slice(0, -1);
         }
         return e;
       });
 
-    if (removeSpaces?.length && removeSpaces.find((x) => x.dataType === "")) {
-      messageContext.showErrorMessage(
-        `Please select data type for all records to save.`
-      );
-      return false;
-    }
-    const columnNames = removeSpaces.map((e) => e.columnName.toLowerCase());
+    const columnNames = formattedColumnData.map((e) =>
+      e.columnName.toLowerCase()
+    );
 
-    if (removeSpaces.length !== _.uniq(columnNames).length) {
+    if (formattedColumnData.length !== _.uniq(columnNames).length) {
       messageContext.showErrorMessage(
         "Column name should be unique for a dataset"
       );
       return false;
     }
-
-    const newData = _.orderBy([...removeSpaces], ["uniqueId"], ["asc"]);
-    setSelectedRows([]);
-    setRows([...newData]);
-    setEditedRows([...newData]);
   };
 
   const onCancelAll = () => {
-    setSelectedRows([]);
-    setEditedRows([...rows]);
+    toggleEditMode("All");
   };
 
-  const onRowCancel = (uniqueId) => {
-    const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const editedData = editedRows.find((e) => e.uniqueId === uniqueId);
-    if (!editedData?.isSaved) {
-      const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
-      setEditedRows(removeEdited);
+  const onRowCancel = (row) => {
+    if (row.dbColumnId) {
+      toggleEditMode("Single");
+    } else {
+      setRows((prevRows) =>
+        prevRows.filter((e) => e.uniqueId !== row.uniqueId)
+      );
     }
-    setSelectedRows([...removeRow]);
   };
 
   const formatSave = (inArray) => {
@@ -397,23 +418,27 @@ export default function DSColumnTable({
   // };
 
   const onRowSave = async (uniqueId) => {
-    const editedRowData = _.filter(editedRows, (e) => e.uniqueId === uniqueId)
+    const editedRowData = _.filter(
+      getEditedRows(),
+      (e) => e.uniqueId === uniqueId
+    )
       .map((e) => {
         const d = {
           ...e,
           isSaved: true,
           values: e.values.toString().trim(),
           columnName: e.columnName.toString().trim(),
+          isEditMode: false,
         };
         return d;
       })
       .map((e) => {
-        const isFirst = e.values.charAt(0) === "~";
-        const isLast = e.values.charAt(e.values.length - 1) === "~";
-        if (isFirst) {
+        const hasAtFirst = e.values.charAt(0) === "~";
+        const hasAtLast = e.values.charAt(e.values.length - 1) === "~";
+        if (hasAtFirst) {
           e.values = e.values.substring(1);
         }
-        if (isLast) {
+        if (hasAtLast) {
           e.values = e.values.slice(0, -1);
         }
         return e;
@@ -434,45 +459,23 @@ export default function DSColumnTable({
       return false;
     }
 
-    if (editedRowData && editedRowData.dataType === "") {
-      messageContext.showErrorMessage(
-        `Please select data type for this record to save.`
-      );
-      return false;
-    }
-    const removeRow = selectedRows.filter((e) => e !== uniqueId);
+    // const removeRow = selectedRows.filter((e) => e !== uniqueId);
     // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
-
-    const newData = _.orderBy(
-      [...removeExistingRowData, editedRowData],
-      ["uniqueId"],
-      ["asc"]
-    );
-
-    setRows([...newData]);
-    // setEditedRows([...removeEdited]);
-    setSelectedRows([...removeRow]);
+    setRows([...removeExistingRowData, editedRowData]);
   };
 
-  const onRowEdit = (uniqueId) => {
-    setSelectedRows([...selectedRows, uniqueId]);
-    setEditedRows(rows);
+  const onRowEdit = (row) => {
+    setEditedBackup([{ ...row }]);
+    setRows((prevRows) =>
+      prevRows.map((e) => {
+        return { ...e, isEditMode: e.uniqueId === row.uniqueId };
+      })
+    );
   };
 
   const onRowDelete = async (uniqueId) => {
-    const newData = rows
-      .filter((row) => row.uniqueId !== uniqueId)
-      .map((e, i) => {
-        const d = {
-          ...e,
-          uniqueId: `u${i}`,
-        };
-        return d;
-      });
-
-    setRows([...newData]);
-    setEditedRows([...newData]);
+    setRows((prevRows) => prevRows.filter((e) => e.uniqueId !== uniqueId));
   };
 
   const haveHeader = parseInt(headerValue, 10) > 0;
@@ -482,7 +485,7 @@ export default function DSColumnTable({
   // };
 
   const editRow = (uniqueId, key, value) => {
-    setEditedRows((rws) =>
+    setRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
           const data = {
@@ -490,26 +493,6 @@ export default function DSColumnTable({
             [key]: value,
             isInitLoad: Boolean(key === "variableLabel"),
           };
-          if (
-            (key === "columnName" && haveHeader) ||
-            (!haveHeader && key === "position")
-          ) {
-            return {
-              ...data,
-              isHavingColumnName: Boolean(value.length >= 1),
-            };
-          }
-
-          if (row.isInitLoad || row.isFormatLoad) {
-            if (key !== "variableLabel") {
-              return {
-                ...data,
-                isFormatLoad:
-                  key === "format" || key === "columnName" ? true : false,
-              };
-            }
-          }
-
           return {
             ...data,
           };
@@ -520,27 +503,26 @@ export default function DSColumnTable({
   };
 
   useEffect(() => {
-    if (editedRows.map((row) => validateRow(row)).every((e) => e === true)) {
-      setDisableSaveAll(false);
-    } else {
+    const editedlength = getEditedRows().length;
+    setEditedCount(editedlength);
+    if (editedlength && rows.some((row) => !validateRow(row))) {
       setDisableSaveAll(true);
-    }
-  }, [editedRows]);
-
-  useEffect(() => {
-    if (selectedRows.length > 0) {
-      setIsEditAll(true);
-      setEditMode(true);
     } else {
-      setIsEditAll(false);
-      setEditMode(false);
+      setDisableSaveAll(false);
     }
-  }, [selectedRows]);
-
-  useEffect(() => {
     setFilteredRows(rows);
     messageContext?.setDataflow({ columnDefinition: rows });
   }, [rows]);
+
+  // useEffect(() => {
+  //   if (selectedRows.length > 0) {
+  //     setIsEditAll(true);
+  //     setEditMode(true);
+  //   } else {
+  //     setIsEditAll(false);
+  //     setEditMode(false);
+  //   }
+  // }, [selectedRows]);
 
   useEffect(() => {
     if (isSftp(locationType)) {
@@ -560,14 +542,11 @@ export default function DSColumnTable({
     }
     const formatRows = formattedData.map((e) => e.uniqueId);
     if (dataOrigin === "fileUpload") {
-      setSelectedRows(formatRows);
-      setEditedRows(formattedData);
+      setRows([...formattedData]);
     } else if (dataOrigin === "fromDB") {
-      // setSelectedRows(formatRows);
       setRows([...formattedData]);
     } else if (dataOrigin === "manually") {
-      setSelectedRows([`u0`]);
-      setEditedRows([{ uniqueId: `u0`, ...columnObj }]);
+      setInitRow();
     }
     if (previewSQL?.length) {
       addMulti(previewSQL);
@@ -609,6 +588,7 @@ export default function DSColumnTable({
             onRowEdit,
             locationType,
             haveHeader,
+            editedCount,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}
@@ -637,6 +617,7 @@ export default function DSColumnTable({
             disableSaveAll,
             changeHandler,
             haveHeader,
+            editedCount,
           }}
         />
       </div>
