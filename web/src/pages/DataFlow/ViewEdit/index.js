@@ -121,10 +121,11 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   useEffect(() => {
     if (
-      selectedLocation?.src_loc_id &&
-      selectedLocation?.loc_typ !== ("SFTP" || "FTPS")
+      selectedLocation?.value &&
+      (selectedLocation?.loc_typ !== ("SFTP" || "FTPS") ||
+        dashboardData?.selectedDataFlow?.locationType !== ("SFTP" || "FTPS"))
     ) {
-      dispatch(getLocationDetails(selectedLocation?.src_loc_id));
+      dispatch(getLocationDetails(selectedLocation?.value));
     }
   }, [selectedLocation]);
 
