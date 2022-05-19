@@ -69,6 +69,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     const jsonData = JSON.stringify(conf_Data);
 
     const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11, $12) returning *`;
+
     const data = await DB.executeQuery(insertQuery, body);
 
     const attributeName = "New Dataset";
@@ -89,6 +90,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
       data.rows[0]
     );
   } catch (err) {
+    // console.log(" Catch::::", err);
     //throw error in json response with status 500.
     Logger.error("catch: create SQL Dataset");
     Logger.error(err);
@@ -254,19 +256,37 @@ async function updateSQLDataset(res, values) {
       updatedSqlQuery = sQLQuery;
     }
 
+    const { rows: tempData } = await DB.executeQuery(
+      `select mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`,
+      [datasetid]
+    );
+    const oldData = tempData[0];
+
     const body = [
       datasetName,
       helper.stringToBoolean(active) ? 1 : 0,
       clinicalDataType ? clinicalDataType[0] : null,
-      isCustomSQL,
-      updatedSqlQuery,
+      isCustomSQL || null,
+      updatedSqlQuery || null,
       tableName || null,
       filterCondition || null,
-      dataType == "Incremental" ? "Y" : "N" || null,
+      dataType === "Incremental" ? "Y" : "N" || null,
       offsetColumn || null,
       curDate,
       datasetid,
     ];
+
+    const requestData = {
+      mnemonic: datasetName,
+      active: helper.stringToBoolean(active) ? 1 : 0,
+      datakindid: clinicalDataType ? clinicalDataType[0] : null,
+      customsql_yn: isCustomSQL || null,
+      customsql: updatedSqlQuery || null,
+      tbl_nm: tableName || null,
+      dataset_fltr: filterCondition || null,
+      offsetcolumn: offsetColumn,
+      incremental: dataType === "Incremental" ? "Y" : "N" || null,
+    };
 
     const updateDS = await DB.executeQuery(
       `UPDATE ${schemaName}.dataset set mnemonic = $1, active = $2, datakindid = $3, customsql_yn = $4, customsql =$5, tbl_nm = $6, dataset_fltr = $7, offsetcolumn = $9, incremental = $8, updt_tm=$10 where datasetid = $11 returning *`,
@@ -277,32 +297,14 @@ async function updateSQLDataset(res, values) {
       return apiResponse.ErrorResponse(res, "Something went wrong on update");
     }
 
-    const requestData = {
-      datasetid: datasetid,
-      datapackageid: dpId,
-      mnemonic: values.datasetName,
-      active: true ? 1 : 0,
-      datakindid: values.clinicalDataType ? values.clinicalDataType[0] : null,
-      customsql_yn: values.isCustomSQL || null,
-      customsql: values.sQLQuery || null,
-      tbl_nm: values.tableName || null,
-      dataset_fltr: values.filterCondition || null,
-      offsetcolumn: values.offsetColumn,
-      incremental: values.dataType == "Incremental" ? "Y" : "N" || null,
-    };
-
-    const selectQuery = `select datasetid, datapackageid, mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, 
-    dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`;
-
-    const { rows: tempData } = await DB.executeQuery(selectQuery, [datasetid]);
-    const oldData = tempData[0];
-
     const diffObj = helper.getdiffKeys(requestData, oldData);
+
     var idObj = {
       dataflowid: dfId,
       datasetid: datasetid,
       datapackageid: dpId,
     };
+
     const updateConfg = Object.assign(idObj, diffObj);
 
     if (Object.keys(diffObj).length != 0) {
