@@ -13,8 +13,8 @@ async function checkIsExistInDF(dkId) {
   right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid
   where d.active = 1 and d2.active = 1 and d3.active = 1`;
   const res = await DB.executeQuery(listQuery);
-  const existingInDF = res.rows.map((e) => parseInt(e.datakindid));
-  return existingInDF.includes(parseInt(dkId));
+  const existingInDF = res.rows.map((e) => e.datakindid);
+  return existingInDF.includes(dkId.toString());
 }
 
 exports.createDataKind = async (req, res) => {
@@ -78,12 +78,12 @@ exports.getDKList = async (req, res) => {
     let dbQuery = await DB.executeQuery(selectQuery);
     Logger.info({ message: "getDKList" });
     const datakind = (await dbQuery.rows) || [];
-    const replaceNullDataWithBlank=datakind.map(el=>{
-      if(!el.dkESName){
-        el.dkESName="Blank";
+    const replaceNullDataWithBlank = datakind.map((el) => {
+      if (!el.dkESName) {
+        el.dkESName = "Blank";
       }
-      return el
-    })
+      return el;
+    });
     return apiResponse.successResponseWithData(
       res,
       "Operation success",
@@ -206,6 +206,7 @@ exports.dkStatusUpdate = async (req, res) => {
     const { dkId, dkStatus } = req.body;
     const curDate = helper.getCurrentTime();
     const query = `UPDATE ${schemaName}.datakind SET updt_tm=$3, active=$1 WHERE datakindid=$2`;
+
     Logger.info({ message: "dkStatusUpdate" });
     const isExist = await checkIsExistInDF(dkId);
     if (isExist) {
