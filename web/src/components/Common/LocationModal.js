@@ -24,6 +24,7 @@ import {
   extSysName,
   generateConnectionURL,
   generatedBName,
+  extractHostname,
 } from "../../utils";
 import {
   ReduxFormSelect,
@@ -364,7 +365,6 @@ const LocationModal = (props) => {
         password === "Yes" || typeof password === "object"
           ? locationPassword
           : password || "",
-      host: ipServer || "",
       endPoint: "/checkconnection/sftp",
     };
     if (locationType) {
@@ -372,11 +372,18 @@ const LocationModal = (props) => {
         reqBody = {
           ...reqBody,
           endPoint: "/checkconnection/jdbc",
+          host: ipServer || "",
           databaseName: dbName || "",
           userId: "",
           database: generatedBName(locationType),
           port: port ? port : "",
         };
+      } else {
+        reqBody = {
+          ...reqBody,
+          host: extractHostname(ipServer) || "",
+        };
+        // console.log("test", reqBody);
       }
     }
     setLoadingConn(true);
