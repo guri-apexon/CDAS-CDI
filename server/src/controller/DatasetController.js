@@ -350,7 +350,7 @@ exports.updateDatasetData = async (req, res) => {
       datasetid
     );
     const selectQuery = `select datasetid, datapackageid, mnemonic, type, charset, delimiter , escapecode, quote,
-    headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, 
+    headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, 
     incremental from ${schemaName}.dataset where datasetid = $1`;
 
     if (isExist) {
@@ -393,7 +393,7 @@ exports.updateDatasetData = async (req, res) => {
       active: helper.stringToBoolean(values.active) ? 1 : 0,
       name: values.fileNamingConvention || null,
       path: values.folderPath || null,
-      password: passwordStatus,
+      file_pwd: passwordStatus,
       datakindid: values.clinicalDataType[0],
       data_freq: values.transferFrequency || null,
       ovrd_stale_alert: values.overrideStaleAlert || null,
