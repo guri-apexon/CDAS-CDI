@@ -201,17 +201,14 @@ export default function CDTList() {
     e.preventDefault();
     const selected = cdtList.find((d) => d.dkId === Id);
     await getENSlists();
-    const { dkName, dkStatus, dkDesc, dkESName } = selected;
-    const picked = ensList.find((d) => d.label === dkESName);
-    // console.log("handleLink", "test", selected, picked);
+    const { dkName, dkStatus, dkDesc, dkESName, dkESNId } = selected;
+    // console.log("handleLink", selected, picked);
     setSelectedRow(Id);
     setENS(dkESName || "");
     setCName(dkName || "");
     setDesc(dkDesc || "");
     setStatus(dkStatus === 1 ? true : false);
-    if (picked) {
-      setENSId(picked.value);
-    }
+    setENSId(dkESNId);
     setViewModal(true);
   };
 
@@ -295,7 +292,7 @@ export default function CDTList() {
         }
         if (res.status === 0) {
           hideViewData();
-          messageContext.showErrorMessage(res.data);
+          messageContext.showErrorMessage(res.message || res.data);
         }
       });
     } else {

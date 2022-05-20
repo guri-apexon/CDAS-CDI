@@ -74,7 +74,7 @@ exports.getDatakindList = function (req, res) {
 
 exports.getDKList = async (req, res) => {
   try {
-    let selectQuery = `SELECT datakindid as "dkId", name as "dkName", extrnl_sys_nm as "dkESName", dk_desc as "dkDesc", active as "dkStatus" from ${schemaName}.datakind order by name`;
+    let selectQuery = `SELECT datakindid as "dkId", name as "dkName", extrnl_sys_nm as "dkESName", extrnl_id as dkESNId, dk_desc as "dkDesc", active as "dkStatus" from ${schemaName}.datakind order by name`;
     let dbQuery = await DB.executeQuery(selectQuery);
     Logger.info({ message: "getDKList" });
     const datakind = (await dbQuery.rows) || [];
