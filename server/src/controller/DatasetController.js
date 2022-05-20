@@ -69,6 +69,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     const jsonData = JSON.stringify(conf_Data);
 
     const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11, $12) returning *`;
+
     const data = await DB.executeQuery(insertQuery, body);
 
     const attributeName = "New Dataset";
@@ -89,6 +90,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
       data.rows[0]
     );
   } catch (err) {
+    // console.log(" Catch::::", err);
     //throw error in json response with status 500.
     Logger.error("catch: create SQL Dataset");
     Logger.error(err);
