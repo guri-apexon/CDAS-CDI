@@ -123,19 +123,21 @@ const DataFlowFormBase = (props) => {
 
   useEffect(() => {
     if (initialValues) {
-      const { dataflowType } = initialValues;
+      // const { dataflowType } = initialValues;
       const selectedV = vendors?.find(
         (e) => e.value === initialValues.vendors[0]
       );
+      const selectedLoc = locations?.find(
+        (e) => e.value === initialValues?.locations[0].value
+      );
       setDataLoaded(true);
-      setLocationDetail(initialValues?.locations[0] || null);
-      // console.log("initialValues", initialValues, selectedV);
+      setLocationDetail(selectedLoc || null);
       setSelectedVendor(selectedV);
-      if (dataflowType) {
-        // changeFormField(dataflowType, "dataflowType");
-      }
+      // if (dataflowType) {
+      //   changeFormField({ target: { value: dataflowType } }, "dataflowType");
+      // }
     }
-  }, [initialValues, vendors]);
+  }, [initialValues, vendors, locations]);
 
   useEffect(() => {
     setLocationDetail(selectedLocation || null);

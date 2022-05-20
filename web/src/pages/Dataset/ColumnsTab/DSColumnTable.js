@@ -14,7 +14,6 @@ import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../utils/downloadData";
 import {
-  createDatasetColumns,
   updateDatasetColumns,
   getDatasetColumns,
 } from "../../../store/actions/DataSetsAction";
@@ -252,7 +251,6 @@ export default function DSColumnTable({
 
   const handleSaveLOV = async () => {
     if (selectedRow.dbColumnId) {
-      const newQuery = "";
       const removeExistingRowData = rows.filter(
         (e) => e.uniqueId !== selectedRow.uniqueId
       );
@@ -274,15 +272,7 @@ export default function DSColumnTable({
         });
 
       dispatch(
-        updateDatasetColumns(
-          editedRowData,
-          dsId,
-          dfId,
-          dpId,
-          userInfo.userId,
-          isCustomSQL === "No",
-          newQuery
-        )
+        updateDatasetColumns(editedRowData, dsId, dfId, dpId, userInfo.userId)
       );
 
       const newData = _.orderBy(
@@ -513,19 +503,6 @@ export default function DSColumnTable({
     const existingCD = formattedColumnData.filter((e) => e.dbColumnId);
     const newCD = formattedColumnData.filter((e) => !e.dbColumnId);
 
-    let newQuery = "";
-    if (isCustomSQL === "No") {
-      const columnList = formattedColumnData
-        .map((e) => e.columnName)
-        .join(", ");
-      const wherePart = customsql?.indexOf("where");
-      if (wherePart) {
-        newQuery = `Select ${columnList} from ${tableName} ${customsql.slice(
-          wherePart
-        )}`;
-      }
-    }
-
     // setSelectedRows([]);
     // const newData = _.orderBy([...formattedColumnData], ["uniqueId"], ["asc"]);
     // setEditedRows([...newData]);
@@ -538,8 +515,6 @@ export default function DSColumnTable({
         dfId,
         dpId,
         userId: userInfo.userId,
-        isUpdateQuery: isCustomSQL === "No",
-        newQuery,
       });
       if (created?.status && created.data?.length) {
         const prevRows = [...rows];
@@ -556,15 +531,7 @@ export default function DSColumnTable({
 
     if (existingCD?.length) {
       dispatch(
-        updateDatasetColumns(
-          existingCD,
-          dsId,
-          dfId,
-          dpId,
-          userInfo.userId,
-          isCustomSQL === "No",
-          newQuery
-        )
+        updateDatasetColumns(existingCD, dsId, dfId, dpId, userInfo.userId)
       );
       setRows((prevRows) => prevRows.map((x) => ({ ...x, isEditMode: false })));
     }
@@ -615,15 +582,6 @@ export default function DSColumnTable({
       // const removeRow = selectedRows.filter((e) => e !== uniqueId);
       // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
       const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
-      let newQuery = "";
-      if (isCustomSQL === "No") {
-        const selectedList = [...selectedCN, editedRowData?.columnName];
-        setSelectedCN(selectedList);
-        const splitted = customsql.split("where");
-        newQuery = `Select ${selectedList.join(
-          ", "
-        )} from ${tableName} where ${splitted[1].trim()}`;
-      }
 
       if (editedRowData?.dbColumnId) {
         await dispatch(
@@ -632,9 +590,7 @@ export default function DSColumnTable({
             dsId,
             dfId,
             dpId,
-            userInfo.userId,
-            isCustomSQL === "No",
-            newQuery
+            userInfo.userId
           )
         );
       } else {
@@ -644,8 +600,6 @@ export default function DSColumnTable({
           dfId,
           dpId,
           userId: userInfo.userId,
-          isUpdateQuery: isCustomSQL === "No",
-          newQuery,
         });
 
         if (created?.status) {
@@ -707,7 +661,7 @@ export default function DSColumnTable({
     const isInDB = rows.find((row) => row.uniqueId === uniqueId);
     if (isInDB) {
       if (isInDB.dbColumnId !== ("" || undefined || null)) {
-        await deleteCD(isInDB.dbColumnId, dsId, dpId, dfId, false, "");
+        await deleteCD(isInDB.dbColumnId, dsId, dpId, dfId);
       }
     }
     setRows((prevRows) => prevRows.filter((e) => e.uniqueId !== uniqueId));

@@ -379,22 +379,13 @@ export const userLogOut = () => {
     });
 };
 
-export const deleteCD = async (
-  columnId,
-  dsId,
-  dpId,
-  dfId,
-  isUpdateQuery,
-  nQuery
-) => {
+export const deleteCD = async (columnId, dsId, dpId, dfId) => {
   try {
     const res = await axios.post(`${baseURL}/${COLUMNSAPI}/delete`, {
       columnId,
       dsId,
       dfId,
       dpId,
-      isUpdateQuery,
-      nQuery,
       userId,
     });
     return res.data?.data || [];

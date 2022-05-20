@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 /* eslint-disable eqeqeq */
 import moment from "moment";
 import React from "react";
@@ -717,4 +718,19 @@ export const scrollIntoView = () => {
     },
     1500
   );
+};
+
+export const extractHostname = (url) => {
+  let hostname;
+  // find & remove protocol (http, ftp, etc.) and get hostname
+  if (url.indexOf("//") > -1) {
+    hostname = url.split("/")[2];
+  } else {
+    hostname = url.split("/")[0];
+  }
+  // find & remove port number
+  hostname = hostname.split(":")[0];
+  // find & remove "?"
+  hostname = hostname.split("?")[0];
+  return hostname;
 };
