@@ -231,8 +231,10 @@ const SystemSettings = () => {
   // console.log("testtes");
 
   const filteredRow = search
-    ? rows?.filter((row) =>
-        row.name?.toLowerCase().includes(search.toLowerCase())
+    ? rows?.filter(
+        (row) =>
+          row.name?.toLowerCase().includes(search.toLowerCase()) ||
+          row.value?.toLowerCase().includes(search?.toLowerCase())
       )
     : rows;
 
