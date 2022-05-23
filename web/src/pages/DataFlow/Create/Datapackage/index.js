@@ -102,7 +102,12 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
                   value={compression}
                   size="small"
                   placeholder="Select type..."
-                  onChange={(e) => setCompression(e.target.value)}
+                  onChange={(e) => {
+                    setCompression(e.target.value);
+                    if (e.target.value === "") {
+                      setNotMatchedType(false);
+                    }
+                  }}
                   className="mb-20 package-type"
                 >
                   {packageComprTypes.map((type, i) => (
