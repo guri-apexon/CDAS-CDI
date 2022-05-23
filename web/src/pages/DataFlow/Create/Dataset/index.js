@@ -129,7 +129,7 @@ const Dataset = (props, ref) => {
       dispatch(submit("CreateDataSetsForm"));
     } else {
       // messageContext?.setDataflow({ datasetSubmit: true });
-      jdbcRef.current.handleSubmit();
+      jdbcRef?.current?.handleSubmit();
     }
   };
 
