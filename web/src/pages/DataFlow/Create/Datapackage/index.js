@@ -33,13 +33,20 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
   const [notMatchedType, setNotMatchedType] = useState(false);
   const userInfo = getUserInfo();
 
+  const resetForm = () => {
+    setNamingConvention("");
+    setPackagePassword("");
+    setSftpPath("");
+    setCompression("");
+    setConfigShow(false);
+    setNotMatchedType(false);
+  };
   const showConfig = (e, checked) => {
     setConfigShow(checked);
+    if (!checked) {
+      resetForm();
+    }
   };
-  //   const resetForm = () => {
-  //     setConfigShow(false);
-  //     setShowForm(false);
-  //   };
   useImperativeHandle(ref, () => ({
     // eslint-disable-next-line consistent-return
     submitForm: () => {
