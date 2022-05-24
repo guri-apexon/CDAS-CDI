@@ -71,6 +71,17 @@ const AuditLog = () => {
         }
       }
     });
+    if (sortedColumnValue === "log_version") {
+      filteredRows.sort((a, b) => {
+        return (
+          sortOrderValue === "asc"
+            ? Number(a[sortedColumnValue]) > Number(b[sortedColumnValue])
+            : Number(a[sortedColumnValue]) < Number(b[sortedColumnValue])
+        )
+          ? 1
+          : -1;
+      });
+    }
     return filteredRows;
   };
 
