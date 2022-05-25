@@ -581,6 +581,12 @@ exports.insertValidation = (req) => {
                     obj.customSql !== "" &&
                     obj.customSql !== undefined
                   ) {
+                    if (obj.customSql.length <= 131072) {
+                    } else {
+                      validate.push({
+                        err: " Custom Sql  Max of 131072 characters  ",
+                      });
+                    }
                   } else {
                     validate.push({
                       err: " Custom Sql  is required ",
@@ -1188,6 +1194,10 @@ const saveDataset = (exports.datasetLevelInsert = async (
       if (obj.customQuery.toLowerCase() == "yes") {
         if (!obj.customSql) {
           errorDataset.push(" Custom Sql  is required  ");
+        } else {
+          if (obj.customSql.length >= 131072) {
+            errorDataset.push(" Custom Sql  Max of 131072 characters  ");
+          }
         }
       }
       if (obj.customQuery.toLowerCase() == "no") {
@@ -2499,6 +2509,10 @@ exports.datasetUpdate = async (
         if (helper.stringToBoolean(data.customQuery)) {
           if (!data.customSql) {
             errorDataset.push(" Custom Sql  is required  ");
+          } else {
+            if (data.customSql.length >= 131072) {
+              errorDataset.push(" Custom Sql  Max of 131072 characters ");
+            }
           }
         }
         if (!helper.stringToBoolean(data.customQuery)) {
