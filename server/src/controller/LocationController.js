@@ -302,18 +302,22 @@ exports.saveLocationData = async function (req, res) {
       locationType,
       ipServer,
       dataStructure,
-      externalSytemName,
+      externalSystemName,
       connURL,
       dbName,
+      port,
       userName,
       password,
     } = req.body;
+
+    const curDate = helper.getCurrentTime();
+
     const isExist = await checkLocationExists(
-      values.locationType,
-      values.connURL,
-      values.userName,
-      values.dbName,
-      values.externalSytemName
+      locationType,
+      connURL,
+      userName,
+      dbName,
+      externalSystemName
     );
     if (isExist > 0) {
       return apiResponse.ErrorResponse(
@@ -322,23 +326,21 @@ exports.saveLocationData = async function (req, res) {
       );
     }
     const newId = helper.generateUniqueID();
-    const curDate = helper.getCurrentTime();
 
     const body = [
+      curDate,
+      locationType,
       newId,
-      values.locationType || null,
-      values.ipServer || null,
-      values.port || null,
-      values.connURL || null,
-      values.dataStructure || null,
-      values.active == true ? 1 : 0,
-      values.externalSytemName || null,
-      values.locationName || null,
-      values.userName,
-      values.password ? "Yes" : "No",
-      curDate,
-      curDate,
-      values.dbName || null,
+      ipServer || null,
+      port || null,
+      connURL || null,
+      dataStructure,
+      active === true ? 1 : 0,
+      externalSystemName,
+      locationName || null,
+      userName,
+      password ? "Yes" : "No",
+      dbName || null,
     ];
 
     const searchQuery = `INSERT into ${schemaName}.source_location (src_loc_id, loc_typ, ip_servr, port, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, usr_nm, pswd, insrt_tm, updt_tm, db_nm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`;
@@ -347,9 +349,10 @@ exports.saveLocationData = async function (req, res) {
     DB.executeQuery(searchQuery, body)
       .then(async (response) => {
         const vaultData = {
-          user: values.userName || null,
-          password: values.password || null,
+          user: userName || null,
+          password: password || null,
         };
+
         await helper.writeVaultData(newId, vaultData);
 
         return apiResponse.successResponseWithData(
@@ -377,7 +380,7 @@ exports.saveLocationData = async function (req, res) {
 //       values.connURL,
 //       values.userName,
 //       values.dbName,
-//       values.externalSytemName
+//       values.externalSystemName
 //     );
 //     if (isExist > 0) {
 //       return apiResponse.ErrorResponse(
@@ -396,7 +399,7 @@ exports.saveLocationData = async function (req, res) {
 //       values.connURL || null,
 //       values.dataStructure || null,
 //       values.active == true ? 1 : 0,
-//       values.externalSytemName || null,
+//       values.externalSystemName || null,
 //       values.locationName || null,
 //       values.userName,
 //       values.password ? "Yes" : "No",
@@ -444,7 +447,7 @@ exports.updateLocationData = async function (req, res) {
       values.connURL,
       values.userName,
       values.dbName,
-      values.externalSytemName,
+      values.externalSystemName,
       locationID
     );
     if (isExist > 0) {
@@ -469,7 +472,7 @@ exports.updateLocationData = async function (req, res) {
       values.port || null,
       values.dataStructure || null,
       values.active === true ? 1 : 0,
-      values.externalSytemName,
+      values.externalSystemName,
       values.locationName || null,
       values.dbName || null,
       values.connURL || null,
@@ -505,7 +508,7 @@ exports.updateLocationData = async function (req, res) {
           port: values.port || null,
           data_strc: values.dataStructure || null,
           active: values.active === true ? 1 : 0,
-          extrnl_sys_nm: values.externalSytemName,
+          extrnl_sys_nm: values.externalSystemName,
           loc_alias_nm: values.locationName || null,
           db_nm: values.dbName || null,
           cnn_url: values.connURL || null,

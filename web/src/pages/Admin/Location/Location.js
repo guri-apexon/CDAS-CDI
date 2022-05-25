@@ -192,7 +192,7 @@ const Location = () => {
     dispatch(change("AddLocationForm", "port", row?.port));
     dispatch(change("AddLocationForm", "dbName", row?.db_nm));
     dispatch(
-      change("AddLocationForm", "externalSytemName", row?.extrnl_sys_nm)
+      change("AddLocationForm", "externalSystemName", row?.extrnl_sys_nm)
     );
 
     setLocationViewMode(true);

@@ -697,7 +697,7 @@ content-type: application/json
     "active": true,
     "dataStructure": "tabular",
     "locationName": "testLocation_123_vaithe",
-    "externalSytemName": "IQB",
+    "externalSystemName": "IQB",
     "locationType": "Hive CDH",
     "password": "Iqvia@123",
     "userName": "ycdrssd",
@@ -725,7 +725,7 @@ content-type: application/json
     "connURL": "jdbc:mysql://ca2uhdtsd001vd:3306/vault",
     "port": "3306",
     "dbName": "vault",
-    "externalSytemName": "IQB",
+    "externalSystemName": "IQB",
     "userId": "u1105372"
 }
 

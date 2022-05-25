@@ -96,9 +96,9 @@ const LocationForm = (props) => {
               />
             </Grid>
           )}
-          <Grid item md={5} id="for-externalSytemName">
+          <Grid item md={5} id="for-externalSystemName">
             <ReduxFormSelect
-              name="externalSytemName"
+              name="externalSystemName"
               label="External System Name"
               InputProps={{ readOnly: props.locationViewMode }}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
