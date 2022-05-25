@@ -212,6 +212,93 @@ exports.getLocationById = async function (req, res) {
   }
 };
 
+exports.getServiceOwnersList = function (req, res) {
+  try {
+    let select = `call_back_url_id as value, serv_ownr as label`;
+    let searchQuery = `SELECT ${select} from ${schemaName}.call_back_urls where actv_flg=1 order by serv_ownr asc`;
+    let dbQuery = DB.executeQuery(searchQuery);
+    Logger.info({ message: "serviceOwnerList" });
+
+    dbQuery
+      .then((response) => {
+        const vendors = response.rows || [];
+        return apiResponse.successResponseWithData(res, "Operation success", {
+          records: vendors,
+          totalSize: response.rowCount,
+        });
+      })
+      .catch((err) => {
+        return apiResponse.ErrorResponse(res, err.message);
+      });
+  } catch (err) {
+    //throw error in json response with status 500.
+    Logger.error("catch :serviceOwnerList");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.statusUpdate = async (req, res) => {
+  try {
+    const { id, status, userId } = req.body;
+    const activeStatus = status === true ? 1 : 0;
+    Logger.info({ message: "Location status Update" });
+    const curDate = helper.getCurrentTime();
+
+    const updateLocation = await DB.executeQuery(
+      `UPDATE ${schemaName}.source_location SET updt_tm=$3, active=$1 WHERE src_loc_id=$2 returning *`,
+      [activeStatus, id, curDate]
+    );
+    const oldLocation = await DB.executeQuery(
+      `SELECT active FROM ${schemaName}.source_location where src_loc_id=$1`,
+      [id]
+    );
+
+    if (!updateLocation?.rowCount || !oldLocation?.rowCount) {
+      return apiResponse.ErrorResponse(res, "Something went wrong on update");
+    }
+
+    const dfList = await DB.executeQuery(
+      `select d.dataflowid from ${schemaName}.dataflow d where d.src_loc_id = $1`,
+      [id]
+    );
+
+    if (dfList.rowCount > 0) {
+      const locationObj = updateLocation.rows[0];
+      const existingObj = oldLocation.rows[0];
+      dfList?.rows?.forEach(async (row) => {
+        const dataflowId = row.dataflowid;
+        const diffObj = helper.getdiffKeys(
+          {
+            active: activeStatus,
+          },
+          existingObj
+        );
+        await addLocationCDHHistory({
+          dataflowId,
+          externalSystemName: "CDI",
+          userId,
+          config_json: locationObj,
+          diffObj,
+          existingObj,
+        });
+      });
+    }
+
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      updateLocation.rows
+    );
+  } catch (err) {
+    //throw error in json response with status 500.
+    console.log(err);
+    Logger.error("catch :location status Update");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
 exports.saveLocationData = async function (req, res) {
   try {
     const values = req.body;
@@ -271,32 +358,6 @@ exports.saveLocationData = async function (req, res) {
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :storeLocation");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
-  }
-};
-
-exports.getServiceOwnersList = function (req, res) {
-  try {
-    let select = `call_back_url_id as value, serv_ownr as label`;
-    let searchQuery = `SELECT ${select} from ${schemaName}.call_back_urls where actv_flg=1 order by serv_ownr asc`;
-    let dbQuery = DB.executeQuery(searchQuery);
-    Logger.info({ message: "serviceOwnerList" });
-
-    dbQuery
-      .then((response) => {
-        const vendors = response.rows || [];
-        return apiResponse.successResponseWithData(res, "Operation success", {
-          records: vendors,
-          totalSize: response.rowCount,
-        });
-      })
-      .catch((err) => {
-        return apiResponse.ErrorResponse(res, err.message);
-      });
-  } catch (err) {
-    //throw error in json response with status 500.
-    Logger.error("catch :serviceOwnerList");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
@@ -397,67 +458,6 @@ exports.updateLocationData = async function (req, res) {
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :updateLocation");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
-  }
-};
-
-exports.statusUpdate = async (req, res) => {
-  try {
-    const { id, status, userId } = req.body;
-    const activeStatus = status === true ? 1 : 0;
-    Logger.info({ message: "Location status Update" });
-    const curDate = helper.getCurrentTime();
-
-    const updateLocation = await DB.executeQuery(
-      `UPDATE ${schemaName}.source_location SET updt_tm=$3, active=$1 WHERE src_loc_id=$2 returning *`,
-      [activeStatus, id, curDate]
-    );
-    const oldLocation = await DB.executeQuery(
-      `SELECT active FROM ${schemaName}.source_location where src_loc_id=$1`,
-      [id]
-    );
-
-    if (!updateLocation?.rowCount || !oldLocation?.rowCount) {
-      return apiResponse.ErrorResponse(res, "Something went wrong on update");
-    }
-
-    const dfList = await DB.executeQuery(
-      `select d.dataflowid from ${schemaName}.dataflow d where d.src_loc_id = $1`,
-      [id]
-    );
-
-    if (dfList.rowCount > 0) {
-      const locationObj = updateLocation.rows[0];
-      const existingObj = oldLocation.rows[0];
-      dfList?.rows?.forEach(async (row) => {
-        const dataflowId = row.dataflowid;
-        const diffObj = helper.getdiffKeys(
-          {
-            active: activeStatus,
-          },
-          existingObj
-        );
-        await addLocationCDHHistory({
-          dataflowId,
-          externalSystemName: "CDI",
-          userId,
-          config_json: locationObj,
-          diffObj,
-          existingObj,
-        });
-      });
-    }
-
-    return apiResponse.successResponseWithData(
-      res,
-      "Operation success",
-      updateLocation.rows
-    );
-  } catch (err) {
-    //throw error in json response with status 500.
-    console.log(err);
-    Logger.error("catch :location status Update");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
   }
