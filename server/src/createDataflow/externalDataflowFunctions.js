@@ -58,6 +58,11 @@ exports.insertValidation = (req) => {
       err: " External Id  is required and data type should be string or Number ",
     });
   }
+  if (req.del_flg !== 0) {
+    validate.push({
+      err: " Data flow Level del_flg required and value should be 0 ",
+    });
+  }
   if (!ConnectionType) {
     validate.push({
       err: " ConnectionType is required and data type should be string ",
@@ -86,6 +91,11 @@ exports.insertValidation = (req) => {
       // console.log("data package data", req.body.dataPackage.length);
       for (let each of req.dataPackage) {
         var LocationType = req.connectionType;
+        if (each.del_flg !== 0) {
+          validate.push({
+            err: " Data Package Level del_flg required and value should be 0 ",
+          });
+        }
         if (
           each.externalID === null ||
           each.externalID === "" ||
@@ -213,6 +223,12 @@ exports.insertValidation = (req) => {
                     });
                   }
 
+                  if (obj.del_flg !== 0) {
+                    validate.push({
+                      err: " Data Set Level del_flg required and value should be 0 ",
+                    });
+                  }
+
                   const dsArray = [
                     {
                       key: "Data Set Name (Mnemonic) ",
@@ -288,6 +304,30 @@ exports.insertValidation = (req) => {
                     });
                   }
 
+                  if (obj.headerRowNumber) {
+                    if (typeof obj.headerRowNumber != "number") {
+                      validate.push({
+                        err: " In SFTP/FTPS headerRowNumber is Optional and data type should be Number ",
+                      });
+                    }
+                  }
+
+                  if (obj.footerRowNumber) {
+                    if (typeof obj.footerRowNumber != "number") {
+                      validate.push({
+                        err: " In SFTP/FTPS footerRowNumber is Optional and data type should be Number ",
+                      });
+                    }
+                  }
+
+                  if (obj.OverrideStaleAlert) {
+                    if (typeof obj.OverrideStaleAlert != "number") {
+                      validate.push({
+                        err: " In SFTP/FTPS OverrideStaleAlert is Optional and data type should be Number ",
+                      });
+                    }
+                  }
+
                   if (
                     obj.customQuery ||
                     obj.customQuery === 0 ||
@@ -334,6 +374,22 @@ exports.insertValidation = (req) => {
                       obj.columnDefinition.length > 0
                     ) {
                       for (let el of obj.columnDefinition) {
+                        if (
+                          el.externalID === null ||
+                          el.externalID === "" ||
+                          el.externalID === undefined
+                        ) {
+                          validate.push({
+                            err: " Column Definition Level, External Id  is required and data type should be string or Number ",
+                          });
+                        }
+
+                        if (el.del_flg !== 0) {
+                          validate.push({
+                            err: " Column Definition Level del_flg required and value should be 0 ",
+                          });
+                        }
+
                         const clArray = [
                           {
                             key: "Column Name or Designator ",
@@ -373,6 +429,22 @@ exports.insertValidation = (req) => {
                         let clRes = helper.validation(clArray);
                         if (clRes.length > 0) {
                           validate.push(clRes);
+                        }
+
+                        if (el.characterMin) {
+                          if (typeof el.characterMin != "number") {
+                            validate.push({
+                              err: " In SFTP/FTPS characterMin is Optional and data type should be Number ",
+                            });
+                          }
+                        }
+
+                        if (el.characterMax) {
+                          if (typeof el.characterMax != "number") {
+                            validate.push({
+                              err: " In SFTP/FTPS characterMax is Optional and data type should be Number ",
+                            });
+                          }
                         }
                         if (el.characterMin) {
                           if (
@@ -439,6 +511,12 @@ exports.insertValidation = (req) => {
                   });
                 }
 
+                if (obj.del_flg !== 0) {
+                  validate.push({
+                    err: " Data Set Level del_flg required and value should be 0 ",
+                  });
+                }
+
                 if (
                   obj.type ||
                   obj.name ||
@@ -448,11 +526,17 @@ exports.insertValidation = (req) => {
                   obj.rowDecreaseAllowed === 0 ||
                   obj.dataTransferFrequency === 0 ||
                   obj.dataTransferFrequency ||
+                  obj.headerRowNumber ||
+                  obj.footerRowNumber ||
+                  obj.OverrideStaleAlert ||
+                  obj.headerRowNumber === 0 ||
+                  obj.footerRowNumber === 0 ||
+                  obj.OverrideStaleAlert === 0 ||
                   obj.escapeCode ||
                   obj.path
                 ) {
                   validate.push({
-                    err: " In JDBC Data Set Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, escapeCode, path should be blank ",
+                    err: " In JDBC Data Set Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, escapeCode, path, headerRowNumber, footerRowNumber, OverrideStaleAlert should be blank ",
                   });
                 }
 
@@ -544,6 +628,22 @@ exports.insertValidation = (req) => {
 
                   if (obj.columnDefinition && obj.columnDefinition.length > 0) {
                     for (let el of obj.columnDefinition) {
+                      if (
+                        el.externalID === null ||
+                        el.externalID === "" ||
+                        el.externalID === undefined
+                      ) {
+                        validate.push({
+                          err: " Column Definition Level, External Id  is required and data type should be string or Number ",
+                        });
+                      }
+
+                      if (el.del_flg !== 0) {
+                        validate.push({
+                          err: " Column Definition Level del_flg required and value should be 0 ",
+                        });
+                      }
+
                       const clArray = [
                         {
                           key: "Include Flag",
@@ -634,6 +734,12 @@ exports.packageLevelInsert = async (
 
     if (helper.isSftp(LocationType)) {
       // if (LocationType === "MySQL") {
+      if (data.del_flg !== 0) {
+        errorPackage.push(
+          " Data Package Level del_flg required and value should be 0 "
+        );
+      }
+
       const dpArray = [
         {
           key: "No Package Level Config ",
@@ -741,6 +847,11 @@ exports.packageLevelInsert = async (
         errorPackage.push(dpRes);
       }
     } else {
+      if (data.del_flg !== 0) {
+        errorPackage.push(
+          " Data Package Level del_flg required and value should be 0 "
+        );
+      }
       if (
         !helper.stringToBoolean(data.noPackageConfig) ||
         !helper.stringToBoolean(data.active)
@@ -853,7 +964,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
   DFId,
   version,
   ConnectionType,
-  externalSysName
+  externalSysName,
+  testFlag
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -865,7 +977,11 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
     if (helper.isSftp(LocationType)) {
       // if (LocationType == "Hive CDH") {
-
+      if (obj.del_flg !== 0) {
+        errorDataset.push(
+          " Data Set Level del_flg required and value should be 0 "
+        );
+      }
       const dsArray = [
         {
           key: "Data Set Name (Mnemonic) ",
@@ -962,6 +1078,30 @@ const saveDataset = (exports.datasetLevelInsert = async (
         }
       }
 
+      if (obj.headerRowNumber) {
+        if (typeof obj.headerRowNumber != "number") {
+          errorDataset.push(
+            " In SFTP/FTPS headerRowNumber is Optional and data type should be Number "
+          );
+        }
+      }
+
+      if (obj.footerRowNumber) {
+        if (typeof obj.footerRowNumber != "number") {
+          errorDataset.push(
+            " In SFTP/FTPS footerRowNumber is Optional and data type should be Number "
+          );
+        }
+      }
+
+      if (obj.OverrideStaleAlert) {
+        if (typeof obj.OverrideStaleAlert != "number") {
+          errorDataset.push(
+            " In SFTP/FTPS OverrideStaleAlert is Optional and data type should be Number "
+          );
+        }
+      }
+
       if (
         obj.customQuery ||
         obj.customQuery === 0 ||
@@ -984,13 +1124,25 @@ const saveDataset = (exports.datasetLevelInsert = async (
         obj.quote ||
         obj.rowDecreaseAllowed ||
         obj.dataTransferFrequency ||
+        obj.headerRowNumber ||
+        obj.footerRowNumber ||
+        obj.OverrideStaleAlert ||
         obj.rowDecreaseAllowed === 0 ||
         obj.dataTransferFrequency === 0 ||
+        obj.headerRowNumber === 0 ||
+        obj.footerRowNumber === 0 ||
+        obj.OverrideStaleAlert === 0 ||
         obj.path ||
         obj.escapeCode
       ) {
         errorDataset.push(
-          " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCode should be Blank "
+          " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCode, headerRowNumber, footerRowNumber, OverrideStaleAlert should be Blank "
+        );
+      }
+
+      if (obj.del_flg !== 0) {
+        errorDataset.push(
+          " Data Set Level del_flg required and value should be 0 "
         );
       }
 
@@ -1056,19 +1208,49 @@ const saveDataset = (exports.datasetLevelInsert = async (
       }
     }
     // console.log("insert data set");
-    if (errorDataset.length > 0) {
-      errorDataset.splice(0, 0, `DataSet External Id -${externalID} `);
-      return { sucRes: dataSet, errRes: errorDataset };
-    }
 
     let dsObj = {};
 
     let dataKind = null;
     if (obj.dataKind) {
       let checkDataKind = await DB.executeQuery(
-        `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
+        `select datakindid,active from ${schemaName}.datakind where name='${obj.dataKind}';`
       );
-      dataKind = checkDataKind.rows[0].datakindid;
+
+      if (checkDataKind.rows.length > 0) {
+        if (checkDataKind.rows[0].active === 1) {
+          dataKind = checkDataKind.rows[0].datakindid;
+        } else {
+          errorDataset.push(
+            `Clinical Data Type is inactive from ${externalSysName}, Description in TA cannot be integrated.`
+          );
+        }
+      } else {
+        errorDataset.push(
+          `Clinical Data Type is missing from ${externalSysName}, Description in TA cannot be integrated.`
+        );
+      }
+    }
+
+    if (obj.mnemonic) {
+      const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
+      let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
+                left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+                left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+                where ds.mnemonic ='${obj.mnemonic}' and df.testflag ='${tFlg}'`;
+
+      let queryMnemonic = await DB.executeQuery(selectMnemonic);
+
+      if (queryMnemonic.rows.length > 0) {
+        errorDataset.push(
+          "In this environment this mnemonic name already Exist!"
+        );
+      }
+    }
+
+    if (errorDataset.length > 0) {
+      errorDataset.splice(0, 0, `DataSet External Id -${externalID} `);
+      return { sucRes: dataSet, errRes: errorDataset };
     }
 
     const dsUid = createUniqueID();
@@ -1162,6 +1344,12 @@ const saveDataset = (exports.datasetLevelInsert = async (
     if (obj.columnDefinition && obj.columnDefinition.length > 0) {
       dataSet.column_definition = [];
       for (let el of obj.columnDefinition) {
+        if (el.del_flg !== 0) {
+          errorDataset.push(
+            " Column Definition Level del_flg required and value should be 0 "
+          );
+        }
+
         if (helper.isSftp(LocationType)) {
           const clArrayIf = [
             {
@@ -1201,6 +1389,22 @@ const saveDataset = (exports.datasetLevelInsert = async (
           let clResIf = helper.validation(clArrayIf);
           if (clResIf.length > 0) {
             errorDataset.push(clResIf);
+          }
+
+          if (el.characterMin) {
+            if (typeof el.characterMin != "number") {
+              errorDataset.push(
+                " In SFTP/FTPS characterMin is Optional and data type should be Number"
+              );
+            }
+          }
+
+          if (el.characterMax) {
+            if (typeof el.characterMax != "number") {
+              errorDataset.push(
+                " In SFTP/FTPS characterMax is Optional and data type should be Number"
+              );
+            }
           }
 
           if (el.characterMin) {
@@ -1291,8 +1495,22 @@ const saveDataset = (exports.datasetLevelInsert = async (
           }
         }
 
+        // Column def Name check
+        if (el.name) {
+          let clName = await DB.executeQuery(
+            `select name from ${schemaName}.columndefinition where datasetid='${dsUid}' and name='${el.name}';`
+          );
+          if (clName.rows.length > 0) {
+            errorDataset.push(" This Column Definition Name already exist!");
+          }
+        }
+
         if (errorDataset.length > 0) {
-          errorDataset.splice(0, 0, `Dataset External Id -${obj.externalID} `);
+          errorDataset.splice(
+            0,
+            0,
+            `Column definition External Id -${el.externalID} `
+          );
           return { sucRes: dataSet, errRes: errorDataset };
         }
 
@@ -1314,16 +1532,24 @@ const saveDataset = (exports.datasetLevelInsert = async (
           helper.stringToBoolean(el.unique) ? 1 : 0,
           el.requiredfield || null,
           helper.getCurrentTime(),
+          el.externalID || null,
         ];
         await DB.executeQuery(
           `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
                   primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
-                  insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
+                  insrt_tm, updt_tm,externalid) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14,$15);`,
           CDBody
         );
 
+        // column count update
+        const clDefCount = `select  count(*) from ${schemaName}.columndefinition where datasetid ='${dsUid}'`;
+        const Count = await DB.executeQuery(clDefCount);
+
+        const dsCountUpdate = `update ${schemaName}.dataset set columncount='${Count.rows[0].count}' where datasetid ='${dsUid}'`;
+        const clCountUpdate = await DB.executeQuery(dsCountUpdate);
+
         cdObj.colmunid = CDUid;
-        cdObj.externalId = obj.externalID;
+        cdObj.externalId = el.externalID;
         cdObj.action = "column definition created successfully.";
         cdObj.timestamp = ts;
         dataSet.push(cdObj);
@@ -1336,7 +1562,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
             DFId,
             DPId,
             dsUid,
-            null,
+            CDUid,
             version,
             "New Column Definition",
             "",
@@ -1356,6 +1582,256 @@ const saveDataset = (exports.datasetLevelInsert = async (
     Logger.error(err);
   }
 });
+
+exports.columnDefinationInsert = async (
+  el,
+  cdExternalId,
+  DPId,
+  DFId,
+  DSId,
+  version,
+  ConnectionType,
+  externalSysName
+) => {
+  try {
+    var LocationType = ConnectionType;
+    let ts = new Date().toLocaleString();
+    let errorColumnDef = [];
+    var ColumnDef = [];
+    var str1 = /[~]/;
+
+    if (el.del_flg !== 0) {
+      errorColumnDef.push(
+        " Column Definition Level del_flg required and value should be 0 "
+      );
+    }
+
+    if (helper.isSftp(LocationType)) {
+      const clArrayIf = [
+        {
+          key: "Column Name or Designator ",
+          value: el.name,
+          type: "string",
+        },
+
+        {
+          key: "Primary Key",
+          value: el.primaryKey,
+          type: "boolean",
+        },
+        {
+          key: "Required",
+          value: el.required,
+          type: "boolean",
+        },
+        {
+          key: "Unique",
+          value: el.unique,
+          type: "boolean",
+        },
+        {
+          key: "Alphanumeric, Numeric or Date",
+          value: el.dataType,
+          type: "string",
+        },
+      ];
+
+      if (!helper.isColumnType(el.dataType)) {
+        errorColumnDef.push(
+          " Data type's Supported values : Numeric, Alphanumeric or Date"
+        );
+      }
+
+      let clResIf = helper.validation(clArrayIf);
+      if (clResIf.length > 0) {
+        errorColumnDef.push(clResIf);
+      }
+
+      if (el.characterMin) {
+        if (typeof el.characterMin != "number") {
+          errorColumnDef.push(
+            " In SFTP/FTPS characterMin is Optional and data type should be Number"
+          );
+        }
+      }
+
+      if (el.characterMax) {
+        if (typeof el.characterMax != "number") {
+          errorColumnDef.push(
+            " In SFTP/FTPS characterMax is Optional and data type should be Number"
+          );
+        }
+      }
+
+      if (el.characterMin) {
+        if (
+          typeof el.characterMin != "undefined" &&
+          typeof el.characterMax != "undefined"
+        ) {
+          if (el.characterMin >= el.characterMax) {
+            errorColumnDef.push("MinCharacter always less than MaxCharacter ");
+          }
+        }
+      }
+
+      if (el.lov) {
+        const last = el.lov.charAt(el.lov.length - 1);
+        const first = el.lov.charAt(el.lov.charAt(0));
+
+        if (str1.test(el.lov) === false) {
+          errorColumnDef.push(" LOV should be seperated by tilde(~) ");
+        } else {
+          if (last === "~" || first === "~") {
+            errorColumnDef.push(
+              " Tilde(~) can't be used start or end of string "
+            );
+          }
+        }
+      }
+    } else {
+      const clArray = [
+        {
+          key: "Column Name or Designator ",
+          value: el.name,
+          type: "string",
+        },
+
+        {
+          key: "Primary Key",
+          value: el.primaryKey,
+          type: "boolean",
+        },
+        {
+          key: "Required",
+          value: el.required,
+          type: "boolean",
+        },
+        {
+          key: "Unique",
+          value: el.unique,
+          type: "boolean",
+        },
+        {
+          key: "includeFlag",
+          value: el.includeFlag,
+          type: "boolean",
+        },
+        {
+          key: "Alphanumeric, Numeric or Date",
+          value: el.dataType,
+          type: "string",
+        },
+      ];
+
+      if (!helper.isColumnType(el.dataType)) {
+        errorColumnDef.push(
+          " Data type's Supported values : Numeric, Alphanumeric or Date"
+        );
+      }
+
+      let clRes = helper.validation(clArray);
+      if (clRes.length > 0) {
+        errorColumnDef.push(clRes);
+      }
+
+      if (
+        el.characterMin ||
+        el.characterMin === 0 ||
+        el.characterMax ||
+        el.characterMax === 0 ||
+        el.lov ||
+        el.position
+      ) {
+        // console.log(val.key, val.value);
+        errorColumnDef.push(
+          "For JBDC characterMin, characterMax, lov, position fields should be Blank "
+        );
+      }
+    }
+
+    // Column Def Name check
+    if (el.name) {
+      let clName = await DB.executeQuery(
+        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${el.name}';`
+      );
+      if (clName.rows.length > 0) {
+        errorColumnDef.push(" This Column Definition Name already exist!");
+      }
+    }
+
+    if (errorColumnDef.length > 0) {
+      errorColumnDef.splice(
+        0,
+        0,
+        `Column definition External Id -${cdExternalId} `
+      );
+      return { sucRes: ColumnDef, errRes: errorColumnDef };
+    }
+
+    let cdObj = {};
+    const CDUid = createUniqueID();
+
+    let CDBody = [
+      DSId,
+      CDUid,
+      el.name || el.columnName || null,
+      el.dataType || null,
+      helper.stringToBoolean(el.primaryKey) ? 1 : 0,
+      helper.stringToBoolean(el.required) ? 1 : 0,
+      el.characterMin || el.minLength || 0,
+      el.characterMax || el.maxLength || 0,
+      el.position || 0,
+      el.format || null,
+      el.lov || el.values || null,
+      helper.stringToBoolean(el.unique) ? 1 : 0,
+      el.requiredfield || null,
+      helper.getCurrentTime(),
+      el.externalID || null,
+    ];
+    await DB.executeQuery(
+      `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
+                  primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
+                  insrt_tm, updt_tm, externalid) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14, $15);`,
+      CDBody
+    );
+
+    const clDefCount = `select  count(*) from ${schemaName}.columndefinition where datasetid ='${DSId}'`;
+    const Count = await DB.executeQuery(clDefCount);
+
+    const dsCountUpdate = `update ${schemaName}.dataset set columncount='${Count.rows[0].count}' where datasetid ='${DSId}'`;
+    const clCountUpdate = await DB.executeQuery(dsCountUpdate);
+
+    cdObj.colmunid = CDUid;
+    cdObj.externalId = cdExternalId;
+    cdObj.action = "column definition created successfully.";
+    cdObj.timestamp = ts;
+    ColumnDef.push(cdObj);
+
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_audit_log
+                      ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+      [
+        DFId,
+        DPId,
+        DSId,
+        CDUid,
+        version,
+        "New Column Definition",
+        "",
+        "",
+        externalSysName,
+        helper.getCurrentTime(),
+      ]
+    );
+
+    return { sucRes: ColumnDef, errRes: errorColumnDef };
+  } catch (e) {
+    console.log(e);
+    Logger.error("catch :New Column def add");
+    Logger.error(e);
+  }
+};
 
 exports.dataflowUpdate = async (
   data,
@@ -1473,7 +1949,7 @@ exports.dataflowUpdate = async (
     const { rows: existDfRows } = await DB.executeQuery(
       `SELECT type, description,src_loc_id, externalsystemname , expt_fst_prd_dt ,
        testflag , active, prot_id , vend_id , name
-       from ${schemaName}.dataflow where externalid='${externalID}';`
+       from ${schemaName}.dataflow where externalsystemname='${externalSysName}' and externalid='${externalID}';`
     );
     const existDf = existDfRows[0];
     const dataflowupdate = await DB.executeQuery(updateQueryDF);
@@ -1522,7 +1998,7 @@ exports.dataflowUpdate = async (
       return { sucRes: dataflow };
     } else {
       newDfobj.externalId = externalID;
-      newDfobj.dataSetid = DFId;
+      newDfobj.dataFlowId = DFId;
       newDfobj.action = "Data Flow update successfully.";
       newDfobj.timestamp = ts;
       dataflow.push(newDfobj);
@@ -1678,7 +2154,7 @@ exports.packageUpdate = async (
 
     const { rows: existDPRows } = await DB.executeQuery(
       `SELECT type, name, path, sasxptmethod ,password, nopackageconfig 
-       from ${schemaName}.datapackage where externalid='${externalID}';`
+       from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${externalID}';`
     );
 
     const existDP = existDPRows[0];
@@ -1737,7 +2213,8 @@ exports.datasetUpdate = async (
   version,
   ConnectionType,
   custSql,
-  externalSysName
+  externalSysName,
+  testFlag
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -1751,12 +2228,37 @@ exports.datasetUpdate = async (
 
     if (data.dataKind) {
       let checkDataKind = await DB.executeQuery(
-        `select datakindid from ${schemaName}.datakind where name='${data.dataKind}';`
+        `select datakindid,active from ${schemaName}.datakind where name='${data.dataKind}';`
       );
+
       if (checkDataKind.rows.length > 0) {
-        dataKi_Id = checkDataKind.rows[0].datakindid;
+        if (checkDataKind.rows[0].active === 0) {
+          dataKi_Id = checkDataKind.rows[0].datakindid;
+        } else {
+          errorDataset.push(
+            `Clinical Data Type is inactive from ${externalSysName}, Description in TA cannot be integrated.`
+          );
+        }
       } else {
-        errorDataset.push(" This datakindid is not exist ");
+        errorDataset.push(
+          `Clinical Data Type is missing from ${externalSysName}, Description in TA cannot be integrated.`
+        );
+      }
+    }
+
+    if (data.mnemonic) {
+      const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
+      let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
+                left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+                left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+                where ds.mnemonic ='${data.mnemonic}' and df.testflag ='${tFlg}'`;
+
+      let queryMnemonic = await DB.executeQuery(selectMnemonic);
+
+      if (queryMnemonic.rows.length > 0) {
+        errorDataset.push(
+          "In this environment this mnemonic name already Exist!"
+        );
       }
     }
 
@@ -1861,6 +2363,30 @@ exports.datasetUpdate = async (
         errorDataset.push(dataSetRes);
       }
 
+      if (data.headerRowNumber) {
+        if (typeof data.headerRowNumber != "number") {
+          errorDataset.push(
+            " In SFTP/FTPS headerRowNumber is Optional and data type should be Number "
+          );
+        }
+      }
+
+      if (data.footerRowNumber) {
+        if (typeof data.footerRowNumber != "number") {
+          errorDataset.push(
+            " In SFTP/FTPS footerRowNumber is Optional and data type should be Number "
+          );
+        }
+      }
+
+      if (data.OverrideStaleAlert) {
+        if (typeof data.OverrideStaleAlert != "number") {
+          errorDataset.push(
+            " In SFTP/FTPS OverrideStaleAlert is Optional and data type should be Number "
+          );
+        }
+      }
+
       if (data.type) {
         if (data.type.toLowerCase() === "delimited") {
           const dlData = [];
@@ -1955,11 +2481,17 @@ exports.datasetUpdate = async (
         data.rowDecreaseAllowed === 0 ||
         data.dataTransferFrequency === 0 ||
         data.dataTransferFrequency ||
+        data.headerRowNumber ||
+        data.footerRowNumber ||
+        data.OverrideStaleAlert ||
+        data.headerRowNumber === 0 ||
+        data.footerRowNumber === 0 ||
+        data.OverrideStaleAlert === 0 ||
         data.path ||
         data.escapeCode
       ) {
         errorDataset.push(
-          " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCode should be Blank "
+          " In JDBC Dataset Level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCode, headerRowNumber, footerRowNumber, OverrideStaleAlert should be Blank "
         );
       }
 
@@ -2080,7 +2612,7 @@ exports.datasetUpdate = async (
       updateQueryDS += `,data_freq='${data.dataTransferFrequency}'`;
     }
 
-    updateQueryDS += ` where externalid='${externalID}' returning *;`;
+    updateQueryDS += ` where datapackageid='${DPId}' and externalid='${externalID}' returning *;`;
 
     // console.log(updateQueryDS);
 
@@ -2135,5 +2667,576 @@ exports.datasetUpdate = async (
     console.log(e);
     Logger.error("catch :Data set update");
     Logger.error(e);
+  }
+};
+
+exports.clDefUpdate = async (
+  data,
+  externalId,
+  DSId,
+  DPId,
+  DFId,
+  cdId,
+  version,
+  ConnectionType,
+  externalSysName
+) => {
+  try {
+    var LocationType = ConnectionType;
+    let ts = new Date().toLocaleString();
+    var colDef_update = [];
+    var newObj = {};
+    const valColDef = [];
+    let errorcolDef = [];
+    var str1 = /[~]/;
+    if (helper.isSftp(LocationType)) {
+      // if (LocationType === "Hive CDH") {
+      if (typeof data.name != "undefined") {
+        valColDef.push({
+          key: "name ",
+          value: data.name,
+          type: "string",
+        });
+      }
+      if (typeof data.dataType != "undefined") {
+        valColDef.push({
+          key: "dataType ",
+          value: data.dataType,
+          type: "string",
+        });
+
+        if (!helper.isColumnType(data.dataType)) {
+          errorcolDef.push(
+            " Data type's Supported values : Numeric, Alphanumeric or Date"
+          );
+        }
+      }
+      if (data.characterMin) {
+        if (typeof data.characterMin != "number") {
+          errorcolDef.push(
+            " In SFTP/FTPS characterMin is Optional and data type should be Number"
+          );
+        }
+      }
+
+      if (data.characterMax) {
+        if (typeof data.characterMax != "number") {
+          errorcolDef.push(
+            " In SFTP/FTPS characterMax is Optional and data type should be Number"
+          );
+        }
+      }
+
+      if (data.characterMin) {
+        if (
+          typeof data.characterMin != "undefined" &&
+          typeof data.characterMax != "undefined"
+        ) {
+          if (data.characterMin >= data.characterMax) {
+            errorcolDef.push("MinCharacter always less than MaxCharacter ");
+          }
+        }
+      }
+
+      if (typeof data.primaryKey != "undefined") {
+        valColDef.push({
+          key: "primaryKey ",
+          value: data.primaryKey,
+          type: "boolean",
+        });
+      }
+
+      if (typeof data.required != "undefined") {
+        valColDef.push({
+          key: "required ",
+          value: data.required,
+          type: "boolean",
+        });
+      }
+
+      if (typeof data.unique != "undefined") {
+        valColDef.push({
+          key: "unique ",
+          value: data.unique,
+          type: "boolean",
+        });
+      }
+
+      if (data.lov) {
+        const last = data.lov.charAt(data.lov.length - 1);
+        const first = data.lov.charAt(data.lov.charAt(0));
+
+        if (str1.test(data.lov) === false) {
+          errorcolDef.push(" LOV should be seperated by tilde(~) ");
+        } else {
+          if (last === "~" || first === "~") {
+            errorcolDef.push(" Tilde(~) can't be used start or end of string ");
+          }
+        }
+      }
+
+      let colDefRes = helper.validation(valColDef);
+
+      if (colDefRes.length > 0) {
+        errorcolDef.push(colDefRes);
+      }
+    } else {
+      if (typeof data.name != "undefined") {
+        valColDef.push({
+          key: "name ",
+          value: data.name,
+          type: "string",
+        });
+      }
+      if (typeof data.dataType != "undefined") {
+        valColDef.push({
+          key: "dataType ",
+          value: data.dataType,
+          type: "string",
+        });
+
+        if (!helper.isColumnType(data.dataType)) {
+          errorcolDef.push(
+            " Data type's Supported values : Numeric, Alphanumeric or Date"
+          );
+        }
+      }
+
+      if (typeof data.primaryKey != "undefined") {
+        valColDef.push({
+          key: "primaryKey ",
+          value: data.primaryKey,
+          type: "boolean",
+        });
+      }
+
+      if (typeof data.required != "undefined") {
+        valColDef.push({
+          key: "required ",
+          value: data.required,
+          type: "boolean",
+        });
+      }
+
+      if (typeof data.unique != "undefined") {
+        valColDef.push({
+          key: "unique ",
+          value: data.unique,
+          type: "boolean",
+        });
+      }
+
+      if (typeof data.includeFlag != "undefined") {
+        valColDef.push({
+          key: "includeFlag ",
+          value: data.includeFlag,
+          type: "boolean",
+        });
+      }
+
+      let colDefRes = helper.validation(valColDef);
+
+      if (colDefRes.length > 0) {
+        errorcolDef.push(colDefRes);
+      }
+
+      if (
+        data.characterMin ||
+        data.characterMin === 0 ||
+        data.characterMax ||
+        data.characterMax === 0 ||
+        data.lov ||
+        data.position
+      ) {
+        errorcolDef.push(
+          " For JBDC characterMin, characterMax, lov, position fields should be Blank "
+        );
+      }
+    }
+
+    if (data.name) {
+      let clName = await DB.executeQuery(
+        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${data.name}';`
+      );
+      if (clName.rows.length > 0) {
+        errorcolDef.push(" This Column Definition Name already exist!");
+      }
+    }
+
+    if (errorcolDef.length > 0) {
+      errorcolDef.splice(0, 0, `Column Definition Id -${externalId} `);
+      return { sucRes: colDef_update, errRes: errorcolDef };
+    }
+
+    // columndefinition(datasetid,columnid,name,datatype,
+    //               primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
+    //               insrt_tm, updt_tm, externalid
+
+    let updateQueryCD = `UPDATE ${schemaName}.columndefinition set updt_tm=NOW() `;
+
+    if (data.name) {
+      updateQueryCD += `,name='${data.name}'`;
+    }
+    if (data.dataType) {
+      updateQueryCD += `,datatype='${data.dataType}'`;
+    }
+    if (data.characterMin) {
+      updateQueryCD += `,charactermin='${data.characterMin}'`;
+    }
+    if (data.characterMax) {
+      updateQueryCD += `,charactermax='${data.characterMax}'`;
+    }
+    if (typeof data.primaryKey != "undefined") {
+      updateQueryCD += `,primarykey='${
+        helper.stringToBoolean(data.primaryKey) ? 1 : 0
+      }'`;
+    }
+    if (typeof data.required != "undefined") {
+      updateQueryCD += `,required='${
+        helper.stringToBoolean(data.required) ? 1 : 0
+      }'`;
+    }
+    if (typeof data.unique != "undefined") {
+      updateQueryCD += `,"unique"='${
+        helper.stringToBoolean(data.unique) ? 1 : 0
+      }'`;
+    }
+    if (data.position) {
+      updateQueryCD += `,position='${data.position}'`;
+    }
+    if (data.format) {
+      updateQueryCD += `,format='${data.format}'`;
+    }
+    if (data.lov) {
+      updateQueryCD += `,lov='${data.lov}'`;
+    }
+
+    updateQueryCD += ` where datasetid='${DSId}' and externalid='${externalId}' returning *;`;
+
+    // console.log(updateQueryCD);
+
+    const { rows: existCDRows } = await DB.executeQuery(
+      `SELECT name, datatype, charactermin,charactermax,primarykey,required,"unique",position,
+      format,lov from ${schemaName}.columndefinition where externalid='${externalId}';`
+    );
+
+    const existClDef = existCDRows[0];
+    const clDefUpdate = await DB.executeQuery(updateQueryCD);
+    const clDefObj = clDefUpdate.rows[0];
+    const diffObj = helper.getdiffKeys(existClDef, clDefObj);
+
+    // console.log("dada", diffObj);
+
+    for (let key of Object.keys(diffObj)) {
+      let oldData = diffObj[key];
+      let newData = clDefObj[key];
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+        [
+          DFId,
+          DPId,
+          DSId,
+          cdId,
+          version,
+          key,
+          oldData,
+          newData,
+          externalSysName,
+          helper.getCurrentTime(),
+        ]
+      );
+    }
+
+    if (Object.keys(diffObj).length === 0) {
+      return { sucRes: colDef_update, errRes: errorcolDef };
+    } else {
+      newObj.externalId = externalId;
+      newObj.clDefid = cdId;
+      newObj.action = "Column Defination update successfully.";
+      newObj.timestamp = ts;
+      colDef_update.push(newObj);
+
+      return { sucRes: colDef_update, errRes: errorcolDef };
+    }
+  } catch (err) {
+    console.log(err);
+    Logger.error("catch : Column Definition update");
+    Logger.error(err);
+  }
+};
+
+exports.removeDataflow = async (
+  DFId,
+  externalID,
+  version,
+  externalSysName,
+  conf_data
+) => {
+  try {
+    let ts = new Date().toLocaleString();
+    var dataflow = [];
+    var newDfobj = {};
+
+    const deleteQueryDF = `update ${schemaName}.dataflow set updt_tm=NOW(),refreshtimestamp=NOW(), del_flg=1 where dataflowid='${DFId}' `;
+    const removeDf = await DB.executeQuery(deleteQueryDF);
+
+    const deleteQueryDP = `update ${schemaName}.datapackage set updt_tm=NOW(), del_flg=1 where dataflowid='${DFId}' returning datapackageid;`;
+    const removeDp = await DB.executeQuery(deleteQueryDP);
+
+    const DPID = removeDp.rows;
+
+    for (let id of DPID) {
+      const deleteQueryDS = `update ${schemaName}.dataset set updt_tm=NOW(), del_flg=1 where datapackageid='${id.datapackageid}' returning *;`;
+      const removeDs = await DB.executeQuery(deleteQueryDS);
+      const DSID = removeDs.rows;
+
+      for (let ds_id of DSID) {
+        const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where datasetid='${ds_id.datasetid}';`;
+        const removeCd = await DB.executeQuery(deleteQueryCD);
+      }
+    }
+
+    newDfobj.externalId = externalID;
+    newDfobj.dataflowid = DFId;
+    newDfobj.action = "Data Flow Removed successfully.";
+    newDfobj.timestamp = ts;
+    dataflow.push(newDfobj);
+
+    // Version Table enrty
+    let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
+        ( dataflowid, "version", config_json, created_by, created_on)
+        VALUES($1,$2,$3,$4,$5);`;
+    let aduit_version_body = [
+      DFId,
+      version,
+      JSON.stringify(conf_data),
+      externalSysName,
+      new Date(),
+    ];
+    await DB.executeQuery(dataflow_version_query, aduit_version_body);
+
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+      [
+        DFId,
+        null,
+        null,
+        null,
+        version,
+        "Remove Dataflow",
+        0,
+        1,
+        externalSysName,
+        helper.getCurrentTime(),
+      ]
+    );
+
+    return { sucRes: dataflow };
+  } catch (err) {
+    console.log(err);
+    Logger.error("catch : DataFlow Removed");
+    Logger.error(err);
+  }
+};
+
+exports.removeDataPackage = async (
+  externalID,
+  DPID,
+  DFId,
+  version,
+  externalSysName
+) => {
+  try {
+    let ts = new Date().toLocaleString();
+    var dataPackage = [];
+    var newDfobj = {};
+
+    const deleteQueryDP = `update ${schemaName}.datapackage set updt_tm=NOW(), del_flg=1 where datapackageid='${DPID}';`;
+    const removeDp = await DB.executeQuery(deleteQueryDP);
+
+    const deleteQueryDS = `update ${schemaName}.dataset set updt_tm=NOW(), del_flg=1 where datapackageid='${DPID}' returning *;`;
+    const removeDs = await DB.executeQuery(deleteQueryDS);
+    const DSID = removeDs.rows;
+
+    for (let key of DSID) {
+      const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where datasetid='${key.datasetid}';`;
+      const removeCd = await DB.executeQuery(deleteQueryCD);
+    }
+
+    newDfobj.externalId = externalID;
+    newDfobj.dataPackageId = DFId;
+    newDfobj.action = "Data Package Removed successfully.";
+    newDfobj.timestamp = ts;
+    dataPackage.push(newDfobj);
+
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+      [
+        DFId,
+        DPID,
+        null,
+        null,
+        version,
+        "Remove DataPackage",
+        0,
+        1,
+        externalSysName,
+        helper.getCurrentTime(),
+      ]
+    );
+
+    return { sucRes: dataPackage };
+  } catch (err) {
+    console.log(err);
+    Logger.error("catch : Data Package Removed");
+    Logger.error(err);
+  }
+};
+
+exports.removeDataSet = async (
+  externalID,
+  DPId,
+  DFId,
+  DSID,
+  version,
+  externalSysName
+) => {
+  try {
+    let ts = new Date().toLocaleString();
+    var dataSet = [];
+    var newDfobj = {};
+
+    const deleteQueryDS = `update ${schemaName}.dataset set updt_tm=NOW(), del_flg=1 where datasetid='${DSID}';`;
+    const removeDs = await DB.executeQuery(deleteQueryDS);
+
+    const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where datasetid='${DSID}';`;
+    const removeCd = await DB.executeQuery(deleteQueryCD);
+
+    newDfobj.externalId = externalID;
+    newDfobj.dataSetid = DFId;
+    newDfobj.action = "Data Set Removed successfully.";
+    newDfobj.timestamp = ts;
+    dataSet.push(newDfobj);
+
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+      [
+        DFId,
+        DPId,
+        DSID,
+        null,
+        version,
+        "Remove Data Set",
+        0,
+        1,
+        externalSysName,
+        helper.getCurrentTime(),
+      ]
+    );
+
+    return { sucRes: dataSet };
+  } catch (err) {
+    console.log(err);
+    Logger.error("catch : Data Set Removed");
+    Logger.error(err);
+  }
+};
+
+exports.removeColumnDefination = async (
+  externalID,
+  dpId,
+  DFId,
+  dsId,
+  version,
+  cdId,
+  externalSysName
+) => {
+  try {
+    let ts = new Date().toLocaleString();
+    var ColumnDefinition = [];
+    var newDfobj = {};
+
+    const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where columnid='${cdId}';`;
+    const removeCd = await DB.executeQuery(deleteQueryCD);
+
+    newDfobj.externalId = externalID;
+    newDfobj.columnDefId = cdId;
+    newDfobj.action = "Column Definition Removed successfully.";
+    newDfobj.timestamp = ts;
+    ColumnDefinition.push(newDfobj);
+
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+      [
+        DFId,
+        dpId,
+        dsId,
+        cdId,
+        version,
+        "Remove Column Definition",
+        0,
+        1,
+        externalSysName,
+        helper.getCurrentTime(),
+      ]
+    );
+
+    return { sucRes: ColumnDefinition };
+  } catch (err) {
+    console.log(err);
+    Logger.error("catch : Column Def Removed ");
+    Logger.error(err);
+  }
+};
+
+exports.dataSetLevelRollBack = async (dfid, dpUid) => {
+  try {
+    const deleteLog = `delete from ${schemaName}.dataflow_audit_log where dataflowid ='${dfid}'`;
+    const deleteDataset = `delete from ${schemaName}.dataset where datapackageid ='${dpUid}'`;
+    const deletePackage = `delete from ${schemaName}.datapackage where dataflowid ='${dfid}'`;
+    const deleteDataflow = `delete from ${schemaName}.dataflow where dataflowid ='${dfid}'`;
+
+    const logDelete = await DB.executeQuery(deleteLog);
+    const datasetDelete = await DB.executeQuery(deleteDataset);
+    const packageDelete = await DB.executeQuery(deletePackage);
+    const dataflowDelete = await DB.executeQuery(deleteDataflow);
+
+    return;
+  } catch (err) {
+    console.log(err);
+    Logger.error("catch : Data Set Level Roll Back");
+    Logger.error(err);
+  }
+};
+
+exports.clDefLevelRollBack = async (dfid, dpUid, dsid) => {
+  try {
+    const deleteLog = `delete from ${schemaName}.dataflow_audit_log where dataflowid ='${dfid}'`;
+    const deleteClDef = `delete from ${schemaName}.columndefinition where datasetid ='${dsid}'`;
+    const deleteDataset = `delete from ${schemaName}.dataset where datapackageid ='${dpUid}'`;
+    const deletePackage = `delete from ${schemaName}.datapackage where dataflowid ='${dfid}'`;
+    const deleteDataflow = `delete from ${schemaName}.dataflow where dataflowid ='${dfid}'`;
+
+    const logDelete = await DB.executeQuery(deleteLog);
+    const clDefDelete = await DB.executeQuery(deleteClDef);
+    const datasetDelete = await DB.executeQuery(deleteDataset);
+    const packageDelete = await DB.executeQuery(deletePackage);
+    const dataflowDelete = await DB.executeQuery(deleteDataflow);
+
+    return;
+  } catch (err) {
+    console.log(err);
+    Logger.error("catch : column Def Level Roll Back");
+    Logger.error(err);
   }
 };

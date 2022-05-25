@@ -162,14 +162,22 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
 
     if (req.body.externalSystemName !== "CDI") {
       if (req.body.location) {
-        let q1 = `select src_loc_id from ${schemaName}.source_location where cnn_url=$1;`;
+        let q1 = `select src_loc_id,active from ${schemaName}.source_location where cnn_url=$1;`;
         let locationData = await DB.executeQuery(q1, [req.body.location]);
+
         if (locationData.rows.length > 0) {
-          src_loc_id = locationData.rows[0].src_loc_id;
+          if (locationData.rows[0].active === 1) {
+            src_loc_id = locationData.rows[0].src_loc_id;
+          } else {
+            return apiResponse.ErrorResponse(
+              res,
+              `Location is not active in ${externalSystemName}`
+            );
+          }
         } else {
           return apiResponse.ErrorResponse(
             res,
-            "This location's cnn_url is not exist in DB"
+            `Location does not exist for ${externalSystemName}`
           );
         }
       }
@@ -221,8 +229,22 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
           DFTestname = DFTestname + "-1";
         }
       }
-      let q = `select vend_id from ${schemaName}.vendor where vend_nm='${vendorName}';`;
+      let q = `select vend_id,active from ${schemaName}.vendor where vend_nm='${vendorName}';`;
       let { rows } = await DB.executeQuery(q);
+
+      if (rows.length > 0) {
+        if (rows[0].active === 0) {
+          return apiResponse.ErrorResponse(
+            res,
+            `Vendor is not active in ${externalSystemName}`
+          );
+        }
+      } else {
+        return apiResponse.ErrorResponse(
+          res,
+          `Vendor does not exist for ${externalSystemName}`
+        );
+      }
 
       DFBody = [
         uid,
@@ -340,9 +362,47 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
               let dataKind = null;
               if (obj.dataKind) {
                 let checkDataKind = await DB.executeQuery(
-                  `select datakindid from ${schemaName}.datakind where name='${obj.dataKind}';`
+                  `select datakindid,active from ${schemaName}.datakind where name='${obj.dataKind}';`
                 );
-                dataKind = checkDataKind.rows[0]?.datakindid;
+                // dataKind = checkDataKind.rows[0]?.datakindid;
+                if (checkDataKind.rows.length > 0) {
+                  if (checkDataKind.rows[0].active === 0) {
+                    dataKind = checkDataKind.rows[0]?.datakindid;
+                  } else {
+                    const dataSetRollBack =
+                      await externalFunction.dataSetLevelRollBack(uid, dpUid);
+                    return apiResponse.ErrorResponse(
+                      res,
+                      `Clinical Data Type is inactive from ${externalSystemName}, Description in TA cannot be integrated.`
+                    );
+                  }
+                } else {
+                  const dataSetRollBack =
+                    await externalFunction.dataSetLevelRollBack(uid, dpUid);
+                  return apiResponse.ErrorResponse(
+                    res,
+                    `Clinical Data Type is missing from ${externalSystemName}, Description in TA cannot be integrated.`
+                  );
+                }
+              }
+
+              if (obj.mnemonic) {
+                const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
+                let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
+                left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+                left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+                where ds.mnemonic ='${obj.mnemonic}' and df.testflag ='${tFlg}'`;
+
+                let queryMnemonic = await DB.executeQuery(selectMnemonic);
+
+                if (queryMnemonic.rows.length > 0) {
+                  const dataSetRollBack =
+                    await externalFunction.dataSetLevelRollBack(uid, dpUid);
+                  return apiResponse.ErrorResponse(
+                    res,
+                    "In this environment this mnemonic name already Exist!"
+                  );
+                }
               }
 
               const dsUid = createUniqueID();
@@ -447,6 +507,23 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                 ResponseBody.column_definition = [];
                 for (let el of obj.columnDefinition) {
                   // console.log("column ", el);
+                  if (el.name) {
+                    let clName = await DB.executeQuery(
+                      `select name from ${schemaName}.columndefinition where datasetid='${dsUid}' and name='${el.name}';`
+                    );
+                    if (clName.rows.length > 0) {
+                      await externalFunction.clDefLevelRollBack(
+                        uid,
+                        dpUid,
+                        dsUid
+                      );
+                      return apiResponse.ErrorResponse(
+                        res,
+                        "This Column Definition Name already exist!"
+                      );
+                    }
+                  }
+
                   let newobj = {};
                   const CDUid = createUniqueID();
                   let CDBody = [
@@ -464,13 +541,21 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                     helper.stringToBoolean(el.unique) ? 1 : 0,
                     el.requiredfield || null,
                     dFTimestamp,
+                    el.externalID || null,
                   ];
                   await DB.executeQuery(
                     `insert into ${schemaName}.columndefinition(datasetid,columnid,name,datatype,
                     primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
-                    insrt_tm, updt_tm) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14);`,
+                    insrt_tm, updt_tm,externalid) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14,$15);`,
                     CDBody
                   );
+
+                  // column count update
+                  const clDefCount = `select  count(*) from ${schemaName}.columndefinition where datasetid ='${dsUid}'`;
+                  const Count = await DB.executeQuery(clDefCount);
+
+                  const dsCountUpdate = `update ${schemaName}.dataset set columncount='${Count.rows[0].count}' where datasetid ='${dsUid}'`;
+                  const clCountUpdate = await DB.executeQuery(dsCountUpdate);
 
                   // dataflow audit
                   let dataflow_aduit_query = `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -618,6 +703,7 @@ exports.updateDataFlow = async (req, res) => {
       sponsorName,
       externalVersion,
       protocolNumberStandard,
+      del_flg,
     } = req.body;
 
     // Dataflow External Id validation
@@ -626,6 +712,21 @@ exports.updateDataFlow = async (req, res) => {
         res,
         "Data flow Level External Id required and data type should be string or Number"
       );
+    }
+
+    if (del_flg === null || del_flg === "" || del_flg === undefined) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Data flow Level del_flg required and it's either 0 or 1"
+      );
+    }
+    if (del_flg) {
+      if (del_flg !== 1) {
+        return apiResponse.ErrorResponse(
+          res,
+          "Data flow Level del_flg value of either 0 or 1"
+        );
+      }
     }
 
     // Data Package External Id validation
@@ -637,6 +738,25 @@ exports.updateDataFlow = async (req, res) => {
             "Data Package Level External Id required and data type should be string or Number"
           );
         }
+
+        if (
+          each.del_flg === null ||
+          each.del_flg === "" ||
+          each.del_flg === undefined
+        ) {
+          return apiResponse.ErrorResponse(
+            res,
+            "Data Package Level del_flg required and it's either 0 or 1"
+          );
+        }
+        if (each.del_flg) {
+          if (each.del_flg !== 1) {
+            return apiResponse.ErrorResponse(
+              res,
+              "Data Package Level del_flg value of either 0 or 1"
+            );
+          }
+        }
         // Data Set External Id validation
         if (each.dataSet && each.dataSet.length > 0) {
           for (let obj of each.dataSet) {
@@ -646,6 +766,53 @@ exports.updateDataFlow = async (req, res) => {
                 "Data Set Level External Id required and data type should be string or Number"
               );
             }
+            if (
+              obj.del_flg === null ||
+              obj.del_flg === "" ||
+              obj.del_flg === undefined
+            ) {
+              return apiResponse.ErrorResponse(
+                res,
+                "Data Set Level del_flg required and it's either 0 or 1"
+              );
+            }
+            if (obj.del_flg) {
+              if (obj.del_flg !== 1) {
+                return apiResponse.ErrorResponse(
+                  res,
+                  "Data Set Level del_flg value of either 0 or 1"
+                );
+              }
+            }
+
+            if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+              for (let el of obj.columnDefinition) {
+                if (!el.externalID) {
+                  return apiResponse.ErrorResponse(
+                    res,
+                    "Column Definition Level External Id required and data type should be string or Number"
+                  );
+                }
+                if (
+                  el.del_flg === null ||
+                  el.del_flg === "" ||
+                  el.del_flg === undefined
+                ) {
+                  return apiResponse.ErrorResponse(
+                    res,
+                    "Column Definition Level del_flg required and it's either 0 or 1"
+                  );
+                }
+                if (el.del_flg) {
+                  if (el.del_flg !== 1) {
+                    return apiResponse.ErrorResponse(
+                      res,
+                      "Column Definition Level del_flg value of either 0 or 1"
+                    );
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -653,23 +820,39 @@ exports.updateDataFlow = async (req, res) => {
 
     // return;
     if (vendorName) {
-      let q2 = `select vend_id from ${schemaName}.vendor where vend_nm=$1;`;
+      let q2 = `select vend_id,active from ${schemaName}.vendor where vend_nm=$1;`;
       let { rows } = await DB.executeQuery(q2, [vendorName]);
-      if (rows.length <= 0) {
+
+      if (rows.length > 0) {
+        if (rows[0].active === 0) {
+          return apiResponse.ErrorResponse(
+            res,
+            `Vendor is not active in ${externalSystemName}`
+          );
+        }
+      } else {
         return apiResponse.ErrorResponse(
           res,
-          "This Vendor Name is not exist in DB"
+          `Vendor does not exist for ${externalSystemName}`
         );
       }
     }
 
     if (location) {
-      let q3 = `select src_loc_id from ${schemaName}.source_location where cnn_url=$1;`;
+      let q3 = `select src_loc_id,active from ${schemaName}.source_location where cnn_url=$1;`;
       let locationData = await DB.executeQuery(q3, [location]);
-      if (locationData.rows.length <= 0) {
+
+      if (locationData.rows.length > 0) {
+        if (locationData.rows[0].active === 0) {
+          return apiResponse.ErrorResponse(
+            res,
+            `Location is not active in ${externalSystemName}`
+          );
+        }
+      } else {
         return apiResponse.ErrorResponse(
           res,
-          "This location's cnn_url is not exist in DB"
+          `Location does not exist for ${externalSystemName}`
         );
       }
     }
@@ -729,7 +912,7 @@ exports.updateDataFlow = async (req, res) => {
       return apiResponse.ErrorResponse(res, returnData);
     }
 
-    let selectDataFlow = `select * from ${schemaName}.dataflow where externalid='${externalID}'`;
+    let selectDataFlow = `select * from ${schemaName}.dataflow where externalsystemname='${externalSystemName}' and externalid='${externalID}'`;
     let { rows } = await DB.executeQuery(selectDataFlow);
 
     if (rows.length > 0) {
@@ -739,7 +922,7 @@ exports.updateDataFlow = async (req, res) => {
       const DFId = rows[0].dataflowid;
       let { rows: versions } = await DB.executeQuery(selectVersion, [DFId]);
 
-      const Ver = versions[0].version || 0;
+      const Ver = versions[0]?.version || 0;
       const DFVer = Ver + 1;
       const ConnectionType = rows[0].connectiontype;
       const externalSysName = rows[0].externalsystemname;
@@ -751,115 +934,214 @@ exports.updateDataFlow = async (req, res) => {
       ResponseBody.success = [];
       ResponseBody.errors = [];
 
-      //dataFlow update function Call
-      var updateDataflow = await externalFunction
-        .dataflowUpdate(
-          req.body,
-          externalID,
-          DFId,
-          DFVer,
-          externalSysName,
-          conf_data
-        )
-        .then((res) => {
-          ResponseBody.success.push(res.sucRes);
-        });
+      if (del_flg === 1) {
+        await externalFunction
+          .removeDataflow(DFId, externalID, DFVer, externalSysName, conf_data)
+          .then((res) => {
+            ResponseBody.success.push(res.sucRes);
+          });
+      } else {
+        //dataFlow update function Call
+        var updateDataflow = await externalFunction
+          .dataflowUpdate(
+            req.body,
+            externalID,
+            DFId,
+            DFVer,
+            externalSysName,
+            conf_data
+          )
+          .then((res) => {
+            ResponseBody.success.push(res.sucRes);
+          });
 
-      if (dataPackage && dataPackage.length > 0) {
-        for (let each of dataPackage) {
-          let selectDP = `select * from ${schemaName}.datapackage where externalid='${each.externalID}'`;
-          let dpRows = await DB.executeQuery(selectDP);
-          const packageExternalId = each.externalID;
+        if (dataPackage && dataPackage.length > 0) {
+          for (let each of dataPackage) {
+            let selectDP = `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.externalID}'`;
+            let dpRows = await DB.executeQuery(selectDP);
 
-          if (dpRows.rows.length > 0) {
-            const DPId = dpRows.rows[0].datapackageid;
+            const packageExternalId = each.externalID;
 
-            var updatePackage = await externalFunction
-              .packageUpdate(
-                each,
-                packageExternalId,
-                DPId,
-                DFId,
-                DFVer,
-                ConnectionType,
-                externalSysName
-              )
-              .then((res) => {
-                ResponseBody.errors.push(res.errRes);
-                ResponseBody.success.push(res.sucRes);
-              });
+            if (dpRows.rows.length > 0) {
+              const DPId = dpRows.rows[0].datapackageid;
 
-            if (each.dataSet && each.dataSet.length > 0) {
-              // if datasets exists
-              for (let obj of each.dataSet) {
-                let selectDS = `select * from ${schemaName}.dataset where externalid='${obj.externalID}'`;
-                let { rows: dsRows } = await DB.executeQuery(selectDS);
+              if (each.del_flg === 1) {
+                await externalFunction
+                  .removeDataPackage(
+                    packageExternalId,
+                    DPId,
+                    DFId,
+                    DFVer,
+                    externalSysName
+                  )
+                  .then((res) => {
+                    ResponseBody.success.push(res.sucRes);
+                  });
+              } else {
+                var updatePackage = await externalFunction
+                  .packageUpdate(
+                    each,
+                    packageExternalId,
+                    DPId,
+                    DFId,
+                    DFVer,
+                    ConnectionType,
+                    externalSysName
+                  )
+                  .then((res) => {
+                    ResponseBody.errors.push(res.errRes);
+                    ResponseBody.success.push(res.sucRes);
+                  });
 
-                const datasetExternalId = obj.externalID;
-                if (dsRows.length > 0) {
-                  const DSId = dsRows[0].datasetid;
-                  const custSql = dsRows[0].customsql;
-                  //Function call for update dataSet data
-                  var updateDataset = await externalFunction
-                    .datasetUpdate(
-                      obj,
-                      datasetExternalId,
-                      DSId,
-                      DPId,
-                      DFId,
-                      DFVer,
-                      ConnectionType,
-                      custSql,
-                      externalSysName
-                    )
-                    .then((res) => {
-                      ResponseBody.errors.push(res.errRes);
-                      ResponseBody.success.push(res.sucRes);
-                    });
+                if (each.dataSet && each.dataSet.length > 0) {
+                  // if datasets exists
+                  for (let obj of each.dataSet) {
+                    let selectDS = `select * from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${obj.externalID}'`;
+                    let { rows: dsRows } = await DB.executeQuery(selectDS);
 
-                  // if (obj.columnDefinition && obj.columnDefinition.length > 0) {
-                  //   ResponseBody.column_definition = [];
-                  //   for (let el of obj.columnDefinition) {
+                    const datasetExternalId = obj.externalID;
+                    if (dsRows.length > 0) {
+                      const DSId = dsRows[0].datasetid;
+                      const custSql = dsRows[0].customsql;
 
-                  //   }
-                  // }
-                } else {
-                  // Function call for insert dataSet level data
+                      if (obj.del_flg === 1) {
+                        await externalFunction
+                          .removeDataSet(
+                            datasetExternalId,
+                            DPId,
+                            DFId,
+                            DSId,
+                            DFVer,
+                            externalSysName
+                          )
+                          .then((res) => {
+                            ResponseBody.success.push(res.sucRes);
+                          });
+                      } else {
+                        //Function call for update dataSet data
+                        var updateDataset = await externalFunction
+                          .datasetUpdate(
+                            obj,
+                            datasetExternalId,
+                            DSId,
+                            DPId,
+                            DFId,
+                            DFVer,
+                            ConnectionType,
+                            custSql,
+                            externalSysName,
+                            testFlag
+                          )
+                          .then((res) => {
+                            ResponseBody.errors.push(res.errRes);
+                            ResponseBody.success.push(res.sucRes);
+                          });
 
-                  var DatasetInsert = await externalFunction
-                    .datasetLevelInsert(
-                      obj,
-                      datasetExternalId,
-                      DPId,
-                      DFId,
-                      DFVer,
-                      ConnectionType,
-                      externalSysName
-                    )
-                    .then((res) => {
-                      ResponseBody.errors.push(res.errRes);
-                      ResponseBody.success.push(res.sucRes);
-                    });
+                        if (
+                          obj.columnDefinition &&
+                          obj.columnDefinition.length > 0
+                        ) {
+                          for (let el of obj.columnDefinition) {
+                            let selectCD = `select * from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${el.externalID}'`;
+                            let { rows: cdRows } = await DB.executeQuery(
+                              selectCD
+                            );
+
+                            const cdExternalId = el.externalID;
+                            if (cdRows.length > 0) {
+                              const cdId = cdRows[0].columnid;
+
+                              if (el.del_flg === 1) {
+                                await externalFunction
+                                  .removeColumnDefination(
+                                    cdExternalId,
+                                    DPId,
+                                    DFId,
+                                    DSId,
+                                    DFVer,
+                                    cdId,
+                                    externalSysName
+                                  )
+                                  .then((res) => {
+                                    ResponseBody.success.push(res.sucRes);
+                                  });
+                              } else {
+                                var updateClDef = await externalFunction
+                                  .clDefUpdate(
+                                    el,
+                                    cdExternalId,
+                                    DSId,
+                                    DPId,
+                                    DFId,
+                                    cdId,
+                                    DFVer,
+                                    ConnectionType,
+                                    externalSysName
+                                  )
+                                  .then((res) => {
+                                    ResponseBody.errors.push(res.errRes);
+                                    ResponseBody.success.push(res.sucRes);
+                                  });
+                              }
+                            } else {
+                              var cdInsert = await externalFunction
+                                .columnDefinationInsert(
+                                  el,
+                                  cdExternalId,
+                                  DPId,
+                                  DFId,
+                                  DSId,
+                                  DFVer,
+                                  ConnectionType,
+                                  externalSysName
+                                )
+                                .then((res) => {
+                                  ResponseBody.errors.push(res.errRes);
+                                  ResponseBody.success.push(res.sucRes);
+                                });
+                            }
+                          }
+                        }
+                      }
+                    } else {
+                      // Function call for insert dataSet level data
+
+                      var DatasetInsert = await externalFunction
+                        .datasetLevelInsert(
+                          obj,
+                          datasetExternalId,
+                          DPId,
+                          DFId,
+                          DFVer,
+                          ConnectionType,
+                          externalSysName,
+                          testFlag
+                        )
+                        .then((res) => {
+                          ResponseBody.errors.push(res.errRes);
+                          ResponseBody.success.push(res.sucRes);
+                        });
+                    }
+                  }
                 }
               }
+            } else {
+              var PackageInsert = await externalFunction
+                .packageLevelInsert(
+                  each,
+                  DFId,
+                  DFVer,
+                  ConnectionType,
+                  externalSysName
+                )
+                .then((res) => {
+                  ResponseBody.errors.push(res.errRes);
+                  ResponseBody.success.push(res.sucRes);
+                });
             }
-          } else {
-            var PackageInsert = await externalFunction
-              .packageLevelInsert(
-                each,
-                DFId,
-                DFVer,
-                ConnectionType,
-                externalSysName
-              )
-              .then((res) => {
-                ResponseBody.errors.push(res.errRes);
-                ResponseBody.success.push(res.sucRes);
-              });
           }
         }
       }
-
       const sucData = ResponseBody.success;
       let isEmpty = (arr) => Array.isArray(arr) && arr.every(isEmpty);
 
