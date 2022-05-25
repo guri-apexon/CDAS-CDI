@@ -52,7 +52,14 @@ export const updateDatasetData = (values) => {
   };
 };
 
-export const updateDatasetColumns = (values, dsId, dfId, dpId, userId) => {
+export const updateDatasetColumns = (
+  values,
+  dsId,
+  dfId,
+  dpId,
+  userId,
+  CDVersionBump
+) => {
   return {
     type: UPDATE_COLUMNS_DATA,
     values,
@@ -60,6 +67,7 @@ export const updateDatasetColumns = (values, dsId, dfId, dpId, userId) => {
     dfId,
     dpId,
     userId,
+    CDVersionBump,
   };
 };
 

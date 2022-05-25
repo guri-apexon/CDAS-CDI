@@ -62,7 +62,7 @@ const updateSqlQuery = async (datasetId, del = false) => {
 
 exports.saveDatasetColumns = async (req, res) => {
   try {
-    const { dsId, dpId, dfId, userId, values } = req.body;
+    const { dsId, dpId, dfId, userId, values, CDVersionBump } = req.body;
     if (!dsId) {
       return apiResponse.ErrorResponse(res, "Please pass dataset id");
     }
@@ -114,7 +114,10 @@ exports.saveDatasetColumns = async (req, res) => {
         dfId,
         dpId,
         userId,
-        JSON.stringify(configJsonArr)
+        JSON.stringify(configJsonArr),
+        null,
+        null,
+        CDVersionBump
       );
       if (!historyVersion) throw new Error("History not updated");
 
@@ -143,7 +146,7 @@ exports.saveDatasetColumns = async (req, res) => {
 
 exports.updateColumns = async (req, res) => {
   try {
-    const { dsId, dpId, dfId, userId, values } = req.body;
+    const { dsId, dpId, dfId, userId, values, CDVersionBump } = req.body;
     const curDate = helper.getCurrentTime();
 
     Logger.info({ message: "update set columns" });
@@ -204,7 +207,7 @@ exports.updateColumns = async (req, res) => {
         }
       }
       await updateSqlQuery(dsId);
-
+      let versionBumped = false;
       if (Object.keys(diffValuesObj).length) {
         const historyVersion = await CommonController.addColumnHistory(
           dsId,
@@ -213,17 +216,18 @@ exports.updateColumns = async (req, res) => {
           userId,
           JSON.stringify(configJson),
           oldDataObj,
-          diffValuesObj
+          diffValuesObj,
+          CDVersionBump
         );
         if (!historyVersion) throw new Error("History not updated");
+        versionBumped = true;
       }
 
       const datasetColumns = values;
-      return apiResponse.successResponseWithData(
-        res,
-        "Operation success",
-        datasetColumns
-      );
+      return apiResponse.successResponseWithData(res, "Operation success", {
+        columns: datasetColumns,
+        versionBumped,
+      });
     }
     return apiResponse.ErrorResponse(res, "Something went wrong");
   } catch (err) {
@@ -242,7 +246,7 @@ exports.updateColumns = async (req, res) => {
 
 exports.deleteColumns = async (req, res) => {
   try {
-    const { columnId, dsId, dfId, dpId, userId } = req.body;
+    const { columnId, dsId, dfId, dpId, userId, CDVersionBump } = req.body;
     const curDate = helper.getCurrentTime();
 
     Logger.info({ message: "deleteColumns" });
@@ -258,7 +262,8 @@ exports.deleteColumns = async (req, res) => {
         userId,
         JSON.stringify(columnObj),
         { [columnId]: { del_flg: 0 } },
-        { [columnId]: { del_flg: 1 } }
+        { [columnId]: { del_flg: 1 } },
+        CDVersionBump
       );
       if (!historyVersion) throw new Error("History not updated");
 
