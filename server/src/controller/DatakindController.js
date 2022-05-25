@@ -262,8 +262,8 @@ exports.getDatakindList = function (req, res) {
 
 exports.getDKList = async (req, res) => {
   try {
-    let selectQuery = `SELECT datakindid as "dkId", name as "dkName", extrnl_sys_nm as "dkESName", extrnl_id as dkESNId, dk_desc as "dkDesc", active as "dkStatus" from ${schemaName}.datakind order by name`;
-    let dbQuery = await DB.executeQuery(selectQuery);
+    let getDKListQuery = `SELECT datakindid as "ID", name as "dkName", extrnl_sys_nm as "dkESName", extrnl_id as "dkExternalId", dk_desc as "dkDesc", active as "dkStatus" from ${schemaName}.datakind order by name`;
+    let dbQuery = await DB.executeQuery(getDKListQuery);
     Logger.info({ message: "getDKList" });
     const datakind = (await dbQuery.rows) || [];
     const replaceNullDataWithBlank = datakind.map((el) => {
@@ -288,8 +288,8 @@ exports.getDKList = async (req, res) => {
 exports.getENSList = async (req, res) => {
   try {
     Logger.info({ message: "getENSList" });
-    const selectQuery = `select lov_nm, lov_id from ${schemaName}.cdas_core_lov ccl where lov_typ = 'externalsystemname' and act_flg = 1`;
-    const list = await DB.executeQuery(selectQuery);
+    const getENSList = `select lov_nm, lov_id from ${schemaName}.cdas_core_lov ccl where lov_typ = 'externalsystemname' and act_flg = 1`;
+    const list = await DB.executeQuery(getENSList);
     const formatted = list.rows.map((e) => {
       return { label: e.lov_nm, value: e.lov_id };
     });
