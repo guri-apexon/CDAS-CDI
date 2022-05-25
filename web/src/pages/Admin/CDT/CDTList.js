@@ -53,7 +53,7 @@ const StatusCell =
         <Switch
           className="table-checkbox"
           checked={value === 1 ? true : false}
-          onChange={(e) => handleStatusChange(e, row.dkId, value)}
+          onChange={(e) => handleStatusChange(e, row.ID, value)}
           size="small"
         />
       </Tooltip>
@@ -64,7 +64,7 @@ const LinkCell =
   (handleLink) =>
   ({ row, column: { accessor } }) => {
     const rowValue = row[accessor];
-    return <Link onClick={(e) => handleLink(e, row.dkId)}>{rowValue}</Link>;
+    return <Link onClick={(e) => handleLink(e, row.ID)}>{rowValue}</Link>;
   };
 
 const CustomDkesCell = ({ row, column: { accessor } }) => {
@@ -83,7 +83,7 @@ const generateColumns = (
   return [
     {
       header: "",
-      accessor: "dkId",
+      accessor: "ID",
       hidden: true,
     },
     {
@@ -173,13 +173,13 @@ export default function CDTList() {
     }
   }, []);
 
-  const handleStatusChange = async (e, dkId, currStatus) => {
+  const handleStatusChange = async (e, ID, currStatus) => {
     e.preventDefault();
     if (currStatus === 0) {
-      await activateDK(dkId, 1);
+      await activateDK(ID, 1);
       getData();
     } else {
-      const update = await inActivateDK(dkId, 0);
+      const update = await inActivateDK(ID, 0);
       if (update) {
         if (update.status === 0) {
           messageContext.showErrorMessage(update.data);
@@ -199,16 +199,16 @@ export default function CDTList() {
 
   const handleLink = async (e, Id) => {
     e.preventDefault();
-    const selected = cdtList.find((d) => d.dkId === Id);
+    const selected = cdtList.find((d) => d.ID === Id);
     await getENSlists();
-    const { dkName, dkStatus, dkDesc, dkESName, dkESNId } = selected;
+    const { dkName, dkStatus, dkDesc, dkESName, dkExternalId } = selected;
     // console.log("handleLink", selected, picked);
     setSelectedRow(Id);
     setENS(dkESName || "");
     setCName(dkName || "");
     setDesc(dkDesc || "");
     setStatus(dkStatus === 1 ? true : false);
-    setENSId(dkESNId);
+    setENSId(dkExternalId);
     setViewModal(true);
   };
 
@@ -275,7 +275,7 @@ export default function CDTList() {
       // console.log("update", cName, selectedRow, status, desc, ensId, ens);
 
       updateDK({
-        dkId: selectedRow,
+        ID: selectedRow,
         dkName: cName,
         dkDesc: desc,
         dkExternalId: ensId,
@@ -354,7 +354,7 @@ export default function CDTList() {
               subtitle={`${tableRows.length} items`}
               columns={columnsState}
               rows={tableRows}
-              rowId="dkId"
+              rowId="ID"
               hasScroll={true}
               maxHeight="calc(100vh - 162px)"
               rowsPerPageOptions={[10, 50, 100, "All"]}
