@@ -28,6 +28,7 @@ import {
 } from "../../../utils/index";
 import { allowedTypes } from "../../../constants";
 import { validateRow } from "../../../components/FormComponents/validators";
+import { preventCDVersionBump } from "../../../store/actions/DataFlowAction";
 
 const maxSize = 150000;
 
@@ -44,7 +45,8 @@ export default function DSColumnTable({
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
   const dataSets = useSelector((state) => state.dataSets);
-  const { datasetColumns, selectedDataset, haveHeader } = dataSets;
+  const { datasetColumns, selectedDataset, haveHeader, CDVersionBump } =
+    dataSets;
   const {
     type: fileType,
     datasetid: dsId,
@@ -97,6 +99,7 @@ export default function DSColumnTable({
       // setSelectedRows(forImport);
       // setEditedRows(formattedData);
     }
+    dispatch(preventCDVersionBump(false));
   }, []);
 
   useEffect(() => {
@@ -272,7 +275,14 @@ export default function DSColumnTable({
         });
 
       dispatch(
-        updateDatasetColumns(editedRowData, dsId, dfId, dpId, userInfo.userId)
+        updateDatasetColumns(
+          editedRowData,
+          dsId,
+          dfId,
+          dpId,
+          userInfo.userId,
+          CDVersionBump
+        )
       );
 
       const newData = _.orderBy(
@@ -509,14 +519,17 @@ export default function DSColumnTable({
     // setRows([...newData]);
 
     if (newCD?.length) {
+      console.log("CDVersionBump::::", CDVersionBump);
       const created = await createColumns({
         values: newCD,
         dsId,
         dfId,
         dpId,
         userId: userInfo.userId,
+        CDVersionBump,
       });
       if (created?.status && created.data?.length) {
+        dispatch(preventCDVersionBump());
         const prevRows = [...rows];
         created.data.forEach((d) => {
           const obj = prevRows.find((x) => x.uniqueId === d.frontendUniqueRef);
@@ -531,7 +544,14 @@ export default function DSColumnTable({
 
     if (existingCD?.length) {
       dispatch(
-        updateDatasetColumns(existingCD, dsId, dfId, dpId, userInfo.userId)
+        updateDatasetColumns(
+          existingCD,
+          dsId,
+          dfId,
+          dpId,
+          userInfo.userId,
+          CDVersionBump
+        )
       );
       setRows((prevRows) => prevRows.map((x) => ({ ...x, isEditMode: false })));
     }
@@ -540,6 +560,7 @@ export default function DSColumnTable({
   };
 
   const onRowSave = async (uniqueId) => {
+    console.log("CDVersionBump::::", CDVersionBump);
     const editedRowData = _.filter(
       getEditedRows(),
       (e) => e.uniqueId === uniqueId
@@ -590,7 +611,8 @@ export default function DSColumnTable({
             dsId,
             dfId,
             dpId,
-            userInfo.userId
+            userInfo.userId,
+            CDVersionBump
           )
         );
       } else {
@@ -600,9 +622,11 @@ export default function DSColumnTable({
           dfId,
           dpId,
           userId: userInfo.userId,
+          CDVersionBump,
         });
 
         if (created?.status) {
+          dispatch(preventCDVersionBump());
           const createdId = created.data[0]?.columnid;
           if (createdId) {
             editedRowData.dbColumnId = createdId;
@@ -661,7 +685,14 @@ export default function DSColumnTable({
     const isInDB = rows.find((row) => row.uniqueId === uniqueId);
     if (isInDB) {
       if (isInDB.dbColumnId !== ("" || undefined || null)) {
-        await deleteCD(isInDB.dbColumnId, dsId, dpId, dfId);
+        const deleteRes = await deleteCD(
+          isInDB.dbColumnId,
+          dsId,
+          dpId,
+          dfId,
+          CDVersionBump
+        );
+        if (deleteRes) dispatch(preventCDVersionBump());
       }
     }
     setRows((prevRows) => prevRows.filter((e) => e.uniqueId !== uniqueId));

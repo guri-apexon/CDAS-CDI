@@ -239,8 +239,9 @@ export function* updateDatasetColumns(action) {
     });
     yield put({
       type: UPDATE_COLUMNS_SUCCESS,
-      update: saveData.data.data,
+      update: saveData.data?.data?.columns || [],
       values: action.values,
+      versionBumped: saveData.data?.data?.versionBumped || false,
     });
   } catch (e) {
     const errText = e.response?.data?.message

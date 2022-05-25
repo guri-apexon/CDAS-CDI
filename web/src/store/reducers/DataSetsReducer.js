@@ -43,6 +43,7 @@ import {
   GET_LOCATION_DETAIL,
   FETCH_LOCATION_DETAIL_FAILURE,
   FETCH_LOCATION_DETAIL_SUCCESS,
+  PREVENT_CD_VERSION_BUMP,
 } from "../../constants";
 
 import { dateTypeForJDBC, parseBool } from "../../utils/index";
@@ -101,6 +102,7 @@ export const initialState = {
   dsCreatedSuccessfully: false,
   isDatasetFetched: false,
   haveHeader: false,
+  CDVersionBump: true,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -115,6 +117,9 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case FETCH_DATAKIND_FAILURE:
         newState.loading = false;
+        break;
+      case PREVENT_CD_VERSION_BUMP:
+        newState.CDVersionBump = action.flag;
         break;
       case SAVE_DATASET_DATA:
         newState.loading = true;
@@ -293,6 +298,7 @@ const DataFlowReducer = (state = initialState, action) =>
       case UPDATE_COLUMNS_SUCCESS:
         newState.loading = false;
         newState.error = null;
+        if (action.versionBumped) newState.CDVersionBump = false;
         newState.sucessMsg = "Column defination was updated succesfully";
         break;
       case UPDATE_COLUMNS_FAILURE:
