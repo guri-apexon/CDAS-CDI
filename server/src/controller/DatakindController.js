@@ -41,7 +41,7 @@ exports.createDataKind = async (req, res) => {
   try {
     Logger.info({ message: "handle datakind" });
     const {
-      dkId,
+      ID: dkId,
       dkName,
       dkDesc,
       ExternalId,

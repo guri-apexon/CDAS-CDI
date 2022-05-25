@@ -298,7 +298,7 @@ export const updateDK = async (reqBody) => {
   try {
     return new Promise((resolve, reject) => {
       axios
-        .post(`${baseURL}/${DATAKINDAPI}/update`, reqBody)
+        .post(`${baseURL}/${DATAKINDAPI}/create`, reqBody)
         .then((res) => {
           resolve(res.data);
         })

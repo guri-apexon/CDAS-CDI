@@ -271,16 +271,19 @@ export default function CDTList() {
 
     setReqENSError(false);
 
-    if (selectedRow) {
-      // console.log("update", cName, selectedRow, status, desc, ensId, ens);
+    const payload = {
+      dkName: cName,
+      dkDesc: desc,
+      dkExternalId: ensId,
+      dkESName: ens,
+      dkStatus: status === true ? 1 : 0,
+      systemName: "CDI",
+    };
 
+    if (selectedRow) {
       updateDK({
         ID: selectedRow,
-        dkName: cName,
-        dkDesc: desc,
-        dkExternalId: ensId,
-        dkESName: ens,
-        dkStatus: status === true ? 1 : 0,
+        ...payload,
         userId,
       }).then((res) => {
         if (res.status === 1) {
@@ -298,11 +301,7 @@ export default function CDTList() {
     } else {
       // console.log("create", cName, status, desc, ensId, ens);
       addDK({
-        dkName: cName,
-        dkDesc: desc,
-        dkExternalId: ensId,
-        dkESName: ens,
-        dkStatus: status === true ? 1 : 0,
+        ...payload,
       }).then((res) => {
         if (res.status === 1) {
           hideViewData();
