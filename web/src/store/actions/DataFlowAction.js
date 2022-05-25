@@ -14,6 +14,7 @@ import {
   UPDATE_DS,
   RESET_DF_FORMDATA,
   TOGGLE_DF_BTN,
+  PREVENT_CD_VERSION_BUMP,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -107,5 +108,12 @@ export const updateDSState = (status) => {
 export const resetDfFormData = () => {
   return {
     type: RESET_DF_FORMDATA,
+  };
+};
+
+export const preventCDVersionBump = (flag = true) => {
+  return {
+    type: PREVENT_CD_VERSION_BUMP,
+    flag: !flag,
   };
 };

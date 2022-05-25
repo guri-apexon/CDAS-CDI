@@ -379,7 +379,7 @@ export const userLogOut = () => {
     });
 };
 
-export const deleteCD = async (columnId, dsId, dpId, dfId) => {
+export const deleteCD = async (columnId, dsId, dpId, dfId, CDVersionBump) => {
   try {
     const res = await axios.post(`${baseURL}/${COLUMNSAPI}/delete`, {
       columnId,
@@ -387,8 +387,9 @@ export const deleteCD = async (columnId, dsId, dpId, dfId) => {
       dfId,
       dpId,
       userId,
+      CDVersionBump,
     });
-    return res.data?.data || [];
+    return res.data?.status === 1;
   } catch (err) {
     return console.log("Error", err);
   }
