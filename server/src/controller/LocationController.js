@@ -116,10 +116,10 @@ exports.searchLocationList = function (req, res) {
   }
 };
 
-exports.getLocationList = function (req, res) {
+exports.getLocationList = async (req, res) => {
   try {
     let type = req.query.type || null;
-    let select = `src_loc_id,src_loc_id as value,CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,db_nm`;
+    let select = `src_loc_id, src_loc_id as "ID", external_id as "ExternalID", src_loc_id as value, CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm, loc_alias_nm,db_nm`;
     let searchQuery = `SELECT ${select} from ${schemaName}.source_location where active=1 order by label asc`;
     Logger.info({ message: "getLocationList" });
     if (type) {
@@ -138,33 +138,25 @@ exports.getLocationList = function (req, res) {
       }
     }
 
-    Logger.info({ message: "locationList" });
+    const response = await DB.executeQuery(searchQuery);
+    const locations = response.rows || [];
 
-    let dbQuery = DB.executeQuery(searchQuery, []);
-    dbQuery
-      .then(async (response) => {
-        const locations = response.rows || [];
+    const withCredentials = await locations.map((d) => {
+      if (d.pswd === "Yes") {
+        // const credentials = await helper.readVaultData(d.src_loc_id);
+        // if (credentials) {
+        //   d.pswd = credentials.password;
+        // }
+      } else if (d.pswd === "No") {
+        d.pswd = "";
+      }
+      return d;
+    });
 
-        const withCredentials = locations.map((d) => {
-          if (d.pswd === "Yes") {
-            // const credentials = helper.readVaultData(d.src_loc_id);
-            // if (credentials) {
-            //   d.pswd = credentials.password;
-            // }
-          } else if (d.pswd === "No") {
-            d.pswd = "";
-          }
-          return d;
-        });
-
-        return apiResponse.successResponseWithData(res, "Operation success", {
-          records: withCredentials,
-          totalSize: response.rowCount,
-        });
-      })
-      .catch((err) => {
-        return apiResponse.ErrorResponse(res, err.message);
-      });
+    return apiResponse.successResponseWithData(res, "Operation success", {
+      records: withCredentials,
+      totalSize: response.rowCount,
+    });
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :getLocationList");
@@ -302,6 +294,20 @@ exports.statusUpdate = async (req, res) => {
 exports.saveLocationData = async function (req, res) {
   try {
     const values = req.body;
+
+    const {
+      ExternalId,
+      active,
+      locationName,
+      locationType,
+      ipServer,
+      dataStructure,
+      externalSytemName,
+      connURL,
+      dbName,
+      userName,
+      password,
+    } = req.body;
     const isExist = await checkLocationExists(
       values.locationType,
       values.connURL,
@@ -362,6 +368,70 @@ exports.saveLocationData = async function (req, res) {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+
+// exports.saveLocationData = async function (req, res) {
+//   try {
+//     const values = req.body;
+//     const isExist = await checkLocationExists(
+//       values.locationType,
+//       values.connURL,
+//       values.userName,
+//       values.dbName,
+//       values.externalSytemName
+//     );
+//     if (isExist > 0) {
+//       return apiResponse.ErrorResponse(
+//         res,
+//         "No duplicate locations are allowed"
+//       );
+//     }
+//     const newId = helper.generateUniqueID();
+//     const curDate = helper.getCurrentTime();
+
+//     const body = [
+//       newId,
+//       values.locationType || null,
+//       values.ipServer || null,
+//       values.port || null,
+//       values.connURL || null,
+//       values.dataStructure || null,
+//       values.active == true ? 1 : 0,
+//       values.externalSytemName || null,
+//       values.locationName || null,
+//       values.userName,
+//       values.password ? "Yes" : "No",
+//       curDate,
+//       curDate,
+//       values.dbName || null,
+//     ];
+
+//     const searchQuery = `INSERT into ${schemaName}.source_location (src_loc_id, loc_typ, ip_servr, port, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, usr_nm, pswd, insrt_tm, updt_tm, db_nm) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`;
+//     Logger.info({ message: "storeLocation" });
+
+//     DB.executeQuery(searchQuery, body)
+//       .then(async (response) => {
+//         const vaultData = {
+//           user: values.userName || null,
+//           password: values.password || null,
+//         };
+//         await helper.writeVaultData(newId, vaultData);
+
+//         return apiResponse.successResponseWithData(
+//           res,
+//           "Operation success",
+//           true
+//         );
+//       })
+//       .catch((err) => {
+//         return apiResponse.ErrorResponse(res, err.message);
+//       });
+//   } catch (err) {
+//     //throw error in json response with status 500.
+//     Logger.error("catch :storeLocation");
+//     Logger.error(err);
+//     return apiResponse.ErrorResponse(res, err);
+//   }
+// };
 
 exports.updateLocationData = async function (req, res) {
   try {
