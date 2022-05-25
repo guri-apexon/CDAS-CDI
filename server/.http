@@ -205,11 +205,26 @@ POST http://localhost:4001/v1/api/datakind/create HTTP/1.1
 content-type: application/json
 
 {
-    "dkName": "Body_Kinetic_data",
-    "dkDesc": "test",
-    "dkExternalId": " 1447",
+    "dkId": "DK00000000000666",
+    "dkName": "Btest_data",
+    "dkDesc": "khjkhj",
     "dkESName": "GDMPM-DAS",
-    "dkStatus": 1
+    "dkStatus": 1,
+    "systemName": "CDI",
+    "userId": "u1105372"
+}
+
+### Create DataKind External System
+
+POST http://localhost:4001/v1/api/datakind/create HTTP/1.1
+content-type: application/json
+
+{
+    "dkName": "Btest_datasdfs",
+    "dkDesc": "testn",
+    "dkESName": "GDMPM-DAS",
+    "dkStatus": 1,
+    "ExternalId": "1232"
 }
 
 ### Update DataKind Status
