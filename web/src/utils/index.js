@@ -734,3 +734,9 @@ export const extractHostname = (url) => {
   hostname = hostname.split("?")[0];
   return hostname;
 };
+
+export const convertLocalFormat = (time) => {
+  return time
+    ? moment.utc(time).local().format("DD-MMM-YYYY hh:mm A")
+    : moment().local().format("DD-MMM-YYYY hh:mm A");
+};

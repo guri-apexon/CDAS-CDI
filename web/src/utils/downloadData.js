@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import { convertLocalFormat } from ".";
 
 export const exportToCSV = (
   exportData,
@@ -15,8 +16,14 @@ export const exportToCSV = (
   const from = pageNo * rowPerPage;
   const to = from + rowPerPage;
   const newData = exportData.slice(from, to);
-  newData.unshift(headers);
-  ws = XLSX.utils.json_to_sheet(newData, { skipHeader: true });
+  const newXlsData = newData.map((x) => ({
+    ...x,
+    update_dt: convertLocalFormat(x.update_dt),
+  }));
+  newXlsData.unshift(headers);
+  // console.log("newXlsData", newXlsData, exportData);
+
+  ws = XLSX.utils.json_to_sheet(newXlsData, { skipHeader: true });
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
   XLSX.writeFile(wb, fileName);
 };

@@ -79,12 +79,21 @@ const DataPackages = React.memo(() => {
     },
   ];
 
-  const showConfig = (e, checked) => {
-    setConfigShow(checked);
-  };
   const resetForm = () => {
     setConfigShow(false);
     setShowForm(false);
+    setNamingConvention("");
+    setPackagePassword("");
+    setSftpPath("");
+    setCompression("");
+    setNotMatchedType(false);
+  };
+  const showConfig = (e, checked) => {
+    if (!checked) {
+      resetForm();
+    } else {
+      setConfigShow(checked);
+    }
   };
   // const getPackages = (query = "") => {
   //   dispatch(getPackagesList(query));
