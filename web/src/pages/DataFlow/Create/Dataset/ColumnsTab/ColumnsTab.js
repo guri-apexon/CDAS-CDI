@@ -14,7 +14,11 @@ import { allowedTypes } from "../../../../../constants";
 import DSColumnTable from "./DSColumnTable";
 
 import { downloadTemplate } from "../../../../../utils/downloadData";
-import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
+import {
+  checkHeaders,
+  convertFileData,
+  isSftp,
+} from "../../../../../utils/index";
 import Progress from "../../../../../components/Common/Progress/Progress";
 
 const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
@@ -143,7 +147,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        const newData = formatData(importedData, protocolnumber);
+        const newData = convertFileData(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
         if (newData.length > 0) {
           setFormattedData(newData);

@@ -15,7 +15,7 @@ import { CustomHeader, columns } from "./DSCTableHelper";
 import { downloadTemplate } from "../../../../../utils/downloadData";
 import {
   checkHeaders,
-  formatData,
+  convertFileData,
   isSftp,
   columnObj,
   getInitColumnObj,
@@ -133,7 +133,7 @@ export default function DSColumnTable({
       setShowOverWrite(false);
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
-        const newData = formatData(importedData, protocolnumber);
+        const newData = convertFileData(importedData, protocolnumber);
         // eslint-disable-next-line no-unused-expressions
         if (newData.length > 0) {
           // const initRows = newData.map((e) => e.uniqueId);
@@ -399,7 +399,7 @@ export default function DSColumnTable({
   };
 
   const onRowCancel = (row) => {
-    if (row.dbColumnId) {
+    if (row.isSaved) {
       toggleEditMode("Single");
     } else {
       setRows((prevRows) =>
@@ -466,6 +466,7 @@ export default function DSColumnTable({
   };
 
   const onRowEdit = (row) => {
+    console.log("row", row);
     setEditedBackup([{ ...row }]);
     setRows((prevRows) =>
       prevRows.map((e) => {
@@ -510,8 +511,8 @@ export default function DSColumnTable({
     } else {
       setDisableSaveAll(false);
     }
-    setFilteredRows(rows);
-    messageContext?.setDataflow({ columnDefinition: rows });
+    // setFilteredRows(rows);
+    // messageContext?.setDataflow({ columnDefinition: rows });
   }, [rows]);
 
   // useEffect(() => {
@@ -575,7 +576,7 @@ export default function DSColumnTable({
           initialSortOrder="asc"
           rowId="uniqueId"
           hasScroll={true}
-          rows={(editMode ? editedRows : filteredRows).map((row, i) => ({
+          rows={rows.map((row, i) => ({
             ...row,
             onRowDelete,
             editRow,

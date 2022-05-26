@@ -292,6 +292,7 @@ const DataSetsFormBase = (props) => {
                 variant="search"
                 singleSelect
                 fullWidth
+                size="small"
                 // required
               />
               {formValues === "Excel" && (

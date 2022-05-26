@@ -56,7 +56,7 @@ const fieldStylesNo = {
 export const makeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    return row.editMode ? (
+    return row.isEditMode ? (
       <Select
         size="small"
         fullWidth
@@ -80,7 +80,7 @@ export const DataTypeEditableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
     const errorText = checkRequired(row[key], key);
-    return row.editMode ? (
+    return row.isEditMode ? (
       <Select
         className="dsctablehelper_select"
         size="small"
@@ -108,7 +108,7 @@ export const editableSelectCell =
   ({ row, column: { accessor: key } }) => {
     const errorText = checkRequiredValue(row[key], key, row.primaryKey);
 
-    return row.editMode ? (
+    return row.isEditMode ? (
       <Select
         size="small"
         fullWidth
@@ -134,7 +134,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   const errorText =
     checkNumeric(row[key]) ||
     checkCharacterLength(row[key], key, row.minLength, row.maxLength);
-  return row.editMode ? (
+  return row.isEditMode ? (
     <TextField
       size="small"
       fullWidth
@@ -153,14 +153,14 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
-  const { editMode, haveHeader } = row;
+  const { isEditMode, haveHeader } = row;
   let errorText;
   if (haveHeader) {
     errorText = checkRequired(row[key]);
   } else {
     errorText = false;
   }
-  return editMode ? (
+  return isEditMode ? (
     <TextField
       size="small"
       fullWidth
@@ -181,7 +181,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
-  const { editMode, haveHeader } = row;
+  const { isEditMode, haveHeader } = row;
   let errorText;
   if (!haveHeader) {
     errorText = checkRequired(row[key]) || checkNumeric(row[key]);
@@ -189,7 +189,7 @@ export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
     errorText = checkNumeric(row[key]);
   }
 
-  return editMode ? (
+  return isEditMode ? (
     <TextField
       size="small"
       fullWidth
@@ -206,9 +206,9 @@ export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const FormatCell = ({ row, column: { accessor: key } }) => {
-  const { editMode } = row;
+  const { isEditMode } = row;
   const errorText = checkFormat(row[key], key, row.dataType);
-  return editMode ? (
+  return isEditMode ? (
     <TextField
       size="small"
       fullWidth
@@ -224,9 +224,9 @@ export const FormatCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const EditableCell = ({ row, column: { accessor: key } }) => {
-  const { editMode } = row;
+  const { isEditMode } = row;
   const errorText = checkAlphaNumeric(row[key], key);
-  return editMode ? (
+  return isEditMode ? (
     <TextField
       size="small"
       fullWidth
@@ -242,7 +242,7 @@ export const EditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const Cell = ({ row, column }) => (
-  <div style={{ paddingTop: row.editMode ? 12 : 0 }}>
+  <div style={{ paddingTop: row.isEditMode ? 12 : 0 }}>
     {row[column.accessor]}
   </div>
 );
@@ -253,7 +253,7 @@ export const ActionCell = ({ row }) => {
     onRowEdit,
     onRowCancel,
     onRowDelete,
-    editMode: eMode,
+    isEditMode: eMode,
     isHavingColumnName,
     onRowSave,
     maxLength,

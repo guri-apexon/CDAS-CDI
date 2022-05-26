@@ -461,43 +461,34 @@ export const formatDataNew = (incomingData, protNo) => {
   return { headerNotMatching: !isAllDataMatch, data: [] };
 };
 
-export const formatData = (incomingData, protNo) => {
-  const data = incomingData.slice(1); // removing header
-  let isAllDataMatch = false;
-  if (data.length === 1) {
-    isAllDataMatch = data[0][0].toString() === protNo.toString();
-  } else {
-    isAllDataMatch = data
-      .map((e) => e[0])
-      .every((ele) => ele.toString() === protNo.toString()); // checking for protocol match
-  }
-
-  if (isAllDataMatch) {
-    const newData =
-      data.length > 0
-        ? data.map((e, i) => {
-            const newObj = {
-              uniqueId: i + 1,
-              variableLabel: e[1] || "",
-              columnName: e[2] || "",
-              position: "",
-              format: e[3] || "",
-              dataType: e[4] || "",
-              primaryKey: setYN(e[5]),
-              unique: setYN(e[6]),
-              required: setYN(e[7]),
-              minLength: e[8] || "",
-              maxLength: e[9] || "",
-              values: e[10] || "",
-              isInitLoad: true,
-              isHavingColumnName: true,
-            };
-            return newObj;
-          })
-        : [];
-    return newData;
-  }
-  return [];
+export const convertFileData = (sourceData, protNo) => {
+  const data = sourceData?.slice(1); // removing header
+  const protNbr = protNo?.toString();
+  if (!data.length) return [];
+  const diffProtIdFound = data.some((x) => x[0].toString() !== protNbr);
+  if (diffProtIdFound) return [];
+  return data.length
+    ? data.map((e, i) => {
+        const newObj = {
+          uniqueId: i + 1,
+          variableLabel: e[1] || "",
+          columnName: e[2] || "",
+          position: "",
+          format: e[3] || "",
+          dataType: e[4] || "",
+          primaryKey: setYN(e[5]),
+          unique: setYN(e[6]),
+          required: setYN(e[7]),
+          minLength: e[8] || "",
+          maxLength: e[9] || "",
+          values: e[10] || "",
+          // isInitLoad: true,
+          // isHavingColumnName: true,
+          isSaved: true,
+        };
+        return newObj;
+      })
+    : [];
 };
 
 export const Capitalize = (str) => {
