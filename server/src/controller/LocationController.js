@@ -292,7 +292,7 @@ exports.statusUpdate = async (req, res) => {
 };
 
 const $insertLocation = `INSERT into ${schemaName}.source_location (src_loc_id, loc_typ, ip_servr, port, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, usr_nm, pswd, insrt_tm, updt_tm, db_nm, external_id) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`;
-const $selectLocation = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, external_id FROM ${schemaName}.source_location WHERE src_loc_id=$1`;
+const $selectLocation = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm FROM ${schemaName}.source_location WHERE src_loc_id=$1`;
 const $updateLocation = `UPDATE ${schemaName}.source_location set loc_typ=$1, ip_servr=$2, port=$3, data_strc=$4, active=$5, extrnl_sys_nm=$6, loc_alias_nm=$7, updt_tm=$13, db_nm=$8, cnn_url=$9, usr_nm=$10, pswd=$11, external_id=$12 WHERE src_loc_id=$13 returning *`;
 const $selectExternalId = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id FROM ${schemaName}.source_location WHERE external_id=$1`;
 
@@ -411,17 +411,17 @@ exports.saveLocationData = async function (req, res) {
         dfList?.rows?.forEach(async (row) => {
           const dataflowId = row.dataflowid;
           const comparisionObj = {
-            loc_typ: values.locationType,
-            ip_servr: values.ipServer || null,
-            port: values.port || null,
-            data_strc: values.dataStructure || null,
-            active: values.active === true ? 1 : 0,
-            extrnl_sys_nm: values.externalSystemName,
-            loc_alias_nm: values.locationName || null,
-            db_nm: values.dbName || null,
-            cnn_url: values.connURL || null,
-            usr_nm: values.userName || null,
-            pswd: values.password ? "Yes" : "No",
+            loc_typ: locationType,
+            ip_servr: ipServer || null,
+            port: port || null,
+            data_strc: dataStructure,
+            active: active === true ? 1 : 0,
+            extrnl_sys_nm: externalSystemName,
+            loc_alias_nm: locationName,
+            db_nm: dbName || null,
+            cnn_url: updatedURL,
+            usr_nm: userName,
+            pswd: password ? "Yes" : "No",
           };
           const diffObj = helper.getdiffKeys(comparisionObj, existingObj);
           await addLocationCDHHistory({
