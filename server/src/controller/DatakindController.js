@@ -53,7 +53,7 @@ exports.createDataKind = async (req, res) => {
 
     const curDate = helper.getCurrentTime();
 
-    if (!dkName || !dkESName || !dkStatus) {
+    if (!dkName || !dkESName || typeof dkStatus !== "number") {
       return apiResponse.validationErrorWithData(
         res,
         "Operation failed",

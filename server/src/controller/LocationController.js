@@ -296,6 +296,10 @@ const $selectLocation = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, p
 const $updateLocation = `UPDATE ${schemaName}.source_location set loc_typ=$1, ip_servr=$2, port=$3, data_strc=$4, active=$5, extrnl_sys_nm=$6, loc_alias_nm=$7, updt_tm=$13, db_nm=$8, cnn_url=$9, usr_nm=$10, pswd=$11, external_id=$12 WHERE src_loc_id=$13 returning *`;
 const $selectExternalId = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id FROM ${schemaName}.source_location WHERE external_id=$1`;
 
+const commonError = `Something went wrong`;
+const mandatoryMissing = `Please check payload mandatory fields are missing`;
+const duplicateNotAllowed = `No duplicate locations are allowed`;
+
 exports.saveLocationData = async function (req, res) {
   Logger.info({ message: "storeLocation" });
   try {
@@ -316,6 +320,16 @@ exports.saveLocationData = async function (req, res) {
       password,
     } = req.body;
 
+    if (!systemName === "CDI") {
+      if (!ExternalId) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Operation failed",
+          mandatoryMissing
+        );
+      }
+    }
+
     let existingLoc = "";
 
     if (ExternalId) {
@@ -324,6 +338,33 @@ exports.saveLocationData = async function (req, res) {
 
     if (locationID) {
       existingLoc = await DB.executeQuery($selectLocation, [locationID]);
+    }
+
+    if (
+      !locationType ||
+      !locationName ||
+      !ipServer ||
+      !dataStructure ||
+      !externalSystemName ||
+      !userName ||
+      !password ||
+      typeof active !== "boolean"
+    ) {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Operation failed",
+        mandatoryMissing
+      );
+    }
+
+    if (!(locationType === "SFTP" || locationType === "FTPS")) {
+      if (!port || !dbName) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Operation failed",
+          mandatoryMissing
+        );
+      }
     }
 
     // construct connURL for external system
@@ -351,9 +392,10 @@ exports.saveLocationData = async function (req, res) {
     );
 
     if (isExist > 0) {
-      return apiResponse.ErrorResponse(
+      return apiResponse.validationErrorWithData(
         res,
-        "No duplicate locations are allowed"
+        "Operation failed",
+        duplicateNotAllowed
       );
     }
 
@@ -381,7 +423,15 @@ exports.saveLocationData = async function (req, res) {
 
     // write password to vault
     if (password === "Yes") {
-      await helper.writeVaultData(updatedID, vaultData);
+      try {
+        await helper.writeVaultData(updatedID, vaultData);
+      } catch (error) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Operation failed",
+          "Error in Vault"
+        );
+      }
     }
 
     // create location
@@ -393,21 +443,29 @@ exports.saveLocationData = async function (req, res) {
         true
       );
     } else {
+      if (!updatedID) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Operation failed",
+          commonError
+        );
+      }
+
       // update location
       const updateLocation = await DB.executeQuery($updateLocation, body);
 
       if (!updateLocation?.rowCount || !existingLoc?.rowCount) {
-        return apiResponse.ErrorResponse(res, "Something went wrong");
+        return apiResponse.ErrorResponse(res, commonError);
       }
 
       const dfList = await DB.executeQuery(
         `select d.dataflowid from ${schemaName}.dataflow d where d.src_loc_id = $1`,
-        [locationID]
+        [updatedID]
       );
 
       if (dfList.rowCount > 0) {
         const locationObj = updateLocation.rows[0];
-        const existingObj = oldLocation.rows[0];
+        const existingObj = existingLoc.rows[0];
         dfList?.rows?.forEach(async (row) => {
           const dataflowId = row.dataflowid;
           const comparisionObj = {
