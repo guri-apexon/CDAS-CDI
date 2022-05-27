@@ -23,10 +23,9 @@ exports.insertValidation = (req) => {
       value: req.protocolNumberStandard,
       type: "string",
     },
-    { key: "Vendor Name", value: req.vendorName, type: "string" },
-    { key: "Data Structure ", value: req.type, type: "string" },
-    { key: "Data Flow Name ", value: req.name, type: "string" },
-    { key: "location ", value: req.location, type: "string" },
+    { key: "vendorid", value: req.vendorid, type: "string" },
+    { key: "Data Structure ", value: req.dataStructure, type: "string" },
+    { key: "locationID ", value: req.locationID, type: "string" },
 
     {
       key: "External System Name",
@@ -48,12 +47,11 @@ exports.insertValidation = (req) => {
   ];
 
   // Validating Connection Type and externalID
-  var ConnectionType = req.connectionType;
+  var ConnectionType = req.locationType;
   const description = req.description;
   const externalID = req.externalID;
 
-  if (externalID !== null && externalID !== "" && externalID !== undefined) {
-  } else {
+  if (!externalID) {
     validate.push({
       err: " External id is required and data type should be string or number ",
     });
@@ -136,8 +134,8 @@ exports.insertValidation = (req) => {
                   type: "string",
                 },
                 {
-                  key: "Package Naming Convention",
-                  value: each.name,
+                  key: "namingConvention",
+                  value: each.namingConvention,
                   type: "string",
                 },
                 {
@@ -161,8 +159,8 @@ exports.insertValidation = (req) => {
               }
             }
 
-            if (each.name && each.type) {
-              const name = each.name.split(".")[1];
+            if (each.namingConvention && each.type) {
+              const name = each.namingConvention.split(".")[1];
 
               // if (each.type.toLowerCase() === "rar") {
               //   if (name.toLowerCase() !== "rar") {
@@ -196,9 +194,13 @@ exports.insertValidation = (req) => {
               //   }
               // }
 
-              const last = each.name.charAt(each.name.length - 1);
-              const first = each.name.charAt(each.name.charAt(0));
-              if (str2.test(each.name) === false) {
+              const last = each.namingConvention.charAt(
+                each.namingConvention.length - 1
+              );
+              const first = each.namingConvention.charAt(
+                each.namingConvention.charAt(0)
+              );
+              if (str2.test(each.namingConvention) === false) {
                 validate.push({
                   err: " Package naming convention should be end with dot extension ",
                 });
@@ -236,19 +238,19 @@ exports.insertValidation = (req) => {
 
                   const dsArray = [
                     {
-                      key: "Data Set Name (Mnemonic) ",
-                      value: obj.mnemonic,
+                      key: "datasetName",
+                      value: obj.datasetName,
                       type: "string",
                     },
                     {
-                      key: "Clinical Data Type ",
-                      value: obj.dataKind,
+                      key: "dataKindID ",
+                      value: obj.dataKindID,
                       type: "string",
                     },
                     { key: "File Type", value: obj.type, type: "string" },
                     {
                       key: "File Naming Convention ",
-                      value: obj.name,
+                      value: obj.fileNamingConvention,
                       type: "string",
                     },
 
@@ -287,10 +289,14 @@ exports.insertValidation = (req) => {
                   //   });
                   // }
 
-                  if (obj.name) {
-                    const last = obj.name.charAt(obj.name.length - 1);
-                    const first = obj.name.charAt(obj.name.charAt(0));
-                    if (str2.test(obj.name) === false) {
+                  if (obj.fileNamingConvention) {
+                    const last = obj.fileNamingConvention.charAt(
+                      obj.fileNamingConvention.length - 1
+                    );
+                    const first = obj.fileNamingConvention.charAt(
+                      obj.fileNamingConvention.charAt(0)
+                    );
+                    if (str2.test(obj.fileNamingConvention) === false) {
                       validate.push({
                         err: " File naming convention should be end with dot extension ",
                       });
@@ -359,8 +365,8 @@ exports.insertValidation = (req) => {
                         { key: "Quote", value: obj.quote, type: "string" },
 
                         {
-                          key: "Escape Character",
-                          value: obj.escapeCode,
+                          key: "escapeCharacter",
+                          value: obj.escapeCharacter,
                           type: "string",
                         },
                       ];
@@ -396,11 +402,11 @@ exports.insertValidation = (req) => {
                             err: " Column definition level del_flg required and value should be 0 ",
                           });
                         }
-
+                        //testttt
                         const clArray = [
                           {
                             key: "Column Name or Designator ",
-                            value: el.name,
+                            value: el.columnName,
                             type: "string",
                           },
 
@@ -440,27 +446,27 @@ exports.insertValidation = (req) => {
                           validate.push(clRes);
                         }
 
-                        if (el.characterMin) {
-                          if (typeof el.characterMin != "number") {
+                        if (el.minLength) {
+                          if (typeof el.minLength != "number") {
                             validate.push({
-                              err: " In SFTP/FTPS characterMin is Optional and data type should be Number ",
+                              err: " In SFTP/FTPS minLength is Optional and data type should be Number ",
                             });
                           }
                         }
 
-                        if (el.characterMax) {
-                          if (typeof el.characterMax != "number") {
+                        if (el.maxLength) {
+                          if (typeof el.maxLength != "number") {
                             validate.push({
-                              err: " In SFTP/FTPS characterMax is Optional and data type should be Number ",
+                              err: " In SFTP/FTPS maxLength is Optional and data type should be Number ",
                             });
                           }
                         }
-                        if (el.characterMin) {
+                        if (el.minLength) {
                           if (
-                            typeof el.characterMin != "undefined" &&
-                            typeof el.characterMax != "undefined"
+                            typeof el.minLength != "undefined" &&
+                            typeof el.maxLength != "undefined"
                           ) {
-                            if (el.characterMin <= el.characterMax) {
+                            if (el.minLength <= el.maxLength) {
                             } else {
                               validate.push({
                                 err: " Min character always less than max character  ",
@@ -590,9 +596,14 @@ exports.insertValidation = (req) => {
               });
             }
 
-            if (each.type || each.sasXptMethod || each.path || each.name) {
+            if (
+              each.type ||
+              each.sasXptMethod ||
+              each.path ||
+              each.namingConvention
+            ) {
               validate.push({
-                err: " In jdbc datapackage level type, sasXptMethod, path, name should be blank ",
+                err: " In jdbc datapackage level type, sasXptMethod, path, namingConvention should be blank ",
               });
             }
 
@@ -617,7 +628,7 @@ exports.insertValidation = (req) => {
 
                 if (
                   obj.type ||
-                  obj.name ||
+                  obj.fileNamingConvention ||
                   obj.delimiter ||
                   obj.quote ||
                   obj.rowDecreaseAllowed ||
@@ -630,23 +641,23 @@ exports.insertValidation = (req) => {
                   obj.headerRowNumber === 0 ||
                   obj.footerRowNumber === 0 ||
                   obj.OverrideStaleAlert === 0 ||
-                  obj.escapeCode ||
+                  obj.escapeCharacter ||
                   obj.path
                 ) {
                   validate.push({
-                    err: " In jdbc dataset level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, escapeCode, path, headerRowNumber, footerRowNumber, overrideStaleAlert should be blank ",
+                    err: " In jdbc dataset level type, fileNamingConvention, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, escapeCharacter, path, headerRowNumber, footerRowNumber, overrideStaleAlert should be blank ",
                   });
                 }
 
                 const dsArray = [
                   {
                     key: "Data Set Name (Mnemonic) ",
-                    value: obj.mnemonic,
+                    value: obj.datasetName,
                     type: "string",
                   },
                   {
-                    key: "Clinical Data Type ",
-                    value: obj.dataKind,
+                    key: "dataKindID ",
+                    value: obj.dataKindID,
                     type: "string",
                   },
                   {
@@ -758,7 +769,7 @@ exports.insertValidation = (req) => {
                         },
                         {
                           key: "Column Name or Designator ",
-                          value: el.name,
+                          value: el.columnName,
                           type: "string",
                         },
 
@@ -799,15 +810,15 @@ exports.insertValidation = (req) => {
                       }
 
                       if (
-                        el.characterMin ||
-                        el.characterMax ||
-                        el.characterMin === 0 ||
-                        el.characterMax === 0 ||
+                        el.minLength ||
+                        el.maxLength ||
+                        el.minLength === 0 ||
+                        el.maxLength === 0 ||
                         el.lov ||
                         el.position
                       ) {
                         validate.push({
-                          err: " In jdbc characterMin, characterMax, position, lov should be blank ",
+                          err: " In jdbc minLength, maxLength, position, lov should be blank ",
                         });
                       }
                     }
@@ -964,7 +975,7 @@ exports.packageLevelInsert = async (
           },
           {
             key: "Package Naming Convention",
-            value: data.name,
+            value: data.namingConvention,
             type: "string",
           },
           {
@@ -989,8 +1000,8 @@ exports.packageLevelInsert = async (
         }
       }
 
-      if (data.name && data.type) {
-        const name = data.name.split(".")[1];
+      if (data.namingConvention && data.type) {
+        const name = data.namingConvention.split(".")[1];
         // if (data.type.toLowerCase() === "rar") {
         //   if (name.toLowerCase() !== "rar") {
         //     errorPackage.push(
@@ -1023,9 +1034,13 @@ exports.packageLevelInsert = async (
         //   }
         // }
 
-        const last = data.name.charAt(data.name.length - 1);
-        const first = data.name.charAt(data.name.charAt(0));
-        if (str2.test(data.name) === false) {
+        const last = data.namingConvention.charAt(
+          data.namingConvention.length - 1
+        );
+        const first = data.namingConvention.charAt(
+          data.namingConvention.charAt(0)
+        );
+        if (str2.test(data.namingConvention) === false) {
           errorPackage.push(
             " Package naming convention should be end with dot extension "
           );
@@ -1062,9 +1077,14 @@ exports.packageLevelInsert = async (
         errorPackage.push(" In jdbc no package config, active should be true ");
       }
 
-      if (data.type || data.sasXptMethod || data.path || data.name) {
+      if (
+        data.type ||
+        data.sasXptMethod ||
+        data.path ||
+        data.namingConvention
+      ) {
         errorPackage.push(
-          " In jdbc type, sasXptMethod path name should be blank "
+          " In jdbc type, sasXptMethod path namingConvention should be blank "
         );
       }
     }
@@ -1090,7 +1110,7 @@ exports.packageLevelInsert = async (
     let dPBody = [
       dpUid,
       data.type || null,
-      data.name || null,
+      data.namingConvention || null,
       data.path || null,
       data.sasXptMethod || null,
       passwordStatus,
@@ -1191,18 +1211,18 @@ const saveDataset = (exports.datasetLevelInsert = async (
       const dsArray = [
         {
           key: "Data Set Name (Mnemonic) ",
-          value: obj.mnemonic,
+          value: obj.datasetName,
           type: "string",
         },
         {
-          key: "Clinical Data Type ",
-          value: obj.dataKind,
+          key: "dataKindID ",
+          value: obj.dataKindID,
           type: "string",
         },
         { key: "File Type", value: obj.type, type: "string" },
         {
           key: "File Naming Convention ",
-          value: obj.name,
+          value: obj.fileNamingConvention,
           type: "string",
         },
 
@@ -1243,10 +1263,14 @@ const saveDataset = (exports.datasetLevelInsert = async (
         errorDataset.push("Data transfer frequency must be greater than zero");
       }
 
-      if (obj.name) {
-        const last = obj.name.charAt(obj.name.length - 1);
-        const first = obj.name.charAt(obj.name.charAt(0));
-        if (str2.test(obj.name) === false) {
+      if (obj.fileNamingConvention) {
+        const last = obj.fileNamingConvention.charAt(
+          obj.fileNamingConvention.length - 1
+        );
+        const first = obj.fileNamingConvention.charAt(
+          obj.fileNamingConvention.charAt(0)
+        );
+        if (str2.test(obj.fileNamingConvention) === false) {
           errorDataset.push(
             " File naming convention should be end with dot extension "
           );
@@ -1274,7 +1298,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
             {
               key: "Escape Character",
-              value: obj.escapeCode,
+              value: obj.escapeCharacter,
               type: "string",
             },
           ];
@@ -1327,7 +1351,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
       // console.log("else data set1");
       if (
         obj.type ||
-        obj.name ||
+        obj.fileNamingConvention ||
         obj.delimiter ||
         obj.quote ||
         obj.rowDecreaseAllowed ||
@@ -1341,10 +1365,10 @@ const saveDataset = (exports.datasetLevelInsert = async (
         obj.footerRowNumber === 0 ||
         obj.OverrideStaleAlert === 0 ||
         obj.path ||
-        obj.escapeCode
+        obj.escapeCharacter
       ) {
         errorDataset.push(
-          " In jdbc dataset level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCode, headerRowNumber, footerRowNumber, OverrideStaleAlert should be Blank "
+          " In jdbc dataset level type, fileNamingConvention, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, Path, escapeCharacter, headerRowNumber, footerRowNumber, OverrideStaleAlert should be Blank "
         );
       }
 
@@ -1357,12 +1381,12 @@ const saveDataset = (exports.datasetLevelInsert = async (
       const dsElse = [
         {
           key: "Data Set Name (Mnemonic) ",
-          value: obj.mnemonic,
+          value: obj.datasetName,
           type: "string",
         },
         {
-          key: "Clinical Data Type ",
-          value: obj.dataKind,
+          key: "dataKindID",
+          value: obj.dataKindID,
           type: "string",
         },
         {
@@ -1425,16 +1449,13 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
     let dsObj = {};
 
-    let dataKind = null;
-    if (obj.dataKind) {
+    if (obj.dataKindID) {
       let checkDataKind = await DB.executeQuery(
-        `select datakindid,active from ${schemaName}.datakind where name='${obj.dataKind}';`
+        `select datakindid,active from ${schemaName}.datakind where name='${obj.dataKindID}';`
       );
 
       if (checkDataKind.rows.length > 0) {
-        if (checkDataKind.rows[0].active === 0) {
-          dataKind = checkDataKind.rows[0].datakindid;
-        } else {
+        if (checkDataKind.rows[0].active !== 1) {
           errorDataset.push(
             `Clinical Data Type is inactive from ${externalSysName}, Description in TA cannot be integrated.`
           );
@@ -1446,12 +1467,12 @@ const saveDataset = (exports.datasetLevelInsert = async (
       }
     }
 
-    if (obj.mnemonic) {
+    if (obj.datasetName) {
       const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
       let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
                 left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
                 left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
-                where ds.mnemonic ='${obj.mnemonic}' and df.testflag ='${tFlg}'`;
+                where ds.mnemonic ='${obj.datasetName}' and df.testflag ='${tFlg}'`;
 
       let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -1482,9 +1503,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
     let sqlQuery = "";
     if (obj.customQuery.toLowerCase() === "no") {
       if (obj.columnDefinition?.length > 0) {
-        const cList = obj.columnDefinition.map(
-          (el) => el.name || el.columnName
-        );
+        const cList = obj.columnDefinition.map((el) => el.columnName);
         sqlQuery = helper.createCustomSql(
           cList,
           obj.tableName,
@@ -1498,8 +1517,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
     let DSBody = [
       dsUid,
       DPId,
-      dataKind || null,
-      obj.mnemonic || obj.datasetName || null,
+      obj.dataKindID || null,
+      obj.datasetName || null,
       obj.fileNamingConvention || "",
       helper.stringToBoolean(obj.active) ? 1 : 0,
       typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
@@ -1519,7 +1538,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
       dsPasswordStatus || "No",
       helper.getCurrentTime(),
       obj.delimiter || "",
-      helper.convertEscapeChar(obj.escapeCode || obj.escapeCharacter) || "",
+      helper.convertEscapeChar(obj.escapeCharacter) || "",
       obj.quote || "",
       obj.rowDecreaseAllowed || 0,
       obj.dataTransferFrequency || "",
@@ -1568,7 +1587,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
           const clArrayIf = [
             {
               key: "Column Name or Designator ",
-              value: el.name,
+              value: el.columnName,
               type: "string",
             },
 
@@ -1607,28 +1626,28 @@ const saveDataset = (exports.datasetLevelInsert = async (
             errorDataset.push(clResIf);
           }
 
-          if (el.characterMin) {
-            if (typeof el.characterMin != "number") {
+          if (el.minLength) {
+            if (typeof el.minLength != "number") {
               errorDataset.push(
-                " In SFTP/FTPS characterMin is Optional and data type should be Number"
+                " In SFTP/FTPS minLength is Optional and data type should be Number"
               );
             }
           }
 
-          if (el.characterMax) {
-            if (typeof el.characterMax != "number") {
+          if (el.maxLength) {
+            if (typeof el.maxLength != "number") {
               errorDataset.push(
-                " In SFTP/FTPS characterMax is Optional and data type should be Number"
+                " In SFTP/FTPS maxLength is Optional and data type should be Number"
               );
             }
           }
 
-          if (el.characterMin) {
+          if (el.minLength) {
             if (
-              typeof el.characterMin != "undefined" &&
-              typeof el.characterMax != "undefined"
+              typeof el.minLength != "undefined" &&
+              typeof el.maxLength != "undefined"
             ) {
-              if (el.characterMin >= el.characterMax) {
+              if (el.minLength >= el.maxLength) {
                 errorDataset.push(
                   "Min character always less than max character "
                 );
@@ -1654,7 +1673,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
           const clArray = [
             {
               key: "Column Name or Designator ",
-              value: el.name,
+              value: el.columnName,
               type: "string",
             },
 
@@ -1699,24 +1718,24 @@ const saveDataset = (exports.datasetLevelInsert = async (
           }
 
           if (
-            el.characterMin ||
-            el.characterMin === 0 ||
-            el.characterMax ||
-            el.characterMax === 0 ||
+            el.minLength ||
+            el.minLength === 0 ||
+            el.maxLength ||
+            el.maxLength === 0 ||
             el.lov ||
             el.position
           ) {
             // console.log(val.key, val.value);
             errorDataset.push(
-              "For jdbc characterMin, characterMax, lov, position fields should be blank "
+              "For jdbc minLength, maxLength, lov, position fields should be blank "
             );
           }
         }
 
         // Column def Name check
-        if (el.name) {
+        if (el.columnName) {
           let clName = await DB.executeQuery(
-            `select name from ${schemaName}.columndefinition where datasetid='${dsUid}' and name='${el.name}';`
+            `select name from ${schemaName}.columndefinition where datasetid='${dsUid}' and name='${el.columnName}';`
           );
           if (clName.rows.length > 0) {
             errorDataset.push(" This Column Definition Name already exist!");
@@ -1738,12 +1757,12 @@ const saveDataset = (exports.datasetLevelInsert = async (
         let CDBody = [
           dsUid,
           CDUid,
-          el.name || el.columnName || null,
+          el.columnName || null,
           el.dataType || null,
           helper.stringToBoolean(el.primaryKey) ? 1 : 0,
           helper.stringToBoolean(el.required) ? 1 : 0,
-          el.characterMin || el.minLength || 0,
-          el.characterMax || el.maxLength || 0,
+          el.minLength || el.minLength || 0,
+          el.maxLength || el.maxLength || 0,
           el.position || 0,
           el.format || null,
           el.lov || el.values || null,
@@ -1847,7 +1866,7 @@ exports.columnDefinationInsert = async (
       const clArrayIf = [
         {
           key: "Column Name or Designator ",
-          value: el.name,
+          value: el.columnName,
           type: "string",
         },
 
@@ -1886,28 +1905,28 @@ exports.columnDefinationInsert = async (
         errorColumnDef.push(clResIf);
       }
 
-      if (el.characterMin) {
-        if (typeof el.characterMin != "number") {
+      if (el.minLength) {
+        if (typeof el.minLength != "number") {
           errorColumnDef.push(
-            " In SFTP/FTPS characterMin is Optional and data type should be Number"
+            " In SFTP/FTPS minLength is Optional and data type should be Number"
           );
         }
       }
 
-      if (el.characterMax) {
-        if (typeof el.characterMax != "number") {
+      if (el.maxLength) {
+        if (typeof el.maxLength != "number") {
           errorColumnDef.push(
-            " In SFTP/FTPS characterMax is Optional and data type should be Number"
+            " In SFTP/FTPS maxLength is Optional and data type should be Number"
           );
         }
       }
 
-      if (el.characterMin) {
+      if (el.minLength) {
         if (
-          typeof el.characterMin != "undefined" &&
-          typeof el.characterMax != "undefined"
+          typeof el.minLength != "undefined" &&
+          typeof el.maxLength != "undefined"
         ) {
-          if (el.characterMin >= el.characterMax) {
+          if (el.minLength >= el.maxLength) {
             errorColumnDef.push("MinCharacter always less than MaxCharacter ");
           }
         }
@@ -1931,7 +1950,7 @@ exports.columnDefinationInsert = async (
       const clArray = [
         {
           key: "Column Name or Designator ",
-          value: el.name,
+          value: el.columnName,
           type: "string",
         },
 
@@ -1976,24 +1995,24 @@ exports.columnDefinationInsert = async (
       }
 
       if (
-        el.characterMin ||
-        el.characterMin === 0 ||
-        el.characterMax ||
-        el.characterMax === 0 ||
+        el.minLength ||
+        el.minLength === 0 ||
+        el.maxLength ||
+        el.maxLength === 0 ||
         el.lov ||
         el.position
       ) {
         // console.log(val.key, val.value);
         errorColumnDef.push(
-          "For JBDC characterMin, characterMax, lov, position fields should be Blank "
+          "For JBDC minLength, maxLength, lov, position fields should be Blank "
         );
       }
     }
 
     // Column Def Name check
-    if (el.name) {
+    if (el.columnName) {
       let clName = await DB.executeQuery(
-        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${el.name}';`
+        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${el.columnName}';`
       );
       if (clName.rows.length > 0) {
         errorColumnDef.push(" This Column Definition Name already exist!");
@@ -2015,12 +2034,12 @@ exports.columnDefinationInsert = async (
     let CDBody = [
       DSId,
       CDUid,
-      el.name || el.columnName || null,
+      el.columnName || null,
       el.dataType || null,
       helper.stringToBoolean(el.primaryKey) ? 1 : 0,
       helper.stringToBoolean(el.required) ? 1 : 0,
-      el.characterMin || el.minLength || 0,
-      el.characterMax || el.maxLength || 0,
+      el.minLength || el.minLength || 0,
+      el.maxLength || el.maxLength || 0,
       el.position || 0,
       el.format || null,
       el.lov || el.values || null,
@@ -2261,8 +2280,8 @@ exports.dataflowUpdate = async (
       vNameDB = rows[0].vend_nm;
     }
 
-    if (data.location) {
-      let q5 = `select src_loc_id from ${schemaName}.source_location where src_loc_id='${data.location}';`;
+    if (data.locationID) {
+      let q5 = `select src_loc_id from ${schemaName}.source_location where src_loc_id='${data.locationID}';`;
       let { rows: srcId } = await DB.executeQuery(q5);
       loc_id = srcId[0].src_loc_id;
     }
@@ -2309,8 +2328,8 @@ exports.dataflowUpdate = async (
 
     let updateQueryDF = `update ${schemaName}.dataflow set updt_tm=NOW(), refreshtimestamp=NOW(),updated_by_user='${userId}'`;
 
-    if (data.type) {
-      updateQueryDF += `,type='${data.type}'`;
+    if (data.dataStructure) {
+      updateQueryDF += `,type='${data.dataStructure}'`;
     }
 
     if (data.description) {
@@ -2339,7 +2358,7 @@ exports.dataflowUpdate = async (
     if (data.location) {
       updateQueryDF += ` ,src_loc_id= '${loc_id}'`;
     }
-    if (data.protocolNumberStandard || data.type || data.vendorName) {
+    if (data.protocolNumberStandard || data.description || data.vendorName) {
       updateQueryDF += `,name='${DFTestname}'`;
     }
 
@@ -2463,8 +2482,8 @@ exports.packageUpdate = async (
         });
 
         TypeSas.push({
-          key: "name",
-          value: data.name,
+          key: "namingConvention",
+          value: data.namingConvention,
           type: "string",
         });
 
@@ -2497,10 +2516,14 @@ exports.packageUpdate = async (
         }
       }
 
-      if (typeof data.name != "undefined") {
-        const last = data.name.charAt(data.name.length - 1);
-        const first = data.name.charAt(data.name.charAt(0));
-        if (str2.test(data.name) === false) {
+      if (typeof data.namingConvention != "undefined") {
+        const last = data.namingConvention.charAt(
+          data.namingConvention.length - 1
+        );
+        const first = data.namingConvention.charAt(
+          data.namingConvention.charAt(0)
+        );
+        if (str2.test(data.namingConvention) === false) {
           errorPackage.push(
             " Package naming convention should be end with dot extension "
           );
@@ -2517,9 +2540,14 @@ exports.packageUpdate = async (
       ) {
         errorPackage.push(" In jdbc no package config, active should be true ");
       }
-      if (data.type || data.sasXptMethod || data.path || data.name) {
+      if (
+        data.type ||
+        data.sasXptMethod ||
+        data.path ||
+        data.namingConvention
+      ) {
         errorPackage.push(
-          " In jdbc type, sasXptMethod, path, name should be blank "
+          " In jdbc type, sasXptMethod, path, namingConvention should be blank "
         );
       }
     }
@@ -2533,8 +2561,8 @@ exports.packageUpdate = async (
     if (data.type) {
       updateQueryDP += `, type='${data.type}'`;
     }
-    if (data.name) {
-      updateQueryDP += `, name='${data.name}'`;
+    if (data.namingConvention) {
+      updateQueryDP += `, name='${data.namingConvention}'`;
     }
     if (data.path) {
       updateQueryDP += `, path='${data.path}'`;
@@ -2627,15 +2655,13 @@ exports.datasetUpdate = async (
     let errorDataset = [];
     var str2 = /[.]/;
 
-    if (data.dataKind) {
+    if (data.dataKindID) {
       let checkDataKind = await DB.executeQuery(
-        `select datakindid,active from ${schemaName}.datakind where datakindid='${data.dataKind}';`
+        `select datakindid,active from ${schemaName}.datakind where datakindid='${data.dataKindID}';`
       );
 
       if (checkDataKind.rows.length > 0) {
-        if (checkDataKind.rows[0].active === 0) {
-          dataKi_Id = checkDataKind.rows[0].datakindid;
-        } else {
+        if (checkDataKind.rows[0].active !== 01) {
           errorDataset.push(
             `Clinical Data Type is inactive from ${externalSysName}, Description in TA cannot be integrated.`
           );
@@ -2647,12 +2673,12 @@ exports.datasetUpdate = async (
       }
     }
 
-    if (data.mnemonic) {
+    if (data.datasetName) {
       const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
       let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
                 left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
                 left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
-                where ds.mnemonic ='${data.mnemonic}' and df.testflag ='${tFlg}'`;
+                where ds.mnemonic ='${data.datasetName}' and df.testflag ='${tFlg}'`;
 
       let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -2668,17 +2694,17 @@ exports.datasetUpdate = async (
     if (helper.isSftp(LocationType)) {
       // if (LocationType === "Hive CDH") {
 
-      if (typeof data.mnemonic != "undefined") {
+      if (typeof data.datasetName != "undefined") {
         valDataset.push({
-          key: "mnemonic ",
-          value: data.mnemonic,
+          key: "datasetName ",
+          value: data.datasetName,
           type: "string",
         });
       }
-      if (typeof data.dataKind != "undefined") {
+      if (typeof data.dataKindID != "undefined") {
         valDataset.push({
-          key: "dataKind ",
-          value: data.dataKind,
+          key: "dataKindID ",
+          value: data.dataKindID,
           type: "string",
         });
       }
@@ -2689,17 +2715,21 @@ exports.datasetUpdate = async (
           type: "string",
         });
       }
-      if (typeof data.name != "undefined") {
+      if (typeof data.fileNamingConvention != "undefined") {
         valDataset.push({
-          key: "name ",
-          value: data.name,
+          key: "fileNamingConvention ",
+          value: data.fileNamingConvention,
           type: "string",
         });
 
-        if (data.name) {
-          const last = data.name.charAt(data.name.length - 1);
-          const first = data.name.charAt(data.name.charAt(0));
-          if (str2.test(data.name) === false) {
+        if (data.fileNamingConvention) {
+          const last = data.fileNamingConvention.charAt(
+            data.fileNamingConvention.length - 1
+          );
+          const first = data.fileNamingConvention.charAt(
+            data.fileNamingConvention.charAt(0)
+          );
+          if (str2.test(data.fileNamingConvention) === false) {
             errorDataset.push(
               " File naming convention should be end with dot extension "
             );
@@ -2805,10 +2835,10 @@ exports.datasetUpdate = async (
               type: "string",
             });
           }
-          if (typeof data.escapeCode != "undefined") {
+          if (typeof data.escapeCharacter != "undefined") {
             dlData.push({
-              key: "escapeCode ",
-              value: data.escapeCode,
+              key: "escapeCharacter ",
+              value: data.escapeCharacter,
               type: "string",
             });
           }
@@ -2834,17 +2864,17 @@ exports.datasetUpdate = async (
         );
       }
     } else {
-      if (typeof data.mnemonic != "undefined") {
+      if (typeof data.datasetName != "undefined") {
         valDataset.push({
-          key: "mnemonic ",
-          value: data.mnemonic,
+          key: "datasetName ",
+          value: data.datasetName,
           type: "string",
         });
       }
-      if (typeof data.dataKind != "undefined") {
+      if (typeof data.dataKindID != "undefined") {
         valDataset.push({
-          key: "dataKind ",
-          value: data.dataKind,
+          key: "dataKindID ",
+          value: data.dataKindID,
           type: "string",
         });
       }
@@ -2875,7 +2905,7 @@ exports.datasetUpdate = async (
 
       if (
         data.type ||
-        data.name ||
+        data.fileNamingConvention ||
         data.delimiter ||
         data.quote ||
         data.rowDecreaseAllowed ||
@@ -2889,10 +2919,10 @@ exports.datasetUpdate = async (
         data.footerRowNumber === 0 ||
         data.OverrideStaleAlert === 0 ||
         data.path ||
-        data.escapeCode
+        data.escapeCharacter
       ) {
         errorDataset.push(
-          " In jdbc dataset level type, name, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, path, escapeCode, headerRowNumber, footerRowNumber, overrideStaleAlert should be blank "
+          " In jdbc dataset level type, fileNamingConvention, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, path, escapeCharacter, headerRowNumber, footerRowNumber, overrideStaleAlert should be blank "
         );
       }
 
@@ -2936,9 +2966,7 @@ exports.datasetUpdate = async (
     if (data.customQuery) {
       if (!helper.stringToBoolean(data.customQuery)) {
         if (data.columnDefinition?.length > 0) {
-          const cList = data.columnDefinition.map(
-            (el) => el.name || el.columnName
-          );
+          const cList = data.columnDefinition.map((el) => el.columnName);
           sqlQuery = helper.createCustomSql(
             cList,
             data.tableName,
@@ -2952,14 +2980,14 @@ exports.datasetUpdate = async (
 
     let updateQueryDS = `UPDATE ${schemaName}.dataset set updt_tm=NOW() `;
 
-    if (data.dataKind) {
-      updateQueryDS += `,datakindid='${dataKi_Id}'`;
+    if (data.dataKindID) {
+      updateQueryDS += `,datakindid='${dataKindID}'`;
     }
-    if (data.mnemonic) {
-      updateQueryDS += `,mnemonic='${data.mnemonic}'`;
+    if (data.datasetName) {
+      updateQueryDS += `,datasetName='${data.datasetName}'`;
     }
-    if (data.name) {
-      updateQueryDS += `,name='${data.name}'`;
+    if (data.fileNamingConvention) {
+      updateQueryDS += `,name='${data.fileNamingConvention}'`;
     }
     if (data.columnCount) {
       updateQueryDS += `,columncount='${data.columnCount}'`;
@@ -3002,9 +3030,9 @@ exports.datasetUpdate = async (
     if (data.delimiter) {
       updateQueryDS += `,delimiter='${data.delimiter}'`;
     }
-    if (data.escapeCode) {
+    if (data.escapeCharacter) {
       updateQueryDS += `,escapecode='${helper.convertEscapeChar(
-        data.escapeCode
+        data.escapeCharacter
       )}'`;
     }
     if (data.quote) {
@@ -3096,10 +3124,10 @@ exports.clDefUpdate = async (
     var str1 = /[~]/;
     if (helper.isSftp(LocationType)) {
       // if (LocationType === "Hive CDH") {
-      if (typeof data.name != "undefined") {
+      if (typeof data.columnName != "undefined") {
         valColDef.push({
-          key: "name ",
-          value: data.name,
+          key: "columnName ",
+          value: data.columnName,
           type: "string",
         });
       }
@@ -3116,28 +3144,28 @@ exports.clDefUpdate = async (
           );
         }
       }
-      if (data.characterMin) {
-        if (typeof data.characterMin != "number") {
+      if (data.minLength) {
+        if (typeof data.minLength != "number") {
           errorcolDef.push(
-            " In SFTP/FTPS characterMin is Optional and data type should be Number"
+            " In SFTP/FTPS minLength is Optional and data type should be Number"
           );
         }
       }
 
-      if (data.characterMax) {
-        if (typeof data.characterMax != "number") {
+      if (data.maxLength) {
+        if (typeof data.maxLength != "number") {
           errorcolDef.push(
-            " In SFTP/FTPS characterMax is Optional and data type should be Number"
+            " In SFTP/FTPS maxLength is Optional and data type should be Number"
           );
         }
       }
 
-      if (data.characterMin) {
+      if (data.minLength) {
         if (
-          typeof data.characterMin != "undefined" &&
-          typeof data.characterMax != "undefined"
+          typeof data.minLength != "undefined" &&
+          typeof data.maxLength != "undefined"
         ) {
-          if (data.characterMin >= data.characterMax) {
+          if (data.minLength >= data.maxLength) {
             errorcolDef.push("MinCharacter always less than MaxCharacter ");
           }
         }
@@ -3186,10 +3214,10 @@ exports.clDefUpdate = async (
         errorcolDef.push(colDefRes);
       }
     } else {
-      if (typeof data.name != "undefined") {
+      if (typeof data.columnName != "undefined") {
         valColDef.push({
           key: "name ",
-          value: data.name,
+          value: data.columnName,
           type: "string",
         });
       }
@@ -3246,22 +3274,22 @@ exports.clDefUpdate = async (
       }
 
       if (
-        data.characterMin ||
-        data.characterMin === 0 ||
-        data.characterMax ||
-        data.characterMax === 0 ||
+        data.minLength ||
+        data.minLength === 0 ||
+        data.maxLength ||
+        data.maxLength === 0 ||
         data.lov ||
         data.position
       ) {
         errorcolDef.push(
-          " For JBDC characterMin, characterMax, lov, position fields should be Blank "
+          " For JBDC minLength, maxLength, lov, position fields should be Blank "
         );
       }
     }
 
-    if (data.name) {
+    if (data.columnName) {
       let clName = await DB.executeQuery(
-        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${data.name}';`
+        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${data.columnName}';`
       );
       if (clName.rows.length > 0) {
         errorcolDef.push(" This Column Definition Name already exist!");
@@ -3279,17 +3307,17 @@ exports.clDefUpdate = async (
 
     let updateQueryCD = `UPDATE ${schemaName}.columndefinition set updt_tm=NOW() `;
 
-    if (data.name) {
-      updateQueryCD += `,name='${data.name}'`;
+    if (data.columnName) {
+      updateQueryCD += `,name='${data.columnName}'`;
     }
     if (data.dataType) {
       updateQueryCD += `,datatype='${data.dataType}'`;
     }
-    if (data.characterMin) {
-      updateQueryCD += `,charactermin='${data.characterMin}'`;
+    if (data.minLength) {
+      updateQueryCD += `,charactermin='${data.minLength}'`;
     }
-    if (data.characterMax) {
-      updateQueryCD += `,charactermax='${data.characterMax}'`;
+    if (data.maxLength) {
+      updateQueryCD += `,charactermax='${data.maxLength}'`;
     }
     if (typeof data.primaryKey != "undefined") {
       updateQueryCD += `,primarykey='${
