@@ -5,7 +5,7 @@ const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
-const { addLocationCDHHistory } = require("./CommonController");
+const CommonController = require("./CommonController");
 
 async function checkIsExistInDF(dkId) {
   let listQuery = `select distinct (d3.datakindid) from ${schemaName}.dataflow d 
@@ -87,7 +87,7 @@ exports.createDataKind = async (req, res) => {
         const isExist = await checkIsExistInDF(dkId);
 
         // inactivating status is not allowed
-        if (isExist && !existingDK.rows[0].active === dkStatus) {
+        if (isExist && !existingDK?.rows[0].active === dkStatus) {
           return apiResponse.ErrorResponse(res, inactiveNotAllowed);
         }
 
@@ -121,7 +121,7 @@ exports.createDataKind = async (req, res) => {
             const diffObj = helper.getdiffKeys(comparisionObj, existingObj);
 
             // updating dataflow version and audit history
-            await addLocationCDHHistory({
+            await CommonController.addLocationCDHHistory({
               dataflowId,
               externalSystemName: systemName,
               userId,
@@ -161,7 +161,7 @@ exports.createDataKind = async (req, res) => {
       const isExist = await checkIsExistInDF(id);
 
       // inactivating status is not allowed
-      if (isExist && !existingDK.rows[0].active === dkStatus) {
+      if (isExist && !existingDK?.rows[0].active === dkStatus) {
         return apiResponse.ErrorResponse(res, inactiveNotAllowed);
       }
 
@@ -193,7 +193,7 @@ exports.createDataKind = async (req, res) => {
           const diffObj = helper.getdiffKeys(comparisionObj, existingObj);
 
           // updating dataflow version and audit history
-          await addLocationCDHHistory({
+          await CommonController.addLocationCDHHistory({
             dataflowId,
             externalSystemName: dkESName,
             userId,

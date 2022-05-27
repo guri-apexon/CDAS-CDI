@@ -5,6 +5,8 @@ const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
+const CommonController = require("./CommonController");
+
 async function checkLocationExists(
   locationType = "",
   cnUnl = "",
@@ -266,7 +268,7 @@ exports.statusUpdate = async (req, res) => {
           },
           existingObj
         );
-        await addLocationCDHHistory({
+        await CommonController.addLocationCDHHistory({
           dataflowId,
           externalSystemName: "CDI",
           userId,
@@ -292,7 +294,7 @@ exports.statusUpdate = async (req, res) => {
 };
 
 const $insertLocation = `INSERT into ${schemaName}.source_location (insrt_tm, loc_alias_nm, loc_typ, data_strc, extrnl_sys_nm, active, usr_nm, pswd, ip_servr, cnn_url, port, db_nm, external_id) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`;
-const $selectLocation = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm FROM ${schemaName}.source_location WHERE src_loc_id=$1`;
+const $selectLocation = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id FROM ${schemaName}.source_location WHERE src_loc_id=$1`;
 const $updateLocation = `UPDATE ${schemaName}.source_location set updt_tm=$1, loc_alias_nm=$2, loc_typ=$3, data_strc=$4, extrnl_sys_nm=$5, active=$6, usr_nm=$7, pswd=$8, ip_servr=$9, cnn_url=$10, port=$11, db_nm=$12, external_id=$13 WHERE src_loc_id=$14 returning *`;
 const $selectExternalId = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id FROM ${schemaName}.source_location WHERE external_id=$1`;
 
@@ -379,7 +381,7 @@ exports.saveLocationData = async function (req, res) {
     const newId = helper.generateUniqueID();
 
     const updatedURL = connURL || newURL;
-    const updatedID = locationID || existingLoc[0]?.src_loc_id || newId;
+    const updatedID = locationID || existingLoc?.rows[0]?.src_loc_id || newId;
 
     // check for location exist
     const isExist = await checkLocationExists(
@@ -388,7 +390,7 @@ exports.saveLocationData = async function (req, res) {
       userName,
       dbName,
       externalSystemName,
-      locationID || existingLoc[0]?.src_loc_id || null
+      locationID || existingLoc?.rows[0]?.src_loc_id || null
     );
 
     if (isExist > 0) {
@@ -434,13 +436,20 @@ exports.saveLocationData = async function (req, res) {
     }
 
     // create location
-    if ((systemName === "CDI" && !locationID) || !existingLoc?.rowCount) {
-      await DB.executeQuery($insertLocation, body);
-      return apiResponse.successResponseWithData(
-        res,
-        "Operation success",
-        true
-      );
+    if (!existingLoc?.rowCount) {
+      const inset = await DB.executeQuery($insertLocation, body);
+      if (systemName === "CDI") {
+        return apiResponse.successResponseWithData(
+          res,
+          "Operation success",
+          true
+        );
+      } else {
+        return apiResponse.successResponseWithMoreData(res, {
+          ExternalId,
+          id: inset?.rows[0].src_loc_id,
+        });
+      }
     } else {
       if (!updatedID) {
         return apiResponse.validationErrorWithData(
@@ -484,7 +493,7 @@ exports.saveLocationData = async function (req, res) {
             pswd: password ? "Yes" : "No",
           };
           const diffObj = helper.getdiffKeys(comparisionObj, existingObj);
-          await addLocationCDHHistory({
+          await CommonController.addLocationCDHHistory({
             dataflowId,
             externalSystemName: "CDI",
             userId,
