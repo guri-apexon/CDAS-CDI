@@ -26,7 +26,7 @@ exports.insertValidation = (req) => {
     { key: "Vendor Name", value: req.vendorName, type: "string" },
     { key: "Data Structure ", value: req.type, type: "string" },
     { key: "Data Flow Name ", value: req.name, type: "string" },
-    { key: "location ", value: req.location, type: "string" },
+    { key: "locationID ", value: req.locationID, type: "string" },
 
     {
       key: "External System Name",
@@ -242,7 +242,7 @@ exports.insertValidation = (req) => {
                     },
                     {
                       key: "Clinical Data Type ",
-                      value: obj.dataKind,
+                      value: obj.dataKindID,
                       type: "string",
                     },
                     { key: "File Type", value: obj.type, type: "string" },
@@ -646,7 +646,7 @@ exports.insertValidation = (req) => {
                   },
                   {
                     key: "Clinical Data Type ",
-                    value: obj.dataKind,
+                    value: obj.dataKindID,
                     type: "string",
                   },
                   {
@@ -2261,8 +2261,8 @@ exports.dataflowUpdate = async (
       vNameDB = rows[0].vend_nm;
     }
 
-    if (data.location) {
-      let q5 = `select src_loc_id from ${schemaName}.source_location where src_loc_id='${data.location}';`;
+    if (data.locationID) {
+      let q5 = `select src_loc_id from ${schemaName}.source_location where src_loc_id='${data.locationID}';`;
       let { rows: srcId } = await DB.executeQuery(q5);
       loc_id = srcId[0].src_loc_id;
     }
@@ -2336,7 +2336,7 @@ exports.dataflowUpdate = async (
     if (data.vendorName) {
       updateQueryDF += ` ,vend_id= '${vendorId}'`;
     }
-    if (data.location) {
+    if (data.locationID) {
       updateQueryDF += ` ,src_loc_id= '${loc_id}'`;
     }
     if (data.protocolNumberStandard || data.type || data.vendorName) {
