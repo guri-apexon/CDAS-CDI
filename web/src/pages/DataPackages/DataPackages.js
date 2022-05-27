@@ -48,7 +48,7 @@ const DataPackages = React.memo(() => {
   const history = useHistory();
   const [showForm, setShowForm] = useState(false);
   const [configShow, setConfigShow] = useState(false);
-  const [compression, setCompression] = useState("not_compressed");
+  const [compression, setCompression] = useState("");
   const [namingConvention, setNamingConvention] = useState("");
   const [packagePassword, setPackagePassword] = useState("");
   const [sftpPath, setSftpPath] = useState("");
@@ -79,12 +79,21 @@ const DataPackages = React.memo(() => {
     },
   ];
 
-  const showConfig = (e, checked) => {
-    setConfigShow(checked);
-  };
   const resetForm = () => {
     setConfigShow(false);
     setShowForm(false);
+    setNamingConvention("");
+    setPackagePassword("");
+    setSftpPath("");
+    setCompression("");
+    setNotMatchedType(false);
+  };
+  const showConfig = (e, checked) => {
+    if (!checked) {
+      resetForm();
+    } else {
+      setConfigShow(checked);
+    }
   };
   // const getPackages = (query = "") => {
   //   dispatch(getPackagesList(query));
@@ -105,7 +114,7 @@ const DataPackages = React.memo(() => {
     const validated = validateFields(namingConvention, compression);
     setNotMatchedType(!validated);
     if (!validated) return false;
-    if (namingConvention === "" || compression === "") {
+    if (namingConvention === "" && compression) {
       toast("Please fill all fields to proceed", "error");
       return false;
     }
@@ -212,7 +221,12 @@ const DataPackages = React.memo(() => {
                         value={compression}
                         size="small"
                         placeholder="Select type..."
-                        onChange={(e) => setCompression(e.target.value)}
+                        onChange={(e) => {
+                          setCompression(e.target.value);
+                          if (e.target.value === "") {
+                            setNotMatchedType(false);
+                          }
+                        }}
                         className="mb-20 package-type"
                       >
                         {packageComprTypes.map((type, i) => (
@@ -229,7 +243,12 @@ const DataPackages = React.memo(() => {
                         size="small"
                         fullWidth
                         helperText="File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
-                        onChange={(e) => setNamingConvention(e.target.value)}
+                        onChange={(e) => {
+                          setNotMatchedType(
+                            !validateFields(e.target.value, compression)
+                          );
+                          setNamingConvention(e.target.value);
+                        }}
                       />
                       <PasswordInput
                         defaultValue=""
@@ -264,7 +283,7 @@ const DataPackages = React.memo(() => {
                       size="small"
                       onClick={setShowForm}
                     >
-                      Add Data Package
+                      Add data package
                     </Button>
                   </Box>
                 </>

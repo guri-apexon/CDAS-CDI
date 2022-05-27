@@ -47,9 +47,7 @@ exports.getDatasetIngestionReportProperties = (req, res) => {
     const userId = req.headers["userid"];
     const searchQuery = `SELECT datasetid,"DatasetName","Vendor",vend_id,"VendorContactInformation","DateLastChecked","DateofLastSuccessfulProcess","ExpectedDateofNextTransfer","ExpectedTransferFrequency","LoadType", "SourceOrigin", dataflowid, "DataFlowName", datapackageid, "FileName", "DataPackageNamingConvention", "DatasetStatus" from ${schemaName}.dataset_stat_current 
             WHERE datasetid = $1`;
-    Logger.info({
-      message: "getDatasetIngestionReportProperties",
-    });
+    Logger.info({ message: "getDatasetIngestionReportProperties" });
 
     DB.executeQuery(searchQuery, [id])
       .then(async (response) => {
@@ -85,9 +83,7 @@ exports.getDatasetIngestionReportTransferLog = (req, res) => {
     const userId = req.headers["userid"];
     const searchQuery = `SELECT "DatasetName", "Vendor", "TransferDate", "FileName", datasetname, "FileTransferStatus", "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords", "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate", "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue", "DownloadStart", "ProcessStart", "SourceOrigin", dataflowid, "DataflowName", fst_prd_file_recvd from ${schemaName}.dataset_transfer_log 
               WHERE datasetid = $1`;
-    Logger.info({
-      message: "getDatasetIngestionReportTransferLog",
-    });
+    Logger.info({ message: "getDatasetIngestionReportTransferLog" });
 
     DB.executeQuery(searchQuery, [id])
       .then((response) => {
@@ -115,9 +111,7 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
     const userId = req.headers["userid"];
     const searchQuery = `SELECT "DatasetName", "Vendor",vend_id, "TransferDate", "FileName", datasetname, "FileTransferStatus", "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords", "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate", "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue", "DownloadStart", "ProcessStart", "VendorContactInformation", "DateLastChecked", "DateofLastSuccessfulProcess", "ExpectedDateofNextTransfer", "ExpectedTransferFrequency", "SourceOrigin", "DataFlowName", "DataPackageNamingConvention", incincremental, postingestionissues, recordswithissues, total_records, incpostingestionissues, increcordswithissues, inctotal_records, inctotalincrementalfilestransferred, incfiles_not_ingested, incfileswithissues, inctotalfilesingested, fst_prd_file_recvd, dataflowid, datapackageid, datasetid, "DatasetStatus" from ${schemaName}.dataset_stat_current 
                 WHERE datasetid = $1`;
-    Logger.info({
-      message: "getDatasetIngestionReportMetrics",
-    });
+    Logger.info({ message: "getDatasetIngestionReportMetrics" });
 
     DB.executeQuery(searchQuery, [id])
       .then(async (response) => {
@@ -208,9 +202,7 @@ exports.getDatasetIssueTypes = (req, res) => {
     const id = req.params.datasetid;
     const searchQuery = `SELECT incdatasetid as datasetid, incremental, "incIngestionIssueType" as "incrementalIssueType", "incTotalNoOfIssuess" as "incrementalTotalIssues", "cumIngestionIssueType" as "cummulativeIssueType", "cumTotalNoOfIssuess" as "cummulativeTotalIssues", ingestionissuetype from ${schemaName}.dataset_issue_summary 
                 WHERE incdatasetid = $1`;
-    Logger.info({
-      message: "getDatasetIssueTypes",
-    });
+    Logger.info({ message: "getDatasetIssueTypes" });
 
     DB.executeQuery(searchQuery, [id])
       .then((response) => {
@@ -240,9 +232,7 @@ exports.getFileTransferHistory = (req, res) => {
     const searchQuery = `SELECT count(datasetid) OVER() AS total_transfered, dataflowid, executionid, "VERSION", datapackageid, datasetid, mnemonicfile, datapackagename, datasetname, datasettype, processtype, "user", downloadstatus, downloadstarttime, downloadendtime, processstatus, processstarttime, processendtime, downloadtrnx, processtrnx, filerpath, lastsucceeded, lastattempted, failurecat, refreshtimestamp, stage, fst_prd_file_recvd, deleted_records, modified_records, new_records from ${schemaName}.transaction_summary
               WHERE datasetid = $1 and lastsucceeded BETWEEN NOW() - INTERVAL '${dayFilter} days' AND NOW() order by lastsucceeded desc limit $2 `;
     //  and lastattempted BETWEEN NOW() - INTERVAL '${dayFilter} days' AND NOW()
-    Logger.info({
-      message: "getFileTransferHistory",
-    });
+    Logger.info({ message: "getFileTransferHistory" });
 
     DB.executeQuery(searchQuery, [id, page])
       .then((response) => {

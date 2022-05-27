@@ -70,7 +70,7 @@ const packageLevelInsert = async (
           ) {
           } else {
             msg.push({
-              text: " Package type's Supported values : 7Z, ZIP, RAR, SAS ",
+              text: " Package type's supported values : 7Z, ZIP, RAR, SAS ",
             });
             status = false;
           }
@@ -121,7 +121,7 @@ const packageLevelInsert = async (
         ) {
         } else {
           msg.push({
-            text: " In JDBC noPackageConfig, active should be True ",
+            text: " In jdbc no package config, active should be true ",
           });
           status = false;
         }
@@ -280,7 +280,7 @@ const packageLevelInsert = async (
                 // console.log(val.key, val.value);
               } else {
                 msg.push({
-                  text: " customQuery fields should be Blank ",
+                  text: " Custom query fields should be blank ",
                 });
               }
 
@@ -293,7 +293,7 @@ const packageLevelInsert = async (
                 ) {
                 } else {
                   msg.push({
-                    text: " column count is required and data type should be Number ",
+                    text: " Column count is required and data type should be number ",
                   });
                   status = false;
                 }
@@ -306,7 +306,7 @@ const packageLevelInsert = async (
               ) {
               } else {
                 msg.push({
-                  text: " Data Set Level, External Id  is required and data type should be string or Number ",
+                  text: " Dataset level, external id is required and data type should be string or number ",
                 });
                 status = false;
               }
@@ -409,7 +409,7 @@ const packageLevelInsert = async (
                 dsObj.timestamp = ts;
                 dsObj.externalId = obj.externalID;
                 dsObj.datasetid = dsUid;
-                dsObj.action = "Data set created successfully.";
+                dsObj.action = "Dataset created successfully.";
                 ResponseBody.data_sets.push(dsObj);
 
                 await DB.executeQuery(
@@ -577,7 +577,7 @@ const packageLevelInsert = async (
                 ) {
                 } else {
                   msg.push({
-                    text: " Custom Sql  is required  ",
+                    text: " Custom sql is required  ",
                   });
                   status = false;
                 }
@@ -591,13 +591,13 @@ const packageLevelInsert = async (
                   if (obj.tableName.length <= 255) {
                   } else {
                     msg.push({
-                      text: " Table Name  Max of 255 characters  ",
+                      text: " Table name max of 255 characters  ",
                     });
                     status = false;
                   }
                 } else {
                   msg.push({
-                    text: " Table Name  is required ",
+                    text: " Table name is required ",
                   });
                   status = false;
                 }
@@ -610,7 +610,7 @@ const packageLevelInsert = async (
                   ) {
                   } else {
                     msg.push({
-                      text: " offsetColumn  is required and data type should be string ",
+                      text: " OffsetColumn is required and data type should be string ",
                     });
                     status = false;
                   }
@@ -626,7 +626,7 @@ const packageLevelInsert = async (
                 ) {
                 } else {
                   msg.push({
-                    text: " column count is required and data type should be Number ",
+                    text: " Column count is required and data type should be number ",
                   });
                   status = false;
                 }
@@ -639,7 +639,7 @@ const packageLevelInsert = async (
               ) {
               } else {
                 msg.push({
-                  text: " Data Set Level, External Id  is required and data type should be string or Number ",
+                  text: " Dataset level, external id  is required and data type should be string or number ",
                 });
                 status = false;
               }
@@ -741,7 +741,7 @@ const packageLevelInsert = async (
                 dsObj.timestamp = ts;
                 dsObj.externalId = obj.externalID;
                 dsObj.datasetid = dsUid;
-                dsObj.action = "Data set created successfully.";
+                dsObj.action = "Dataset created successfully.";
                 ResponseBody.data_sets.push(dsObj);
 
                 await DB.executeQuery(
@@ -862,7 +862,7 @@ const packageLevelInsert = async (
       }
     } else {
       msg.push({
-        text: " Data Package, Level External Id  is required and data type should be string or Number ",
+        text: " Datapackage, level external id  is required and data type should be string or number ",
       });
       status = false;
       return { validate: msg, status: status };
@@ -977,7 +977,7 @@ const datasetLevelInsert = async (
       ) {
       } else {
         msg.push({
-          text: " Data Set Level, External Id  is required and data type should be string or Number ",
+          text: " Dataset level, external id is required and data type should be string or number ",
         });
         status = false;
       }
@@ -991,7 +991,7 @@ const datasetLevelInsert = async (
         ) {
         } else {
           msg.push({
-            text: " column count is required and data type should be Number ",
+            text: " Column count is required and data type should be number ",
           });
           status = false;
         }
@@ -1260,7 +1260,7 @@ const datasetLevelInsert = async (
         ) {
         } else {
           msg.push({
-            text: " Custom Sql  is required  ",
+            text: " Custom sql is required  ",
           });
           status = false;
         }
@@ -1274,7 +1274,7 @@ const datasetLevelInsert = async (
           if (obj.tableName.length <= 255) {
           } else {
             msg.push({
-              text: " Table Name  Max of 255 characters  ",
+              text: " Table name max of 255 characters  ",
             });
             status = false;
           }
@@ -1293,7 +1293,7 @@ const datasetLevelInsert = async (
           ) {
           } else {
             msg.push({
-              text: " offsetColumn  is required and data type should be string ",
+              text: " OffsetColumn is required and data type should be string ",
             });
             status = false;
           }
@@ -1309,7 +1309,7 @@ const datasetLevelInsert = async (
         ) {
         } else {
           msg.push({
-            text: " column count is required and data type should be Number ",
+            text: " Column count is required and data type should be number ",
           });
           status = false;
         }
@@ -1322,7 +1322,7 @@ const datasetLevelInsert = async (
       ) {
       } else {
         msg.push({
-          text: " Data Set Level, External Id  is required and data type should be string or Number ",
+          text: " Dataset level, external id is required and data type should be string or number ",
         });
         status = false;
       }
@@ -1684,7 +1684,7 @@ const dataflowUpdate = async (data, externalID, DFId, version) => {
           if (data[key].length <= 30) {
           } else {
             msg.push({
-              text: ` Description length , Max of 30 characters `,
+              text: ` Description length, max of 30 characters `,
             });
             status = false;
           }
@@ -1851,7 +1851,7 @@ const packageUpdate = async (
               columnArray.push(dpObj[key]);
             } else {
               msg.push({
-                text: " Package type's is required and Supported values : 7Z, ZIP, RAR, SAS ",
+                text: " Package type's is required and supported values : 7Z, ZIP, RAR, SAS ",
               });
               status = false;
             }
@@ -1883,7 +1883,7 @@ const packageUpdate = async (
               columnArray.push(dpObj[key]);
             } else {
               msg.push({
-                text: " Package type's is required and Supported values : 7Z, ZIP, RAR, SAS ",
+                text: " Package type's is required and supported values : 7Z, ZIP, RAR, SAS ",
               });
               status = false;
             }
@@ -2129,7 +2129,7 @@ const datasetUpdate = async (
           ) {
           } else {
             msg.push({
-              text: ` customQuery fields should be Blank `,
+              text: ` Custom query fields should be blank `,
             });
             status = false;
           }
@@ -2206,7 +2206,7 @@ const datasetUpdate = async (
             // console.log("Fields Validation Success");
           } else {
             msg.push({
-              text: ` This ${key} fields should be Blank`,
+              text: ` This ${key} fields should be blank`,
             });
             status = false;
           }
@@ -2255,7 +2255,7 @@ const datasetUpdate = async (
               // console.log("Fields Validation Success");
             } else {
               msg.push({
-                text: ` Custom Sql is required  `,
+                text: ` Custom sql is required  `,
               });
               status = false;
             }
@@ -2263,7 +2263,7 @@ const datasetUpdate = async (
               // console.log("Fields Validation Success");
             } else {
               msg.push({
-                text: ` Custom Sql Max of 131072 characters  `,
+                text: ` Custom sql max of 131072 characters  `,
               });
               status = false;
             }
@@ -2277,7 +2277,7 @@ const datasetUpdate = async (
               // console.log("Fields Validation Success");
             } else {
               msg.push({
-                text: ` Table Name is required `,
+                text: ` Table name is required `,
               });
               status = false;
             }
@@ -2285,7 +2285,7 @@ const datasetUpdate = async (
               // console.log("Fields Validation Success");
             } else {
               msg.push({
-                text: ` Table Name  Max of 255 characters  `,
+                text: ` Table name max of 255 characters  `,
               });
               status = false;
             }
@@ -2305,7 +2305,7 @@ const datasetUpdate = async (
             ) {
             } else {
               msg.push({
-                text: " offsetColumn  is required and data type should be string ",
+                text: " OffsetColumn is required and data type should be string ",
               });
               status = false;
             }
@@ -2607,7 +2607,7 @@ exports.updateDataFlow = async (req, res) => {
 
       return apiResponse.successResponseWithData(
         res,
-        "Data flow Update successfully.",
+        "Data flow update successfully.",
         ResponseBody
       );
       // return apiResponse.successResponseWithData(res, "Success", rows);

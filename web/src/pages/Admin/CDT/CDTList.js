@@ -201,17 +201,14 @@ export default function CDTList() {
     e.preventDefault();
     const selected = cdtList.find((d) => d.dkId === Id);
     await getENSlists();
-    const { dkName, dkStatus, dkDesc, dkESName } = selected;
-    const picked = ensList.find((d) => d.label === dkESName);
-    // console.log("handleLink", "test", selected, picked);
+    const { dkName, dkStatus, dkDesc, dkESName, dkESNId } = selected;
+    // console.log("handleLink", selected, picked);
     setSelectedRow(Id);
     setENS(dkESName || "");
     setCName(dkName || "");
     setDesc(dkDesc || "");
     setStatus(dkStatus === 1 ? true : false);
-    if (picked) {
-      setENSId(picked.value);
-    }
+    setENSId(dkESNId);
     setViewModal(true);
   };
 
@@ -288,12 +285,14 @@ export default function CDTList() {
       }).then((res) => {
         if (res.status === 1) {
           hideViewData();
-          messageContext.showSuccessMessage("Updated successfully");
+          messageContext.showSuccessMessage(
+            "Clinical Data Type was updated successfully"
+          );
           getData();
         }
         if (res.status === 0) {
           hideViewData();
-          messageContext.showErrorMessage(res.data);
+          messageContext.showErrorMessage(res.message || res.data);
         }
       });
     } else {
@@ -307,7 +306,9 @@ export default function CDTList() {
       }).then((res) => {
         if (res.status === 1) {
           hideViewData();
-          messageContext.showSuccessMessage("Created successfully");
+          messageContext.showSuccessMessage(
+            "Clinical Data Type was saved successfully"
+          );
           getData();
         }
         if (res.status === 0) {
@@ -402,8 +403,8 @@ export default function CDTList() {
                     onChange={(e) => handleChange(e)}
                     fullWidth
                     helperText={
-                      (nameError && "Only Alphanumeric and '_' are allowed") ||
-                      (reqNameError && "Data Type Name shouldn't be empty")
+                      (nameError && "Only alphanumeric and '_' are allowed") ||
+                      (reqNameError && "Data type name shouldn't be empty")
                     }
                     error={nameError || reqNameError}
                   />
@@ -433,7 +434,7 @@ export default function CDTList() {
                     // required
                     size="small"
                     helperText={
-                      reqENSError && "External System shouldn't be empty"
+                      reqENSError && "External system shouldn't be empty"
                     }
                     error={reqENSError}
                   >

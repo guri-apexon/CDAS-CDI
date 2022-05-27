@@ -21,6 +21,8 @@ import {
   getPackagesList,
   addPackageBtnAction,
 } from "../../../../store/actions/DataPackageAction";
+import { updateDFStatus } from "../../../../store/actions/DashboardAction";
+import { activateDF, inActivateDF } from "../../../../services/ApiServices";
 
 import "./LeftPanel.scss";
 
@@ -129,6 +131,21 @@ const LeftPanel = () => {
       </>
     );
   };
+
+  const handleStatusUpdate = async () => {
+    if (status === "Active") {
+      const data = await inActivateDF(dataFlowId);
+      if (data?.active === 0) {
+        dispatch(updateDFStatus(dataFlowId, "Inactive"));
+      }
+    } else {
+      const data = await activateDF(dataFlowId);
+      if (parseInt(data?.active, 10) === 1) {
+        dispatch(updateDFStatus(dataFlowId, "Active"));
+      }
+    }
+  };
+
   return (
     <div className="leftPanel">
       <div className={classes.drawerHeader}>
@@ -143,7 +160,7 @@ const LeftPanel = () => {
             label="Active"
             className="inline-checkbox"
             checked={status === "Active"}
-            // onChange={handleActive}
+            onChange={handleStatusUpdate}
             size="small"
           />
           <ContextMenu />
@@ -183,7 +200,7 @@ const LeftPanel = () => {
             onClick={redirectDataPackage}
             disabled={!isSftp(locationType)}
           >
-            Add Data Package
+            Add data package
           </Button>
         </div>
 

@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 /* eslint-disable eqeqeq */
 import moment from "moment";
 import React from "react";
@@ -283,6 +284,7 @@ export const createAutocompleteFilter =
           showCheckboxes
           limitChips={1}
           filterSelectedOptions={false}
+          enableVirtualization
           blurOnSelect={false}
           clearOnBlur={false}
           disableCloseOnSelect
@@ -393,9 +395,12 @@ export const columnObj = {
   values: "",
   isInitLoad: true,
   isFormatLoad: true,
-  isNotValid: false,
   isHavingColumnName: false,
-  isHavingDataType: false,
+  isEditMode: true,
+};
+
+export const getInitColumnObj = () => {
+  return { ...columnObj };
 };
 
 export const checkHeaders = (data) => {
@@ -432,7 +437,7 @@ export const formatDataNew = (incomingData, protNo) => {
       data.length > 0
         ? data.map((e, i) => {
             const newObj = {
-              uniqueId: `u${i}`,
+              uniqueId: i + 1,
               variableLabel: e[1] || "",
               columnName: e[2] || "",
               position: "",
@@ -445,9 +450,8 @@ export const formatDataNew = (incomingData, protNo) => {
               maxLength: e[9] || "",
               values: e[10] || "",
               isInitLoad: true,
-              isNotValid: false,
               isHavingColumnName: true,
-              isHavingDataType: true,
+              isEditMode: true,
             };
             return newObj;
           })
@@ -486,9 +490,7 @@ export const formatData = (incomingData, protNo) => {
               maxLength: e[9] || "",
               values: e[10] || "",
               isInitLoad: true,
-              isNotValid: false,
               isHavingColumnName: true,
-              isHavingDataType: true,
             };
             return newObj;
           })
@@ -716,4 +718,25 @@ export const scrollIntoView = () => {
     },
     1500
   );
+};
+
+export const extractHostname = (url) => {
+  let hostname;
+  // find & remove protocol (http, ftp, etc.) and get hostname
+  if (url.indexOf("//") > -1) {
+    hostname = url.split("/")[2];
+  } else {
+    hostname = url.split("/")[0];
+  }
+  // find & remove port number
+  hostname = hostname.split(":")[0];
+  // find & remove "?"
+  hostname = hostname.split("?")[0];
+  return hostname;
+};
+
+export const convertLocalFormat = (time) => {
+  return time
+    ? moment.utc(time).local().format("DD-MMM-YYYY hh:mm A")
+    : moment().local().format("DD-MMM-YYYY hh:mm A");
 };

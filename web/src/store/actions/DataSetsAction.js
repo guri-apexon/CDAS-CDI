@@ -52,35 +52,13 @@ export const updateDatasetData = (values) => {
   };
 };
 
-export const createDatasetColumns = (
-  values,
-  dsId,
-  dfId,
-  dpId,
-  userId,
-  isUpdateQuery,
-  nQuery
-) => {
-  return {
-    type: SAVE_DATASET_COLUMNS,
-    values,
-    dsId,
-    dfId,
-    dpId,
-    userId,
-    isUpdateQuery,
-    nQuery,
-  };
-};
-
 export const updateDatasetColumns = (
   values,
   dsId,
   dfId,
   dpId,
   userId,
-  isUpdateQuery,
-  nQuery
+  CDVersionBump
 ) => {
   return {
     type: UPDATE_COLUMNS_DATA,
@@ -89,8 +67,7 @@ export const updateDatasetColumns = (
     dfId,
     dpId,
     userId,
-    isUpdateQuery,
-    nQuery,
+    CDVersionBump,
   };
 };
 

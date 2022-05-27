@@ -124,10 +124,6 @@ const Dashboard = () => {
                 Ingestion Dashboard
               </Typography>
 
-              {/* <div>
-                <button onClick={downloadTemplate}>export template</button>
-              </div> */}
-
               <Tabs value={value} onChange={handleChangeTab} truncate>
                 <Tab label="Monitor" />
                 <Tab label="Data Flows" />
