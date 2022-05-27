@@ -216,8 +216,12 @@ export default function DataflowTab({ updateData }) {
     // console.log(deleteStatus);
     if (deleteStatus?.success) {
       messageContext.showSuccessMessage("Dataflow deleted successfully");
-      await updateData();
+      const removedData = rowData.filter((df) => df.dataFlowId !== dataFlowId);
+      setRowData([...removedData]);
+      setSelectedFlow(null);
+      // await updateData();
     } else {
+      setSelectedFlow(null);
       messageContext.showErrorMessage("Something went wrong");
     }
     setShowHardDelete(false);
@@ -248,7 +252,7 @@ export default function DataflowTab({ updateData }) {
 
   const changeStatusAction = async (e) => {
     if (e.status === "Inactive") {
-      const updateStataus = await activateDF(e.dataFlowId, e.version);
+      const updateStataus = await activateDF(e.dataFlowId);
       console.log(updateStataus, "");
       if (updateStataus?.status === 1) {
         messageContext.showSuccessMessage(updateStataus.message);
@@ -265,7 +269,7 @@ export default function DataflowTab({ updateData }) {
         );
       }
     } else {
-      await inActivateDF(e.dataFlowId, e.version);
+      await inActivateDF(e.dataFlowId);
       await updateData();
       await dispatch(
         updateHeaderCount(
@@ -347,7 +351,7 @@ export default function DataflowTab({ updateData }) {
             history.push("/dashboard/dataflow/create");
           } else {
             messageContext.showErrorMessage(
-              `Please select a study to Add Data flow`
+              `Please select a study to add Data Flow`
             );
           }
         },
@@ -739,7 +743,7 @@ export default function DataflowTab({ updateData }) {
             title={
               // eslint-disable-next-line react/jsx-wrap-multilines
               <>
-                {`${totalRows} ${totalRows > 1 ? "Data Flows" : "Data Flow"}`}
+                {`${totalRows} ${totalRows > 1 ? "data flows" : "data flow"}`}
               </>
             }
             col
@@ -792,7 +796,7 @@ export default function DataflowTab({ updateData }) {
         open={showSyncNow}
         title="Sync Dataflow"
         onClose={hideSyncNow}
-        message="Do you want to proceed with SYNC NOW action?"
+        message="Do you want to proceed with sync now action?"
         buttonProps={[
           { label: "Cancel", onClick: hideSyncNow },
           { label: "Ok", onClick: handleSync },

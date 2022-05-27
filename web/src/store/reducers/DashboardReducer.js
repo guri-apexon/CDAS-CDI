@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import produce from "immer";
 // import moment from "moment";
 
@@ -17,6 +18,7 @@ import {
   GET_PINNED_LIST_FAILURE,
   SELECTED_DATAFLOW,
   UPDATE_HEADER_COUNT,
+  UPDATE_DF_STATUS,
 } from "../../constants";
 
 export const initialState = {
@@ -91,6 +93,23 @@ const DashboardReducer = (state = initialState, action) =>
 
       case GET_PINNED_LIST_FAILURE:
         newState.loading = false;
+        break;
+
+      case UPDATE_DF_STATUS:
+        const updateDF = state.flowData.map((df) => {
+          if (df.dataFlowId === action.dfId) {
+            return {
+              ...df,
+              status: action.newStatus,
+            };
+          }
+          return df;
+        });
+        newState.selectedDataFlow = {
+          ...state.selectedDataFlow,
+          status: action.newStatus,
+        };
+        newState.flowData = updateDF;
         break;
 
       case GET_DATASET_INGESTION_SUMMARY:

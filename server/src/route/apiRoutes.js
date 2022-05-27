@@ -13,7 +13,6 @@ const systemSettingsRoute = require("./settings");
 const CommonController = require("../controller/CommonController");
 
 const router = express.Router();
-// const alother= express.Router();
 
 router.use(
   express.urlencoded({
@@ -21,12 +20,9 @@ router.use(
   })
 );
 
-// router.use("/", alothers);
-
 router.use("/location/", locationRoute);
 router.use("/data-package/", dataPackageRoute);
 router.use("/study/", studyRoute);
-// alothers.use("/study/", studyRoute);
 router.use("/vendor/", vendorRoute);
 router.use("/audit-logs/", AuditLogRoute);
 router.use("/dataflow/", dataFlowRoute);

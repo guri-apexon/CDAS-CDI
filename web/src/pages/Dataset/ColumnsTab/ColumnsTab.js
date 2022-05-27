@@ -74,7 +74,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
         ? datacolumns.map((column, i) => {
             const newObj = {
               dbColumnId: column.columnid,
-              uniqueId: `u${i}`,
+              uniqueId: i + 1,
               variableLabel: column.variable || "",
               columnName: column.name || "",
               position: column.position || "",
@@ -87,10 +87,9 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               maxLength: column.charactermax || "",
               values: column.lov || "",
               isInitLoad: true,
-              isNotValid: false,
               isHavingColumnName: true,
-              isHavingDataType: true,
               isSaved: true,
+              isEditMode: false,
             };
             return newObj;
           })
@@ -104,21 +103,20 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
         ? arr.map((column, i) => {
             const newObj = {
               dbColumnId: column.columnid || "",
-              uniqueId: `u${i}`,
+              uniqueId: i + 1,
               variableLabel: column.varable || "",
               columnName: column.columnName || "",
               format: column.format || "",
               dataType: column.dataType || "",
-              primaryKey: column.primarykey === true ? "Yes" : "No",
-              unique: column.unique === true ? "Yes" : "No",
-              required: column.required === true ? "Yes" : "No",
+              primaryKey: column.primarykey === "true" ? "Yes" : "No",
+              unique: column.unique === "true" ? "Yes" : "No",
+              required: column.required === "true" ? "Yes" : "No",
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
               values: column.lov || "",
               isInitLoad: true,
-              isNotValid: false,
               isHavingColumnName: true,
-              isHavingDataType: true,
+              isEditMode: true,
             };
             return newObj;
           })
@@ -141,7 +139,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
         console.log("newData", newData);
         if (newData?.headerNotMatching) {
           messageContext.showErrorMessage(
-            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+            `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
           );
           handleDelete();
         } else if (newData?.data?.length === 0) {
@@ -155,7 +153,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
         }
       } else {
         messageContext.showErrorMessage(
-          `The Selected File Does Not Match the Template`
+          `The selected file does not match the template`
         );
         handleDelete();
       }

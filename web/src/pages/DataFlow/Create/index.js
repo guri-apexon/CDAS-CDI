@@ -21,7 +21,6 @@ import Modal from "apollo-react/components/Modal";
 import { values } from "lodash";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
-import LeftPanel from "./LeftPanel";
 // eslint-disable-next-line import/no-unresolved
 import Header from "./Header";
 import "../DataFlow.scss";
@@ -33,10 +32,12 @@ import {
   changeFormFieldData,
   hideErrorMessage,
   getLocationByType,
-  addDataFlow,
   setDataflowLocal,
 } from "../../../store/actions/DataFlowAction";
-import { getSQLColumns, resetFTP } from "../../../store/actions/DataSetsAction";
+import {
+  getLocationDetails,
+  resetFTP,
+} from "../../../store/actions/DataSetsAction";
 import DataPackages from "./Datapackage";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
@@ -97,13 +98,19 @@ const DataFlow = ({
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
-  const [FormType, setFormType] = useState("dataflow");
   const [createdDataflow, setCreatedDataflow] = useState(null);
   const [headerValue, setHeaderValue] = useState(1);
+  const messageContext = useContext(MessageContext);
   const [changeLocationRequire, setChangeLocationRequire] = useState(true);
   const [currentStep, setCurrentStep] = useReducer((state, action) => {
-    if (action?.step) return action.step;
-    return action?.prev ? state - 1 : state + 1;
+    let step = state;
+    if (action?.step) {
+      step = action.step;
+    } else {
+      step = action?.prev ? state - 1 : state + 1;
+    }
+    messageContext.setCreateDfConfig({ currentStep: step });
+    return step;
   }, 1);
   const dataFlowData = useSelector((state) => state.dataFlow);
   const {
@@ -115,7 +122,6 @@ const DataFlow = ({
   );
   const [locType, setLocType] = useState("SFTP");
   const [modalLocType, setModalLocType] = useState("SFTP");
-  const messageContext = useContext(MessageContext);
 
   const pullVendorandLocation = () => {
     dispatch(getVendorsData());
@@ -167,13 +173,13 @@ const DataFlow = ({
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
-    // console.log("FormValues", FormValues, selectedCard);
+    console.log("FormValues", FormValues, selectedCard);
     if (
       FormValues &&
       FormValues?.dataflowType &&
       FormValues?.dataStructure &&
-      FormValues?.vendor?.length > 0 &&
-      FormValues?.locationName?.length &&
+      FormValues?.vendor?.vend_id &&
+      FormValues?.locationName?.src_loc_id &&
       FormValues?.description &&
       FormValues?.description !== "" &&
       selectedCard?.protocolnumberstandard !== ""
@@ -185,8 +191,8 @@ const DataFlow = ({
         return false;
       }
       const payload = {
-        vend_id: FormValues.vendor[0],
-        src_loc_id: FormValues.locationName[0],
+        vend_id: FormValues.vendor.vend_id,
+        src_loc_id: FormValues.locationName.src_loc_id,
         dataStructure: FormValues.dataStructure,
         testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
@@ -198,10 +204,9 @@ const DataFlow = ({
         externalSystemName: "CDI",
         dataPackage: [{ dataSet: [] }],
         active: true,
-        vendorName: selectedVendor?.vend_nm,
+        vendorName: FormValues?.vendor?.vend_nm,
       };
       setForm(payload);
-      setFormType("datapackage");
       setCurrentStep();
       dispatch(setDataflowLocal(FormValues));
     } else {
@@ -236,16 +241,14 @@ const DataFlow = ({
       newForm.dataPackage[0] = obj;
       setForm(newForm);
     }
-    setFormType("dataset");
     setCurrentStep();
   };
 
-  const AddDatasetData = (datasetObj) => {
-    console.log("datasetObj", datasetObj);
+  const AddDatasetData = (data) => {
+    const datasetObj = { ...data };
     if (
       datasetObj.datasetName === "" ||
-      datasetObj.clinicalDataType === null ||
-      !datasetObj.clinicalDataType?.length
+      !datasetObj?.clinicalDataType?.datakindid
     ) {
       messageContext.showErrorMessage("Please fill required fields to proceed");
       return false;
@@ -255,11 +258,11 @@ const DataFlow = ({
       datasetObj.incremental = datasetObj.loadType === "Incremental" ? 1 : 0;
     }
     if (datasetObj.clinicalDataType) {
-      const datakindObj = datakindArr.find((x) => {
-        return x.value === datasetObj.clinicalDataType[0];
-      });
+      // const datakindObj = datakindArr.find((x) => {
+      //   return x.value === datasetObj.clinicalDataType.datakindid;
+      // });
+      datasetObj.dataKind = datasetObj?.clinicalDataType?.name;
       delete datasetObj.clinicalDataType;
-      datasetObj.dataKind = datakindObj?.name;
     }
     if (datasetObj.transferFrequency) {
       datasetObj.dataTransferFrequency = datasetObj.transferFrequency;
@@ -269,13 +272,16 @@ const DataFlow = ({
       datasetObj.OverrideStaleAlert = datasetObj.overrideStaleAlert;
       delete datasetObj.overrideStaleAlert;
     }
-    // if (datasetObj.customQuery === "No" && datasetObj.tableName) {
-    //   dispatch(getSQLColumns(datasetObj.tableName));
-    // }
     if (typeof datasetObj.headerRowNumber !== "undefined") {
       setHeaderValue(datasetObj.headerRowNumber);
     }
-
+    if (datasetObj.tableName?.length) {
+      // eslint-disable-next-line prefer-destructuring
+      datasetObj.tableName = datasetObj.tableName[0];
+    }
+    if (datasetObj.offsetColumn?.value) {
+      datasetObj.offsetColumn = datasetObj.offsetColumn?.value;
+    }
     if (datasetObj.customQuery === "Yes") {
       if (!datasetObj.sqlReady) {
         messageContext.showErrorMessage("Please hit previewSql to proceed");
@@ -345,7 +351,6 @@ const DataFlow = ({
         break;
       case 5:
         submitFinalForm();
-        // setCurrentStep({ step: 3 });
         break;
       default:
         break;
@@ -367,6 +372,20 @@ const DataFlow = ({
       AddColumnDefinitions(columnDefinition);
     }
   }, [messageContext?.dataflowObj?.columnDefinition]);
+
+  useEffect(() => {
+    if (
+      selectedLocation?.src_loc_id &&
+      selectedLocation?.loc_typ !== ("SFTP" || "FTPS")
+    ) {
+      dispatch(getLocationDetails(selectedLocation?.src_loc_id));
+    }
+  }, [selectedLocation]);
+
+  useEffect(() => {
+    const step = messageContext?.createDfConfig?.currentStep || 1;
+    if (step !== currentStep) setCurrentStep({ step });
+  }, [messageContext?.createDfConfig?.currentStep]);
 
   const RenderForm = () => {
     const formEl = (
@@ -425,6 +444,7 @@ const DataFlow = ({
     pullVendorandLocation();
     dispatch(resetFTP());
     return () => {
+      messageContext.setCreateDfConfig({ currentStep: 0 });
       messageContext?.resetDataflow();
     };
   }, []);
@@ -445,14 +465,7 @@ const DataFlow = ({
         onOpen={handleOpen}
         open={isPanelOpen}
         width={20}
-      >
-        {/* <LeftPanel
-          protId={protId}
-          packages={myform.DataPackage}
-          setFormType={setFormType}
-          myform={myform}
-        /> */}
-      </Panel>
+      />
       <Panel className={classes.rightPanelExtended} width="100%" hideButton>
         <main className={classes.content}>
           <div className="content">

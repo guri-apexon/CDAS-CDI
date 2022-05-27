@@ -36,6 +36,39 @@ async function checkLocationExists(
   return res.rowCount;
 }
 
+exports.locationDetails = async (req, res) => {
+  try {
+    Logger.info({ message: "locationDetails" });
+    const locationId = req.params.locationId;
+
+    const query = `	select extrnl_sys_nm as "externalSystem", ld.cnn_drvr as "driverName", sl.loc_typ as "locationType", usr_nm as "connectionUserName", pswd, cnn_url as "connectionUrl" from  ${schemaName}.source_location sl inner join  ${schemaName}.location_details ld on sl.loc_typ = ld.loc_typ where sl.src_loc_id=$1`;
+    const { rows } = await DB.executeQuery(query, [locationId]);
+    let result = {};
+    if (rows[0].pswd === "Yes") {
+      const credentials = await helper.readVaultData(locationId);
+      result = {
+        ...rows[0],
+        connectionPassword: credentials?.password,
+      };
+    } else {
+      result = {
+        ...rows[0],
+        connectionPassword: "",
+      };
+    }
+
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      result
+    );
+  } catch (err) {
+    Logger.error("catch :locationDetails");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
 exports.checkLocationExistsInDataFlow = async function (req, res) {
   try {
     const locId = req.params.location_id;
@@ -248,9 +281,7 @@ exports.getServiceOwnersList = function (req, res) {
     let select = `call_back_url_id as value, serv_ownr as label`;
     let searchQuery = `SELECT ${select} from ${schemaName}.call_back_urls where actv_flg=1 order by serv_ownr asc`;
     let dbQuery = DB.executeQuery(searchQuery);
-    Logger.info({
-      message: "serviceOwnerList",
-    });
+    Logger.info({ message: "serviceOwnerList" });
 
     dbQuery
       .then((response) => {

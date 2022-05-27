@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
-// import CssBaseline from "@material-ui/core/CssBaseline";
 import Panel from "apollo-react/components/Panel";
 import { useDispatch, useSelector, connect } from "react-redux";
 import { submit, reset, getFormValues } from "redux-form";
@@ -26,6 +25,7 @@ import {
   getDataFlowDetail,
 } from "../../../store/actions/DataFlowAction";
 
+import { getLocationDetails } from "../../../store/actions/DataSetsAction";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
 import { getUserInfo } from "../../../utils";
@@ -74,14 +74,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const dataFlowData = useSelector((state) => state.dataFlow);
   const dashboardData = useSelector((state) => state.dashboard);
   const dataSetCount = dashboardData?.selectedDataFlow?.dataSets;
-  const {
-    selectedLocation,
-    createTriggered,
-    error,
-    loading,
-    dataFlowdetail,
-    updated,
-  } = dataFlowData;
+  const { selectedLocation, createTriggered, error, loading, dataFlowdetail } =
+    dataFlowData;
   const [locType, setLocType] = useState("");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
@@ -100,13 +94,14 @@ const DataFlow = ({ FormValues, dashboard }) => {
   ];
 
   const changeLocationData = (value) => {
-    if (selectedLocation && value === selectedLocation.value) return;
-    const locationsRec = dataFlowData.locations?.records ?? [];
-    const location = locationsRec?.find(
-      // eslint-disable-next-line eqeqeq
-      (loc) => value == loc.src_loc_id
-    );
-    dispatch(updateSelectedLocation(location));
+    // console.log("location", value);
+    if (selectedLocation && value?.value === selectedLocation.value) return;
+    // const locationsRec = dataFlowData.locations?.records ?? [];
+    // const location = locationsRec?.find(
+    //   // eslint-disable-next-line eqeqeq
+    //   (loc) => value == loc.src_loc_id
+    // );
+    dispatch(updateSelectedLocation(value));
   };
 
   const pullVendorandLocation = () => {
@@ -123,6 +118,16 @@ const DataFlow = ({ FormValues, dashboard }) => {
       dispatch(getLocationByType(locType));
     }
   }, [createTriggered]);
+
+  useEffect(() => {
+    if (
+      selectedLocation?.value &&
+      (selectedLocation?.loc_typ !== ("SFTP" || "FTPS") ||
+        dashboardData?.selectedDataFlow?.locationType !== ("SFTP" || "FTPS"))
+    ) {
+      dispatch(getLocationDetails(selectedLocation?.value));
+    }
+  }, [selectedLocation]);
 
   useEffect(() => {
     if (locType) dispatch(getLocationByType(locType));
@@ -176,8 +181,11 @@ const DataFlow = ({ FormValues, dashboard }) => {
       firstFileDate = moment(firstFileDate).isValid()
         ? moment(firstFileDate).format("DD-MMM-yyyy")
         : null;
+
       const payload = {
         vendorID: FormValues.vendors[0],
+        vendorName: "",
+        dataflowName: "",
         locationName: selectedLocation.value,
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.locationType,

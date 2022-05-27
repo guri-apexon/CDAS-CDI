@@ -15,7 +15,6 @@ import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import { ReactComponent as DataPackageIcon } from "../../../../components/Icons/datapackage.svg";
 import "./index.scss";
-// import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, isSftp, validateFields } from "../../../../utils";
 import { packageComprTypes } from "../../../../utils/constants";
 // import {
@@ -26,7 +25,7 @@ import { packageComprTypes } from "../../../../utils/constants";
 const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
   const [showForm, setShowForm] = useState(true);
   const [configShow, setConfigShow] = useState(false);
-  const [compression, setCompression] = useState("not_compressed");
+  const [compression, setCompression] = useState("");
   const [namingConvention, setNamingConvention] = useState("");
   const [packagePassword, setPackagePassword] = useState("");
   const [sftpPath, setSftpPath] = useState("");
@@ -34,13 +33,20 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
   const [notMatchedType, setNotMatchedType] = useState(false);
   const userInfo = getUserInfo();
 
+  const resetForm = () => {
+    setNamingConvention("");
+    setPackagePassword("");
+    setSftpPath("");
+    setCompression("");
+    setConfigShow(false);
+    setNotMatchedType(false);
+  };
   const showConfig = (e, checked) => {
     setConfigShow(checked);
+    if (!checked) {
+      resetForm();
+    }
   };
-  //   const resetForm = () => {
-  //     setConfigShow(false);
-  //     setShowForm(false);
-  //   };
   useImperativeHandle(ref, () => ({
     // eslint-disable-next-line consistent-return
     submitForm: () => {
@@ -55,7 +61,7 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
         });
         return false;
       }
-      if (namingConvention !== "") {
+      if (namingConvention !== "" || compression) {
         const validated = validateFields(namingConvention, compression);
         setNotMatchedType(!validated);
         if (!validated) return false;
@@ -103,7 +109,12 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
                   value={compression}
                   size="small"
                   placeholder="Select type..."
-                  onChange={(e) => setCompression(e.target.value)}
+                  onChange={(e) => {
+                    setCompression(e.target.value);
+                    if (e.target.value === "") {
+                      setNotMatchedType(false);
+                    }
+                  }}
                   className="mb-20 package-type"
                 >
                   {packageComprTypes.map((type, i) => (
@@ -122,7 +133,12 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
                   size="small"
                   fullWidth
                   helperText="File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
-                  onChange={(e) => setNamingConvention(e.target.value)}
+                  onChange={(e) => {
+                    setNotMatchedType(
+                      !validateFields(e.target.value, compression)
+                    );
+                    setNamingConvention(e.target.value);
+                  }}
                 />
                 <TextField
                   type="password"
@@ -157,7 +173,7 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
                 size="small"
                 onClick={setShowForm}
               >
-                Add Data Package
+                Add data package
               </Button>
             </Box>
           </>

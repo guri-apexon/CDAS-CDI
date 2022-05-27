@@ -216,25 +216,23 @@ export const syncNowDataFlow = async ({ version, dataFlowId }) => {
   }
 };
 
-export const activateDF = async (dataFlowId, versionNo) => {
+export const activateDF = async (dataFlowId) => {
   try {
     const res = await axios.post(`${baseURL}/${ACTIVATEDF}`, {
       dataFlowId,
       userId,
-      versionNo,
     });
-    return res.data || [];
+    return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);
   }
 };
 
-export const inActivateDF = async (dataFlowId, versionNo) => {
+export const inActivateDF = async (dataFlowId) => {
   try {
     const res = await axios.post(`${baseURL}/${INACTIVATE}`, {
       dataFlowId,
       userId,
-      versionNo,
     });
     return res.data?.data || [];
   } catch (err) {
@@ -381,25 +379,17 @@ export const userLogOut = () => {
     });
 };
 
-export const deleteCD = async (
-  columnId,
-  dsId,
-  dpId,
-  dfId,
-  isUpdateQuery,
-  nQuery
-) => {
+export const deleteCD = async (columnId, dsId, dpId, dfId, CDVersionBump) => {
   try {
     const res = await axios.post(`${baseURL}/${COLUMNSAPI}/delete`, {
       columnId,
       dsId,
       dfId,
       dpId,
-      isUpdateQuery,
-      nQuery,
       userId,
+      CDVersionBump,
     });
-    return res.data?.data || [];
+    return res.data?.status === 1;
   } catch (err) {
     return console.log("Error", err);
   }

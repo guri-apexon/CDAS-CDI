@@ -173,7 +173,6 @@ const Dataset = (props, ref) => {
   };
 
   useEffect(() => {
-    console.log("currentStep", currentStep);
     if (currentStep === 5 || currentStep === 4) {
       if (
         isSftp(locationType) ||

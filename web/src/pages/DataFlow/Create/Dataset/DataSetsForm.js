@@ -1,13 +1,8 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch } from "react-redux";
-import {
-  reduxForm,
-  getFormValues,
-  formValueSelector,
-  change,
-} from "redux-form";
+import { reduxForm, getFormValues, formValueSelector } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
 import FixedBar from "apollo-react/components/FixedBar";
@@ -15,7 +10,7 @@ import Radio from "apollo-react/components/Radio";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
 import {
-  ReduxFormAutocomplete,
+  ReduxFormAutocompleteV2,
   ReduxFormRadioGroup,
   ReduxFormSwitch,
   ReduxFormSelect,
@@ -84,9 +79,11 @@ const styles = {
 
 const DataSetsFormBase = (props) => {
   const dispatch = useDispatch();
+  const [cdtValue, setCdtValue] = useState(null);
   const {
     handleSubmit,
     classes,
+    change,
     datakind,
     formValues,
     defaultDelimiter,
@@ -95,9 +92,21 @@ const DataSetsFormBase = (props) => {
     defaultHeaderRowNumber,
     defaultFooterRowNumber,
     defaultLoadType,
-    values,
+    initialValues,
   } = props;
   // const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
+
+  const onChangeCDT = (values) => {
+    console.log("cdt", values);
+    setCdtValue(values);
+    change("clinicalDataType", values);
+  };
+
+  useEffect(() => {
+    if (initialValues?.clinicalDataType) {
+      setCdtValue(initialValues?.clinicalDataType);
+    }
+  }, [initialValues]);
 
   const setDefaultValues = (e) => {
     const fileValue = e.target.value;
@@ -149,7 +158,7 @@ const DataSetsFormBase = (props) => {
             style={{ paddingLeft: 0, border: "none" }}
           >
             <ReduxFormSwitch
-              label="Dataset Active"
+              label="Dataset active"
               name="active"
               className="MuiSwitch"
               size="small"
@@ -268,12 +277,17 @@ const DataSetsFormBase = (props) => {
               </div>
             </Grid>
             <Grid item md={6}>
-              <ReduxFormAutocomplete
+              <ReduxFormAutocompleteV2
                 name="clinicalDataType"
                 autoSelect
                 id="clinicalDataType"
                 label="Clinical Data Type"
                 source={datakind}
+                input={{
+                  value: cdtValue,
+                  onChange: onChangeCDT,
+                }}
+                enableVirtualization
                 className="smallSize_autocomplete"
                 variant="search"
                 singleSelect

@@ -1,10 +1,11 @@
+/* eslint-disable prefer-destructuring */
 /* eslint-disable eqeqeq */
 import moment from "moment";
 import React from "react";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import { TextField } from "apollo-react/components/TextField/TextField";
-import { IDLE_LOGOUT_TIME } from "./constants";
+import { DATA_TYPES, IDLE_LOGOUT_TIME } from "./constants";
 // import { hive2CDH, hive2CDP, impala, oracle, SQLServer } from "../constants";
 
 export const getCookie = (key) => {
@@ -283,6 +284,7 @@ export const createAutocompleteFilter =
           showCheckboxes
           limitChips={1}
           filterSelectedOptions={false}
+          enableVirtualization
           blurOnSelect={false}
           clearOnBlur={false}
           disableCloseOnSelect
@@ -393,9 +395,12 @@ export const columnObj = {
   values: "",
   isInitLoad: true,
   isFormatLoad: true,
-  isNotValid: false,
   isHavingColumnName: false,
-  isHavingDataType: false,
+  isEditMode: true,
+};
+
+export const getInitColumnObj = () => {
+  return { ...columnObj };
 };
 
 export const checkHeaders = (data) => {
@@ -432,7 +437,7 @@ export const formatDataNew = (incomingData, protNo) => {
       data.length > 0
         ? data.map((e, i) => {
             const newObj = {
-              uniqueId: `u${i}`,
+              uniqueId: i + 1,
               variableLabel: e[1] || "",
               columnName: e[2] || "",
               position: "",
@@ -445,9 +450,8 @@ export const formatDataNew = (incomingData, protNo) => {
               maxLength: e[9] || "",
               values: e[10] || "",
               isInitLoad: true,
-              isNotValid: false,
               isHavingColumnName: true,
-              isHavingDataType: true,
+              isEditMode: true,
             };
             return newObj;
           })
@@ -486,9 +490,7 @@ export const formatData = (incomingData, protNo) => {
               maxLength: e[9] || "",
               values: e[10] || "",
               isInitLoad: true,
-              isNotValid: false,
               isHavingColumnName: true,
-              isHavingDataType: true,
             };
             return newObj;
           })
@@ -659,7 +661,7 @@ export const dateFilterCustom = (accessor) => (row, filters) => {
   );
 };
 
-export const isSftp = (str) => {
+export const isSftp = (str = "") => {
   return ["SFTP", "FTPS"].includes(str.toUpperCase());
 };
 
@@ -678,6 +680,22 @@ export const goToCore = () => {
     window.location.href = process.env.REACT_APP_CORE_URL;
 };
 
+export const dateTypeForJDBC = (datatype) => {
+  const type = datatype?.toUpperCase();
+  if (DATA_TYPES.alphanumeric.includes(type)) {
+    return "Alphanumeric";
+  }
+  if (DATA_TYPES.numeric.includes(type)) {
+    return "Numeric";
+  }
+  if (DATA_TYPES.date.includes(type)) {
+    return "Date";
+  }
+  return "Alphanumeric";
+};
+export const parseBool = (b) => {
+  return !/^(false|0)$/i.test(b) && !!b;
+};
 export const setIdleLogout = (logout) => {
   let time;
   // DOM Events
@@ -690,4 +708,35 @@ export const setIdleLogout = (logout) => {
   document.onmousemove = resetTimer;
   document.onkeypress = resetTimer;
   window.onload = resetTimer;
+};
+
+export const scrollIntoView = () => {
+  const body = document.querySelector("#root");
+  body.scrollIntoView(
+    {
+      behavior: "smooth",
+    },
+    1500
+  );
+};
+
+export const extractHostname = (url) => {
+  let hostname;
+  // find & remove protocol (http, ftp, etc.) and get hostname
+  if (url.indexOf("//") > -1) {
+    hostname = url.split("/")[2];
+  } else {
+    hostname = url.split("/")[0];
+  }
+  // find & remove port number
+  hostname = hostname.split(":")[0];
+  // find & remove "?"
+  hostname = hostname.split("?")[0];
+  return hostname;
+};
+
+export const convertLocalFormat = (time) => {
+  return time
+    ? moment.utc(time).local().format("DD-MMM-YYYY hh:mm A")
+    : moment().local().format("DD-MMM-YYYY hh:mm A");
 };

@@ -135,7 +135,7 @@ exports.getdiffKeys = (newObj, oldObj) => {
   return {};
 };
 
-exports.isSftp = (str) => {
+exports.isSftp = (str = "") => {
   return ["SFTP", "FTPS"].includes(str.toUpperCase());
 };
 
@@ -175,4 +175,24 @@ exports.createCustomSql = (clname, tableName, condition) => {
   }`;
 
   return sqlQuery;
+};
+exports.formatDBColumns = (data) => {
+  if (!data) return [];
+  return data?.map((d) => {
+    return {
+      columnName: d.columnName || d.Field || d.col_name,
+      datatype: d.datatype || d.Type || d.data_type,
+      primaryKey: d.primaryKey || d.Key === "PRI",
+      required: d.required || d.Null === "NO",
+      unique: d.unique || false,
+    };
+  });
+};
+exports.formatDBTables = (data) => {
+  if (!data) return [];
+  return data?.map((d) => {
+    return {
+      tableName: d.tableName || d.tab_name || "",
+    };
+  });
 };

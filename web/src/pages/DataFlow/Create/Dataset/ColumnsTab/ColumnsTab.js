@@ -67,7 +67,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
           setImportedData(dataParse);
         } else {
           messageContext.showErrorMessage(
-            `The Selected file does not match the template`
+            `The selected file does not match the template`
           );
           setSelectedFile([]);
         }
@@ -88,14 +88,13 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
               position: column.position || "",
               format: column.format || "",
               dataType: column.datatype || "",
-              primaryKey: column.primarykey === 1 ? "Yes" : "No",
+              primaryKey: column.primaryKey ? "Yes" : "No",
               unique: column.unique === 1 ? "Yes" : "No",
               required: column.required === 1 ? "Yes" : "No",
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
               values: column.lov || "",
               isInitLoad: true,
-              isNotValid: false,
               isHavingColumnName: true,
             };
             return newObj;
@@ -116,7 +115,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
               columnName: column.columnName || "",
               format: column.format || "",
               dataType: column.dataType || "",
-              primaryKey: column.primarykey === true ? "Yes" : "No",
+              primaryKey: column.primaryKey ? "Yes" : "No",
               unique: column.unique === true ? "Yes" : "No",
               required: column.required === true ? "Yes" : "No",
               minLength: column.charactermin || "",
@@ -124,7 +123,6 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
               position: 0,
               values: column.lov || "",
               isInitLoad: true,
-              isNotValid: false,
               isHavingColumnName: true,
             };
             return newObj;
@@ -152,7 +150,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
           setIsImportReady(true);
         } else {
           messageContext.showErrorMessage(
-            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+            `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
           );
           handleDelete();
         }

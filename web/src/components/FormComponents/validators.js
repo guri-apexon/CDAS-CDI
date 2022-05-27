@@ -10,17 +10,20 @@ export const checkRequired = (value) => {
 };
 
 export const checkValidQuery = (value) => {
+  if (!value) {
+    return "Please add your query to proceed.";
+  }
   if (value !== "" && value?.toLowerCase().trim().indexOf("select *") > -1) {
-    return "Custom SQL Query should not contain select *";
+    return "Custom SQL query should not contain select *";
   }
   return false;
 };
 
 export const checkfilterCondition = (value) => {
+  if (!value) {
+    return false;
+  }
   if (!value?.toLowerCase().trim().startsWith("where")) {
-    if (value === "" || value === undefined) {
-      return false;
-    }
     return "Filter condition should start with WHERE";
   }
   return false;
@@ -71,7 +74,7 @@ export const checkExceSupport = (value, fileType) => {
     !regexpFixed.test(value.toLowerCase()) &&
     fileType.toLowerCase() === "fixed width"
   ) {
-    msg = "Only .txt formats are Supported";
+    msg = "Only .txt formats are supported";
   }
   return msg;
 };
@@ -81,23 +84,50 @@ export const checkAlphaNumeric = (value, key = "") => {
   if (key === "format") {
     return false;
   }
-  if (value && value.search(regexp) === -1) {
+  if (value && value.toString().search(regexp) === -1) {
     return "Only alphanumeric format values are allowed";
   }
   return false;
 };
 
+export const hasSpecialCHar = (str = "") => {
+  return /[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(str);
+};
+
 export const checkAlphaNumericFileName = (value) => {
   const regexp = /^[A-Za-z0-9-_.%@&()!#~;+,{}<>[\] \b]+$/;
-  const regexp2 = /[^hmsdyinx%-\s]/gi;
+  const regexp2 = /[^hmsdyinx_%/-\s]/gi;
   const regexp1 = /\<(.*?)\>/g;
   const matched = value.match(regexp1);
+
+  const regYear = /y/g;
+  const regDay = /d/g;
+  const regSecond = /s/g;
+  const regMin = /i/g;
+  const regMonth = /m/g;
 
   const inValid = (element) => element === true;
 
   if (matched?.length > 0) {
     const allValidation = matched.map((e) => {
       const ele = e.substr(1, e.length - 2).toLowerCase();
+      if (
+        !ele ||
+        ele === "-" ||
+        (ele.includes("%") && !ele.endsWith("%")) ||
+        (ele.includes("d") && ele.match(regDay)?.length !== 2) ||
+        (ele.includes("y") && ele.match(regYear)?.length !== 4) ||
+        (ele.includes("s") && ele.match(regSecond)?.length !== 2) ||
+        (ele.includes("i") &&
+          (ele.match(regMin)?.length !== 1 ||
+            ele.match(regMonth)?.length !== 1))
+        // ||
+        // (ele.includes("m") &&
+        //   (ele.match(regMonth)?.length !== 2 ||
+        //     ele.match(regMonth)?.length !== 3))
+      ) {
+        return true;
+      }
       return !!(ele && ele.match(regexp2));
     });
     if (allValidation.some(inValid)) {
@@ -148,8 +178,8 @@ export const checkCharacterLength = (value, key, minLength, maxLength) => {
 
 export const checkFormat = (value, key = "", dataType = "") => {
   if (dataType === "Alphanumeric") {
-    const regexp = /^[a-zA-Z0-9-_]+$/;
-    if (value !== "" && !regexp.test(value)) {
+    const regexp = /([$]|\\|\s)/gm;
+    if (value !== "" && regexp.test(value)) {
       return (
         key === "format" &&
         "Only alphanumeric format values are allowed for alphanumeric data type"
@@ -201,31 +231,29 @@ export const removeUndefined = (arr) =>
 
 export const validateRow = (row) => {
   const {
-    isHavingColumnName,
     minLength,
     maxLength,
     dataType,
     columnName,
-    isNotValid,
+    primaryKey,
+    required,
+    format,
   } = row;
 
   const min = Number.parseInt(minLength, 10);
   const max = Number.parseInt(maxLength, 10);
-
-  if (isNotValid) {
+  if (
+    !dataType ||
+    !columnName ||
+    // (columnName && hasSpecialCHar(columnName)) ||
+    (dataType && format && checkFormat(format, "format", dataType)) ||
+    ((minLength || maxLength) &&
+      (Number.isNaN(min) ||
+        Number.isNaN(max) ||
+        !(!Number.isNaN(min) && !Number.isNaN(max) && min <= max))) ||
+    (primaryKey?.toLowerCase() === "yes" && required?.toLowerCase() === "no")
+  ) {
     return false;
   }
-
-  let check = isHavingColumnName;
-  if (!dataType || !columnName) {
-    check = false;
-  } else if (
-    (minLength || maxLength) &&
-    (Number.isNaN(min) || Number.isNaN(max))
-  ) {
-    check = false;
-  } else if (isHavingColumnName && !Number.isNaN(min) && !Number.isNaN(max)) {
-    check = min < max;
-  }
-  return check;
+  return true;
 };
