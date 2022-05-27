@@ -291,9 +291,9 @@ exports.statusUpdate = async (req, res) => {
   }
 };
 
-const $insertLocation = `INSERT into ${schemaName}.source_location (src_loc_id, loc_typ, ip_servr, port, cnn_url, data_strc, active, extrnl_sys_nm, loc_alias_nm, usr_nm, pswd, insrt_tm, updt_tm, db_nm, external_id) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`;
+const $insertLocation = `INSERT into ${schemaName}.source_location (insrt_tm, loc_alias_nm, loc_typ, data_strc, extrnl_sys_nm, active, usr_nm, pswd, ip_servr, cnn_url, port, db_nm, external_id) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`;
 const $selectLocation = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm FROM ${schemaName}.source_location WHERE src_loc_id=$1`;
-const $updateLocation = `UPDATE ${schemaName}.source_location set loc_typ=$1, ip_servr=$2, port=$3, data_strc=$4, active=$5, extrnl_sys_nm=$6, loc_alias_nm=$7, updt_tm=$13, db_nm=$8, cnn_url=$9, usr_nm=$10, pswd=$11, external_id=$12 WHERE src_loc_id=$13 returning *`;
+const $updateLocation = `UPDATE ${schemaName}.source_location set updt_tm=$1, loc_alias_nm=$2, loc_typ=$3, data_strc=$4, extrnl_sys_nm=$5, active=$6, usr_nm=$7, pswd=$8, ip_servr=$9, cnn_url=$10, port=$11, db_nm=$12, external_id=$13 WHERE src_loc_id=$14 returning *`;
 const $selectExternalId = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id FROM ${schemaName}.source_location WHERE external_id=$1`;
 
 const commonError = `Something went wrong`;
@@ -413,7 +413,6 @@ exports.saveLocationData = async function (req, res) {
       port || null,
       dbName || null,
       ExternalId || null,
-      updatedID,
     ];
 
     const vaultData = {
@@ -452,7 +451,10 @@ exports.saveLocationData = async function (req, res) {
       }
 
       // update location
-      const updateLocation = await DB.executeQuery($updateLocation, body);
+      const updateLocation = await DB.executeQuery($updateLocation, [
+        ...body,
+        updatedID,
+      ]);
 
       if (!updateLocation?.rowCount || !existingLoc?.rowCount) {
         return apiResponse.ErrorResponse(res, commonError);
