@@ -77,7 +77,7 @@ const Properties = ({ datasetProperties }) => {
             size="small"
             style={{ marginRight: 10 }}
           >
-            View Dataset Settings
+            View dataset settings
           </Button>
         </div>
         <div className="panel-body">

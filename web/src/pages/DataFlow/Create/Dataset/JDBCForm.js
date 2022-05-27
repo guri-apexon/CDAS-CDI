@@ -251,7 +251,7 @@ const JDBCForm = forwardRef((props, ref) => {
   }, [previewSQL]);
 
   const handlePreview = async () => {
-    if (!clinicalDataType?.length || datasetName === "") {
+    if (!clinicalDataType?.value || datasetName === "") {
       messageContext.showErrorMessage(
         `Please fill required fields to proceed.`
       );
@@ -297,8 +297,8 @@ const JDBCForm = forwardRef((props, ref) => {
     resetDfStep();
   };
 
-  const handleCDT = (e) => {
-    setClinicalDataType(e);
+  const handleCDT = (e, v) => {
+    setClinicalDataType(v);
     resetDfStep();
   };
 
@@ -379,14 +379,15 @@ const JDBCForm = forwardRef((props, ref) => {
   useEffect(() => {
     if (initialValue) {
       if (initialValue.dataKind) {
-        const dataKindId =
-          datakind.records.find((x) => x.name === initialValue.dataKind)
-            ?.value || null;
-        if (dataKindId) {
-          setClinicalDataType([dataKindId]);
-        }
+        console.log(initialValue);
+        // const dataKindId =
+        //   datakind.records.find((x) => x.name === initialValue.dataKind)
+        //     ?.value || null;
+        // if (dataKindId) {
+        //   setClinicalDataType([dataKindId]);
+        // }
         setDatakindReady((x) => x + 1);
-      } else if (initialValue.clinicalDataType?.length) {
+      } else if (initialValue.clinicalDataType?.datakindid) {
         setClinicalDataType(initialValue.clinicalDataType);
         setDatakindReady((x) => x + 1);
       }
@@ -429,7 +430,7 @@ const JDBCForm = forwardRef((props, ref) => {
             </Typography>
             <div className="ds-status">
               <Switch
-                label="Dataset Active"
+                label="Dataset active"
                 name="active"
                 checked={dsActive}
                 className="MuiSwitch"
@@ -454,7 +455,7 @@ const JDBCForm = forwardRef((props, ref) => {
               />
             </Grid>
             <Grid item md={6}>
-              <Autocomplete
+              <AutocompleteV2
                 key={dataKindReady}
                 name="clinicalDataType"
                 value={clinicalDataType}
@@ -462,11 +463,12 @@ const JDBCForm = forwardRef((props, ref) => {
                 source={datakind.records}
                 className="smallSize_autocomplete"
                 onChange={handleCDT}
-                variant="search"
+                forcePopupIcon={true}
                 singleSelect
-                // required
-                size="small"
+                enableVirtualization
+                variant="search"
                 fullWidth
+                required
               />
             </Grid>
           </Grid>
@@ -578,6 +580,7 @@ const JDBCForm = forwardRef((props, ref) => {
                   onChange={handleColumnSelect}
                   variant="search"
                   singleSelect
+                  enableVirtualization
                   required
                   fullWidth
                 />

@@ -12,13 +12,13 @@ import Grid from "apollo-react/components/Grid";
 import Button from "apollo-react/components/Button";
 import Table from "apollo-react/components/Table";
 import {
-  ReduxFormAutocomplete,
+  // ReduxFormAutocomplete,
   ReduxFormRadioGroup,
   ReduxFormSwitch,
   ReduxFormSelect,
   ReduxFormTextField,
   ReduxFormAutocompleteV2,
-  ReduxFormMultiSelect,
+  // ReduxFormMultiSelect,
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
 import {
@@ -54,6 +54,7 @@ const DataSetsFormBase = (props) => {
     testLock,
     prodLock,
     testProdLock,
+    values,
   } = props;
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
@@ -64,6 +65,7 @@ const DataSetsFormBase = (props) => {
   const { locationDetail } = dataSets;
   const [selectedOffsetColumns, setSelectedOffsetColumns] = useState(null);
   const [sqlColumnsArr, setSqlColumnsArr] = useState([]);
+  const [cdtValue, setCdtValue] = useState(null);
 
   const onChangeOffsetColumn = (obj) => {
     setSelectedOffsetColumns(obj);
@@ -108,14 +110,18 @@ const DataSetsFormBase = (props) => {
   }, [formValues.isCustomSQL]);
 
   useEffect(() => {
-    console.log("formValues.tableName::::", formValues.tableName);
-    setSqlColumnsArr([]);
-    dispatch(
-      getSQLColumns({
-        ...locationDetail,
-        tableName: formValues.tableName,
-      })
-    );
+    // console.log("formValues.tableName::::", formValues, formValues.tableName);
+    if (formValues?.isCustomSQL === "No" && formValues?.tableName) {
+      setSqlColumnsArr([]);
+      dispatch(
+        getSQLColumns({
+          ...locationDetail,
+          tableName: formValues.tableName,
+        })
+      );
+    } else {
+      setSqlColumnsArr([]);
+    }
   }, [formValues.tableName]);
 
   // eslint-disable-next-line consistent-return
@@ -145,6 +151,23 @@ const DataSetsFormBase = (props) => {
     setRenderClinicalDataType(false);
   }, [datakind, formValues.clinicalDataType]);
 
+  const onChangeCDT = (v) => {
+    setCdtValue(v);
+    change("clinicalDataType", [v.datakindid]);
+  };
+
+  useEffect(() => {
+    if (values?.clinicalDataType) {
+      const selectedDK = datakind?.find(
+        (e) => e.value === values.clinicalDataType[0]
+      );
+      setCdtValue(selectedDK);
+    }
+    if (!values || !values?.clinicalDataType) {
+      setCdtValue(null);
+    }
+  }, [values]);
+
   useEffect(() => {
     if (!renderClinicalDataType)
       setTimeout(() => setRenderClinicalDataType(true), 50);
@@ -170,7 +193,7 @@ const DataSetsFormBase = (props) => {
             </Typography>
             <div className="ds-status">
               <ReduxFormSwitch
-                label="Dataset Active"
+                label="Dataset active"
                 name="active"
                 className="MuiSwitch"
                 size="small"
@@ -194,13 +217,18 @@ const DataSetsFormBase = (props) => {
             </Grid>
             <Grid item md={6}>
               {datakind && renderClinicalDataType && (
-                <ReduxFormAutocomplete
+                <ReduxFormAutocompleteV2
                   name="clinicalDataType"
                   id="clinicalDataType"
                   label="Clinical Data Type"
                   source={datakind}
                   className="smallSize_autocomplete"
                   variant="search"
+                  input={{
+                    value: cdtValue,
+                    onChange: onChangeCDT,
+                  }}
+                  enableVirtualization
                   singleSelect
                   size="small"
                   fullWidth

@@ -20,11 +20,7 @@ import {
   columnObj,
 } from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
-import {
-  checkFormat,
-  checkRequiredValue,
-  validateRow,
-} from "../../../../../components/FormComponents/validators";
+import { validateRow } from "../../../../../components/FormComponents/validators";
 
 const maxSize = 150000;
 
@@ -139,7 +135,7 @@ export default function DSColumnTable({
           setSelectedRows([...initRows]);
         } else {
           messageContext.showErrorMessage(
-            `Protocol Number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+            `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
           );
           hideOverWrite();
         }
@@ -174,7 +170,7 @@ export default function DSColumnTable({
   const handleSaveLOV = () => {
     const newData = [{ ...selectedRow }]
       .map((e) => {
-        e.values = e.values.trim();
+        e.values = e.values.toString().trim();
         return e;
       })
       .map((e) => {
@@ -338,8 +334,8 @@ export default function DSColumnTable({
         const d = {
           ...e,
           isSaved: true,
-          values: e.values.trim(),
-          columnName: e.columnName.trim(),
+          values: e.values.toString().trim(),
+          columnName: e.columnName.toString().trim(),
         };
         return d;
       })
@@ -406,8 +402,8 @@ export default function DSColumnTable({
         const d = {
           ...e,
           isSaved: true,
-          values: e.values.trim(),
-          columnName: e.columnName.trim(),
+          values: e.values.toString().trim(),
+          columnName: e.columnName.toString().trim(),
         };
         return d;
       })
@@ -482,7 +478,7 @@ export default function DSColumnTable({
   const haveHeader = parseInt(headerValue, 10) > 0;
 
   // const showColumnNameRequried = () => {
-  //   messageContext.showErrorMessage("Column Name Should be there");
+  //   messageContext.showErrorMessage("Column name Should be there");
   // };
 
   const editRow = (uniqueId, key, value) => {

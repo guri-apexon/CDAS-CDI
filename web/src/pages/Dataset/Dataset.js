@@ -6,13 +6,13 @@ import { makeStyles } from "@material-ui/core/styles";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { submit, reset } from "redux-form";
-import Banner from "apollo-react/components/Banner";
 import Panel from "apollo-react/components/Panel/Panel";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
+import Banner from "apollo-react/components/Banner";
 import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { MessageContext } from "../../components/Providers/MessageProvider";
@@ -26,8 +26,6 @@ import {
   getDatasetColumns,
   resetFTP,
   resetJDBC,
-  getSQLColumns,
-  getLocationDetails,
 } from "../../store/actions/DataSetsAction";
 import { updatePanel } from "../../store/actions/DataPackageAction";
 import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
@@ -171,9 +169,6 @@ const Dataset = () => {
     if (fromWhere === "IngestionProperties") {
       if (selectedDSDetails.dataflowid) {
         dispatch(getDataFlowDetail(selectedDSDetails.dataflowid));
-        // setTimeout(() => {
-        //   dispatch(getLocationDetails(srclocid));
-        // }, 1000);
       } else {
         history.push("/dashboard");
       }
@@ -182,7 +177,7 @@ const Dataset = () => {
 
   useEffect(() => {
     setValue(0);
-    setColumnsActive(false);
+    //   setColumnsActive(false);
   }, [params]);
 
   useEffect(() => {
@@ -197,7 +192,7 @@ const Dataset = () => {
 
   useEffect(() => {
     if (isDatasetCreated && isDatasetCreation) {
-      messageContext.showSuccessMessage("Dataset Created Successfully");
+      messageContext.showSuccessMessage("Dataset was saved successfully");
       history.push(`/dashboard/dataset/${dsId}`);
       dispatch(updatePanel());
     }
@@ -216,7 +211,6 @@ const Dataset = () => {
           setValue(1);
           setColumnsActive(true);
         } else if (isCustomSQL === "No") {
-          // dispatch(getSQLColumns(tableName));
           setColumnsActive(true);
           setValue(1);
         } else {
@@ -231,7 +225,6 @@ const Dataset = () => {
       if (isSftp(locationType)) {
         setColumnsActive(true);
       } else if (isCustomSQL === "No") {
-        // dispatch(getSQLColumns(tableName));
         setColumnsActive(true);
       } else {
         setColumnsActive(false);
@@ -317,6 +310,12 @@ const Dataset = () => {
     history.push("/dashboard");
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      dispatch(hideErrorMessage());
+    }, 7500);
+  }, [error, sucessMsg]);
+
   const getLeftPanel = React.useMemo(
     () => (
       <>
@@ -325,12 +324,6 @@ const Dataset = () => {
     ),
     []
   );
-
-  useEffect(() => {
-    setTimeout(() => {
-      dispatch(hideErrorMessage());
-    }, 7500);
-  }, [error, sucessMsg]);
 
   return (
     <>
@@ -343,6 +336,7 @@ const Dataset = () => {
           message={error || sucessMsg}
         />
       )}
+
       <div className="pageRoot">
         <Panel
           onClose={handleClose}

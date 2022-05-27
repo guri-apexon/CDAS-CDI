@@ -485,7 +485,7 @@ const CloneDataFlow = ({ open, handleModalClose, dataflowList, studyList }) => {
       if (dataflowDetails) {
         dispatch(SelectedDataflow(dataflowDetails));
         messageContext.showSuccessMessage(
-          `Selected Dataflow has been cloned to this study.`
+          `Selected dataflow has been cloned to this study.`
         );
         history.push(
           `/dashboard/dataflow-management/${dataflowDetails?.dataFlowId}`
