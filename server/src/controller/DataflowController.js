@@ -162,7 +162,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
 
     if (req.body.externalSystemName !== "CDI") {
       if (req.body.location) {
-        let q1 = `select src_loc_id,active from ${schemaName}.source_location where cnn_url=$1;`;
+        let q1 = `select src_loc_id,active from ${schemaName}.source_location where src_loc_id=$1;`;
         let locationData = await DB.executeQuery(q1, [req.body.location]);
 
         if (locationData.rows.length > 0) {
@@ -181,6 +181,13 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
           );
         }
       }
+
+      if (req.body.vendorName) {
+        let q = `select vend_id,active,vend_nm from ${schemaName}.vendor where vend_id='${req.body.vendorName}';`;
+        let { rows } = await DB.executeQuery(q);
+        vendorName = rows[0].vend_nm;
+        vend_id = rows[0].vend_id;
+      }
       // var dataRes = insertValidation(req.body);
       var dataRes = externalFunction.insertValidation(req.body);
 
@@ -190,7 +197,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       }
     }
 
-    console.log(src_loc_id);
+    console.log(src_loc_id, vendorName, vend_id);
 
     var ResponseBody = {};
     if (!type && dataStructure) type = dataStructure;
@@ -229,7 +236,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
           DFTestname = DFTestname + "-1";
         }
       }
-      let q = `select vend_id,active from ${schemaName}.vendor where vend_nm='${vendorName}';`;
+      let q = `select vend_id,active,vend_nm from ${schemaName}.vendor where vend_nm='${vendorName}';`;
       let { rows } = await DB.executeQuery(q);
 
       if (rows.length > 0) {
@@ -267,14 +274,15 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
         serviceOwners && Array.isArray(serviceOwners)
           ? serviceOwners.join()
           : "",
+        userId,
       ];
       // insert dataflow schema into db
       let createDF = await DB.executeQuery(
         `insert into ${schemaName}.dataflow 
       (dataflowid,name,vend_id,type,description,src_loc_id,active,configured,expt_fst_prd_dt,
         testflag,data_in_cdr,connectiontype,externalsystemname,externalid,
-        fsrstatus,prot_id,insrt_tm,updt_tm, refreshtimestamp, serv_ownr) VALUES 
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17, $18) returning dataflowid as "dataFlowId", name as "dataFlowName", type as adapter, description, active as status, testflag, connectiontype as "locationType", fsrstatus as "fsrStatus", prot_id as "studyId", externalsystemname as "externalSourceSystem";`,
+        fsrstatus,prot_id,insrt_tm,updt_tm, refreshtimestamp, serv_ownr,created_by_user,updated_by_user) VALUES 
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17,$17, $18,$19,$19) returning dataflowid as "dataFlowId", name as "dataFlowName", type as adapter, description, active as status, testflag, connectiontype as "locationType", fsrstatus as "fsrStatus", prot_id as "studyId", externalsystemname as "externalSourceSystem";`,
         DFBody
       );
       let ts = dFTimestamp;
@@ -344,7 +352,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
               "New Datapackage",
               "",
               "",
-              externalSystemName === "CDI" ? userId : externalSystemName,
+              userId,
               dFTimestamp,
             ]
           );
@@ -362,7 +370,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
               let dataKind = null;
               if (obj.dataKind) {
                 let checkDataKind = await DB.executeQuery(
-                  `select datakindid,active from ${schemaName}.datakind where name='${obj.dataKind}';`
+                  `select datakindid,active from ${schemaName}.datakind where datakindid='${obj.dataKind}';`
                 );
                 // dataKind = checkDataKind.rows[0]?.datakindid;
                 if (checkDataKind.rows.length > 0) {
@@ -386,12 +394,13 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                 }
               }
 
-              if (obj.mnemonic) {
+              if (obj.mnemonic || obj.datasetName) {
                 const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
+                const name = obj.mnemonic || obj.datasetName;
                 let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
                 left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
                 left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
-                where ds.mnemonic ='${obj.mnemonic}' and df.testflag ='${tFlg}'`;
+                where ds.mnemonic ='${name}' and df.testflag ='${tFlg}'`;
 
                 let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -498,7 +507,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                   "New Dataset",
                   "",
                   "",
-                  externalSystemName === "CDI" ? userId : externalSystemName,
+                  userId,
                   dFTimestamp,
                 ]
               );
@@ -570,7 +579,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                     "New Column definition",
                     "",
                     "",
-                    externalSystemName === "CDI" ? userId : externalSystemName,
+                    userId,
                     dFTimestamp,
                   ];
                   await DB.executeQuery(dataflow_aduit_query, audit_body);
@@ -581,6 +590,22 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                   newobj.action = "column definition created successfully.";
                   el.colmunid = CDUid;
                   ResponseBody.column_definition.push(newobj);
+                }
+              }
+
+              if (obj.qcType) {
+                if (
+                  obj.conditionalExpressions &&
+                  obj.conditionalExpressions.length > 0
+                ) {
+                  ResponseBody.vlc = [];
+                  for (let vlc of obj.conditionalExpressions) {
+                    await externalFunction
+                      .VlcInsert(vlc, obj.qcType, uid, dpUid, dsUid, 1, userId)
+                      .then((res) => {
+                        ResponseBody.vlc.push(res.sucRes);
+                      });
+                  }
                 }
               }
             }
@@ -598,18 +623,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       `INSERT INTO ${schemaName}.dataflow_audit_log
     ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-      [
-        uid,
-        null,
-        null,
-        null,
-        1,
-        "New Dataflow",
-        "",
-        "",
-        externalSystemName === "CDI" ? userId : externalSystemName,
-        dFTimestamp,
-      ]
+      [uid, null, null, null, 1, "New Dataflow", "", "", userId, dFTimestamp]
     );
     let config_json = {
       dataFlowId: uid,
@@ -637,7 +651,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       uid,
       1,
       JSON.stringify(config_json),
-      externalSystemName === "CDI" ? userId : externalSystemName,
+      userId,
       dFTimestamp,
     ];
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
@@ -646,11 +660,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
     (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
     VALUES($1, 'CONFIG', $2, 'QUEUE', $3, $3, '', 1, '', 1, '', 0)`;
 
-    await DB.executeQuery(q, [
-      uid,
-      externalSystemName === "CDI" ? userId : externalSystemName,
-      dFTimestamp,
-    ]);
+    await DB.executeQuery(q, [uid, userId, dFTimestamp]);
 
     await DB.executeQuery(
       `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
@@ -711,6 +721,13 @@ exports.updateDataFlow = async (req, res) => {
       return apiResponse.ErrorResponse(
         res,
         "Data flow Level External Id required and data type should be string or Number"
+      );
+    }
+
+    if (!userId) {
+      return apiResponse.ErrorResponse(
+        res,
+        "userId required and data type should be string or Number"
       );
     }
 
@@ -813,6 +830,45 @@ exports.updateDataFlow = async (req, res) => {
                 }
               }
             }
+
+            if (obj.qcType) {
+              if (
+                obj.conditionalExpressions &&
+                obj.conditionalExpressions.length > 0
+              ) {
+                for (let vl of obj.conditionalExpressions) {
+                  if (!vl.conditionalExpressionNumber) {
+                    return apiResponse.ErrorResponse(
+                      res,
+                      "Conditional Expression Number1 required and Data Type should be Number"
+                    );
+                  } else {
+                    if (typeof vl.conditionalExpressionNumber != "number") {
+                      return apiResponse.ErrorResponse(
+                        res,
+                        "Conditional Expression Number required and Data Type should be Number"
+                      );
+                    }
+                  }
+                }
+
+                if (obj.conditionalExpressions.length > 0) {
+                  if (!obj.qcType) {
+                    return apiResponse.ErrorResponse(
+                      res,
+                      "qcType required and Value should be VLC"
+                    );
+                  } else {
+                    if (obj.qcType.toLowerCase() !== "vlc") {
+                      return apiResponse.ErrorResponse(
+                        res,
+                        "qcType required and Value should be VLC"
+                      );
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -820,7 +876,7 @@ exports.updateDataFlow = async (req, res) => {
 
     // return;
     if (vendorName) {
-      let q2 = `select vend_id,active from ${schemaName}.vendor where vend_nm=$1;`;
+      let q2 = `select vend_id,active from ${schemaName}.vendor where vend_id=$1;`;
       let { rows } = await DB.executeQuery(q2, [vendorName]);
 
       if (rows.length > 0) {
@@ -839,7 +895,7 @@ exports.updateDataFlow = async (req, res) => {
     }
 
     if (location) {
-      let q3 = `select src_loc_id,active from ${schemaName}.source_location where cnn_url=$1;`;
+      let q3 = `select src_loc_id,active from ${schemaName}.source_location where src_loc_id=$1;`;
       let locationData = await DB.executeQuery(q3, [location]);
 
       if (locationData.rows.length > 0) {
@@ -936,7 +992,14 @@ exports.updateDataFlow = async (req, res) => {
 
       if (del_flg === 1) {
         await externalFunction
-          .removeDataflow(DFId, externalID, DFVer, externalSysName, conf_data)
+          .removeDataflow(
+            DFId,
+            externalID,
+            DFVer,
+            externalSysName,
+            conf_data,
+            userId
+          )
           .then((res) => {
             ResponseBody.success.push(res.sucRes);
           });
@@ -949,7 +1012,8 @@ exports.updateDataFlow = async (req, res) => {
             DFId,
             DFVer,
             externalSysName,
-            conf_data
+            conf_data,
+            userId
           )
           .then((res) => {
             ResponseBody.success.push(res.sucRes);
@@ -972,7 +1036,7 @@ exports.updateDataFlow = async (req, res) => {
                     DPId,
                     DFId,
                     DFVer,
-                    externalSysName
+                    userId
                   )
                   .then((res) => {
                     ResponseBody.success.push(res.sucRes);
@@ -986,7 +1050,7 @@ exports.updateDataFlow = async (req, res) => {
                     DFId,
                     DFVer,
                     ConnectionType,
-                    externalSysName
+                    userId
                   )
                   .then((res) => {
                     ResponseBody.errors.push(res.errRes);
@@ -1012,7 +1076,7 @@ exports.updateDataFlow = async (req, res) => {
                             DFId,
                             DSId,
                             DFVer,
-                            externalSysName
+                            userId
                           )
                           .then((res) => {
                             ResponseBody.success.push(res.sucRes);
@@ -1030,7 +1094,8 @@ exports.updateDataFlow = async (req, res) => {
                             ConnectionType,
                             custSql,
                             externalSysName,
-                            testFlag
+                            testFlag,
+                            userId
                           )
                           .then((res) => {
                             ResponseBody.errors.push(res.errRes);
@@ -1060,7 +1125,7 @@ exports.updateDataFlow = async (req, res) => {
                                     DSId,
                                     DFVer,
                                     cdId,
-                                    externalSysName
+                                    userId
                                   )
                                   .then((res) => {
                                     ResponseBody.success.push(res.sucRes);
@@ -1076,7 +1141,7 @@ exports.updateDataFlow = async (req, res) => {
                                     cdId,
                                     DFVer,
                                     ConnectionType,
-                                    externalSysName
+                                    userId
                                   )
                                   .then((res) => {
                                     ResponseBody.errors.push(res.errRes);
@@ -1093,12 +1158,58 @@ exports.updateDataFlow = async (req, res) => {
                                   DSId,
                                   DFVer,
                                   ConnectionType,
-                                  externalSysName
+                                  userId
                                 )
                                 .then((res) => {
                                   ResponseBody.errors.push(res.errRes);
                                   ResponseBody.success.push(res.sucRes);
                                 });
+                            }
+                          }
+                        }
+
+                        if (obj.qcType) {
+                          if (
+                            obj.conditionalExpressions &&
+                            obj.conditionalExpressions.length > 0
+                          ) {
+                            for (let vlc of obj.conditionalExpressions) {
+                              let selectVLC = `select * from ${schemaName}.dataset_qc_rules where datasetid='${DSId}' and ext_ruleid='${vlc.conditionalExpressionNumber}'`;
+                              let { rows: vlcRows } = await DB.executeQuery(
+                                selectVLC
+                              );
+
+                              if (vlcRows.length > 0) {
+                                var VlcDataUpdate = await externalFunction
+                                  .vlcUpdate(
+                                    vlc,
+                                    obj.qcType,
+                                    DFId,
+                                    DPId,
+                                    DSId,
+                                    DFVer,
+                                    userId
+                                  )
+                                  .then((res) => {
+                                    ResponseBody.errors.push(res.errRes);
+                                    ResponseBody.success.push(res.sucRes);
+                                  });
+                              } else {
+                                var VlcDataInsert = await externalFunction
+                                  .VlcInsert(
+                                    vlc,
+                                    obj.qcType,
+                                    DFId,
+                                    DPId,
+                                    DSId,
+                                    DFVer,
+                                    userId
+                                  )
+                                  .then((res) => {
+                                    ResponseBody.errors.push(res.errRes);
+                                    ResponseBody.success.push(res.sucRes);
+                                  });
+                              }
                             }
                           }
                         }
@@ -1115,7 +1226,8 @@ exports.updateDataFlow = async (req, res) => {
                           DFVer,
                           ConnectionType,
                           externalSysName,
-                          testFlag
+                          testFlag,
+                          userId
                         )
                         .then((res) => {
                           ResponseBody.errors.push(res.errRes);
@@ -1132,7 +1244,9 @@ exports.updateDataFlow = async (req, res) => {
                   DFId,
                   DFVer,
                   ConnectionType,
-                  externalSysName
+                  externalSysName,
+                  testFlag,
+                  userId
                 )
                 .then((res) => {
                   ResponseBody.errors.push(res.errRes);

@@ -147,6 +147,14 @@ exports.isColumnType = (str) => {
   return ["alphanumeric", "numeric", "date"].includes(str.toLowerCase());
 };
 
+exports.isActive = (str) => {
+  return ["y", "n"].includes(str.toLowerCase());
+};
+
+exports.isAction = (str) => {
+  return ["reject", "report"].includes(str.toLowerCase());
+};
+
 exports.isConnectionType = (str) => {
   return [
     "SFTP",

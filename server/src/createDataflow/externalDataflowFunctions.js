@@ -58,6 +58,11 @@ exports.insertValidation = (req) => {
       err: " External Id  is required and data type should be string or Number ",
     });
   }
+  if (!req.userId) {
+    validate.push({
+      err: " userId required and data type should be string or Number ",
+    });
+  }
   if (req.del_flg !== 0) {
     validate.push({
       err: " Data flow Level del_flg required and value should be 0 ",
@@ -342,26 +347,28 @@ exports.insertValidation = (req) => {
                     });
                   }
 
-                  // console.log("line 373", obj.type.toLowerCase());
-                  if (obj.type.toLowerCase() === "delimited") {
-                    const dsArrayDt = [
-                      {
-                        key: "Delimiter",
-                        value: obj.delimiter,
-                        type: "string",
-                      },
-                      { key: "Quote", value: obj.quote, type: "string" },
+                  // console.log("line 373", obj.type.toLowerCase hahhah());
+                  if (obj.type) {
+                    if (obj.type.toLowerCase() === "delimited") {
+                      const dsArrayDt = [
+                        {
+                          key: "Delimiter",
+                          value: obj.delimiter,
+                          type: "string",
+                        },
+                        { key: "Quote", value: obj.quote, type: "string" },
 
-                      {
-                        key: "Escape Character",
-                        value: obj.escapeCode,
-                        type: "string",
-                      },
-                    ];
+                        {
+                          key: "Escape Character",
+                          value: obj.escapeCode,
+                          type: "string",
+                        },
+                      ];
 
-                    let dsResdt = helper.validation(dsArrayDt);
-                    if (dsResdt.length > 0) {
-                      validate.push(dsResdt);
+                      let dsResdt = helper.validation(dsArrayDt);
+                      if (dsResdt.length > 0) {
+                        validate.push(dsResdt);
+                      }
                     }
                   }
 
@@ -413,16 +420,18 @@ exports.insertValidation = (req) => {
                             type: "boolean",
                           },
                           {
-                            key: "Alphanumeric, Numeric or Date",
+                            key: "Data Type",
                             value: el.dataType,
                             type: "string",
                           },
                         ];
 
-                        if (!helper.isColumnType(el.dataType)) {
-                          validate.push({
-                            err: " Data type's Supported values : Numeric, Alphanumeric or Date",
-                          });
+                        if (el.dataType) {
+                          if (!helper.isColumnType(el.dataType)) {
+                            validate.push({
+                              err: " Data type's Supported values : Numeric, Alphanumeric or Date",
+                            });
+                          }
                         }
 
                         // Validation Function call for column defination
@@ -473,6 +482,95 @@ exports.insertValidation = (req) => {
                                 err: " Tilde(~) can't be used start or end of string ",
                               });
                             }
+                          }
+                        }
+                      }
+                    }
+                    // vlc validation
+                    if (obj.qcType) {
+                      if (
+                        obj.conditionalExpressions &&
+                        obj.conditionalExpressions.length > 0
+                      ) {
+                        for (let vl of obj.conditionalExpressions) {
+                          const vlcArray = [
+                            {
+                              key: "Conditional Expression Number ",
+                              value: vl.conditionalExpressionNumber,
+                              type: "number",
+                            },
+
+                            {
+                              key: "Run Sequence",
+                              value: vl.runSequence,
+                              type: "number",
+                            },
+                            {
+                              key: "Conditional Expression",
+                              value: vl.conditionalExpression,
+                              type: "string",
+                            },
+
+                            {
+                              key: "Action",
+                              value: vl.action,
+                              type: "string",
+                            },
+                            {
+                              key: "Active",
+                              value: vl.active,
+                              type: "string",
+                            },
+                          ];
+
+                          if (vl.active) {
+                            if (!helper.isActive(vl.active)) {
+                              validate.push({
+                                err: " Active's Supported values : Y or N",
+                              });
+                            }
+                          }
+                          if (vl.action) {
+                            if (!helper.isAction(vl.action)) {
+                              validate.push({
+                                err: " Action's Supported values : Reject or Report",
+                              });
+                            }
+                            if (vl.action.toLowerCase() === "report") {
+                              const rVlcArr = [
+                                {
+                                  key: "Error Message",
+                                  value: vl.errorMessage,
+                                  type: "string",
+                                },
+                              ];
+
+                              let rVclres = helper.validation(rVlcArr);
+                              if (rVclres.length > 0) {
+                                validate.push(rVclres);
+                              }
+                            }
+                          }
+
+                          let vlcRes = helper.validation(vlcArray);
+                          if (vlcRes.length > 0) {
+                            validate.push(vlcRes);
+                          }
+                        }
+                      }
+                    }
+
+                    if (obj.conditionalExpressions) {
+                      if (obj.conditionalExpressions.length > 0) {
+                        if (!obj.qcType) {
+                          validate.push({
+                            err: " qcType required and Value should be VLC ",
+                          });
+                        } else {
+                          if (obj.qcType.toLowerCase() !== "vlc") {
+                            validate.push({
+                              err: " qcType required and Value should be VLC ",
+                            });
                           }
                         }
                       }
@@ -575,52 +673,54 @@ exports.insertValidation = (req) => {
                 //   });
                 // }
 
-                if (obj.customQuery.toLowerCase() == "yes") {
-                  if (
-                    obj.customSql !== null &&
-                    obj.customSql !== "" &&
-                    obj.customSql !== undefined
-                  ) {
-                    if (obj.customSql.length <= 131072) {
-                    } else {
-                      validate.push({
-                        err: " Custom Sql  Max of 131072 characters  ",
-                      });
-                    }
-                  } else {
-                    validate.push({
-                      err: " Custom Sql  is required ",
-                    });
-                  }
-                }
-                if (obj.customQuery.toLowerCase() == "no") {
-                  if (
-                    obj.tableName !== null &&
-                    obj.tableName !== "" &&
-                    obj.tableName !== undefined
-                  ) {
-                    if (obj.tableName.length <= 255) {
-                    } else {
-                      validate.push({
-                        err: " Table Name  Max of 255 characters  ",
-                      });
-                    }
-                  } else {
-                    validate.push({
-                      err: " Table Name  is required ",
-                    });
-                  }
-                  if (helper.stringToBoolean(obj.incremental) === true) {
+                if (obj.customQuery) {
+                  if (obj.customQuery.toLowerCase() == "yes") {
                     if (
-                      obj.offsetColumn !== null &&
-                      obj.offsetColumn !== "" &&
-                      obj.offsetColumn !== undefined &&
-                      typeof obj.offsetColumn === "string"
+                      obj.customSql !== null &&
+                      obj.customSql !== "" &&
+                      obj.customSql !== undefined
                     ) {
+                      if (obj.customSql.length <= 131072) {
+                      } else {
+                        validate.push({
+                          err: " Custom Sql  Max of 131072 characters  ",
+                        });
+                      }
                     } else {
                       validate.push({
-                        err: " offsetColumn  is required and data type should be string",
+                        err: " Custom Sql  is required ",
                       });
+                    }
+                  }
+                  if (obj.customQuery.toLowerCase() == "no") {
+                    if (
+                      obj.tableName !== null &&
+                      obj.tableName !== "" &&
+                      obj.tableName !== undefined
+                    ) {
+                      if (obj.tableName.length <= 255) {
+                      } else {
+                        validate.push({
+                          err: " Table Name  Max of 255 characters  ",
+                        });
+                      }
+                    } else {
+                      validate.push({
+                        err: " Table Name  is required ",
+                      });
+                    }
+                    if (helper.stringToBoolean(obj.incremental) === true) {
+                      if (
+                        obj.offsetColumn !== null &&
+                        obj.offsetColumn !== "" &&
+                        obj.offsetColumn !== undefined &&
+                        typeof obj.offsetColumn === "string"
+                      ) {
+                      } else {
+                        validate.push({
+                          err: " offsetColumn  is required and data type should be string",
+                        });
+                      }
                     }
                   }
                 }
@@ -678,16 +778,18 @@ exports.insertValidation = (req) => {
                           type: "boolean",
                         },
                         {
-                          key: "Alphanumeric, Numeric or Date",
+                          key: "Data Type",
                           value: el.dataType,
                           type: "string",
                         },
                       ];
 
-                      if (!helper.isColumnType(el.dataType)) {
-                        validate.push({
-                          err: " Data type's Supported values : Numeric, Alphanumeric or Date",
-                        });
+                      if (el.dataType) {
+                        if (!helper.isColumnType(el.dataType)) {
+                          validate.push({
+                            err: " Data type's Supported values : Numeric, Alphanumeric or Date",
+                          });
+                        }
                       }
 
                       // Validation Function call for column defination
@@ -710,6 +812,96 @@ exports.insertValidation = (req) => {
                       }
                     }
                   }
+
+                  // vlc validation
+                  if (obj.qcType) {
+                    if (
+                      obj.conditionalExpressions &&
+                      obj.conditionalExpressions.length > 0
+                    ) {
+                      for (let vl of obj.conditionalExpressions) {
+                        const vlcArray = [
+                          {
+                            key: "Conditional Expression Number ",
+                            value: vl.conditionalExpressionNumber,
+                            type: "number",
+                          },
+
+                          {
+                            key: "Run Sequence",
+                            value: vl.runSequence,
+                            type: "number",
+                          },
+                          {
+                            key: "Conditional Expression",
+                            value: vl.conditionalExpression,
+                            type: "string",
+                          },
+
+                          {
+                            key: "Action",
+                            value: vl.action,
+                            type: "string",
+                          },
+                          {
+                            key: "Active",
+                            value: vl.active,
+                            type: "string",
+                          },
+                        ];
+
+                        if (vl.active) {
+                          if (!helper.isActive(vl.active)) {
+                            validate.push({
+                              err: " Active's Supported values : Y or N",
+                            });
+                          }
+                        }
+                        if (vl.action) {
+                          if (!helper.isAction(vl.action)) {
+                            validate.push({
+                              err: " Action's Supported values : Reject or Report",
+                            });
+                          }
+                          if (vl.action.toLowerCase() === "report") {
+                            const rVlcArr = [
+                              {
+                                key: "Error Message",
+                                value: vl.errorMessage,
+                                type: "string",
+                              },
+                            ];
+
+                            let rVclres = helper.validation(rVlcArr);
+                            if (rVclres.length > 0) {
+                              validate.push(rVclres);
+                            }
+                          }
+                        }
+
+                        let vlcRes = helper.validation(vlcArray);
+                        if (vlcRes.length > 0) {
+                          validate.push(vlcRes);
+                        }
+                      }
+                    }
+                  }
+
+                  if (obj.conditionalExpressions) {
+                    if (obj.conditionalExpressions.length > 0) {
+                      if (!obj.qcType) {
+                        validate.push({
+                          err: " qcType required and Value should be VLC ",
+                        });
+                      } else {
+                        if (obj.qcType.toLowerCase() !== "vlc") {
+                          validate.push({
+                            err: " qcType required and Value should be VLC ",
+                          });
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -727,7 +919,9 @@ exports.packageLevelInsert = async (
   DFId,
   version,
   ConnectionType,
-  externalSysName
+  externalSysName,
+  testFlag,
+  userId
 ) => {
   try {
     const { externalID } = data;
@@ -779,10 +973,13 @@ exports.packageLevelInsert = async (
             type: "string",
           },
         ];
-        if (!helper.isPackageType(data.type)) {
-          errorPackage.push(
-            " Package type's Supported values : 7Z, ZIP, RAR, SAS "
-          );
+
+        if (data.type) {
+          if (!helper.isPackageType(data.type)) {
+            errorPackage.push(
+              " Package type's Supported values : 7Z, ZIP, RAR, SAS "
+            );
+          }
         }
 
         let dpResST = helper.validation(dpArrayST);
@@ -930,7 +1127,7 @@ exports.packageLevelInsert = async (
         "New Datapackage",
         "",
         "",
-        externalSysName,
+        userId,
         helper.getCurrentTime(),
       ]
     );
@@ -946,7 +1143,9 @@ exports.packageLevelInsert = async (
           DFId,
           version,
           ConnectionType,
-          externalSysName
+          externalSysName,
+          testFlag,
+          userId
         ).then((res) => {
           errorPackage.push(res.errRes);
           dataPackage.push(res.sucRes);
@@ -971,7 +1170,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
   version,
   ConnectionType,
   externalSysName,
-  testFlag
+  testFlag,
+  userId
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -1062,25 +1262,27 @@ const saveDataset = (exports.datasetLevelInsert = async (
         errorDataset.push(dsArrRes);
       }
 
-      if (obj.type.toLowerCase() === "delimited") {
-        const dsArrayDt = [
-          {
-            key: "Delimiter",
-            value: obj.delimiter,
-            type: "string",
-          },
-          { key: "Quote", value: obj.quote, type: "string" },
+      if (obj.type) {
+        if (obj.type.toLowerCase() === "delimited") {
+          const dsArrayDt = [
+            {
+              key: "Delimiter",
+              value: obj.delimiter,
+              type: "string",
+            },
+            { key: "Quote", value: obj.quote, type: "string" },
 
-          {
-            key: "Escape Character",
-            value: obj.escapeCode,
-            type: "string",
-          },
-        ];
+            {
+              key: "Escape Character",
+              value: obj.escapeCode,
+              type: "string",
+            },
+          ];
 
-        let dsResdt = helper.validation(dsArrayDt);
-        if (dsResdt.length > 0) {
-          errorDataset.push(dsResdt);
+          let dsResdt = helper.validation(dsArrayDt);
+          if (dsResdt.length > 0) {
+            errorDataset.push(dsResdt);
+          }
         }
       }
 
@@ -1191,28 +1393,30 @@ const saveDataset = (exports.datasetLevelInsert = async (
         errorDataset.push(dsreqElse);
       }
 
-      if (obj.customQuery.toLowerCase() == "yes") {
-        if (!obj.customSql) {
-          errorDataset.push(" Custom Sql  is required  ");
-        } else {
-          if (obj.customSql.length >= 131072) {
-            errorDataset.push(" Custom Sql  Max of 131072 characters  ");
+      if (obj.customQuery) {
+        if (obj.customQuery.toLowerCase() == "yes") {
+          if (!obj.customSql) {
+            errorDataset.push(" Custom Sql  is required  ");
+          } else {
+            if (obj.customSql.length >= 131072) {
+              errorDataset.push(" Custom Sql  Max of 131072 characters  ");
+            }
           }
         }
-      }
-      if (obj.customQuery.toLowerCase() == "no") {
-        if (!obj.tableName) {
-          errorDataset.push(" Table Name  is required  ");
-        } else {
-          if (obj.tableName.length >= 255) {
-            errorDataset.push(" Table Name  Max of 255 characters  ");
+        if (obj.customQuery.toLowerCase() == "no") {
+          if (!obj.tableName) {
+            errorDataset.push(" Table Name  is required  ");
+          } else {
+            if (obj.tableName.length >= 255) {
+              errorDataset.push(" Table Name  Max of 255 characters  ");
+            }
           }
-        }
-        if (helper.stringToBoolean(obj.incremental)) {
-          if (!obj.offsetColumn) {
-            errorDataset.push(
-              " offsetColumn  is required and data type should be string  "
-            );
+          if (helper.stringToBoolean(obj.incremental)) {
+            if (!obj.offsetColumn) {
+              errorDataset.push(
+                " offsetColumn  is required and data type should be string  "
+              );
+            }
           }
         }
       }
@@ -1228,7 +1432,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
       );
 
       if (checkDataKind.rows.length > 0) {
-        if (checkDataKind.rows[0].active === 1) {
+        if (checkDataKind.rows[0].active === 0) {
           dataKind = checkDataKind.rows[0].datakindid;
         } else {
           errorDataset.push(
@@ -1346,7 +1550,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
         "New Dataset",
         "",
         "",
-        externalSysName,
+        userId,
         helper.getCurrentTime(),
       ]
     );
@@ -1384,16 +1588,18 @@ const saveDataset = (exports.datasetLevelInsert = async (
               type: "boolean",
             },
             {
-              key: "Alphanumeric, Numeric or Date",
+              key: "Data Type",
               value: el.dataType,
               type: "string",
             },
           ];
 
-          if (!helper.isColumnType(el.dataType)) {
-            errorDataset.push(
-              " Data type's Supported values : Numeric, Alphanumeric or Date"
-            );
+          if (el.dataType) {
+            if (!helper.isColumnType(el.dataType)) {
+              errorDataset.push(
+                " Data type's Supported values : Numeric, Alphanumeric or Date"
+              );
+            }
           }
 
           let clResIf = helper.validation(clArrayIf);
@@ -1473,16 +1679,18 @@ const saveDataset = (exports.datasetLevelInsert = async (
               type: "boolean",
             },
             {
-              key: "Alphanumeric, Numeric or Date",
+              key: "Data Type",
               value: el.dataType,
               type: "string",
             },
           ];
 
-          if (!helper.isColumnType(el.dataType)) {
-            errorDataset.push(
-              " Data type's Supported values : Numeric, Alphanumeric or Date"
-            );
+          if (el.dataType) {
+            if (!helper.isColumnType(el.dataType)) {
+              errorDataset.push(
+                " Data type's Supported values : Numeric, Alphanumeric or Date"
+              );
+            }
           }
 
           let clRes = helper.validation(clArray);
@@ -1577,10 +1785,29 @@ const saveDataset = (exports.datasetLevelInsert = async (
             "New Column Definition",
             "",
             "",
-            externalSysName,
+            userId,
             helper.getCurrentTime(),
           ]
         );
+      }
+    }
+
+    if (obj.qcType) {
+      if (obj.conditionalExpressions && obj.conditionalExpressions.length > 0) {
+        for (let vlc of obj.conditionalExpressions) {
+          await saveVlc(
+            vlc,
+            obj.qcType,
+            DFId,
+            DPId,
+            dsUid,
+            version,
+            userId
+          ).then((res) => {
+            errorDataset.push(res.errRes);
+            dataSet.push(res.sucRes);
+          });
+        }
       }
     }
 
@@ -1601,7 +1828,7 @@ exports.columnDefinationInsert = async (
   DSId,
   version,
   ConnectionType,
-  externalSysName
+  userId
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -1640,16 +1867,18 @@ exports.columnDefinationInsert = async (
           type: "boolean",
         },
         {
-          key: "Alphanumeric, Numeric or Date",
+          key: "Data Type",
           value: el.dataType,
           type: "string",
         },
       ];
 
-      if (!helper.isColumnType(el.dataType)) {
-        errorColumnDef.push(
-          " Data type's Supported values : Numeric, Alphanumeric or Date"
-        );
+      if (el.dataType) {
+        if (!helper.isColumnType(el.dataType)) {
+          errorColumnDef.push(
+            " Data type's Supported values : Numeric, Alphanumeric or Date"
+          );
+        }
       }
 
       let clResIf = helper.validation(clArrayIf);
@@ -1727,16 +1956,18 @@ exports.columnDefinationInsert = async (
           type: "boolean",
         },
         {
-          key: "Alphanumeric, Numeric or Date",
+          key: "Data Type",
           value: el.dataType,
           type: "string",
         },
       ];
 
-      if (!helper.isColumnType(el.dataType)) {
-        errorColumnDef.push(
-          " Data type's Supported values : Numeric, Alphanumeric or Date"
-        );
+      if (el.dataType) {
+        if (!helper.isColumnType(el.dataType)) {
+          errorColumnDef.push(
+            " Data type's Supported values : Numeric, Alphanumeric or Date"
+          );
+        }
       }
 
       let clRes = helper.validation(clArray);
@@ -1830,7 +2061,7 @@ exports.columnDefinationInsert = async (
         "New Column Definition",
         "",
         "",
-        externalSysName,
+        userId,
         helper.getCurrentTime(),
       ]
     );
@@ -1843,13 +2074,169 @@ exports.columnDefinationInsert = async (
   }
 };
 
+const saveVlc = (exports.VlcInsert = async (
+  vl,
+  qcType,
+  DFId,
+  DPId,
+  dsUid,
+  version,
+  userId
+) => {
+  try {
+    //vl holds all Conditional Expressions data
+    let ts = new Date().toLocaleString();
+    let errorVlc = [];
+    var vlc = [];
+
+    if (qcType) {
+      const vlcArray = [
+        {
+          key: "Conditional Expression Number ",
+          value: vl.conditionalExpressionNumber,
+          type: "number",
+        },
+
+        {
+          key: "Run Sequence",
+          value: vl.runSequence,
+          type: "number",
+        },
+        {
+          key: "Conditional Expression",
+          value: vl.conditionalExpression,
+          type: "string",
+        },
+
+        {
+          key: "Action",
+          value: vl.action,
+          type: "string",
+        },
+        {
+          key: "Active",
+          value: vl.active,
+          type: "string",
+        },
+      ];
+
+      let vlcRes = helper.validation(vlcArray);
+      if (vlcRes.length > 0) {
+        errorVlc.push(vlcRes);
+      }
+
+      if (vl.active) {
+        if (!helper.isActive(vl.active)) {
+          // hhhhhhhh44
+          errorVlc.push(" Active's Supported values : Y or N ");
+        }
+      }
+      if (vl.action) {
+        if (!helper.isAction(vl.action)) {
+          errorVlc.push(" Action's Supported values : Reject or Report ");
+        }
+        if (vl.action.toLowerCase() === "report") {
+          const rVlcArr = [
+            {
+              key: "Error Message",
+              value: vl.errorMessage,
+              type: "string",
+            },
+          ];
+
+          let rVclres = helper.validation(rVlcArr);
+          if (rVclres.length > 0) {
+            errorVlc.push(rVclres);
+          }
+        }
+      }
+    }
+
+    if (vl) {
+      if (vl.length > 0) {
+        if (!qcType) {
+          errorVlc.push(" qcType required and Value should be VLC ");
+        } else {
+          if (qcType.toLowerCase() !== "vlc") {
+            errorVlc.push(" qcType required and Value should be VLC ");
+          }
+        }
+      }
+    }
+
+    if (errorVlc.length > 0) {
+      errorVlc.splice(
+        0,
+        0,
+        `VLC Conditional Expression Number -${vl.conditionalExpressionNumber} `
+      );
+      return { sucRes: vlc, errRes: errorVlc };
+    }
+
+    let vlcObj = {};
+
+    let vlcBody = [
+      DFId,
+      DPId,
+      dsUid,
+      vl.conditionalExpressionNumber,
+      qcType,
+      vl.runSequence,
+      vl.action,
+      vl.conditionalExpression,
+      vl.errorMessage || null,
+      vl.active,
+      helper.getCurrentTime(),
+      userId,
+    ];
+
+    let createVlc = await DB.executeQuery(
+      `insert into ${schemaName}.dataset_qc_rules(dataflowid, datapackageid, datasetid, ext_ruleid, qc_type,
+        ruleseq, action, ruleexpr, errormessage, active_yn,created_dttm,updated_dttm,created_by_user,updated_by_user)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11,$12,$12 )`,
+      vlcBody
+    );
+    vlcObj.conditionalExpressionNumber = vl.conditionalExpressionNumber;
+    vlcObj.datasetid = dsUid;
+    vlcObj.action = "VLC created successfully.";
+    vlcObj.timestamp = ts;
+    vlc.push(vlcObj);
+
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.dataflow_audit_log
+                ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+      [
+        DFId,
+        DPId,
+        dsUid,
+        null,
+        version,
+        "New VLC",
+        "",
+        "",
+        userId,
+        helper.getCurrentTime(),
+      ]
+    );
+
+    return { sucRes: vlc, errRes: errorVlc };
+  } catch (err) {
+    console.log(err);
+    //throw error in json response with status 500.
+    Logger.error("catch :Data Set VLC Insert");
+    Logger.error(err);
+  }
+});
+
 exports.dataflowUpdate = async (
   data,
   externalID,
   DFId,
   version,
   externalSysName,
-  conf_data
+  conf_data,
+  userId
 ) => {
   try {
     let ts = new Date().toLocaleString();
@@ -1858,6 +2245,7 @@ exports.dataflowUpdate = async (
     let vendorId;
     let loc_id;
     let vName;
+    let vNameDB;
     let ptNum;
     let desc;
     var newDfobj = {};
@@ -1867,13 +2255,14 @@ exports.dataflowUpdate = async (
     let q4 = `select prot_nbr_stnd  from study where prot_id=$1;`;
 
     if (data.vendorName) {
-      let q2 = `select vend_id from ${schemaName}.vendor where vend_nm=$1;`;
+      let q2 = `select vend_id,vend_nm from ${schemaName}.vendor where vend_id=$1;`;
       let { rows } = await DB.executeQuery(q2, [data.vendorName]);
       vendorId = rows[0].vend_id;
+      vNameDB = rows[0].vend_nm;
     }
 
     if (data.location) {
-      let q5 = `select src_loc_id from ${schemaName}.source_location where cnn_url='${data.location}';`;
+      let q5 = `select src_loc_id from ${schemaName}.source_location where src_loc_id='${data.location}';`;
       let { rows: srcId } = await DB.executeQuery(q5);
       loc_id = srcId[0].src_loc_id;
     }
@@ -1887,7 +2276,8 @@ exports.dataflowUpdate = async (
     ]);
 
     if (data.vendorName) {
-      vName = data.vendorName;
+      // vName = data.vendorName;
+      vName = vNameDB;
     } else {
       vName = vendorData.rows[0].vend_nm;
     }
@@ -1917,7 +2307,7 @@ exports.dataflowUpdate = async (
       DFTestname = "TST-" + DFTestname;
     }
 
-    let updateQueryDF = `update ${schemaName}.dataflow set updt_tm=NOW(), refreshtimestamp=NOW()`;
+    let updateQueryDF = `update ${schemaName}.dataflow set updt_tm=NOW(), refreshtimestamp=NOW(),updated_by_user='${userId}'`;
 
     if (data.type) {
       updateQueryDF += `,type='${data.type}'`;
@@ -1953,7 +2343,7 @@ exports.dataflowUpdate = async (
       updateQueryDF += `,name='${DFTestname}'`;
     }
 
-    updateQueryDF += ` where externalid='${externalID}' returning *;`;
+    updateQueryDF += ` where externalsystemname='${externalSysName}' and externalid='${externalID}' returning *;`;
     // console.log(updateQueryDF);
 
     const { rows: existDfRows } = await DB.executeQuery(
@@ -1976,7 +2366,7 @@ exports.dataflowUpdate = async (
       DFId,
       version,
       JSON.stringify(conf_data),
-      externalSysName,
+      userId,
       new Date(),
     ];
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
@@ -1998,7 +2388,7 @@ exports.dataflowUpdate = async (
           key,
           oldData,
           newData,
-          externalSysName,
+          userId,
           helper.getCurrentTime(),
         ]
       );
@@ -2028,7 +2418,7 @@ exports.packageUpdate = async (
   DFId,
   version,
   ConnectionType,
-  externalSysName
+  userId
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -2160,7 +2550,7 @@ exports.packageUpdate = async (
       updateQueryDP += `, nopackageconfig='
       ${helper.stringToBoolean(data.noPackageConfig) ? 1 : 0}'`;
     }
-    updateQueryDP += ` where externalid='${externalID}' returning *;`;
+    updateQueryDP += ` where dataflowid='${DFId}' and externalid='${externalID}' returning *;`;
 
     const { rows: existDPRows } = await DB.executeQuery(
       `SELECT type, name, path, sasxptmethod ,password, nopackageconfig 
@@ -2190,7 +2580,7 @@ exports.packageUpdate = async (
           key,
           oldData,
           newData,
-          externalSysName,
+          userId,
           helper.getCurrentTime(),
         ]
       );
@@ -2224,7 +2614,8 @@ exports.datasetUpdate = async (
   ConnectionType,
   custSql,
   externalSysName,
-  testFlag
+  testFlag,
+  userId
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -2238,7 +2629,7 @@ exports.datasetUpdate = async (
 
     if (data.dataKind) {
       let checkDataKind = await DB.executeQuery(
-        `select datakindid,active from ${schemaName}.datakind where name='${data.dataKind}';`
+        `select datakindid,active from ${schemaName}.datakind where datakindid='${data.dataKind}';`
       );
 
       if (checkDataKind.rows.length > 0) {
@@ -2634,7 +3025,7 @@ exports.datasetUpdate = async (
       `SELECT datakindid , mnemonic, name, columncount, incremental, offsetcolumn , type, 
        path, ovrd_stale_alert ,headerrow , headerrownumber ,footerrow , footerrownumber ,
        customsql ,customsql_yn , tbl_nm , delimiter, escapecode ,quote, 
-       rowdecreaseallowed , data_freq from ${schemaName}.dataset where externalid='${externalID}';`
+       rowdecreaseallowed , data_freq from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${externalID}';`
     );
 
     const existDs = existDSRows[0];
@@ -2660,7 +3051,7 @@ exports.datasetUpdate = async (
           key,
           oldData,
           newData,
-          externalSysName,
+          userId,
           helper.getCurrentTime(),
         ]
       );
@@ -2693,7 +3084,7 @@ exports.clDefUpdate = async (
   cdId,
   version,
   ConnectionType,
-  externalSysName
+  userId
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -2931,7 +3322,7 @@ exports.clDefUpdate = async (
 
     const { rows: existCDRows } = await DB.executeQuery(
       `SELECT name, datatype, charactermin,charactermax,primarykey,required,"unique",position,
-      format,lov from ${schemaName}.columndefinition where externalid='${externalId}';`
+      format,lov from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${externalId}';`
     );
 
     const existClDef = existCDRows[0];
@@ -2957,7 +3348,7 @@ exports.clDefUpdate = async (
           key,
           oldData,
           newData,
-          externalSysName,
+          userId,
           helper.getCurrentTime(),
         ]
       );
@@ -2981,19 +3372,174 @@ exports.clDefUpdate = async (
   }
 };
 
+exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
+  try {
+    // uuuuuuuuuuuu
+    let ts = new Date().toLocaleString();
+    var vlc_update = [];
+    var newObj = {};
+    const vlcValidate = [];
+    let errorVlc = [];
+
+    if (typeof vl.runSequence != "undefined") {
+      vlcValidate.push({
+        key: "Run Sequence ",
+        value: vl.runSequence,
+        type: "number",
+      });
+    }
+    if (typeof vl.conditionalExpression != "undefined") {
+      vlcValidate.push({
+        key: "Conditional Expression",
+        value: vl.conditionalExpression,
+        type: "string",
+      });
+    }
+    if (typeof vl.action != "undefined") {
+      vlcValidate.push({
+        key: "Action",
+        value: vl.action,
+        type: "string",
+      });
+    }
+    if (typeof vl.active != "undefined") {
+      vlcValidate.push({
+        key: "Active",
+        value: vl.active,
+        type: "string",
+      });
+    }
+    let vlcRes = helper.validation(vlcValidate);
+
+    if (vlcRes.length > 0) {
+      errorVlc.push(vlcRes);
+    }
+
+    if (vl.active) {
+      if (!helper.isActive(vl.active)) {
+        // hhhhhhhh44
+        errorVlc.push(" Active's Supported values : Y or N ");
+      }
+    }
+    if (vl.action) {
+      if (!helper.isAction(vl.action)) {
+        errorVlc.push(" Action's Supported values : Reject or Report ");
+      }
+      if (vl.action.toLowerCase() === "report") {
+        const rVlcArr = [
+          {
+            key: "Error Message",
+            value: vl.errorMessage,
+            type: "string",
+          },
+        ];
+
+        let rVclres = helper.validation(rVlcArr);
+        if (rVclres.length > 0) {
+          errorVlc.push(rVclres);
+        }
+      }
+    }
+
+    if (errorVlc.length > 0) {
+      errorVlc.splice(
+        0,
+        0,
+        `VLC Conditional Expression Number -${vl.conditionalExpressionNumber}`
+      );
+      return { sucRes: vlc_update, errRes: errorVlc };
+    }
+
+    //heeheheheh
+    let updateQueryVLC = `UPDATE ${schemaName}.dataset_qc_rules set updated_dttm=NOW(),updated_by_user='${userId}' `;
+
+    // ruleseq, action, ruleexpr, errormessage, active_yn;
+    if (vl.runSequence) {
+      updateQueryVLC += `,ruleseq='${vl.runSequence}'`;
+    }
+    if (vl.action) {
+      updateQueryVLC += `,action='${vl.action}'`;
+    }
+    if (vl.conditionalExpression) {
+      updateQueryVLC += `,ruleexpr='${vl.conditionalExpression}'`;
+    }
+    if (vl.errorMessage) {
+      updateQueryVLC += `,errormessage='${vl.errorMessage}'`;
+    }
+    if (vl.active) {
+      updateQueryVLC += `,active_yn='${vl.active}'`;
+    }
+
+    updateQueryVLC += ` where datasetid='${DSId}' and ext_ruleid='${vl.conditionalExpressionNumber}' returning *;`;
+
+    // console.log(updateQueryCD);
+
+    const { rows: existVLCRows } = await DB.executeQuery(
+      `SELECT ruleseq, action, ruleexpr,errormessage,active_yn from ${schemaName}.dataset_qc_rules
+       where datasetid='${DSId}' and ext_ruleid='${vl.conditionalExpressionNumber}';`
+    );
+
+    const existVlc = existVLCRows[0];
+    const vlcUpdate = await DB.executeQuery(updateQueryVLC);
+    const vlcfObj = vlcUpdate.rows[0];
+    const diffObj = helper.getdiffKeys(existVlc, vlcfObj);
+
+    // console.log("dada", diffObj);
+
+    for (let key of Object.keys(diffObj)) {
+      let oldData = diffObj[key];
+      let newData = vlcfObj[key];
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.dataflow_audit_log
+                        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
+                        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
+        [
+          DFId, // DFId, DPId, dsUid, version, userId
+          DPId,
+          DSId,
+          null,
+          version,
+          key,
+          oldData,
+          newData,
+          userId,
+          helper.getCurrentTime(),
+        ]
+      );
+    }
+
+    if (Object.keys(diffObj).length === 0) {
+      return { sucRes: vlc_update, errRes: errorVlc };
+    } else {
+      newObj.conditionalExpressionNumber = vl.conditionalExpressionNumber;
+      newObj.DataSetId = DSId;
+      newObj.action = "VLC update successfully.";
+      newObj.timestamp = ts;
+      vlc_update.push(newObj);
+
+      return { sucRes: vlc_update, errRes: errorVlc };
+    }
+  } catch (err) {
+    console.log(err);
+    Logger.error("catch : VLC update");
+    Logger.error(err);
+  }
+};
+
 exports.removeDataflow = async (
   DFId,
   externalID,
   version,
   externalSysName,
-  conf_data
+  conf_data,
+  userId
 ) => {
   try {
     let ts = new Date().toLocaleString();
     var dataflow = [];
     var newDfobj = {};
 
-    const deleteQueryDF = `update ${schemaName}.dataflow set updt_tm=NOW(),refreshtimestamp=NOW(), del_flg=1 where dataflowid='${DFId}' `;
+    const deleteQueryDF = `update ${schemaName}.dataflow set updt_tm=NOW(),refreshtimestamp=NOW(),updated_by_user='${userId}', del_flg=1 where dataflowid='${DFId}' `;
     const removeDf = await DB.executeQuery(deleteQueryDF);
 
     const deleteQueryDP = `update ${schemaName}.datapackage set updt_tm=NOW(), del_flg=1 where dataflowid='${DFId}' returning datapackageid;`;
@@ -3026,7 +3572,7 @@ exports.removeDataflow = async (
       DFId,
       version,
       JSON.stringify(conf_data),
-      externalSysName,
+      userId,
       new Date(),
     ];
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
@@ -3044,7 +3590,7 @@ exports.removeDataflow = async (
         "Remove Dataflow",
         0,
         1,
-        externalSysName,
+        userId,
         helper.getCurrentTime(),
       ]
     );
@@ -3057,13 +3603,7 @@ exports.removeDataflow = async (
   }
 };
 
-exports.removeDataPackage = async (
-  externalID,
-  DPID,
-  DFId,
-  version,
-  externalSysName
-) => {
+exports.removeDataPackage = async (externalID, DPID, DFId, version, userId) => {
   try {
     let ts = new Date().toLocaleString();
     var dataPackage = [];
@@ -3100,7 +3640,7 @@ exports.removeDataPackage = async (
         "Remove DataPackage",
         0,
         1,
-        externalSysName,
+        userId,
         helper.getCurrentTime(),
       ]
     );
@@ -3119,7 +3659,7 @@ exports.removeDataSet = async (
   DFId,
   DSID,
   version,
-  externalSysName
+  userId
 ) => {
   try {
     let ts = new Date().toLocaleString();
@@ -3151,7 +3691,7 @@ exports.removeDataSet = async (
         "Remove Data Set",
         0,
         1,
-        externalSysName,
+        userId,
         helper.getCurrentTime(),
       ]
     );
@@ -3171,7 +3711,7 @@ exports.removeColumnDefination = async (
   dsId,
   version,
   cdId,
-  externalSysName
+  userId
 ) => {
   try {
     let ts = new Date().toLocaleString();
@@ -3200,7 +3740,7 @@ exports.removeColumnDefination = async (
         "Remove Column Definition",
         0,
         1,
-        externalSysName,
+        userId,
         helper.getCurrentTime(),
       ]
     );
