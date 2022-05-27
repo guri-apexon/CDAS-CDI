@@ -472,7 +472,7 @@ exports.saveLocationData = async function (req, res) {
           const dataflowId = row.dataflowid;
           const comparisionObj = {
             loc_typ: locationType,
-            ip_servr: ipServer || null,
+            ip_servr: ipServer,
             port: port || null,
             data_strc: dataStructure,
             active: active === true ? 1 : 0,
