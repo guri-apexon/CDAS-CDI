@@ -26,7 +26,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
-  const { datasetColumns, sqlColumns } = dataSets;
+  const { sqlColumns } = dataSets;
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
   const [showColumns, setShowColumns] = useState(false);
@@ -80,58 +80,30 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
     }, 1000);
   };
 
-  const formatDBColumns = (datacolumns) => {
-    const newData =
-      datacolumns.length > 1
-        ? datacolumns.map((column, i) => {
-            const newObj = {
-              dbColumnId: column.columnid,
-              uniqueId: `u${i}`,
-              variableLabel: column.variable || "",
-              columnName: column.name || "",
-              position: column.position || "",
-              format: column.format || "",
-              dataType: column.datatype || "",
-              primaryKey: column.primaryKey ? "Yes" : "No",
-              unique: column.unique === 1 ? "Yes" : "No",
-              required: column.required === 1 ? "Yes" : "No",
-              minLength: column.charactermin || "",
-              maxLength: column.charactermax || "",
-              values: column.lov || "",
-              isInitLoad: true,
-              isHavingColumnName: true,
-            };
-            return newObj;
-          })
-        : [];
-    setFormattedData([...newData]);
-    setLoading(false);
-  };
-
   const formatJDBCColumns = (arr) => {
-    const newData =
-      arr.length > 0
-        ? arr.map((column, i) => {
-            const newObj = {
-              dbColumnId: column.columnid || "",
-              uniqueId: `u${i}`,
-              variableLabel: column.varable || "",
-              columnName: column.columnName || "",
-              format: column.format || "",
-              dataType: column.dataType || "",
-              primaryKey: column.primaryKey ? "Yes" : "No",
-              unique: column.unique === true ? "Yes" : "No",
-              required: column.required === true ? "Yes" : "No",
-              minLength: column.charactermin || "",
-              maxLength: column.charactermax || "",
-              position: 0,
-              values: column.lov || "",
-              isInitLoad: true,
-              isHavingColumnName: true,
-            };
-            return newObj;
-          })
-        : [];
+    const newData = arr.length
+      ? arr.map((column, i) => {
+          const newObj = {
+            dbColumnId: column.columnid || "",
+            uniqueId: i + 1,
+            variableLabel: column.variable || "",
+            columnName: column.columnName || "",
+            format: column.format || "",
+            dataType: column.dataType || "",
+            primaryKey: column.primaryKey ? "Yes" : "No",
+            unique: column.unique ? "Yes" : "No",
+            required: column.required ? "Yes" : "No",
+            minLength: column.charactermin || "",
+            maxLength: column.charactermax || "",
+            position: 0,
+            values: column.lov || "",
+            isInitLoad: true,
+            isHavingColumnName: true,
+            isSaved: true,
+          };
+          return newObj;
+        })
+      : [];
     setFormattedData([...newData]);
     setLoading(false);
   };
@@ -169,10 +141,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
 
   useEffect(() => {
     if (!isSftp(locationType)) {
-      if (datasetColumns.length > 0) {
-        formatDBColumns(datasetColumns);
-        setSelectedMethod("fromDB");
-      } else if (sqlColumns.length > 0) {
+      if (sqlColumns.length) {
         formatJDBCColumns(sqlColumns);
         setSelectedMethod("fromDB");
       }
@@ -181,7 +150,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
       setShowColumns(false);
       setLoading(false);
     }
-  }, [datasetColumns, sqlColumns]);
+  }, [sqlColumns]);
 
   useEffect(() => {
     columnFunc.current = () => {

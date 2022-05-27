@@ -482,9 +482,9 @@ export const convertFileData = (sourceData, protNo) => {
           minLength: e[8] || "",
           maxLength: e[9] || "",
           values: e[10] || "",
+          isEditMode: true,
           // isInitLoad: true,
           // isHavingColumnName: true,
-          isSaved: true,
         };
         return newObj;
       })

@@ -75,6 +75,9 @@ export default function DSColumnTable({
   const setInitRow = () => {
     setRows([{ uniqueId: 1, ...initColumnObj }]);
   };
+  const updateRowsInDf = () => {
+    messageContext?.setDataflow({ columnDefinition: rows });
+  };
   const changeValuesTitle = (newValues) => {
     const noOf = newValues?.split("~")?.filter(Boolean)?.length || "No";
     setNoOfvalues(noOf);
@@ -331,7 +334,7 @@ export default function DSColumnTable({
           );
         } else {
           data = (editedBackup.length > 1 ? editedBackup : prevRows).filter(
-            (e) => e.dbColumnId
+            (e) => e.isSaved
           );
         }
       } else {
@@ -363,10 +366,8 @@ export default function DSColumnTable({
       .map((e) => {
         const d = {
           ...e,
-          isSaved: true,
           values: e.values.toString().trim(),
           columnName: e.columnName.toString().trim(),
-          isEditMode: false,
         };
         return d;
       })
@@ -392,6 +393,9 @@ export default function DSColumnTable({
       );
       return false;
     }
+    setRows((prevRows) =>
+      prevRows.map((x) => ({ ...x, isEditMode: false, isSaved: true }))
+    );
   };
 
   const onCancelAll = () => {
@@ -511,8 +515,10 @@ export default function DSColumnTable({
     } else {
       setDisableSaveAll(false);
     }
+    if (rows.every((x) => !x.isEditMode)) {
+      updateRowsInDf();
+    }
     // setFilteredRows(rows);
-    // messageContext?.setDataflow({ columnDefinition: rows });
   }, [rows]);
 
   // useEffect(() => {
