@@ -79,12 +79,21 @@ const DataPackages = React.memo(() => {
     },
   ];
 
-  const showConfig = (e, checked) => {
-    setConfigShow(checked);
-  };
   const resetForm = () => {
     setConfigShow(false);
     setShowForm(false);
+    setNamingConvention("");
+    setPackagePassword("");
+    setSftpPath("");
+    setCompression("");
+    setNotMatchedType(false);
+  };
+  const showConfig = (e, checked) => {
+    if (!checked) {
+      resetForm();
+    } else {
+      setConfigShow(checked);
+    }
   };
   // const getPackages = (query = "") => {
   //   dispatch(getPackagesList(query));
@@ -212,7 +221,12 @@ const DataPackages = React.memo(() => {
                         value={compression}
                         size="small"
                         placeholder="Select type..."
-                        onChange={(e) => setCompression(e.target.value)}
+                        onChange={(e) => {
+                          setCompression(e.target.value);
+                          if (e.target.value === "") {
+                            setNotMatchedType(false);
+                          }
+                        }}
                         className="mb-20 package-type"
                       >
                         {packageComprTypes.map((type, i) => (

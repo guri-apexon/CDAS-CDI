@@ -109,6 +109,7 @@ exports.tablecolumns = async (req, res) => {
         break;
 
       case "sqlserver":
+      case "sql server":
         q = `select c.name columnName,t1.name as dataType,
       case when c.is_nullable=1 then 'yes' else 'no' end as required,
       case when r.ConstraintType in ('PK' , 'UQ') then 'Yes' else 'No' end as "unique",
@@ -145,6 +146,9 @@ exports.tablecolumns = async (req, res) => {
         break;
 
       case "mysql":
+        q = `SHOW COLUMNS FROM ${tableName}`;
+        break;
+      default:
         q = `SHOW COLUMNS FROM ${tableName}`;
         break;
     }

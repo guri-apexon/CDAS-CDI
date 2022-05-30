@@ -69,9 +69,19 @@ const AuditLog = () => {
             column.sortFunction(sortedColumnValue, sortOrderValue)
           );
         }
-        //  console.log("filteredRows", filteredRows);
       }
     });
+    if (sortedColumnValue === "log_version") {
+      filteredRows.sort((a, b) => {
+        return (
+          sortOrderValue === "asc"
+            ? Number(a[sortedColumnValue]) > Number(b[sortedColumnValue])
+            : Number(a[sortedColumnValue]) < Number(b[sortedColumnValue])
+        )
+          ? 1
+          : -1;
+      });
+    }
     return filteredRows;
   };
 
@@ -82,6 +92,13 @@ const AuditLog = () => {
       toBeExportRows,
       inlineFilters
     );
+    // console.log(
+    //   "sortedFilteredData::::",
+    //   sortedFilteredData,
+    //   tableColumns,
+    //   toBeExportRows,
+    //   inlineFilters
+    // );
     setExportTableRows(sortedFilteredData);
     return sortedFilteredData;
   };
@@ -94,14 +111,13 @@ const AuditLog = () => {
     // console.log("inDown", exportHeader);
     const exportRows = exportDataRows();
     const tempObj = {};
-    console.log(tableColumns);
+    // console.log("tableColumns", tableColumns);
     const temp = tableColumns
       .filter((d) => d.hidden !== true && d.ignore !== true)
       .map((d) => {
         tempObj[d.accessor] = d.header;
         return d;
       });
-    console.log({ tempObj });
     const newData = exportRows.map((obj) => {
       const newObj = pick(obj, Object.keys(tempObj));
       return newObj;
