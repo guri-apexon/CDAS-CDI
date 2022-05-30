@@ -3868,47 +3868,42 @@ exports.removeColumnDefination = async (
 
 exports.dataflowRollBack = async (dfid) => {
   try {
-    const deleteLog = `delete from ${schemaName}.dataflow_audit_log where dataflowid ='${dfid}'`;
-    const logDelete = await DB.executeQuery(deleteLog);
-
-    const selectPackage = `select datapackageid from ${schemaName}.datapackage where dataflowid='${dfid}'`;
-    const packageId = await DB.executeQuery(selectPackage);
-
-    const DPID = packageId.rows;
-
+    await DB.executeQuery(
+      `delete from ${schemaName}.dataflow_audit_log where dataflowid ='${dfid}';`
+    );
+    await DB.executeQuery(
+      `delete from ${schemaName}.dataset_qc_rules where dataflowid ='${dfid}';`
+    );
+    await DB.executeQuery(
+      `delete from ${schemaName}.cdr_ta_queue where dataflowid ='${dfid}';`
+    );
+    await DB.executeQuery(
+      `delete from ${schemaName}.dataflow_version where dataflowid ='${dfid}';`
+    );
+    const { rows: packagesIds } = await DB.executeQuery(
+      `select datapackageid from ${schemaName}.datapackage where dataflowid='${dfid}';`
+    );
     //Get Dataset data and column data delete
-    for (let id of DPID) {
-      const selectQueryDS = `select datasetid from ${schemaName}.dataset where datapackageid='${id.datapackageid}';`;
-      const queryDS = await DB.executeQuery(selectQueryDS);
-      const DSID = queryDS.rows;
-
-      for (let ds_id of DSID) {
-        const deleteClDef = `delete from ${schemaName}.columndefinition where datasetid ='${ds_id.datasetid}'`;
-        const clDefDelete = await DB.executeQuery(deleteClDef);
+    for (let item of packagesIds) {
+      const { rows: datasetsIds } = await DB.executeQuery(
+        `select datasetid from ${schemaName}.dataset where datapackageid='${item.datapackageid}';`
+      );
+      for (let item of datasetsIds) {
+        const clDefDelete = await DB.executeQuery(
+          `delete from ${schemaName}.columndefinition where datasetid ='${item.datasetid}';`
+        );
       }
+      // Dataset data delete
+      const datasetDelete = await DB.executeQuery(
+        `delete from ${schemaName}.dataset where datapackageid ='${item.datapackageid}';`
+      );
     }
-
-    const deleteQc = `delete from ${schemaName}.dataset_qc_rules where dataflowid ='${dfid}'`;
-    const qcDelete = await DB.executeQuery(deleteQc);
-
-    const deleteQueue = `delete from ${schemaName}.cdr_ta_queue where dataflowid ='${dfid}'`;
-    const queueDelete = await DB.executeQuery(deleteQueue);
-
-    // Dataset data delete
-    for (let key of DPID) {
-      const deleteDataset = `delete from ${schemaName}.dataset where datapackageid ='${key.datapackageid}'`;
-      const datasetDelete = await DB.executeQuery(deleteDataset);
-    }
-
-    const deletePackage = `delete from ${schemaName}.datapackage where dataflowid ='${dfid}'`;
-    const packageDelete = await DB.executeQuery(deletePackage);
-
-    const deleteVersion = `delete from ${schemaName}.dataflow_version where dataflowid ='${dfid}'`;
-    const versionDelete = await DB.executeQuery(deleteVersion);
-
-    const deleteDataflow = `delete from ${schemaName}.dataflow where dataflowid ='${dfid}'`;
-    const dataflowDelete = await DB.executeQuery(deleteDataflow);
-
+    await DB.executeQuery(
+      `delete from ${schemaName}.datapackage where dataflowid ='${dfid}';`
+    );
+    await DB.executeQuery(
+      `delete from ${schemaName}.dataflow where dataflowid ='${dfid}';`
+    );
     return;
   } catch (err) {
     console.log(err);

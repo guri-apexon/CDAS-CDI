@@ -159,23 +159,24 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       serviceOwners,
     } = req.body;
 
-    let serviceUrl = [];
-
     if (externalSystemName !== "CDI") {
       var dataRes = externalFunction.insertValidation(req.body);
-
-      if (serviceOwners) {
+      if (serviceOwners && Array.isArray(serviceOwners)) {
+        let serviceUrl = [];
         for (let key of serviceOwners) {
-          let ulr = `select call_back_url_id from ${schemaName}.call_back_urls where serv_ownr='${key}';`;
-          const ulrData = await DB.executeQuery(ulr);
-          if (ulrData.rows.length > 0) {
-            serviceUrl.push(ulrData.rows[0].call_back_url_id);
+          const {
+            rows: [callbackUrlObj],
+          } = await DB.executeQuery(
+            `select call_back_url_id from ${schemaName}.call_back_urls where serv_ownr='${key}';`
+          );
+          if (callbackUrlObj) {
+            serviceUrl.push(callbackUrlObj.call_back_url_id);
           }
         }
+        serviceOwners = serviceUrl;
       }
-      serviceOwners = serviceUrl;
 
-      if (dataRes.length > 0) {
+      if (dataRes.length) {
         validate.push(dataRes);
         return apiResponse.ErrorResponse(res, validate);
       }
