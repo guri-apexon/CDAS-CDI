@@ -378,10 +378,13 @@ exports.saveLocationData = async function (req, res) {
     );
 
     const curDate = helper.getCurrentTime();
-    const newId = helper.generateUniqueID();
 
     const updatedURL = connURL || newURL;
-    const updatedID = locationID || existingLoc?.rows[0]?.src_loc_id || newId;
+    let updatedID = "";
+
+    if (existingLoc?.rows) {
+      updatedID = locationID || existingLoc?.rows[0]?.src_loc_id;
+    }
 
     // check for location exist
     const isExist = await checkLocationExists(
@@ -390,7 +393,7 @@ exports.saveLocationData = async function (req, res) {
       userName,
       dbName,
       externalSystemName,
-      locationID || existingLoc?.rows[0]?.src_loc_id || null
+      updatedID || null
     );
 
     if (isExist > 0) {
@@ -436,7 +439,7 @@ exports.saveLocationData = async function (req, res) {
     }
 
     // create location
-    if (!existingLoc?.rowCount) {
+    if (!updatedID) {
       const inset = await DB.executeQuery($insertLocation, body);
       if (systemName === "CDI") {
         return apiResponse.successResponseWithData(
@@ -451,14 +454,6 @@ exports.saveLocationData = async function (req, res) {
         });
       }
     } else {
-      if (!updatedID) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Operation failed",
-          commonError
-        );
-      }
-
       // update location
       const updateLocation = await DB.executeQuery($updateLocation, [
         ...body,
