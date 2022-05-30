@@ -220,11 +220,12 @@ POST http://localhost:4001/v1/api/datakind/create HTTP/1.1
 content-type: application/json
 
 {
-    "dkName": "Btest_datasdfs",
-    "dkDesc": "testn",
+    "dkName": "test_new_123",
+    "dkDesc": "text change",
     "dkESName": "GDMPM-DAS",
     "dkStatus": 1,
-    "ExternalId": "1232"
+    "ExternalId": "",
+    "userId": "u1105372"
 }
 
 ### Update DataKind Status
@@ -714,19 +715,17 @@ POST http://localhost:4001/v1/api/location/create HTTP/1.1
 content-type: application/json
 
 {
+    "ExternalId": "newid123",
     "active": true,
     "dataStructure": "tabular",
-    "locationID": "wkfmexkrq40cva4l",
-    "locationName": "vaithe_test_hive_cdp",
-    "locationType": "Hive CDP",
-    "ipServer": "hs2-tdse-us-cdp-dw-hive.env-v5cswj.dw.imkp-dy57.cloudera.site",
-    "userName": "srv_tcdh_prd_ro",
-    "connURL": "jdbc:hive2://hs2-tdse-us-cdp-dw-hive.env-v5cswj.dw.imkp-dy57.cloudera.site:443/tctmgt01p;transportMode=http;httpPath=cliservice;ssl=1;AllowSelfSignedCerts=1;AuthMech=3",
-    "port": "443",
-    "dbName": "tctmgt01p",
-    "externalSystemName": "CDR",
-    "password": "asdfsadfasdfsads",
-    "systemName": "CDI",
+    "locationName": "test_loc_new_123",
+    "externalSystemName": "IQB",
+    "locationType": "Oracle",
+    "ipServer": "dbhostnam3",
+    "port": "2345",
+    "dbName": "testdb",
+    "userName": "username",
+    "password": "password",
     "userId": "u1105372"
 }
 
