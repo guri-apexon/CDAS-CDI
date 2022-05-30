@@ -321,8 +321,11 @@ exports.saveLocationData = async function (req, res) {
       userName,
       password,
     } = req.body;
+    const curDate = helper.getCurrentTime();
 
-    if (!systemName === "CDI") {
+    let existingLoc = "";
+
+    if (systemName !== "CDI") {
       if (!ExternalId) {
         return apiResponse.validationErrorWithData(
           res,
@@ -330,12 +333,10 @@ exports.saveLocationData = async function (req, res) {
           mandatoryMissing
         );
       }
-    }
 
-    let existingLoc = "";
-
-    if (ExternalId) {
-      existingLoc = await DB.executeQuery($selectExternalId, [ExternalId]);
+      if (ExternalId) {
+        existingLoc = await DB.executeQuery($selectExternalId, [ExternalId]);
+      }
     }
 
     if (locationID) {
@@ -377,13 +378,11 @@ exports.saveLocationData = async function (req, res) {
       dbName
     );
 
-    const curDate = helper.getCurrentTime();
-
     const updatedURL = connURL || newURL;
     let updatedID = "";
 
     if (existingLoc?.rows) {
-      updatedID = locationID || existingLoc?.rows[0]?.src_loc_id;
+      updatedID = existingLoc?.rows[0]?.src_loc_id;
     }
 
     // check for location exist
@@ -426,21 +425,23 @@ exports.saveLocationData = async function (req, res) {
     };
 
     // write password to vault
-    if (password === "Yes") {
-      try {
-        await helper.writeVaultData(updatedID, vaultData);
-      } catch (error) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Operation failed",
-          "Error in Vault"
-        );
-      }
-    }
 
     // create location
     if (!updatedID) {
       const inset = await DB.executeQuery($insertLocation, body);
+
+      if (password === "Yes") {
+        try {
+          await helper.writeVaultData(inset?.rows[0].src_loc_id, vaultData);
+        } catch (error) {
+          return apiResponse.validationErrorWithData(
+            res,
+            "Operation failed",
+            "Error in Vault"
+          );
+        }
+      }
+
       if (systemName === "CDI") {
         return apiResponse.successResponseWithData(
           res,
@@ -454,6 +455,14 @@ exports.saveLocationData = async function (req, res) {
         });
       }
     } else {
+      if (!updatedID) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Operation failed",
+          mandatoryMissing
+        );
+      }
+
       // update location
       const updateLocation = await DB.executeQuery($updateLocation, [
         ...body,

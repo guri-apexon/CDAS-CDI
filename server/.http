@@ -715,13 +715,13 @@ POST http://localhost:4001/v1/api/location/create HTTP/1.1
 content-type: application/json
 
 {
-    "ExternalId": "newid123",
+    "ExternalId": "",
     "active": true,
     "dataStructure": "tabular",
-    "locationName": "test_loc_new_123",
+    "locationName": "test_T_123",
     "externalSystemName": "IQB",
     "locationType": "Oracle",
-    "ipServer": "dbhostnam3",
+    "ipServer": "dbhostname322",
     "port": "2345",
     "dbName": "testdb",
     "userName": "username",
