@@ -307,7 +307,13 @@ const LocationModal = (props) => {
       }
     }
     setExistErr("");
-    dispatch(saveLocationData(values));
+    dispatch(
+      saveLocationData({
+        ...values,
+        active: values.active === 0 ? false : true,
+        systemName: "CDI",
+      })
+    );
     return null;
   };
 

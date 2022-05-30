@@ -708,24 +708,25 @@ content-type: application/json
     "userId": "u1105372"
 }
 
-### update location
+### create / update location
 
-POST http://localhost:4001/v1/api/location/update HTTP/1.1
+POST http://localhost:4001/v1/api/location/create HTTP/1.1
 content-type: application/json
 
 {
-    "locationID": "7cex6pyiewwre7fq",
-    "locationName": "vaithe_test_MySQL",
-    "active": 1,
-    "locationType": "MySQL",
-    "ipServer": "ca2uhdtsd001vd",
+    "active": true,
     "dataStructure": "tabular",
-    "userName": "vault",
-    "password": "",
-    "connURL": "jdbc:mysql://ca2uhdtsd001vd:3306/vault",
-    "port": "3306",
-    "dbName": "vault",
-    "externalSystemName": "IQB",
+    "locationID": "wkfmexkrq40cva4l",
+    "locationName": "vaithe_test_hive_cdp",
+    "locationType": "Hive CDP",
+    "ipServer": "hs2-tdse-us-cdp-dw-hive.env-v5cswj.dw.imkp-dy57.cloudera.site",
+    "userName": "srv_tcdh_prd_ro",
+    "connURL": "jdbc:hive2://hs2-tdse-us-cdp-dw-hive.env-v5cswj.dw.imkp-dy57.cloudera.site:443/tctmgt01p;transportMode=http;httpPath=cliservice;ssl=1;AllowSelfSignedCerts=1;AuthMech=3",
+    "port": "443",
+    "dbName": "tctmgt01p",
+    "externalSystemName": "CDR",
+    "password": "asdfsadfasdfsads",
+    "systemName": "CDI",
     "userId": "u1105372"
 }
 
