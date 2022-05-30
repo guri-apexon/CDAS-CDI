@@ -192,7 +192,7 @@ const DataFlow = ({
       }
       const payload = {
         vendorid: FormValues.vendor.vend_id,
-        location: FormValues.locationName.src_loc_id,
+        locationID: FormValues.locationName.src_loc_id,
         dataStructure: FormValues.dataStructure,
         testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,

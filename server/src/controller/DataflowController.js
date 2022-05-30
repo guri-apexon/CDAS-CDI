@@ -733,7 +733,6 @@ exports.updateDataFlow = async (req, res) => {
       active,
       connectionType,
       exptDtOfFirstProdFile,
-
       protocolNumber,
       ExternalId,
       vendorid,
@@ -1798,7 +1797,7 @@ exports.fetchdataflowDetails = async (req, res) => {
       for (const el of tempDS) {
         if (el.datapackageid === each.datapackageid) {
           let datapackageObj = {
-            externalID: each.externalid,
+            externalID: each.ExternalId,
             type: each.type,
             sasXptMethod: each.sasxptmethod,
             path: each.path,
@@ -1811,7 +1810,7 @@ exports.fetchdataflowDetails = async (req, res) => {
           if (el.datasetid === each.datasetid) {
             let datasetObj = {
               columncount: el.columncount,
-              externalID: el.externalid,
+              externalID: el.ExternalId,
               customQuery: el.customsql_yn,
               customSql: el.customsql,
               tableName: el.tbl_nm,

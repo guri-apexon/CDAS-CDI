@@ -3889,12 +3889,12 @@ exports.dataflowRollBack = async (dfid) => {
         `select datasetid from ${schemaName}.dataset where datapackageid='${item.datapackageid}';`
       );
       for (let item of datasetsIds) {
-        const clDefDelete = await DB.executeQuery(
+        await DB.executeQuery(
           `delete from ${schemaName}.columndefinition where datasetid ='${item.datasetid}';`
         );
       }
       // Dataset data delete
-      const datasetDelete = await DB.executeQuery(
+      await DB.executeQuery(
         `delete from ${schemaName}.dataset where datapackageid ='${item.datapackageid}';`
       );
     }
