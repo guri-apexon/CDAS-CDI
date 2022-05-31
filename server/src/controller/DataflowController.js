@@ -95,6 +95,7 @@ exports.getStudyDataflows = async (req, res) => {
               ...r,
               dataSets: 0,
               dataPackages: 0,
+              locationType: r.locationType || "",
             };
             return acc.set(dataFlowId, {
               ...current,
@@ -1794,28 +1795,25 @@ exports.searchDataflow = async (req, res) => {
 
 exports.fetchdataflowSource = async (req, res) => {
   try {
-    let dataflow_id = req.params.id;
-    let q = `select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."name" as datasetname from ${schemaName}.dataflow d
+    const { id: dataflow_id } = req.params;
+    let { rows } =
+      await DB.executeQuery(`select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."name" as datasetname from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
       inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
-      where d.dataflowid ='${dataflow_id}'`;
-    Logger.info({
-      message: "fetchdataflowSource",
-      dataflow_id,
-    });
-    let { rows } = await DB.executeQuery(q);
+      where d.dataflowid ='${dataflow_id}';`);
     return apiResponse.successResponseWithData(
       res,
       "Operation successfully.",
       rows
     );
   } catch (error) {
-    console.log(error);
     Logger.error("catch :fetchdataflowSource");
-    Logger.error(error);
-    return apiResponse.ErrorResponse(res, error);
+    return apiResponse.ErrorResponse(
+      res,
+      error.message || "Something went wrong"
+    );
   }
 };
 
