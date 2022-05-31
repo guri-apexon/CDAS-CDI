@@ -1066,6 +1066,13 @@ exports.updateDataFlow = async (req, res) => {
       ResponseBody.success = [];
       ResponseBody.errors = [];
 
+      if (rows[0].del_flg === 1) {
+        return apiResponse.ErrorResponse(
+          res,
+          "This dataFlow data already removed"
+        );
+      }
+
       if (delFlag === 1) {
         await externalFunction
           .removeDataflow(
@@ -1107,74 +1114,273 @@ exports.updateDataFlow = async (req, res) => {
             if (dpRows.rows.length > 0) {
               const DPId = dpRows.rows[0].datapackageid;
 
-              if (each.delFlag === 1) {
-                await externalFunction
-                  .removeDataPackage(
-                    packageExternalId,
-                    DPId,
-                    DFId,
-                    DFVer,
-                    userId
-                  )
-                  .then((res) => {
-                    ResponseBody.success.push(res.sucRes);
-                  });
+              if (dpRows.rows[0].del_flg == 1) {
+                ResponseBody.errors.push([
+                  `This - ${packageExternalId}  Data package already removed`,
+                ]);
               } else {
-                var updatePackage = await externalFunction
-                  .packageUpdate(
-                    each,
-                    packageExternalId,
-                    DPId,
-                    DFId,
-                    DFVer,
-                    ConnectionType,
-                    userId
-                  )
-                  .then((res) => {
-                    if (Object.keys(res.sucRes).length !== 0) {
+                if (each.delFlag === 1) {
+                  await externalFunction
+                    .removeDataPackage(
+                      packageExternalId,
+                      DPId,
+                      DFId,
+                      DFVer,
+                      userId
+                    )
+                    .then((res) => {
                       ResponseBody.success.push(res.sucRes);
-                    }
-                    if (Object.keys(res.errRes).length !== 0) {
-                      ResponseBody.errors.push(res.errRes);
-                    }
-                  });
+                    });
+                } else {
+                  var updatePackage = await externalFunction
+                    .packageUpdate(
+                      each,
+                      packageExternalId,
+                      DPId,
+                      DFId,
+                      DFVer,
+                      ConnectionType,
+                      userId
+                    )
+                    .then((res) => {
+                      if (Object.keys(res.sucRes).length !== 0) {
+                        ResponseBody.success.push(res.sucRes);
+                      }
+                      if (Object.keys(res.errRes).length !== 0) {
+                        ResponseBody.errors.push(res.errRes);
+                      }
+                    });
 
-                if (each.dataSet && each.dataSet.length > 0) {
-                  // if datasets exists
-                  for (let obj of each.dataSet) {
-                    let selectDS = `select * from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${obj.ExternalId}'`;
-                    let { rows: dsRows } = await DB.executeQuery(selectDS);
+                  if (each.dataSet && each.dataSet.length > 0) {
+                    // if datasets exists
+                    for (let obj of each.dataSet) {
+                      let selectDS = `select * from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${obj.ExternalId}'`;
+                      let { rows: dsRows } = await DB.executeQuery(selectDS);
 
-                    const datasetExternalId = obj.ExternalId;
-                    if (dsRows.length > 0) {
-                      const DSId = dsRows[0].datasetid;
-                      const custSql = dsRows[0].customsql;
+                      const datasetExternalId = obj.ExternalId;
+                      if (dsRows.length > 0) {
+                        const DSId = dsRows[0].datasetid;
+                        const custSql = dsRows[0].customsql;
 
-                      if (obj.delFlag === 1) {
-                        await externalFunction
-                          .removeDataSet(
-                            datasetExternalId,
-                            DPId,
-                            DFId,
-                            DSId,
-                            DFVer,
-                            userId
-                          )
-                          .then((res) => {
-                            ResponseBody.success.push(res.sucRes);
-                          });
+                        if (dsRows[0].del_flg == 1) {
+                          ResponseBody.errors.push([
+                            `This - ${datasetExternalId}  Data set already removed`,
+                          ]);
+                        } else {
+                          if (obj.delFlag === 1) {
+                            await externalFunction
+                              .removeDataSet(
+                                datasetExternalId,
+                                DPId,
+                                DFId,
+                                DSId,
+                                DFVer,
+                                userId
+                              )
+                              .then((res) => {
+                                ResponseBody.success.push(res.sucRes);
+                              });
+                          } else {
+                            //Function call for update dataSet data
+                            var updateDataset = await externalFunction
+                              .datasetUpdate(
+                                obj,
+                                datasetExternalId,
+                                DSId,
+                                DPId,
+                                DFId,
+                                DFVer,
+                                ConnectionType,
+                                custSql,
+                                externalSysName,
+                                testFlag,
+                                userId
+                              )
+                              .then((res) => {
+                                if (Object.keys(res.sucRes).length !== 0) {
+                                  ResponseBody.success.push(res.sucRes);
+                                }
+                                if (Object.keys(res.errRes).length !== 0) {
+                                  ResponseBody.errors.push(res.errRes);
+                                }
+                              });
+
+                            if (
+                              obj.columnDefinition &&
+                              obj.columnDefinition.length > 0
+                            ) {
+                              for (let el of obj.columnDefinition) {
+                                let selectCD = `select * from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${el.ExternalId}'`;
+                                let { rows: cdRows } = await DB.executeQuery(
+                                  selectCD
+                                );
+
+                                const cdExternalId = el.ExternalId;
+                                if (cdRows.length > 0) {
+                                  const cdId = cdRows[0].columnid;
+
+                                  if (cdRows[0].del_flg === 1) {
+                                    ResponseBody.errors.push([
+                                      `This - ${cdExternalId}  column definition already removed`,
+                                    ]);
+                                  } else {
+                                    if (el.delFlag === 1) {
+                                      await externalFunction
+                                        .removeColumnDefination(
+                                          cdExternalId,
+                                          DPId,
+                                          DFId,
+                                          DSId,
+                                          DFVer,
+                                          cdId,
+                                          userId
+                                        )
+                                        .then((res) => {
+                                          ResponseBody.success.push(res.sucRes);
+                                        });
+                                    } else {
+                                      var updateClDef = await externalFunction
+                                        .clDefUpdate(
+                                          el,
+                                          cdExternalId,
+                                          DSId,
+                                          DPId,
+                                          DFId,
+                                          cdId,
+                                          DFVer,
+                                          ConnectionType,
+                                          userId
+                                        )
+                                        .then((res) => {
+                                          if (
+                                            Object.keys(res.sucRes).length !== 0
+                                          ) {
+                                            ResponseBody.success.push(
+                                              res.sucRes
+                                            );
+                                          }
+                                          if (
+                                            Object.keys(res.errRes).length !== 0
+                                          ) {
+                                            ResponseBody.errors.push(
+                                              res.errRes
+                                            );
+                                          }
+                                        });
+                                    }
+                                  }
+                                } else {
+                                  var cdInsert = await externalFunction
+                                    .columnDefinationInsert(
+                                      el,
+                                      cdExternalId,
+                                      DPId,
+                                      DFId,
+                                      DSId,
+                                      DFVer,
+                                      ConnectionType,
+                                      userId
+                                    )
+                                    .then((res) => {
+                                      if (
+                                        Object.keys(res.sucRes).length !== 0
+                                      ) {
+                                        ResponseBody.success.push(res.sucRes);
+                                      }
+                                      if (
+                                        Object.keys(res.errRes).length !== 0
+                                      ) {
+                                        ResponseBody.errors.push(res.errRes);
+                                      }
+                                    });
+                                }
+                              }
+                            }
+
+                            if (obj.qcType) {
+                              if (
+                                obj.conditionalExpressions &&
+                                obj.conditionalExpressions.length > 0
+                              ) {
+                                for (let vlc of obj.conditionalExpressions) {
+                                  let selectVLC = `select * from ${schemaName}.dataset_qc_rules where datasetid='${DSId}' and ext_ruleid='${vlc.conditionalExpressionNumber}'`;
+                                  let { rows: vlcRows } = await DB.executeQuery(
+                                    selectVLC
+                                  );
+
+                                  if (vlcRows.length > 0) {
+                                    if (vlcRows[0].active_yn === "N") {
+                                      ResponseBody.errors.push([
+                                        `This - ${vlcRows[0].ext_ruleid} Qc Rules already removed`,
+                                      ]);
+                                    } else {
+                                      var VlcDataUpdate = await externalFunction
+                                        .vlcUpdate(
+                                          vlc,
+                                          obj.qcType,
+                                          DFId,
+                                          DPId,
+                                          DSId,
+                                          DFVer,
+                                          userId
+                                        )
+                                        .then((res) => {
+                                          if (
+                                            Object.keys(res.sucRes).length !== 0
+                                          ) {
+                                            ResponseBody.success.push(
+                                              res.sucRes
+                                            );
+                                          }
+                                          if (
+                                            Object.keys(res.errRes).length !== 0
+                                          ) {
+                                            ResponseBody.errors.push(
+                                              res.errRes
+                                            );
+                                          }
+                                        });
+                                    }
+                                  } else {
+                                    var VlcDataInsert = await externalFunction
+                                      .VlcInsert(
+                                        vlc,
+                                        obj.qcType,
+                                        DFId,
+                                        DPId,
+                                        DSId,
+                                        DFVer,
+                                        userId
+                                      )
+                                      .then((res) => {
+                                        if (
+                                          Object.keys(res.sucRes).length !== 0
+                                        ) {
+                                          ResponseBody.success.push(res.sucRes);
+                                        }
+                                        if (
+                                          Object.keys(res.errRes).length !== 0
+                                        ) {
+                                          ResponseBody.errors.push(res.errRes);
+                                        }
+                                      });
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
                       } else {
-                        //Function call for update dataSet data
-                        var updateDataset = await externalFunction
-                          .datasetUpdate(
+                        // Function call for insert dataSet level data
+
+                        var DatasetInsert = await externalFunction
+                          .datasetLevelInsert(
                             obj,
                             datasetExternalId,
-                            DSId,
                             DPId,
                             DFId,
                             DFVer,
                             ConnectionType,
-                            custSql,
                             externalSysName,
                             testFlag,
                             userId
@@ -1187,158 +1393,7 @@ exports.updateDataFlow = async (req, res) => {
                               ResponseBody.errors.push(res.errRes);
                             }
                           });
-
-                        if (
-                          obj.columnDefinition &&
-                          obj.columnDefinition.length > 0
-                        ) {
-                          for (let el of obj.columnDefinition) {
-                            let selectCD = `select * from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${el.ExternalId}'`;
-                            let { rows: cdRows } = await DB.executeQuery(
-                              selectCD
-                            );
-
-                            const cdExternalId = el.ExternalId;
-                            if (cdRows.length > 0) {
-                              const cdId = cdRows[0].columnid;
-
-                              if (el.delFlag === 1) {
-                                await externalFunction
-                                  .removeColumnDefination(
-                                    cdExternalId,
-                                    DPId,
-                                    DFId,
-                                    DSId,
-                                    DFVer,
-                                    cdId,
-                                    userId
-                                  )
-                                  .then((res) => {
-                                    ResponseBody.success.push(res.sucRes);
-                                  });
-                              } else {
-                                var updateClDef = await externalFunction
-                                  .clDefUpdate(
-                                    el,
-                                    cdExternalId,
-                                    DSId,
-                                    DPId,
-                                    DFId,
-                                    cdId,
-                                    DFVer,
-                                    ConnectionType,
-                                    userId
-                                  )
-                                  .then((res) => {
-                                    if (Object.keys(res.sucRes).length !== 0) {
-                                      ResponseBody.success.push(res.sucRes);
-                                    }
-                                    if (Object.keys(res.errRes).length !== 0) {
-                                      ResponseBody.errors.push(res.errRes);
-                                    }
-                                  });
-                              }
-                            } else {
-                              var cdInsert = await externalFunction
-                                .columnDefinationInsert(
-                                  el,
-                                  cdExternalId,
-                                  DPId,
-                                  DFId,
-                                  DSId,
-                                  DFVer,
-                                  ConnectionType,
-                                  userId
-                                )
-                                .then((res) => {
-                                  if (Object.keys(res.sucRes).length !== 0) {
-                                    ResponseBody.success.push(res.sucRes);
-                                  }
-                                  if (Object.keys(res.errRes).length !== 0) {
-                                    ResponseBody.errors.push(res.errRes);
-                                  }
-                                });
-                            }
-                          }
-                        }
-
-                        if (obj.qcType) {
-                          if (
-                            obj.conditionalExpressions &&
-                            obj.conditionalExpressions.length > 0
-                          ) {
-                            for (let vlc of obj.conditionalExpressions) {
-                              let selectVLC = `select * from ${schemaName}.dataset_qc_rules where datasetid='${DSId}' and ext_ruleid='${vlc.conditionalExpressionNumber}'`;
-                              let { rows: vlcRows } = await DB.executeQuery(
-                                selectVLC
-                              );
-
-                              if (vlcRows.length > 0) {
-                                var VlcDataUpdate = await externalFunction
-                                  .vlcUpdate(
-                                    vlc,
-                                    obj.qcType,
-                                    DFId,
-                                    DPId,
-                                    DSId,
-                                    DFVer,
-                                    userId
-                                  )
-                                  .then((res) => {
-                                    if (Object.keys(res.sucRes).length !== 0) {
-                                      ResponseBody.success.push(res.sucRes);
-                                    }
-                                    if (Object.keys(res.errRes).length !== 0) {
-                                      ResponseBody.errors.push(res.errRes);
-                                    }
-                                  });
-                              } else {
-                                var VlcDataInsert = await externalFunction
-                                  .VlcInsert(
-                                    vlc,
-                                    obj.qcType,
-                                    DFId,
-                                    DPId,
-                                    DSId,
-                                    DFVer,
-                                    userId
-                                  )
-                                  .then((res) => {
-                                    if (Object.keys(res.sucRes).length !== 0) {
-                                      ResponseBody.success.push(res.sucRes);
-                                    }
-                                    if (Object.keys(res.errRes).length !== 0) {
-                                      ResponseBody.errors.push(res.errRes);
-                                    }
-                                  });
-                              }
-                            }
-                          }
-                        }
                       }
-                    } else {
-                      // Function call for insert dataSet level data
-
-                      var DatasetInsert = await externalFunction
-                        .datasetLevelInsert(
-                          obj,
-                          datasetExternalId,
-                          DPId,
-                          DFId,
-                          DFVer,
-                          ConnectionType,
-                          externalSysName,
-                          testFlag,
-                          userId
-                        )
-                        .then((res) => {
-                          if (Object.keys(res.sucRes).length !== 0) {
-                            ResponseBody.success.push(res.sucRes);
-                          }
-                          if (Object.keys(res.errRes).length !== 0) {
-                            ResponseBody.errors.push(res.errRes);
-                          }
-                        });
                     }
                   }
                 }
