@@ -68,8 +68,8 @@ exports.saveDatasetColumns = async (req, res) => {
     }
     const curDate = helper.getCurrentTime();
 
-    const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, columnid, "name", "datatype", primarykey, "required", "unique", charactermin, charactermax, "position", "format", lov, "variable", del_flg, insrt_tm)
-     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *;`;
+    const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, "name", "datatype", primarykey, "required", "unique", charactermin, charactermax, "position", "format", lov, "variable", del_flg, insrt_tm)
+     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *;`;
 
     Logger.info({ message: "storeDatasetColumns" });
 
@@ -78,10 +78,8 @@ exports.saveDatasetColumns = async (req, res) => {
     if (values?.length) {
       const configJsonArr = [];
       for (let value of values) {
-        const columnId = helper.generateUniqueID();
         const body = [
           dsId,
-          columnId,
           value.columnName.toString().trim() || null,
           value.dataType.trim() || null,
           value.primaryKey === "Yes" ? 1 : 0,
@@ -100,13 +98,19 @@ exports.saveDatasetColumns = async (req, res) => {
           curDate,
         ];
 
-        const inserted = await DB.executeQuery(insertQuery, body);
+        const {
+          rows: [columnObj],
+        } = await DB.executeQuery(insertQuery, body);
         datasetColumns.push({
-          ...inserted.rows[0],
+          ...columnObj,
           frontendUniqueRef: value.uniqueId,
         });
 
-        configJsonArr.push({ datasetid: dsId, columnId, ...value });
+        configJsonArr.push({
+          datasetid: dsId,
+          columnid: columnObj.columnid,
+          ...value,
+        });
       }
       await updateSqlQuery(dsId);
       const historyVersion = await CommonController.addColumnHistory(

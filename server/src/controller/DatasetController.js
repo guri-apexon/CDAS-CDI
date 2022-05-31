@@ -22,7 +22,6 @@ async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
 async function saveSQLDataset(res, values, dpId, userId, dfId) {
   try {
     Logger.info({ message: "create SQL Dataset" });
-    const dsId = helper.generateUniqueID();
     const curDate = helper.getCurrentTime();
     let sqlQuery = "";
     if (values.isCustomSQL === "No") {
@@ -36,7 +35,6 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     }
 
     const body = [
-      dsId,
       values.datasetName,
       values.active === true ? 1 : 0,
       values.clinicalDataType[0] ? values.clinicalDataType[0] : null,
@@ -50,8 +48,15 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
       dpId,
     ];
 
+    const {
+      rows: [datasetObj],
+    } = await DB.executeQuery(
+      `INSERT into ${schemaName}.dataset (mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10, $11) returning *`,
+      body
+    );
+
     const conf_Data = {
-      datasetid: dsId,
+      datasetid: datasetObj.datasetid,
       datapackageid: dpId,
       mnemonic: values.datasetName,
       active: values.active === true ? 1 : 0,
@@ -68,17 +73,13 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
 
     const jsonData = JSON.stringify(conf_Data);
 
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11, $12) returning *`;
-
-    const data = await DB.executeQuery(insertQuery, body);
-
     const attributeName = "New Dataset";
 
     const historyVersion = await CommonController.addDatasetHistory(
       dfId,
       userId,
       dpId,
-      dsId,
+      datasetObj.datasetid,
       jsonData,
       attributeName
     );
@@ -87,14 +88,17 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
     return apiResponse.successResponseWithData(
       res,
       "Dataset was saved successfully",
-      data.rows[0]
+      datasetObj
     );
   } catch (err) {
     // console.log(" Catch::::", err);
     //throw error in json response with status 500.
     Logger.error("catch: create SQL Dataset");
     Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    return apiResponse.ErrorResponse(
+      res,
+      err.message || "Something went wrong"
+    );
   }
 }
 
@@ -119,30 +123,11 @@ exports.saveDatasetData = async (req, res) => {
       return saveSQLDataset(res, values, dpId, userId, dfId);
     }
 
-    const dsId = helper.generateUniqueID();
     const curDate = helper.getCurrentTime();
 
-    let passwordStatus = "No";
-    if (values.filePwd) {
-      passwordStatus = "Yes";
-      try {
-        await helper.writeVaultData(`${dfId}/${dpId}/${dsId}`, {
-          password: values.filePwd,
-        });
-      } catch (error) {
-        Logger.error(error);
-        return apiResponse.ErrorResponse(
-          res,
-          "Something went wrong with vault"
-        );
-      }
-    }
-
     Logger.info({ message: "create Dataset" });
-    const insertQuery = `INSERT into ${schemaName}.dataset (datasetid, mnemonic, type, charset, delimiter, escapecode, quote, headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) returning *`;
 
     const body = [
-      dsId,
       values.datasetName,
       values.fileType,
       values.encoding || null,
@@ -156,7 +141,7 @@ exports.saveDatasetData = async (req, res) => {
       values.active === true ? 1 : 0,
       values.fileNamingConvention || null,
       values.folderPath || null,
-      passwordStatus,
+      values.filePwd ? "Yes" : "No",
       values.clinicalDataType[0],
       values.transferFrequency || null,
       values.overrideStaleAlert || null,
@@ -166,39 +151,59 @@ exports.saveDatasetData = async (req, res) => {
       values.loadType == "Incremental" ? "Y" : "N",
     ];
 
-    const conf_Data = {
-      datasetid: dsId,
-      datapackageid: dpId,
-      mnemonic: values.datasetName,
-      type: values.fileType,
-      charset: values.encoding || null,
-      delimiter: values.delimiter || null,
-      escapecode: values.escapeCharacter || null,
-      quote: values.quote || null,
-      headerrow: values.headerRowNumber > 0 ? 1 : 0,
-      footerrow: values.footerRowNumber > 0 ? 1 : 0,
-      headerrownumber: values.headerRowNumber || 0,
-      footerrownumber: values.footerRowNumber || 0,
-      active: true ? 1 : 0,
-      naming_convention: values.fileNamingConvention || null,
-      path: values.folderPath || null,
-      password: passwordStatus,
-      datakindid: values.clinicalDataType[0],
-      data_freq: values.transferFrequency || null,
-      ovrd_stale_alert: values.overrideStaleAlert || null,
-      rowdecreaseallowed: values.rowDecreaseAllowed || 0,
-      incremental: "Incremental" ? "Y" : "N",
-    };
+    DB.executeQuery(
+      `INSERT into ${schemaName}.dataset (mnemonic, type, charset, delimiter, escapecode, quote, headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) returning *`,
+      body
+    ).then(async (response) => {
+      const { rows: datasetObj } = response;
+      if (values.filePwd) {
+        try {
+          await helper.writeVaultData(
+            `${dfId}/${dpId}/${datasetObj.datasetid}`,
+            {
+              password: values.filePwd,
+            }
+          );
+        } catch (error) {
+          Logger.error(error);
+          return apiResponse.ErrorResponse(
+            res,
+            "Something went wrong with vault"
+          );
+        }
+      }
+      const conf_Data = {
+        datasetid: datasetObj.datasetid,
+        datapackageid: dpId,
+        mnemonic: values.datasetName,
+        type: values.fileType,
+        charset: values.encoding || null,
+        delimiter: values.delimiter || null,
+        escapecode: values.escapeCharacter || null,
+        quote: values.quote || null,
+        headerrow: values.headerRowNumber > 0 ? 1 : 0,
+        footerrow: values.footerRowNumber > 0 ? 1 : 0,
+        headerrownumber: values.headerRowNumber || 0,
+        footerrownumber: values.footerRowNumber || 0,
+        active: true ? 1 : 0,
+        naming_convention: values.fileNamingConvention || null,
+        path: values.folderPath || null,
+        password: datasetObj.file_pwd,
+        datakindid: values.clinicalDataType[0],
+        data_freq: values.transferFrequency || null,
+        ovrd_stale_alert: values.overrideStaleAlert || null,
+        rowdecreaseallowed: values.rowDecreaseAllowed || 0,
+        incremental: "Incremental" ? "Y" : "N",
+      };
 
-    const jsonData = JSON.stringify(conf_Data);
-    const attributeName = "New Dataset";
+      const jsonData = JSON.stringify(conf_Data);
+      const attributeName = "New Dataset";
 
-    DB.executeQuery(insertQuery, body).then(async (response) => {
       const historyVersion = await CommonController.addDatasetHistory(
         dfId,
         userId,
         dpId,
-        dsId,
+        datasetObj.datasetid,
         jsonData,
         attributeName
       );
@@ -214,8 +219,10 @@ exports.saveDatasetData = async (req, res) => {
     });
   } catch (err) {
     Logger.error("catch :storeDataset");
-    console.log(err);
-    return apiResponse.ErrorResponse(res, err);
+    return apiResponse.ErrorResponse(
+      res,
+      err.message || "Something went wrong"
+    );
   }
 };
 
