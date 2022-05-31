@@ -550,19 +550,19 @@ exports.insertValidation = (req) => {
                               type: "string",
                             },
                             {
-                              key: "Active",
-                              value: vl.active,
+                              key: "inUse",
+                              value: vl.inUse,
                               type: "string",
                             },
                           ];
 
-                          if (vl.active) {
-                            if (!helper.isActive(vl.active)) {
-                              validate.push({
-                                err: " Active's supported values : Y or N",
-                              });
-                            }
-                          }
+                          // if (vl.inUse) {
+                          //   if (!helper.isActive(vl.inUse)) {
+                          //     validate.push({
+                          //       err: " inUse field's supported values : Y or N",
+                          //     });
+                          //   }
+                          // }
                           if (vl.action) {
                             if (!helper.isAction(vl.action)) {
                               validate.push({
@@ -888,19 +888,19 @@ exports.insertValidation = (req) => {
                             type: "string",
                           },
                           {
-                            key: "Active",
-                            value: vl.active,
+                            key: "inUse",
+                            value: vl.inUse,
                             type: "string",
                           },
                         ];
 
-                        if (vl.active) {
-                          if (!helper.isActive(vl.active)) {
-                            validate.push({
-                              err: " Active's Supported values : Y or N",
-                            });
-                          }
-                        }
+                        // if (vl.inUse) {
+                        //   if (!helper.isActive(vl.inUse)) {
+                        //     validate.push({
+                        //       err: " inUse field's Supported values : Y or N",
+                        //     });
+                        //   }
+                        // }
                         if (vl.action) {
                           if (!helper.isAction(vl.action)) {
                             validate.push({
@@ -2171,8 +2171,8 @@ const saveVlc = (exports.VlcInsert = async (
           type: "string",
         },
         {
-          key: "Active",
-          value: vl.active,
+          key: "inUse",
+          value: vl.inUse,
           type: "string",
         },
       ];
@@ -2182,12 +2182,12 @@ const saveVlc = (exports.VlcInsert = async (
         errorVlc.push(vlcRes);
       }
 
-      if (vl.active) {
-        if (!helper.isActive(vl.active)) {
-          // hhhhhhhh44
-          errorVlc.push(" Active's Supported values : Y or N ");
-        }
-      }
+      // if (vl.inUse) {
+      //   if (!helper.isActive(vl.inUse)) {
+      //     // hhhhhhhh44
+      //     errorVlc.push(" inUse field's Supported values : Y or N ");
+      //   }
+      // }
       if (vl.action) {
         if (!helper.isAction(vl.action)) {
           errorVlc.push(" Action's Supported values : Reject or Report ");
@@ -2242,7 +2242,7 @@ const saveVlc = (exports.VlcInsert = async (
       vl.action,
       vl.conditionalExpression,
       vl.errorMessage || null,
-      vl.active,
+      "Y",
       helper.getCurrentTime(),
       userId,
     ];
@@ -3195,6 +3195,7 @@ exports.clDefUpdate = async (
     const valColDef = [];
     let errorcolDef = [];
     var str1 = /[~]/;
+
     if (helper.isSftp(LocationType)) {
       // if (LocationType === "Hive CDH") {
       if (typeof data.columnName != "undefined") {
@@ -3506,10 +3507,10 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
         type: "string",
       });
     }
-    if (typeof vl.active != "undefined") {
+    if (typeof vl.inUse != "undefined") {
       vlcValidate.push({
-        key: "Active",
-        value: vl.active,
+        key: "inUse",
+        value: vl.inUse,
         type: "string",
       });
     }
@@ -3519,10 +3520,10 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
       errorVlc.push(vlcRes);
     }
 
-    if (vl.active) {
-      if (!helper.isActive(vl.active)) {
+    if (vl.inUse) {
+      if (!helper.isActive(vl.inUse)) {
         // hhhhhhhh44
-        errorVlc.push(" Active's Supported values : Y or N ");
+        errorVlc.push(" inUse field's Supported values : Y or N ");
       }
     }
     if (vl.action) {
@@ -3570,8 +3571,8 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
     if (vl.errorMessage) {
       updateQueryVLC += `,errormessage='${vl.errorMessage}'`;
     }
-    if (vl.active) {
-      updateQueryVLC += `,active_yn='${vl.active}'`;
+    if (vl.inUse) {
+      updateQueryVLC += `,active_yn='${vl.inUse.toUpperCase()}'`;
     }
 
     updateQueryVLC += ` where datasetid='${DSId}' and ext_ruleid='${vl.conditionalExpressionNumber}' returning *;`;
@@ -3662,7 +3663,7 @@ exports.removeDataflow = async (
       }
     }
 
-    const deleteQc = `delete from ${schemaName}.dataset_qc_rules where dataflowid ='${DFId}'`;
+    const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
     const qcDelete = await DB.executeQuery(deleteQc);
 
     newDfobj.externalId = externalID;
@@ -3728,7 +3729,7 @@ exports.removeDataPackage = async (externalID, DPID, DFId, version, userId) => {
       const removeCd = await DB.executeQuery(deleteQueryCD);
     }
 
-    const deleteQc = `delete from ${schemaName}.dataset_qc_rules where dataflowid ='${DFId}'`;
+    const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
     const qcDelete = await DB.executeQuery(deleteQc);
 
     newDfobj.externalId = externalID;
@@ -3782,7 +3783,7 @@ exports.removeDataSet = async (
     const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where datasetid='${DSID}';`;
     const removeCd = await DB.executeQuery(deleteQueryCD);
 
-    const deleteQc = `delete from ${schemaName}.dataset_qc_rules where dataflowid ='${DFId}'`;
+    const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
     const qcDelete = await DB.executeQuery(deleteQc);
 
     newDfobj.externalId = externalID;
