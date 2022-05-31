@@ -199,7 +199,7 @@ GET http://localhost:4001/v1/api/datakind/table/list HTTP/1.1
 
 GET http://localhost:4001/v1/api/datakind/ens/list HTTP/1.1
 
-### Create DataKind 
+### Create / Update DataKind for CDI
 
 POST http://localhost:4001/v1/api/datakind/create HTTP/1.1
 content-type: application/json
@@ -214,7 +214,7 @@ content-type: application/json
     "userId": "u1105372"
 }
 
-### Create DataKind External System
+### Create / Update DataKind for External System
 
 POST http://localhost:4001/v1/api/datakind/create HTTP/1.1
 content-type: application/json
@@ -224,7 +224,47 @@ content-type: application/json
     "dkDesc": "text change",
     "dkESName": "GDMPM-DAS",
     "dkStatus": 1,
-    "ExternalId": "",
+    "ExternalId": "DK00021",
+    "userId": "u1105372"
+}
+
+### Create / Update location for External System
+
+POST http://localhost:4001/v1/api/location/create HTTP/1.1
+content-type: application/json
+
+{
+    "ExternalId": "SL00033",
+    "active": true,
+    "dataStructure": "tabular",
+    "locationName": "test_T_123",
+    "externalSystemName": "IQB",
+    "locationType": "Oracle",
+    "ipServer": "dbhostname322",
+    "port": "2345",
+    "dbName": "testdb",
+    "userName": "username",
+    "password": "password",
+    "userId": "u1105372"
+}
+
+### Create / Update location for CDI
+
+POST http://localhost:4001/v1/api/location/create HTTP/1.1
+content-type: application/json
+
+{
+    "systemName": "CDI",
+    "active": true,
+    "dataStructure": "tabular",
+    "locationName": "test_T_123",
+    "externalSystemName": "IQB",
+    "locationType": "Oracle",
+    "ipServer": "dbhostname322",
+    "port": "2345",
+    "dbName": "testdb",
+    "userName": "username",
+    "password": "password",
     "userId": "u1105372"
 }
 
@@ -706,26 +746,6 @@ content-type: application/json
     "port": "10001",
     "connURL": "jdbc:hive2://cdtdev-hive.quintiles.net:10001/db_hats0301;transportMode=https;httpPath=cliservice;ssl=1;AllowSelfSignedCerts=1;AuthMech=3",
     "dbName": "db_hats0301",
-    "userId": "u1105372"
-}
-
-### create / update location
-
-POST http://localhost:4001/v1/api/location/create HTTP/1.1
-content-type: application/json
-
-{
-    "ExternalId": "",
-    "active": true,
-    "dataStructure": "tabular",
-    "locationName": "test_T_123",
-    "externalSystemName": "IQB",
-    "locationType": "Oracle",
-    "ipServer": "dbhostname322",
-    "port": "2345",
-    "dbName": "testdb",
-    "userName": "username",
-    "password": "password",
     "userId": "u1105372"
 }
 
