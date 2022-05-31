@@ -84,7 +84,7 @@ export function* updateLocationData(action) {
   try {
     const fetchData = yield call(
       axios.post,
-      `${baseURL}/${LOCATIONAPI}/update`,
+      `${baseURL}/${LOCATIONAPI}/create`,
       { ...action.values, userId }
     );
     yield put({
