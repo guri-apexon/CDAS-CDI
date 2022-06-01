@@ -418,7 +418,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
                 );
               }
             }
-            console.log("createdDSAfter");
+            // console.log("createdDSAfter");
 
             let sqlQuery = "";
             if (obj.customQuery === "No" || obj.customsql_yn === "No") {
@@ -727,7 +727,10 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
 exports.updateDataFlow = async (req, res) => {
   try {
     var validate = [];
-
+    if (req.body.externalSystemName === "CDI") {
+      var dataFlowRes = await creatDataflow(req, res);
+      return false;
+    }
     // console.log(req.body);
     let {
       active,
@@ -756,8 +759,8 @@ exports.updateDataFlow = async (req, res) => {
       delFlag,
     } = req.body;
 
-    // Dataflow External Id validation
     if (!ExternalId) {
+      // Dataflow External Id validation
       return apiResponse.ErrorResponse(
         res,
         "Dataflow level ExternalId required and data type should be string or number"

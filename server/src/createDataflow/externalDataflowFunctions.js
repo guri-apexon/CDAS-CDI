@@ -172,13 +172,29 @@ exports.insertValidation = (req) => {
               }
             }
 
-            if (each.type) {
-              if (!helper.isPackageType(each.type)) {
-                validate.push({
-                  err: " Package type's supported values : 7Z, ZIP, RAR, SAS ",
-                });
+            if (helper.stringToBoolean(each.noPackageConfig)) {
+              if (
+                each.type ||
+                each.sasXptMethod ||
+                each.path ||
+                each.namingConvention ||
+                each.password
+              ) {
+                errorPackage.push(
+                  " if there is no package then type, sasXptMethod, path, namingConvention, password should be blank "
+                );
               }
             }
+
+            //kkkkk
+
+            // if (each.type) {
+            //   if (!helper.isPackageType(each.type)) {
+            //     validate.push({
+            //       err: " Package type's supported values : 7Z, ZIP, RAR, SAS ",
+            //     });
+            //   }
+            // }
 
             if (each.namingConvention && each.type) {
               const name = each.namingConvention.split(".")[1];
@@ -1033,6 +1049,22 @@ exports.packageLevelInsert = async (
         }
       }
 
+      if (helper.stringToBoolean(data.noPackageConfig)) {
+        if (
+          data.type ||
+          data.sasXptMethod ||
+          data.path ||
+          data.namingConvention ||
+          data.password
+        ) {
+          errorPackage.push(
+            " if there is no package then type, sasXptMethod, path, namingConvention, password should be blank "
+          );
+        }
+      }
+
+      //iuyiuyiuy
+
       if (data.namingConvention && data.type) {
         const name = data.namingConvention.split(".")[1];
         // if (data.type.toLowerCase() === "rar") {
@@ -1084,13 +1116,13 @@ exports.packageLevelInsert = async (
         }
       }
 
-      if (data.type) {
-        if (!helper.isPackageType(data.type)) {
-          errorPackage.push(
-            " Package type's supported values : 7Z, ZIP, RAR, SAS "
-          );
-        }
-      }
+      // if (data.type) {
+      //   if (!helper.isPackageType(data.type)) {
+      //     errorPackage.push(
+      //       " Package type's supported values : 7Z, ZIP, RAR, SAS "
+      //     );
+      //   }
+      // }
 
       let dpRes = helper.validation(dpArray);
 
@@ -2559,13 +2591,29 @@ exports.packageUpdate = async (
         }
       }
 
-      if (typeof data.type != "undefined") {
-        if (!helper.isPackageType(data.type)) {
+      if (helper.stringToBoolean(data.noPackageConfig)) {
+        if (
+          data.type ||
+          data.sasXptMethod ||
+          data.path ||
+          data.namingConvention ||
+          data.password
+        ) {
           errorPackage.push(
-            " Package type's supported values : 7Z, ZIP, RAR, SAS "
+            " if there is no package then type, sasXptMethod, path, namingConvention, password should be blank "
           );
         }
       }
+
+      //ttrrtrtrtrt
+
+      // if (typeof data.type != "undefined") {
+      //   if (!helper.isPackageType(data.type)) {
+      //     errorPackage.push(
+      //       " Package type's supported values : 7Z, ZIP, RAR, SAS "
+      //     );
+      //   }
+      // }
       if (data.namingConvention) {
         if (typeof data.namingConvention != "undefined") {
           const last = data.namingConvention.charAt(
