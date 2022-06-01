@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import { TextField } from "apollo-react/components/TextField/TextField";
@@ -33,7 +33,6 @@ import {
   checkAlphaNumeric,
   checkRequired,
   checkFormat,
-  checkRequiredValue,
   checkCharacterLength,
   validateRow,
 } from "../../../components/FormComponents/validators";
@@ -105,15 +104,12 @@ export const DataTypeEditableSelectCell =
 export const editableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText = checkRequiredValue(row[key], key, row.primaryKey);
     return row.isEditMode ? (
       <Select
         size="small"
         fullWidth
         canDeselect={false}
         value={row[key]}
-        error={!row.isInitLoad && errorText}
-        helperText={!row.isInitLoad ? errorText : ""}
         onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
         {...fieldStyles}
         disabled={row.pkDisabled}
@@ -256,7 +252,6 @@ export const ActionCell = ({ row }) => {
     onRowDelete,
     isEditMode: eMode,
     onRowSave,
-    isEditAll,
     editedCount,
   } = row;
   if (editedCount > 1) {
