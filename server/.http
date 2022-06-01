@@ -199,17 +199,73 @@ GET http://localhost:4001/v1/api/datakind/table/list HTTP/1.1
 
 GET http://localhost:4001/v1/api/datakind/ens/list HTTP/1.1
 
-### Create DataKind 
+### Create / Update DataKind for CDI
 
 POST http://localhost:4001/v1/api/datakind/create HTTP/1.1
 content-type: application/json
 
 {
-    "dkName": "Body_Kinetic_data",
-    "dkDesc": "test",
-    "dkExternalId": " 1447",
+    "dkId": "DK00000000000666",
+    "dkName": "Btest_data",
+    "dkDesc": "khjkhj",
     "dkESName": "GDMPM-DAS",
-    "dkStatus": 1
+    "dkStatus": 1,
+    "systemName": "CDI",
+    "userId": "u1105372"
+}
+
+### Create / Update DataKind for External System
+
+POST http://localhost:4001/v1/api/datakind/create HTTP/1.1
+content-type: application/json
+
+{
+    "dkName": "test_new_123",
+    "dkDesc": "text change",
+    "dkESName": "GDMPM-DAS",
+    "dkStatus": 1,
+    "ExternalId": "DK00021",
+    "userId": "u1105372"
+}
+
+### Create / Update location for External System
+
+POST http://localhost:4001/v1/api/location/create HTTP/1.1
+content-type: application/json
+
+{
+    "ExternalId": "SL00033",
+    "active": true,
+    "dataStructure": "tabular",
+    "locationName": "test_T_123",
+    "externalSystemName": "IQB",
+    "locationType": "Oracle",
+    "ipServer": "dbhostname322",
+    "port": "2345",
+    "dbName": "testdb",
+    "userName": "username",
+    "password": "password",
+    "userId": "u1105372"
+}
+
+### Create / Update location for CDI
+
+POST http://localhost:4001/v1/api/location/create HTTP/1.1
+content-type: application/json
+
+{
+    "systemName": "CDI",
+    "active": true,
+    "dataStructure": "tabular",
+    "locationName": "test_T_123",
+    "externalSystemName": "IQB",
+    "locationType": "Oracle",
+    "ipServer": "dbhostname322",
+    "port": "2345",
+    "dbName": "testdb",
+    "userName": "username",
+    "password": "password",
+    "userId": "u1105372"
 }
 
 ### Update DataKind Status
@@ -682,7 +738,7 @@ content-type: application/json
     "active": true,
     "dataStructure": "tabular",
     "locationName": "testLocation_123_vaithe",
-    "externalSytemName": "IQB",
+    "externalSystemName": "IQB",
     "locationType": "Hive CDH",
     "password": "Iqvia@123",
     "userName": "ycdrssd",
@@ -690,27 +746,6 @@ content-type: application/json
     "port": "10001",
     "connURL": "jdbc:hive2://cdtdev-hive.quintiles.net:10001/db_hats0301;transportMode=https;httpPath=cliservice;ssl=1;AllowSelfSignedCerts=1;AuthMech=3",
     "dbName": "db_hats0301",
-    "userId": "u1105372"
-}
-
-### update location
-
-POST http://localhost:4001/v1/api/location/update HTTP/1.1
-content-type: application/json
-
-{
-    "locationID": "7cex6pyiewwre7fq",
-    "locationName": "vaithe_test_MySQL",
-    "active": 1,
-    "locationType": "MySQL",
-    "ipServer": "ca2uhdtsd001vd",
-    "dataStructure": "tabular",
-    "userName": "vault",
-    "password": "",
-    "connURL": "jdbc:mysql://ca2uhdtsd001vd:3306/vault",
-    "port": "3306",
-    "dbName": "vault",
-    "externalSytemName": "IQB",
     "userId": "u1105372"
 }
 
