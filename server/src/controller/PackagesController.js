@@ -47,7 +47,6 @@ exports.searchList = async (req, res) => {
 
 exports.addPackage = function (req, res) {
   try {
-    const packageID = helper.createUniqueID();
     Logger.info({ message: "addPackage" });
     const {
       compression_type,
@@ -58,34 +57,37 @@ exports.addPackage = function (req, res) {
       dataflow_id,
       user_id,
     } = req.body;
-    let passwordStatus;
+
     if (study_id == null || dataflow_id == null || user_id == null) {
       return apiResponse.ErrorResponse(res, "Study not found");
     }
 
-    if (package_password) {
-      passwordStatus = "Yes";
-      helper.writeVaultData(`${dataflow_id}/${packageID}`, {
-        password: package_password,
-      });
-    } else {
-      passwordStatus = "No";
-    }
-
     const insertValues = [
-      packageID,
       dataflow_id,
       compression_type,
       naming_convention,
       sftp_path,
-      passwordStatus,
+      package_password ? "Yes" : "No",
       "1",
       "N",
     ];
-    const query = `INSERT INTO ${schemaName}.datapackage(datapackageid, dataflowid, type, name, path, password, active, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
-
-    DB.executeQuery(query, insertValues).then(async (response) => {
-      const package = response.rows[0] || [];
+    DB.executeQuery(
+      `INSERT INTO ${schemaName}.datapackage(dataflowid, type, name, path, password, active, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      insertValues
+    ).then(async (response) => {
+      const {
+        rows: [package],
+      } = response;
+      if (package_password) {
+        console.log(
+          "package_password",
+          package_password,
+          package.datapackageid
+        );
+        helper.writeVaultData(`${dataflow_id}/${package.datapackageid}`, {
+          password: package_password,
+        });
+      }
       const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
