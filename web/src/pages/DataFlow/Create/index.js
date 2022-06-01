@@ -191,8 +191,8 @@ const DataFlow = ({
         return false;
       }
       const payload = {
-        vend_id: FormValues.vendor.vend_id,
-        src_loc_id: FormValues.locationName.src_loc_id,
+        vendorid: FormValues.vendor.vend_id,
+        locationID: FormValues.locationName.src_loc_id,
         dataStructure: FormValues.dataStructure,
         testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
@@ -261,7 +261,7 @@ const DataFlow = ({
       // const datakindObj = datakindArr.find((x) => {
       //   return x.value === datasetObj.clinicalDataType.datakindid;
       // });
-      datasetObj.dataKind = datasetObj?.clinicalDataType?.name;
+      datasetObj.dataKindID = datasetObj?.clinicalDataType?.datakindid;
       delete datasetObj.clinicalDataType;
     }
     if (datasetObj.transferFrequency) {
