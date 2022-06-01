@@ -196,6 +196,7 @@ export const checkFormat = (value, key = "", dataType = "") => {
     }
   }
   if (dataType === "Date") {
+    // Date:  <dd><MM><yyyy>   Time: <hh>:<mm>:<ss></ss>
     const regexp = /^[Y]{4}[M]{2}[D]{2}$/;
     if (value !== "" && !regexp.test(value)) {
       return (
