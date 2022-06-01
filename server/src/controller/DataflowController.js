@@ -727,10 +727,12 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
 exports.updateDataFlow = async (req, res) => {
   try {
     var validate = [];
+
     if (req.body.externalSystemName === "CDI") {
       var dataFlowRes = await creatDataflow(req, res);
       return false;
     }
+
     // console.log(req.body);
     let {
       active,

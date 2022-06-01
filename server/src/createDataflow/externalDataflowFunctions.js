@@ -992,6 +992,8 @@ exports.packageLevelInsert = async (
     var str1 = /[~]/;
     var str2 = /[.]/;
 
+    //testttuuu
+
     if (helper.isSftp(LocationType)) {
       // if (LocationType === "MySQL") {
       if (data.delFlag !== 0) {
@@ -1170,7 +1172,7 @@ exports.packageLevelInsert = async (
       data.password ? "Yes" : "No",
       helper.stringToBoolean(data.active) ? 1 : 0,
       helper.stringToBoolean(data.noPackageConfig) ? 1 : 0,
-      data.externalID || null,
+      data.ExternalId || null,
       dPTimestamp,
       DFId,
       0,
@@ -1186,7 +1188,7 @@ exports.packageLevelInsert = async (
 
     const dpUid = createdDP?.dataPackageId || null;
 
-    DpObj.externalId = externalID;
+    DpObj.externalId = data.ExternalId;
     DpObj.datapackageid = dpUid;
     DpObj.action = "Data package created successfully.";
     DpObj.timestamp = ts;
@@ -1517,7 +1519,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
     if (obj.dataKindID) {
       let checkDataKind = await DB.executeQuery(
-        `select datakindid,active from ${schemaName}.datakind where name='${obj.dataKindID}';`
+        `select datakindid,active from ${schemaName}.datakind where datakindid='${obj.dataKindID}';`
       );
 
       if (checkDataKind.rows.length > 0) {
@@ -3094,7 +3096,7 @@ exports.datasetUpdate = async (
       updateQueryDS += `,datakindid='${data.dataKindID}'`;
     }
     if (data.datasetName) {
-      updateQueryDS += `,datasetName='${data.datasetName}'`;
+      updateQueryDS += `,mnemonic='${data.datasetName}'`;
     }
     if (data.fileNamingConvention) {
       updateQueryDS += `,name='${data.fileNamingConvention}'`;
