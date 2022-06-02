@@ -195,15 +195,25 @@ export const checkFormat = (value, key = "", dataType = "") => {
       );
     }
   }
-  if (dataType === "Date") {
-    // Date:  <dd><MM><yyyy>   Time: <hh>:<mm>:<ss></ss>
-    const regexp = /^[Y]{4}[M]{2}[D]{2}$/;
-    if (value !== "" && !regexp.test(value)) {
-      return (
-        key === "format" &&
-        "Only date format (YYYYMMDD) values are allowed for date data type. \\ and $ are not allowed"
-      );
+  if (dataType === "Date" && key === "format") {
+    if (value.includes("$") || String.raw`${value}`.includes("\\")) {
+      return "\\ and $ are not allowed";
     }
+    const optionArr = [
+      "Date:<dd><MM><yyyy>Time:<hh>:<mm>:<ss>",
+      "Date:<dd><MM><yyyy>",
+      "<dd><MM><yyyy>",
+    ];
+    if (!optionArr.includes(value.replace(/ /g, ""))) {
+      return "Only date format values are allowed for date data type.";
+    }
+    // const regexp = /^[Y]{4}[M]{2}[D]{2}$/;
+    // if (value !== "" && !regexp.test(value)) {
+    //   return (
+    //     key === "format" &&
+    //     "Only date format (YYYYMMDD) values are allowed for date data type. \\ and $ are not allowed"
+    //   );
+    // }
   }
   return false;
 };
