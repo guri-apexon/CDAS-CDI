@@ -437,15 +437,179 @@ exports.updateDataFlow = async (req, res) => {
     } = req.body;
 
     let returnData = [];
+    let valData = [];
 
     if (!ExternalId) {
       // Dataflow External Id validation
-      returnData.push([
-        "Dataflow level ExternalId required and data type should be string or number",
-      ]);
+      return apiResponse.ErrorResponse(
+        res,
+        "Dataflow level ExternalId required and data type should be string or number"
+      );
     }
 
-    // Dataflow External Id validation
+    if (!userId) {
+      return apiResponse.ErrorResponse(
+        res,
+        "userId required and data type should be string or Number"
+      );
+    }
+
+    if (delFlag === null || delFlag === "" || delFlag === undefined) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Data flow Level delFlag  required and it's either 0 or 1"
+      );
+    }
+    if (delFlag) {
+      if (delFlag !== 1) {
+        return apiResponse.ErrorResponse(
+          res,
+          "Data flow Level delFlag  value of either 0 or 1"
+        );
+      }
+    }
+
+    if (!externalSystemName) {
+      return apiResponse.ErrorResponse(
+        res,
+        "externalSystemName required and data type should be string"
+      );
+    } else {
+      valData.push({
+        key: "externalSystemName",
+        value: externalSystemName,
+        type: "string",
+      });
+    }
+
+    // Data Package External Id validation
+    if (dataPackage && dataPackage.length > 0) {
+      for (let each of dataPackage) {
+        if (!each.ExternalId) {
+          return apiResponse.ErrorResponse(
+            res,
+            "Datapackage level ExternalId required and data type should be string or number"
+          );
+        }
+
+        if (
+          each.delFlag === null ||
+          each.delFlag === "" ||
+          each.delFlag === undefined
+        ) {
+          return apiResponse.ErrorResponse(
+            res,
+            "Data Package Level delFlag  required and it's either 0 or 1"
+          );
+        }
+        if (each.delFlag) {
+          if (each.delFlag !== 1) {
+            return apiResponse.ErrorResponse(
+              res,
+              "Data Package Level delFlag  value of either 0 or 1"
+            );
+          }
+        }
+        // Data Set External Id validation
+        if (each.dataSet && each.dataSet.length > 0) {
+          for (let obj of each.dataSet) {
+            if (!obj.ExternalId) {
+              return apiResponse.ErrorResponse(
+                res,
+                "Dataset level ExternalId required and data type should be string or number"
+              );
+            }
+            if (
+              obj.delFlag === null ||
+              obj.delFlag === "" ||
+              obj.delFlag === undefined
+            ) {
+              return apiResponse.ErrorResponse(
+                res,
+                "Data Set Level delFlag  required and it's either 0 or 1"
+              );
+            }
+            if (obj.delFlag) {
+              if (obj.delFlag !== 1) {
+                return apiResponse.ErrorResponse(
+                  res,
+                  "Data Set Level delFlag  value of either 0 or 1"
+                );
+              }
+            }
+
+            if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+              for (let el of obj.columnDefinition) {
+                if (!el.ExternalId) {
+                  return apiResponse.ErrorResponse(
+                    res,
+                    "Column Definition Level ExternalId required and data type should be string or Number"
+                  );
+                }
+                if (
+                  el.delFlag === null ||
+                  el.delFlag === "" ||
+                  el.delFlag === undefined
+                ) {
+                  return apiResponse.ErrorResponse(
+                    res,
+                    "Column Definition Level delFlag  required and it's either 0 or 1"
+                  );
+                }
+                if (el.delFlag) {
+                  if (el.delFlag !== 1) {
+                    return apiResponse.ErrorResponse(
+                      res,
+                      "Column Definition Level delFlag  value of either 0 or 1"
+                    );
+                  }
+                }
+              }
+            }
+
+            if (obj.qcType) {
+              if (
+                obj.conditionalExpressions &&
+                obj.conditionalExpressions.length > 0
+              ) {
+                for (let vl of obj.conditionalExpressions) {
+                  if (!vl.conditionalExpressionNumber) {
+                    return apiResponse.ErrorResponse(
+                      res,
+                      "Conditional Expression Number1 required and Data Type should be Number"
+                    );
+                  } else {
+                    if (typeof vl.conditionalExpressionNumber != "number") {
+                      return apiResponse.ErrorResponse(
+                        res,
+                        "Conditional Expression Number required and Data Type should be Number"
+                      );
+                    }
+                  }
+                }
+
+                if (obj.conditionalExpressions.length > 0) {
+                  if (!obj.qcType) {
+                    return apiResponse.ErrorResponse(
+                      res,
+                      "qcType required and Value should be VLC"
+                    );
+                  } else {
+                    if (obj.qcType.toLowerCase() !== "vlc") {
+                      return apiResponse.ErrorResponse(
+                        res,
+                        "qcType required and Value should be VLC"
+                      );
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     if (exptDtOfFirstProdFile) {
       function validateDOB(date) {
         var pattern =
@@ -457,25 +621,6 @@ exports.updateDataFlow = async (req, res) => {
         }
       }
       validateDOB(exptDtOfFirstProdFile);
-    }
-
-    // return;
-
-    if (!userId) {
-      returnData.push([
-        "userId required and data type should be string or Number",
-      ]);
-    }
-
-    if (delFlag === null || delFlag === "" || delFlag === undefined) {
-      returnData.push([
-        "Data flow Level delFlag  required and it's either 0 or 1",
-      ]);
-    }
-    if (delFlag) {
-      if (delFlag !== 1) {
-        returnData.push(["Data flow Level delFlag  value of either 0 or 1"]);
-      }
     }
 
     // return;
@@ -514,24 +659,10 @@ exports.updateDataFlow = async (req, res) => {
       }
     }
 
-    let valData = [];
     if (typeof dataStructure != "undefined") {
       valData.push({
         key: "dataStructure ",
         value: dataStructure,
-        type: "string",
-      });
-    }
-
-    if (!externalSystemName) {
-      return apiResponse.ErrorResponse(
-        res,
-        "externalSystemName required and data type should be string"
-      );
-    } else {
-      valData.push({
-        key: "externalSystemName",
-        value: externalSystemName,
         type: "string",
       });
     }
@@ -569,121 +700,6 @@ exports.updateDataFlow = async (req, res) => {
     const resErr = helper.validation(valData);
     if (resErr.length > 0) {
       returnData.push(resErr);
-    }
-
-    // Data Package External Id validation
-    if (dataPackage && dataPackage.length > 0) {
-      for (let each of dataPackage) {
-        if (!each.ExternalId) {
-          returnData.push([
-            "Datapackage level ExternalId required and data type should be string or number",
-          ]);
-        }
-
-        if (
-          each.delFlag === null ||
-          each.delFlag === "" ||
-          each.delFlag === undefined
-        ) {
-          returnData.push([
-            "Data Package Level delFlag  required and it's either 0 or 1",
-          ]);
-        }
-        if (each.delFlag) {
-          if (each.delFlag !== 1) {
-            returnData.push([
-              "Data Package Level delFlag  value of either 0 or 1",
-            ]);
-          }
-        }
-        // Data Set External Id validation
-        if (each.dataSet && each.dataSet.length > 0) {
-          for (let obj of each.dataSet) {
-            if (!obj.ExternalId) {
-              returnData.push([
-                "Dataset level ExternalId required and data type should be string or number",
-              ]);
-            }
-            if (
-              obj.delFlag === null ||
-              obj.delFlag === "" ||
-              obj.delFlag === undefined
-            ) {
-              returnData.push([
-                "Data Set Level delFlag  required and it's either 0 or 1",
-              ]);
-            }
-            if (obj.delFlag) {
-              if (obj.delFlag !== 1) {
-                returnData.push([
-                  "Data Set Level delFlag  value of either 0 or 1",
-                ]);
-              }
-            }
-
-            if (obj.columnDefinition && obj.columnDefinition.length > 0) {
-              for (let el of obj.columnDefinition) {
-                if (!el.ExternalId) {
-                  returnData.push([
-                    "Column Definition Level ExternalId required and data type should be string or Number",
-                  ]);
-                }
-                if (
-                  el.delFlag === null ||
-                  el.delFlag === "" ||
-                  el.delFlag === undefined
-                ) {
-                  returnData.push([
-                    "Column Definition Level delFlag  required and it's either 0 or 1",
-                  ]);
-                }
-                if (el.delFlag) {
-                  if (el.delFlag !== 1) {
-                    returnData.push([
-                      "Column Definition Level delFlag  value of either 0 or 1",
-                    ]);
-                  }
-                }
-              }
-            }
-
-            if (obj.qcType) {
-              if (
-                obj.conditionalExpressions &&
-                obj.conditionalExpressions.length > 0
-              ) {
-                for (let vl of obj.conditionalExpressions) {
-                  if (!vl.conditionalExpressionNumber) {
-                    returnData.push([
-                      "Conditional Expression Number1 required and Data Type should be Number",
-                    ]);
-                  } else {
-                    if (typeof vl.conditionalExpressionNumber != "number") {
-                      returnData.push([
-                        "Conditional Expression Number required and Data Type should be Number",
-                      ]);
-                    }
-                  }
-                }
-
-                if (obj.conditionalExpressions.length > 0) {
-                  if (!obj.qcType) {
-                    returnData.push([
-                      "qcType required and Value should be VLC",
-                    ]);
-                  } else {
-                    if (obj.qcType.toLowerCase() !== "vlc") {
-                      returnData.push([
-                        "qcType required and Value should be VLC",
-                      ]);
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
     }
 
     if (returnData.length > 0) {
