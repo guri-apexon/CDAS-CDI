@@ -172,13 +172,29 @@ exports.insertValidation = (req) => {
               }
             }
 
-            if (each.type) {
-              if (!helper.isPackageType(each.type)) {
-                validate.push({
-                  err: " Package type's supported values : 7Z, ZIP, RAR, SAS ",
-                });
+            if (helper.stringToBoolean(each.noPackageConfig)) {
+              if (
+                each.type ||
+                each.sasXptMethod ||
+                each.path ||
+                each.namingConvention ||
+                each.password
+              ) {
+                errorPackage.push(
+                  " if there is no package then type, sasXptMethod, path, namingConvention, password should be blank "
+                );
               }
             }
+
+            //kkkkk
+
+            // if (each.type) {
+            //   if (!helper.isPackageType(each.type)) {
+            //     validate.push({
+            //       err: " Package type's supported values : 7Z, ZIP, RAR, SAS ",
+            //     });
+            //   }
+            // }
 
             if (each.namingConvention && each.type) {
               const name = each.namingConvention.split(".")[1];
@@ -976,6 +992,8 @@ exports.packageLevelInsert = async (
     var str1 = /[~]/;
     var str2 = /[.]/;
 
+    //testttuuu
+
     if (helper.isSftp(LocationType)) {
       // if (LocationType === "MySQL") {
       if (data.delFlag !== 0) {
@@ -1033,6 +1051,22 @@ exports.packageLevelInsert = async (
         }
       }
 
+      if (helper.stringToBoolean(data.noPackageConfig)) {
+        if (
+          data.type ||
+          data.sasXptMethod ||
+          data.path ||
+          data.namingConvention ||
+          data.password
+        ) {
+          errorPackage.push(
+            " if there is no package then type, sasXptMethod, path, namingConvention, password should be blank "
+          );
+        }
+      }
+
+      //iuyiuyiuy
+
       if (data.namingConvention && data.type) {
         const name = data.namingConvention.split(".")[1];
         // if (data.type.toLowerCase() === "rar") {
@@ -1084,13 +1118,13 @@ exports.packageLevelInsert = async (
         }
       }
 
-      if (data.type) {
-        if (!helper.isPackageType(data.type)) {
-          errorPackage.push(
-            " Package type's supported values : 7Z, ZIP, RAR, SAS "
-          );
-        }
-      }
+      // if (data.type) {
+      //   if (!helper.isPackageType(data.type)) {
+      //     errorPackage.push(
+      //       " Package type's supported values : 7Z, ZIP, RAR, SAS "
+      //     );
+      //   }
+      // }
 
       let dpRes = helper.validation(dpArray);
 
@@ -1138,7 +1172,7 @@ exports.packageLevelInsert = async (
       data.password ? "Yes" : "No",
       helper.stringToBoolean(data.active) ? 1 : 0,
       helper.stringToBoolean(data.noPackageConfig) ? 1 : 0,
-      data.externalID || null,
+      data.ExternalId || null,
       dPTimestamp,
       DFId,
       0,
@@ -1154,7 +1188,7 @@ exports.packageLevelInsert = async (
 
     const dpUid = createdDP?.dataPackageId || null;
 
-    DpObj.externalId = externalID;
+    DpObj.externalId = data.ExternalId;
     DpObj.datapackageid = dpUid;
     DpObj.action = "Data package created successfully.";
     DpObj.timestamp = ts;
@@ -1485,7 +1519,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
     if (obj.dataKindID) {
       let checkDataKind = await DB.executeQuery(
-        `select datakindid,active from ${schemaName}.datakind where name='${obj.dataKindID}';`
+        `select datakindid,active from ${schemaName}.datakind where datakindid='${obj.dataKindID}';`
       );
 
       if (checkDataKind.rows.length > 0) {
@@ -2559,13 +2593,29 @@ exports.packageUpdate = async (
         }
       }
 
-      if (typeof data.type != "undefined") {
-        if (!helper.isPackageType(data.type)) {
+      if (helper.stringToBoolean(data.noPackageConfig)) {
+        if (
+          data.type ||
+          data.sasXptMethod ||
+          data.path ||
+          data.namingConvention ||
+          data.password
+        ) {
           errorPackage.push(
-            " Package type's supported values : 7Z, ZIP, RAR, SAS "
+            " if there is no package then type, sasXptMethod, path, namingConvention, password should be blank "
           );
         }
       }
+
+      //ttrrtrtrtrt
+
+      // if (typeof data.type != "undefined") {
+      //   if (!helper.isPackageType(data.type)) {
+      //     errorPackage.push(
+      //       " Package type's supported values : 7Z, ZIP, RAR, SAS "
+      //     );
+      //   }
+      // }
       if (data.namingConvention) {
         if (typeof data.namingConvention != "undefined") {
           const last = data.namingConvention.charAt(
@@ -3046,7 +3096,7 @@ exports.datasetUpdate = async (
       updateQueryDS += `,datakindid='${data.dataKindID}'`;
     }
     if (data.datasetName) {
-      updateQueryDS += `,datasetName='${data.datasetName}'`;
+      updateQueryDS += `,mnemonic='${data.datasetName}'`;
     }
     if (data.fileNamingConvention) {
       updateQueryDS += `,name='${data.fileNamingConvention}'`;
