@@ -312,8 +312,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
           externalSystemName,
           testFlag,
           userId,
-          true,
-          res
+          true
         );
         if (PackageInsert.sucRes.length) {
           ResponseBody.data_packages.push(PackageInsert.sucRes);
@@ -341,7 +340,6 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
         dFTimestamp,
       ]
     );
-    console.log("line 344");
 
     let config_json = {
       dataFlowId: createdDF.dataFlowId,
@@ -438,12 +436,13 @@ exports.updateDataFlow = async (req, res) => {
       delFlag,
     } = req.body;
 
+    let returnData = [];
+
     if (!ExternalId) {
       // Dataflow External Id validation
-      return apiResponse.ErrorResponse(
-        res,
-        "Dataflow level ExternalId required and data type should be string or number"
-      );
+      returnData.push([
+        "Dataflow level ExternalId required and data type should be string or number",
+      ]);
     }
 
     // Dataflow External Id validation
@@ -452,15 +451,10 @@ exports.updateDataFlow = async (req, res) => {
         var pattern =
           /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/;
         if (!pattern.test(date)) {
-          // errMessage += "Invalid date of birth\n";
-          return apiResponse.ErrorResponse(
-            res,
-            "exptDtOfFirstProdFile optional and data format should be [YYYY-MM-DD HH:MI:SS] "
-          );
+          returnData.push([
+            "exptDtOfFirstProdFile optional and data format should be [YYYY-MM-DD HH:MI:SS]",
+          ]);
         }
-        // else {
-        //   return apiResponse.ErrorResponse(res, " Success ");
-        // }
       }
       validateDOB(exptDtOfFirstProdFile);
     }
@@ -468,152 +462,19 @@ exports.updateDataFlow = async (req, res) => {
     // return;
 
     if (!userId) {
-      return apiResponse.ErrorResponse(
-        res,
-        "userId required and data type should be string or Number"
-      );
+      returnData.push([
+        "userId required and data type should be string or Number",
+      ]);
     }
 
     if (delFlag === null || delFlag === "" || delFlag === undefined) {
-      return apiResponse.ErrorResponse(
-        res,
-        "Data flow Level delFlag  required and it's either 0 or 1"
-      );
+      returnData.push([
+        "Data flow Level delFlag  required and it's either 0 or 1",
+      ]);
     }
     if (delFlag) {
       if (delFlag !== 1) {
-        return apiResponse.ErrorResponse(
-          res,
-          "Data flow Level delFlag  value of either 0 or 1"
-        );
-      }
-    }
-
-    // Data Package External Id validation
-    if (dataPackage && dataPackage.length > 0) {
-      for (let each of dataPackage) {
-        if (!each.ExternalId) {
-          return apiResponse.ErrorResponse(
-            res,
-            "Datapackage level ExternalId required and data type should be string or number"
-          );
-        }
-
-        if (
-          each.delFlag === null ||
-          each.delFlag === "" ||
-          each.delFlag === undefined
-        ) {
-          return apiResponse.ErrorResponse(
-            res,
-            "Data Package Level delFlag  required and it's either 0 or 1"
-          );
-        }
-        if (each.delFlag) {
-          if (each.delFlag !== 1) {
-            return apiResponse.ErrorResponse(
-              res,
-              "Data Package Level delFlag  value of either 0 or 1"
-            );
-          }
-        }
-        // Data Set External Id validation
-        if (each.dataSet && each.dataSet.length > 0) {
-          for (let obj of each.dataSet) {
-            if (!obj.ExternalId) {
-              return apiResponse.ErrorResponse(
-                res,
-                "Dataset level ExternalId required and data type should be string or number"
-              );
-            }
-            if (
-              obj.delFlag === null ||
-              obj.delFlag === "" ||
-              obj.delFlag === undefined
-            ) {
-              return apiResponse.ErrorResponse(
-                res,
-                "Data Set Level delFlag  required and it's either 0 or 1"
-              );
-            }
-            if (obj.delFlag) {
-              if (obj.delFlag !== 1) {
-                return apiResponse.ErrorResponse(
-                  res,
-                  "Data Set Level delFlag  value of either 0 or 1"
-                );
-              }
-            }
-
-            if (obj.columnDefinition && obj.columnDefinition.length > 0) {
-              for (let el of obj.columnDefinition) {
-                if (!el.ExternalId) {
-                  return apiResponse.ErrorResponse(
-                    res,
-                    "Column Definition Level ExternalId required and data type should be string or Number"
-                  );
-                }
-                if (
-                  el.delFlag === null ||
-                  el.delFlag === "" ||
-                  el.delFlag === undefined
-                ) {
-                  return apiResponse.ErrorResponse(
-                    res,
-                    "Column Definition Level delFlag  required and it's either 0 or 1"
-                  );
-                }
-                if (el.delFlag) {
-                  if (el.delFlag !== 1) {
-                    return apiResponse.ErrorResponse(
-                      res,
-                      "Column Definition Level delFlag  value of either 0 or 1"
-                    );
-                  }
-                }
-              }
-            }
-
-            if (obj.qcType) {
-              if (
-                obj.conditionalExpressions &&
-                obj.conditionalExpressions.length > 0
-              ) {
-                for (let vl of obj.conditionalExpressions) {
-                  if (!vl.conditionalExpressionNumber) {
-                    return apiResponse.ErrorResponse(
-                      res,
-                      "Conditional Expression Number1 required and Data Type should be Number"
-                    );
-                  } else {
-                    if (typeof vl.conditionalExpressionNumber != "number") {
-                      return apiResponse.ErrorResponse(
-                        res,
-                        "Conditional Expression Number required and Data Type should be Number"
-                      );
-                    }
-                  }
-                }
-
-                if (obj.conditionalExpressions.length > 0) {
-                  if (!obj.qcType) {
-                    return apiResponse.ErrorResponse(
-                      res,
-                      "qcType required and Value should be VLC"
-                    );
-                  } else {
-                    if (obj.qcType.toLowerCase() !== "vlc") {
-                      return apiResponse.ErrorResponse(
-                        res,
-                        "qcType required and Value should be VLC"
-                      );
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+        returnData.push(["Data flow Level delFlag  value of either 0 or 1"]);
       }
     }
 
@@ -624,16 +485,10 @@ exports.updateDataFlow = async (req, res) => {
 
       if (rows.length > 0) {
         if (rows[0].active !== 1) {
-          return apiResponse.ErrorResponse(
-            res,
-            `Vendor is not active in ${externalSystemName}`
-          );
+          returnData.push([`Vendor is not active in ${externalSystemName}`]);
         }
       } else {
-        return apiResponse.ErrorResponse(
-          res,
-          `Vendor does not exist for ${externalSystemName}`
-        );
+        returnData.push([`Vendor does not exist for ${externalSystemName}`]);
       }
     }
 
@@ -643,16 +498,10 @@ exports.updateDataFlow = async (req, res) => {
 
       if (locationData.rows.length > 0) {
         if (locationData.rows[0].active !== 1) {
-          return apiResponse.ErrorResponse(
-            res,
-            `Location is not active in ${externalSystemName}`
-          );
+          returnData.push([`Location is not active in ${externalSystemName}`]);
         }
       } else {
-        return apiResponse.ErrorResponse(
-          res,
-          `Location does not exist for ${externalSystemName}`
-        );
+        returnData.push([`Location does not exist for ${externalSystemName}`]);
       }
     }
 
@@ -661,14 +510,11 @@ exports.updateDataFlow = async (req, res) => {
         `select prot_id from study where prot_nbr_stnd ='${protocolNumberStandard}';`
       );
       if (studyRows.rows.length <= 0) {
-        return apiResponse.ErrorResponse(
-          res,
-          "This protocol number doesn't exist "
-        );
+        returnData.push(["This protocol number doesn't exist "]);
       }
     }
 
-    const valData = [];
+    let valData = [];
     if (typeof dataStructure != "undefined") {
       valData.push({
         key: "dataStructure ",
@@ -720,7 +566,125 @@ exports.updateDataFlow = async (req, res) => {
         );
     }
 
-    const returnData = helper.validation(valData);
+    const resErr = helper.validation(valData);
+    if (resErr.length > 0) {
+      returnData.push(resErr);
+    }
+
+    // Data Package External Id validation
+    if (dataPackage && dataPackage.length > 0) {
+      for (let each of dataPackage) {
+        if (!each.ExternalId) {
+          returnData.push([
+            "Datapackage level ExternalId required and data type should be string or number",
+          ]);
+        }
+
+        if (
+          each.delFlag === null ||
+          each.delFlag === "" ||
+          each.delFlag === undefined
+        ) {
+          returnData.push([
+            "Data Package Level delFlag  required and it's either 0 or 1",
+          ]);
+        }
+        if (each.delFlag) {
+          if (each.delFlag !== 1) {
+            returnData.push([
+              "Data Package Level delFlag  value of either 0 or 1",
+            ]);
+          }
+        }
+        // Data Set External Id validation
+        if (each.dataSet && each.dataSet.length > 0) {
+          for (let obj of each.dataSet) {
+            if (!obj.ExternalId) {
+              returnData.push([
+                "Dataset level ExternalId required and data type should be string or number",
+              ]);
+            }
+            if (
+              obj.delFlag === null ||
+              obj.delFlag === "" ||
+              obj.delFlag === undefined
+            ) {
+              returnData.push([
+                "Data Set Level delFlag  required and it's either 0 or 1",
+              ]);
+            }
+            if (obj.delFlag) {
+              if (obj.delFlag !== 1) {
+                returnData.push([
+                  "Data Set Level delFlag  value of either 0 or 1",
+                ]);
+              }
+            }
+
+            if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+              for (let el of obj.columnDefinition) {
+                if (!el.ExternalId) {
+                  returnData.push([
+                    "Column Definition Level ExternalId required and data type should be string or Number",
+                  ]);
+                }
+                if (
+                  el.delFlag === null ||
+                  el.delFlag === "" ||
+                  el.delFlag === undefined
+                ) {
+                  returnData.push([
+                    "Column Definition Level delFlag  required and it's either 0 or 1",
+                  ]);
+                }
+                if (el.delFlag) {
+                  if (el.delFlag !== 1) {
+                    returnData.push([
+                      "Column Definition Level delFlag  value of either 0 or 1",
+                    ]);
+                  }
+                }
+              }
+            }
+
+            if (obj.qcType) {
+              if (
+                obj.conditionalExpressions &&
+                obj.conditionalExpressions.length > 0
+              ) {
+                for (let vl of obj.conditionalExpressions) {
+                  if (!vl.conditionalExpressionNumber) {
+                    returnData.push([
+                      "Conditional Expression Number1 required and Data Type should be Number",
+                    ]);
+                  } else {
+                    if (typeof vl.conditionalExpressionNumber != "number") {
+                      returnData.push([
+                        "Conditional Expression Number required and Data Type should be Number",
+                      ]);
+                    }
+                  }
+                }
+
+                if (obj.conditionalExpressions.length > 0) {
+                  if (!obj.qcType) {
+                    returnData.push([
+                      "qcType required and Value should be VLC",
+                    ]);
+                  } else {
+                    if (obj.qcType.toLowerCase() !== "vlc") {
+                      returnData.push([
+                        "qcType required and Value should be VLC",
+                      ]);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
 
     if (returnData.length > 0) {
       return apiResponse.ErrorResponse(res, returnData);
@@ -962,25 +926,18 @@ exports.updateDataFlow = async (req, res) => {
                                       DFVer,
                                       ConnectionType,
                                       userId,
-                                      null,
-                                      res
+                                      null
                                     )
-                                    .then((response) => {
+                                    .then((res) => {
                                       if (
-                                        Object.keys(response.sucRes).length !==
-                                        0
+                                        Object.keys(res.sucRes).length !== 0
                                       ) {
-                                        ResponseBody.success.push(
-                                          response.sucRes
-                                        );
+                                        ResponseBody.success.push(res.sucRes);
                                       }
                                       if (
-                                        Object.keys(response.errRes).length !==
-                                        0
+                                        Object.keys(res.errRes).length !== 0
                                       ) {
-                                        ResponseBody.errors.push(
-                                          response.errRes
-                                        );
+                                        ResponseBody.errors.push(res.errRes);
                                       }
                                     });
                                 }
@@ -1074,15 +1031,14 @@ exports.updateDataFlow = async (req, res) => {
                             externalSysName,
                             testFlag,
                             userId,
-                            null,
-                            res
+                            null
                           )
-                          .then((response) => {
-                            if (Object.keys(response.sucRes).length !== 0) {
-                              ResponseBody.success.push(response.sucRes);
+                          .then((res) => {
+                            if (Object.keys(res.sucRes).length !== 0) {
+                              ResponseBody.success.push(res.sucRes);
                             }
-                            if (Object.keys(response.errRes).length !== 0) {
-                              ResponseBody.errors.push(response.errRes);
+                            if (Object.keys(res.errRes).length !== 0) {
+                              ResponseBody.errors.push(res.errRes);
                             }
                           });
                       }
@@ -1100,15 +1056,14 @@ exports.updateDataFlow = async (req, res) => {
                   externalSysName,
                   testFlag,
                   userId,
-                  null,
-                  res
+                  null
                 )
-                .then((response) => {
-                  if (Object.keys(response.sucRes).length !== 0) {
-                    ResponseBody.success.push(response.sucRes);
+                .then((res) => {
+                  if (Object.keys(res.sucRes).length !== 0) {
+                    ResponseBody.success.push(res.sucRes);
                   }
-                  if (Object.keys(response.errRes).length !== 0) {
-                    ResponseBody.errors.push(response.errRes);
+                  if (Object.keys(res.errRes).length !== 0) {
+                    ResponseBody.errors.push(res.errRes);
                   }
                 });
             }

@@ -980,8 +980,7 @@ exports.packageLevelInsert = async (
   externalSysName,
   testFlag,
   userId,
-  isNew,
-  res
+  isNew
 ) => {
   try {
     const { ExternalId, delFlag, noPackageConfig, active, namingConvention } =
@@ -992,6 +991,7 @@ exports.packageLevelInsert = async (
     var dataPackage = [];
     var str1 = /[~]/;
     var str2 = /[.]/;
+    console.log("line no 994", externalSysName);
 
     if (!isNew) {
       if (helper.isSftp(LocationType)) {
@@ -1235,8 +1235,7 @@ exports.packageLevelInsert = async (
           externalSysName,
           testFlag,
           userId,
-          isNew,
-          res
+          isNew
         ).then((res) => {
           if (res.errRes && res.errRes.length) {
             errorPackage.push(res.errRes);
@@ -1265,8 +1264,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
   externalSysName,
   testFlag,
   userId,
-  isNew,
-  res
+  isNew
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -1725,8 +1723,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
           version,
           ConnectionType,
           userId,
-          isNew,
-          res
+          isNew
         ).then((res) => {
           if (res.errRes && res.errRes.length) {
             errorDataset.push(res.errRes);
@@ -1753,8 +1750,7 @@ const columnSave = (exports.columnDefinationInsert = async (
   version,
   ConnectionType,
   userId,
-  isNew,
-  res
+  isNew
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -1995,8 +1991,8 @@ const columnSave = (exports.columnDefinationInsert = async (
     // const dsCountUpdate = `update ${schemaName}.dataset set columncount='${Count.rows[0].count}' where datasetid ='${DSId}'`;
     // const clCountUpdate = await DB.executeQuery(dsCountUpdate);
 
-    cdObj.colmunid = CDUid;
     cdObj.externalId = cdExternalId;
+    cdObj.colmunid = CDUid;
     cdObj.action = "column definition created successfully.";
     cdObj.timestamp = ts;
     ColumnDef.push(cdObj);
