@@ -1,5 +1,4 @@
 const DB = require("../config/db");
-const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const moment = require("moment");
 const _ = require("lodash");
@@ -985,7 +984,8 @@ exports.packageLevelInsert = async (
   res
 ) => {
   try {
-    const { externalID } = data;
+    const { ExternalId, delFlag, noPackageConfig, active, namingConvention } =
+      data;
     var LocationType = ConnectionType;
     let ts = new Date().toLocaleString();
     let errorPackage = [];
@@ -996,7 +996,7 @@ exports.packageLevelInsert = async (
     if (!isNew) {
       if (helper.isSftp(LocationType)) {
         // if (LocationType === "MySQL") {
-        if (data.delFlag !== 0) {
+        if (delFlag !== 0) {
           errorPackage.push(
             " Data Package Level delFlag required and value should be 0 "
           );
@@ -1005,18 +1005,18 @@ exports.packageLevelInsert = async (
         const dpArray = [
           {
             key: "No Package Level Config ",
-            value: data.noPackageConfig,
+            value: noPackageConfig,
             type: "boolean",
           },
 
           {
             key: "active",
-            value: data.active,
+            value: active,
             type: "boolean",
           },
         ];
 
-        if (!helper.stringToBoolean(data.noPackageConfig)) {
+        if (!helper.stringToBoolean(noPackageConfig)) {
           const dpArrayST = [
             { key: "Package type", value: data.type, type: "string" },
             {
@@ -1026,7 +1026,7 @@ exports.packageLevelInsert = async (
             },
             {
               key: "Package Naming Convention",
-              value: data.namingConvention,
+              value: namingConvention,
               type: "string",
             },
             {
@@ -1051,12 +1051,12 @@ exports.packageLevelInsert = async (
           }
         }
 
-        if (helper.stringToBoolean(data.noPackageConfig)) {
+        if (helper.stringToBoolean(noPackageConfig)) {
           if (
             data.type ||
             data.sasXptMethod ||
             data.path ||
-            data.namingConvention ||
+            namingConvention ||
             data.password
           ) {
             errorPackage.push(
@@ -1067,8 +1067,8 @@ exports.packageLevelInsert = async (
 
         //iuyiuyiuy
 
-        if (data.namingConvention && data.type) {
-          const name = data.namingConvention.split(".")[1];
+        if (namingConvention && data.type) {
+          const name = namingConvention.split(".")[1];
           // if (data.type.toLowerCase() === "rar") {
           //   if (name.toLowerCase() !== "rar") {
           //     errorPackage.push(
@@ -1101,13 +1101,9 @@ exports.packageLevelInsert = async (
           //   }
           // }
 
-          const last = data.namingConvention.charAt(
-            data.namingConvention.length - 1
-          );
-          const first = data.namingConvention.charAt(
-            data.namingConvention.charAt(0)
-          );
-          if (str2.test(data.namingConvention) === false) {
+          const last = namingConvention.charAt(namingConvention.length - 1);
+          const first = namingConvention.charAt(namingConvention.charAt(0));
+          if (str2.test(namingConvention) === false) {
             errorPackage.push(
               " Package naming convention should be end with dot extension "
             );
@@ -1134,26 +1130,21 @@ exports.packageLevelInsert = async (
           errorPackage.push(dpRes);
         }
       } else {
-        if (data.delFlag !== 0) {
+        if (delFlag !== 0) {
           errorPackage.push(
             " Data Package Level delFlag required and value should be 0 "
           );
         }
         if (
-          !helper.stringToBoolean(data.noPackageConfig) ||
-          !helper.stringToBoolean(data.active)
+          !helper.stringToBoolean(noPackageConfig) ||
+          !helper.stringToBoolean(active)
         ) {
           errorPackage.push(
             " In jdbc no package config, active should be true "
           );
         }
 
-        if (
-          data.type ||
-          data.sasXptMethod ||
-          data.path ||
-          data.namingConvention
-        ) {
+        if (data.type || data.sasXptMethod || data.path || namingConvention) {
           errorPackage.push(
             " In jdbc type, sasXptMethod path namingConvention should be blank "
           );
@@ -1162,7 +1153,7 @@ exports.packageLevelInsert = async (
     }
 
     if (errorPackage.length > 0) {
-      errorPackage.splice(0, 0, `Datapackage external id -${externalID} `);
+      errorPackage.splice(0, 0, `Datapackage external id -${ExternalId} `);
       return { sucRes: dataPackage, errRes: errorPackage };
     }
 
@@ -1171,12 +1162,12 @@ exports.packageLevelInsert = async (
 
     let dPBody = [
       data.type || null,
-      data.name || data.namingConvention || null,
+      data.name || namingConvention || null,
       data.path || null,
       data.sasXptMethod || null,
       data.password ? "Yes" : "No",
-      helper.stringToBoolean(data.active) ? 1 : 0,
-      helper.stringToBoolean(data.noPackageConfig) ? 1 : 0,
+      helper.stringToBoolean(active) ? 1 : 0,
+      helper.stringToBoolean(noPackageConfig) ? 1 : 0,
       data.ExternalId || null,
       dPTimestamp,
       DFId,
@@ -1197,12 +1188,6 @@ exports.packageLevelInsert = async (
     if (isNew) {
       if (!dpUid) {
         await dfRollBack(DFId);
-        return apiResponse.ErrorResponse(
-          res,
-          `Something went wrong while creating datapackage (${
-            data.name || data.namingConvention
-          })`
-        );
       }
       if (data.password) {
         helper.writeVaultData(`${DFId}/${dpUid}`, {
@@ -1564,10 +1549,6 @@ const saveDataset = (exports.datasetLevelInsert = async (
           );
           if (isNew) {
             const dataSetRollBack = await dfRollBack(DFId);
-            return apiResponse.ErrorResponse(
-              res,
-              `Clinical Data Type is inactive from ${externalSysName}, Description in TA cannot be integrated.`
-            );
           }
         }
       } else {
@@ -1576,11 +1557,6 @@ const saveDataset = (exports.datasetLevelInsert = async (
         );
         if (isNew) {
           const dataSetRollBack = await dfRollBack(DFId);
-          return apiResponse.ErrorResponse(
-            res,
-            `Clinical Data nasim Type is missing from ${externalSysName}, Description in TA cannot be integrated.`
-          );
-          // return false;
         }
       }
     }
@@ -1600,12 +1576,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
         );
 
         if (isNew) {
-          console.log("line 1605", errorDataset);
           const dataSetRollBack = await dfRollBack(DFId);
-          return apiResponse.ErrorResponse(
-            res,
-            "Mnemonic name already exists!"
-          );
         }
       }
     }
@@ -1686,10 +1657,6 @@ const saveDataset = (exports.datasetLevelInsert = async (
     if (isNew) {
       if (!dsUid) {
         await dfRollBack(DFId);
-        return apiResponse.ErrorResponse(
-          res,
-          `Something went wrong while creating dataset (${obj.datasetName})`
-        );
       }
       if (obj.filePwd) {
         await helper.writeVaultData(`${DFId}/${DPId}/${dsUid}`, {
@@ -1746,7 +1713,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
       }
     }
 
-    if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+    if (obj.columnDefinition && obj.columnDefinition.length) {
       let column_definition = [];
       for (let el of obj.columnDefinition) {
         await columnSave(
@@ -1961,10 +1928,6 @@ const columnSave = (exports.columnDefinationInsert = async (
         errorColumnDef.push(" This Column Definition name already exists!");
         if (isNew) {
           await dfRollBack(DFId);
-          return apiResponse.ErrorResponse(
-            res,
-            `Column (${el.columnName}) name already exists!`
-          );
         }
       }
     }
@@ -2012,10 +1975,6 @@ const columnSave = (exports.columnDefinationInsert = async (
     if (isNew) {
       if (!CDUid) {
         await dfRollBack(DFId);
-        return apiResponse.ErrorResponse(
-          res,
-          `Something went wrong while creating column (${el.columnName})`
-        );
       }
     }
 

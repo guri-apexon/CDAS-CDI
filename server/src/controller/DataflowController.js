@@ -302,7 +302,6 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
 
     if (dataPackage?.length) {
       ResponseBody.data_packages = [];
-      let rollBack = false;
       // if datapackage exists
       for (let each of dataPackage) {
         var PackageInsert = await externalFunction.packageLevelInsert(
@@ -316,22 +315,14 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
           true,
           res
         );
-        // console.log(PackageInsert.sucRes);
         if (PackageInsert.sucRes.length) {
           ResponseBody.data_packages.push(PackageInsert.sucRes);
         }
-        console.log("line 323", PackageInsert.errRes);
         if (PackageInsert.errRes.length) {
-          console.log("line 325", PackageInsert.errRes);
-          rollBack = true;
+          return apiResponse.ErrorResponse(res, PackageInsert.errRes);
         }
       }
-      if (rollBack) {
-        return false;
-      }
     }
-
-    console.log("line 325");
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
