@@ -95,7 +95,6 @@ exports.getStudyDataflows = async (req, res) => {
               ...r,
               dataSets: 0,
               dataPackages: 0,
-              locationType: r.locationType || "",
             };
             return acc.set(dataFlowId, {
               ...current,
@@ -300,353 +299,39 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       version: 1,
       dataflowDetails: createdDF,
     };
+
     if (dataPackage?.length) {
       ResponseBody.data_packages = [];
+      let rollBack = false;
       // if datapackage exists
       for (let each of dataPackage) {
-        // if (each.name !== "" && each.path !== "" && each.type !== "") {
-
-        let dPBody = [
-          each.type || null,
-          each.name || each.namingConvention || null,
-          each.path || null,
-          each.sasXptMethod || null,
-          each.password ? "Yes" : "No",
-          helper.stringToBoolean(each.active) ? 1 : 0,
-          helper.stringToBoolean(each.noPackageConfig) ? 1 : 0,
-          each.ExternalId || null,
-          dFTimestamp,
+        var PackageInsert = await externalFunction.packageLevelInsert(
+          each,
           createdDF.dataFlowId,
-          0,
-        ];
-        const {
-          rows: [createdDP],
-        } = await DB.executeQuery(
-          `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(type, name, path, sasxptmethod, password, active, nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid, del_flg)
-          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$9,$10, $11) returning datapackageid as "dataPackageId";`,
-          dPBody
+          1,
+          connectionType,
+          externalSystemName,
+          testFlag,
+          userId,
+          true,
+          res
         );
-        const dpUid = createdDP?.dataPackageId || null;
-        if (!dpUid) {
-          await externalFunction.dataflowRollBack(createdDF.dataFlowId);
-          return apiResponse.ErrorResponse(
-            res,
-            `Something went wrong while creating datapackage (${
-              each.name || each.namingConvention
-            })`
-          );
+        // console.log(PackageInsert.sucRes);
+        if (PackageInsert.sucRes.length) {
+          ResponseBody.data_packages.push(PackageInsert.sucRes);
         }
-        if (each.password) {
-          helper.writeVaultData(`${createdDF.dataFlowId}/${dpUid}`, {
-            password: each.password,
-          });
-        }
-
-        let newObj = {
-          timestamp: ts,
-          externalId: each.ExternalId,
-          datapackageid: dpUid,
-          action: "Data package created successfully.",
-        };
-        ResponseBody.data_packages.push(newObj);
-
-        await DB.executeQuery(
-          `INSERT INTO ${schemaName}.dataflow_audit_log
-        ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-          [
-            createdDF.dataFlowId,
-            dpUid,
-            null,
-            null,
-            1,
-            "New Datapackage",
-            "",
-            "",
-            userId,
-            dFTimestamp,
-          ]
-        );
-        if (each.dataSet?.length) {
-          ResponseBody.data_sets = [];
-          // if datasets exists
-          for (let obj of each.dataSet) {
-            // if (
-            //   obj.name !== "" &&
-            //   obj.path !== "" &&
-            //   obj.mnemonic !== "" &&
-            // ) {
-            let checkDataKind = await DB.executeQuery(
-              `select datakindid, active from ${schemaName}.datakind where datakindid='${obj.dataKindID}';`
-            );
-            if (!checkDataKind?.rows?.length) {
-              const dataSetRollBack = await externalFunction.dataflowRollBack(
-                createdDF.dataFlowId
-              );
-              return apiResponse.ErrorResponse(
-                res,
-                `Clinical Data Type is missing from ${externalSystemName}, Description in TA cannot be integrated.`
-              );
-            }
-            if (checkDataKind.rows[0].active !== 1) {
-              const dataSetRollBack = await externalFunction.dataflowRollBack(
-                createdDF.dataFlowId
-              );
-              return apiResponse.ErrorResponse(
-                res,
-                `Clinical Data Type is inactive from ${externalSystemName}, Description in TA cannot be integrated.`
-              );
-            }
-
-            if (obj.datasetName) {
-              const name = obj.datasetName;
-              let {
-                rows: [existedMnemonic],
-              } = await DB.executeQuery(`select ds.mnemonic from ${schemaName}.dataset ds
-              left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
-              left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
-              where ds.mnemonic ='${name}' and df.testflag ='${
-                testFlag ? 1 : 0
-              }'`);
-
-              if (existedMnemonic) {
-                const dataSetRollBack = await externalFunction.dataflowRollBack(
-                  createdDF.dataFlowId
-                );
-                return apiResponse.ErrorResponse(
-                  res,
-                  "Mnemonic name already exists!"
-                );
-              }
-            }
-            // console.log("createdDSAfter");
-
-            let sqlQuery = "";
-            if (obj.customQuery === "No" || obj.customsql_yn === "No") {
-              if (obj.columnDefinition.length) {
-                const cList = obj.columnDefinition
-                  .map((el) => el.name || el.columnName)
-                  .join(", ");
-
-                sqlQuery = `Select ${cList} from ${
-                  obj.tableName || obj.tbl_nm
-                } ${
-                  obj.conditionalExpression
-                    ? obj.conditionalExpression
-                    : "where 1=1"
-                }`;
-              } else {
-                sqlQuery = `Select from ${obj.tableName || obj.tbl_nm} ${
-                  obj.conditionalExpression
-                    ? obj.conditionalExpression
-                    : "where 1=1"
-                }`;
-              }
-            } else {
-              sqlQuery = obj.customSql || obj.customsql;
-            }
-
-            let DSBody = [
-              dpUid,
-              obj.dataKindID || null,
-              obj.datasetName || null,
-              obj.fileNamingConvention || obj.name || "",
-              helper.stringToBoolean(obj.active) ? 1 : 0,
-              typeof obj.columnCount != "undefined" ? obj.columnCount : 0,
-              helper.stringToBoolean(obj.incremental) ? "Y" : "N",
-              obj.offsetColumn || obj.offsetcolumn || null,
-              obj.type || obj.fileType || null,
-              obj.path || null,
-              obj.OverrideStaleAlert || null,
-              obj.headerRowNumber > 0 ? 1 : 0,
-              obj.footerRowNumber > 0 ? 1 : 0,
-              obj.headerRowNumber || 0,
-              obj.footerRowNumber || 0,
-              sqlQuery || null,
-              obj.customQuery || obj.customsql_yn || null,
-              obj.tableName || obj.tbl_nm || null,
-              obj.ExternalId || null,
-              obj.filePwd ? "Yes" : "No",
-              dFTimestamp,
-              obj.delimiter || "",
-              obj.encoding || "UTF-8",
-              // helper.convertEscapeChar(
-              obj.escapeCode || obj.escapeCharacter || "",
-              // ) || "",
-              obj.quote || "",
-              obj.rowDecreaseAllowed || 0,
-              obj.dataTransferFrequency || "",
-              obj.conditionalExpression,
-              obj.offset_val || null,
-              0,
-            ];
-            const {
-              rows: [createdDS],
-            } = await DB.executeQuery(
-              `insert into ${schemaName}.dataset(datapackageid, datakindid, mnemonic, name, active, columncount, incremental,
-              offsetcolumn, type, path, ovrd_stale_alert, headerrow, footerrow, headerrownumber,footerrownumber, customsql,
-              customsql_yn, tbl_nm, externalid, file_pwd, insrt_tm, updt_tm, "delimiter", charset, escapecode, "quote", rowdecreaseallowed, data_freq, dataset_fltr,offset_val, del_flg )
-               values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20, $21, $21, $22, $23, $24, $25, $26, $27, $28,$29, $30) returning datasetid as "datasetId";`,
-              DSBody
-            );
-            const dsUid = createdDS?.datasetId || null;
-            if (!dsUid) {
-              await externalFunction.dataflowRollBack(createdDF.dataFlowId);
-              return apiResponse.ErrorResponse(
-                res,
-                `Something went wrong while creating dataset (${obj.datasetName})`
-              );
-            }
-            if (obj.filePwd) {
-              await helper.writeVaultData(
-                `${createdDF.dataFlowId}/${dpUid}/${dsUid}`,
-                {
-                  password: obj.filePwd,
-                }
-              );
-            }
-            let newobj = {
-              timestamp: ts,
-              externalId: obj.ExternalId,
-              datasetid: dsUid,
-              action: "Data set created successfully.",
-            };
-            ResponseBody.data_sets.push(newobj);
-            await DB.executeQuery(
-              `INSERT INTO ${schemaName}.dataflow_audit_log
-            ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-              [
-                createdDF.dataFlowId,
-                dpUid,
-                dsUid,
-                null,
-                1,
-                "New Dataset",
-                "",
-                "",
-                userId,
-                dFTimestamp,
-              ]
-            );
-
-            if (obj.columnDefinition?.length) {
-              ResponseBody.column_definition = [];
-              for (let el of obj.columnDefinition) {
-                if (el.columnName) {
-                  let clName = await DB.executeQuery(
-                    `select name from ${schemaName}.columndefinition where datasetid='${dsUid}' and name='${el.columnName}';`
-                  );
-                  if (clName.rows.length) {
-                    await externalFunction.dataflowRollBack(
-                      createdDF.dataFlowId
-                    );
-                    return apiResponse.ErrorResponse(
-                      res,
-                      `Column (${el.columnName}) Name already exist!`
-                    );
-                  }
-                }
-
-                let CDBody = [
-                  dsUid,
-                  el.columnName || null,
-                  el.dataType || null,
-                  helper.stringToBoolean(el.primaryKey) ? 1 : 0,
-                  helper.stringToBoolean(el.required) ? 1 : 0,
-                  el.characterMin || el.minLength || 0,
-                  el.characterMax || el.maxLength || 0,
-                  el.position || 0,
-                  el.format || null,
-                  el.lov || el.values || null,
-                  helper.stringToBoolean(el.unique) ? 1 : 0,
-                  el.requiredfield || null,
-                  dFTimestamp,
-                  el.ExternalId || null,
-                  el.variableLabel || null,
-                  0,
-                ];
-                const {
-                  rows: [createdCD],
-                } = await DB.executeQuery(
-                  `insert into ${schemaName}.columndefinition(datasetid,name,datatype,
-                  primarykey,required,charactermin,charactermax,position,format,lov, "unique", requiredfield,
-                  insrt_tm, updt_tm,externalid, variable,del_flg) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$13,$14, $15,$16) returning columnid as "columnId";`,
-                  CDBody
-                );
-                const CDUid = createdCD?.columnId || null;
-                if (!CDUid) {
-                  await externalFunction.dataflowRollBack(createdDF.dataFlowId);
-                  return apiResponse.ErrorResponse(
-                    res,
-                    `Something went wrong while creating column (${el.columnName})`
-                  );
-                }
-
-                // column count update
-                const {
-                  rows: [existCDs],
-                } = await DB.executeQuery(
-                  `select count(*) from ${schemaName}.columndefinition where datasetid ='${dsUid}'`
-                );
-                const clCountUpdate = await DB.executeQuery(
-                  `update ${schemaName}.dataset set columncount='${
-                    existCDs.count || 0
-                  }' where datasetid ='${dsUid}'`
-                );
-
-                // dataflow audit
-                let dataflow_aduit_query = `INSERT INTO ${schemaName}.dataflow_audit_log
-                ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
-                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`;
-                let audit_body = [
-                  createdDF.dataFlowId,
-                  dpUid,
-                  dsUid,
-                  CDUid,
-                  1,
-                  "New Column definition",
-                  "",
-                  "",
-                  userId,
-                  dFTimestamp,
-                ];
-                await DB.executeQuery(dataflow_aduit_query, audit_body);
-
-                let newobj = {
-                  timestamp: ts,
-                  colmunid: CDUid,
-                  externalId: obj.ExternalId,
-                  action: "Column definition created successfully.",
-                };
-                ResponseBody.column_definition.push(newobj);
-              }
-            }
-
-            if (obj.qcType) {
-              if (obj.conditionalExpressions?.length) {
-                ResponseBody.vlc = [];
-                for (let vlc of obj.conditionalExpressions) {
-                  await externalFunction
-                    .VlcInsert(
-                      vlc,
-                      obj.qcType,
-                      createdDF.dataFlowId,
-                      dpUid,
-                      dsUid,
-                      1,
-                      userId
-                    )
-                    .then((res) => {
-                      ResponseBody.vlc.push(res.sucRes);
-                    });
-                }
-              }
-            }
-          }
+        console.log("line 323", PackageInsert.errRes);
+        if (PackageInsert.errRes.length) {
+          console.log("line 325", PackageInsert.errRes);
+          rollBack = true;
         }
       }
+      if (rollBack) {
+        return false;
+      }
     }
+
+    console.log("line 325");
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -665,6 +350,8 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
         dFTimestamp,
       ]
     );
+    console.log("line 344");
+
     let config_json = {
       dataFlowId: createdDF.dataFlowId,
       vendorName: selectedVendor.vend_nm,
@@ -728,12 +415,10 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
 exports.updateDataFlow = async (req, res) => {
   try {
     var validate = [];
-
     if (req.body.externalSystemName === "CDI") {
       var dataFlowRes = await creatDataflow(req, res);
       return false;
     }
-
     // console.log(req.body);
     let {
       active,
@@ -1285,18 +970,26 @@ exports.updateDataFlow = async (req, res) => {
                                       DSId,
                                       DFVer,
                                       ConnectionType,
-                                      userId
+                                      userId,
+                                      null,
+                                      res
                                     )
-                                    .then((res) => {
+                                    .then((response) => {
                                       if (
-                                        Object.keys(res.sucRes).length !== 0
+                                        Object.keys(response.sucRes).length !==
+                                        0
                                       ) {
-                                        ResponseBody.success.push(res.sucRes);
+                                        ResponseBody.success.push(
+                                          response.sucRes
+                                        );
                                       }
                                       if (
-                                        Object.keys(res.errRes).length !== 0
+                                        Object.keys(response.errRes).length !==
+                                        0
                                       ) {
-                                        ResponseBody.errors.push(res.errRes);
+                                        ResponseBody.errors.push(
+                                          response.errRes
+                                        );
                                       }
                                     });
                                 }
@@ -1389,14 +1082,16 @@ exports.updateDataFlow = async (req, res) => {
                             ConnectionType,
                             externalSysName,
                             testFlag,
-                            userId
+                            userId,
+                            null,
+                            res
                           )
-                          .then((res) => {
-                            if (Object.keys(res.sucRes).length !== 0) {
-                              ResponseBody.success.push(res.sucRes);
+                          .then((response) => {
+                            if (Object.keys(response.sucRes).length !== 0) {
+                              ResponseBody.success.push(response.sucRes);
                             }
-                            if (Object.keys(res.errRes).length !== 0) {
-                              ResponseBody.errors.push(res.errRes);
+                            if (Object.keys(response.errRes).length !== 0) {
+                              ResponseBody.errors.push(response.errRes);
                             }
                           });
                       }
@@ -1413,14 +1108,16 @@ exports.updateDataFlow = async (req, res) => {
                   ConnectionType,
                   externalSysName,
                   testFlag,
-                  userId
+                  userId,
+                  null,
+                  res
                 )
-                .then((res) => {
-                  if (Object.keys(res.sucRes).length !== 0) {
-                    ResponseBody.success.push(res.sucRes);
+                .then((response) => {
+                  if (Object.keys(response.sucRes).length !== 0) {
+                    ResponseBody.success.push(response.sucRes);
                   }
-                  if (Object.keys(res.errRes).length !== 0) {
-                    ResponseBody.errors.push(res.errRes);
+                  if (Object.keys(response.errRes).length !== 0) {
+                    ResponseBody.errors.push(response.errRes);
                   }
                 });
             }
@@ -1800,33 +1497,35 @@ exports.searchDataflow = async (req, res) => {
 
 exports.fetchdataflowSource = async (req, res) => {
   try {
-    const { id: dataflow_id } = req.params;
-    let { rows } =
-      await DB.executeQuery(`select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."name" as datasetname from ${schemaName}.dataflow d
+    let dataflow_id = req.params.id;
+    let q = `select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."name" as datasetname from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
       inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
-      where d.dataflowid ='${dataflow_id}';`);
+      where d.dataflowid ='${dataflow_id}'`;
+    Logger.info({
+      message: "fetchdataflowSource",
+      dataflow_id,
+    });
+    let { rows } = await DB.executeQuery(q);
     return apiResponse.successResponseWithData(
       res,
       "Operation successfully.",
       rows
     );
   } catch (error) {
+    console.log(error);
     Logger.error("catch :fetchdataflowSource");
-    return apiResponse.ErrorResponse(
-      res,
-      error.message || "Something went wrong"
-    );
+    Logger.error(error);
+    return apiResponse.ErrorResponse(res, error);
   }
 };
 
 exports.fetchdataflowDetails = async (req, res) => {
   try {
-    const { id: dataflow_id } = req.params;
-    let { rows } =
-      await DB.executeQuery(`select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
+    let dataflow_id = req.params.id;
+    let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
     d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, S.prot_nbr_stnd
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
@@ -1836,8 +1535,13 @@ exports.fetchdataflowDetails = async (req, res) => {
     left join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
     left join ${schemaName}.datakind dk on (dk.datakindid=d3.datakindid)
     left join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
-    where d.dataflowid ='${dataflow_id}'`);
-    if (!rows.length) {
+    where d.dataflowid ='${dataflow_id}'`;
+    Logger.info({
+      message: "fetchdataflowDetails",
+      dataflow_id,
+    });
+    let { rows } = await DB.executeQuery(q);
+    if (!rows.length || rows.length === 0) {
       return apiResponse.ErrorResponse(
         res,
         "There is no dataflow exist with this id"
