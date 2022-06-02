@@ -403,12 +403,6 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
 
 exports.updateDataFlow = async (req, res) => {
   try {
-    var validate = [];
-    if (req.body.externalSystemName === "CDI") {
-      var dataFlowRes = await creatDataflow(req, res);
-      return false;
-    }
-    // console.log(req.body);
     let {
       active,
       connectionType,
@@ -424,22 +418,23 @@ exports.updateDataFlow = async (req, res) => {
       dataPackage,
       dataStructure,
       externalSystemName,
-
       // connectiondriver,
       serviceOwners,
-      data_in_cdr,
-      configured,
-      sponsorNameStandard,
-      sponsorName,
-      externalVersion,
       protocolNumberStandard,
       delFlag,
     } = req.body;
 
+    // if (externalSystemName === "CDI") {
+    //   await creatDataflow(req, res);
+    //   return false;
+    // }
+    const isCDI = externalSystemName === "CDI" ? true : false;
+
+    var validate = [];
     let returnData = [];
     let valData = [];
 
-    if (!ExternalId) {
+    if (!ExternalId && !isCDI) {
       // Dataflow External Id validation
       return apiResponse.ErrorResponse(
         res,
@@ -483,7 +478,7 @@ exports.updateDataFlow = async (req, res) => {
     }
 
     // Data Package External Id validation
-    if (dataPackage && dataPackage.length > 0) {
+    if (dataPackage && dataPackage.length && !isCDI) {
       for (let each of dataPackage) {
         if (!each.ExternalId) {
           return apiResponse.ErrorResponse(
@@ -493,25 +488,16 @@ exports.updateDataFlow = async (req, res) => {
         }
 
         if (
-          each.delFlag === null ||
-          each.delFlag === "" ||
-          each.delFlag === undefined
+          typeof each.delFlag === "undefined" ||
+          !["0", "1"].includes(each.delFlag?.toString())
         ) {
           return apiResponse.ErrorResponse(
             res,
-            "Data Package Level delFlag  required and it's either 0 or 1"
+            "Data Package Level delFlag required and it's either 0 or 1"
           );
         }
-        if (each.delFlag) {
-          if (each.delFlag !== 1) {
-            return apiResponse.ErrorResponse(
-              res,
-              "Data Package Level delFlag  value of either 0 or 1"
-            );
-          }
-        }
         // Data Set External Id validation
-        if (each.dataSet && each.dataSet.length > 0) {
+        if (each.dataSet?.length) {
           for (let obj of each.dataSet) {
             if (!obj.ExternalId) {
               return apiResponse.ErrorResponse(
@@ -520,25 +506,16 @@ exports.updateDataFlow = async (req, res) => {
               );
             }
             if (
-              obj.delFlag === null ||
-              obj.delFlag === "" ||
-              obj.delFlag === undefined
+              typeof obj.delFlag === "undefined" ||
+              !["0", "1"].includes(obj.delFlag?.toString())
             ) {
               return apiResponse.ErrorResponse(
                 res,
                 "Data Set Level delFlag  required and it's either 0 or 1"
               );
             }
-            if (obj.delFlag) {
-              if (obj.delFlag !== 1) {
-                return apiResponse.ErrorResponse(
-                  res,
-                  "Data Set Level delFlag  value of either 0 or 1"
-                );
-              }
-            }
 
-            if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+            if (obj.columnDefinition?.length) {
               for (let el of obj.columnDefinition) {
                 if (!el.ExternalId) {
                   return apiResponse.ErrorResponse(
@@ -547,60 +524,37 @@ exports.updateDataFlow = async (req, res) => {
                   );
                 }
                 if (
-                  el.delFlag === null ||
-                  el.delFlag === "" ||
-                  el.delFlag === undefined
+                  typeof el.delFlag === "undefined" ||
+                  !["0", "1"].includes(el.delFlag?.toString())
                 ) {
                   return apiResponse.ErrorResponse(
                     res,
                     "Column Definition Level delFlag  required and it's either 0 or 1"
                   );
                 }
-                if (el.delFlag) {
-                  if (el.delFlag !== 1) {
-                    return apiResponse.ErrorResponse(
-                      res,
-                      "Column Definition Level delFlag  value of either 0 or 1"
-                    );
-                  }
-                }
               }
             }
 
             if (obj.qcType) {
-              if (
-                obj.conditionalExpressions &&
-                obj.conditionalExpressions.length > 0
-              ) {
+              if (obj.conditionalExpressions?.length) {
                 for (let vl of obj.conditionalExpressions) {
-                  if (!vl.conditionalExpressionNumber) {
+                  if (
+                    !vl.conditionalExpressionNumber ||
+                    typeof vl.conditionalExpressionNumber != "number"
+                  ) {
                     return apiResponse.ErrorResponse(
                       res,
                       "Conditional Expression Number1 required and Data Type should be Number"
                     );
-                  } else {
-                    if (typeof vl.conditionalExpressionNumber != "number") {
-                      return apiResponse.ErrorResponse(
-                        res,
-                        "Conditional Expression Number required and Data Type should be Number"
-                      );
-                    }
                   }
                 }
 
-                if (obj.conditionalExpressions.length > 0) {
-                  if (!obj.qcType) {
+                if (obj.conditionalExpressions.length) {
+                  if (!obj.qcType || obj.qcType?.toLowerCase() !== "vlc") {
                     return apiResponse.ErrorResponse(
                       res,
                       "qcType required and Value should be VLC"
                     );
-                  } else {
-                    if (obj.qcType.toLowerCase() !== "vlc") {
-                      return apiResponse.ErrorResponse(
-                        res,
-                        "qcType required and Value should be VLC"
-                      );
-                    }
                   }
                 }
               }
@@ -625,11 +579,12 @@ exports.updateDataFlow = async (req, res) => {
 
     // return;
     if (vendorid) {
-      let q2 = `select vend_id,active from ${schemaName}.vendor where vend_id=$1;`;
-      let { rows } = await DB.executeQuery(q2, [vendorid]);
-
-      if (rows.length > 0) {
-        if (rows[0].active !== 1) {
+      let { rows: existVendor } = await DB.executeQuery(
+        `select vend_id,active from ${schemaName}.vendor where vend_id=$1;`,
+        [vendorid]
+      );
+      if (existVendor.length) {
+        if (existVendor[0].active !== 1) {
           returnData.push([`Vendor is not active in ${externalSystemName}`]);
         }
       } else {
@@ -638,10 +593,12 @@ exports.updateDataFlow = async (req, res) => {
     }
 
     if (locationID) {
-      let q3 = `select src_loc_id,active from ${schemaName}.source_location where src_loc_id=$1;`;
-      let locationData = await DB.executeQuery(q3, [locationID]);
+      let locationData = await DB.executeQuery(
+        `select src_loc_id,active from ${schemaName}.source_location where src_loc_id=$1;`,
+        [locationID]
+      );
 
-      if (locationData.rows.length > 0) {
+      if (locationData.rows.length) {
         if (locationData.rows[0].active !== 1) {
           returnData.push([`Location is not active in ${externalSystemName}`]);
         }
@@ -654,7 +611,7 @@ exports.updateDataFlow = async (req, res) => {
       const studyRows = await DB.executeQuery(
         `select prot_id from study where prot_nbr_stnd ='${protocolNumberStandard}';`
       );
-      if (studyRows.rows.length <= 0) {
+      if (!studyRows.rows.length) {
         returnData.push(["This protocol number doesn't exist "]);
       }
     }
@@ -690,7 +647,7 @@ exports.updateDataFlow = async (req, res) => {
       });
     }
     if (serviceOwners) {
-      if (Array.isArray(serviceOwners) === false)
+      if (!Array.isArray(serviceOwners))
         return apiResponse.ErrorResponse(
           res,
           "serviceOwners its optional and it should be array "
@@ -698,28 +655,32 @@ exports.updateDataFlow = async (req, res) => {
     }
 
     const resErr = helper.validation(valData);
-    if (resErr.length > 0) {
+    if (resErr.length) {
       returnData.push(resErr);
     }
 
-    if (returnData.length > 0) {
+    if (returnData.length) {
       return apiResponse.ErrorResponse(res, returnData);
     }
+    if (!isCDI) {
+    }
+    let {
+      rows: [existDf],
+    } = await DB.executeQuery(
+      `select * from ${schemaName}.dataflow where externalsystemname='${externalSystemName}' and externalid='${ExternalId}'`
+    );
 
-    let selectDataFlow = `select * from ${schemaName}.dataflow where externalsystemname='${externalSystemName}' and externalid='${ExternalId}'`;
-    let { rows } = await DB.executeQuery(selectDataFlow);
+    if (existDf && !isCDI) {
+      const DFId = existDf.dataflowid;
+      let { rows: versions } = await DB.executeQuery(
+        `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = $1 order by version DESC limit 1`,
+        [DFId]
+      );
 
-    if (rows.length > 0) {
-      let selectVersion = `SELECT version from ${schemaName}.dataflow_version
-        WHERE dataflowid = $1 order by version DESC limit 1`;
-
-      const DFId = rows[0].dataflowid;
-      let { rows: versions } = await DB.executeQuery(selectVersion, [DFId]);
-
-      const Ver = versions[0]?.version || 0;
-      const DFVer = Ver + 1;
-      const ConnectionType = rows[0].connectiontype;
-      const externalSysName = rows[0].externalsystemname;
+      const DFVer = (versions[0]?.version || 0) + 1;
+      const ConnectionType = existDf.connectiontype;
+      const externalSysName = existDf.externalsystemname;
 
       const cData = { dataFlowId: DFId };
       const conf_data = Object.assign(cData, req.body);
@@ -728,7 +689,7 @@ exports.updateDataFlow = async (req, res) => {
       ResponseBody.success = [];
       ResponseBody.errors = [];
 
-      if (rows[0].del_flg === 1) {
+      if (existDf.del_flg === 1) {
         return apiResponse.ErrorResponse(
           res,
           "This dataFlow data already removed"
@@ -761,22 +722,24 @@ exports.updateDataFlow = async (req, res) => {
             userId
           )
           .then((res) => {
-            if (Object.keys(res.sucRes).length !== 0) {
+            if (res.sucRes?.length) {
               ResponseBody.success.push(res.sucRes);
             }
           });
 
-        if (dataPackage && dataPackage.length > 0) {
+        if (dataPackage && Array.isArray(dataPackage) && dataPackage.length) {
           for (let each of dataPackage) {
-            let selectDP = `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`;
-            let dpRows = await DB.executeQuery(selectDP);
+            let dpRows = await DB.executeQuery(
+              `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
+            );
 
             const packageExternalId = each.ExternalId;
+            const currentDp = dpRows.rows ? dpRows.rows[0] : null;
 
-            if (dpRows.rows.length > 0) {
-              const DPId = dpRows.rows[0].datapackageid;
+            if (currentDp) {
+              const DPId = currentDp.datapackageid;
 
-              if (dpRows.rows[0].del_flg == 1) {
+              if (currentDp.del_flg == 1) {
                 ResponseBody.errors.push([
                   `This - ${packageExternalId}  Data package already removed`,
                 ]);
@@ -805,26 +768,28 @@ exports.updateDataFlow = async (req, res) => {
                       userId
                     )
                     .then((res) => {
-                      if (Object.keys(res.sucRes).length !== 0) {
+                      if (res.sucRes?.length) {
                         ResponseBody.success.push(res.sucRes);
                       }
-                      if (Object.keys(res.errRes).length !== 0) {
+                      if (res.errRes?.length) {
                         ResponseBody.errors.push(res.errRes);
                       }
                     });
 
-                  if (each.dataSet && each.dataSet.length > 0) {
+                  if (each.dataSet.length) {
                     // if datasets exists
                     for (let obj of each.dataSet) {
                       let selectDS = `select * from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${obj.ExternalId}'`;
                       let { rows: dsRows } = await DB.executeQuery(selectDS);
 
                       const datasetExternalId = obj.ExternalId;
-                      if (dsRows.length > 0) {
-                        const DSId = dsRows[0].datasetid;
-                        const custSql = dsRows[0].customsql;
+                      const currentDs = dsRows ? dsRows[0] : null;
 
-                        if (dsRows[0].del_flg == 1) {
+                      if (currentDs) {
+                        const DSId = currentDs.datasetid;
+                        const custSql = currentDs.customsql;
+
+                        if (currentDs.del_flg == 1) {
                           ResponseBody.errors.push([
                             `This - ${datasetExternalId}  Data set already removed`,
                           ]);
@@ -859,18 +824,15 @@ exports.updateDataFlow = async (req, res) => {
                                 userId
                               )
                               .then((res) => {
-                                if (Object.keys(res.sucRes).length !== 0) {
+                                if (res.sucRes?.length) {
                                   ResponseBody.success.push(res.sucRes);
                                 }
-                                if (Object.keys(res.errRes).length !== 0) {
+                                if (res.errRes?.length) {
                                   ResponseBody.errors.push(res.errRes);
                                 }
                               });
 
-                            if (
-                              obj.columnDefinition &&
-                              obj.columnDefinition.length > 0
-                            ) {
+                            if (obj.columnDefinition.length) {
                               for (let el of obj.columnDefinition) {
                                 let selectCD = `select * from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${el.ExternalId}'`;
                                 let { rows: cdRows } = await DB.executeQuery(
@@ -878,10 +840,11 @@ exports.updateDataFlow = async (req, res) => {
                                 );
 
                                 const cdExternalId = el.ExternalId;
-                                if (cdRows.length > 0) {
-                                  const cdId = cdRows[0].columnid;
+                                const currentCd = cdRows ? cdRows[0] : null;
+                                if (currentCd) {
+                                  const cdId = currentCd.columnid;
 
-                                  if (cdRows[0].del_flg === 1) {
+                                  if (currentCd.del_flg === 1) {
                                     ResponseBody.errors.push([
                                       `This - ${cdExternalId}  column definition already removed`,
                                     ]);
@@ -914,16 +877,12 @@ exports.updateDataFlow = async (req, res) => {
                                           userId
                                         )
                                         .then((res) => {
-                                          if (
-                                            Object.keys(res.sucRes).length !== 0
-                                          ) {
+                                          if (res.sucRes?.length) {
                                             ResponseBody.success.push(
                                               res.sucRes
                                             );
                                           }
-                                          if (
-                                            Object.keys(res.errRes).length !== 0
-                                          ) {
+                                          if (res.errRes?.length) {
                                             ResponseBody.errors.push(
                                               res.errRes
                                             );
@@ -945,14 +904,10 @@ exports.updateDataFlow = async (req, res) => {
                                       null
                                     )
                                     .then((res) => {
-                                      if (
-                                        Object.keys(res.sucRes).length !== 0
-                                      ) {
+                                      if (res.sucRes?.length) {
                                         ResponseBody.success.push(res.sucRes);
                                       }
-                                      if (
-                                        Object.keys(res.errRes).length !== 0
-                                      ) {
+                                      if (res.errRes?.length) {
                                         ResponseBody.errors.push(res.errRes);
                                       }
                                     });
@@ -961,20 +916,20 @@ exports.updateDataFlow = async (req, res) => {
                             }
 
                             if (obj.qcType) {
-                              if (
-                                obj.conditionalExpressions &&
-                                obj.conditionalExpressions.length > 0
-                              ) {
+                              if (obj.conditionalExpressions?.length) {
                                 for (let vlc of obj.conditionalExpressions) {
                                   let selectVLC = `select * from ${schemaName}.dataset_qc_rules where datasetid='${DSId}' and ext_ruleid='${vlc.conditionalExpressionNumber}'`;
                                   let { rows: vlcRows } = await DB.executeQuery(
                                     selectVLC
                                   );
+                                  const currentVlc = vlcRows
+                                    ? vlcRows[0]
+                                    : null;
 
-                                  if (vlcRows.length > 0) {
-                                    if (vlcRows[0].active_yn === "N") {
+                                  if (currentVlc) {
+                                    if (currentVlc.active_yn === "N") {
                                       ResponseBody.errors.push([
-                                        `This - ${vlcRows[0].ext_ruleid} Qc Rules already removed`,
+                                        `This - ${currentVlc.ext_ruleid} Qc Rules already removed`,
                                       ]);
                                     } else {
                                       var VlcDataUpdate = await externalFunction
@@ -988,16 +943,12 @@ exports.updateDataFlow = async (req, res) => {
                                           userId
                                         )
                                         .then((res) => {
-                                          if (
-                                            Object.keys(res.sucRes).length !== 0
-                                          ) {
+                                          if (res.sucRes?.length) {
                                             ResponseBody.success.push(
                                               res.sucRes
                                             );
                                           }
-                                          if (
-                                            Object.keys(res.errRes).length !== 0
-                                          ) {
+                                          if (res.errRes?.length) {
                                             ResponseBody.errors.push(
                                               res.errRes
                                             );
@@ -1016,14 +967,10 @@ exports.updateDataFlow = async (req, res) => {
                                         userId
                                       )
                                       .then((res) => {
-                                        if (
-                                          Object.keys(res.sucRes).length !== 0
-                                        ) {
+                                        if (res.sucRes?.length) {
                                           ResponseBody.success.push(res.sucRes);
                                         }
-                                        if (
-                                          Object.keys(res.errRes).length !== 0
-                                        ) {
+                                        if (res.errRes?.length) {
                                           ResponseBody.errors.push(res.errRes);
                                         }
                                       });
@@ -1050,10 +997,10 @@ exports.updateDataFlow = async (req, res) => {
                             null
                           )
                           .then((res) => {
-                            if (Object.keys(res.sucRes).length !== 0) {
+                            if (res.sucRes?.length) {
                               ResponseBody.success.push(res.sucRes);
                             }
-                            if (Object.keys(res.errRes).length !== 0) {
+                            if (res.errRes?.length) {
                               ResponseBody.errors.push(res.errRes);
                             }
                           });
@@ -1075,10 +1022,10 @@ exports.updateDataFlow = async (req, res) => {
                   null
                 )
                 .then((res) => {
-                  if (Object.keys(res.sucRes).length !== 0) {
+                  if (res.sucRes?.length) {
                     ResponseBody.success.push(res.sucRes);
                   }
-                  if (Object.keys(res.errRes).length !== 0) {
+                  if (res.errRes?.length) {
                     ResponseBody.errors.push(res.errRes);
                   }
                 });
@@ -1087,9 +1034,8 @@ exports.updateDataFlow = async (req, res) => {
         }
       }
       const sucData = ResponseBody.success;
-      let isEmpty = (arr) => Array.isArray(arr) && arr.every(isEmpty);
 
-      if (isEmpty(sucData)) {
+      if (helper.isEmpty(sucData)) {
         const deleteQuery = `delete from ${schemaName}.dataflow_version where dataflowid='${DFId}' and 
         version ='${DFVer}'`;
         await DB.executeQuery(deleteQuery);
