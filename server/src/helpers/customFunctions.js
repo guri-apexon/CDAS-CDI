@@ -147,6 +147,14 @@ exports.isColumnType = (str) => {
   return ["alphanumeric", "numeric", "date"].includes(str.toLowerCase());
 };
 
+exports.isActive = (str) => {
+  return ["y", "n"].includes(str.toLowerCase());
+};
+
+exports.isAction = (str) => {
+  return ["reject", "report"].includes(str.toLowerCase());
+};
+
 exports.isConnectionType = (str) => {
   return [
     "SFTP",
@@ -187,4 +195,47 @@ exports.formatDBTables = (data) => {
       tableName: d.tableName || d.tab_name || "",
     };
   });
+};
+
+exports.generateConnectionURL = (locType, hostName, port, dbName) => {
+  if (!locType || !hostName) {
+    return "";
+  }
+  if (locType != "" && (locType === "SFTP" || locType === "FTPS")) {
+    return hostName;
+  }
+  if (locType === "Hive CDP" || locType === "Hive CDH") {
+    const transportMode = locType === "Hive CDP" ? "http" : "https";
+    return port && dbName
+      ? `jdbc:hive2://${hostName}:${port}/${dbName};transportMode=${transportMode};httpPath=cliservice;ssl=1;AllowSelfSignedCerts=1;AuthMech=3`
+      : "";
+  }
+  if (locType === "Oracle") {
+    return port && dbName
+      ? `jdbc:oracle:thin:@${hostName}:${port}:${dbName}`
+      : "";
+  }
+  if (locType === "MySQL") {
+    return port && dbName ? `jdbc:mysql://${hostName}:${port}/${dbName}` : "";
+  }
+  if (locType === "SQL Server") {
+    return port && dbName
+      ? `jdbc:sqlserver://${hostName}:${port};databaseName=${dbName}`
+      : "";
+  }
+  if (locType === "PostgreSQL") {
+    return port && dbName
+      ? `jdbc:postgresql://${hostName}:${port}/${dbName}`
+      : "";
+  }
+  if (locType === "Impala") {
+    return port
+      ? `jdbc:impala://${hostName}:${port}/${dbName};ssl=1;AllowSelfSignedCerts=1;AuthMech=3`
+      : "";
+  }
+  if (locType && hostName && port && dbName) {
+    return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
+  }
+
+  return "";
 };

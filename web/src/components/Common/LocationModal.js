@@ -96,9 +96,9 @@ const LocationForm = (props) => {
               />
             </Grid>
           )}
-          <Grid item md={5} id="for-externalSytemName">
+          <Grid item md={5} id="for-externalSystemName">
             <ReduxFormSelect
-              name="externalSytemName"
+              name="externalSystemName"
               label="External System Name"
               InputProps={{ readOnly: props.locationViewMode }}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
@@ -307,7 +307,13 @@ const LocationModal = (props) => {
       }
     }
     setExistErr("");
-    dispatch(saveLocationData(values));
+    dispatch(
+      saveLocationData({
+        ...values,
+        active: values.active === 0 ? false : true,
+        systemName: "CDI",
+      })
+    );
     return null;
   };
 
