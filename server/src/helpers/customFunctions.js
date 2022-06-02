@@ -120,7 +120,8 @@ exports.validation = (data) => {
   return msg;
 };
 
-exports.isEmpty = (arr) => Array.isArray(arr) && arr.every(isEmpty);
+let isEmpty = (exports.isEmpty = (arr) =>
+  Array.isArray(arr) && arr.every(isEmpty));
 
 exports.getdiffKeys = (newObj, oldObj) => {
   // console.log("line 131");

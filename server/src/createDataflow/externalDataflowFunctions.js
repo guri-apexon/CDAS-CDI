@@ -119,18 +119,13 @@ exports.insertValidation = (req) => {
             err: " Data Package Level delFlag required and value should be 0 ",
           });
         }
-        if (
-          each.ExternalId === null ||
-          each.ExternalId === "" ||
-          each.ExternalId === undefined
-        ) {
+        if (!each.ExternalId) {
           validate.push({
             err: " Datapackage, level ExternalId is required and data type should be string or number ",
           });
         } else {
           if (helper.isSftp(LocationType)) {
             // if (LocationType === "Hive CDH") {
-            // console.log("data");
             const dpArray = [
               {
                 key: "No Package Level Config ",
@@ -145,7 +140,7 @@ exports.insertValidation = (req) => {
               },
             ];
 
-            if (helper.stringToBoolean(each.noPackageConfig) === false) {
+            if (!helper.stringToBoolean(each.noPackageConfig)) {
               const dpArrayST = [
                 { key: "Package type", value: each.type, type: "string" },
                 {
@@ -164,6 +159,14 @@ exports.insertValidation = (req) => {
                   type: "string",
                 },
               ];
+
+              if (each.type) {
+                if (!helper.isPackageType(each.type)) {
+                  validate.push({
+                    err: " Package type's supported values : 7Z, ZIP, RAR, SAS ",
+                  });
+                }
+              }
 
               let dpResST = helper.validation(dpArrayST);
               if (dpResST.length > 0) {
@@ -255,12 +258,7 @@ exports.insertValidation = (req) => {
             } else {
               if (each.dataSet && each.dataSet.length > 0) {
                 for (let obj of each.dataSet) {
-                  if (
-                    obj.ExternalId !== null &&
-                    obj.ExternalId !== "" &&
-                    obj.ExternalId !== undefined
-                  ) {
-                  } else {
+                  if (!obj.ExternalId) {
                     validate.push({
                       err: " Dataset level, ExternalId is required and data type should be string or number ",
                     });
@@ -428,11 +426,7 @@ exports.insertValidation = (req) => {
                       obj.columnDefinition.length > 0
                     ) {
                       for (let el of obj.columnDefinition) {
-                        if (
-                          el.ExternalId === null ||
-                          el.ExternalId === "" ||
-                          el.ExternalId === undefined
-                        ) {
+                        if (!el.ExternalId) {
                           validate.push({
                             err: " Column definition level, ExternalId is required and data type should be string or Number ",
                           });
@@ -609,16 +603,10 @@ exports.insertValidation = (req) => {
 
                     if (obj.conditionalExpressions) {
                       if (obj.conditionalExpressions.length > 0) {
-                        if (!obj.qcType) {
+                        if (!obj.qcType || obj.qcType.toLowerCase() !== "vlc") {
                           validate.push({
                             err: " qcType required and Value should be VLC ",
                           });
-                        } else {
-                          if (obj.qcType.toLowerCase() !== "vlc") {
-                            validate.push({
-                              err: " qcType required and Value should be VLC ",
-                            });
-                          }
                         }
                       }
                     }
@@ -650,12 +638,7 @@ exports.insertValidation = (req) => {
 
             if (each.dataSet && each.dataSet.length > 0) {
               for (let obj of each.dataSet) {
-                if (
-                  obj.ExternalId !== null &&
-                  obj.ExternalId !== "" &&
-                  obj.ExternalId !== undefined
-                ) {
-                } else {
+                if (!obj.ExternalId) {
                   validate.push({
                     err: " Dataset level, ExternalId is required and data type should be string or number ",
                   });
@@ -733,43 +716,33 @@ exports.insertValidation = (req) => {
 
                 if (obj.customsql_yn) {
                   if (obj.customsql_yn.toLowerCase() == "yes") {
-                    if (
-                      obj.customsql !== null &&
-                      obj.customsql !== "" &&
-                      obj.customsql !== undefined
-                    ) {
-                      if (obj.customsql.length <= 131072) {
-                      } else {
+                    if (!obj.customsql) {
+                      validate.push({
+                        err: " Custom sql is required ",
+                      });
+                    } else {
+                      if (obj.customsql.length >= 131072) {
                         validate.push({
                           err: " Custom sql max of 131072 characters  ",
                         });
                       }
-                    } else {
-                      validate.push({
-                        err: " Custom sql is required ",
-                      });
                     }
                   }
                   if (obj.customsql_yn.toLowerCase() == "no") {
-                    if (
-                      obj.tbl_nm !== null &&
-                      obj.tbl_nm !== "" &&
-                      obj.tbl_nm !== undefined
-                    ) {
-                      if (obj.tbl_nm.length <= 255) {
-                      } else {
+                    if (!obj.tbl_nm) {
+                      validate.push({
+                        err: " Table name is required ",
+                      });
+                    } else {
+                      if (obj.tbl_nm.length >= 255) {
                         validate.push({
                           err: " Table name max of 255 characters  ",
                         });
                       }
-                    } else {
-                      validate.push({
-                        err: " Table name is required ",
-                      });
                     }
-                    if (helper.stringToBoolean(obj.incremental) === true) {
+                    if (helper.stringToBoolean(obj.incremental)) {
                       if (
-                        obj.offsetcolumn !== null &&
+                        !obj.offsetcolumn !== null &&
                         obj.offsetcolumn !== "" &&
                         obj.offsetcolumn !== undefined &&
                         typeof obj.offsetcolumn === "string"
@@ -792,11 +765,7 @@ exports.insertValidation = (req) => {
 
                   if (obj.columnDefinition && obj.columnDefinition.length > 0) {
                     for (let el of obj.columnDefinition) {
-                      if (
-                        el.ExternalId === null ||
-                        el.ExternalId === "" ||
-                        el.ExternalId === undefined
-                      ) {
+                      if (!el.ExternalId) {
                         validate.push({
                           err: " Column Definition Level, ExternalId  is required and data type should be string or Number ",
                         });
@@ -947,16 +916,10 @@ exports.insertValidation = (req) => {
 
                   if (obj.conditionalExpressions) {
                     if (obj.conditionalExpressions.length > 0) {
-                      if (!obj.qcType) {
+                      if (!obj.qcType || obj.qcType.toLowerCase() !== "vlc") {
                         validate.push({
                           err: " qcType required and Value should be VLC ",
                         });
-                      } else {
-                        if (obj.qcType.toLowerCase() !== "vlc") {
-                          validate.push({
-                            err: " qcType required and Value should be VLC ",
-                          });
-                        }
                       }
                     }
                   }
@@ -991,7 +954,6 @@ exports.packageLevelInsert = async (
     var dataPackage = [];
     var str1 = /[~]/;
     var str2 = /[.]/;
-    console.log("line no 994", externalSysName);
 
     if (!isNew) {
       if (helper.isSftp(LocationType)) {

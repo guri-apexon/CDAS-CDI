@@ -449,17 +449,14 @@ exports.updateDataFlow = async (req, res) => {
       );
     }
 
-    if (delFlag === null || delFlag === "" || delFlag === undefined) {
-      return apiResponse.ErrorResponse(
-        res,
-        "Data flow Level delFlag  required and it's either 0 or 1"
-      );
-    }
-    if (delFlag) {
-      if (delFlag !== 1) {
+    if (!isCDI) {
+      if (
+        typeof delFlag === "undefined" ||
+        !["0", "1"].includes(delFlag?.toString())
+      ) {
         return apiResponse.ErrorResponse(
           res,
-          "Data flow Level delFlag  value of either 0 or 1"
+          "Data flow Level delFlag  required and it's either 0 or 1 New"
         );
       }
     }
@@ -548,15 +545,14 @@ exports.updateDataFlow = async (req, res) => {
                     );
                   }
                 }
-
-                if (obj.conditionalExpressions.length) {
-                  if (!obj.qcType || obj.qcType?.toLowerCase() !== "vlc") {
-                    return apiResponse.ErrorResponse(
-                      res,
-                      "qcType required and Value should be VLC"
-                    );
-                  }
-                }
+              }
+            }
+            if (obj.conditionalExpressions.length) {
+              if (!obj.qcType || obj.qcType?.toLowerCase() !== "vlc") {
+                return apiResponse.ErrorResponse(
+                  res,
+                  "qcType required and Value should be VLC"
+                );
               }
             }
           }
@@ -564,7 +560,7 @@ exports.updateDataFlow = async (req, res) => {
       }
     }
 
-    if (exptDtOfFirstProdFile) {
+    if (exptDtOfFirstProdFile && !isCDI) {
       function validateDOB(date) {
         var pattern =
           /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/;
