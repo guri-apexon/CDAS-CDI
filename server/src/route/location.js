@@ -11,7 +11,7 @@ router.get(
 );
 router.get("/search-location/:query", LocationController.searchLocationList);
 router.post("/create", LocationController.saveLocationData);
-router.post("/update", LocationController.updateLocationData);
+// router.post("/update", LocationController.updateLocationData);
 router.get("/service_owners", LocationController.getServiceOwnersList);
 router.post("/statusUpdate", LocationController.statusUpdate);
 router.get("/detail/:locationId", LocationController.locationDetails);
