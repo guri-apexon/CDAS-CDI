@@ -1,19 +1,19 @@
 import React from "react";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
-import { TextField } from "apollo-react/components/TextField/TextField";
-import { Button } from "apollo-react/components/Button/Button";
-import { IconButton } from "apollo-react/components/IconButton/IconButton";
-import Grid from "apollo-react/components/Grid";
-import Divider from "apollo-react/components/Divider";
-import { Search } from "apollo-react/components/Search/Search";
-import { IconMenuButton } from "apollo-react/components/IconMenuButton/IconMenuButton";
-import { Tooltip } from "apollo-react/components/Tooltip/Tooltip";
-import Upload from "apollo-react-icons/Upload";
-import Filter from "apollo-react-icons/Filter";
+import TextField from "apollo-react/components/TextField";
 import Trash from "apollo-react-icons/Trash";
 import Pencil from "apollo-react-icons/Pencil";
+import Button from "apollo-react/components/Button";
+import IconButton from "apollo-react/components/IconButton";
+import Grid from "apollo-react/components/Grid";
+import Upload from "apollo-react-icons/Upload";
+import Filter from "apollo-react-icons/Filter";
+import Divider from "apollo-react/components/Divider";
+import Search from "apollo-react/components/Search";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
+import IconMenuButton from "apollo-react/components/IconMenuButton";
+import Tooltip from "apollo-react/components/Tooltip";
 import {
   createStringSearchFilter,
   createSelectFilterComponent,
@@ -33,7 +33,6 @@ import {
   checkAlphaNumeric,
   checkRequired,
   checkFormat,
-  checkRequiredValue,
   checkCharacterLength,
   validateRow,
 } from "../../../../../components/FormComponents/validators";
@@ -106,16 +105,12 @@ export const DataTypeEditableSelectCell =
 export const editableSelectCell =
   (options) =>
   ({ row, column: { accessor: key } }) => {
-    const errorText = checkRequiredValue(row[key], key, row.primaryKey);
-
     return row.editMode ? (
       <Select
         size="small"
         fullWidth
         canDeselect={false}
         value={row[key]}
-        error={!row.isInitLoad && errorText ? true : false}
-        helperText={!row.isInitLoad ? errorText : ""}
         onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
         {...fieldStyles}
       >
@@ -254,11 +249,7 @@ export const ActionCell = ({ row }) => {
     onRowCancel,
     onRowDelete,
     editMode: eMode,
-    isHavingColumnName,
     onRowSave,
-    maxLength,
-    minLength,
-    dataType,
   } = row;
   return eMode ? (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
