@@ -86,12 +86,12 @@ exports.insertValidation = (req) => {
   }
   if (!ConnectionType) {
     validate.push({
-      err: " ConnectionType is required and data type should be string ",
+      err: " locationType is required and data type should be string ",
     });
   } else {
     if (!helper.isConnectionType(ConnectionType)) {
       validate.push({
-        err: " ConnectionType's supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server ",
+        err: " locationType's supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server ",
       });
     }
   }
