@@ -97,7 +97,6 @@ const DataSetsFormBase = (props) => {
   // const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
 
   const onChangeCDT = (values) => {
-    console.log("cdt", values);
     setCdtValue(values);
     change("clinicalDataType", values);
   };
@@ -109,8 +108,8 @@ const DataSetsFormBase = (props) => {
   }, [initialValues]);
 
   const setDefaultValues = (e) => {
-    const fileValue = e.target.value;
-    if (fileValue !== "Delimited") {
+    const fileValue = e.target.value?.toLowerCase();
+    if (fileValue !== "delimited") {
       dispatch(change("CreateDataSetsForm", "delimiter", defaultDelimiter));
       dispatch(
         change("CreateDataSetsForm", "escapeCharacter", defaultEscapeCharacter)
@@ -123,6 +122,11 @@ const DataSetsFormBase = (props) => {
         change("CreateDataSetsForm", "footerRowNumber", defaultFooterRowNumber)
       );
       dispatch(change("CreateDataSetsForm", "loadType", defaultLoadType));
+      change("escapeCharacter", defaultEscapeCharacter);
+      change("quote", defaultQuote);
+    } else {
+      change("escapeCharacter", `"`);
+      change("quote", `"`);
     }
   };
   const submitForm = () => {
