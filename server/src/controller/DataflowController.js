@@ -257,7 +257,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
     DFBody = [
       DFTestname,
       vendorid,
-      dataStructure?.toLowerCase() || null,
+      dataStructure || null,
       description || null,
       locationID || null,
       helper.stringToBoolean(active) ? 1 : 0,
@@ -318,12 +318,13 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
           dFTimestamp,
           createdDF.dataFlowId,
           0,
+          each.sod_view_type || null,
         ];
         const {
           rows: [createdDP],
         } = await DB.executeQuery(
-          `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(type, name, path, sasxptmethod, password, active, nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid, del_flg)
-          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$9,$10, $11) returning datapackageid as "dataPackageId";`,
+          `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage(type, name, path, sasxptmethod, password, active,  nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid, del_flg,sod_view_type)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$9,$10, $11, $12) returning datapackageid as "dataPackageId";`,
           dPBody
         );
         const dpUid = createdDP?.dataPackageId || null;
@@ -733,7 +734,7 @@ exports.updateDataFlow = async (req, res) => {
       var dataFlowRes = await creatDataflow(req, res);
       return false;
     }
-
+    
     // console.log(req.body);
     let {
       active,

@@ -13,19 +13,26 @@ import Checkbox from "apollo-react/components/Checkbox";
 import TextField from "apollo-react/components/TextField";
 import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
+import InfoIcon from "apollo-react-icons/Info";
+import Tooltip from "apollo-react/components/Tooltip";
 import { ReactComponent as DataPackageIcon } from "../../../../components/Icons/datapackage.svg";
 import "./index.scss";
 import { getUserInfo, isSftp, validateFields } from "../../../../utils";
-import { packageComprTypes } from "../../../../utils/constants";
+import { packageComprTypes, packageTypes } from "../../../../utils/constants";
+
 // import {
 //   addDataPackage,
 //   getPackagesList,
 // } from "../../store/actions/DataPackageAction";
 
-const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
+const DataPackage = (
+  { payloadBack, toast, locType, tabularSod, payloadSodBack },
+  ref
+) => {
   const [showForm, setShowForm] = useState(true);
   const [configShow, setConfigShow] = useState(false);
   const [compression, setCompression] = useState("");
+  const [sodValue, setSodValue] = useState("");
   const [namingConvention, setNamingConvention] = useState("");
   const [packagePassword, setPackagePassword] = useState("");
   const [sftpPath, setSftpPath] = useState("");
@@ -50,7 +57,7 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
   useImperativeHandle(ref, () => ({
     // eslint-disable-next-line consistent-return
     submitForm: () => {
-      if (disabled) {
+      if (disabled && !tabularSod) {
         payloadBack({
           type: "",
           name: "No package",
@@ -78,13 +85,36 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
         noPackageConfig: configShow ? 0 : 1,
         active: 1,
       };
-      payloadBack(reqBody);
+      const reqBodySod = {
+        type: compression,
+        name: namingConvention === "" ? "No package" : namingConvention,
+        password: packagePassword,
+        path: sftpPath,
+        noPackageConfig: configShow ? 0 : 1,
+        active: 1,
+        sod_view_type: sodValue,
+      };
+      if (tabularSod) {
+        payloadSodBack(reqBodySod);
+      } else {
+        payloadBack(reqBody);
+      }
     },
   }));
 
   useEffect(() => {
     setDisabled(locType && !isSftp(locType));
-  }, [locType]);
+    if (tabularSod) {
+      setConfigShow(true);
+      setDisabled(true);
+      setCompression("zip");
+      setSodValue("Regular");
+    } else {
+      setConfigShow(false);
+      setDisabled(false);
+      setCompression("");
+    }
+  }, [locType, tabularSod]);
   return (
     <div className="data-packages">
       <Paper className="add-package-box">
@@ -96,34 +126,45 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
                 className="config-checkbox"
                 size="small"
                 label="Package Level Configuration"
-                checked={!disabled && configShow}
+                checked={configShow}
                 disabled={disabled}
                 onChange={showConfig}
               />
             </div>
-            {configShow && !disabled && (
+            {configShow && (
               <div className="package-form">
-                <Select
-                  error={notMatchedType}
-                  label="Package Compression Type"
-                  value={compression}
-                  size="small"
-                  placeholder="Select type..."
-                  onChange={(e) => {
-                    setCompression(e.target.value);
-                    if (e.target.value === "") {
-                      setNotMatchedType(false);
-                    }
-                  }}
-                  className="mb-20 package-type"
-                >
-                  {packageComprTypes.map((type, i) => (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <MenuItem key={i} value={type.value}>
-                      {type.text}
-                    </MenuItem>
-                  ))}
-                </Select>
+                {tabularSod ? (
+                  <TextField
+                    className="mb-20 package-type"
+                    label="Package Compression Type"
+                    size="small"
+                    fullWidth
+                    value={compression}
+                    disabled
+                  />
+                ) : (
+                  <Select
+                    error={notMatchedType}
+                    label="Package Compression Type"
+                    value={compression}
+                    size="small"
+                    placeholder="Select type..."
+                    onChange={(e) => {
+                      setCompression(e.target.value);
+                      if (e.target.value === "") {
+                        setNotMatchedType(false);
+                      }
+                    }}
+                    className="mb-20 package-type"
+                  >
+                    {packageComprTypes.map((type, i) => (
+                      // eslint-disable-next-line react/no-array-index-key
+                      <MenuItem key={i} value={type.value}>
+                        {type.text}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
                 <TextField
                   error={notMatchedType}
                   // required
@@ -132,7 +173,11 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
                   placeholder=""
                   size="small"
                   fullWidth
-                  helperText="File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
+                  helperText={
+                    tabularSod
+                      ? "File extension must match package compression type e.g. zip"
+                      : "File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
+                  }
                   onChange={(e) => {
                     setNotMatchedType(
                       !validateFields(e.target.value, compression)
@@ -157,6 +202,34 @@ const DataPackage = ({ payloadBack, toast, locType, configRequired }, ref) => {
                   fullWidth
                   onChange={(e) => setSftpPath(e.target.value)}
                 />
+                {tabularSod && (
+                  <div>
+                    <Select
+                      label="SOD View Type to Process"
+                      value={sodValue}
+                      size="small"
+                      onChange={(e) => {
+                        setSodValue(e.target.value);
+                      }}
+                      className="mb-20 package-type"
+                    >
+                      {packageTypes.map((type, i) => (
+                        // eslint-disable-next-line react/no-array-index-key
+                        <MenuItem key={i} value={type.value}>
+                          {type.text}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <Tooltip
+                      title="SOD View Type to Process"
+                      subtitle="Files in the SOD package which match your selection will be processed. Please make sure that your selection and the generated SOD view type are in sync."
+                      placement="left"
+                      style={{ marginRight: 48 }}
+                    >
+                      <InfoIcon style={{ height: "2em", marginLeft: 10 }} />
+                    </Tooltip>
+                  </div>
+                )}
               </div>
             )}
           </>
