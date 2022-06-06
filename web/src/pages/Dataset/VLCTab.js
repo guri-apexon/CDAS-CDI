@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 // import { useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import Table, {
   numberSearchFilter,
   createStringSearchFilter,
@@ -37,7 +38,14 @@ export default function VLCTab() {
   // const history = useHistory();
   const dispatch = useDispatch();
   const dataSets = useSelector((state) => state.dataSets);
-  const { loading, VLCData } = dataSets;
+  const { loading, VLCData, selectedDataset } = dataSets;
+
+  const params = useParams();
+
+  const datasetid = params.datasetId;
+
+  const { datasetid: dsId } = selectedDataset;
+
   // const getData = async () => {
   //   // const data = await getVLCDataList();
   //   // console.log("data", data);
@@ -48,7 +56,7 @@ export default function VLCTab() {
   // };
 
   useEffect(() => {
-    dispatch(getVLCData());
+    if (datasetid !== null && datasetid !== "new") dispatch(getVLCData(dsId));
     // console.log("data", Data);
   }, []);
 
