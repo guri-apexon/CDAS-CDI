@@ -61,8 +61,8 @@ const DataSetsFormBase = (props) => {
   const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
 
   const setDefaultValues = (e) => {
-    const fileValue = e.target.value;
-    if (fileValue !== "Delimited") {
+    const fileValue = e.target.value?.toLowerCase();
+    if (fileValue !== "delimited") {
       dispatch(change("DataSetsForm", "delimiter", defaultDelimiter));
       dispatch(
         change("DataSetsForm", "escapeCharacter", defaultEscapeCharacter)
@@ -75,6 +75,9 @@ const DataSetsFormBase = (props) => {
         change("DataSetsForm", "footerRowNumber", defaultFooterRowNumber)
       );
       dispatch(change("DataSetsForm", "loadType", defaultLoadType));
+    } else {
+      dispatch(change("DataSetsForm", "escapeCharacter", `"`));
+      dispatch(change("DataSetsForm", "quote", `"`));
     }
   };
 
