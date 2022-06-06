@@ -149,7 +149,7 @@ const Dataset = () => {
 
   const handleChangeTab = (event, v) => {
     setValue(v);
-    if (v === 1) {
+    if (v === 1 && datasetid !== "new" && datasetid !== null) {
       dispatch(getDatasetColumns(datasetid));
     }
   };

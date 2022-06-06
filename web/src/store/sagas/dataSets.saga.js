@@ -59,9 +59,11 @@ export function* fetchDataKindData(action = null) {
   }
 }
 
-export function* fetchVLCData() {
+export function* fetchVLCData(action) {
   try {
-    const fetchVlcData = yield call(axios.post, `${baseURL}/${VLCDATAAPI}`, {});
+    const fetchVlcData = yield call(axios.post, `${baseURL}/${VLCDATAAPI}`, {
+      datasetid: action.dsId,
+    });
     // console.log("VLC", fetchVlcData);
     yield put({
       type: FETCH_VLC_RULES_SUCCESS,
