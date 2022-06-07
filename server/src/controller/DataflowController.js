@@ -547,7 +547,7 @@ exports.updateDataFlow = async (req, res) => {
                 }
               }
             }
-            if (obj.conditionalExpressions.length) {
+            if (obj.conditionalExpressions?.length) {
               if (!obj.qcType || obj.qcType?.toLowerCase() !== "vlc") {
                 return apiResponse.ErrorResponse(
                   res,
@@ -772,7 +772,7 @@ exports.updateDataFlow = async (req, res) => {
                       }
                     });
 
-                  if (each.dataSet.length) {
+                  if (each.dataSet?.length) {
                     // if datasets exists
                     for (let obj of each.dataSet) {
                       let selectDS = `select * from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${obj.ExternalId}'`;
@@ -828,7 +828,7 @@ exports.updateDataFlow = async (req, res) => {
                                 }
                               });
 
-                            if (obj.columnDefinition.length) {
+                            if (obj.columnDefinition?.length) {
                               for (let el of obj.columnDefinition) {
                                 let selectCD = `select * from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${el.ExternalId}'`;
                                 let { rows: cdRows } = await DB.executeQuery(
