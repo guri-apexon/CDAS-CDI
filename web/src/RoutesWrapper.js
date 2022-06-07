@@ -1,9 +1,8 @@
 import { Route, Switch, Redirect, useRouteMatch } from "react-router";
 import { useLocation, useHistory } from "react-router-dom";
 import { lazy, Suspense, useState, useEffect } from "react";
-import { useIdleTimer } from "react-idle-timer";
 import Loader from "apollo-react/components/Loader";
-import { getUserId } from "./utils";
+import { getUserId, setIdleLogout } from "./utils";
 import TopNavbar from "./components/AppHeader/TopNavbar/TopNavbar";
 import AppFooter from "./components/AppFooter/AppFooter";
 import Logout from "./pages/Logout/Logout";
@@ -11,8 +10,6 @@ import DataPackages from "./pages/DataPackages/DataPackages";
 import AuditLog from "./pages/AuditLog/AuditLog";
 import PageHeader from "./components/Common/PageHeader";
 import { userLogOut } from "./services/ApiServices";
-import AlertBox from "./pages/AlertBox/AlertBox";
-import { IDLE_LOGOUT_TIME, IDLE_WARNING_TIME } from "./utils/constants";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
@@ -90,7 +87,6 @@ const WithOutPageHeader = () => {
 const CDIWrapper = () => {
   const [loggedIn, setLoggedIn] = useState(true);
   const [checkedOnce, setCheckedOnce] = useState(false);
-  const [showAlertBox, setShowAlertBox] = useState(false);
 
   const history = useHistory();
   const location = useLocation();
@@ -121,38 +117,19 @@ const CDIWrapper = () => {
     }
   }, [checkedOnce, history]);
 
-  const onIdleWarning = () => {
-    setShowAlertBox(true);
-  };
-
-  const onIdleLogout = async () => {
+  const logoutOnIdle = async () => {
     const isLogout = await userLogOut();
     if (isLogout) {
       setLoggedIn(false);
-      setShowAlertBox(false);
       history.push("/logout");
-      // eslint-disable-next-line no-use-before-define
-      idleTimer = null;
     }
   };
 
-  let idleTimer = useIdleTimer({
-    onPrompt: onIdleWarning,
-    onIdle: onIdleLogout,
-    timeout: IDLE_LOGOUT_TIME,
-    promptTimeout: IDLE_WARNING_TIME,
-    startOnMount: true,
-    startManually: false,
-    stopOnIdle: false,
-    crossTab: false,
-    syncTimers: 0,
-  });
-
-  const handleOkClose = () => {
-    setShowAlertBox(false);
-    // eslint-disable-next-line no-use-before-define
-    idleTimer.reset();
-  };
+  useEffect(() => {
+    setIdleLogout(() => {
+      logoutOnIdle();
+    });
+  }, []);
 
   return (
     <Suspense fallback={<Loader isInner />}>
@@ -171,12 +148,6 @@ const CDIWrapper = () => {
           <Route path="/logout" render={() => <Logout />} />
           <Redirect from="/" to="/checkAuthentication" />
         </Switch>
-      )}
-      {showAlertBox && idleTimer.isIdle && (
-        <AlertBox
-          handleOkClose={handleOkClose}
-          message="Your session is about to expire. Please click OK to continue your session"
-        />
       )}
     </Suspense>
   );
