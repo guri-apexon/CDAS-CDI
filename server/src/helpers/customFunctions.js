@@ -226,6 +226,9 @@ exports.generateConnectionURL = (locType, hostName, port, dbName) => {
       ? `jdbc:sqlserver://${hostName}:${port};databaseName=${dbName}`
       : "";
   }
+  if (locType === "SQL Server Dynamic Port") {
+    return dbName ? `jdbc:sqlserver://${hostName};databaseName=${dbName}` : "";
+  }
   if (locType === "PostgreSQL") {
     return port && dbName
       ? `jdbc:postgresql://${hostName}:${port}/${dbName}`
