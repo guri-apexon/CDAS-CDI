@@ -26,9 +26,10 @@ export const getDataKindData = () => {
   };
 };
 
-export const getVLCData = () => {
+export const getVLCData = (dsId) => {
   return {
     type: GET_VLC_RULES,
+    dsId,
   };
 };
 

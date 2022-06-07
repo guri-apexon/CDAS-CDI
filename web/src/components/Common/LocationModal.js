@@ -25,6 +25,7 @@ import {
   generateConnectionURL,
   generatedBName,
   extractHostname,
+  isSftp,
 } from "../../utils";
 import {
   ReduxFormSelect,
@@ -60,6 +61,7 @@ const useStyles = makeStyles(styles);
 
 const LocationForm = (props) => {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const {
     locType,
     selectedHost,
@@ -137,14 +139,17 @@ const LocationForm = (props) => {
               size="small"
               InputProps={{ readOnly: props.locationViewMode }}
               canDeselect={false}
-              onChange={(v) =>
+              onChange={(v) => {
                 props.generateUrl(
                   v.target.value,
                   selectedHost,
                   selectedPort,
                   selectedDB
-                )
-              }
+                );
+                if (v.target.value?.includes("Dynamic Port")) {
+                  dispatch(change("AddLocationForm", "port", ""));
+                }
+              }}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
               fullWidth
             >
@@ -181,28 +186,30 @@ const LocationForm = (props) => {
         </Grid>
         {locType !== "SFTP" && locType !== "FTPS" && (
           <>
-            <Grid container spacing={2}>
-              <Grid item md={5} id="for-port">
-                <ReduxFormTextField
-                  fullWidth
-                  size="small"
-                  name="port"
-                  label="Port"
-                  inputProps={{
-                    maxLength: 5,
-                    readOnly: props.locationViewMode,
-                  }}
-                  onChange={(v) =>
-                    props.generateUrl(
-                      locType,
-                      selectedHost,
-                      v.target.value,
-                      selectedDB
-                    )
-                  }
-                />
+            {!locType?.includes("Dynamic Port") && (
+              <Grid container spacing={2}>
+                <Grid item md={5} id="for-port">
+                  <ReduxFormTextField
+                    fullWidth
+                    size="small"
+                    name="port"
+                    label="Port"
+                    inputProps={{
+                      maxLength: 5,
+                      readOnly: props.locationViewMode,
+                    }}
+                    onChange={(v) =>
+                      props.generateUrl(
+                        locType,
+                        selectedHost,
+                        v.target.value,
+                        selectedDB
+                      )
+                    }
+                  />
+                </Grid>
               </Grid>
-            </Grid>
+            )}
             <Grid container spacing={2}>
               <Grid item md={5} id="for-dbName">
                 <ReduxFormTextField
@@ -374,7 +381,13 @@ const LocationModal = (props) => {
       endPoint: "/checkconnection/sftp",
     };
     if (locationType) {
-      if (locationType !== "SFTP" && locationType !== "FTPS") {
+      if (!isSftp(locationType)) {
+        let dbPort;
+        if (locationType.includes("Dynamic Port")) {
+          dbPort = 1433;
+        } else {
+          dbPort = port ? port : "";
+        }
         reqBody = {
           ...reqBody,
           endPoint: "/checkconnection/jdbc",
@@ -382,7 +395,7 @@ const LocationModal = (props) => {
           databaseName: dbName || "",
           userId: "",
           database: generatedBName(locationType),
-          port: port ? port : "",
+          port: dbPort,
         };
       } else {
         reqBody = {
