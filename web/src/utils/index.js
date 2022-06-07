@@ -571,6 +571,7 @@ export const locationTypes = [
   "Oracle",
   "PostgreSQL",
   "SQL Server",
+  "SQL Server Dynamic Port",
 ];
 
 export const fileTypes = ["SAS", "Excel", "Delimited", "Fixed Width"];
@@ -614,6 +615,9 @@ export const generateConnectionURL = (locType, hostName, port, dbName) => {
     return port && dbName
       ? `jdbc:sqlserver://${hostName}:${port};databaseName=${dbName}`
       : "";
+  }
+  if (locType === "SQL Server Dynamic Port") {
+    return dbName ? `jdbc:sqlserver://${hostName};databaseName=${dbName}` : "";
   }
   if (locType === "PostgreSQL") {
     return port && dbName

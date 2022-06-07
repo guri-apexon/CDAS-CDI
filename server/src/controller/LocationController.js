@@ -360,8 +360,11 @@ exports.saveLocationData = async function (req, res) {
       );
     }
 
-    if (!(locationType === "SFTP" || locationType === "FTPS")) {
-      if (!port || !dbName) {
+    if (!helper.isSftp(locationType)) {
+      if (
+        (locationType.toLowerCase() !== "sql server dynamic port" && !port) ||
+        !dbName
+      ) {
         return apiResponse.validationErrorWithData(
           res,
           "Operation failed",
