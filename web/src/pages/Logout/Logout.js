@@ -10,7 +10,7 @@ const Logout = () => {
         open={true}
         variant="error"
         title="Logged out"
-        message="Thank you for using CDI. Your session token has expired. You will be redirected to Dashboard now."
+        message="Thank you for using the Clinical Data Analytics Suite. You are now logged out."
         hideButtons={true}
         id="errorLogout"
       />
