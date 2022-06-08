@@ -20,7 +20,7 @@ import CreateDataSetsForm from "./DataSetsForm";
 // import DataSetsFormSQL from "./DataSetsFormSQL";
 import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
-import VLCTab from "./VLCTab";
+// import VLCTab from "./VLCTab";
 import { isSftp } from "../../../../utils";
 
 // const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
