@@ -26,6 +26,7 @@ import {
   getDatasetColumns,
   resetFTP,
   resetJDBC,
+  getVLCData,
 } from "../../store/actions/DataSetsAction";
 import { updatePanel } from "../../store/actions/DataPackageAction";
 import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
@@ -36,7 +37,6 @@ import DataSetsFormSQL from "./DataSetsFormSQL";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
 
-const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
 const userInfo = getUserInfo();
 
 const styles = {
@@ -122,6 +122,7 @@ const Dataset = () => {
     selectedDataset,
     formDataSQL,
     isDatasetFetched,
+    VLCData,
   } = dataSets;
   const datasetid = params.datasetId;
   const { prot_id: studyId } = selectedCard;
@@ -135,6 +136,12 @@ const Dataset = () => {
   const { name, loctyp, testflag, srclocid } = dataFlowdetail;
   const { datasetid: dsId } = selectedDataset;
   const { isCustomSQL, tableName } = formDataSQL;
+
+  const dataSettabs = [
+    "Settings",
+    "Dataset Columns",
+    ...(datasetid !== "new" && VLCData?.length ? ["VLC"] : []),
+  ];
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -187,6 +194,7 @@ const Dataset = () => {
     } else {
       dispatch(getDataSetDetail(datasetid, dfId, dpId));
       dispatch(getDatasetColumns(datasetid));
+      dispatch(getVLCData(datasetid));
     }
   }, [datasetid, dsCreatedSuccessfully]);
 
@@ -443,7 +451,9 @@ const Dataset = () => {
                   dpId={dpId}
                 />
               )}
-              {value === 2 && <VLCTab />}
+              {datasetid !== "new" && value === 2 && !!VLCData?.length && (
+                <VLCTab />
+              )}
             </div>
           </main>
         </Panel>

@@ -32,19 +32,19 @@ export default function VLCTab() {
   const [selectedRow, setSelectedRow] = useState(null);
   // const messageContext = useContext(MessageContext);
   const [isViewData, setIsViewData] = useState(false);
-  const [rowData, setRowData] = useState([]);
   const [searchValue, setSearchValue] = useState("");
 
   // const history = useHistory();
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const dataSets = useSelector((state) => state.dataSets);
   const { loading, VLCData, selectedDataset } = dataSets;
+  const [rowData, setRowData] = useState([...VLCData]);
 
-  const params = useParams();
+  // const params = useParams();
 
-  const datasetid = params.datasetId;
+  // const datasetid = params.datasetId;
 
-  const { datasetid: dsId } = selectedDataset;
+  // const { datasetid: dsId } = selectedDataset;
 
   // const getData = async () => {
   //   // const data = await getVLCDataList();
@@ -55,15 +55,15 @@ export default function VLCTab() {
   //   // return data;
   // };
 
-  useEffect(() => {
-    if (datasetid !== null && datasetid !== "new") dispatch(getVLCData(dsId));
-    // console.log("data", Data);
-  }, []);
+  // useEffect(() => {
+  //   if (datasetid !== null && datasetid !== "new") dispatch(getVLCData(dsId));
+  //   // console.log("data", Data);
+  // }, []);
 
-  useEffect(() => {
-    setRowData([...VLCData]);
-    // console.log(VLCData);
-  }, [loading]);
+  // useEffect(() => {
+  //   setRowData([...VLCData]);
+  //   // console.log(VLCData);
+  // }, [loading]);
 
   const searchRows = async (e) => {
     // eslint-disable-next-line prefer-destructuring

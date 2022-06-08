@@ -20,10 +20,11 @@ import CreateDataSetsForm from "./DataSetsForm";
 // import DataSetsFormSQL from "./DataSetsFormSQL";
 import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
-import VLCTab from "./VLCTab";
+// import VLCTab from "./VLCTab";
 import { isSftp } from "../../../../utils";
 
-const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
+// const dataSettabs = ["Settings", "Dataset Columns", "VLC"];
+const dataSettabs = ["Settings", "Dataset Columns"];
 
 const styles = {
   rightPanel: {
@@ -236,7 +237,7 @@ const Dataset = (props, ref) => {
               moveNext={() => updateStep(5)}
             />
           )}
-          {value === 2 && <VLCTab />}
+          {/* {value === 2 && <VLCTab />} */}
         </div>
       </main>
     </Panel>
