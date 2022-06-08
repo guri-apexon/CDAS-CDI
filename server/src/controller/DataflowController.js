@@ -541,7 +541,7 @@ exports.updateDataFlow = async (req, res) => {
                   ) {
                     return apiResponse.ErrorResponse(
                       res,
-                      "Conditional Expression Number1 required and Data Type should be Number"
+                      "conditionalExpressionNumber required and Data Type should be Number"
                     );
                   }
                 }
@@ -784,6 +784,7 @@ exports.updateDataFlow = async (req, res) => {
                       if (currentDs) {
                         const DSId = currentDs.datasetid;
                         const custSql = currentDs.customsql;
+                        const DSheaderRow = currentDs.headerrow;
 
                         if (currentDs.del_flg == 1) {
                           ResponseBody.errors.push([
@@ -870,7 +871,8 @@ exports.updateDataFlow = async (req, res) => {
                                           cdId,
                                           DFVer,
                                           ConnectionType,
-                                          userId
+                                          userId,
+                                          DSheaderRow
                                         )
                                         .then((res) => {
                                           if (res.sucRes?.length) {
@@ -897,7 +899,8 @@ exports.updateDataFlow = async (req, res) => {
                                       DFVer,
                                       ConnectionType,
                                       userId,
-                                      null
+                                      null,
+                                      DSheaderRow
                                     )
                                     .then((res) => {
                                       if (res.sucRes?.length) {
