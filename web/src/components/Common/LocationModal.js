@@ -313,14 +313,13 @@ const LocationModal = (props) => {
         return null;
       }
     }
+    const reqBody = {
+      ...values,
+      active: values.active === 0 ? false : true,
+      systemName: "CDI",
+    };
     setExistErr("");
-    dispatch(
-      saveLocationData({
-        ...values,
-        active: values.active === 0 ? false : true,
-        systemName: "CDI",
-      })
-    );
+    dispatch(saveLocationData(reqBody));
     return null;
   };
 
