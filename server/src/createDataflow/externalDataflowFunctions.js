@@ -1340,7 +1340,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
     if (!isNew) {
       if (!obj.columnDefinition) {
         errorDataset.push(
-          "Please provide at least one columnDefinition details for dataset"
+          "While adding a new dataset, please provide at least one columnDefinition details"
         );
       }
       if (helper.isSftp(LocationType)) {
