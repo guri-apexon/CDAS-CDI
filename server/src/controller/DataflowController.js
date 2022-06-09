@@ -125,6 +125,40 @@ exports.getStudyDataflows = async (req, res) => {
     return apiResponse.ErrorResponse(res, err);
   }
 };
+const createDataflowName = async (
+  vendorId,
+  prtNbrStnd,
+  desc,
+  testFlag = false
+) => {
+  if (!vendorId || !prtNbrStnd || !desc) {
+    return false;
+  }
+  const {
+    rows: [selectedVendor],
+  } = await DB.executeQuery(
+    `select vend_id,active,vend_nm from ${schemaName}.vendor where vend_id='${vendorId}';`
+  );
+  if (!selectedVendor) return false;
+
+  let dfNewName = `${selectedVendor.vend_nm}-${prtNbrStnd}-${desc}`;
+  if (testFlag) {
+    dfNewName = `TST-${dfNewName}`;
+  }
+  //check for dataflowname && sequence logic
+  const { rows: dfRows } = await DB.executeQuery(
+    `select name from ${schemaName}.dataflow where name LIKE '${dfNewName}%';`
+  );
+  if (dfRows?.length) {
+    let dfNewVersion;
+    const dfVersions = dfRows
+      .map((d) => parseInt(d.name.split("-").pop()))
+      .filter((d) => !isNaN(d));
+    dfNewVersion = dfVersions.length ? Math.max(...dfVersions) + 1 : 1;
+    dfNewName = `${dfNewName}-${dfNewVersion}`;
+  }
+  return dfNewName;
+};
 
 const creatDataflow = (exports.createDataflow = async (req, res) => {
   let dataFlowId = null;
@@ -541,13 +575,13 @@ exports.updateDataFlow = async (req, res) => {
                   ) {
                     return apiResponse.ErrorResponse(
                       res,
-                      "Conditional Expression Number1 required and Data Type should be Number"
+                      "conditionalExpressionNumber required and Data Type should be Number"
                     );
                   }
                 }
               }
             }
-            if (obj.conditionalExpressions.length) {
+            if (obj.conditionalExpressions?.length) {
               if (!obj.qcType || obj.qcType?.toLowerCase() !== "vlc") {
                 return apiResponse.ErrorResponse(
                   res,
@@ -772,7 +806,7 @@ exports.updateDataFlow = async (req, res) => {
                       }
                     });
 
-                  if (each.dataSet.length) {
+                  if (each.dataSet?.length) {
                     // if datasets exists
                     for (let obj of each.dataSet) {
                       let selectDS = `select * from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${obj.ExternalId}'`;
@@ -784,6 +818,7 @@ exports.updateDataFlow = async (req, res) => {
                       if (currentDs) {
                         const DSId = currentDs.datasetid;
                         const custSql = currentDs.customsql;
+                        const DSheaderRow = currentDs.headerrow;
 
                         if (currentDs.del_flg == 1) {
                           ResponseBody.errors.push([
@@ -828,7 +863,7 @@ exports.updateDataFlow = async (req, res) => {
                                 }
                               });
 
-                            if (obj.columnDefinition.length) {
+                            if (obj.columnDefinition?.length) {
                               for (let el of obj.columnDefinition) {
                                 let selectCD = `select * from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${el.ExternalId}'`;
                                 let { rows: cdRows } = await DB.executeQuery(
@@ -870,7 +905,8 @@ exports.updateDataFlow = async (req, res) => {
                                           cdId,
                                           DFVer,
                                           ConnectionType,
-                                          userId
+                                          userId,
+                                          DSheaderRow
                                         )
                                         .then((res) => {
                                           if (res.sucRes?.length) {
@@ -897,7 +933,8 @@ exports.updateDataFlow = async (req, res) => {
                                       DFVer,
                                       ConnectionType,
                                       userId,
-                                      null
+                                      null,
+                                      DSheaderRow
                                     )
                                     .then((res) => {
                                       if (res.sucRes?.length) {
@@ -1632,13 +1669,28 @@ exports.updateDataflowConfig = async (req, res) => {
       dataflowId &&
       userId
     ) {
-      const { rows: existDfRows } = await DB.executeQuery(
+      const {
+        rows: [existDf],
+      } = await DB.executeQuery(
         `SELECT vend_id as "vendorID", src_loc_id as "locationName", testflag as "testFlag", type as "dataStructure", description, connectiontype as "connectionType", serv_ownr as "serviceOwners", expt_fst_prd_dt as "firstFileDate" from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}';`
       );
-      if (!existDfRows?.length) {
+      if (!existDf) {
         return apiResponse.ErrorResponse(res, "Dataflow doesn't exist");
       }
-      const existDf = existDfRows[0];
+      let dfUpdatedName = false;
+      if (
+        existDf.vendorID != vendorID ||
+        existDf.description != description ||
+        helper.stringToBoolean(existDf.testFlag) !==
+          helper.stringToBoolean(testFlag)
+      ) {
+        dfUpdatedName = await createDataflowName(
+          vendorID,
+          protocolNumberStandard,
+          description,
+          testFlag
+        );
+      }
       const dFTimestamp = helper.getCurrentTime();
       if (testFlag) testFlag = helper.stringToBoolean(testFlag) ? 1 : 0;
       serviceOwners =
@@ -1658,9 +1710,14 @@ exports.updateDataflowConfig = async (req, res) => {
         serviceOwners,
         moment(firstFileDate).isValid() ? firstFileDate : null,
       ];
+      let fieldsStr = `vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, externalsystemname=$8, updt_tm=$9, serv_ownr=$10, expt_fst_prd_dt=$11`;
+      if (dfUpdatedName) {
+        fieldsStr = `${fieldsStr}, name=$12`;
+        dFBody.push(dfUpdatedName);
+      }
       // update dataflow schema into db
       const updatedDF = await DB.executeQuery(
-        `update ${schemaName}.dataflow set vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, externalsystemname=$8, updt_tm=$9, serv_ownr=$10, expt_fst_prd_dt=$11 WHERE dataflowid=$1 returning *;`,
+        `update ${schemaName}.dataflow set ${fieldsStr} WHERE dataflowid=$1 returning *;`,
         dFBody
       );
       if (!updatedDF?.rowCount) {
