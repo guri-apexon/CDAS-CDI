@@ -4,6 +4,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
+// import moment from "moment";
 import Paper from "apollo-react/components/Paper";
 import Typography from "apollo-react/components/Typography";
 import Box from "apollo-react/components/Box";
@@ -16,6 +17,8 @@ import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import Panel from "apollo-react/components/Panel";
 import { makeStyles } from "@material-ui/core/styles";
+import InfoIcon from "apollo-react-icons/Info";
+import Tooltip from "apollo-react/components/Tooltip";
 // import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
@@ -23,13 +26,16 @@ import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapa
 import "./DataPackages.scss";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, toast, validateFields } from "../../utils";
-import { submitDataPackage } from "../../services/ApiServices";
+import {
+  submitDataPackage,
+  updateDatPackage,
+} from "../../services/ApiServices";
 import {
   addDataPackage,
   getPackagesList,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
-import { packageComprTypes } from "../../utils/constants";
+import { packageComprTypes, packageTypes } from "../../utils/constants";
 
 const useStyles = makeStyles(() => ({
   rightPanel: {
@@ -48,6 +54,7 @@ const DataPackages = React.memo(() => {
   const history = useHistory();
   const [showForm, setShowForm] = useState(false);
   const [configShow, setConfigShow] = useState(false);
+  const [sodValue, setSodValue] = useState("");
   const [compression, setCompression] = useState("");
   const [namingConvention, setNamingConvention] = useState("");
   const [packagePassword, setPackagePassword] = useState("");
@@ -106,8 +113,20 @@ const DataPackages = React.memo(() => {
     }
   }, [packageData.refreshData]);
   useEffect(() => {
-    if (packageData.openAddPackage) setShowForm(true);
-  }, [packageData.openAddPackage]);
+    if (
+      packageData.openAddPackage ||
+      packageData.packagesList[0]?.sod_view_type !== null
+    )
+      setShowForm(true);
+    if (packageData.packagesList[0]?.sod_view_type !== null) {
+      setConfigShow(true);
+      setCompression("zip");
+      setNamingConvention(packageData.packagesList[0]?.name);
+      setSodValue(packageData.packagesList[0]?.sod_view_type);
+      setPackagePassword(packageData.packagesList[0]?.password);
+      setSftpPath(packageData.packagesList[0]?.path);
+    }
+  }, [packageData.openAddPackage, packageData.packagesList]);
 
   // eslint-disable-next-line consistent-return
   const submitPackage = async () => {
@@ -127,13 +146,35 @@ const DataPackages = React.memo(() => {
       dataflow_id: dfId,
       user_id: userInfo.userId,
     };
-    const result = await submitDataPackage(reqBody);
-    if (result.status === 1) {
-      showSuccessMessage(result.message);
-      dispatch(addDataPackage());
+    const sodReqBody = {
+      package_id: packageData.packagesList[0].datapackageid,
+      compression_type: compression,
+      naming_convention: namingConvention,
+      package_password: packagePassword,
+      sftp_path: sftpPath,
+      study_id: selectedCard.prot_id,
+      dataflow_id: dfId,
+      user_id: userInfo.userId,
+      sod_view_type: sodValue,
+    };
+    if (packageData.packagesList[0]?.sod_view_type === null) {
+      const result = await submitDataPackage(reqBody);
+      if (result.status === 1) {
+        showSuccessMessage(result.message);
+        dispatch(addDataPackage());
+      } else {
+        showErrorMessage(result.message);
+      }
     } else {
-      showErrorMessage(result.message);
+      const sodResult = await updateDatPackage(sodReqBody);
+      if (sodResult.status === 1) {
+        showSuccessMessage(sodResult.message);
+        history.push("/dashboard/dataflow-management");
+      } else {
+        showErrorMessage(sodResult.message);
+      }
     }
+
     resetForm();
   };
 
@@ -175,7 +216,9 @@ const DataPackages = React.memo(() => {
                   <div className="flex title">
                     <DataPackageIcon />
                     <Typography className="b-font">
-                      Creating New Package
+                      {packageData.packagesList[0]?.sod_view_type !== null
+                        ? packageData.packagesList[0]?.name
+                        : "Creating New Package"}
                     </Typography>
                   </div>
                   <ButtonGroup
@@ -184,10 +227,17 @@ const DataPackages = React.memo(() => {
                       {
                         label: "Cancel",
                         size: "small",
-                        onClick: () => setShowForm(false),
+                        onClick: () =>
+                          packageData.packagesList[0]?.sod_view_type !== null
+                            ? history.push("/dashboard")
+                            : setShowForm(false),
                       },
                       {
-                        label: "Save",
+                        label: `${
+                          packageData.packagesList[0]?.sod_view_type !== null
+                            ? "Save Data Flow"
+                            : "Save"
+                        }`,
                         size: "small",
                         onClick: submitPackage,
                       },
@@ -211,30 +261,56 @@ const DataPackages = React.memo(() => {
                       label="Package Level Configuration"
                       checked={configShow}
                       onChange={showConfig}
+                      disabled={
+                        packageData.packagesList[0]?.sod_view_type !== null
+                      }
                     />
                   </div>
+                  {/* {packageData.packagesList[0]?.updt_tm &&
+                  moment(
+                    packageData.packagesList[0]?.updt_tm,
+                    "MM/DD/YYYY"
+                  ).isValid()
+                    ? moment(packageData.packagesList[0]?.updt_tm).format(
+                        "DD-MMM-YYYY"
+                      )
+                    : ""} */}
                   {configShow && (
                     <div className="package-form">
-                      <Select
-                        error={notMatchedType}
-                        label="Package Compression Type"
-                        value={compression}
-                        size="small"
-                        placeholder="Select type..."
-                        onChange={(e) => {
-                          setCompression(e.target.value);
-                          if (e.target.value === "") {
-                            setNotMatchedType(false);
+                      {packageData.packagesList[0]?.sod_view_type !== null ? (
+                        <TextField
+                          error={notMatchedType}
+                          label="Package Compression Type"
+                          value={compression}
+                          size="small"
+                          placeholder="Select type..."
+                          disabled={
+                            packageData.packagesList[0]?.sod_view_type !== null
                           }
-                        }}
-                        className="mb-20 package-type"
-                      >
-                        {packageComprTypes.map((type, i) => (
-                          <MenuItem key={i} value={type.value}>
-                            {type.text}
-                          </MenuItem>
-                        ))}
-                      </Select>
+                          className="mb-20 package-type"
+                        />
+                      ) : (
+                        <Select
+                          error={notMatchedType}
+                          label="Package Compression Type"
+                          value={compression}
+                          size="small"
+                          placeholder="Select type..."
+                          onChange={(e) => {
+                            setCompression(e.target.value);
+                            if (e.target.value === "") {
+                              setNotMatchedType(false);
+                            }
+                          }}
+                          className="mb-20 package-type"
+                        >
+                          {packageComprTypes.map((type, i) => (
+                            <MenuItem key={i} value={type.value}>
+                              {type.text}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      )}
                       <TextField
                         error={notMatchedType}
                         className="mb-20"
@@ -242,7 +318,16 @@ const DataPackages = React.memo(() => {
                         placeholder=""
                         size="small"
                         fullWidth
-                        helperText="File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
+                        defaultValue={
+                          packageData.packagesList[0]?.sod_view_type !== null
+                            ? packageData.packagesList[0]?.name
+                            : ""
+                        }
+                        helperText={
+                          packageData.packagesList[0]?.sod_view_type === null
+                            ? "File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
+                            : "File extension must match package compression type e.g.zip"
+                        }
                         onChange={(e) => {
                           setNotMatchedType(
                             !validateFields(e.target.value, compression)
@@ -251,9 +336,9 @@ const DataPackages = React.memo(() => {
                         }}
                       />
                       <PasswordInput
-                        defaultValue=""
                         size="small"
                         icon={false}
+                        defaultValue={packagePassword}
                         label="Package Password (Optional)"
                         className="mb-20"
                         style={{ width: "70%" }}
@@ -263,10 +348,41 @@ const DataPackages = React.memo(() => {
                         className="mb-20"
                         label="sFTP Folder Path (Optional)"
                         placeholder=""
+                        defaultValue={sftpPath}
                         size="small"
                         fullWidth
                         onChange={(e) => setSftpPath(e.target.value)}
                       />
+                      {packageData.packagesList[0]?.sod_view_type !== null && (
+                        <div>
+                          <Select
+                            label="SOD View Type to Process"
+                            value={sodValue}
+                            size="small"
+                            onChange={(e) => {
+                              setSodValue(e.target.value);
+                            }}
+                            className="mb-20 package-type"
+                          >
+                            {packageTypes.map((type, i) => (
+                              // eslint-disable-next-line react/no-array-index-key
+                              <MenuItem key={i} value={type.value}>
+                                {type.text}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                          <Tooltip
+                            title="SOD View Type to Process"
+                            subtitle="Files in the SOD package which match your selection will be processed. Please make sure that your selection and the generated SOD view type are in sync."
+                            placement="left"
+                            style={{ marginRight: 48 }}
+                          >
+                            <InfoIcon
+                              style={{ height: "2em", marginLeft: 10 }}
+                            />
+                          </Tooltip>
+                        </div>
+                      )}
                     </div>
                   )}
                 </>

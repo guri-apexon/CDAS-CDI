@@ -20,6 +20,7 @@ import {
   COLUMNSAPI,
   DATAFLOW_UPDATE_API,
   ADD_PACKAGE,
+  EDIT_PACKAGE,
 } from "../constants";
 import {
   columnsCreated,
@@ -398,6 +399,16 @@ export const deleteCD = async (columnId, dsId, dpId, dfId, CDVersionBump) => {
 export const submitDataPackage = async (reqBody) => {
   try {
     const res = await axios.post(`${baseURL}/${ADD_PACKAGE}`, reqBody);
+    return res.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const updateDatPackage = async (reqBody) => {
+  console.log(reqBody);
+  try {
+    const res = await axios.post(`${baseURL}/${EDIT_PACKAGE}`, reqBody);
     return res.data || [];
   } catch (err) {
     return console.log("Error", err);

@@ -187,17 +187,19 @@ module.exports = {
     old_val = "",
     new_val = ""
   ) {
+    console.log(package,"addpackage")
     return new Promise((resolve, reject) => {
       if (!package) resolve(false);
       DB.executeQuery(
         `SELECT version from ${schemaName}.dataflow_version
       WHERE dataflowid = '${package.dataflowid}' order by version DESC limit 1`
       ).then(async (response) => {
+        console.log(response,"respince")
         const historyVersion = response.rows[0]?.version || 0;
         const version = Number(historyVersion) + 1;
         const curDate = helper.getCurrentTime();
         const addHistoryQuery = `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
-        const values = [package.dataflowid, version, package, user_id, curDate];
+        const values = [package.dataflowid,package.type,package.path, package.password,package.sod_view_type, package.name, version, package, user_id, curDate];
         DB.executeQuery(addHistoryQuery, values).then(async (response) => {
           const addAuditLogQuery = `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid, audit_vers, attribute, old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
           const auditValues = [
@@ -209,6 +211,11 @@ module.exports = {
             new_val,
             user_id,
             curDate,
+            package.type,
+            package.path,
+            package.password,
+            package.sod_view_type,
+            package.name
           ];
           DB.executeQuery(addAuditLogQuery, auditValues)
             .then(async (response) => {

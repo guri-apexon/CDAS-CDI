@@ -217,6 +217,7 @@ export const TOGGLE_DF_BTN = "TOGGLE_DF_BTN";
 
 export const PACKAGES_SEARCH = "v1/api/data-package/search";
 export const ADD_PACKAGE = "v1/api/data-package/add";
+export const EDIT_PACKAGE = "v1/api/data-package/update";
 export const DELETE_PACKAGE = "v1/api/data-package/delete";
 export const UPDATE_PACKAGE = "v1/api/data-package/update-status";
 export const NOT_ONBOARDED_FETCH = "v1/api/study/notonboarded-studies-stat";
