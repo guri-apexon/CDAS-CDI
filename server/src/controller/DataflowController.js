@@ -95,6 +95,7 @@ exports.getStudyDataflows = async (req, res) => {
               ...r,
               dataSets: 0,
               dataPackages: 0,
+              locationType: r.locationType || "",
             };
             return acc.set(dataFlowId, {
               ...current,
