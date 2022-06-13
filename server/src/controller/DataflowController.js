@@ -293,11 +293,16 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
     dataFlowId = createdDF.dataFlowId;
     ResponseBody = {
       ...ResponseBody,
-      action: "Data flow created successfully.",
-      status: helper.stringToBoolean(active) ? "Active" : "Inactive",
-      timestamp: ts,
+
+      // status: helper.stringToBoolean(active) ? "Active" : "Inactive",
       version: 1,
-      dataflowDetails: createdDF,
+      timestamp: ts,
+      // dataflowDetails: createdDF,
+      ExternalId: ExternalId,
+      ID: createdDF.dataFlowId,
+      ResponseCode: "00000",
+      // ResponseMessage: "Dataflow created successfully",
+      externalSystemName: externalSystemName,
     };
 
     if (dataPackage?.length) {
@@ -314,7 +319,8 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
           userId,
           true
         );
-        if (PackageInsert.sucRes.length) {
+        if (PackageInsert.sucRes) {
+          // console.log("dataflow", PackageInsert.sucRes);
           ResponseBody.data_packages.push(PackageInsert.sucRes);
         }
         if (PackageInsert.errRes.length) {
@@ -821,7 +827,7 @@ exports.updateDataFlow = async (req, res) => {
                                 userId
                               )
                               .then((res) => {
-                                if (res.sucRes?.length) {
+                                if (res.sucRes) {
                                   ResponseBody.success.push(res.sucRes);
                                 }
                                 if (res.errRes?.length) {
@@ -903,7 +909,7 @@ exports.updateDataFlow = async (req, res) => {
                                       DSheaderRow
                                     )
                                     .then((res) => {
-                                      if (res.sucRes?.length) {
+                                      if (res.sucRes) {
                                         ResponseBody.success.push(res.sucRes);
                                       }
                                       if (res.errRes?.length) {
@@ -966,7 +972,7 @@ exports.updateDataFlow = async (req, res) => {
                                         userId
                                       )
                                       .then((res) => {
-                                        if (res.sucRes?.length) {
+                                        if (res.sucRes) {
                                           ResponseBody.success.push(res.sucRes);
                                         }
                                         if (res.errRes?.length) {
@@ -996,7 +1002,7 @@ exports.updateDataFlow = async (req, res) => {
                             null
                           )
                           .then((res) => {
-                            if (res.sucRes?.length) {
+                            if (res.sucRes) {
                               ResponseBody.success.push(res.sucRes);
                             }
                             if (res.errRes?.length) {
@@ -1021,7 +1027,7 @@ exports.updateDataFlow = async (req, res) => {
                   null
                 )
                 .then((res) => {
-                  if (res.sucRes?.length) {
+                  if (res.sucRes) {
                     ResponseBody.success.push(res.sucRes);
                   }
                   if (res.errRes?.length) {

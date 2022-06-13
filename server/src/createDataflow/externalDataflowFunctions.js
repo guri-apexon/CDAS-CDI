@@ -480,6 +480,12 @@ exports.insertValidation = (req) => {
                     }
                   }
 
+                  if (!obj.columnDefinition) {
+                    validate.push({
+                      err: "While adding a new dataset, please provide at least one columnDefinition details",
+                    });
+                  }
+
                   let dsRes = helper.validation(dsArray);
                   if (dsRes.length > 0) {
                     validate.push(dsRes);
@@ -574,7 +580,7 @@ exports.insertValidation = (req) => {
                           }
                         }
 
-                        if (el.maxLength) {
+                        if (el.maxLength || el.maxLength === 0) {
                           if (typeof el.maxLength != "number") {
                             validate.push({
                               err: "In SFTP/FTPS maxLength is Optional and data type should be Number",
@@ -582,6 +588,11 @@ exports.insertValidation = (req) => {
                           } // testing
                           else {
                             if (el.maxLength >= 10001) {
+                              validate.push({
+                                err: "Max Length must be between values of 1 and 10,000. Please amend",
+                              });
+                            }
+                            if (el.maxLength === 0) {
                               validate.push({
                                 err: "Max Length must be between values of 1 and 10,000. Please amend",
                               });
@@ -848,6 +859,12 @@ exports.insertValidation = (req) => {
                   }
                 }
 
+                if (!obj.columnDefinition) {
+                  validate.push({
+                    err: "While adding a new dataset, please provide at least one columnDefinition details",
+                  });
+                }
+
                 // Validation Function call for data set
                 let dsRes = helper.validation(dsArray);
                 if (dsRes.length > 0) {
@@ -1085,7 +1102,7 @@ exports.packageLevelInsert = async (
               type: "string",
             },
             {
-              key: "Package path  ",
+              key: "p_path",
               value: data.path,
               type: "string",
             },
@@ -1219,7 +1236,6 @@ exports.packageLevelInsert = async (
       return { sucRes: dataPackage, errRes: errorPackage };
     }
 
-    let DpObj = {};
     let dPTimestamp = new Date();
 
     let dPBody = [
@@ -1258,11 +1274,14 @@ exports.packageLevelInsert = async (
       }
     }
 
-    DpObj.externalId = data.ExternalId;
-    DpObj.datapackageid = dpUid;
-    DpObj.action = "DataPackage created successfully.";
-    DpObj.timestamp = ts;
-    dataPackage.push(DpObj);
+    let DpObj = {
+      ExternalId: data.ExternalId,
+      ID: dpUid,
+    };
+    // DpObj.action = "DataPackage created successfully.";
+    // DpObj.timestamp = ts;
+    // dataPackage.push(DpObj);
+
     // // each.datapackageid = dpUid;
 
     await DB.executeQuery(
@@ -1284,7 +1303,7 @@ exports.packageLevelInsert = async (
     );
 
     if (data.dataSet && data.dataSet.length > 0) {
-      dataPackage.data_sets = [];
+      DpObj.data_sets = [];
       for (let obj of data.dataSet) {
         const dataSetExternalId = obj.ExternalId;
         await saveDataset(
@@ -1302,11 +1321,13 @@ exports.packageLevelInsert = async (
           if (res.errRes && res.errRes.length) {
             errorPackage.push(res.errRes);
           }
-          dataPackage.push(res.sucRes);
+          DpObj.data_sets.push(res.sucRes);
+          // console.log("data set function call ", res.sucRes);
         });
       }
     }
-    return { sucRes: dataPackage, errRes: errorPackage };
+    // console.log("package insert ", DpObj);
+    return { sucRes: DpObj, errRes: errorPackage };
     // return;
   } catch (err) {
     console.log(err);
@@ -1654,8 +1675,6 @@ const saveDataset = (exports.datasetLevelInsert = async (
     }
     // console.log("insert data set");
 
-    let dsObj = {};
-
     if (obj.dataKindID) {
       let checkDataKind = await DB.executeQuery(
         `select datakindid, active from ${schemaName}.datakind where datakindid='${obj.dataKindID}';`
@@ -1691,7 +1710,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
       if (queryMnemonic.rows.length > 0) {
         errorDataset.push(
-          "In this environment this mnemonic name already Exist!"
+          "In this environment this datasetName(mnemonic) name already Exist!"
         );
 
         if (isNew) {
@@ -1784,11 +1803,13 @@ const saveDataset = (exports.datasetLevelInsert = async (
       }
     }
 
-    dsObj.externalId = obj.ExternalId;
-    dsObj.datasetid = dsUid;
-    dsObj.action = "Dataset created successfully.";
-    dsObj.timestamp = ts;
-    dataSet.push(dsObj);
+    let dsObj = {
+      ExternalId: obj.ExternalId,
+      ID: dsUid,
+    };
+    // dsObj.action = "Dataset created successfully.";
+    // dsObj.timestamp = ts;
+    // dataSet.push(dsObj);
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -1810,7 +1831,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
     if (obj.qcType) {
       if (obj.conditionalExpressions && obj.conditionalExpressions.length > 0) {
-        dataSet.vlc = [];
+        dsObj.vlc = [];
         for (let vlc of obj.conditionalExpressions) {
           // let vlcRes = [];
           await saveVlc(
@@ -1825,7 +1846,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
             if (res.errRes && res.errRes.length) {
               errorDataset.push(res.errRes);
             }
-            dataSet.push(res.sucRes);
+            dsObj.vlc.push(res.sucRes);
           });
           // dataSet.push(vlcRes);
         }
@@ -1833,7 +1854,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
     }
 
     if (obj.columnDefinition && obj.columnDefinition.length) {
-      let column_definition = [];
+      // let column_definition = [];
+      dsObj.columnDefinition = [];
       for (let el of obj.columnDefinition) {
         await columnSave(
           el,
@@ -1850,11 +1872,13 @@ const saveDataset = (exports.datasetLevelInsert = async (
           if (res.errRes && res.errRes.length) {
             errorDataset.push(res.errRes);
           }
-          dataSet.push(res.sucRes);
+          // console.log("column function call ", res.sucRes);
+          dsObj.columnDefinition.push(res.sucRes);
         });
       }
     }
-    return { sucRes: dataSet, errRes: errorDataset };
+    // console.log("dataset insert", dsObj);
+    return { sucRes: dsObj, errRes: errorDataset };
   } catch (err) {
     console.log(err);
     //throw error in json response with status 500.
@@ -1963,13 +1987,18 @@ const columnSave = (exports.columnDefinationInsert = async (
           }
         }
 
-        if (el.maxLength) {
+        if (el.maxLength || el.maxLength === 0) {
           if (typeof el.maxLength != "number") {
             errorColumnDef.push(
               "In SFTP/FTPS maxLength is Optional and data type should be Number"
             );
           } else {
             if (el.maxLength >= 10001) {
+              errorColumnDef.push(
+                "Max Length must be between values of 1 and 10,000. Please amend."
+              );
+            }
+            if (el.maxLength === 0) {
               errorColumnDef.push(
                 "Max Length must be between values of 1 and 10,000. Please amend."
               );
@@ -2074,7 +2103,7 @@ const columnSave = (exports.columnDefinationInsert = async (
       //new changes1
       if (clName.rows.length > 0) {
         errorColumnDef.push(
-          " This Column Definition columnName already exists!"
+          " Column Names (Headers) must be unique in a data set file structure. Please amend."
         );
         if (isNew) {
           await dfRollBack(DFId);
@@ -2091,7 +2120,6 @@ const columnSave = (exports.columnDefinationInsert = async (
       return { sucRes: ColumnDef, errRes: errorColumnDef };
     }
 
-    let cdObj = {};
     let CDBody = [
       DSId,
       el.columnName || null,
@@ -2145,11 +2173,13 @@ const columnSave = (exports.columnDefinationInsert = async (
     // const dsCountUpdate = `update ${schemaName}.dataset set columncount='${Count.rows[0].count}' where datasetid ='${DSId}'`;
     // const clCountUpdate = await DB.executeQuery(dsCountUpdate);
 
-    cdObj.externalId = cdExternalId;
-    cdObj.colmunid = CDUid;
-    cdObj.action = "column definition created successfully.";
-    cdObj.timestamp = ts;
-    ColumnDef.push(cdObj);
+    let cdObj = {
+      ExternalId: cdExternalId,
+      ID: CDUid,
+    };
+    // cdObj.action = "column definition created successfully.";
+    // cdObj.timestamp = ts;
+    // ColumnDef.push(cdObj);
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -2169,7 +2199,8 @@ const columnSave = (exports.columnDefinationInsert = async (
       ]
     );
 
-    return { sucRes: ColumnDef, errRes: errorColumnDef };
+    // console.log("column insert", cdObj);
+    return { sucRes: cdObj, errRes: errorColumnDef };
   } catch (e) {
     console.log(e);
     Logger.error("catch :New Column def add");
@@ -2276,8 +2307,6 @@ const saveVlc = (exports.VlcInsert = async (
       return { sucRes: vlc, errRes: errorVlc };
     }
 
-    let vlcObj = {};
-
     let vlcBody = [
       DFId,
       DPId,
@@ -2293,17 +2322,24 @@ const saveVlc = (exports.VlcInsert = async (
       userId,
     ];
 
-    let createVlc = await DB.executeQuery(
+    const {
+      rows: [createdVlc],
+    } = await DB.executeQuery(
       `insert into ${schemaName}.dataset_qc_rules(dataflowid, datapackageid, datasetid, ext_ruleid, qc_type,
         ruleseq, action, ruleexpr, errormessage, active_yn,created_dttm,updated_dttm,created_by_user,updated_by_user)
-        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11,$12,$12 )`,
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11,$12,$12 ) returning dsqcruleid as "vlcID";`,
       vlcBody
     );
-    vlcObj.conditionalExpressionNumber = vl.conditionalExpressionNumber;
-    vlcObj.datasetid = dsUid;
-    vlcObj.action = "VLC created successfully.";
-    vlcObj.timestamp = ts;
-    vlc.push(vlcObj);
+
+    const vlcId = createdVlc?.vlcID || null;
+
+    let vlcObj = {
+      conditionalExpressionNumber: vl.conditionalExpressionNumber,
+      ID: vlcId,
+    };
+    // vlcObj.action = "VLC created successfully.";
+    // vlcObj.timestamp = ts;
+    // vlc.push(vlcObj);
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -2323,7 +2359,8 @@ const saveVlc = (exports.VlcInsert = async (
       ]
     );
 
-    return { sucRes: vlc, errRes: errorVlc };
+    // console.log("vlc insert ", vlcObj);
+    return { sucRes: vlcObj, errRes: errorVlc };
   } catch (err) {
     console.log(err);
     //throw error in json response with status 500.
@@ -2591,7 +2628,7 @@ exports.packageUpdate = async (
         }
         if (typeof data.path != "undefined") {
           TypeSas.push({
-            key: "path",
+            key: "p_path",
             value: data.path,
             type: "string",
           });
@@ -2859,7 +2896,7 @@ exports.datasetUpdate = async (
 
       if (queryMnemonic.rows.length > 0) {
         errorDataset.push(
-          "In this environment this mnemonic name already Exist!"
+          "In this environment this datasetName(mnemonic) name already Exist!"
         );
       }
     }
@@ -3253,7 +3290,7 @@ exports.datasetUpdate = async (
     if (data.OverrideStaleAlert) {
       updateQueryDS += `,ovrd_stale_alert='${data.OverrideStaleAlert}'`;
     }
-    if (data.headerRowNumber) {
+    if (data.headerRowNumber || data.headerRowNumber === 0) {
       updateQueryDS += `,headerrow='${data.headerRowNumber}'`;
       updateQueryDS += `,headerrownumber='${data.headerRowNumber}'`;
     }
@@ -3430,13 +3467,18 @@ exports.clDefUpdate = async (
           );
         }
       }
-      if (data.maxLength) {
+      if (data.maxLength || data.maxLength === 0) {
         if (typeof data.maxLength != "number") {
           errorcolDef.push(
             "In SFTP/FTPS maxLength is Optional and data type should be Number"
           );
         } else {
           if (data.maxLength >= 10001) {
+            errorcolDef.push(
+              "Max Length must be between values of 1 and 10,000. Please amend."
+            );
+          }
+          if (data.maxLength === 0) {
             errorcolDef.push(
               "Max Length must be between values of 1 and 10,000. Please amend."
             );
@@ -3578,7 +3620,9 @@ exports.clDefUpdate = async (
         `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${data.columnName}';`
       );
       if (clName.rows.length > 0) {
-        errorcolDef.push("This Column Definition columnName already exist!");
+        errorcolDef.push(
+          "Column Names (Headers) must be unique in a data set file structure. Please amend."
+        );
       }
     }
 
