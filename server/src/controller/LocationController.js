@@ -6,6 +6,7 @@ const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const CommonController = require("./CommonController");
+const { COMMON_ERR, PAYLOAD_ERR } = require("../config/messageConstants");
 
 async function checkLocationExists(
   locationType = "",
@@ -44,17 +45,28 @@ exports.locationDetails = async (req, res) => {
     const locationId = req.params.locationId;
 
     const query = `	select extrnl_sys_nm as "externalSystem", ld.cnn_drvr as "driverName", sl.loc_typ as "locationType", usr_nm as "connectionUserName", pswd, cnn_url as "connectionUrl" from  ${schemaName}.source_location sl inner join  ${schemaName}.location_details ld on sl.loc_typ = ld.loc_typ where sl.src_loc_id=$1`;
-    const { rows } = await DB.executeQuery(query, [locationId]);
+    const {
+      rows: [locationObj],
+    } = await DB.executeQuery(query, [locationId]);
     let result = {};
-    if (rows[0].pswd === "Yes") {
+    if (!locationObj) {
+      return apiResponse.ErrorResponse(res, "Location not found");
+    }
+    if (locationObj.connectionUrl) {
+      locationObj.connectionUrl = locationObj.connectionUrl.replace(
+        /\\\\/g,
+        "\\"
+      );
+    }
+    if (locationObj?.pswd === "Yes") {
       const credentials = await helper.readVaultData(locationId);
       result = {
-        ...rows[0],
+        ...locationObj,
         connectionPassword: credentials?.password,
       };
     } else {
       result = {
-        ...rows[0],
+        ...locationObj,
         connectionPassword: "",
       };
     }
@@ -66,8 +78,9 @@ exports.locationDetails = async (req, res) => {
     );
   } catch (err) {
     Logger.error("catch :locationDetails");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    const errMsg = err.message || COMMON_ERR;
+    Logger.error(errMsg);
+    return apiResponse.ErrorResponse(res, errMsg);
   }
 };
 
@@ -84,9 +97,9 @@ exports.checkLocationExistsInDataFlow = async function (req, res) {
     );
   } catch (err) {
     //throw error in json response with status 500.
-    console.log(err);
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    const errMsg = err.message || COMMON_ERR;
+    Logger.error(errMsg);
+    return apiResponse.ErrorResponse(res, errMsg);
   }
 };
 
@@ -113,8 +126,9 @@ exports.searchLocationList = function (req, res) {
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :searchLocationList");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    const errMsg = err.message || COMMON_ERR;
+    Logger.error(errMsg);
+    return apiResponse.ErrorResponse(res, errMsg);
   }
 };
 
@@ -162,8 +176,9 @@ exports.getLocationList = async (req, res) => {
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :getLocationList");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    const errMsg = err.message || COMMON_ERR;
+    Logger.error(errMsg);
+    return apiResponse.ErrorResponse(res, errMsg);
   }
 };
 
@@ -179,8 +194,9 @@ exports.getPassword = async function (req, res) {
     );
   } catch (err) {
     Logger.error("catch :getPasswordOfLocation");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    const errMsg = err.message || COMMON_ERR;
+    Logger.error(errMsg);
+    return apiResponse.ErrorResponse(res, errMsg);
   }
 };
 
@@ -201,8 +217,9 @@ exports.getLocationById = async function (req, res) {
     return apiResponse.successResponseWithData(res, "Operation success", null);
   } catch (err) {
     Logger.error("catch :getLocationById");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    const errMsg = err.message || COMMON_ERR;
+    Logger.error(errMsg);
+    return apiResponse.ErrorResponse(res, errMsg);
   }
 };
 
@@ -227,8 +244,9 @@ exports.getServiceOwnersList = function (req, res) {
   } catch (err) {
     //throw error in json response with status 500.
     Logger.error("catch :serviceOwnerList");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    const errMsg = err.message || COMMON_ERR;
+    Logger.error(errMsg);
+    return apiResponse.ErrorResponse(res, errMsg);
   }
 };
 
@@ -286,10 +304,10 @@ exports.statusUpdate = async (req, res) => {
     );
   } catch (err) {
     //throw error in json response with status 500.
-    console.log(err);
     Logger.error("catch :location status Update");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    const errMsg = err.message || COMMON_ERR;
+    Logger.error(errMsg);
+    return apiResponse.ErrorResponse(res, errMsg);
   }
 };
 
@@ -297,10 +315,6 @@ const $insertLocation = `INSERT into ${schemaName}.source_location (insrt_tm, lo
 const $selectLocation = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id FROM ${schemaName}.source_location WHERE src_loc_id=$1`;
 const $updateLocation = `UPDATE ${schemaName}.source_location set updt_tm=$1, loc_alias_nm=$2, loc_typ=$3, data_strc=$4, extrnl_sys_nm=$5, active=$6, usr_nm=$7, pswd=$8, ip_servr=$9, cnn_url=$10, port=$11, db_nm=$12, external_id=$13 WHERE src_loc_id=$14 returning *`;
 const $selectExternalId = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id FROM ${schemaName}.source_location WHERE external_id=$1`;
-
-const commonError = `Something went wrong`;
-const mandatoryMissing = `Please check payload mandatory fields are missing`;
-const duplicateNotAllowed = `No duplicate locations are allowed`;
 
 exports.saveLocationData = async function (req, res) {
   Logger.info({ message: "storeLocation" });
@@ -330,7 +344,7 @@ exports.saveLocationData = async function (req, res) {
         return apiResponse.validationErrorWithData(
           res,
           "Operation failed",
-          mandatoryMissing
+          PAYLOAD_ERR
         );
       }
 
@@ -356,7 +370,7 @@ exports.saveLocationData = async function (req, res) {
       return apiResponse.validationErrorWithData(
         res,
         "Operation failed",
-        mandatoryMissing
+        PAYLOAD_ERR
       );
     }
 
@@ -368,7 +382,7 @@ exports.saveLocationData = async function (req, res) {
         return apiResponse.validationErrorWithData(
           res,
           "Operation failed",
-          mandatoryMissing
+          PAYLOAD_ERR
         );
       }
     }
@@ -402,7 +416,7 @@ exports.saveLocationData = async function (req, res) {
       return apiResponse.validationErrorWithData(
         res,
         "Operation failed",
-        duplicateNotAllowed
+        `No duplicate locations are allowed`
       );
     }
 
@@ -462,7 +476,7 @@ exports.saveLocationData = async function (req, res) {
         return apiResponse.validationErrorWithData(
           res,
           "Operation failed",
-          mandatoryMissing
+          PAYLOAD_ERR
         );
       }
 
@@ -473,7 +487,7 @@ exports.saveLocationData = async function (req, res) {
       ]);
 
       if (!updateLocation?.rowCount || !existingLoc?.rowCount) {
-        return apiResponse.ErrorResponse(res, commonError);
+        return apiResponse.ErrorResponse(res, COMMON_ERR);
       }
 
       const dfList = await DB.executeQuery(
@@ -522,6 +536,24 @@ exports.saveLocationData = async function (req, res) {
     Logger.error("catch :storeLocation");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.getLocationTypes = async (req, res) => {
+  try {
+    const { rows: locationTypes } = await DB.executeQuery(
+      `SELECT loc_typ as type from ${schemaName}.location_details WHERE loc_typ not in ('Snowflake', 'SQL Server Dynamic Port');`
+    );
+    return apiResponse.successResponseWithData(
+      res,
+      "Location retrieved successfully",
+      locationTypes
+    );
+  } catch (err) {
+    Logger.error("catch :GetLocationTypesError");
+    const errMsg = err.message || COMMON_ERR;
+    Logger.error(errMsg);
+    return apiResponse.ErrorResponse(res, errMsg);
   }
 };
 

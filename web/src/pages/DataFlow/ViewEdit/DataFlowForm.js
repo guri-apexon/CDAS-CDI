@@ -100,6 +100,7 @@ const DataFlowFormBase = (props) => {
     prodLock,
     firstFileDate,
     changeFirstFlDt,
+    dataFlowdetail,
   } = props;
   const locationNameRef = React.useRef(null);
   const [selectedSrvcOwnr, setSelectedSrvcOwnr] = useState(null);
@@ -120,6 +121,7 @@ const DataFlowFormBase = (props) => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [locationDetail, setLocationDetail] = useState(null);
   const [renderLocation, setRenderLocation] = useState(false);
+  const [disabledVendor, setDisabledVendor] = useState(false);
 
   useEffect(() => {
     if (initialValues) {
@@ -151,6 +153,12 @@ const DataFlowFormBase = (props) => {
     setRenderLocation(false);
     changeLocationData(locationDetail);
   }, [locationDetail, locations]);
+  useEffect(() => {
+    if (dataFlowdetail) {
+      const { isSync, testflag } = dataFlowdetail;
+      setDisabledVendor(isSync === "Y" && testflag === 0);
+    }
+  }, [dataFlowdetail]);
 
   useEffect(() => {
     return () => {
@@ -159,7 +167,6 @@ const DataFlowFormBase = (props) => {
   }, []);
 
   const onChangeVendor = (v) => {
-    console.log("vendor", v);
     // change("vendor", v?.vend_id);
     dispatch(change("vendors", [v?.vend_id]));
   };
@@ -170,25 +177,26 @@ const DataFlowFormBase = (props) => {
         <div className={classes.section}>
           <Typography variant="title1">Flow Details</Typography>
           <div style={{ width: "50%" }}>
-            {dataLoaded && vendors && (
-              <ReduxFormAutocompleteV2
-                key={selectedVendor}
-                name="vendor"
-                autoSelect
-                label="Vendor"
-                source={vendors}
-                id="vendor"
-                input={{
-                  value: selectedVendor,
-                  onChange: onChangeVendor,
-                }}
-                enableVirtualization
-                className="autocomplete_field"
-                singleSelect
-                variant="search"
-                fullWidth
-              />
-            )}
+            {/* {dataLoaded && vendors && ( */}
+            <ReduxFormAutocompleteV2
+              key={selectedVendor}
+              name="vendor"
+              autoSelect
+              label="Vendor"
+              source={vendors}
+              id="vendor"
+              input={{
+                value: selectedVendor,
+                onChange: onChangeVendor,
+                disabled: disabledVendor,
+              }}
+              enableVirtualization
+              className="autocomplete_field"
+              singleSelect
+              variant="search"
+              fullWidth
+            />
+            {/* )} */}
             <ReduxFormTextField
               fullWidth
               maxLength="30"
@@ -346,6 +354,7 @@ const ReduxForm = compose(
 
 const DataFlowForm = connect((state) => ({
   initialValues: state.dataFlow.formData, // pull initial values from account reducer
+  dataFlowdetail: state.dataFlow.dataFlowdetail,
   enableReinitialize: true,
   locations: state.dataFlow.locations?.records,
   vendors: state.dataFlow.vendors?.records,

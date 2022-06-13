@@ -571,7 +571,7 @@ export const locationTypes = [
   "Oracle",
   "PostgreSQL",
   "SQL Server",
-  "SQL Server Dynamic Port",
+  // "SQL Server Dynamic Port", Don't remove. This need to use in Portless connection
 ];
 
 export const fileTypes = ["SAS", "Excel", "Delimited", "Fixed Width"];
