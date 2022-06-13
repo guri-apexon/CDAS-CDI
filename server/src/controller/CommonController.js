@@ -179,80 +179,71 @@ module.exports = {
       });
     });
   },
+  addPackageHistory: async function (package, user_id, values) {
+    if (!package || !values) return false;
+    try {
+      const response = await DB.executeQuery(
+        `SELECT version from ${schemaName}.dataflow_version  WHERE dataflowid = '${package.dataflowid}' order by version DESC limit 1`
+      );
 
-  addPackageHistory: function (
-    package,
-    user_id,
-    column,
-    old_val = "",
-    new_val = ""
-  ) {
-    console.log(package,"addpackage")
-    return new Promise((resolve, reject) => {
-      if (!package) resolve(false);
-      DB.executeQuery(
-        `SELECT version from ${schemaName}.dataflow_version
-      WHERE dataflowid = '${package.dataflowid}' order by version DESC limit 1`
-      ).then(async (response) => {
-        console.log(response,"respince")
-        const historyVersion = response.rows[0]?.version || 0;
-        const version = Number(historyVersion) + 1;
-        const curDate = helper.getCurrentTime();
-        const addHistoryQuery = `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`;
-        const values = [package.dataflowid,package.type,package.path, package.password,package.sod_view_type, package.name, version, package, user_id, curDate];
-        DB.executeQuery(addHistoryQuery, values).then(async (response) => {
-          const addAuditLogQuery = `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid, audit_vers, attribute, old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
-          const auditValues = [
+      const historyVersion = response.rows[0]?.version || 0;
+      const version = Number(historyVersion) + 1;
+      const curDate = helper.getCurrentTime();
+
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`,
+        [
+          package.dataflowid,
+          package.type,
+          package.path,
+          package.password,
+          package.sod_view_type,
+          package.name,
+          version,
+          package,
+          user_id,
+          curDate,
+        ]
+      );
+
+      for (let i = 0; i < values.length; i++) {
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid, audit_vers, attribute, old_val, new_val, audit_updt_by, audit_updt_dt) 
+         VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [
             package.dataflowid,
             package.datapackageid,
             version,
-            column,
-            old_val,
-            new_val,
+            values[i].attribute,
+            values[i].old_val,
+            values[i].new_val,
             user_id,
             curDate,
             package.type,
             package.path,
             package.password,
             package.sod_view_type,
-            package.name
-          ];
-          DB.executeQuery(addAuditLogQuery, auditValues)
-            .then(async (response) => {
-              DB.executeQuery(
-                `INSERT INTO ${schemaName}.cdr_ta_queue
-              (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count, datapackageid)
-              VALUES($1, 'CONFIG', $2, 'QUEUE', $5, $5, '', $3, '', 1, '', 0, $4)`,
-                [
-                  package.dataflowid,
-                  user_id,
-                  version,
-                  package.datapackageid,
-                  curDate,
-                ]
-              )
-                .then(async (response) => {
-                  DB.executeQuery(
-                    `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
-                    [package.dataflowid, curDate]
-                  )
-                    .then((res) => {
-                      resolve(version);
-                    })
-                    .catch((err) => {
-                      resolve(false);
-                    });
-                })
-                .catch((err) => {
-                  resolve(false);
-                });
-            })
-            .catch((err) => {
-              resolve(version);
-            });
-        });
-      });
-    });
+            package.name,
+          ]
+        );
+      }
+
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.cdr_ta_queue
+            (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count, datapackageid)
+            VALUES($1, 'CONFIG', $2, 'QUEUE', $5, $5, '', $3, '', 1, '', 0, $4)`,
+        [package.dataflowid, user_id, version, package.datapackageid, curDate]
+      );
+
+      await DB.executeQuery(
+        `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
+        [package.dataflowid, curDate]
+      );
+      return version;
+    } catch (error) {
+      console.log(error);
+    }
+    return false;
   },
 
   addPackageHistoryOLD: function (package, user_id, column, old_val, new_val) {
