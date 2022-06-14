@@ -71,5 +71,4 @@ export const DATA_TYPES = {
     "TIMESTAMP(6)",
   ],
 };
-
 export const IDLE_LOGOUT_TIME = 900000;
