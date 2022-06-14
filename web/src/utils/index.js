@@ -532,6 +532,10 @@ export const dataStruct = [
     value: "tabular",
     label: "Tabular",
   },
+  {
+    value: "TabularRaveSOD",
+    label: "Tabular - Rave SOD",
+  },
 ];
 
 export const extSysName = [
@@ -574,6 +578,7 @@ export const locationTypes = [
   // "SQL Server Dynamic Port", Don't remove. This need to use in Portless connection
 ];
 
+export const SodLocationTypes = ["SFTP", "FTPS"];
 export const fileTypes = ["SAS", "Excel", "Delimited", "Fixed Width"];
 export const delimeters = ["COMMA", "TAB", "TILDE", "PIPE"];
 export const loadTypes = ["Cumulative", "Incremental"];

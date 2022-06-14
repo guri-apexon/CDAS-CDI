@@ -205,7 +205,7 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
             : item.menuItems.some((e) => e.pathname === pathname)
         }
         waves
-        notificationsMenuProps={notificationsMenuProps}
+        // notificationsMenuProps={notificationsMenuProps}
         otherButtons={
           // eslint-disable-next-line react/jsx-wrap-multilines
           <div className={classes.centerAligned}>
