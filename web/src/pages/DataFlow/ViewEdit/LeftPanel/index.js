@@ -193,15 +193,17 @@ const LeftPanel = () => {
       <div className="packages-list-header">
         <div className="flex flex-center justify-between">
           <Typography className="b-font">Data Packages & Datasets</Typography>
-          <Button
-            variant="secondary"
-            icon={<PlusIcon />}
-            size="small"
-            onClick={redirectDataPackage}
-            disabled={!isSftp(locationType)}
-          >
-            Add data package
-          </Button>
+          {packageData.packagesList[0]?.sod_view_type === null && (
+            <Button
+              variant="secondary"
+              icon={<PlusIcon />}
+              size="small"
+              onClick={redirectDataPackage}
+              disabled={!isSftp(locationType)}
+            >
+              Add data package
+            </Button>
+          )}
         </div>
 
         <div style={{ maxWidth: 400 }} className="search-package">

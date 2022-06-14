@@ -87,6 +87,7 @@ const WithOutPageHeader = () => {
 const CDIWrapper = () => {
   const [loggedIn, setLoggedIn] = useState(true);
   const [checkedOnce, setCheckedOnce] = useState(false);
+
   const history = useHistory();
   const location = useLocation();
 
