@@ -258,15 +258,12 @@ exports.generateConnectionURL = (locType, hostName, port, dbName) => {
   return "";
 };
 
-exports.isAlphaNumeric = (value, key = "") => {
-  const regexp = key === "values" ? /^[a-zA-Z0-9~_\s]+$/ : /\w+$/;
-  if (key === "format") {
+exports.isAlphaNumeric = (val) => {
+  const regexp = /^[a-zA-Z0-9~_\s]+$/gi;
+  if (regexp.test(val)) {
     return true;
   }
-  if (value && value.toString().search(regexp) === -1) {
-    return false;
-  }
-  return true;
+  return false;
 };
 exports.isNumbers = (value) => {
   const regexp = /^[0-9\b]+$/;
@@ -275,14 +272,8 @@ exports.isNumbers = (value) => {
   }
   return true;
 };
-// exports.isNumbers = (value) => {
-//   const regexp = /^[\d]+$/;
-//     if (value !== "" && !regexp.test(value)) {
-//       return "Only numeric values are allowed";
-//     }
-//     return false;
-// };
-exports.isDate = (value) => {
+
+exports.isValidDate = (value) => {
   if (value.includes("$") || String.raw`${value}`.includes("\\")) {
     // return "\\ and $ are not allowed";
     return false;

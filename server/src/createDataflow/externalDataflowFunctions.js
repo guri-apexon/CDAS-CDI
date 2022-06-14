@@ -545,6 +545,31 @@ exports.insertValidation = (req) => {
                           }
                         }
 
+                        // line 548
+                        if (el.dataType && el.format) {
+                          if (el.dataType.toLowerCase() === "alphanumeric") {
+                            if (helper.isAlphaNumeric(el.format) === false) {
+                              validate.push({
+                                err: "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.",
+                              });
+                            }
+                          }
+                          if (el.dataType.toLowerCase() === "numeric") {
+                            if (helper.isNumbers(el.format) === false) {
+                              validate.push({
+                                err: "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.",
+                              });
+                            }
+                          }
+                          if (el.dataType.toLowerCase() === "date") {
+                            if (helper.isValidDate(el.format) === false) {
+                              validate.push({
+                                err: "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend.",
+                              });
+                            }
+                          }
+                        }
+
                         // Validation Function call for column defination
                         let clRes = helper.validation(clArray);
                         if (clRes.length > 0) {
@@ -926,6 +951,31 @@ exports.insertValidation = (req) => {
                           validate.push({
                             err: "dataType's supported values : Numeric, Alphanumeric or Date",
                           });
+                        }
+                      }
+
+                      // line 957
+                      if (el.dataType && el.format) {
+                        if (el.dataType.toLowerCase() === "alphanumeric") {
+                          if (helper.isAlphaNumeric(el.format) === false) {
+                            validate.push({
+                              err: "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.",
+                            });
+                          }
+                        }
+                        if (el.dataType.toLowerCase() === "numeric") {
+                          if (helper.isNumbers(el.format) === false) {
+                            validate.push({
+                              err: "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.",
+                            });
+                          }
+                        }
+                        if (el.dataType.toLowerCase() === "date") {
+                          if (helper.isValidDate(el.format) === false) {
+                            validate.push({
+                              err: "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend.",
+                            });
+                          }
                         }
                       }
 
@@ -1954,33 +2004,29 @@ const columnSave = (exports.columnDefinationInsert = async (
         }
 
         //po09
-        // if (el.dataType && el.format) {
-        //   if (el.dataType.toLowerCase() === "alphanumeric") {
-        //     console.log("alphanumeric");
-        //     if (!helper.isAlphaNumeric(el.format)) {
-        //       console.log("reply", helper.isAlphaNumeric(el.format));
-        //       errorColumnDef.push(
-        //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
-        //       );
-        //     }
-        //   }
-        //   if (el.dataType.toLowerCase() === "numeric") {
-        //     console.log("numeric");
-        //     if (!helper.isNumbers(el.format)) {
-        //       console.log("numeric reply", helper.isAlphaNumeric(el.format));
-        //       errorColumnDef.push(
-        //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
-        //       );
-        //     }
-        //   }
-        //   if (el.dataType.toLowerCase() === "date") {
-        //     if (!helper.isDate(el.format)) {
-        //       errorColumnDef.push(
-        //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
-        //       );
-        //     }
-        //   }
-        // }
+        if (el.dataType && el.format) {
+          if (el.dataType.toLowerCase() === "alphanumeric") {
+            if (helper.isAlphaNumeric(el.format) === false) {
+              errorColumnDef.push(
+                "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+              );
+            }
+          }
+          if (el.dataType.toLowerCase() === "numeric") {
+            if (helper.isNumbers(el.format) === false) {
+              errorColumnDef.push(
+                "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+              );
+            }
+          }
+          if (el.dataType.toLowerCase() === "date") {
+            if (helper.isValidDate(el.format) === false) {
+              errorColumnDef.push(
+                "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend."
+              );
+            }
+          }
+        }
 
         let clResIf = helper.validation(clArrayIf);
         if (clResIf.length > 0) {
@@ -2102,6 +2148,31 @@ const columnSave = (exports.columnDefinationInsert = async (
             errorColumnDef.push(
               "dataType's Supported values : Numeric, Alphanumeric or Date"
             );
+          }
+        }
+
+        //ppp
+        if (el.dataType && el.format) {
+          if (el.dataType.toLowerCase() === "alphanumeric") {
+            if (helper.isAlphaNumeric(el.format) === false) {
+              errorColumnDef.push(
+                "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+              );
+            }
+          }
+          if (el.dataType.toLowerCase() === "numeric") {
+            if (helper.isNumbers(el.format) === false) {
+              errorColumnDef.push(
+                "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+              );
+            }
+          }
+          if (el.dataType.toLowerCase() === "date") {
+            if (helper.isValidDate(el.format) === false) {
+              errorColumnDef.push(
+                "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend."
+              );
+            }
           }
         }
 
@@ -3472,6 +3543,34 @@ exports.clDefUpdate = async (
           );
         }
       }
+
+      //plo
+      if ((data.dataType && !data.format) || (!data.dataType && data.format)) {
+        errorcolDef.push("dataType and format both are required");
+      } else {
+        if (data.dataType.toLowerCase() === "alphanumeric") {
+          if (helper.isAlphaNumeric(data.format) === false) {
+            errorcolDef.push(
+              "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+            );
+          }
+        }
+        if (data.dataType.toLowerCase() === "numeric") {
+          if (helper.isNumbers(data.format) === false) {
+            errorcolDef.push(
+              "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+            );
+          }
+        }
+        if (data.dataType.toLowerCase() === "date") {
+          if (helper.isValidDate(data.format) === false) {
+            errorcolDef.push(
+              "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend."
+            );
+          }
+        }
+      }
+
       if (data.position || data.position === 0) {
         if (typeof data.position != "number") {
           errorcolDef.push(
@@ -3633,6 +3732,33 @@ exports.clDefUpdate = async (
 
       if (colDefRes.length > 0) {
         errorcolDef.push(colDefRes);
+      }
+
+      //last add
+      if ((data.dataType && !data.format) || (!data.dataType && data.format)) {
+        errorcolDef.push("dataType and format both are required");
+      } else {
+        if (data.dataType.toLowerCase() === "alphanumeric") {
+          if (helper.isAlphaNumeric(data.format) === false) {
+            errorcolDef.push(
+              "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+            );
+          }
+        }
+        if (data.dataType.toLowerCase() === "numeric") {
+          if (helper.isNumbers(data.format) === false) {
+            errorcolDef.push(
+              "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+            );
+          }
+        }
+        if (data.dataType.toLowerCase() === "date") {
+          if (helper.isValidDate(data.format) === false) {
+            errorcolDef.push(
+              "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend."
+            );
+          }
+        }
       }
 
       if (
