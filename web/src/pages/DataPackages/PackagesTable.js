@@ -88,16 +88,18 @@ const PackagesList = ({ data, userInfo }) => {
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
-        <span className="add-dataset">
-          <Tooltip title="Add dataset" disableFocusListener>
-            <RoundPlusSvg
-              className="add-dataset-btn"
-              onClick={() =>
-                addDataSet(row.dataflowid, "", row.datapackageid, row.name)
-              }
-            />
-          </Tooltip>
-        </span>
+        {row.sod_view_type === null && (
+          <span className="add-dataset">
+            <Tooltip title="Add dataset" disableFocusListener>
+              <RoundPlusSvg
+                className="add-dataset-btn"
+                onClick={() =>
+                  addDataSet(row.dataflowid, "", row.datapackageid, row.name)
+                }
+              />
+            </Tooltip>
+          </span>
+        )}
       </div>
     );
   };
@@ -119,19 +121,28 @@ const PackagesList = ({ data, userInfo }) => {
               key={dataset.datasetid}
               role="button"
               tabIndex={0}
-              onClick={() =>
-                goToDataSet(
-                  row.dataflowid,
-                  "",
-                  row.datapackageid,
-                  row.name,
-                  dataset.datasetid,
-                  dataset.mnemonic
-                )
+              onClick={
+                row.sod_view_type === null &&
+                (() =>
+                  goToDataSet(
+                    row.dataflowid,
+                    "",
+                    row.datapackageid,
+                    row.name,
+                    dataset.datasetid,
+                    dataset.mnemonic
+                  ))
               }
             >
               <div className="dataset-details">
-                <Typography variant="caption" className="dataset-name">
+                <Typography
+                  variant="caption"
+                  className={
+                    row.sod_view_type !== null
+                      ? "sod-datasetName"
+                      : "dataset-name"
+                  }
+                >
                   {dataset.name?.toUpperCase() ||
                     dataset.mnemonic ||
                     "DataSet Name"}
@@ -183,6 +194,11 @@ const PackagesList = ({ data, userInfo }) => {
         );
       }
     };
+    const editAction = () => {
+      if (packageId) {
+        history.push("/dashboard/data-packages");
+      }
+    };
     const menuItems = [
       {
         text: `Set data package ${active === 1 ? "inactive" : "active"}`,
@@ -213,20 +229,33 @@ const PackagesList = ({ data, userInfo }) => {
           onClick={openAction}
           style={{ cursor: "pointer" }}
         />
-        <Menu
-          id="tableMenu"
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleRequestClose}
-        >
-          {menuItems.map((menu) => {
-            return (
-              <MenuItem key={menu.text} size="small" onClick={menu.onClick}>
-                {menu.text}
-              </MenuItem>
-            );
-          })}
-        </Menu>
+        {row.sod_view_type === null ? (
+          <Menu
+            id="tableMenu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleRequestClose}
+          >
+            {menuItems.map((menu) => {
+              return (
+                <MenuItem key={menu.text} size="small" onClick={menu.onClick}>
+                  {menu.text}
+                </MenuItem>
+              );
+            })}
+          </Menu>
+        ) : (
+          <Menu
+            id="tableMenu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleRequestClose}
+          >
+            <MenuItem size="small" onClick={editAction}>
+              Edit data package
+            </MenuItem>
+          </Menu>
+        )}
       </div>
     );
   };
