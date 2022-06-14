@@ -44,7 +44,7 @@ const Breadcrumbs = (props) => {
   );
 };
 const Header = (props) => {
-  const { currentStep, submitting } = props;
+  const { currentStep, submitting, tabularSod } = props;
   const classes = useStyles();
   const [hidebackBtn, setHideBackBtn] = useState(true);
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -98,7 +98,10 @@ const Header = (props) => {
               size: "small",
             },
             {
-              label: currentStep >= 5 ? "Save data flow" : "Next",
+              label:
+                currentStep >= 5 || (currentStep >= 2 && tabularSod)
+                  ? "Save data flow"
+                  : "Next",
               onClick: () => props.submit(),
               size: "small",
               disabled: submitting,

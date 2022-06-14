@@ -1,6 +1,5 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable consistent-return */
-import { includes, isEmpty } from "lodash";
 
 export const checkRequired = (value) => {
   if (!value || (typeof value === "string" && !value.trim())) {
@@ -241,15 +240,7 @@ export const removeUndefined = (arr) =>
     }, {});
 
 export const validateRow = (row) => {
-  const {
-    minLength,
-    maxLength,
-    dataType,
-    columnName,
-    primaryKey,
-    required,
-    format,
-  } = row;
+  const { minLength, maxLength, dataType, columnName, format } = row;
 
   const min = Number.parseInt(minLength, 10);
   const max = Number.parseInt(maxLength, 10);
@@ -261,8 +252,7 @@ export const validateRow = (row) => {
     ((minLength || maxLength) &&
       (Number.isNaN(min) ||
         Number.isNaN(max) ||
-        !(!Number.isNaN(min) && !Number.isNaN(max) && min <= max))) ||
-    (primaryKey?.toLowerCase() === "yes" && required?.toLowerCase() === "no")
+        !(!Number.isNaN(min) && !Number.isNaN(max) && min <= max)))
   ) {
     return false;
   }

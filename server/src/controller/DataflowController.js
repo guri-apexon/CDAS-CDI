@@ -291,7 +291,7 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
     DFBody = [
       DFTestname,
       vendorid,
-      dataStructure?.toLowerCase() || null,
+      dataStructure || null,
       description || null,
       locationID || null,
       helper.stringToBoolean(active) ? 1 : 0,
