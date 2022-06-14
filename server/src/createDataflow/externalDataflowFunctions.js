@@ -1250,13 +1250,14 @@ exports.packageLevelInsert = async (
       dPTimestamp,
       DFId,
       0,
+      data.sod_view_type || null,
     ];
 
     const {
       rows: [createdDP],
     } = await DB.executeQuery(
-      `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage( type, name, path, sasxptmethod, password, active, nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid, del_flg)
-            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$9,$10, $11) returning datapackageid as "dataPackageId";`,
+      `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage( type, name, path, sasxptmethod, password, active, nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid, del_flg, sod_view_type)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$9,$10, $11, $12) returning datapackageid as "dataPackageId";`,
       dPBody
     );
 
