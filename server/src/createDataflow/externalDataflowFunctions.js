@@ -15,6 +15,7 @@ exports.insertValidation = (req) => {
   var str1 = /[~]/;
   var str2 = /[.]/;
   var str3 = /[< >]/;
+
   var error = [];
 
   const Data = [
@@ -1233,7 +1234,7 @@ exports.packageLevelInsert = async (
 
     if (errorPackage.length > 0) {
       errorPackage.splice(0, 0, `Datapackage external id -${ExternalId} `);
-      return { sucRes: dataPackage, errRes: errorPackage };
+      return { errRes: errorPackage };
     }
 
     let dPTimestamp = new Date();
@@ -1721,7 +1722,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
     if (errorDataset.length > 0) {
       errorDataset.splice(0, 0, `DataSet external id -${externalID} `);
-      return { sucRes: dataSet, errRes: errorDataset };
+      return { errRes: errorDataset };
     }
 
     let sqlQuery = "";
@@ -1951,6 +1952,35 @@ const columnSave = (exports.columnDefinationInsert = async (
           }
         }
 
+        //po09
+        // if (el.dataType && el.format) {
+        //   if (el.dataType.toLowerCase() === "alphanumeric") {
+        //     console.log("alphanumeric");
+        //     if (!helper.isAlphaNumeric(el.format)) {
+        //       console.log("reply", helper.isAlphaNumeric(el.format));
+        //       errorColumnDef.push(
+        //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+        //       );
+        //     }
+        //   }
+        //   if (el.dataType.toLowerCase() === "numeric") {
+        //     console.log("numeric");
+        //     if (!helper.isNumbers(el.format)) {
+        //       console.log("numeric reply", helper.isAlphaNumeric(el.format));
+        //       errorColumnDef.push(
+        //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+        //       );
+        //     }
+        //   }
+        //   if (el.dataType.toLowerCase() === "date") {
+        //     if (!helper.isDate(el.format)) {
+        //       errorColumnDef.push(
+        //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+        //       );
+        //     }
+        //   }
+        // }
+
         let clResIf = helper.validation(clArrayIf);
         if (clResIf.length > 0) {
           errorColumnDef.push(clResIf);
@@ -2117,7 +2147,7 @@ const columnSave = (exports.columnDefinationInsert = async (
         0,
         `Column definition External Id -${cdExternalId} `
       );
-      return { sucRes: ColumnDef, errRes: errorColumnDef };
+      return { errRes: errorColumnDef };
     }
 
     let CDBody = [
@@ -2304,7 +2334,7 @@ const saveVlc = (exports.VlcInsert = async (
         0,
         `VLC Conditional Expression Number -${vl.conditionalExpressionNumber} `
       );
-      return { sucRes: vlc, errRes: errorVlc };
+      return { errRes: errorVlc };
     }
 
     let vlcBody = [
@@ -2548,14 +2578,15 @@ exports.dataflowUpdate = async (
     }
 
     if (Object.keys(diffObj).length === 0) {
-      return { sucRes: dataflow };
+      // return { sucRes: dataflow };
+      return;
     } else {
-      newDfobj.externalId = externalID;
-      newDfobj.dataFlowId = DFId;
-      newDfobj.action = "Dataflow update successfully.";
-      newDfobj.timestamp = ts;
-      dataflow.push(newDfobj);
-      return { sucRes: dataflow };
+      newDfobj.ExternalId = externalID;
+      newDfobj.ID = DFId;
+      // newDfobj.action = "Dataflow update successfully.";
+      // newDfobj.timestamp = ts;
+      // dataflow.push(newDfobj);
+      return { sucRes: newDfobj };
     }
   } catch (e) {
     console.log(e);
@@ -2765,7 +2796,8 @@ exports.packageUpdate = async (
 
     if (errorPackage.length > 0) {
       errorPackage.splice(0, 0, `Datapackage external id -${externalID} `);
-      return { sucRes: data_packages, errRes: errorPackage };
+      // return { sucRes: {}, errRes: errorPackage };
+      return { errRes: errorPackage };
     }
 
     let updateQueryDP = `update ${schemaName}.datapackage set updt_tm=NOW()`;
@@ -2826,15 +2858,15 @@ exports.packageUpdate = async (
     }
 
     if (Object.keys(diffObj).length === 0) {
-      return { sucRes: data_packages, errRes: errorPackage };
+      return;
     } else {
-      newObj.externalId = externalID;
-      newObj.datapackageid = DPId;
+      newObj.ExternalId = externalID;
+      newObj.ID = DPId;
       newObj.action = "Datapackage update successfully.";
-      newObj.timestamp = ts;
-      data_packages.push(newObj);
+      // newObj.timestamp = ts;
+      // data_packages.push(newObj);
 
-      return { sucRes: data_packages, errRes: errorPackage };
+      return { sucRes: newObj, errRes: errorPackage };
     }
   } catch (e) {
     console.log(e);
@@ -3240,7 +3272,8 @@ exports.datasetUpdate = async (
 
     if (errorDataset.length > 0) {
       errorDataset.splice(0, 0, `DataSet external id -${externalID} `);
-      return { sucRes: dataset_update, errRes: errorDataset };
+      // return { sucRes: {}, errRes: errorDataset };
+      return { errRes: errorDataset };
     }
 
     let sqlQuery = custSql;
@@ -3378,15 +3411,15 @@ exports.datasetUpdate = async (
     }
 
     if (Object.keys(diffObj).length === 0) {
-      return { sucRes: dataset_update, errRes: errorDataset };
+      return;
     } else {
-      newObj.externalId = externalID;
-      newObj.dataSetid = DSId;
+      newObj.ExternalId = externalID;
+      newObj.ID = DSId;
       newObj.action = "Dataset update successfully.";
-      newObj.timestamp = ts;
-      dataset_update.push(newObj);
+      // newObj.timestamp = ts;
+      // dataset_update.push(newObj);
 
-      return { sucRes: dataset_update, errRes: errorDataset };
+      return { sucRes: newObj, errRes: errorDataset };
     }
   } catch (e) {
     console.log(e);
@@ -3628,7 +3661,8 @@ exports.clDefUpdate = async (
 
     if (errorcolDef.length > 0) {
       errorcolDef.splice(0, 0, `Column Definition Id -${externalId} `);
-      return { sucRes: colDef_update, errRes: errorcolDef };
+      // return { sucRes: {}, errRes: errorcolDef };
+      return { errRes: errorcolDef };
     }
 
     // columndefinition(datasetid,columnid,name,datatype,
@@ -3716,15 +3750,15 @@ exports.clDefUpdate = async (
     }
 
     if (Object.keys(diffObj).length === 0) {
-      return { sucRes: colDef_update, errRes: errorcolDef };
+      return;
     } else {
-      newObj.externalId = externalId;
-      newObj.clDefid = cdId;
+      newObj.ExternalId = externalId;
+      newObj.ID = cdId;
       newObj.action = "Column Defination update successfully.";
-      newObj.timestamp = ts;
-      colDef_update.push(newObj);
+      // newObj.timestamp = ts;
+      // colDef_update.push(newObj);
 
-      return { sucRes: colDef_update, errRes: errorcolDef };
+      return { sucRes: newObj, errRes: errorcolDef };
     }
   } catch (err) {
     console.log(err);
@@ -3808,7 +3842,8 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
         0,
         `VLC Conditional Expression Number -${vl.conditionalExpressionNumber}`
       );
-      return { sucRes: vlc_update, errRes: errorVlc };
+      // return { sucRes: {}, errRes: errorVlc };
+      return { errRes: errorVlc };
     }
 
     //heeheheheh
@@ -3870,15 +3905,15 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
     }
 
     if (Object.keys(diffObj).length === 0) {
-      return { sucRes: vlc_update, errRes: errorVlc };
+      return;
     } else {
       newObj.conditionalExpressionNumber = vl.conditionalExpressionNumber;
-      newObj.DataSetId = DSId;
+      newObj.ID = vlcUpdate.rows[0].dsqcruleid;
       newObj.action = "VLC update successfully.";
-      newObj.timestamp = ts;
-      vlc_update.push(newObj);
+      // newObj.timestamp = ts;
+      // vlc_update.push(newObj);
 
-      return { sucRes: vlc_update, errRes: errorVlc };
+      return { sucRes: newObj, errRes: errorVlc };
     }
   } catch (err) {
     console.log(err);
@@ -3898,7 +3933,6 @@ exports.removeDataflow = async (
   try {
     let ts = new Date().toLocaleString();
     var dataflow = [];
-    var newDfobj = {};
 
     const deleteQueryDF = `update ${schemaName}.dataflow set updt_tm=NOW(),refreshtimestamp=NOW(),updated_by_user='${userId}', del_flg=1 where dataflowid='${DFId}' `;
     const removeDf = await DB.executeQuery(deleteQueryDF);
@@ -3922,11 +3956,14 @@ exports.removeDataflow = async (
     const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
     const qcDelete = await DB.executeQuery(deleteQc);
 
-    newDfobj.externalId = externalID;
-    newDfobj.dataflowid = DFId;
-    newDfobj.action = "Data Flow Removed successfully.";
-    newDfobj.timestamp = ts;
-    dataflow.push(newDfobj);
+    let newDfobj = {
+      ExternalId: externalID,
+      ID: DFId,
+      action: "Data Flow Removed successfully.",
+      // timestamp: ts,
+    };
+    // newDfobj.timestamp = ts;
+    // dataflow.push(newDfobj);
 
     // Version Table enrty
     let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
@@ -3959,7 +3996,7 @@ exports.removeDataflow = async (
       ]
     );
 
-    return { sucRes: dataflow };
+    return { sucRes: newDfobj };
   } catch (err) {
     console.log(err);
     Logger.error("catch : DataFlow Removed");
@@ -3988,11 +4025,11 @@ exports.removeDataPackage = async (externalID, DPID, DFId, version, userId) => {
     const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
     const qcDelete = await DB.executeQuery(deleteQc);
 
-    newDfobj.externalId = externalID;
-    newDfobj.dataPackageId = DPID;
+    newDfobj.ExternalId = externalID;
+    newDfobj.ID = DPID;
     newDfobj.action = "Data Package Removed successfully.";
-    newDfobj.timestamp = ts;
-    dataPackage.push(newDfobj);
+    // newDfobj.timestamp = ts;
+    // dataPackage.push(newDfobj);
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -4012,7 +4049,7 @@ exports.removeDataPackage = async (externalID, DPID, DFId, version, userId) => {
       ]
     );
 
-    return { sucRes: dataPackage };
+    return { sucRes: newDfobj };
   } catch (err) {
     console.log(err);
     Logger.error("catch : Data Package Removed");
@@ -4042,11 +4079,11 @@ exports.removeDataSet = async (
     const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
     const qcDelete = await DB.executeQuery(deleteQc);
 
-    newDfobj.externalId = externalID;
-    newDfobj.dataSetid = DSID;
+    newDfobj.ExternalId = externalID;
+    newDfobj.ID = DSID;
     newDfobj.action = "Data Set Removed successfully.";
-    newDfobj.timestamp = ts;
-    dataSet.push(newDfobj);
+    // newDfobj.timestamp = ts;
+    // dataSet.push(newDfobj);
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -4066,7 +4103,7 @@ exports.removeDataSet = async (
       ]
     );
 
-    return { sucRes: dataSet };
+    return { sucRes: newDfobj };
   } catch (err) {
     console.log(err);
     Logger.error("catch : Data Set Removed");
@@ -4091,11 +4128,11 @@ exports.removeColumnDefination = async (
     const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where columnid='${cdId}';`;
     const removeCd = await DB.executeQuery(deleteQueryCD);
 
-    newDfobj.externalId = externalID;
-    newDfobj.columnDefId = cdId;
+    newDfobj.ExternalId = externalID;
+    newDfobj.ID = cdId;
     newDfobj.action = "Column Definition Removed successfully.";
-    newDfobj.timestamp = ts;
-    ColumnDefinition.push(newDfobj);
+    // newDfobj.timestamp = ts;
+    // ColumnDefinition.push(newDfobj);
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -4115,7 +4152,7 @@ exports.removeColumnDefination = async (
       ]
     );
 
-    return { sucRes: ColumnDefinition };
+    return { sucRes: newDfobj };
   } catch (err) {
     console.log(err);
     Logger.error("catch : Column Def Removed ");
