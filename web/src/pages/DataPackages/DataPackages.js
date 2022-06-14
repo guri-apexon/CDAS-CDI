@@ -4,7 +4,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
-// import moment from "moment";
+import moment from "moment";
 import Paper from "apollo-react/components/Paper";
 import Typography from "apollo-react/components/Typography";
 import Box from "apollo-react/components/Box";
@@ -26,10 +26,7 @@ import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapa
 import "./DataPackages.scss";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
 import { getUserInfo, toast, validateFields } from "../../utils";
-import {
-  submitDataPackage,
-  updateDatPackage,
-} from "../../services/ApiServices";
+import { submitDataPackage } from "../../services/ApiServices";
 import {
   addDataPackage,
   getPackagesList,
@@ -166,7 +163,7 @@ const DataPackages = React.memo(() => {
         showErrorMessage(result.message);
       }
     } else {
-      const sodResult = await updateDatPackage(sodReqBody);
+      const sodResult = await submitDataPackage(sodReqBody);
       if (sodResult.status === 1) {
         showSuccessMessage(sodResult.message);
         history.push("/dashboard/dataflow-management");
@@ -189,6 +186,9 @@ const DataPackages = React.memo(() => {
   useEffect(() => {
     console.log("packageRender");
   }, []);
+  const lastModifieddate =
+    packageData.packagesList[0]?.updt_tm &&
+    moment(packageData.packagesList[0]?.updt_tm).format("DD-MMM-YYYY hh:mm A");
   return (
     <div className="data-packages-wrapper">
       <Panel
@@ -266,15 +266,12 @@ const DataPackages = React.memo(() => {
                       }
                     />
                   </div>
-                  {/* {packageData.packagesList[0]?.updt_tm &&
-                  moment(
-                    packageData.packagesList[0]?.updt_tm,
-                    "MM/DD/YYYY"
-                  ).isValid()
-                    ? moment(packageData.packagesList[0]?.updt_tm).format(
-                        "DD-MMM-YYYY"
-                      )
-                    : ""} */}
+                  {packageData.packagesList[0]?.sod_view_type !== null && (
+                    <span>
+                      Last modified &nbsp;&nbsp;
+                      {lastModifieddate}
+                    </span>
+                  )}
                   {configShow && (
                     <div className="package-form">
                       {packageData.packagesList[0]?.sod_view_type !== null ? (

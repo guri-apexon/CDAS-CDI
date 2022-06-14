@@ -74,7 +74,7 @@ exports.addPackage = async function (req, res) {
       package =
         query_response && query_response.rowCount > 0 && query_response.rows[0];
       const pp = package_password ? "Yes" : "No";
-      if (package && package.rowCount > 0) {
+      if (package) {
         const updateResult = await DB.executeQuery(
           `UPDATE ${schemaName}.datapackage
            SET dataflowid=$1, "type"=$2, "path"=$3, "password"=$4, sod_view_type=$5, name=$6
@@ -175,7 +175,6 @@ exports.changeStatus = function (req, res) {
     WHERE datapackageid = '${package_id}' RETURNING *`;
 
     DB.executeQuery(query).then(async (response) => {
-      console.log(response, "statuschange");
       const package = response.rows[0] || [];
       const oldActive = Number(active) == 1 ? "0" : "1";
       const historyVersion = await CommonController.addPackageHistory(

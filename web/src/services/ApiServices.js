@@ -405,14 +405,4 @@ export const submitDataPackage = async (reqBody) => {
   }
 };
 
-export const updateDatPackage = async (reqBody) => {
-  console.log(reqBody);
-  try {
-    const res = await axios.post(`${baseURL}/${EDIT_PACKAGE}`, reqBody);
-    return res.data || [];
-  } catch (err) {
-    return console.log("Error", err);
-  }
-};
-
 export default searchStudy;

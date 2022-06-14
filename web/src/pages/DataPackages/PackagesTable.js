@@ -121,19 +121,28 @@ const PackagesList = ({ data, userInfo }) => {
               key={dataset.datasetid}
               role="button"
               tabIndex={0}
-              onClick={() =>
-                goToDataSet(
-                  row.dataflowid,
-                  "",
-                  row.datapackageid,
-                  row.name,
-                  dataset.datasetid,
-                  dataset.mnemonic
-                )
+              onClick={
+                row.sod_view_type === null &&
+                (() =>
+                  goToDataSet(
+                    row.dataflowid,
+                    "",
+                    row.datapackageid,
+                    row.name,
+                    dataset.datasetid,
+                    dataset.mnemonic
+                  ))
               }
             >
               <div className="dataset-details">
-                <Typography variant="caption" className="dataset-name">
+                <Typography
+                  variant="caption"
+                  className={
+                    row.sod_view_type !== null
+                      ? "sod-datasetName"
+                      : "dataset-name"
+                  }
+                >
                   {dataset.name?.toUpperCase() ||
                     dataset.mnemonic ||
                     "DataSet Name"}

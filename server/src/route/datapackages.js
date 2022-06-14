@@ -5,7 +5,6 @@ var router = express.Router();
 
 router.get("/search/:dataflowId/:query?", PackagesController.searchList);
 router.post("/add", PackagesController.addPackage);
-router.post("/update", PackagesController.updatePackage);
 router.post("/delete", PackagesController.deletePackage);
 router.post("/update-status", PackagesController.changeStatus);
 

@@ -192,18 +192,7 @@ module.exports = {
 
       await DB.executeQuery(
         `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`,
-        [
-          package.dataflowid,
-          package.type,
-          package.path,
-          package.password,
-          package.sod_view_type,
-          package.name,
-          version,
-          package,
-          user_id,
-          curDate,
-        ]
+        [package.dataflowid, version, package, user_id, curDate]
       );
 
       for (let i = 0; i < values.length; i++) {
@@ -219,11 +208,6 @@ module.exports = {
             values[i].new_val,
             user_id,
             curDate,
-            package.type,
-            package.path,
-            package.password,
-            package.sod_view_type,
-            package.name,
           ]
         );
       }
