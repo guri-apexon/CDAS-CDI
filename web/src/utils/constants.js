@@ -8,8 +8,8 @@ export const packageComprTypes = [
 ];
 export const packageTypes = [
   { text: "Regular", value: "Regular" },
-  { text: "All", value: "All" },
   { text: "Raw", value: "Raw" },
+  { text: "All", value: "All" },
 ];
 export const DATA_TYPES = {
   alphanumeric: [
