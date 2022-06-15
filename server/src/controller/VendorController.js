@@ -7,8 +7,8 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 exports.searchVendorList = function (req, res) {
   try {
     const searchParam = req.params.query.toLowerCase();
-    const searchQuery = `SELECT vend_id,vend_nm,vend_nm_stnd,description,active,extrnl_sys_nm from ${schemaName}.vendor 
-            WHERE (LOWER(vend_nm) LIKE $1 OR 
+    const searchQuery = `SELECT vend_id,vend_nm,vend_nm_stnd,description,active,extrnl_sys_nm from ${schemaName}.vendor
+            WHERE (LOWER(vend_nm) LIKE $1 OR
             LOWER(vend_nm_stnd) LIKE $2) and active = 1
             `;
     Logger.info({ message: "searchVendorList" });
@@ -57,7 +57,7 @@ exports.getVendorList = function (req, res) {
 exports.getVendorById = function (req, res) {
   try {
     const id = req.params.vendor_id;
-    const searchQuery = `SELECT vend_id,vend_nm,vend_nm_stnd,description,active,extrnl_sys_nm from ${schemaName}.vendor 
+    const searchQuery = `SELECT vend_id,vend_nm,vend_nm_stnd,description,active,extrnl_sys_nm from ${schemaName}.vendor
             WHERE vend_id = $1`;
     Logger.info({ message: "getVendorById" });
 

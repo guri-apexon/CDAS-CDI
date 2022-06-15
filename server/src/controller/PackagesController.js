@@ -11,9 +11,9 @@ exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
     const { dataflowId } = req.params;
-    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 'Y');`;
+    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 'Y');`;
     if (searchParam) {
-      searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage 
+      searchQuery = `SELECT datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm from ${schemaName}.datapackage 
       WHERE LOWER(name) LIKE '%${searchParam}%' and dataflowid='${dataflowId}';`;
     }
     const datasetQuery = `SELECT datasetid, mnemonic, active, type from ${schemaName}.dataset where datapackageid = $1`;
@@ -45,9 +45,10 @@ exports.searchList = async (req, res) => {
   }
 };
 
-exports.addPackage = function (req, res) {
+exports.addPackage = async function (req, res) {
+  let package = {};
+  const audit_log = [];
   try {
-    const packageID = helper.createUniqueID();
     Logger.info({ message: "addPackage" });
     const {
       compression_type,
@@ -57,47 +58,109 @@ exports.addPackage = function (req, res) {
       study_id,
       dataflow_id,
       user_id,
+      sod_view_type = "",
+      package_id,
     } = req.body;
-    let passwordStatus;
+
     if (study_id == null || dataflow_id == null || user_id == null) {
       return apiResponse.ErrorResponse(res, "Study not found");
     }
 
-    if (package_password) {
-      passwordStatus = "Yes";
-      helper.writeVaultData(`${dataflow_id}/${packageID}`, {
-        password: package_password,
-      });
+    if (package_id) {
+      const query_response =
+        await DB.executeQuery(`SELECT * FROM ${schemaName}.datapackage
+      WHERE datapackageid = '${package_id}' LIMIT 1`);
+
+      package =
+        query_response && query_response.rowCount > 0 && query_response.rows[0];
+      const pp = package_password ? "Yes" : "No";
+      if (package) {
+        const updateResult = await DB.executeQuery(
+          `UPDATE ${schemaName}.datapackage
+           SET dataflowid=$1, "type"=$2, "path"=$3, "password"=$4, sod_view_type=$5, name=$6
+           WHERE datapackageid='${package_id}' RETURNING*`,
+          [
+            dataflow_id,
+            compression_type,
+            sftp_path,
+            pp,
+            sod_view_type,
+            naming_convention,
+          ]
+        );
+      }
+      if (package.type !== compression_type)
+        audit_log.push({
+          attribute: "type",
+          old_val: package.type,
+          new_val: compression_type,
+        });
+
+      if (package.path !== sftp_path)
+        audit_log.push({
+          attribute: "path",
+          old_val: package.path,
+          new_val: sftp_path,
+        });
+
+      if (package.password !== pp)
+        audit_log.push({
+          attribute: "password",
+          old_val: package.password,
+          new_val: pp,
+        });
+
+      if (package.sod_view_type !== sod_view_type)
+        audit_log.push({
+          attribute: "sod_view_type",
+          old_val: package.sod_view_type,
+          new_val: sod_view_type,
+        });
+
+      if (package.name !== naming_convention)
+        audit_log.push({
+          attribute: "name",
+          old_val: package.name,
+          new_val: naming_convention,
+        });
     } else {
-      passwordStatus = "No";
+      const query_response = await DB.executeQuery(
+        `INSERT INTO ${schemaName}.datapackage(dataflowid, type, name, path, password, active, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [
+          dataflow_id,
+          compression_type,
+          naming_convention,
+          sftp_path,
+          package_password ? "Yes" : "No",
+          "1",
+          "N",
+        ]
+      );
+
+      package =
+        query_response && query_response.rowCount > 0 && query_response.rows[0];
+
+      audit_log.push({ attribute: "New Package", old_val: "", new_val: "" });
     }
 
-    const insertValues = [
-      packageID,
-      dataflow_id,
-      compression_type,
-      naming_convention,
-      sftp_path,
-      passwordStatus,
-      "1",
-      "N",
-    ];
-    const query = `INSERT INTO ${schemaName}.datapackage(datapackageid, dataflowid, type, name, path, password, active, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
+    if (package_password) {
+      helper.writeVaultData(`${dataflow_id}/${package.datapackageid}`, {
+        password: package_password,
+      });
+    }
 
-    DB.executeQuery(query, insertValues).then(async (response) => {
-      const package = response.rows[0] || [];
-      const historyVersion = await CommonController.addPackageHistory(
-        package,
-        user_id,
-        "New Package"
-      );
-      if (!historyVersion) throw new Error("History not updated");
-      return apiResponse.successResponseWithData(
-        res,
-        "Success! Data Package saved.",
-        {}
-      );
-    });
+    const historyVersion = await CommonController.addPackageHistory(
+      package,
+      user_id,
+      audit_log
+    );
+    if (!historyVersion) throw new Error("History not updated");
+
+    return apiResponse.successResponseWithData(
+      res,
+      "Success! Data Package saved.",
+      {}
+    );
   } catch (err) {
     return apiResponse.ErrorResponse(res, err);
   }
@@ -117,9 +180,7 @@ exports.changeStatus = function (req, res) {
       const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
-        "active",
-        oldActive,
-        active
+        [{ attribute: "active", old_val: oldActive, new_val: active }]
       );
 
       if (!historyVersion) throw new Error("History not updated");
@@ -151,9 +212,7 @@ exports.deletePackage = function (req, res) {
       const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
-        "del_flg",
-        "N",
-        "Y"
+        [{ attribute: "del_flg", old_val: "N", new_val: "Y" }]
       );
       if (!historyVersion) throw new Error("History not updated");
 

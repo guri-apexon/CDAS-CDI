@@ -111,14 +111,23 @@ exports.validation = (data) => {
       }
       // console.log(val.key);
     } else {
-      msg.push({
-        err: ` ${val.key} is required and data type should be ${val.type} `,
-      });
+      if (val.key === "p_path") {
+        msg.push({
+          err: `If Package is opted, then Package Path is mandatory`,
+        });
+      } else {
+        msg.push({
+          err: ` ${val.key} is required and data type should be ${val.type} `,
+        });
+      }
     }
   });
   // console.log(msg);
   return msg;
 };
+
+let isEmpty = (exports.isEmpty = (arr) =>
+  Array.isArray(arr) && arr.every(isEmpty));
 
 exports.getdiffKeys = (newObj, oldObj) => {
   // console.log("line 131");
@@ -143,8 +152,22 @@ exports.isPackageType = (str) => {
   return ["7Z", "ZIP", "RAR", "SAS"].includes(str.toUpperCase());
 };
 
+exports.isFileType = (str) => {
+  return ["EXCEL", "DELIMITED", "FIXED WIDTH", "SAS"].includes(
+    str.toUpperCase()
+  );
+};
+
 exports.isColumnType = (str) => {
   return ["alphanumeric", "numeric", "date"].includes(str.toLowerCase());
+};
+
+exports.isActive = (str) => {
+  return ["y", "n"].includes(str.toLowerCase());
+};
+
+exports.isAction = (str) => {
+  return ["reject", "report"].includes(str.toLowerCase());
 };
 
 exports.isConnectionType = (str) => {
@@ -187,4 +210,73 @@ exports.formatDBTables = (data) => {
       tableName: d.tableName || d.tab_name || "",
     };
   });
+};
+
+exports.generateConnectionURL = (locType, hostName, port, dbName) => {
+  if (!locType || !hostName) {
+    return "";
+  }
+  if (locType != "" && (locType === "SFTP" || locType === "FTPS")) {
+    return hostName;
+  }
+  if (locType === "Hive CDP" || locType === "Hive CDH") {
+    const transportMode = locType === "Hive CDP" ? "http" : "https";
+    return port && dbName
+      ? `jdbc:hive2://${hostName}:${port}/${dbName};transportMode=${transportMode};httpPath=cliservice;ssl=1;AllowSelfSignedCerts=1;AuthMech=3`
+      : "";
+  }
+  if (locType === "Oracle") {
+    return port && dbName
+      ? `jdbc:oracle:thin:@${hostName}:${port}:${dbName}`
+      : "";
+  }
+  if (locType === "MySQL") {
+    return port && dbName ? `jdbc:mysql://${hostName}:${port}/${dbName}` : "";
+  }
+  if (locType === "SQL Server") {
+    return port && dbName
+      ? `jdbc:sqlserver://${hostName}:${port};databaseName=${dbName}`
+      : "";
+  }
+  if (locType === "SQL Server Dynamic Port") {
+    return dbName ? `jdbc:sqlserver://${hostName};databaseName=${dbName}` : "";
+  }
+  if (locType === "PostgreSQL") {
+    return port && dbName
+      ? `jdbc:postgresql://${hostName}:${port}/${dbName}`
+      : "";
+  }
+  if (locType === "Impala") {
+    return port
+      ? `jdbc:impala://${hostName}:${port}/${dbName};ssl=1;AllowSelfSignedCerts=1;AuthMech=3`
+      : "";
+  }
+  if (locType && hostName && port && dbName) {
+    return `jdbc:${locType}://${hostName}:${port}/${dbName}`;
+  }
+
+  return "";
+};
+
+exports.isAlphaNumeric = (val) => {
+  const regexp = /^[a-zA-Z0-9~_\s]+$/gi;
+  if (regexp.test(val)) {
+    return true;
+  }
+  return false;
+};
+exports.isNumbers = (value) => {
+  const regexp = /^[0-9\b]+$/;
+  if (value && !regexp.test(value)) {
+    return false;
+  }
+  return true;
+};
+
+exports.isValidDate = (value) => {
+  if (value.includes("$") || String.raw`${value}`.includes("\\")) {
+    // return "\\ and $ are not allowed";
+    return false;
+  }
+  return true;
 };

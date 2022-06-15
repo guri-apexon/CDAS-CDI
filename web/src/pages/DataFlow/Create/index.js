@@ -121,6 +121,7 @@ const DataFlow = ({
     (state) => state.cdiadmin
   );
   const [locType, setLocType] = useState("SFTP");
+  const [tabularSod, setTabularSod] = useState(false);
   const [modalLocType, setModalLocType] = useState("SFTP");
 
   const pullVendorandLocation = () => {
@@ -158,6 +159,13 @@ const DataFlow = ({
     setLocType(value);
     setChangeLocationRequire(true);
   };
+  const changeDataStrucuture = (value) => {
+    if (value === "TabularRaveSOD") {
+      setTabularSod(true);
+    } else {
+      setTabularSod(false);
+    }
+  };
   const modalLocationType = (value) => {
     setModalLocType(value);
   };
@@ -191,8 +199,8 @@ const DataFlow = ({
         return false;
       }
       const payload = {
-        vend_id: FormValues.vendor.vend_id,
-        src_loc_id: FormValues.locationName.src_loc_id,
+        vendorid: FormValues.vendor.vend_id,
+        locationID: FormValues.locationName.src_loc_id,
         dataStructure: FormValues.dataStructure,
         testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
@@ -244,6 +252,18 @@ const DataFlow = ({
     setCurrentStep();
   };
 
+  const AddSodDatapackage = (payload) => {
+    const newForm = { ...myform };
+    if (payload) {
+      const obj = {
+        dataSet: [],
+        ...payload,
+      };
+      newForm.dataPackage[0] = obj;
+      setForm(newForm);
+    }
+  };
+
   const AddDatasetData = (data) => {
     const datasetObj = { ...data };
     if (
@@ -261,7 +281,7 @@ const DataFlow = ({
       // const datakindObj = datakindArr.find((x) => {
       //   return x.value === datasetObj.clinicalDataType.datakindid;
       // });
-      datasetObj.dataKind = datasetObj?.clinicalDataType?.name;
+      datasetObj.dataKindID = datasetObj?.clinicalDataType?.datakindid;
       delete datasetObj.clinicalDataType;
     }
     if (datasetObj.transferFrequency) {
@@ -328,6 +348,30 @@ const DataFlow = ({
     }
     setSubmitting(false);
   };
+
+  const submitFinaRodForm = async () => {
+    packagesRef.current.submitForm();
+
+    if (myform.dataPackage[0].name === undefined) {
+      messageContext.showErrorMessage(
+        "Please add naming convention to continue"
+      );
+      return false;
+    }
+
+    const reqBody = {
+      ...myform,
+    };
+
+    setSubmitting(true);
+    const result = await dataflowSave(reqBody);
+    if (result?.dataflowDetails) setCreatedDataflow(result.dataflowDetails);
+    if (result) {
+      setSaveSuccess(true);
+    }
+    setSubmitting(false);
+  };
+
   const redirectToDataflow = () => {
     dispatch(SelectedDataflow(createdDataflow));
     history.push(
@@ -336,24 +380,37 @@ const DataFlow = ({
   };
   const nextStep = async () => {
     console.log("datasetFormValues?", datasetFormValues, currentStep);
-    switch (currentStep) {
-      case 1:
-        AddDataflowData();
-        break;
-      case 2:
-        packagesRef.current.submitForm();
-        break;
-      case 3:
-        datasetRef.current.submitForm();
-        break;
-      case 4:
-        datasetRef.current.checkvalidation();
-        break;
-      case 5:
-        submitFinalForm();
-        break;
-      default:
-        break;
+    if (tabularSod) {
+      switch (currentStep) {
+        case 1:
+          AddDataflowData();
+          break;
+        case 2:
+          submitFinaRodForm();
+          break;
+        default:
+          break;
+      }
+    } else {
+      switch (currentStep) {
+        case 1:
+          AddDataflowData();
+          break;
+        case 2:
+          packagesRef.current.submitForm();
+          break;
+        case 3:
+          datasetRef.current.submitForm();
+          break;
+        case 4:
+          datasetRef.current.checkvalidation();
+          break;
+        case 5:
+          submitFinalForm();
+          break;
+        default:
+          break;
+      }
     }
   };
 
@@ -396,6 +453,8 @@ const DataFlow = ({
             onSubmit={onSubmit}
             changeLocationData={changeLocationData}
             changeFormField={changeFormField}
+            tabularSod={tabularSod}
+            changeDataStrucuture={changeDataStrucuture}
             changeLocationType={changeLocationType}
             modalLocationType={modalLocationType}
             userName={selectedLocation?.usr_nm}
@@ -406,9 +465,11 @@ const DataFlow = ({
         <div style={{ display: currentStep === 2 ? "block" : "none" }}>
           <DataPackages
             locType={locType}
+            tabularSod={tabularSod}
             toast={messageContext}
             ref={packagesRef}
             payloadBack={AddDatapackage}
+            payloadSodBack={AddSodDatapackage}
           />
         </div>
         <div
@@ -478,6 +539,7 @@ const DataFlow = ({
                 breadcrumbItems={breadcrumbItems}
                 icon={<DataPackageIcon className={classes.contentIcon} />}
                 submitting={submitting}
+                tabularSod={tabularSod}
               />
             </div>
             <Divider />
