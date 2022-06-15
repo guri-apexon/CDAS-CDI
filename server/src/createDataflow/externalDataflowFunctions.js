@@ -1410,6 +1410,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
     var str2 = /[.]/;
     var str3 = /[< >]/;
 
+    const isCDI = externalSysName === "CDI" ? true : false;
+
     if (!isNew) {
       if (!obj.columnDefinition) {
         errorDataset.push(
@@ -1727,46 +1729,48 @@ const saveDataset = (exports.datasetLevelInsert = async (
     }
     // console.log("insert data set");
 
-    if (obj.dataKindID) {
-      let checkDataKind = await DB.executeQuery(
-        `select datakindid, active from ${schemaName}.datakind where datakindid='${obj.dataKindID}';`
-      );
+    if (!isCDI) {
+      if (obj.dataKindID) {
+        let checkDataKind = await DB.executeQuery(
+          `select datakindid, active from ${schemaName}.datakind where datakindid='${obj.dataKindID}';`
+        );
 
-      if (checkDataKind.rows.length > 0) {
-        if (checkDataKind.rows[0].active !== 1) {
+        if (checkDataKind.rows.length > 0) {
+          if (checkDataKind.rows[0].active !== 1) {
+            errorDataset.push(
+              `Clinical Data Type is inactive from ${externalSysName}, Description in TA cannot be integrated.`
+            );
+            if (isNew) {
+              const dataSetRollBack = await dfRollBack(DFId);
+            }
+          }
+        } else {
           errorDataset.push(
-            `Clinical Data Type is inactive from ${externalSysName}, Description in TA cannot be integrated.`
+            `Clinical Data Type is missing from ${externalSysName}, Description in TA cannot be integrated.`
           );
           if (isNew) {
             const dataSetRollBack = await dfRollBack(DFId);
           }
         }
-      } else {
-        errorDataset.push(
-          `Clinical Data Type is missing from ${externalSysName}, Description in TA cannot be integrated.`
-        );
-        if (isNew) {
-          const dataSetRollBack = await dfRollBack(DFId);
-        }
       }
-    }
 
-    if (obj.datasetName) {
-      const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
-      let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
+      if (obj.datasetName) {
+        const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
+        let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
                 left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
                 left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
                 where ds.mnemonic ='${obj.datasetName}' and df.testflag ='${tFlg}'`;
 
-      let queryMnemonic = await DB.executeQuery(selectMnemonic);
+        let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
-      if (queryMnemonic.rows.length > 0) {
-        errorDataset.push(
-          "In this environment this datasetName(mnemonic) name already Exist!"
-        );
+        if (queryMnemonic.rows.length > 0) {
+          errorDataset.push(
+            "In this environment this datasetName(mnemonic) name already Exist!"
+          );
 
-        if (isNew) {
-          const dataSetRollBack = await dfRollBack(DFId);
+          if (isNew) {
+            const dataSetRollBack = await dfRollBack(DFId);
+          }
         }
       }
     }
