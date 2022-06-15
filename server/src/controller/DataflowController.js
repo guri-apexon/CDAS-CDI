@@ -161,7 +161,7 @@ const createDataflowName = async (
   return dfNewName;
 };
 
-const creatDataflow = (exports.createDataflow = async (req, res) => {
+const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
   let dataFlowId = null;
   try {
     var validate = [];
@@ -339,6 +339,10 @@ const creatDataflow = (exports.createDataflow = async (req, res) => {
       // ResponseMessage: "Dataflow created successfully",
       externalSystemName: externalSystemName,
     };
+
+    if (isCDI) {
+      ResponseBody.dataflowDetails = createdDF;
+    }
 
     if (dataPackage?.length) {
       ResponseBody.data_packages = [];
@@ -623,8 +627,14 @@ exports.updateDataFlow = async (req, res) => {
       if (existVendor.length) {
         if (existVendor[0].active !== 1) {
           returnData.push([`Vendor is not active in ${externalSystemName}`]);
+          // return res
+          //   .status(0001)
+          //   .send([`Vendor is not active in ${externalSystemName}`]);
         }
       } else {
+        // return res
+        //   .status(0001)
+        //   .send([`Vendor does not exist for ${externalSystemName}`]);
         returnData.push([`Vendor does not exist for ${externalSystemName}`]);
       }
     }
@@ -638,9 +648,15 @@ exports.updateDataFlow = async (req, res) => {
       if (locationData.rows.length) {
         if (locationData.rows[0].active !== 1) {
           returnData.push([`Location is not active in ${externalSystemName}`]);
+          // return res
+          //   .status(0003)
+          //   .send([`Location is not active in ${externalSystemName}`]);
         }
       } else {
         returnData.push([`Location does not exist for ${externalSystemName}`]);
+        // return res
+        //   .status(0003)
+        //   .send([`Location does not exist for ${externalSystemName}`]);
       }
     }
 
@@ -726,7 +742,7 @@ exports.updateDataFlow = async (req, res) => {
       let ResponseBody = {
         version: DFVer,
         timestamp: ts,
-        ResponseCode: "00000",
+        // ResponseCode: "00000",
         externalSysName: existDf.externalsystemname,
         dataPackages: [],
         errors: [],
@@ -1167,8 +1183,8 @@ exports.updateDataFlow = async (req, res) => {
         await DB.executeQuery(deleteQuery);
 
         Object.keys(ResponseBody).forEach((key) => {
-          (ResponseBody.version = DFVer - 1),
-            (ResponseBody.ResponseCode = "00001");
+          ResponseBody.version = DFVer - 1;
+          // (ResponseBody.ResponseCode = "00001");
         });
       }
 
@@ -1186,7 +1202,7 @@ exports.updateDataFlow = async (req, res) => {
         ResponseBody
       );
     } else {
-      var dataRes = creatDataflow(req, res);
+      var dataRes = creatDataflow(req, res, isCDI);
     }
   } catch (err) {
     //throw error in json response with status 500.
