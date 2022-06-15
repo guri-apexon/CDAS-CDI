@@ -25,6 +25,7 @@ import {
   generateConnectionURL,
   generatedBName,
   extractHostname,
+  isSftp,
 } from "../../utils";
 import {
   ReduxFormSelect,
@@ -60,6 +61,7 @@ const useStyles = makeStyles(styles);
 
 const LocationForm = (props) => {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const {
     locType,
     selectedHost,
@@ -137,14 +139,17 @@ const LocationForm = (props) => {
               size="small"
               InputProps={{ readOnly: props.locationViewMode }}
               canDeselect={false}
-              onChange={(v) =>
+              onChange={(v) => {
                 props.generateUrl(
                   v.target.value,
                   selectedHost,
                   selectedPort,
                   selectedDB
-                )
-              }
+                );
+                // if (v.target.value?.includes("Dynamic Port")) {
+                //   dispatch(change("AddLocationForm", "port", ""));
+                // } Don't remove this is using for portless story CDAS-11093
+              }}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
               fullWidth
             >
@@ -181,6 +186,10 @@ const LocationForm = (props) => {
         </Grid>
         {locType !== "SFTP" && locType !== "FTPS" && (
           <>
+            {/* {!locType?.includes("Dynamic Port") && (
+            )} */}
+            {/* Don't remove this commented code is using for portless story CDAS-11093 */}
+
             <Grid container spacing={2}>
               <Grid item md={5} id="for-port">
                 <ReduxFormTextField
@@ -306,14 +315,13 @@ const LocationModal = (props) => {
         return null;
       }
     }
+    const reqBody = {
+      ...values,
+      active: values.active === 0 ? false : true,
+      systemName: "CDI",
+    };
     setExistErr("");
-    dispatch(
-      saveLocationData({
-        ...values,
-        active: values.active === 0 ? false : true,
-        systemName: "CDI",
-      })
-    );
+    dispatch(saveLocationData(reqBody));
     return null;
   };
 
@@ -374,7 +382,15 @@ const LocationModal = (props) => {
       endPoint: "/checkconnection/sftp",
     };
     if (locationType) {
-      if (locationType !== "SFTP" && locationType !== "FTPS") {
+      if (!isSftp(locationType)) {
+        // let dbPort;
+        // if (locationType.includes("Dynamic Port")) {
+        //   dbPort = 1433;
+        // } else {
+        //   dbPort = port ? port : "";
+        // }
+        /* Don't remove this commented code is using for portless story CDAS-11093 */
+
         reqBody = {
           ...reqBody,
           endPoint: "/checkconnection/jdbc",

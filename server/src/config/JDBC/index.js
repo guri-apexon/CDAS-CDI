@@ -56,6 +56,7 @@ module.exports = async (
       maxpoolsize: 3,
       drivername: drivername,
     };
+    // console.log("config", config, connectionurl);
 
     var jdbc = new JDBC(config);
     jdbc.initialize(function (err) {

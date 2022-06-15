@@ -111,14 +111,23 @@ exports.validation = (data) => {
       }
       // console.log(val.key);
     } else {
-      msg.push({
-        err: ` ${val.key} is required and data type should be ${val.type} `,
-      });
+      if (val.key === "p_path") {
+        msg.push({
+          err: `If Package is opted, then Package Path is mandatory`,
+        });
+      } else {
+        msg.push({
+          err: ` ${val.key} is required and data type should be ${val.type} `,
+        });
+      }
     }
   });
   // console.log(msg);
   return msg;
 };
+
+let isEmpty = (exports.isEmpty = (arr) =>
+  Array.isArray(arr) && arr.every(isEmpty));
 
 exports.getdiffKeys = (newObj, oldObj) => {
   // console.log("line 131");
@@ -141,6 +150,12 @@ exports.isSftp = (str = "") => {
 
 exports.isPackageType = (str) => {
   return ["7Z", "ZIP", "RAR", "SAS"].includes(str.toUpperCase());
+};
+
+exports.isFileType = (str) => {
+  return ["EXCEL", "DELIMITED", "FIXED WIDTH", "SAS"].includes(
+    str.toUpperCase()
+  );
 };
 
 exports.isColumnType = (str) => {
@@ -222,6 +237,9 @@ exports.generateConnectionURL = (locType, hostName, port, dbName) => {
     return port && dbName
       ? `jdbc:sqlserver://${hostName}:${port};databaseName=${dbName}`
       : "";
+  }
+  if (locType === "SQL Server Dynamic Port") {
+    return dbName ? `jdbc:sqlserver://${hostName};databaseName=${dbName}` : "";
   }
   if (locType === "PostgreSQL") {
     return port && dbName

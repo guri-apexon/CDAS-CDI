@@ -479,9 +479,10 @@ exports.updateDatasetData = async (req, res) => {
 exports.getVLCData = async (req, res) => {
   try {
     Logger.info({ message: "getVLCData" });
-    const q1 = `SELECT dv.df_vers_id as "versionNo", ext_ruleid as "ruleId", qc_type as "type", ruleexpr AS "ruleExp", ruleseq as "ruleSeq", "action", errorcode as "emCode", errormessage as "errMsg",
-    CASE WHEN active_yn='Y' AND curr_rec_yn ='Y' THEN 'Active' ELSE 'Inactive' END as "status" FROM ${schemaName}.dataset_qc_rules dqr inner join ${schemaName}.dataflow_version dv on dqr.dataflowid = dv.dataflowid`;
-    const { rows } = await DB.executeQuery(q1);
+    const { datasetid } = req.body;
+    const q1 = `SELECT ext_ruleid as "ruleId", qc_type as "type", ruleexpr AS "ruleExp", ruleseq as "ruleSeq", "action", errorcode as "emCode", errormessage as "errMsg",
+    CASE WHEN active_yn='Y' AND curr_rec_yn ='Y' THEN 'Active' ELSE 'Inactive' END as "status" FROM ${schemaName}.dataset_qc_rules dqr where dqr.datasetid = $1`;
+    const { rows } = await DB.executeQuery(q1, [datasetid]);
     const uniqueIdAdded = rows.map((e, i) => {
       e.id = `id${i + 1}`;
       return e;
