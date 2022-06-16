@@ -280,3 +280,10 @@ exports.isValidDate = (value) => {
   }
   return true;
 };
+
+exports.hasSpecialCHar = (str) => {
+  if (/[`!@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?~]/.test(str)) {
+    return false;
+  }
+  return true;
+};
