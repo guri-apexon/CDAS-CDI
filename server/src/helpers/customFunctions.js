@@ -257,3 +257,26 @@ exports.generateConnectionURL = (locType, hostName, port, dbName) => {
 
   return "";
 };
+
+exports.isAlphaNumeric = (val) => {
+  const regexp = /^[a-zA-Z0-9~_\s]+$/gi;
+  if (regexp.test(val)) {
+    return true;
+  }
+  return false;
+};
+exports.isNumbers = (value) => {
+  const regexp = /^[0-9\b]+$/;
+  if (value && !regexp.test(value)) {
+    return false;
+  }
+  return true;
+};
+
+exports.isValidDate = (value) => {
+  if (value.includes("$") || String.raw`${value}`.includes("\\")) {
+    // return "\\ and $ are not allowed";
+    return false;
+  }
+  return true;
+};
