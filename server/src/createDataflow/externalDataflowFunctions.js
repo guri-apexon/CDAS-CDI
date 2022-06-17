@@ -2998,9 +2998,11 @@ exports.datasetUpdate = async (
       let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
                 left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
                 left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
-                where ds.mnemonic ='${data.datasetName}' and df.testflag ='${tFlg}'`;
+                where ds.mnemonic ='${data.datasetName}' 
+                and ds.datasetid !=$1
+                and df.testflag ='${tFlg}'`;
 
-      let queryMnemonic = await DB.executeQuery(selectMnemonic);
+      let queryMnemonic = await DB.executeQuery(selectMnemonic, [DSId]);
 
       if (queryMnemonic.rows.length > 0) {
         errorDataset.push(
@@ -3781,7 +3783,7 @@ exports.clDefUpdate = async (
 
     if (data.columnName) {
       let clName = await DB.executeQuery(
-        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${data.columnName}';`
+        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and columnid !='${cdId}' and name='${data.columnName}';`
       );
       if (clName.rows.length > 0) {
         errorcolDef.push(
