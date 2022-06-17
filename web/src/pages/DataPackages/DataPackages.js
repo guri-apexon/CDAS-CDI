@@ -64,7 +64,6 @@ const DataPackages = React.memo(() => {
   const userInfo = getUserInfo();
   const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
 
-  console.log("dataPackage", packageData.selectedPackage?.name);
   const {
     selectedCard,
     selectedDataFlow: { dataFlowId: dfId },
