@@ -23,10 +23,11 @@ export const addPackageBtnAction = () => {
   };
 };
 
-export const addDataPackage = (packageData) => {
+export const addDataPackage = (packageResult) => {
   return {
-    type: ADD_PACKAGE_SUCCESS,
+    type: ADD_DATA_PACKAGE,
     refreshData: true,
+    packageResult,
   };
 };
 
