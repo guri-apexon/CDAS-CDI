@@ -5,6 +5,7 @@ import { connect, useDispatch } from "react-redux";
 import { reduxForm, getFormValues } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
+import Modal from "apollo-react/components/Modal";
 import Typography from "apollo-react/components/Typography";
 import Radio from "apollo-react/components/Radio";
 import Divider from "apollo-react/components/Divider";
@@ -81,6 +82,7 @@ const styles = {
 
 const DataFlowFormBase = (props) => {
   const [locationOpen, setLocationOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(true);
   const {
     handleSubmit,
     classes,
@@ -172,174 +174,203 @@ const DataFlowFormBase = (props) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Paper className={classes.paper}>
-        <div className={classes.section}>
-          <Typography variant="title1">Flow Details</Typography>
-          <div style={{ width: "50%" }}>
-            {/* {dataLoaded && vendors && ( */}
-            <ReduxFormAutocompleteV2
-              key={selectedVendor}
-              name="vendor"
-              autoSelect
-              label="Vendor"
-              source={vendors}
-              id="vendor"
-              input={{
-                value: selectedVendor,
-                onChange: onChangeVendor,
-                disabled: disabledVendor,
-              }}
-              enableVirtualization
-              className="autocomplete_field"
-              singleSelect
-              variant="search"
-              fullWidth
-            />
-            {/* )} */}
-            <ReduxFormTextField
-              fullWidth
-              maxLength="30"
-              name="description"
-              inputProps={{ maxLength: 30 }}
-              onChange={(v) => changeFormField(v, "description")}
-              label="Description"
-              disabled={testLock || prodLock}
-            />
-            <div className="expected-date">
-              <ReduxFormDatePickerV2
-                value={firstFileDate}
-                name="firstFileDate"
-                dateFormat="DD MMM YYYY"
-                placeholder="DD MMM YYYY"
-                label="Expected First File Date"
-                onChange={changeFirstFlDt}
-              />
-            </div>
-            <ReduxFormRadioGroup
-              name="dataflowType"
-              onChange={(v) => changeFormField(v, "dataflowType")}
-              label="Data Flow Type"
-              disabled={testLock || prodLock}
-            >
-              <Radio value="test" label="Test" />
-              <Radio value="production" label="Production" />
-            </ReduxFormRadioGroup>
-          </div>
-        </div>
-        <Divider className={classes.divider} />
-        <div className={classes.section}>
-          <Grid container spacing={2}>
-            <Grid item md={5}>
-              <Typography variant="title1" id="locationDetailTitile">
-                Location Details
-              </Typography>
-              <ReduxFormSelect
-                name="dataStructure"
-                id="dataStructure"
-                label="Data Structure"
-                fullWidth
-                canDeselect={false}
-                disabled={testLock || prodLock}
-              >
-                {dataStruct?.map((type) => (
-                  <MenuItem key={type.value} value={type.value}>
-                    {type.label}
-                  </MenuItem>
-                ))}
-              </ReduxFormSelect>
-              <ReduxFormSelect
-                name="locationType"
-                label="Location Type"
-                onChange={(e) => {
-                  changeLocationData(null);
-                  changeLocationType(e.target.value);
-                }}
-                fullWidth
-                canDeselect={false}
-                disabled={testLock || prodLock}
-              >
-                {locationTypes?.map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {type}
-                  </MenuItem>
-                ))}
-              </ReduxFormSelect>
-              {renderLocation && locations && (
+    <div>
+      <Modal
+        open={isModalOpen}
+        title="Warning"
+        message="No file with unblinded or unmasked data should be configured"
+        buttonProps={[
+          {
+            label: "OK",
+            variant: "primary",
+            onClick: () => setIsModalOpen(false),
+          },
+        ]}
+        id="neutral"
+      />
+      {!isModalOpen && (
+        <form onSubmit={handleSubmit}>
+          <Paper className={classes.paper}>
+            <div className={classes.section}>
+              <Typography variant="title1">Flow Details</Typography>
+              <div style={{ width: "50%" }}>
+                {/* {dataLoaded && vendors && ( */}
                 <ReduxFormAutocompleteV2
-                  name="locationName"
-                  label="Location Name"
+                  key={selectedVendor}
+                  name="vendor"
+                  autoSelect
+                  label="Vendor"
+                  source={vendors}
+                  id="vendor"
                   input={{
-                    onChange: changeLocationData,
-                    value: locationDetail,
+                    value: selectedVendor,
+                    onChange: onChangeVendor,
+                    disabled: disabledVendor,
                   }}
                   enableVirtualization
-                  ref={locationNameRef}
-                  source={locations}
                   className="autocomplete_field"
-                  variant="search"
                   singleSelect
+                  variant="search"
                   fullWidth
                 />
-              )}
-              <Link
-                onClick={() => openLocationModal()}
-                style={{ fontWeight: 600 }}
-              >
-                <PlusIcon style={{ width: 12, height: 12, marginRight: 8 }} />
-                New Location
-              </Link>
-              <LocationModal
-                locationModalOpen={locationOpen}
-                modalLocationType={props.modalLocationType}
-                handleModalClose={() => setLocationOpen(false)}
-              />
-            </Grid>
-            <Grid item md={7}>
-              <Paper className={classes.locationBox}>
-                <Typography>Location settings</Typography>
-                <Typography className={classes.formLabel}>Username</Typography>
-                <Typography className={classes.formText}>{userName}</Typography>
-                <Typography className={classes.formLabel}>Password</Typography>
-                <Typography className={classes.formPass}>{password}</Typography>
-                <Typography className={classes.formLabel}>
-                  Connection URL/IP Server/Database
-                </Typography>
-                <Typography className={classes.formText}>{connLink}</Typography>
-              </Paper>
-            </Grid>
-          </Grid>
-        </div>
-        <Divider className={classes.divider} />
-        <div className={classes.section}>
-          <Typography variant="title1">Others</Typography>
-          <div style={{ width: "50%" }} className="service-owner">
-            {serviceOwners && (
-              <ReduxFormAutocompleteV2
-                name="serviceOwner"
-                input={{
-                  value:
-                    selectedSrvcOwnr ||
-                    serviceOwners.filter((x) =>
-                      initialValues?.serviceOwner.includes(x.value)
-                    ),
-                  onChange: onChangeServiceOwner,
-                }}
-                label="Service Owners (Optional)"
-                source={serviceOwners ?? []}
-                forcePopupIcon={true}
-                fullWidth
-                enableVirtualization
-                noOptionsText="No Service Owner"
-                variant="search"
-                chipColor="white"
-                multiple
-              />
-            )}
-          </div>
-        </div>
-      </Paper>
-    </form>
+                {/* )} */}
+                <ReduxFormTextField
+                  fullWidth
+                  maxLength="30"
+                  name="description"
+                  inputProps={{ maxLength: 30 }}
+                  onChange={(v) => changeFormField(v, "description")}
+                  label="Description"
+                  disabled={testLock || prodLock}
+                />
+                <div className="expected-date">
+                  <ReduxFormDatePickerV2
+                    value={firstFileDate}
+                    name="firstFileDate"
+                    dateFormat="DD MMM YYYY"
+                    placeholder="DD MMM YYYY"
+                    label="Expected First File Date"
+                    onChange={changeFirstFlDt}
+                  />
+                </div>
+                <ReduxFormRadioGroup
+                  name="dataflowType"
+                  onChange={(v) => changeFormField(v, "dataflowType")}
+                  label="Data Flow Type"
+                  disabled={testLock || prodLock}
+                >
+                  <Radio value="test" label="Test" />
+                  <Radio value="production" label="Production" />
+                </ReduxFormRadioGroup>
+              </div>
+            </div>
+            <Divider className={classes.divider} />
+            <div className={classes.section}>
+              <Grid container spacing={2}>
+                <Grid item md={5}>
+                  <Typography variant="title1" id="locationDetailTitile">
+                    Location Details
+                  </Typography>
+                  <ReduxFormSelect
+                    name="dataStructure"
+                    id="dataStructure"
+                    label="Data Structure"
+                    fullWidth
+                    canDeselect={false}
+                    disabled={testLock || prodLock}
+                  >
+                    {dataStruct?.map((type) => (
+                      <MenuItem key={type.value} value={type.value}>
+                        {type.label}
+                      </MenuItem>
+                    ))}
+                  </ReduxFormSelect>
+                  <ReduxFormSelect
+                    name="locationType"
+                    label="Location Type"
+                    onChange={(e) => {
+                      changeLocationData(null);
+                      changeLocationType(e.target.value);
+                    }}
+                    fullWidth
+                    canDeselect={false}
+                    disabled={testLock || prodLock}
+                  >
+                    {locationTypes?.map((type) => (
+                      <MenuItem key={type} value={type}>
+                        {type}
+                      </MenuItem>
+                    ))}
+                  </ReduxFormSelect>
+                  {renderLocation && locations && (
+                    <ReduxFormAutocompleteV2
+                      name="locationName"
+                      label="Location Name"
+                      input={{
+                        onChange: changeLocationData,
+                        value: locationDetail,
+                      }}
+                      enableVirtualization
+                      ref={locationNameRef}
+                      source={locations}
+                      className="autocomplete_field"
+                      variant="search"
+                      singleSelect
+                      fullWidth
+                    />
+                  )}
+                  <Link
+                    onClick={() => openLocationModal()}
+                    style={{ fontWeight: 600 }}
+                  >
+                    <PlusIcon
+                      style={{ width: 12, height: 12, marginRight: 8 }}
+                    />
+                    New Location
+                  </Link>
+                  <LocationModal
+                    locationModalOpen={locationOpen}
+                    modalLocationType={props.modalLocationType}
+                    handleModalClose={() => setLocationOpen(false)}
+                  />
+                </Grid>
+                <Grid item md={7}>
+                  <Paper className={classes.locationBox}>
+                    <Typography>Location settings</Typography>
+                    <Typography className={classes.formLabel}>
+                      Username
+                    </Typography>
+                    <Typography className={classes.formText}>
+                      {userName}
+                    </Typography>
+                    <Typography className={classes.formLabel}>
+                      Password
+                    </Typography>
+                    <Typography className={classes.formPass}>
+                      {password}
+                    </Typography>
+                    <Typography className={classes.formLabel}>
+                      Connection URL/IP Server/Database
+                    </Typography>
+                    <Typography className={classes.formText}>
+                      {connLink}
+                    </Typography>
+                  </Paper>
+                </Grid>
+              </Grid>
+            </div>
+            <Divider className={classes.divider} />
+            <div className={classes.section}>
+              <Typography variant="title1">Others</Typography>
+              <div style={{ width: "50%" }} className="service-owner">
+                {serviceOwners && (
+                  <ReduxFormAutocompleteV2
+                    name="serviceOwner"
+                    input={{
+                      value:
+                        selectedSrvcOwnr ||
+                        serviceOwners.filter((x) =>
+                          initialValues?.serviceOwner.includes(x.value)
+                        ),
+                      onChange: onChangeServiceOwner,
+                    }}
+                    label="Service Owners (Optional)"
+                    source={serviceOwners ?? []}
+                    forcePopupIcon={true}
+                    fullWidth
+                    enableVirtualization
+                    noOptionsText="No Service Owner"
+                    variant="search"
+                    chipColor="white"
+                    multiple
+                  />
+                )}
+              </div>
+            </div>
+          </Paper>
+        </form>
+      )}
+    </div>
   );
 };
 
