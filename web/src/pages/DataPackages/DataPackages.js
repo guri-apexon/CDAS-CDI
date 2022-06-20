@@ -223,7 +223,10 @@ const DataPackages = React.memo(() => {
                       {
                         label: "Cancel",
                         size: "small",
-                        onClick: () => history.push("/dashboard"),
+                        onClick: () =>
+                          packageData.selectedPackage?.sod_view_type !== null
+                            ? history.push("/dashboard")
+                            : setShowForm(false),
                       },
                       {
                         label: `${
