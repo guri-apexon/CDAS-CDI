@@ -103,7 +103,6 @@ const DataPackages = React.memo(() => {
   // };
 
   useEffect(() => {
-    console.log("pk data", packageData);
     if (packageData && packageData.refreshData) {
       // getPackages();
       resetForm();
