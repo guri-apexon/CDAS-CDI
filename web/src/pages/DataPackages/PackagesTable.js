@@ -16,7 +16,7 @@ import { useHistory } from "react-router-dom";
 import { ReactComponent as RoundPlusSvg } from "../../components/Icons/roundplus.svg";
 import { ReactComponent as PackageIcon } from "../../components/Icons/datapackage.svg";
 import {
-  addDataPackage,
+  selectDataPackage,
   deletePackage,
   redirectToDataSet,
   updateStatus,
@@ -199,7 +199,7 @@ const PackagesList = ({ data, userInfo }) => {
     };
     const editAction = () => {
       if (packageId) {
-        dispatch(addDataPackage(row));
+        dispatch(selectDataPackage(row));
         history.push("/dashboard/data-packages");
       }
     };

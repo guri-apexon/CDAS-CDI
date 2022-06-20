@@ -121,12 +121,13 @@ const DataPackages = React.memo(() => {
       isSftp(locationType)
     ) {
       setConfigShow(true);
-      setCompression(packageData.selectedPackage?.type);
-      setNamingConvention(packageData.selectedPackage?.name);
+      setCompression(packageData.selectedPackage?.type || "");
+      setNamingConvention(packageData.selectedPackage?.name || "");
       setSodValue(packageData.selectedPackage?.sod_view_type);
       setPackagePassword(packageData.selectedPackage?.password);
       setSftpPath(packageData.selectedPackage?.path);
     }
+    if (packageData.selectedPackage?.type === null) setConfigShow(false);
   }, [packageData.openAddPackage, packageData.selectedPackage]);
 
   // eslint-disable-next-line consistent-return
@@ -236,15 +237,13 @@ const DataPackages = React.memo(() => {
                         label: "Cancel",
                         size: "small",
                         onClick: () =>
-                          packageData.selectedPackage?.sod_view_type !== null ||
-                          isSftp(locationType)
+                          packageData.selectedPackage?.sod_view_type !== null
                             ? history.push("/dashboard")
                             : setShowForm(false),
                       },
                       {
                         label: `${
-                          packageData.selectedPackage?.sod_view_type !== null ||
-                          isSftp(locationType)
+                          packageData.selectedPackage?.sod_view_type !== null
                             ? "Save Data Flow"
                             : "Save"
                         }`,
@@ -292,10 +291,7 @@ const DataPackages = React.memo(() => {
                           size="small"
                           placeholder="Select type..."
                           disabled={
-                            packageData.selectedPackage?.sod_view_type !==
-                              null ||
-                            packageData.selectedPackage?.name ===
-                              ("No package" || null)
+                            packageData.selectedPackage?.sod_view_type !== null
                           }
                           className="mb-20 package-type"
                         />
@@ -328,12 +324,7 @@ const DataPackages = React.memo(() => {
                         placeholder=""
                         size="small"
                         fullWidth
-                        value={
-                          packageData.selectedPackage?.sod_view_type !== null ||
-                          isSftp(locationType)
-                            ? namingConvention
-                            : ""
-                        }
+                        value={namingConvention}
                         helperText={
                           packageData.selectedPackage?.sod_view_type === null
                             ? "File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
