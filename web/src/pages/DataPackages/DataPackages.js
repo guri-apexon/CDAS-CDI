@@ -68,7 +68,6 @@ const DataPackages = React.memo(() => {
     selectedCard,
     selectedDataFlow: { dataFlowId: dfId },
   } = dashboard;
-
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
@@ -110,20 +109,18 @@ const DataPackages = React.memo(() => {
     }
   }, [packageData.refreshData]);
   useEffect(() => {
-    if (
-      packageData.openAddPackage ||
-      packageData.packagesList[0]?.sod_view_type !== null
-    )
+    if (packageData.openAddPackage || packageData.selectedPackage)
       setShowForm(true);
-    if (packageData.packagesList[0]?.sod_view_type !== null) {
+    if (packageData.selectedPackage) {
       setConfigShow(true);
-      setCompression("zip");
-      setNamingConvention(packageData.packagesList[0]?.name);
-      setSodValue(packageData.packagesList[0]?.sod_view_type);
-      setPackagePassword(packageData.packagesList[0]?.password);
-      setSftpPath(packageData.packagesList[0]?.path);
+      setCompression(packageData.selectedPackage?.type);
+      setNamingConvention(packageData.selectedPackage?.name);
+      setSodValue(packageData.selectedPackage?.sod_view_type);
+      setPackagePassword(packageData.selectedPackage?.password);
+      setSftpPath(packageData.selectedPackage?.path);
     }
-  }, [packageData.openAddPackage, packageData.packagesList]);
+    if (packageData.selectedPackage?.type === null) setConfigShow(false);
+  }, [packageData.openAddPackage, packageData.selectedPackage]);
 
   // eslint-disable-next-line consistent-return
   const submitPackage = async () => {
@@ -144,7 +141,7 @@ const DataPackages = React.memo(() => {
       user_id: userInfo.userId,
     };
     const sodReqBody = {
-      package_id: packageData.packagesList[0].datapackageid,
+      package_id: packageData.selectedPackage.datapackageid,
       compression_type: compression,
       naming_convention: namingConvention,
       package_password: packagePassword,
@@ -154,7 +151,7 @@ const DataPackages = React.memo(() => {
       user_id: userInfo.userId,
       sod_view_type: sodValue,
     };
-    if (packageData.packagesList[0]?.sod_view_type === null) {
+    if (packageData.selectedPackage) {
       const result = await submitDataPackage(reqBody);
       if (result.status === 1) {
         showSuccessMessage(result.message);
@@ -187,8 +184,8 @@ const DataPackages = React.memo(() => {
     console.log("packageRender");
   }, []);
   const lastModifieddate =
-    packageData.packagesList[0]?.updt_tm &&
-    moment(packageData.packagesList[0]?.updt_tm).format("DD-MMM-YYYY hh:mm A");
+    packageData.selectedPackage?.updt_tm &&
+    moment(packageData.selectedPackage?.updt_tm).format("DD-MMM-YYYY hh:mm A");
   return (
     <div className="data-packages-wrapper">
       <Panel
@@ -216,9 +213,8 @@ const DataPackages = React.memo(() => {
                   <div className="flex title">
                     <DataPackageIcon />
                     <Typography className="b-font">
-                      {packageData.packagesList[0]?.sod_view_type !== null
-                        ? packageData.packagesList[0]?.name
-                        : "Creating New Package"}
+                      {packageData.selectedPackage?.name ||
+                        "Creating New Package"}
                     </Typography>
                   </div>
                   <ButtonGroup
@@ -228,13 +224,13 @@ const DataPackages = React.memo(() => {
                         label: "Cancel",
                         size: "small",
                         onClick: () =>
-                          packageData.packagesList[0]?.sod_view_type !== null
+                          packageData.selectedPackage?.sod_view_type !== null
                             ? history.push("/dashboard")
                             : setShowForm(false),
                       },
                       {
                         label: `${
-                          packageData.packagesList[0]?.sod_view_type !== null
+                          packageData.selectedPackage?.sod_view_type !== null
                             ? "Save Data Flow"
                             : "Save"
                         }`,
@@ -262,11 +258,11 @@ const DataPackages = React.memo(() => {
                       checked={configShow}
                       onChange={showConfig}
                       disabled={
-                        packageData.packagesList[0]?.sod_view_type !== null
+                        packageData.selectedPackage?.sod_view_type !== null
                       }
                     />
                   </div>
-                  {packageData.packagesList[0]?.sod_view_type !== null && (
+                  {packageData.selectedPackage?.updt_tm && (
                     <span>
                       Last modified &nbsp;&nbsp;
                       {lastModifieddate}
@@ -274,7 +270,7 @@ const DataPackages = React.memo(() => {
                   )}
                   {configShow && (
                     <div className="package-form">
-                      {packageData.packagesList[0]?.sod_view_type !== null ? (
+                      {packageData.selectedPackage?.sod_view_type !== null ? (
                         <TextField
                           error={notMatchedType}
                           label="Package Compression Type"
@@ -282,7 +278,7 @@ const DataPackages = React.memo(() => {
                           size="small"
                           placeholder="Select type..."
                           disabled={
-                            packageData.packagesList[0]?.sod_view_type !== null
+                            packageData.selectedPackage?.sod_view_type !== null
                           }
                           className="mb-20 package-type"
                         />
@@ -315,13 +311,9 @@ const DataPackages = React.memo(() => {
                         placeholder=""
                         size="small"
                         fullWidth
-                        defaultValue={
-                          packageData.packagesList[0]?.sod_view_type !== null
-                            ? packageData.packagesList[0]?.name
-                            : ""
-                        }
+                        value={namingConvention}
                         helperText={
-                          packageData.packagesList[0]?.sod_view_type === null
+                          packageData.selectedPackage?.sod_view_type === null
                             ? "File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
                             : "File extension must match package compression type e.g.zip"
                         }
@@ -350,7 +342,7 @@ const DataPackages = React.memo(() => {
                         fullWidth
                         onChange={(e) => setSftpPath(e.target.value)}
                       />
-                      {packageData.packagesList[0]?.sod_view_type !== null && (
+                      {packageData.selectedPackage?.sod_view_type && (
                         <div>
                           <Select
                             label="SOD View Type to Process"
