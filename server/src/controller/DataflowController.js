@@ -346,7 +346,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     }
 
     if (dataPackage?.length) {
-      ResponseBody.data_packages = [];
+      ResponseBody.dataPackages = [];
       // if datapackage exists
       for (let each of dataPackage) {
         var PackageInsert = await externalFunction.packageLevelInsert(
@@ -361,7 +361,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
         );
         if (PackageInsert.sucRes) {
           // console.log("dataflow", PackageInsert.sucRes);
-          ResponseBody.data_packages.push(PackageInsert.sucRes);
+          ResponseBody.dataPackages.push(PackageInsert.sucRes);
         }
         if (PackageInsert.errRes.length) {
           return apiResponse.ErrorResponse(res, PackageInsert.errRes);
@@ -630,7 +630,7 @@ exports.updateDataFlow = async (req, res) => {
         if (existVendor[0].active !== 1) {
           // returnData.push([`Vendor is not active in ${externalSystemName}`]);
 
-          return apiResponse.errorResponce(
+          return apiResponse.errResponse(
             res,
             `Vendor is not active in ${externalSystemName}`,
             { ResponseCode: "0001" }
@@ -638,9 +638,9 @@ exports.updateDataFlow = async (req, res) => {
         }
       } else {
         // returnData.push([`Vendor does not exist for ${externalSystemName}`]);
-        return apiResponse.errorResponce(
+        return apiResponse.errResponse(
           res,
-          `Vendor does not exist for ${externalSystemName}`,
+          `Vendor does not exist for tt ${externalSystemName}`,
           { ResponseCode: "0001" }
         );
       }
@@ -655,7 +655,7 @@ exports.updateDataFlow = async (req, res) => {
       if (locationData.rows.length) {
         if (locationData.rows[0].active !== 1) {
           // returnData.push([`Location is not active in ${externalSystemName}`]);
-          return apiResponse.errorResponce(
+          return apiResponse.errResponse(
             res,
             `Location is not active in ${externalSystemName}`,
             { ResponseCode: "0003" }
@@ -663,7 +663,7 @@ exports.updateDataFlow = async (req, res) => {
         }
       } else {
         // returnData.push([`Location does not exist for ${externalSystemName}`]);
-        return apiResponse.errorResponce(
+        return apiResponse.errResponse(
           res,
           `Location does not exist for ${externalSystemName}`,
           { ResponseCode: "0003" }
@@ -957,6 +957,8 @@ exports.updateDataFlow = async (req, res) => {
                                 if (currentCd) {
                                   let newObj = {};
                                   const cdId = currentCd.columnid;
+                                  const oldDataType = currentCd.datatype;
+                                  const oldFormat = currentCd.format;
                                   newObj.ExternalId = cdExternalId;
                                   newObj.ID = cdId;
                                   dsResObj.columnDefinition.push(newObj);
@@ -998,7 +1000,9 @@ exports.updateDataFlow = async (req, res) => {
                                           DFVer,
                                           ConnectionType,
                                           userId,
-                                          DSheaderRow
+                                          DSheaderRow,
+                                          oldDataType,
+                                          oldFormat
                                         )
                                         .then((res) => {
                                           // if (res.sucRes?.length) {
@@ -1441,6 +1445,10 @@ exports.activateDataFlow = async (req, res) => {
         existDf,
       });
 
+      // var resData = { ...dataflowObj, version: updatedLogs };
+      // if (versionFreezed === false || !versionFreezed) {
+      //   resData.versionBumped = true;
+      // }
       if (updatedLogs) {
         return apiResponse.successResponseWithData(
           res,
@@ -1486,6 +1494,11 @@ exports.inActivateDataFlow = async (req, res) => {
       diffObj,
       existDf,
     });
+
+    // var resData = { ...dataflowObj, version: updatedLogs };
+    // if (versionFreezed === false || !versionFreezed) {
+    //   resData.versionBumped = true;
+    // }
 
     if (updatedLogs) {
       return apiResponse.successResponseWithData(
@@ -1805,6 +1818,7 @@ exports.updateDataflowConfig = async (req, res) => {
       vendorID,
       dataflowId,
       userId,
+      // versionFreezed,
     } = req.body;
 
     if (
@@ -1890,6 +1904,11 @@ exports.updateDataflowConfig = async (req, res) => {
         diffObj,
         existDf,
       });
+
+      // var resData = { ...dataflowObj, version: updatedLogs };
+      // if (versionFreezed === false || !versionFreezed) {
+      //   resData.versionBumped = true;
+      // }
 
       if (updatedLogs) {
         return apiResponse.successResponseWithData(
