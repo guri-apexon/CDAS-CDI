@@ -1,5 +1,6 @@
 import {
   ADD_DATA_PACKAGE,
+  SELECT_DATA_PACKAGE,
   ADD_PACKAGE_BTN,
   ADD_PACKAGE_SUCCESS,
   PACKAGES_LIST,
@@ -27,6 +28,13 @@ export const addDataPackage = (packageData) => {
   return {
     type: ADD_PACKAGE_SUCCESS,
     refreshData: true,
+  };
+};
+export const selectDataPackage = (packageResult) => {
+  return {
+    type: SELECT_DATA_PACKAGE,
+    refreshData: true,
+    packageResult,
   };
 };
 

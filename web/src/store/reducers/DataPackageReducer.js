@@ -5,6 +5,7 @@ import {
   PACKAGES_LIST,
   PACKAGES_LIST_FAILURE,
   ADD_DATA_PACKAGE,
+  SELECT_DATA_PACKAGE,
   ADD_PACKAGE_SUCCESS,
   UPDATE_DATA_PACKAGE,
   UPDATE_DATA_PACKAGE_SUCCESS,
@@ -47,6 +48,10 @@ const DataPackageReducer = (state = initialState, action) =>
         break;
 
       case ADD_DATA_PACKAGE:
+        newState.selectedPackage = action.packageResult;
+        break;
+
+      case SELECT_DATA_PACKAGE:
         newState.selectedPackage = action.packageResult;
         break;
 
