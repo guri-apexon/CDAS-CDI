@@ -59,7 +59,7 @@ exports.unauthorizedResponse = function (res, msg) {
   return res.status(401).json(data);
 };
 
-exports.errorResponce = function (res, msg, data) {
+exports.errResponse = function (res, msg, data) {
   var resData = {
     status: 0,
     message: msg,
