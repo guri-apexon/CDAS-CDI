@@ -24,9 +24,9 @@ export const addPackageBtnAction = () => {
   };
 };
 
-export const addDataPackage = (packageResult) => {
+export const addDataPackage = (packageData) => {
   return {
-    type: ADD_DATA_PACKAGE,
+    type: ADD_PACKAGE_SUCCESS,
     refreshData: true,
   };
 };

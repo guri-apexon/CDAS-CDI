@@ -48,7 +48,7 @@ const DataPackageReducer = (state = initialState, action) =>
         break;
 
       case ADD_DATA_PACKAGE:
-        // newState.selectedPackage = action.packageResult;
+        newState.selectedPackage = action.packageResult;
         break;
 
       case SELECT_DATA_PACKAGE:

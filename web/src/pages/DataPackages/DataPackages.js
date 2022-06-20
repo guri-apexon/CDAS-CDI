@@ -25,7 +25,7 @@ import ButtonGroup from "apollo-react/components/ButtonGroup";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import "./DataPackages.scss";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
-import { getUserInfo, isSftp, toast, validateFields } from "../../utils";
+import { getUserInfo, toast, validateFields } from "../../utils";
 import { submitDataPackage } from "../../services/ApiServices";
 import {
   addDataPackage,
@@ -67,7 +67,6 @@ const DataPackages = React.memo(() => {
   const {
     selectedCard,
     selectedDataFlow: { dataFlowId: dfId },
-    selectedDataFlow: { locationType },
   } = dashboard;
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -104,25 +103,19 @@ const DataPackages = React.memo(() => {
   // };
 
   useEffect(() => {
+    console.log("pk data", packageData);
     if (packageData && packageData.refreshData) {
       // getPackages();
       resetForm();
     }
   }, [packageData.refreshData]);
   useEffect(() => {
-    if (
-      packageData.openAddPackage ||
-      packageData.selectedPackage?.sod_view_type !== null ||
-      isSftp(locationType)
-    )
+    if (packageData.openAddPackage || packageData.selectedPackage)
       setShowForm(true);
-    if (
-      packageData.selectedPackage?.sod_view_type !== null ||
-      isSftp(locationType)
-    ) {
+    if (packageData.selectedPackage) {
       setConfigShow(true);
-      setCompression(packageData.selectedPackage?.type || "");
-      setNamingConvention(packageData.selectedPackage?.name || "");
+      setCompression(packageData.selectedPackage?.type);
+      setNamingConvention(packageData.selectedPackage?.name);
       setSodValue(packageData.selectedPackage?.sod_view_type);
       setPackagePassword(packageData.selectedPackage?.password);
       setSftpPath(packageData.selectedPackage?.path);
@@ -159,10 +152,7 @@ const DataPackages = React.memo(() => {
       user_id: userInfo.userId,
       sod_view_type: sodValue,
     };
-    if (
-      packageData.selectedPackage?.sod_view_type === null &&
-      !isSftp(locationType)
-    ) {
+    if (packageData.selectedPackage) {
       const result = await submitDataPackage(reqBody);
       if (result.status === 1) {
         showSuccessMessage(result.message);
@@ -224,10 +214,8 @@ const DataPackages = React.memo(() => {
                   <div className="flex title">
                     <DataPackageIcon />
                     <Typography className="b-font">
-                      {packageData.selectedPackage?.sod_view_type !== null ||
-                      isSftp(locationType)
-                        ? packageData.selectedPackage?.name
-                        : "Creating New Package"}
+                      {packageData.selectedPackage?.name ||
+                        "Creating New Package"}
                     </Typography>
                   </div>
                   <ButtonGroup
@@ -236,10 +224,7 @@ const DataPackages = React.memo(() => {
                       {
                         label: "Cancel",
                         size: "small",
-                        onClick: () =>
-                          packageData.selectedPackage?.sod_view_type !== null
-                            ? history.push("/dashboard")
-                            : setShowForm(false),
+                        onClick: () => history.push("/dashboard"),
                       },
                       {
                         label: `${
@@ -275,7 +260,7 @@ const DataPackages = React.memo(() => {
                       }
                     />
                   </div>
-                  {packageData.selectedPackage?.updt_tm !== null && (
+                  {packageData.selectedPackage?.updt_tm && (
                     <span>
                       Last modified &nbsp;&nbsp;
                       {lastModifieddate}
@@ -355,7 +340,7 @@ const DataPackages = React.memo(() => {
                         fullWidth
                         onChange={(e) => setSftpPath(e.target.value)}
                       />
-                      {packageData.selectedPackage?.sod_view_type !== null && (
+                      {packageData.selectedPackage?.sod_view_type && (
                         <div>
                           <Select
                             label="SOD View Type to Process"
