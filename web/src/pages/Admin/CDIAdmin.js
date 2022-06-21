@@ -25,6 +25,11 @@ const CDIAdmin = () => {
     Features.SYSTEM_SETTINGS
   );
 
+  const { canRead: canReadLocation } = usePermission(
+    Categories.CONFIGURATION,
+    Features.LOCATION_SETUP
+  );
+
   const [value, setValue] = useState(0);
 
   const handleChangeTab = (event, v) => {
@@ -43,7 +48,7 @@ const CDIAdmin = () => {
           style={{ padding: "0px 24px" }}
           truncate
         >
-          <Tab label="Locations" />
+          <Tab label="Locations" disabled={!canReadLocation} />
           <Tab label="Clinical Data Types" disabled={!canReadClinicalData} />
           <Tab label="Callback URL" />
           <Tab label="System Settings" disabled={!canReadSystemSettings} />
@@ -51,7 +56,7 @@ const CDIAdmin = () => {
       </div>
 
       <div style={{ padding: 20 }}>
-        {value === 0 && <Location />}
+        {value === 0 && canReadLocation && <Location />}
         {value === 1 && canReadClinicalData && <CDTList />}
         {value === 2 && <Callback />}
         {value === 3 && canReadSystemSettings && <SystemSettings />}

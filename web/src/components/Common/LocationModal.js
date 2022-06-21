@@ -302,6 +302,9 @@ const LocationModal = (props) => {
   const { error, success, createTriggered, locationPassword } = useSelector(
     (state) => state.cdiadmin
   );
+
+  const { canCreate, canUpdate, isNew } = props;
+
   const [existErr, setExistErr] = useState("");
   const onSubmit = async (values) => {
     // eslint-disable-next-line no-console
@@ -420,6 +423,28 @@ const LocationModal = (props) => {
       showLocationMessage(result?.message || "Something went wrong");
     }
   };
+
+  const btnProps =
+    // eslint-disable-next-line no-nested-ternary
+    isNew && canCreate
+      ? [
+          {
+            label: "Save",
+            onClick: () => dispatch(submit("AddLocationForm")),
+          },
+        ]
+      : !isNew && canUpdate
+      ? [
+          {
+            label: props.locationViewMode ? "Edit" : "Save",
+            onClick: () =>
+              props.locationViewMode
+                ? props.changeLocationEditMode(true)
+                : dispatch(submit("AddLocationForm")),
+          },
+        ]
+      : [];
+
   return (
     <>
       {connectionResponse && (
@@ -470,16 +495,7 @@ const LocationModal = (props) => {
           />
         }
         className={classes.modal}
-        buttonProps={[
-          { label: "Cancel" },
-          {
-            label: props.locationViewMode ? "Edit" : "Save",
-            onClick: () =>
-              props.locationViewMode
-                ? props.changeLocationEditMode(true)
-                : dispatch(submit("AddLocationForm")),
-          },
-        ]}
+        buttonProps={[{ label: "Cancel" }, ...btnProps]}
         id="locationModal"
       />
     </>
