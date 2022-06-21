@@ -29,7 +29,7 @@ import {
 import { getLocationDetails } from "../../../store/actions/DataSetsAction";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
-import { getUserInfo } from "../../../utils";
+import { getUserInfo, isSftp } from "../../../utils";
 import { updateDataflow } from "../../../services/ApiServices";
 
 const useStyles = makeStyles(() => ({
@@ -122,12 +122,14 @@ const DataFlow = ({ FormValues, dashboard }) => {
   }, [createTriggered]);
 
   useEffect(() => {
-    if (
-      selectedLocation?.value &&
-      (selectedLocation?.loc_typ !== ("SFTP" || "FTPS") ||
-        dashboardData?.selectedDataFlow?.locationType !== ("SFTP" || "FTPS"))
-    ) {
-      dispatch(getLocationDetails(selectedLocation?.value));
+    if (selectedLocation?.value) {
+      const locationType =
+        selectedLocation?.loc_typ ||
+        dashboardData?.selectedDataFlow?.locationTypel ||
+        null;
+      if (locationType && !isSftp(locationType)) {
+        dispatch(getLocationDetails(selectedLocation?.value));
+      }
     }
   }, [selectedLocation]);
 
