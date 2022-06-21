@@ -29,6 +29,10 @@ import {
 import { allowedTypes } from "../../../constants";
 import { validateRow } from "../../../components/FormComponents/validators";
 import { preventCDVersionBump } from "../../../store/actions/DataFlowAction";
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
 
 const maxSize = 150000;
 
@@ -45,6 +49,10 @@ export default function DSColumnTable({
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
   const dataSets = useSelector((state) => state.dataSets);
+
+  const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
+    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+
   const { datasetColumns, selectedDataset, haveHeader, CDVersionBump } =
     dataSets;
   const {
@@ -395,10 +403,12 @@ export default function DSColumnTable({
     {
       text: "Add 1 column definition",
       onClick: addSingleRow,
+      disabled: !canUpdateDataFlow,
     },
     {
       text: "Add multiple column definitions",
       onClick: addMultipleRows,
+      disabled: !canUpdateDataFlow,
     },
   ];
 
@@ -743,6 +753,7 @@ export default function DSColumnTable({
           id="file"
           ref={inputFile}
           onChange={handleFileUpdate}
+          disabled={!canUpdateDataFlow}
           style={{ display: "none" }}
         />
         <Table
@@ -805,6 +816,7 @@ export default function DSColumnTable({
             changeHandler,
             haveHeader,
             editedCount,
+            canUpdateDataFlow,
           }}
         />
       </div>
@@ -836,6 +848,7 @@ export default function DSColumnTable({
                     sizeAdjustable
                     minWidth={340}
                     minHeight={278}
+                    disabled={!canUpdateDataFlow}
                   />
                 </div>
               ) : (
@@ -849,11 +862,19 @@ export default function DSColumnTable({
         buttonProps={
           isEditLOVs
             ? [
-                { label: "Save", onClick: handleSaveLOV },
+                {
+                  label: "Save",
+                  onClick: handleSaveLOV,
+                  disabled: !canUpdateDataFlow,
+                },
                 { label: "Cancel", onClick: hideViewLOVs },
               ]
             : [
-                { label: "Edit", onClick: () => setIsEditLOVs(true) },
+                {
+                  label: "Edit",
+                  onClick: () => setIsEditLOVs(true),
+                  disabled: !canUpdateDataFlow,
+                },
                 { label: "Ok", onClick: hideViewLOVs },
               ]
         }
@@ -867,7 +888,11 @@ export default function DSColumnTable({
         message="The existing data set column attributes will be overwritten. Continue?"
         buttonProps={[
           { label: "Cancel", onClick: hideOverWrite },
-          { label: "Ok", onClick: handleOverWrite },
+          {
+            label: "Ok",
+            onClick: handleOverWrite,
+            disabled: !canUpdateDataFlow,
+          },
         ]}
         id="overWrite"
       />

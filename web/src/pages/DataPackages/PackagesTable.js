@@ -24,6 +24,10 @@ import {
 import { updateDSState } from "../../store/actions/DataFlowAction";
 import { updateDSStatus } from "../../store/actions/DataSetsAction";
 import { isSftp } from "../../utils";
+import usePermission, {
+  Categories,
+  Features,
+} from "../../components/Common/usePermission";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
@@ -76,6 +80,12 @@ const PackagesList = ({ data, userInfo }) => {
   const [tableData, setTableData] = useState([]);
   const dashboard = useSelector((state) => state.dashboard);
   const { locationType } = dashboard?.selectedDataFlow;
+
+  const { canUpdate: canUpdateDataFlow } = usePermission(
+    Categories.CONFIGURATION,
+    Features.DATA_FLOW_CONFIGURATION
+  );
+
   const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
     dispatch(updateDSState(true));
@@ -95,8 +105,10 @@ const PackagesList = ({ data, userInfo }) => {
           <span className="add-dataset">
             <Tooltip title="Add dataset" disableFocusListener>
               <RoundPlusSvg
+                disabled={!canUpdateDataFlow}
                 className="add-dataset-btn"
                 onClick={() =>
+                  canUpdateDataFlow &&
                   addDataSet(row.dataflowid, "", row.datapackageid, row.name)
                 }
               />
@@ -207,18 +219,22 @@ const PackagesList = ({ data, userInfo }) => {
       {
         text: `Set data package ${active === 1 ? "inactive" : "active"}`,
         onClick: () => setActive(active),
+        disabled: !canUpdateDataFlow,
       },
       {
         text: "Set all dataset to active",
         // onClick: () => onRowEdit(packageName),
+        disabled: !canUpdateDataFlow,
       },
       {
         text: "Set all datasets to inactive",
         // onClick: () => onRowEdit(packageName),
+        disabled: !canUpdateDataFlow,
       },
       {
         text: "Delete data package",
         onClick: deleteAction,
+        disabled: !canUpdateDataFlow,
       },
     ];
     if (isSftp(locationType)) {
@@ -248,7 +264,12 @@ const PackagesList = ({ data, userInfo }) => {
           >
             {menuItems.map((menu) => {
               return (
-                <MenuItem key={menu.text} size="small" onClick={menu.onClick}>
+                <MenuItem
+                  key={menu.text}
+                  size="small"
+                  disabled={menu.disabled}
+                  onClick={menu.onClick}
+                >
                   {menu.text}
                 </MenuItem>
               );

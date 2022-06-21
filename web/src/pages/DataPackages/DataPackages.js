@@ -32,6 +32,10 @@ import {
   getPackagesList,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
+import usePermission, {
+  Categories,
+  Features,
+} from "../../components/Common/usePermission";
 import { packageComprTypes, packageTypes } from "../../utils/constants";
 
 const useStyles = makeStyles(() => ({
@@ -63,6 +67,11 @@ const DataPackages = React.memo(() => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const userInfo = getUserInfo();
   const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
+
+  const { canUpdate: canUpdateDataFlow } = usePermission(
+    Categories.CONFIGURATION,
+    Features.DATA_FLOW_CONFIGURATION
+  );
 
   const {
     selectedCard,
@@ -224,7 +233,8 @@ const DataPackages = React.memo(() => {
                         label: "Cancel",
                         size: "small",
                         onClick: () =>
-                          packageData.selectedPackage?.sod_view_type !== null
+                          packageData.selectedPackage?.sod_view_type !== null ||
+                          !canUpdateDataFlow
                             ? history.push("/dashboard")
                             : setShowForm(false),
                       },
@@ -234,6 +244,7 @@ const DataPackages = React.memo(() => {
                             ? "Save Data Flow"
                             : "Save"
                         }`,
+                        disabled: !canUpdateDataFlow,
                         size: "small",
                         onClick: submitPackage,
                       },
@@ -258,7 +269,8 @@ const DataPackages = React.memo(() => {
                       checked={configShow}
                       onChange={showConfig}
                       disabled={
-                        packageData.selectedPackage?.sod_view_type !== null
+                        packageData.selectedPackage?.sod_view_type !== null ||
+                        !canUpdateDataFlow
                       }
                     />
                   </div>
@@ -278,7 +290,8 @@ const DataPackages = React.memo(() => {
                           size="small"
                           placeholder="Select type..."
                           disabled={
-                            packageData.selectedPackage?.sod_view_type !== null
+                            packageData.selectedPackage?.sod_view_type !==
+                              null || !canUpdateDataFlow
                           }
                           className="mb-20 package-type"
                         />
@@ -295,6 +308,7 @@ const DataPackages = React.memo(() => {
                               setNotMatchedType(false);
                             }
                           }}
+                          disabled={!canUpdateDataFlow}
                           className="mb-20 package-type"
                         >
                           {packageComprTypes.map((type, i) => (
@@ -323,6 +337,7 @@ const DataPackages = React.memo(() => {
                           );
                           setNamingConvention(e.target.value);
                         }}
+                        disabled={!canUpdateDataFlow}
                       />
                       <PasswordInput
                         size="small"
@@ -332,6 +347,7 @@ const DataPackages = React.memo(() => {
                         className="mb-20"
                         style={{ width: "70%" }}
                         onChange={(e) => setPackagePassword(e.target.value)}
+                        disabled={!canUpdateDataFlow}
                       />
                       <TextField
                         className="mb-20"
@@ -341,6 +357,7 @@ const DataPackages = React.memo(() => {
                         size="small"
                         fullWidth
                         onChange={(e) => setSftpPath(e.target.value)}
+                        disabled={!canUpdateDataFlow}
                       />
                       {packageData.selectedPackage?.sod_view_type && (
                         <div>
@@ -351,6 +368,7 @@ const DataPackages = React.memo(() => {
                             onChange={(e) => {
                               setSodValue(e.target.value);
                             }}
+                            disabled={!canUpdateDataFlow}
                             className="mb-20 package-type"
                           >
                             {packageTypes.map((type, i) => (
@@ -387,6 +405,7 @@ const DataPackages = React.memo(() => {
                       icon={<PlusIcon />}
                       size="small"
                       onClick={setShowForm}
+                      disabled={!canUpdateDataFlow}
                     >
                       Add data package
                     </Button>

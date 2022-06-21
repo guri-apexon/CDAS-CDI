@@ -169,10 +169,11 @@ export default function DataflowTab({ updateData }) {
 
   const [expandedRows, setExpandedRows] = useState([]);
 
-  const { canUpdate: canUpdateDataFlowConfig } = usePermission(
-    Categories.CONFIGURATION,
-    Features.DATA_FLOW_CONFIGURATION
-  );
+  const {
+    canUpdate: canUpdateDataFlow,
+    canCreate: CanCreateDataFlow,
+    canRead: canReadDataFlow,
+  } = usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
   const { canEnabled: canDeleteTest } = usePermission(
     Categories.MENU,
     Features.DATA_FLOW_HARD_DELETE_TEST
@@ -310,7 +311,14 @@ export default function DataflowTab({ updateData }) {
   const LinkCell = ({ row, column: { accessor } }) => {
     const rowValue = row[accessor] || 0;
     const { dataFlowId } = row;
-    return <Link onClick={() => handleLink(dataFlowId, row)}>{rowValue}</Link>;
+    return (
+      <Link
+        disabled={!canReadDataFlow}
+        onClick={() => canReadDataFlow && handleLink(dataFlowId, row)}
+      >
+        {rowValue}
+      </Link>
+    );
   };
 
   const ActionCell = ({ row }) => {
@@ -327,7 +335,7 @@ export default function DataflowTab({ updateData }) {
         id: 1,
         onClick: () => viewAuditLogAction(dataFlowId, row),
       },
-      ...(canUpdateDataFlowConfig
+      ...(canUpdateDataFlow
         ? [
             {
               text: activeText,
@@ -407,12 +415,14 @@ export default function DataflowTab({ updateData }) {
           </SegmentedControlGroup>
         </div>
         <div>
-          <MenuButton
-            buttonText="Add data flow"
-            menuItems={menuItems}
-            size="small"
-            style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
-          />
+          {CanCreateDataFlow && (
+            <MenuButton
+              buttonText="Add data flow"
+              menuItems={menuItems}
+              size="small"
+              style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
+            />
+          )}
           <Button
             size="small"
             variant="secondary"

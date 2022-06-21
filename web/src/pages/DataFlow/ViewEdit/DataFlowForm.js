@@ -24,6 +24,10 @@ import validate from "../../../components/FormComponents/validation";
 import LocationModal from "../../../components/Common/LocationModal";
 
 import { locationTypes, dataStruct } from "../../../utils";
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
 
 const styles = {
   paper: {
@@ -106,6 +110,11 @@ const DataFlowFormBase = (props) => {
   const [selectedSrvcOwnr, setSelectedSrvcOwnr] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState(null);
   // const [selectedLocation, setSelectedLocation] = useState(null);
+
+  const { canUpdate, canCreate } = usePermission(
+    Categories.CONFIGURATION,
+    Features.DATA_FLOW_CONFIGURATION
+  );
 
   const dispatch = useDispatch();
   const onChangeServiceOwner = (v) => {
@@ -195,6 +204,7 @@ const DataFlowFormBase = (props) => {
               singleSelect
               variant="search"
               fullWidth
+              disabled={!canUpdate}
             />
             {/* )} */}
             <ReduxFormTextField
@@ -204,7 +214,7 @@ const DataFlowFormBase = (props) => {
               inputProps={{ maxLength: 30 }}
               onChange={(v) => changeFormField(v, "description")}
               label="Description"
-              disabled={testLock || prodLock}
+              disabled={testLock || prodLock || !canUpdate}
             />
             <div className="expected-date">
               <ReduxFormDatePickerV2
@@ -214,13 +224,14 @@ const DataFlowFormBase = (props) => {
                 placeholder="DD MMM YYYY"
                 label="Expected First File Date"
                 onChange={changeFirstFlDt}
+                disabled={!canUpdate}
               />
             </div>
             <ReduxFormRadioGroup
               name="dataflowType"
               onChange={(v) => changeFormField(v, "dataflowType")}
               label="Data Flow Type"
-              disabled={testLock || prodLock}
+              disabled={testLock || prodLock || !canUpdate}
             >
               <Radio value="test" label="Test" />
               <Radio value="production" label="Production" />
@@ -240,7 +251,7 @@ const DataFlowFormBase = (props) => {
                 label="Data Structure"
                 fullWidth
                 canDeselect={false}
-                disabled={testLock || prodLock}
+                disabled={testLock || prodLock || !canUpdate}
               >
                 {dataStruct?.map((type) => (
                   <MenuItem key={type.value} value={type.value}>
@@ -257,7 +268,7 @@ const DataFlowFormBase = (props) => {
                 }}
                 fullWidth
                 canDeselect={false}
-                disabled={testLock || prodLock}
+                disabled={testLock || prodLock || !canUpdate}
               >
                 {locationTypes?.map((type) => (
                   <MenuItem key={type} value={type}>
@@ -280,20 +291,24 @@ const DataFlowFormBase = (props) => {
                   variant="search"
                   singleSelect
                   fullWidth
+                  disabled={!canUpdate}
                 />
               )}
               <Link
                 onClick={() => openLocationModal()}
                 style={{ fontWeight: 600 }}
+                disabled={!canCreate || !canUpdate}
               >
                 <PlusIcon style={{ width: 12, height: 12, marginRight: 8 }} />
                 New Location
               </Link>
-              <LocationModal
-                locationModalOpen={locationOpen}
-                modalLocationType={props.modalLocationType}
-                handleModalClose={() => setLocationOpen(false)}
-              />
+              {canCreate && canUpdate && (
+                <LocationModal
+                  locationModalOpen={locationOpen}
+                  modalLocationType={props.modalLocationType}
+                  handleModalClose={() => setLocationOpen(false)}
+                />
+              )}
             </Grid>
             <Grid item md={7}>
               <Paper className={classes.locationBox}>
@@ -334,6 +349,7 @@ const DataFlowFormBase = (props) => {
                 variant="search"
                 chipColor="white"
                 multiple
+                disabled={!canUpdate}
               />
             )}
           </div>
