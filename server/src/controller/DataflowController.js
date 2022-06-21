@@ -757,7 +757,7 @@ exports.updateDataFlow = async (req, res) => {
         ID: DFId,
         // ResponseCode: "00000",
         // ResponseMessage: "Dataflow update successfully",
-        externalSysName: existDf.externalsystemname,
+        externalSystemName: existDf.externalsystemname,
         dataPackages: [],
         errors: [],
       };
