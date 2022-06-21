@@ -8,9 +8,19 @@ import Callback from "./Callback/Callback";
 import Location from "./Location/Location";
 import SystemSettings from "./Settings/SystemSettings";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../components/Common/usePermission";
+
 import "./CDIAdmin.scss";
 
 const CDIAdmin = () => {
+  const { canRead: canReadClinicalData } = usePermission(
+    Categories.CONFIGURATION,
+    Features.CLINICAL_DATA_TYPE_SETUP
+  );
+
   const [value, setValue] = useState(0);
 
   const handleChangeTab = (event, v) => {
@@ -30,7 +40,7 @@ const CDIAdmin = () => {
           truncate
         >
           <Tab label="Locations" />
-          <Tab label="Clinical Data Types" />
+          <Tab label="Clinical Data Types" disabled={!canReadClinicalData} />
           <Tab label="Callback URL" />
           <Tab label="System Settings" />
         </Tabs>
@@ -38,7 +48,7 @@ const CDIAdmin = () => {
 
       <div style={{ padding: 20 }}>
         {value === 0 && <Location />}
-        {value === 1 && <CDTList />}
+        {value === 1 && canReadClinicalData && <CDTList />}
         {value === 2 && <Callback />}
         {value === 3 && <SystemSettings />}
       </div>
