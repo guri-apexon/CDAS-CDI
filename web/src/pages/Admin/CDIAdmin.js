@@ -20,6 +20,10 @@ const CDIAdmin = () => {
     Categories.CONFIGURATION,
     Features.CLINICAL_DATA_TYPE_SETUP
   );
+  const { canRead: canReadSystemSettings } = usePermission(
+    Categories.CONFIGURATION,
+    Features.SYSTEM_SETTINGS
+  );
 
   const [value, setValue] = useState(0);
 
@@ -42,7 +46,7 @@ const CDIAdmin = () => {
           <Tab label="Locations" />
           <Tab label="Clinical Data Types" disabled={!canReadClinicalData} />
           <Tab label="Callback URL" />
-          <Tab label="System Settings" />
+          <Tab label="System Settings" disabled={!canReadSystemSettings} />
         </Tabs>
       </div>
 
@@ -50,7 +54,7 @@ const CDIAdmin = () => {
         {value === 0 && <Location />}
         {value === 1 && canReadClinicalData && <CDTList />}
         {value === 2 && <Callback />}
-        {value === 3 && <SystemSettings />}
+        {value === 3 && canReadSystemSettings && <SystemSettings />}
       </div>
     </main>
   );
