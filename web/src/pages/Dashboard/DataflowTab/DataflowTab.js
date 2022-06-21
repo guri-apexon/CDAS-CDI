@@ -55,6 +55,11 @@ import {
   TextFieldFilter,
 } from "../../../utils/index";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
+
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
   const date =
@@ -163,6 +168,23 @@ export default function DataflowTab({ updateData }) {
   const { dfCount, dsCount } = selectedCard;
 
   const [expandedRows, setExpandedRows] = useState([]);
+
+  const { canUpdate: canUpdateDataFlowConfig } = usePermission(
+    Categories.CONFIGURATION,
+    Features.DATA_FLOW_CONFIGURATION
+  );
+  const { canEnabled: canDeleteTest } = usePermission(
+    Categories.MENU,
+    Features.DATA_FLOW_HARD_DELETE_TEST
+  );
+  const { canEnabled: canDeleteProd } = usePermission(
+    Categories.MENU,
+    Features.DATA_FLOW_HARD_DELETE_PROD
+  );
+  const { canEnabled: canSync } = usePermission(
+    Categories.MENU,
+    Features.SYNC_NOW
+  );
 
   const handleToggleRow = (dataFlowId) => {
     // eslint-disable-next-line no-shadow
@@ -292,7 +314,9 @@ export default function DataflowTab({ updateData }) {
   };
 
   const ActionCell = ({ row }) => {
-    const { dataFlowId, status, version, dataSets } = row;
+    const { dataFlowId, status, version, dataSets, type } = row;
+    const canDelete =
+      type.trim().toLowerCase() === "test" ? canDeleteTest : canDeleteProd;
     const activeText =
       status === "Active"
         ? "Change status to inactive"
@@ -303,17 +327,21 @@ export default function DataflowTab({ updateData }) {
         id: 1,
         onClick: () => viewAuditLogAction(dataFlowId, row),
       },
-      {
-        text: activeText,
-        id: 2,
-        onClick: () =>
-          changeStatusAction({ dataFlowId, status, version, dataSets }),
-      },
+      ...(canUpdateDataFlowConfig
+        ? [
+            {
+              text: activeText,
+              id: 2,
+              onClick: () =>
+                changeStatusAction({ dataFlowId, status, version, dataSets }),
+            },
+          ]
+        : []),
       {
         text: "Send sync request",
         id: 3,
         onClick: () => sendSyncRequest(row),
-        disabled: status !== "Active",
+        disabled: status !== "Active" || !canSync,
       },
       {
         text: "Clone data flow",
@@ -325,6 +353,7 @@ export default function DataflowTab({ updateData }) {
         text: "Hard delete data flow",
         id: 5,
         onClick: () => hardDeleteAction(row),
+        disabled: !canDelete,
       },
     ];
     return (

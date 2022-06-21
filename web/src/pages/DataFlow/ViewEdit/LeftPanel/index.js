@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -23,6 +23,10 @@ import {
 } from "../../../../store/actions/DataPackageAction";
 import { updateDFStatus } from "../../../../store/actions/DashboardAction";
 import { activateDF, inActivateDF } from "../../../../services/ApiServices";
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../../components/Common/usePermission";
 
 import "./LeftPanel.scss";
 
@@ -75,6 +79,11 @@ const LeftPanel = () => {
   const [searchTxt, setSearchTxt] = useState("");
   const packageData = useSelector((state) => state.dataPackage);
   const dashboard = useSelector((state) => state.dashboard);
+  const { canUpdate } = usePermission(
+    Categories.CONFIGURATION,
+    Features.DATA_FLOW_CONFIGURATION
+  );
+
   // const dataflow = useSelector((state) => state.dataFlow);
   const {
     dataFlowId,
@@ -161,6 +170,7 @@ const LeftPanel = () => {
             className="inline-checkbox"
             checked={status === "Active"}
             onChange={handleStatusUpdate}
+            disabled={!canUpdate}
             size="small"
           />
           <ContextMenu />
