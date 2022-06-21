@@ -364,7 +364,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
           ResponseBody.dataPackages.push(PackageInsert.sucRes);
         }
         if (PackageInsert.errRes.length) {
-          return apiResponse.ErrorResponse(res, PackageInsert.errRes);
+          return apiResponse.errResponse(res, PackageInsert.errRes);
         }
       }
     }
@@ -1122,6 +1122,7 @@ exports.updateDataFlow = async (req, res) => {
                                         // if (res.sucRes?.length) {
                                         //   ResponseBody.success.push(res.sucRes);
                                         // }
+
                                         if (res && res.sucRes) {
                                           dsResObj.vlc.push(res.sucRes);
                                           isSomthingUpdate = true;

@@ -1412,10 +1412,12 @@ exports.packageLevelInsert = async (
           userId,
           isNew
         ).then((res) => {
-          if (res.errRes && res.errRes.length) {
+          if (res && res.errRes.length) {
             errorPackage.push(res.errRes);
           }
-          DpObj.dataSets.push(res.sucRes);
+          if (res && res.sucRes) {
+            DpObj.dataSets.push(res.sucRes);
+          }
           // console.log("data set function call ", res.sucRes);
         });
       }
@@ -1941,10 +1943,12 @@ const saveDataset = (exports.datasetLevelInsert = async (
             version,
             userId
           ).then((res) => {
-            if (res.errRes && res.errRes.length) {
+            if (res && res.errRes.length) {
               errorDataset.push(res.errRes);
             }
-            dsObj.vlc.push(res.sucRes);
+            if (res && res.sucRes) {
+              dsObj.vlc.push(res.sucRes);
+            }
           });
           // dataSet.push(vlcRes);
         }
@@ -1967,18 +1971,20 @@ const saveDataset = (exports.datasetLevelInsert = async (
           isNew,
           obj.headerRowNumber
         ).then((res) => {
-          if (res.errRes && res.errRes.length) {
+          if (res && res.errRes.length) {
             errorDataset.push(res.errRes);
           }
           // console.log("column function call ", res.sucRes);
-          dsObj.columnDefinition.push(res.sucRes);
+          if (res && res.sucRes) {
+            dsObj.columnDefinition.push(res.sucRes);
+          }
         });
       }
     }
     // console.log("dataset insert", dsObj);
     return { sucRes: dsObj, errRes: errorDataset };
   } catch (err) {
-    console.log(err);
+    console.log("dataset catch", err);
     //throw error in json response with status 500.
     Logger.error("catch :Dataset level insert");
     Logger.error(err);
@@ -2493,7 +2499,10 @@ const saveVlc = (exports.VlcInsert = async (
       vlcBody
     );
 
+    // const createdVlc = "";
+
     const vlcId = createdVlc?.vlcID || null;
+    // const vlcId = null;
 
     let vlcObj = {
       conditionalExpressionNumber: vl.conditionalExpressionNumber,
@@ -2524,7 +2533,7 @@ const saveVlc = (exports.VlcInsert = async (
     // console.log("vlc insert ", vlcObj);
     return { sucRes: vlcObj, errRes: errorVlc };
   } catch (err) {
-    console.log(err);
+    console.log("vlc", err);
     //throw error in json response with status 500.
     Logger.error("catch :Data Set VLC Insert");
     Logger.error(err);
