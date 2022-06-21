@@ -82,19 +82,19 @@ exports.getDatasetIngestionReportTransferLog = (req, res) => {
   try {
     const id = req.params.datasetid;
     const userId = req.headers["userid"];
-    const dayFilter = req.query.dayFilter ?? "10";
+    const dayFilter = req.query.dayFilter ?? 10;
     const currentDate =
       req.query.currentDate !== undefined
         ? moment(req.query.currentDate).format("YYYY-MM-DD")
         : moment().format("YYYY-MM-DD");
 
     var fromDate = moment(currentDate);
-    fromDate = fromDate.subtract(dayFilter, "days");
+    fromDate = fromDate.subtract(dayFilter - 1, "days");
     fromDate = fromDate.format("YYYY-MM-DD");
 
     const searchQuery = `SELECT "DatasetName", "Vendor", "TransferDate", "FileName", datasetname, "FileTransferStatus", "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords", "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate", "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue", "DownloadStart", "ProcessStart", "SourceOrigin", dataflowid, "DataflowName", fst_prd_file_recvd from ${schemaName}.dataset_transfer_log 
               WHERE datasetid = $1 AND "LastCompleted" between  to_date('${fromDate}','yyyy-mm-dd') and to_date('${currentDate}','yyyy-mm-dd')`;
-
+      
     Logger.info({ message: "getDatasetIngestionReportTransferLog" });
 
     DB.executeQuery(searchQuery, [id])
