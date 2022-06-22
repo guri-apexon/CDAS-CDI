@@ -23,18 +23,18 @@ const securedPaths = [
     url: "/dataflow/update-config",
     methods: ["post"],
   },
-  // {
-  //   url: "/vendor/create",
-  //   methods: ["post"],
-  // },
-  // {
-  //   url: "/datakind/create",
-  //   methods: ["post"],
-  // },
-  // {
-  //   url: "/location/create",
-  //   methods: ["post"],
-  // },
+  {
+    url: "/vendor/create",
+    methods: ["post"],
+  },
+  {
+    url: "/datakind/create",
+    methods: ["post"],
+  },
+  {
+    url: "/location/create",
+    methods: ["post"],
+  },
 ];
 
 exports.secureApi = async (req, res, next) => {
