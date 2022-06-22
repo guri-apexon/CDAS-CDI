@@ -9,12 +9,13 @@ import { submit, reset, getFormValues } from "redux-form";
 import Loader from "apollo-react/components/Loader";
 import { values } from "lodash";
 import moment from "moment";
+import Modal from "apollo-react/components/Modal";
 import Banner from "apollo-react/components/Banner";
 import Divider from "apollo-react/components/Divider";
 import LeftPanel from "./LeftPanel";
 import Header from "../../../components/DataFlow/Header";
 import "../DataFlow.scss";
-import DataFlowForm from "./DataFlowForms";
+import DataFlowForm from "./DataFlowForm";
 import {
   getVendorsData,
   updateSelectedLocation,
@@ -71,6 +72,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(true);
   const dataFlowData = useSelector((state) => state.dataFlow);
   const dashboardData = useSelector((state) => state.dashboard);
   const dataSetCount = dashboardData?.selectedDataFlow?.dataSets;
@@ -239,6 +241,19 @@ const DataFlow = ({ FormValues, dashboard }) => {
           message={error}
         />
       )}
+      <Modal
+        open={isModalOpen}
+        title="Warning"
+        message="No file with unblinded or unmasked data should be configured"
+        buttonProps={[
+          {
+            label: "OK",
+            variant: "primary",
+            onClick: () => setIsModalOpen(false),
+          },
+        ]}
+        id="neutral"
+      />
       <Panel
         onClose={handleClose}
         onOpen={handleOpen}
@@ -247,44 +262,46 @@ const DataFlow = ({ FormValues, dashboard }) => {
       >
         <LeftPanel />
       </Panel>
-      <Panel
-        className={
-          isPanelOpen ? classes.rightPanel : classes.rightPanelExtended
-        }
-        width="100%"
-        hideButton
-      >
-        <main className={classes.content}>
-          <div className="content">
-            <div className={classes.contentHeader}>
-              <Header
-                close={closeForm}
-                submit={submitForm}
-                breadcrumbItems={breadcrumbItems}
-                headerTitle={dataFlowdetail.name}
-                icon={<DataPackageIcon className={classes.contentIcon} />}
-                datasetsCount={dataSetCount}
-              />
+      {!isModalOpen && (
+        <Panel
+          className={
+            isPanelOpen ? classes.rightPanel : classes.rightPanelExtended
+          }
+          width="100%"
+          hideButton
+        >
+          <main className={classes.content}>
+            <div className="content">
+              <div className={classes.contentHeader}>
+                <Header
+                  close={closeForm}
+                  submit={submitForm}
+                  breadcrumbItems={breadcrumbItems}
+                  headerTitle={dataFlowdetail.name}
+                  icon={<DataPackageIcon className={classes.contentIcon} />}
+                  datasetsCount={dataSetCount}
+                />
+              </div>
+              <Divider />
+              <div className={classes.formSection}>
+                <DataFlowForm
+                  dataflowSource={dataFlowdetail}
+                  onSubmit={onSubmit}
+                  changeLocationData={changeLocationData}
+                  changeFormField={changeFormField}
+                  changeLocationType={changeLocationType}
+                  modalLocationType={modalLocationType}
+                  userName={selectedLocation?.usr_nm}
+                  password={selectedLocation?.pswd}
+                  connLink={selectedLocation?.cnn_url}
+                  firstFileDate={ffDate}
+                  changeFirstFlDt={changeFirstFlDt}
+                />
+              </div>
             </div>
-            <Divider />
-            <div className={classes.formSection}>
-              <DataFlowForm
-                dataflowSource={dataFlowdetail}
-                onSubmit={onSubmit}
-                changeLocationData={changeLocationData}
-                changeFormField={changeFormField}
-                changeLocationType={changeLocationType}
-                modalLocationType={modalLocationType}
-                userName={selectedLocation?.usr_nm}
-                password={selectedLocation?.pswd}
-                connLink={selectedLocation?.cnn_url}
-                firstFileDate={ffDate}
-                changeFirstFlDt={changeFirstFlDt}
-              />
-            </div>
-          </div>
-        </main>
-      </Panel>
+          </main>
+        </Panel>
+      )}
     </div>
   );
 };
