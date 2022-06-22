@@ -29,7 +29,9 @@ import { getUserInfo, toast, validateFields } from "../../utils";
 import { submitDataPackage } from "../../services/ApiServices";
 import {
   addDataPackage,
+  selectDataPackage,
   getPackagesList,
+  updateStatus,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 import { packageComprTypes, packageTypes } from "../../utils/constants";
@@ -109,6 +111,7 @@ const DataPackages = React.memo(() => {
     }
   }, [packageData.refreshData]);
   useEffect(() => {
+    console.log("pd", packageData);
     if (packageData.openAddPackage || packageData.selectedPackage)
       setShowForm(true);
     if (packageData.selectedPackage) {
@@ -119,7 +122,11 @@ const DataPackages = React.memo(() => {
       setPackagePassword(packageData.selectedPackage?.password);
       setSftpPath(packageData.selectedPackage?.path);
     }
-    if (packageData.selectedPackage?.type === null) setConfigShow(false);
+    if (
+      packageData.selectedPackage &&
+      packageData.selectedPackage?.type === null
+    )
+      setConfigShow(false);
   }, [packageData.openAddPackage, packageData.selectedPackage]);
 
   // eslint-disable-next-line consistent-return
@@ -141,7 +148,7 @@ const DataPackages = React.memo(() => {
       user_id: userInfo.userId,
     };
     const sodReqBody = {
-      package_id: packageData.selectedPackage.datapackageid,
+      package_id: packageData.selectedPackage?.datapackageid,
       compression_type: compression,
       naming_convention: namingConvention,
       package_password: packagePassword,
@@ -151,7 +158,7 @@ const DataPackages = React.memo(() => {
       user_id: userInfo.userId,
       sod_view_type: sodValue,
     };
-    if (packageData.selectedPackage) {
+    if (!packageData.selectedPackage) {
       const result = await submitDataPackage(reqBody);
       if (result.status === 1) {
         showSuccessMessage(result.message);
@@ -163,7 +170,8 @@ const DataPackages = React.memo(() => {
       const sodResult = await submitDataPackage(sodReqBody);
       if (sodResult.status === 1) {
         showSuccessMessage(sodResult.message);
-        history.push("/dashboard/dataflow-management");
+        dispatch(addDataPackage());
+        if (sodValue !== null) history.push("/dashboard/dataflow-management");
       } else {
         showErrorMessage(sodResult.message);
       }
@@ -224,12 +232,14 @@ const DataPackages = React.memo(() => {
                         label: "Cancel",
                         size: "small",
                         onClick: () =>
+                          packageData.selectedPackage &&
                           packageData.selectedPackage?.sod_view_type !== null
                             ? history.push("/dashboard")
                             : setShowForm(false),
                       },
                       {
                         label: `${
+                          packageData.selectedPackage &&
                           packageData.selectedPackage?.sod_view_type !== null
                             ? "Save Data Flow"
                             : "Save"
@@ -258,6 +268,7 @@ const DataPackages = React.memo(() => {
                       checked={configShow}
                       onChange={showConfig}
                       disabled={
+                        packageData.selectedPackage &&
                         packageData.selectedPackage?.sod_view_type !== null
                       }
                     />
@@ -270,7 +281,8 @@ const DataPackages = React.memo(() => {
                   )}
                   {configShow && (
                     <div className="package-form">
-                      {packageData.selectedPackage?.sod_view_type !== null ? (
+                      {packageData.selectedPackage &&
+                      packageData.selectedPackage?.sod_view_type !== null ? (
                         <TextField
                           error={notMatchedType}
                           label="Package Compression Type"
@@ -386,7 +398,15 @@ const DataPackages = React.memo(() => {
                       variant="secondary"
                       icon={<PlusIcon />}
                       size="small"
-                      onClick={setShowForm}
+                      onClick={() => {
+                        setShowForm(true);
+                        setNamingConvention("");
+                        setPackagePassword("");
+                        setSftpPath("");
+                        setCompression("");
+                        setNotMatchedType(false);
+                        dispatch(selectDataPackage());
+                      }}
                     >
                       Add data package
                     </Button>
