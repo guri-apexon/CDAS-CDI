@@ -106,6 +106,7 @@ const DataPackages = React.memo(() => {
   const showConfig = (e, checked) => {
     if (!checked) {
       resetForm();
+      setShowForm(true);
     } else {
       setConfigShow(checked);
     }
@@ -121,7 +122,6 @@ const DataPackages = React.memo(() => {
     }
   }, [packageData.refreshData]);
   useEffect(() => {
-    console.log("pd", packageData);
     if (packageData.openAddPackage || packageData.selectedPackage)
       setShowForm(true);
     if (packageData.selectedPackage) {
@@ -290,7 +290,7 @@ const DataPackages = React.memo(() => {
                         <Select
                           error={notMatchedType}
                           label="Package Compression Type"
-                          value={compression}
+                          value={compression || ""}
                           size="small"
                           placeholder="Select type..."
                           onChange={(e) => {
@@ -397,12 +397,8 @@ const DataPackages = React.memo(() => {
                       size="small"
                       disabled={!canUpdateDataFlow}
                       onClick={() => {
+                        resetForm();
                         setShowForm(true);
-                        setNamingConvention("");
-                        setPackagePassword("");
-                        setSftpPath("");
-                        setCompression("");
-                        setNotMatchedType(false);
                         dispatch(selectDataPackage());
                       }}
                     >
