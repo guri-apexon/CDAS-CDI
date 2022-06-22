@@ -78,6 +78,7 @@ const Header = (props) => {
             {
               label: "Save",
               onClick: () => props.submit(),
+              disabled: !canUpdateDataFlow,
             },
           ]}
         />

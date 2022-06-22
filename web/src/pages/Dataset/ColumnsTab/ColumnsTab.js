@@ -274,9 +274,8 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
               disabled={
                 !(
                   selectedMethod === "manually" ||
-                  (selectedMethod === "fileUpload" && isImportReady) ||
-                  !canUpdateDataFlow
-                )
+                  (selectedMethod === "fileUpload" && isImportReady)
+                ) || !canUpdateDataFlow
               }
             >
               Create
