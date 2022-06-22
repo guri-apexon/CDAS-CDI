@@ -11,6 +11,8 @@ import {
   FETCH_DATASET_PROPERTIES_SUCCESS,
   FETCH_TRANSFER_LOG_FAILURE,
   FETCH_TRANSFER_LOG_SUCCESS,
+  FETCH_DATASET_INGESTION_TRANSFER_LOG_SUCCESS,
+  FETCH_DATASET_INGESTION_TRANSFER_LOG_FAILURE,
   INGESTIONREPORTAPI,
 } from "../../constants";
 
@@ -78,6 +80,30 @@ export function* fetchDatasetIngestionFileHistory(action) {
   } catch (e) {
     yield put({
       type: FETCH_DATASET_INGESTION_FILE_HISTORY_FAILURE,
+      message: e.message,
+    });
+  }
+}
+
+export function* fetchDatasetIngestionTransferLog(action) {
+  try {
+    const fetchDatas = yield call(
+      axios.get,
+      `${baseURL}/${INGESTIONREPORTAPI}/transferlog/${action.datasetId}${
+        // eslint-disable-next-line prefer-template
+        action.days ? "?dayFilter=" + action.days : ""
+      }${
+        // eslint-disable-next-line prefer-template
+        action.date ? "&currentDate=" + action.date : ""
+      }`
+    );
+    yield put({
+      type: FETCH_DATASET_INGESTION_TRANSFER_LOG_SUCCESS,
+      filehistory: fetchDatas.data?.data || [],
+    });
+  } catch (e) {
+    yield put({
+      type: FETCH_DATASET_INGESTION_TRANSFER_LOG_FAILURE,
       message: e.message,
     });
   }
