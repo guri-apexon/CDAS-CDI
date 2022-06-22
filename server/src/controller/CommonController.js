@@ -454,7 +454,7 @@ module.exports = {
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`
       ).then(async (response) => {
         version = Number(response.rows[0]?.version || 0);
-        if (CDVersionBump) {
+        if (CDVersionBump != true) {
           version = version + 1;
           const values = [dfId, version, config_json, userId, curDate];
           const insertVersion = await DB.executeQuery(

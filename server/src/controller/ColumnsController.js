@@ -62,11 +62,20 @@ const updateSqlQuery = async (datasetId, del = false) => {
 
 exports.saveDatasetColumns = async (req, res) => {
   try {
-    const { dsId, dpId, dfId, userId, values, CDVersionBump } = req.body;
+    const { dsId, dpId, dfId, userId, values, versionFreezed } = req.body;
     if (!dsId) {
       return apiResponse.ErrorResponse(res, "Please pass dataset id");
     }
     const curDate = helper.getCurrentTime();
+
+    // const versionFreezed = false;
+
+    const {
+      rows: [oldVersion],
+    } = await DB.executeQuery(
+      `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${dfId}' order by version DESC limit 1`
+    );
 
     const insertQuery = `INSERT into ${schemaName}.columndefinition (datasetid, "name", "datatype", primarykey, "required", "unique", charactermin, charactermax, "position", "format", lov, "variable", del_flg, insrt_tm)
      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *;`;
@@ -121,14 +130,22 @@ exports.saveDatasetColumns = async (req, res) => {
         JSON.stringify(configJsonArr),
         null,
         null,
-        CDVersionBump
+        versionFreezed
+        // CDVersionBump
       );
       if (!historyVersion) throw new Error("History not updated");
+
+      var resData = { ...datasetColumns, version: historyVersion };
+      if (oldVersion.version === historyVersion) {
+        resData.versionBumped = false;
+      } else {
+        resData.versionBumped = true;
+      }
 
       return apiResponse.successResponseWithData(
         res,
         "Column definition created successfully",
-        datasetColumns
+        resData
       );
     }
 
@@ -150,10 +167,18 @@ exports.saveDatasetColumns = async (req, res) => {
 
 exports.updateColumns = async (req, res) => {
   try {
-    const { dsId, dpId, dfId, userId, values, CDVersionBump } = req.body;
+    const { dsId, dpId, dfId, userId, values, versionFreezed } = req.body;
     const curDate = helper.getCurrentTime();
 
     Logger.info({ message: "update set columns" });
+    // const versionFreezed = true;
+
+    const {
+      rows: [oldVersion],
+    } = await DB.executeQuery(
+      `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${dfId}' order by version DESC limit 1`
+    );
 
     if (values?.length) {
       const updateQuery = `UPDATE ${schemaName}.columndefinition
@@ -211,7 +236,8 @@ exports.updateColumns = async (req, res) => {
         }
       }
       await updateSqlQuery(dsId);
-      let versionBumped = false;
+      // let versionBumped = false;
+      let newVersion = "";
       if (Object.keys(diffValuesObj).length) {
         const historyVersion = await CommonController.addColumnHistory(
           dsId,
@@ -221,17 +247,31 @@ exports.updateColumns = async (req, res) => {
           JSON.stringify(configJson),
           oldDataObj,
           diffValuesObj,
-          CDVersionBump
+          versionFreezed
+          // CDVersionBump
         );
         if (!historyVersion) throw new Error("History not updated");
-        versionBumped = true;
+        // versionBumped = true;
+        newVersion = historyVersion;
       }
 
       const datasetColumns = values;
-      return apiResponse.successResponseWithData(res, "Operation success", {
-        columns: datasetColumns,
-        versionBumped,
-      });
+      var resData = { columns: datasetColumns, version: newVersion };
+      if (oldVersion.version === newVersion) {
+        resData.versionBumped = false;
+      } else {
+        resData.versionBumped = true;
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Operation success",
+        // {
+        //   columns: datasetColumns,
+        //   versionBumped,
+        // }
+        resData
+      );
     }
     return apiResponse.ErrorResponse(res, "Something went wrong");
   } catch (err) {
@@ -244,16 +284,26 @@ exports.updateColumns = async (req, res) => {
         "Operation failed"
       );
     }
+    console.log(err);
     return apiResponse.ErrorResponse(res, err);
   }
 };
 
 exports.deleteColumns = async (req, res) => {
   try {
-    const { columnId, dsId, dfId, dpId, userId, CDVersionBump } = req.body;
+    const { columnId, dsId, dfId, dpId, userId, versionFreezed } = req.body;
     const curDate = helper.getCurrentTime();
 
     Logger.info({ message: "deleteColumns" });
+
+    // const versionFreezed = false;
+    const {
+      rows: [oldVersion],
+    } = await DB.executeQuery(
+      `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${dfId}' order by version DESC limit 1`
+    );
+
     const updateQuery = `update ${schemaName}.columndefinition set del_flg = 1 where columnid = $1 returning *;`;
 
     DB.executeQuery(updateQuery, [columnId]).then(async (response) => {
@@ -267,11 +317,23 @@ exports.deleteColumns = async (req, res) => {
         JSON.stringify(columnObj),
         { [columnId]: { del_flg: 0 } },
         { [columnId]: { del_flg: 1 } },
-        CDVersionBump
+        versionFreezed
+        // CDVersionBump
       );
       if (!historyVersion) throw new Error("History not updated");
 
-      return apiResponse.successResponseWithData(res, "Operation success");
+      var resData = { version: historyVersion };
+      if (oldVersion.version === historyVersion) {
+        resData.versionBumped = false;
+      } else {
+        resData.versionBumped = true;
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Operation success",
+        resData
+      );
     });
   } catch (err) {
     Logger.error("catch: deleteColumns");
