@@ -37,6 +37,11 @@ import {
   validateRow,
 } from "../../../components/FormComponents/validators";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
+
 const fieldStyles = {
   style: {
     marginTop: 3,
@@ -253,6 +258,7 @@ export const ActionCell = ({ row }) => {
     isEditMode: eMode,
     onRowSave,
     editedCount,
+    canUpdateDataFlow,
   } = row;
   if (editedCount > 1) {
     return null;
@@ -271,17 +277,25 @@ export const ActionCell = ({ row }) => {
         size="small"
         variant="primary"
         onClick={() => onRowSave(uniqueId)}
-        disabled={!validateRow(row)}
+        disabled={!validateRow(row) || !canUpdateDataFlow}
       >
         Save
       </Button>
     </div>
   ) : (
     <div style={{ marginTop: 8, whiteSpace: "nowrap" }}>
-      <IconButton size="small" onClick={() => onRowEdit(row)}>
+      <IconButton
+        size="small"
+        disabled={!canUpdateDataFlow}
+        onClick={() => onRowEdit(row)}
+      >
         <Pencil />
       </IconButton>
-      <IconButton size="small" onClick={() => onRowDelete(uniqueId)}>
+      <IconButton
+        size="small"
+        disabled={!canUpdateDataFlow}
+        onClick={() => onRowDelete(uniqueId)}
+      >
         <Trash />
       </IconButton>
     </div>
@@ -432,6 +446,8 @@ export const CustomHeader = ({
   haveHeader,
   editedCount,
 }) => {
+  const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
+    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
   return (
     <div>
       <Grid container alignItems="center">
@@ -448,7 +464,7 @@ export const CustomHeader = ({
               size="small"
               variant="primary"
               onClick={onSaveAll}
-              disabled={disableSaveAll}
+              disabled={disableSaveAll || !canUpdateDataFlow}
             >
               Save
             </Button>
@@ -472,7 +488,11 @@ export const CustomHeader = ({
               </Tooltip>
             )}
             <Tooltip title={!editedCount && "Edit all"} disableFocusListener>
-              <IconButton color="primary" size="small" disabled={editedCount}>
+              <IconButton
+                color="primary"
+                size="small"
+                disabled={editedCount || !canUpdateDataFlow}
+              >
                 <Pencil onClick={onEditAll} />
               </IconButton>
             </Tooltip>
@@ -497,7 +517,12 @@ export const CustomHeader = ({
             >
               Cancel
             </Button>
-            <Button size="small" variant="primary" onClick={addMulti}>
+            <Button
+              size="small"
+              variant="primary"
+              disabled={!canUpdateDataFlow}
+              onClick={addMulti}
+            >
               Add
             </Button>
           </>
@@ -513,7 +538,13 @@ export const CustomHeader = ({
             <IconButton
               color="primary"
               size="small"
-              disabled={editedCount || dsProdLock || dsTestLock || !haveHeader}
+              disabled={
+                editedCount ||
+                dsProdLock ||
+                dsTestLock ||
+                !haveHeader ||
+                !canUpdateDataFlow
+              }
               onClick={changeHandler}
             >
               <Upload />

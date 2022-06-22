@@ -37,6 +37,11 @@ import DataSetsFormSQL from "./DataSetsFormSQL";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../components/Common/usePermission";
+
 const userInfo = getUserInfo();
 
 const styles = {
@@ -102,6 +107,10 @@ const Dataset = () => {
   const dashboard = useSelector((state) => state.dashboard);
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
+
+  const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
+    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+
   const { selectedDSDetails } = packageData;
   const {
     selectedCard,
@@ -404,6 +413,7 @@ const Dataset = () => {
                       {
                         label: "Save",
                         onClick: () => submitForm(),
+                        disabled: !canUpdateDataFlow,
                       },
                     ]}
                   />

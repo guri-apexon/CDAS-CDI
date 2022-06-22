@@ -5,6 +5,7 @@ import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
+import usePermission, { Categories, Features } from "../Common/usePermission";
 
 const useStyles = makeStyles(() => ({
   breadcrumbs: {
@@ -45,6 +46,12 @@ const Breadcrumbs = (props) => {
 const Header = (props) => {
   const { headerTitle } = props;
   const classes = useStyles();
+  const {
+    canUpdate: canUpdateDataFlow,
+    canCreate: CanCreateDataFlow,
+    canRead: canReadDataFlow,
+  } = usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+
   return (
     <>
       <Breadcrumbs
@@ -71,6 +78,7 @@ const Header = (props) => {
             {
               label: "Save",
               onClick: () => props.submit(),
+              disabled: !canUpdateDataFlow,
             },
           ]}
         />
