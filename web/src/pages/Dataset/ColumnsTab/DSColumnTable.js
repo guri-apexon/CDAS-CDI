@@ -785,6 +785,7 @@ export default function DSColumnTable({
             pkDisabled,
             haveHeader,
             editedCount,
+            canUpdateDataFlow,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}
