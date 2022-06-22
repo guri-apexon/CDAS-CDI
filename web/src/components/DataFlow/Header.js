@@ -5,11 +5,8 @@ import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
-<<<<<<< HEAD
 import Modal from "apollo-react/components/Modal/Modal";
-=======
 import usePermission, { Categories, Features } from "../Common/usePermission";
->>>>>>> 172c804d9e7710bd215aaf2a8262afa10af69f8e
 
 const useStyles = makeStyles(() => ({
   breadcrumbs: {
