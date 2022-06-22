@@ -30,6 +30,11 @@ import { MessageContext } from "../../components/Providers/MessageProvider";
 
 import { YesNo } from "../../utils";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../components/Common/usePermission";
+
 const styles = {
   paper: {
     padding: "25px 16px",
@@ -60,6 +65,10 @@ const DataSetsFormBase = (props) => {
   const messageContext = useContext(MessageContext);
   const [showPreview, setShowPreview] = useState(false);
   const dataSets = useSelector((state) => state.dataSets);
+
+  const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
+    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+
   const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
   // const [offsetColsRender, setOffsetColsRender] = useState(0);
   const { locationDetail } = dataSets;
@@ -198,6 +207,7 @@ const DataSetsFormBase = (props) => {
                 className="MuiSwitch"
                 size="small"
                 labelPlacement="start"
+                disabled={!canUpdateDataFlow}
               />
             </div>
           </div>
@@ -212,7 +222,7 @@ const DataSetsFormBase = (props) => {
                 label="Dataset Name (Mnemonic)"
                 size="small"
                 // required
-                disabled={prodLock}
+                disabled={prodLock || !canUpdateDataFlow}
               />
             </Grid>
             <Grid item md={6}>
@@ -233,7 +243,7 @@ const DataSetsFormBase = (props) => {
                   size="small"
                   fullWidth
                   required
-                  disabled={prodLock}
+                  disabled={prodLock || !canUpdateDataFlow}
                 />
               )}
             </Grid>
@@ -244,7 +254,7 @@ const DataSetsFormBase = (props) => {
             size="small"
             label="Custom SQL Query"
             required
-            disabled={testProdLock}
+            disabled={testProdLock || !canUpdateDataFlow}
             canDeselect={false}
           >
             {YesNo?.map((type) => (
@@ -261,7 +271,7 @@ const DataSetsFormBase = (props) => {
                 minHeight={32}
                 multiline
                 sizeAdjustable
-                disabled={prodLock}
+                disabled={prodLock || !canUpdateDataFlow}
                 label="SQL Query"
               />
               <Button
@@ -284,7 +294,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 style={{ width: 300, display: "block" }}
                 canDeselect={false}
-                disabled={prodLock}
+                disabled={prodLock || !canUpdateDataFlow}
                 onChange={changeTableName}
               >
                 {sqlTables?.map((e) => (
@@ -302,13 +312,14 @@ const DataSetsFormBase = (props) => {
                 sizeAdjustable
                 inputProps={{ maxLength: 255 }}
                 label="Filter Condition"
+                disabled={!canUpdateDataFlow}
               />
               <ReduxFormRadioGroup
                 name="dataType"
                 id="dataType"
                 size="small"
                 label="Type of Data"
-                disabled={prodLock}
+                disabled={prodLock || !canUpdateDataFlow}
               >
                 <Radio value="Cumulative" label="Cumulative" />
                 <Radio value="Incremental" label="Incremental" />
@@ -332,7 +343,7 @@ const DataSetsFormBase = (props) => {
                   limitChips={5}
                   alwaysLimitChips
                   chipColor="white"
-                  disabled={prodLock}
+                  disabled={prodLock || !canUpdateDataFlow}
                 />
               )}
             </>

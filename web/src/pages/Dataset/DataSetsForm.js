@@ -29,6 +29,11 @@ import dataSetsValidation, {
 
 import { fileTypes, delimeters, loadTypes } from "../../utils";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../components/Common/usePermission";
+
 const styles = {
   paper: {
     padding: "25px 16px",
@@ -54,6 +59,9 @@ const DataSetsFormBase = (props) => {
     prodLock,
     values,
   } = props;
+
+  const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
+    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
 
   // const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
   const [cdtValue, setCdtValue] = useState(null);
@@ -130,6 +138,7 @@ const DataSetsFormBase = (props) => {
                 className="MuiSwitch"
                 size="small"
                 labelPlacement="start"
+                disabled={!canUpdateDataFlow}
               />
             </div>
           </div>
@@ -143,7 +152,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 inputProps={{ maxLength: 30 }}
                 label="Dataset Name (Mnemonic)"
-                disabled={prodLock}
+                disabled={prodLock || !canUpdateDataFlow}
                 // required
               />
               <ReduxFormSelect
@@ -154,7 +163,7 @@ const DataSetsFormBase = (props) => {
                 onChange={setDefaultValues}
                 fullWidth
                 // required
-                disabled={prodLock}
+                disabled={prodLock || !canUpdateDataFlow}
                 canDeselect={false}
               >
                 {fileTypes?.map((type) => (
@@ -168,6 +177,7 @@ const DataSetsFormBase = (props) => {
                   label="Encoding"
                   size="small"
                   row
+                  disabled={!canUpdateDataFlow}
                 >
                   <Radio value="WLATIN1" label="WLATIN1" />
                   <Radio value="UTF-8" label="UTF-8" />
@@ -181,7 +191,9 @@ const DataSetsFormBase = (props) => {
                     id="delimiter"
                     label="Delimiter"
                     size="small"
-                    disabled={formValues.fileType === "SAS"}
+                    disabled={
+                      formValues.fileType === "SAS" || !canUpdateDataFlow
+                    }
                     fullWidth
                     canDeselect={false}
                   >
@@ -194,7 +206,9 @@ const DataSetsFormBase = (props) => {
                     fullWidth
                     name="escapeCharacter"
                     id="escapeCharacter"
-                    disabled={formValues.fileType === "SAS"}
+                    disabled={
+                      formValues.fileType === "SAS" || !canUpdateDataFlow
+                    }
                     inputProps={{ maxLength: 255 }}
                     size="small"
                     label="Escape Character"
@@ -204,7 +218,9 @@ const DataSetsFormBase = (props) => {
                     fullWidth
                     name="quote"
                     id="quote"
-                    disabled={formValues.fileType === "SAS"}
+                    disabled={
+                      formValues.fileType === "SAS" || !canUpdateDataFlow
+                    }
                     size="small"
                     inputProps={{ maxLength: 255 }}
                     label="Quote"
@@ -215,7 +231,7 @@ const DataSetsFormBase = (props) => {
                 fullWidth
                 name="headerRowNumber"
                 id="headerRowNumber"
-                disabled={formValues.fileType === "SAS"}
+                disabled={formValues.fileType === "SAS" || !canUpdateDataFlow}
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="Header Row Number"
@@ -224,7 +240,7 @@ const DataSetsFormBase = (props) => {
                 fullWidth
                 name="footerRowNumber"
                 id="footerRowNumber"
-                disabled={formValues.fileType === "SAS"}
+                disabled={formValues.fileType === "SAS" || !canUpdateDataFlow}
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="Footer Row Number"
@@ -237,6 +253,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="File Naming Convention"
+                disabled={!canUpdateDataFlow}
                 // required
               />
               <ReduxFormTextField
@@ -245,6 +262,7 @@ const DataSetsFormBase = (props) => {
                 id="folderPath"
                 size="small"
                 label="sFTP Folder Path"
+                disabled={!canUpdateDataFlow}
               />
             </Grid>
             <Grid item md={1}>
@@ -270,7 +288,7 @@ const DataSetsFormBase = (props) => {
                   singleSelect
                   fullWidth
                   // required
-                  disabled={prodLock}
+                  disabled={prodLock || !canUpdateDataFlow}
                 />
               )}
               {formValues.fileType === "Excel" && (
@@ -279,7 +297,7 @@ const DataSetsFormBase = (props) => {
                   size="small"
                   type="password"
                   label="File Password"
-                  disabled={prodLock}
+                  disabled={prodLock || !canUpdateDataFlow}
                 />
               )}
               <ReduxFormTextField
@@ -289,6 +307,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="Transfer Frequency"
+                disabled={!canUpdateDataFlow}
                 // required
               />
               <ReduxFormTextField
@@ -298,6 +317,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="Override Stale Alert (days)"
+                disabled={!canUpdateDataFlow}
               />
               <ReduxFormTextField
                 fullWidth
@@ -306,6 +326,7 @@ const DataSetsFormBase = (props) => {
                 inputProps={{ maxLength: 255 }}
                 size="small"
                 label="Row Decrease % Allowed"
+                disabled={!canUpdateDataFlow}
               />
               <ReduxFormSelect
                 fullWidth
@@ -314,7 +335,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Load Type"
                 canDeselect={false}
-                disabled={prodLock}
+                disabled={prodLock || !canUpdateDataFlow}
                 // required
               >
                 {loadTypes?.map((type) => (
