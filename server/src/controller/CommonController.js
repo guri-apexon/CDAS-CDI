@@ -40,6 +40,7 @@ module.exports = {
     config_json,
     diffObj,
     existDf,
+    versionFreezed,
   }) => {
     return new Promise((resolve, reject) => {
       if (!dataflowId) resolve(false);
@@ -49,12 +50,18 @@ module.exports = {
       ).then(async (response) => {
         const historyVersion = response.rows[0]?.version || 0;
         const curDate = helper.getCurrentTime();
-        const version = Number(historyVersion) + 1;
+        var version = Number(historyVersion);
+
+        if (versionFreezed === true) {
+          version = Number(historyVersion) + 1;
+        }
         const values = [dataflowId, version, config_json, userId, curDate];
-        const insertVersion = await DB.executeQuery(
-          `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`,
-          values
-        );
+        if (versionFreezed === true) {
+          const insertVersion = await DB.executeQuery(
+            `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`,
+            values
+          );
+        }
 
         const anditLogsQueries = [];
         Object.keys(diffObj).map((key) => {

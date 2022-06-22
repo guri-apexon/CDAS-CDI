@@ -1450,10 +1450,12 @@ exports.activateDataFlow = async (req, res) => {
         config_json: dataflowObj,
         diffObj,
         existDf,
+        versionFreezed,
       });
 
+      // console.log(oldVersion.version, updatedLogs);
       var resData = { ...dataflowObj, version: updatedLogs };
-      if (oldVersion === updatedLogs) {
+      if (oldVersion.version === updatedLogs) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
@@ -1477,6 +1479,7 @@ exports.activateDataFlow = async (req, res) => {
       success: false,
     });
   } catch (err) {
+    console.log(err);
     Logger.error("catch :activateDataFlow");
     return apiResponse.ErrorResponse(res, err);
   }
@@ -1511,10 +1514,11 @@ exports.inActivateDataFlow = async (req, res) => {
       config_json: dataflowObj,
       diffObj,
       existDf,
+      versionFreezed,
     });
 
     var resData = { ...dataflowObj, version: updatedLogs };
-    if (oldVersion === updatedLogs) {
+    if (oldVersion.version === updatedLogs) {
       resData.versionBumped = false;
     } else {
       resData.versionBumped = true;
@@ -1924,6 +1928,7 @@ exports.updateDataflowConfig = async (req, res) => {
         comparisionObj.firstFileDate = firstFileDate;
       }
       const diffObj = helper.getdiffKeys(comparisionObj, existDf);
+
       const updatedLogs = await addDataflowHistory({
         dataflowId,
         externalSystemName,
@@ -1931,10 +1936,12 @@ exports.updateDataflowConfig = async (req, res) => {
         config_json: dataflowObj,
         diffObj,
         existDf,
+        versionFreezed,
       });
 
       var resData = { ...dataflowObj, version: updatedLogs };
-      if (oldVersion === updatedLogs) {
+      // console.log(oldVersion.version, updatedLogs);
+      if (oldVersion.version === updatedLogs) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
