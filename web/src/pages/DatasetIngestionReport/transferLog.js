@@ -33,6 +33,11 @@ import {
 import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
 import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../components/Common/usePermission";
+
 const TimeCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
   const time = value ? secondsToHms(value) : "";
@@ -74,6 +79,7 @@ const DateCell = ({ row, column: { accessor } }) => {
 
 const StatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
+  const { canReadIngestionIssues } = row;
   if (
     status?.toLowerCase() === "loaded without issues" ||
     status?.toLowerCase() === "successful" ||
@@ -133,6 +139,7 @@ const StatusCell = ({ row, column: { accessor } }) => {
           />
           {status}
           <Link
+            disabled={!canReadIngestionIssues}
             onClick={() => console.log("link clicked")}
             style={{ fontWeight: 500, marginLeft: 8 }}
           >
@@ -282,6 +289,12 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
   const { transferLogs, loading } = useSelector(
     (state) => state.ingestionReports
   );
+
+  const { canEnabled: canReadIngestionIssues } = usePermission(
+    Categories.MENU,
+    Features.CDI_INGESTION_ISSUES
+  );
+
   const [totalLog, setTotalLog] = useState(0);
   const [tableRows, setTableRows] = useState([]);
   const [, setHasUpdated] = useState(false);
@@ -369,7 +382,7 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
           </div>
         }
         columns={columnsState}
-        rows={tableRows}
+        rows={tableRows.map((row) => ({ ...row, canReadIngestionIssues }))}
         rowId="src_loc_id"
         initialSortedColumn="TransferDate"
         initialSortOrder="desc"

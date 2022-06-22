@@ -2,6 +2,7 @@
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { neutral8 } from "apollo-react/colors";
 import Hero from "apollo-react/components/Hero";
@@ -30,6 +31,11 @@ import { ReactComponent as FailureIcon } from "../../../components/Icons/failure
 
 import "../Dashboard.scss";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
+
 export default function MonitorTab({ fetchLatestData, protId }) {
   const [open, setOpen] = useState(false);
   const [curRow, setCurRow] = useState({});
@@ -47,6 +53,13 @@ export default function MonitorTab({ fetchLatestData, protId }) {
     stale_datasets: 0,
   });
   const dashboard = useSelector((state) => state.dashboard);
+
+  const history = useHistory();
+
+  const { canEnabled: canReadIngestionIssues } = usePermission(
+    Categories.MENU,
+    Features.CDI_INGESTION_ISSUES
+  );
 
   useEffect(() => {
     const summaryData = dashboard.ingestionData?.summary || {};
@@ -320,7 +333,11 @@ export default function MonitorTab({ fetchLatestData, protId }) {
               </div>
             }
             columns={columnsState}
-            rows={rows}
+            rows={rows.map((row) => ({
+              ...row,
+              canReadIngestionIssues,
+              history,
+            }))}
             initialSortedColumn="datasetname"
             rowsPerPageOptions={[10, 50, 100, "All"]}
             tablePaginationProps={{

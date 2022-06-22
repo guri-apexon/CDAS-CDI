@@ -23,6 +23,11 @@ import {
   removeErrMessage,
 } from "../../../store/actions/CDIAdminAction";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
+
 import "./SystemSettings.scss";
 
 const CustomHeader = ({
@@ -30,6 +35,7 @@ const CustomHeader = ({
   disableCreateMode,
   onSearch,
   search,
+  canCreateSystemSettings,
 }) => (
   <div style={{ display: "flex", alignItems: "center" }}>
     <Search
@@ -45,21 +51,23 @@ const CustomHeader = ({
       }}
       size="small"
     />
-    <Button
-      id="addLocationBtn"
-      icon={<PlusIcon />}
-      size="small"
-      disabled={disableCreateMode}
-      style={{ marginRight: 16 }}
-      onClick={addSingleRow}
-    >
-      Add new setting
-    </Button>
+    {canCreateSystemSettings && (
+      <Button
+        id="addLocationBtn"
+        icon={<PlusIcon />}
+        size="small"
+        disabled={disableCreateMode}
+        style={{ marginRight: 16 }}
+        onClick={addSingleRow}
+      >
+        Add new setting
+      </Button>
+    )}
   </div>
 );
 
 const ActionCell = ({ row }) => {
-  const { config_id, onRowEdit } = row;
+  const { config_id, onRowEdit, canUpdateSystemSettings } = row;
   return (
     <div style={{ display: "flex", justifyContent: "end" }}>
       <IconButton
@@ -67,6 +75,7 @@ const ActionCell = ({ row }) => {
         data-id={config_id}
         onClick={() => onRowEdit(config_id)}
         style={{ marginRight: 4 }}
+        disabled={!canUpdateSystemSettings}
       >
         <Pencil />
       </IconButton>
@@ -75,6 +84,7 @@ const ActionCell = ({ row }) => {
 };
 
 const SettingCell = ({ row }) => {
+  const { canUpdateSystemSettings } = row;
   return (
     <div>
       <Card interactive className="setting-card">
@@ -106,7 +116,10 @@ const SettingCell = ({ row }) => {
                     variant: "primary",
                     size: "small",
                     label: "Save",
-                    disabled: !row.editedRow.name || !row.editedRow.value,
+                    disabled:
+                      !row.editedRow.name ||
+                      !row.editedRow.value ||
+                      (!row.editedRow && !canUpdateSystemSettings),
                     onClick: () => row.onSave(),
                   },
                 ]}
@@ -123,6 +136,7 @@ const SettingCell = ({ row }) => {
                     resultValue = resultValue.replace(/[^A-Za-z]/gi, "");
                     row.editRow("name", resultValue);
                   }}
+                  disabled={!row.editedRow && !canUpdateSystemSettings}
                   label="Name of Setting"
                 />
               </div>
@@ -136,6 +150,7 @@ const SettingCell = ({ row }) => {
                   resultValue = resultValue.replace(/[^A-Za-z]/gi, "");
                   row.editRow("value", resultValue);
                 }}
+                disabled={!row.editedRow && !canUpdateSystemSettings}
                 label="Setting Value"
               />
             </div>
@@ -158,6 +173,12 @@ const SystemSettings = () => {
   const messageContext = useContext(MessageContext);
   const { settings, loading, upserted, upsertLoading, error, success } =
     useSelector((state) => state.cdiadmin);
+
+  const {
+    canUpdate: canUpdateSystemSettings,
+    canCreate: canCreateSystemSettings,
+  } = usePermission(Categories.CONFIGURATION, Features.SYSTEM_SETTINGS);
+
   const [rows, setRows] = useState([]);
   const [search, setSearch] = useState("");
   const [editedRow, setEditedRow] = useState({});
@@ -255,15 +276,20 @@ const SystemSettings = () => {
           editRow,
           onCancel,
           onSave,
+          canUpdateSystemSettings,
+          canCreateSystemSettings,
         }))}
         rowId="config_id"
-        rowProps={{ hover: false }}
+        rowProps={{
+          hover: false,
+        }}
         CustomHeader={() => (
           <CustomHeader
             addSingleRow={addSingleRow}
             onSearch={(v) => onSearch(v)}
             search={search}
             disableCreateMode={disableCreateMode}
+            canCreateSystemSettings={canCreateSystemSettings}
           />
         )}
         // hidePagination={true}
