@@ -33,6 +33,7 @@ import {
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 import { packageComprTypes, packageTypes } from "../../utils/constants";
+import Header from "../../components/DataFlow/Header";
 
 const useStyles = makeStyles(() => ({
   rightPanel: {
@@ -206,43 +207,23 @@ const DataPackages = React.memo(() => {
         <main className="right-content">
           <Paper className="no-shadow">
             <Box className="top-content">
-              <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />
-              {console.log("renderAgainPackage")}
-              {showForm && (
-                <>
-                  <div className="flex title">
-                    <DataPackageIcon />
-                    <Typography className="b-font">
-                      {packageData.selectedPackage?.name ||
-                        "Creating New Package"}
-                    </Typography>
-                  </div>
-                  <ButtonGroup
-                    alignItems="right"
-                    buttonProps={[
-                      {
-                        label: "Cancel",
-                        size: "small",
-                        onClick: () =>
-                          packageData.selectedPackage?.sod_view_type !== null
-                            ? history.push("/dashboard")
-                            : setShowForm(false),
-                      },
-                      {
-                        label: `${
-                          packageData.selectedPackage?.sod_view_type !== null
-                            ? "Save Data Flow"
-                            : "Save"
-                        }`,
-                        size: "small",
-                        onClick: submitPackage,
-                      },
-                    ]}
-                  />
-                </>
-              )}
+              <Header
+                close={() => history.push("/dashboard")}
+                submit={submitPackage}
+                breadcrumbItems={breadcrumpItems}
+                headerTitle={
+                  packageData.selectedPackage?.name || "Creating New Package"
+                }
+                icon={<DataPackageIcon className={classes.contentIcon} />}
+                saveBtnLabel={
+                  packageData.selectedPackage?.sod_view_type !== null
+                    ? "Save Data Flow"
+                    : "Save"
+                }
+              />
             </Box>
           </Paper>
+
           <Box style={{ padding: 24, backgroundColor: "#f6f7fb" }}>
             <Paper className="add-package-box">
               {showForm ? (

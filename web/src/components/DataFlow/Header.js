@@ -44,7 +44,7 @@ const Breadcrumbs = (props) => {
   );
 };
 const Header = (props) => {
-  const { headerTitle } = props;
+  const { headerTitle, saveBtnLabel } = props;
   const [openModal, setopenModal] = useState(false);
   const classes = useStyles();
   const onCancel = () => {
@@ -74,7 +74,7 @@ const Header = (props) => {
               onClick: onCancel,
             },
             {
-              label: "Save",
+              label: saveBtnLabel || "Save",
               onClick: () => props.submit(),
             },
           ]}
@@ -109,7 +109,10 @@ const Header = (props) => {
         buttonProps={[
           {
             label: "Discard changes",
-            onClick: () => props.close(),
+            onClick: () => {
+              props.close();
+              setopenModal(false);
+            },
           },
           {
             label: "Continue editing data flow",
