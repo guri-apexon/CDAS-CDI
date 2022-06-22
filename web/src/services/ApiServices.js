@@ -1,4 +1,5 @@
 import axios from "axios";
+import CryptoJS from "crypto-js";
 import {
   baseURL,
   STUDYSEARCH,
@@ -30,6 +31,16 @@ import { deleteAllCookies, getUserId } from "../utils/index";
 const userId = getUserId();
 
 const config = { headers: { userId } };
+
+const headers = {
+  api_key: CryptoJS.AES.encrypt(
+    process.env.REACT_APP_API_KEY || "",
+    process.env.REACT_APP_ENCRYPTION_KEY || ""
+  ).toString(),
+  sys_name: process.env.REACT_APP_SYS_NAME,
+  token_type: "",
+  access_token: "",
+};
 
 export const checkLocationExistsInDataFlow = async (locId) => {
   try {
@@ -150,10 +161,16 @@ export const testConnectionFSR = async (reqBody) => {
 
 export const dataflowSave = async (payload) => {
   try {
-    const res = await axios.post(`${baseURL}/${DATAFLOW_SAVE}`, {
-      ...payload,
-      userId,
-    });
+    const res = await axios.post(
+      `${baseURL}/${DATAFLOW_SAVE}`,
+      {
+        ...payload,
+        userId,
+      },
+      {
+        headers,
+      }
+    );
     return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);
@@ -161,10 +178,16 @@ export const dataflowSave = async (payload) => {
 };
 export const updateDataflow = async (payload) => {
   try {
-    const res = await axios.post(`${baseURL}/${DATAFLOW_UPDATE_API}`, {
-      ...payload,
-      userId,
-    });
+    const res = await axios.post(
+      `${baseURL}/${DATAFLOW_UPDATE_API}`,
+      {
+        ...payload,
+        userId,
+      },
+      {
+        headers,
+      }
+    );
     return res.data || [];
   } catch (err) {
     return console.log("Error", err);
@@ -298,7 +321,9 @@ export const updateDK = async (reqBody) => {
   try {
     return new Promise((resolve, reject) => {
       axios
-        .post(`${baseURL}/${DATAKINDAPI}/create`, reqBody)
+        .post(`${baseURL}/${DATAKINDAPI}/create`, reqBody, {
+          headers,
+        })
         .then((res) => {
           resolve(res.data);
         })
