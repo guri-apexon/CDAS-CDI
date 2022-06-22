@@ -86,9 +86,9 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
               // New: record.new_records,
               // Modified: record.modified_records,
 
-              Total: 1000,
-              New: 10000,
-              Modified: 1000,
+              Total: 1000 / 1000,
+              New: 5000 / 1000,
+              Modified: 1000 / 1000,
             },
           ],
         });
@@ -239,8 +239,7 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
                         : "1560",
                   })}
                   data={historyData}
-                  // suffix="k"
-                  toolTip="true"
+                  suffix="k"
                   yTicks={6}
                 />
               ) : (
