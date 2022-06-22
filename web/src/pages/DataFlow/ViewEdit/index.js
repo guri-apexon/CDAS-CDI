@@ -14,7 +14,7 @@ import Divider from "apollo-react/components/Divider";
 import LeftPanel from "./LeftPanel";
 import Header from "../../../components/DataFlow/Header";
 import "../DataFlow.scss";
-import DataFlowForm from "./DataFlowForms";
+import DataFlowForm from "./DataFlowForm";
 import {
   getVendorsData,
   updateSelectedLocation,

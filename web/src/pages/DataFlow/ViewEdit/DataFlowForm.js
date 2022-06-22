@@ -214,7 +214,7 @@ const DataFlowFormBase = (props) => {
                   input={{
                     value: selectedVendor,
                     onChange: onChangeVendor,
-                    disabled: disabledVendor,
+                    disabled: disabledVendor || !canUpdate,
                   }}
                   enableVirtualization
                   className="autocomplete_field"
@@ -230,7 +230,7 @@ const DataFlowFormBase = (props) => {
                   inputProps={{ maxLength: 30 }}
                   onChange={(v) => changeFormField(v, "description")}
                   label="Description"
-                  disabled={testLock || prodLock}
+                  disabled={testLock || prodLock || !canUpdate}
                 />
                 <div className="expected-date">
                   <ReduxFormDatePickerV2
@@ -240,13 +240,14 @@ const DataFlowFormBase = (props) => {
                     placeholder="DD MMM YYYY"
                     label="Expected First File Date"
                     onChange={changeFirstFlDt}
+                    disabled={!canUpdate}
                   />
                 </div>
                 <ReduxFormRadioGroup
                   name="dataflowType"
                   onChange={(v) => changeFormField(v, "dataflowType")}
                   label="Data Flow Type"
-                  disabled={testLock || prodLock}
+                  disabled={testLock || prodLock || !canUpdate}
                 >
                   <Radio value="test" label="Test" />
                   <Radio value="production" label="Production" />
@@ -266,7 +267,7 @@ const DataFlowFormBase = (props) => {
                     label="Data Structure"
                     fullWidth
                     canDeselect={false}
-                    disabled={testLock || prodLock}
+                    disabled={testLock || prodLock || !canUpdate}
                   >
                     {dataStruct?.map((type) => (
                       <MenuItem key={type.value} value={type.value}>
@@ -283,7 +284,7 @@ const DataFlowFormBase = (props) => {
                     }}
                     fullWidth
                     canDeselect={false}
-                    disabled={testLock || prodLock}
+                    disabled={testLock || prodLock || !canUpdate}
                   >
                     {locationTypes?.map((type) => (
                       <MenuItem key={type} value={type}>
@@ -298,6 +299,7 @@ const DataFlowFormBase = (props) => {
                       input={{
                         onChange: changeLocationData,
                         value: locationDetail,
+                        disabled: !canUpdate,
                       }}
                       enableVirtualization
                       ref={locationNameRef}
@@ -309,6 +311,7 @@ const DataFlowFormBase = (props) => {
                     />
                   )}
                   <Link
+                    disabled={!canCreate || !canUpdate}
                     onClick={() => openLocationModal()}
                     style={{ fontWeight: 600 }}
                   >
@@ -317,11 +320,16 @@ const DataFlowFormBase = (props) => {
                     />
                     New Location
                   </Link>
-                  <LocationModal
-                    locationModalOpen={locationOpen}
-                    modalLocationType={props.modalLocationType}
-                    handleModalClose={() => setLocationOpen(false)}
-                  />
+                  {canUpdate && canCreate && (
+                    <LocationModal
+                      canCreate={canCreate}
+                      canUpdate={canUpdate}
+                      isNew={true}
+                      locationModalOpen={locationOpen}
+                      modalLocationType={props.modalLocationType}
+                      handleModalClose={() => setLocationOpen(false)}
+                    />
+                  )}
                 </Grid>
                 <Grid item md={7}>
                   <Paper className={classes.locationBox}>
@@ -362,6 +370,7 @@ const DataFlowFormBase = (props) => {
                           initialValues?.serviceOwner.includes(x.value)
                         ),
                       onChange: onChangeServiceOwner,
+                      disabled: !canUpdate,
                     }}
                     label="Service Owners (Optional)"
                     source={serviceOwners ?? []}
