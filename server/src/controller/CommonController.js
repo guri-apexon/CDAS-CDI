@@ -52,11 +52,11 @@ module.exports = {
         const curDate = helper.getCurrentTime();
         var version = Number(historyVersion);
 
-        if (versionFreezed === true) {
+        if (versionFreezed != true) {
           version = Number(historyVersion) + 1;
         }
         const values = [dataflowId, version, config_json, userId, curDate];
-        if (versionFreezed === true) {
+        if (versionFreezed != true) {
           const insertVersion = await DB.executeQuery(
             `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`,
             values
@@ -186,7 +186,7 @@ module.exports = {
       });
     });
   },
-  addPackageHistory: async function (package, user_id, values) {
+  addPackageHistory: async function (package, user_id, values, versionFreezed) {
     if (!package || !values) return false;
     try {
       const response = await DB.executeQuery(
@@ -194,13 +194,18 @@ module.exports = {
       );
 
       const historyVersion = response.rows[0]?.version || 0;
-      const version = Number(historyVersion) + 1;
+      var version = Number(historyVersion);
+      if (versionFreezed != true) {
+        version = Number(historyVersion) + 1;
+      }
       const curDate = helper.getCurrentTime();
 
-      await DB.executeQuery(
-        `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`,
-        [package.dataflowid, version, package, user_id, curDate]
-      );
+      if (versionFreezed != true) {
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`,
+          [package.dataflowid, version, package, user_id, curDate]
+        );
+      }
 
       for (let i = 0; i < values.length; i++) {
         await DB.executeQuery(

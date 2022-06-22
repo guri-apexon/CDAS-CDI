@@ -60,11 +60,19 @@ exports.addPackage = async function (req, res) {
       user_id,
       sod_view_type = "",
       package_id,
+      versionFreezed,
     } = req.body;
 
     if (study_id == null || dataflow_id == null || user_id == null) {
       return apiResponse.ErrorResponse(res, "Study not found");
     }
+
+    const {
+      rows: [oldVersion],
+    } = await DB.executeQuery(
+      `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${dataflow_id}' order by version DESC limit 1`
+    );
 
     if (package_id) {
       const query_response =
@@ -149,17 +157,31 @@ exports.addPackage = async function (req, res) {
       });
     }
 
+    // const versionFreezed = false;
     const historyVersion = await CommonController.addPackageHistory(
       package,
       user_id,
-      audit_log
+      audit_log,
+      versionFreezed
     );
     if (!historyVersion) throw new Error("History not updated");
+
+    if (oldVersion.version === historyVersion) {
+      var resData = {
+        version: historyVersion,
+        versionBumped: false,
+      };
+    } else {
+      var resData = {
+        version: historyVersion,
+        versionBumped: true,
+      };
+    }
 
     return apiResponse.successResponseWithData(
       res,
       "Success! Data Package saved.",
-      {}
+      resData
     );
   } catch (err) {
     return apiResponse.ErrorResponse(res, err);
@@ -168,26 +190,51 @@ exports.addPackage = async function (req, res) {
 
 exports.changeStatus = function (req, res) {
   try {
-    const { active, package_id, user_id } = req.body;
+    const { active, package_id, user_id, versionFreezed } = req.body;
+
     Logger.info({ message: "Package changeStatus" });
     const query = `UPDATE ${schemaName}.datapackage
     SET active = ${active}
     WHERE datapackageid = '${package_id}' RETURNING *`;
 
+    // const versionFreezed = false;
+
     DB.executeQuery(query).then(async (response) => {
       const package = response.rows[0] || [];
+
+      const {
+        rows: [oldVersion],
+      } = await DB.executeQuery(
+        `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${package.dataflowid}' order by version DESC limit 1`
+      );
+
       const oldActive = Number(active) == 1 ? "0" : "1";
       const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
-        [{ attribute: "active", old_val: oldActive, new_val: active }]
+        [{ attribute: "active", old_val: oldActive, new_val: active }],
+        versionFreezed
       );
 
       if (!historyVersion) throw new Error("History not updated");
+
+      if (oldVersion.version === historyVersion) {
+        var resData = {
+          version: historyVersion,
+          versionBumped: false,
+        };
+      } else {
+        var resData = {
+          version: historyVersion,
+          versionBumped: true,
+        };
+      }
+
       return apiResponse.successResponseWithData(
         res,
         "Success! Data Package updated.",
-        {}
+        resData
       );
     });
   } catch (err) {
@@ -197,11 +244,12 @@ exports.changeStatus = function (req, res) {
 
 exports.deletePackage = function (req, res) {
   try {
-    const { active, package_id, user_id } = req.body;
+    const { active, package_id, user_id, versionFreezed } = req.body;
     const query = `UPDATE ${schemaName}.datapackage
     SET del_flg = 'Y'
     WHERE datapackageid = '${package_id}' RETURNING *`;
 
+    // const versionFreezed = false;
     Logger.info({ message: "deletePackage" });
 
     const dataSetQuery = `UPDATE ${schemaName}.dataset SET del_flg = 'Y' WHERE datapackageid = '${package_id}' RETURNING datasetid`;
@@ -209,10 +257,19 @@ exports.deletePackage = function (req, res) {
 
     DB.executeQuery(query).then(async (response) => {
       const package = response.rows[0] || [];
+
+      const {
+        rows: [oldVersion],
+      } = await DB.executeQuery(
+        `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${package.dataflowid}' order by version DESC limit 1`
+      );
+
       const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
-        [{ attribute: "del_flg", old_val: "N", new_val: "Y" }]
+        [{ attribute: "del_flg", old_val: "N", new_val: "Y" }],
+        versionFreezed
       );
       if (!historyVersion) throw new Error("History not updated");
 
@@ -225,10 +282,22 @@ exports.deletePackage = function (req, res) {
         ]);
       }
 
+      if (oldVersion.version === historyVersion) {
+        var resData = {
+          version: historyVersion,
+          versionBumped: false,
+        };
+      } else {
+        var resData = {
+          version: historyVersion,
+          versionBumped: true,
+        };
+      }
+
       return apiResponse.successResponseWithData(
         res,
         "Success! Data Package deleted.",
-        {}
+        resData
       );
     });
   } catch (err) {
