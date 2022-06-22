@@ -82,13 +82,13 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
           label2: ":test",
           data: [
             {
-              // Total: record.new_records + record.modified_records,
-              // New: record.new_records,
-              // Modified: record.modified_records,
+              Total: record.new_records + record.modified_records,
+              New: record.new_records,
+              Modified: record.modified_records,
 
-              Total: 1000 / 1000,
-              New: 5000 / 1000,
-              Modified: 1000 / 1000,
+              // Total: 1000 / 1000,
+              // New: 5000 / 1000,
+              // Modified: 1000 / 1000,
             },
           ],
         });
