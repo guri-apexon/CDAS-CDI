@@ -76,14 +76,19 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
     const histories = [];
     if (datasetProperties?.loadType?.toLowerCase() === "incremental") {
       filehistory?.records?.forEach((record) => {
+        console.log(record);
         histories.push({
           label: `${formatDate(record.lastsucceeded)}`,
           label2: ":test",
           data: [
             {
-              Total: (record.new_records + record.modified_records) / 1000,
-              New: record.new_records / 1000,
-              Modified: record.modified_records / 1000,
+              // Total: record.new_records + record.modified_records,
+              // New: record.new_records,
+              // Modified: record.modified_records,
+
+              Total: 1000,
+              New: 10000,
+              Modified: 1000,
             },
           ],
         });
@@ -94,10 +99,10 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
           label: `${formatDate(record.lastsucceeded)}`,
           data: [
             {
-              Total: (record.new_records + record.modified_records) / 1000,
-              New: record.new_records / 1000,
-              Modified: record.modified_records / 1000,
-              Unchanged: record.new_records / 1000,
+              Total: record.new_records + record.modified_records,
+              New: record.new_records,
+              Modified: record.modified_records,
+              Unchanged: record.new_records,
             },
           ],
         });
@@ -181,7 +186,7 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
                   variant="body2"
                   style={{ fontSize: 14, marginTop: 0 }}
                 >
-                  {`${totalSize} files transfered`}
+                  {`<${totalSize}> files transfered`}
                 </Typography>
               </div>
               <div className="right-part">
@@ -234,7 +239,8 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
                         : "1560",
                   })}
                   data={historyData}
-                  suffix="k"
+                  // suffix="k"
+                  toolTip="true"
                   yTicks={6}
                 />
               ) : (
