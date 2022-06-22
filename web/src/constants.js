@@ -245,6 +245,7 @@ export const SETTINGAPI = "v1/api/system-settings";
 export const INGESTIONREPORTAPI = "v1/api/dataset/ingestion-report";
 
 export const baseURL = process.env.REACT_APP_API_URL;
+export const API_URL = `${baseURL}/v1/api`;
 
 export const allowedTypes = [
   "xlsx",

@@ -38,6 +38,11 @@ import {
 import { locationExistInDFMsg } from "../../../constants";
 import "./Location.scss";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
+
 const LinkCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
   const { onRowCick } = row;
@@ -57,6 +62,7 @@ const DataStructCell = ({ row, column: { accessor } }) => {
 const StatusCell =
   (handleStatusChange) =>
   ({ row, column: { accessor } }) => {
+    const { canUpdateLocation } = row;
     const value = row[accessor];
     return (
       <Tooltip
@@ -69,6 +75,7 @@ const StatusCell =
           checked={value === 1 ? true : false}
           onChange={(e) => handleStatusChange(e, row.src_loc_id)}
           size="small"
+          disabled={!canUpdateLocation}
         />
       </Tooltip>
     );
@@ -151,6 +158,10 @@ const Location = () => {
   const messageContext = useContext(MessageContext);
   const { locations, loading, upserted, upsertLoading, locationPassword } =
     useSelector((state) => state.cdiadmin);
+
+  const { canUpdate: canUpdateLocation, canCreate: canCreateLocation } =
+    usePermission(Categories.CONFIGURATION, Features.LOCATION_SETUP);
+
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [totalLocations, setTotalLocations] = useState(0);
   const [tableRows, setTableRows] = useState([]);
@@ -255,15 +266,17 @@ const Location = () => {
 
   const CustomHeader = ({ toggleFilters }) => (
     <div>
-      <Button
-        id="addLocationBtn"
-        icon={<PlusIcon />}
-        onClick={() => setLocationOpen(true)}
-        size="small"
-        style={{ marginRight: 16 }}
-      >
-        Add location
-      </Button>
+      {canCreateLocation && (
+        <Button
+          id="addLocationBtn"
+          icon={<PlusIcon />}
+          onClick={() => setLocationOpen(true)}
+          size="small"
+          style={{ marginRight: 16 }}
+        >
+          Add location
+        </Button>
+      )}
       <Button
         size="small"
         id="filterBtn"
@@ -286,13 +299,20 @@ const Location = () => {
         handleModalClose={() => handleModalClose()}
         locationEditMode={locationEditMode}
         locationViewMode={locationViewMode}
+        canUpdate={canUpdateLocation}
+        canCreate={canCreateLocation}
+        isNew={!locationEditMode && !locationViewMode}
       />
       <Table
         title="Locations"
         isLoading={loading || statusUpdating}
         subtitle={`${totalLocations} locations`}
         columns={columnsState}
-        rows={tableRows.map((row) => ({ ...row, onRowCick }))}
+        rows={tableRows.map((row) => ({
+          ...row,
+          onRowCick,
+          canUpdateLocation,
+        }))}
         rowId="src_loc_id"
         initialSortedColumn="loc_alias_nm"
         initialSortOrder="asc"

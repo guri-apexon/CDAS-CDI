@@ -5,7 +5,11 @@ import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
+<<<<<<< HEAD
 import Modal from "apollo-react/components/Modal/Modal";
+=======
+import usePermission, { Categories, Features } from "../Common/usePermission";
+>>>>>>> 172c804d9e7710bd215aaf2a8262afa10af69f8e
 
 const useStyles = makeStyles(() => ({
   breadcrumbs: {
@@ -44,9 +48,15 @@ const Breadcrumbs = (props) => {
   );
 };
 const Header = (props) => {
-  const { headerTitle, saveBtnLabel } = props;
+  const { headerTitle, saveBtnLabel, saveDisabled } = props;
   const [openModal, setopenModal] = useState(false);
   const classes = useStyles();
+  const {
+    canUpdate: canUpdateDataFlow,
+    canCreate: CanCreateDataFlow,
+    canRead: canReadDataFlow,
+  } = usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+
   const onCancel = () => {
     setopenModal(true);
   };
@@ -75,6 +85,7 @@ const Header = (props) => {
             },
             {
               label: saveBtnLabel || "Save",
+              disabled: saveDisabled,
               onClick: () => props.submit(),
             },
           ]}
