@@ -230,24 +230,24 @@ export const checkFormat = (value, key = "", dataType = "") => {
         return "Not a valid date format.";
       }
 
-      const invalidFormat1 = /<[aGzZ].>|<>|>>|<</;
-      const regexPattern1 = new RegExp(invalidFormat1, "gm");
-      if (regexPattern1.test(value)) {
+      const invalidFormatChars = /<[aGzZ].>|<>|>>|<</;
+      const regexPatternChars = new RegExp(invalidFormatChars, "gm");
+      if (regexPatternChars.test(value)) {
         return "Not a valid date format.";
       }
 
-      const invalidFormat2 =
+      const invalidFormatSpace =
         /<[aGzZ].>|<\s+.*\s+>|<\s+.*>|<.*\s+>|<.*?\s\s+.*?>/;
 
-      const regexPattern2 = new RegExp(invalidFormat2, "gm");
-      if (regexPattern2.test(value)) {
+      const regexPatternSpace = new RegExp(invalidFormatSpace, "gm");
+      if (regexPatternSpace.test(value)) {
         return "Not a valid date format.";
       }
 
-      const invalidFormat3 =
+      const invalidFormatDuplicate =
         /<[!@#^*&+=._:/,\s-]+?>|<.*[!@#^*&+=._:/,\s-]+>|<[!@#^*&+=._:/,\s-]+.*>/;
-      const regexPattern3 = new RegExp(invalidFormat3, "gm");
-      if (regexPattern3.test(value)) {
+      const regexPatternDuplicate = new RegExp(invalidFormatDuplicate, "gm");
+      if (regexPatternDuplicate.test(value)) {
         return "Not a valid date format.";
       }
 
@@ -286,8 +286,8 @@ export const checkFormat = (value, key = "", dataType = "") => {
         });
 
         const find = /<[!@#^*&+=._:/,\s-]*?>/;
-        const re = new RegExp(find, "g");
-        matchedToken = matchedToken.replace(re, "");
+        const findRegex = new RegExp(find, "g");
+        matchedToken = matchedToken.replace(findRegex, "");
 
         const regex = `<(.*)?>`;
         const pattern = new RegExp(regex, "g");
