@@ -1,5 +1,5 @@
 import withStyles from "@material-ui/core/styles/withStyles";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 
 import { neutral8, gradientHorizontal } from "apollo-react/colors";
 import Blade from "apollo-react/components/Blade";
@@ -13,6 +13,7 @@ import App from "apollo-react-icons/App";
 import Tooltip from "apollo-react/components/Tooltip/Tooltip";
 import "./NavigationPanel.scss";
 import { goToCore } from "../../../utils";
+import { AppContext } from "../../Providers/AppProvider";
 
 const styles = {
   content: {
@@ -36,39 +37,6 @@ const styles = {
   },
 };
 
-const linksArr = [
-  {
-    title: "Clinical Data Ingestion",
-    imgUrl: "/assets/svg/CDI_ICON_96x96.svg",
-    haveAccess: true,
-    url: "cdi",
-  },
-  {
-    title: "Clinical Data Mapper",
-    imgUrl: "/assets/svg/CDM_ICON_96x96.svg",
-    haveAccess: false,
-    url: "cdm",
-  },
-  {
-    title: "Clinical Data Review",
-    imgUrl: "/assets/svg/CDR_ICON_96x96.svg",
-    haveAccess: false,
-    url: "cdr",
-  },
-  {
-    title: "Clinical Analytics",
-    imgUrl: "/assets/svg/CA_ICON_96x96.svg",
-    haveAccess: false,
-    url: "ca",
-  },
-  {
-    title: "Data Science Workbench",
-    imgUrl: "/assets/svg/DSW_ICON_96x96.svg",
-    haveAccess: false,
-    url: "dsw",
-  },
-];
-
 const NavigationPanel = ({
   history,
   location: { pathname },
@@ -78,6 +46,52 @@ const NavigationPanel = ({
   const [openPanel, setOpenPanel] = useState(open);
   const useStyles = makeStyles(styles);
   const classes = useStyles();
+  const appContext = useContext(AppContext);
+
+  const { permissions } = appContext.user;
+
+  const checkAccess = (name) => {
+    if (permissions.length > 0) {
+      const hasAccess = permissions.some((per) => per.featureName === name);
+      return hasAccess;
+    }
+    return false;
+  };
+
+  const linksArr = [
+    {
+      title: "Clinical Data Ingestion",
+      imgUrl: "/assets/svg/CDI_ICON_96x96.svg",
+      haveAccess: checkAccess("Launchpad-CDI"),
+      url: "cdi",
+    },
+    {
+      title: "Clinical Data Mapper",
+      imgUrl: "/assets/svg/CDM_ICON_96x96.svg",
+      haveAccess: checkAccess("Launchpad-CDM"),
+      url: "cdm",
+    },
+    {
+      title: "Clinical Data Review",
+      imgUrl: "/assets/svg/CDR_ICON_96x96.svg",
+      hveAccess: false,
+      haveAccess: checkAccess("Launchpad-CDR"),
+      url: "cdr",
+    },
+    {
+      title: "Clinical Analytics",
+      imgUrl: "/assets/svg/CA_ICON_96x96.svg",
+      haveAccess: checkAccess("Launchpad-CA"),
+      url: "ca",
+    },
+    {
+      title: "Data Science Workbench",
+      imgUrl: "/assets/svg/DSW_ICON_96x96.svg",
+      haveAccess: checkAccess("Launchpad-DSW"),
+      url: "dsw",
+    },
+  ];
+
   // const onOpen = () => {
   //   setOpenPanel(true);
   // };

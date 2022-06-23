@@ -16,6 +16,11 @@ import Progress from "../../../components/Common/Progress/Progress";
 import { downloadTemplate } from "../../../utils/downloadData";
 import { checkHeaders, formatDataNew, isSftp } from "../../../utils/index";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
+
 const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -23,6 +28,10 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
   const { datasetColumns, sqlColumns, haveHeader } = dataSets;
+
+  const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
+    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState();
   const [selectedMethod, setSelectedMethod] = useState();
@@ -227,6 +236,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
                   value="fileUpload"
                   label="Upload dataset column settings"
                   onClick={handleChange}
+                  disabled={!canUpdateDataFlow}
                   checked={selectedMethod === "fileUpload"}
                 />
 
@@ -237,6 +247,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
                     value={selectedFile}
                     onUpload={handleUpload}
                     onFileDelete={handleDelete}
+                    disabled={!canUpdateDataFlow}
                     maxItems={1}
                   />
                 </div>
@@ -250,6 +261,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
                 value="manually"
                 label="Create manually"
                 onClick={handleChange}
+                disabled={!canUpdateDataFlow}
                 checked={selectedMethod === "manually"}
               />
             </Card>
@@ -263,7 +275,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
                 !(
                   selectedMethod === "manually" ||
                   (selectedMethod === "fileUpload" && isImportReady)
-                )
+                ) || !canUpdateDataFlow
               }
             >
               Create

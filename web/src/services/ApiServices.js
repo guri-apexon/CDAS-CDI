@@ -1,4 +1,6 @@
+/* eslint-disable dot-notation */
 import axios from "axios";
+import CryptoJS from "crypto-js";
 import {
   baseURL,
   STUDYSEARCH,
@@ -20,6 +22,7 @@ import {
   COLUMNSAPI,
   DATAFLOW_UPDATE_API,
   ADD_PACKAGE,
+  API_URL,
 } from "../constants";
 import {
   columnsCreated,
@@ -30,6 +33,35 @@ import { deleteAllCookies, getUserId } from "../utils/index";
 const userId = getUserId();
 
 const config = { headers: { userId } };
+
+// const axios = _axios.create({
+//   headers: {
+//     api_key: CryptoJS.AES.encrypt(
+//       process.env.REACT_APP_API_KEY || "",
+//       process.env.REACT_APP_ENCRYPTION_KEY || ""
+//     ).toString(),
+//     sys_name: process.env.REACT_APP_SYS_NAME,
+//     token_type: "",
+//     access_token: "",
+//   },
+// });
+
+axios.interceptors.request.use(
+  (axiosconfig) => {
+    axiosconfig.headers["api_key"] = CryptoJS.AES.encrypt(
+      process.env.REACT_APP_API_KEY || "",
+      process.env.REACT_APP_ENCRYPTION_KEY || ""
+    ).toString();
+    axiosconfig.headers["sys_name"] = process.env.REACT_APP_SYS_NAME;
+    axiosconfig.headers["token_type"] = "";
+    axiosconfig.headers["access_token"] = "";
+
+    return axiosconfig;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export const checkLocationExistsInDataFlow = async (locId) => {
   try {
@@ -399,6 +431,30 @@ export const submitDataPackage = async (reqBody) => {
   try {
     const res = await axios.post(`${baseURL}/${ADD_PACKAGE}`, reqBody);
     return res.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const getRolesPermissions = () => {
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${API_URL}/role/getUserRolesPermissions`, {
+          userId,
+          productName: "Ingestion",
+        })
+        .then((res) => {
+          resolve(res.data?.data || res.data);
+        })
+        .catch((err) => {
+          if (err.response?.data) {
+            resolve(err.response?.data);
+          } else {
+            resolve({ message: "Something went wrong" });
+          }
+        });
+    });
   } catch (err) {
     return console.log("Error", err);
   }

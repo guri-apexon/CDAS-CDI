@@ -489,10 +489,9 @@ exports.updateDataFlow = async (req, res) => {
     }
 
     if (!userId) {
-      return apiResponse.validationErrorWithData(
-        res,
-        "userId required and data type should be string or Number"
-      );
+      return apiResponse.validationErrorWithData(res, [
+        "userId required and data type should be string or Number",
+      ]);
     }
 
     if (!isCDI) {
@@ -500,18 +499,16 @@ exports.updateDataFlow = async (req, res) => {
         typeof delFlag === "undefined" ||
         !["0", "1"].includes(delFlag?.toString())
       ) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Data flow Level delFlag  required and it's either 0 or 1 New"
-        );
+        return apiResponse.validationErrorWithData(res, [
+          "Data flow Level delFlag  required and it's either 0 or 1 New",
+        ]);
       }
     }
 
     if (!externalSystemName) {
-      return apiResponse.validationErrorWithData(
-        res,
-        "externalSystemName required and data type should be string"
-      );
+      return apiResponse.validationErrorWithData(res, [
+        "externalSystemName required and data type should be string",
+      ]);
     } else {
       valData.push({
         key: "externalSystemName",
@@ -524,56 +521,50 @@ exports.updateDataFlow = async (req, res) => {
     if (dataPackage && dataPackage.length && !isCDI) {
       for (let each of dataPackage) {
         if (!each.ExternalId) {
-          return apiResponse.validationErrorWithData(
-            res,
-            "Datapackage level ExternalId required and data type should be string or number"
-          );
+          return apiResponse.validationErrorWithData(res, [
+            "Datapackage level ExternalId required and data type should be string or number",
+          ]);
         }
 
         if (
           typeof each.delFlag === "undefined" ||
           !["0", "1"].includes(each.delFlag?.toString())
         ) {
-          return apiResponse.validationErrorWithData(
-            res,
-            "Data Package Level delFlag required and it's either 0 or 1"
-          );
+          return apiResponse.validationErrorWithData(res, [
+            "Data Package Level delFlag required and it's either 0 or 1",
+          ]);
         }
         // Data Set External Id validation
         if (each.dataSet?.length) {
           for (let obj of each.dataSet) {
             if (!obj.ExternalId) {
-              return apiResponse.validationErrorWithData(
-                res,
-                "Dataset level ExternalId required and data type should be string or number"
-              );
+              return apiResponse.validationErrorWithData(res, [
+                "Dataset level ExternalId required and data type should be string or number",
+              ]);
             }
             if (
               typeof obj.delFlag === "undefined" ||
               !["0", "1"].includes(obj.delFlag?.toString())
             ) {
-              return apiResponse.validationErrorWithData(
-                res,
-                "Data Set Level delFlag  required and it's either 0 or 1"
-              );
+              return apiResponse.validationErrorWithData(res, [
+                "Data Set Level delFlag  required and it's either 0 or 1",
+              ]);
             }
 
             if (obj.columnDefinition?.length) {
               for (let el of obj.columnDefinition) {
                 if (!el.ExternalId) {
-                  return apiResponse.validationErrorWithData(
-                    res,
-                    "Column Definition Level ExternalId required and data type should be string or Number"
-                  );
+                  return apiResponse.validationErrorWithData(res, [
+                    "Column Definition Level ExternalId required and data type should be string or Number",
+                  ]);
                 }
                 if (
                   typeof el.delFlag === "undefined" ||
                   !["0", "1"].includes(el.delFlag?.toString())
                 ) {
-                  return apiResponse.validationErrorWithData(
-                    res,
-                    "Column Definition Level delFlag  required and it's either 0 or 1"
-                  );
+                  return apiResponse.validationErrorWithData(res, [
+                    "Column Definition Level delFlag  required and it's either 0 or 1",
+                  ]);
                 }
               }
             }
@@ -585,20 +576,18 @@ exports.updateDataFlow = async (req, res) => {
                     !vl.conditionalExpressionNumber ||
                     typeof vl.conditionalExpressionNumber != "number"
                   ) {
-                    return apiResponse.validationErrorWithData(
-                      res,
-                      "conditionalExpressionNumber required and Data Type should be Number"
-                    );
+                    return apiResponse.validationErrorWithData(res, [
+                      "conditionalExpressionNumber required and Data Type should be Number",
+                    ]);
                   }
                 }
               }
             }
             if (obj.conditionalExpressions?.length) {
               if (!obj.qcType || obj.qcType?.toLowerCase() !== "vlc") {
-                return apiResponse.validationErrorWithData(
-                  res,
-                  "qcType required and Value should be VLC"
-                );
+                return apiResponse.validationErrorWithData(res, [
+                  "qcType required and Value should be VLC",
+                ]);
               }
             }
           }
@@ -631,7 +620,7 @@ exports.updateDataFlow = async (req, res) => {
 
           return apiResponse.errResponse(
             res,
-            `Vendor is not active in ${externalSystemName}`,
+            [`Vendor is not active in ${externalSystemName}`],
             { ResponseCode: "0001" }
           );
         }
@@ -639,7 +628,7 @@ exports.updateDataFlow = async (req, res) => {
         // returnData.push([`Vendor does not exist for ${externalSystemName}`]);
         return apiResponse.errResponse(
           res,
-          `Vendor does not exist for tt ${externalSystemName}`,
+          [`Vendor does not exist for tt ${externalSystemName}`],
           { ResponseCode: "0001" }
         );
       }
@@ -656,7 +645,7 @@ exports.updateDataFlow = async (req, res) => {
           // returnData.push([`Location is not active in ${externalSystemName}`]);
           return apiResponse.errResponse(
             res,
-            `Location is not active in ${externalSystemName}`,
+            [`Location is not active in ${externalSystemName}`],
             { ResponseCode: "0003" }
           );
         }
@@ -664,7 +653,7 @@ exports.updateDataFlow = async (req, res) => {
         // returnData.push([`Location does not exist for ${externalSystemName}`]);
         return apiResponse.errResponse(
           res,
-          `Location does not exist for ${externalSystemName}`,
+          [`Location does not exist for ${externalSystemName}`],
           { ResponseCode: "0003" }
         );
       }
@@ -711,10 +700,9 @@ exports.updateDataFlow = async (req, res) => {
     }
     if (serviceOwners) {
       if (!Array.isArray(serviceOwners))
-        return apiResponse.ErrorResponse(
-          res,
-          "serviceOwners its optional and it should be array "
-        );
+        return apiResponse.ErrorResponse(res, [
+          "serviceOwners its optional and it should be array ",
+        ]);
     }
 
     const resErr = helper.validation(valData);
@@ -756,7 +744,7 @@ exports.updateDataFlow = async (req, res) => {
         ID: DFId,
         // ResponseCode: "00000",
         // ResponseMessage: "Dataflow update successfully",
-        externalSysName: existDf.externalsystemname,
+        externalSystemName: existDf.externalsystemname,
         dataPackages: [],
         errors: [],
       };
@@ -764,10 +752,9 @@ exports.updateDataFlow = async (req, res) => {
       // ResponseBody.errors = [];
 
       if (existDf.del_flg === 1) {
-        return apiResponse.ErrorResponse(
-          res,
-          "This dataFlow data already removed"
-        );
+        return apiResponse.ErrorResponse(res, [
+          "This dataFlow data already removed",
+        ]);
       }
 
       if (delFlag === 1) {

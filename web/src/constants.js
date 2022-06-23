@@ -201,6 +201,13 @@ export const FETCH_DATASET_INGESTION_FILE_HISTORY_SUCCESS =
   "FETCH_DATASET_INGESTION_FILE_HISTORY_SUCCESS";
 export const FETCH_DATASET_INGESTION_FILE_HISTORY_FAILURE =
   "FETCH_DATASET_INGESTION_FILE_HISTORY_FAILURE";
+
+export const GET_DATASET_INGESTION_TRANSFER_LOG =
+  "GET_DATASET_INGESTION_TRANSFER_LOG";
+export const FETCH_DATASET_INGESTION_TRANSFER_LOG_SUCCESS =
+  "FETCH_DATASET_INGESTION_TRANSFER_LOG_SUCCESS";
+export const FETCH_DATASET_INGESTION_TRANSFER_LOG_FAILURE =
+  "FETCH_DATASET_INGESTION_TRANSFER_LOG_FAILURE";
 // API URLS
 
 export const GETSTUDYDF = "v1/api/dataflow/studyDataflowList";
@@ -219,6 +226,8 @@ export const TOGGLE_DF_BTN = "TOGGLE_DF_BTN";
 
 export const PACKAGES_SEARCH = "v1/api/data-package/search";
 export const ADD_PACKAGE = "v1/api/data-package/add";
+export const DATAPACKAGEPASSWORD = "v1/api/data-package/get_password";
+
 export const DELETE_PACKAGE = "v1/api/data-package/delete";
 export const UPDATE_PACKAGE = "v1/api/data-package/update-status";
 export const NOT_ONBOARDED_FETCH = "v1/api/study/notonboarded-studies-stat";
@@ -244,6 +253,7 @@ export const SETTINGAPI = "v1/api/system-settings";
 export const INGESTIONREPORTAPI = "v1/api/dataset/ingestion-report";
 
 export const baseURL = process.env.REACT_APP_API_URL;
+export const API_URL = `${baseURL}/v1/api`;
 
 export const allowedTypes = [
   "xlsx",

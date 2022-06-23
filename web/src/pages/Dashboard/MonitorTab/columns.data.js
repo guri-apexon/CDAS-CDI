@@ -6,8 +6,8 @@ import Check from "apollo-react-icons/Check";
 import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
 import Arrow2Up from "apollo-react-icons/Arrow2Up";
 import Arrow2Down from "apollo-react-icons/Arrow2Down";
-import { Link } from "react-router-dom";
-// import Link from "apollo-react/components/Link";
+// import { Link } from "react-router-dom";
+import Link from "apollo-react/components/Link";
 import Tag from "apollo-react/components/Tag";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
@@ -138,10 +138,16 @@ const createAutocompleteFilter =
 
 const DatasetCell = ({ row, column: { accessor } }) => {
   const dataset = row[accessor];
+  const { canReadIngestionIssues, history } = row;
+
   return (
     // eslint-disable-next-line jsx-a11y/anchor-is-valid
     <Link
-      to={`/dashboard/ingestion-report/${row.datasetid}`}
+      disabled={!canReadIngestionIssues}
+      onClick={() =>
+        history.push(`/dashboard/ingestion-report/${row.datasetid}`)
+      }
+      // to={`/dashboard/ingestion-report/${row.datasetid}`}
       style={{
         fontWeight: 500,
         color: "#0768FD",

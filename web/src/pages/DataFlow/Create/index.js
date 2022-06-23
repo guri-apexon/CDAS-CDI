@@ -95,6 +95,7 @@ const DataFlow = ({
   const datasetRef = useRef();
   const [myform, setForm] = useState({});
   const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
@@ -521,32 +522,47 @@ const DataFlow = ({
           message={error}
         />
       )}
+      <Modal
+        open={isModalOpen}
+        title="Warning"
+        message="No file with unblinded or unmasked data should be configured"
+        buttonProps={[
+          {
+            label: "OK",
+            variant: "primary",
+            onClick: () => setIsModalOpen(false),
+          },
+        ]}
+        id="neutral"
+      />
       <Panel
         onClose={handleClose}
         onOpen={handleOpen}
         open={isPanelOpen}
         width={20}
       />
-      <Panel className={classes.rightPanelExtended} width="100%" hideButton>
-        <main className={classes.content}>
-          <div className="content">
-            <div className={classes.contentHeader}>
-              <Header
-                close={closeForm}
-                submit={nextStep}
-                back={() => backStep()}
-                currentStep={currentStep}
-                breadcrumbItems={breadcrumbItems}
-                icon={<DataPackageIcon className={classes.contentIcon} />}
-                submitting={submitting}
-                tabularSod={tabularSod}
-              />
+      {!isModalOpen && (
+        <Panel className={classes.rightPanelExtended} width="100%" hideButton>
+          <main className={classes.content}>
+            <div className="content">
+              <div className={classes.contentHeader}>
+                <Header
+                  close={closeForm}
+                  submit={nextStep}
+                  back={() => backStep()}
+                  currentStep={currentStep}
+                  breadcrumbItems={breadcrumbItems}
+                  icon={<DataPackageIcon className={classes.contentIcon} />}
+                  submitting={submitting}
+                  tabularSod={tabularSod}
+                />
+              </div>
+              <Divider />
+              <div className={classes.formSection}>{RenderForm()}</div>
             </div>
-            <Divider />
-            <div className={classes.formSection}>{RenderForm()}</div>
-          </div>
-        </main>
-      </Panel>
+          </main>
+        </Panel>
+      )}
       <Modal
         open={saveSuccess}
         variant="success"
