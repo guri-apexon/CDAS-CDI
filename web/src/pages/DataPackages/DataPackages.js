@@ -104,8 +104,9 @@ const DataPackages = React.memo(() => {
   };
   const showConfig = (e, checked) => {
     if (!checked) {
-      resetForm();
-      setShowForm(true);
+      // resetForm();
+      // setShowForm(true);
+      setConfigShow(checked);
     } else {
       setConfigShow(checked);
     }
