@@ -23,6 +23,7 @@ import {
   hideErrorMessage,
   getLocationByType,
   getDataFlowDetail,
+  freezeDfVersion,
 } from "../../../store/actions/DataFlowAction";
 
 import { getLocationDetails } from "../../../store/actions/DataSetsAction";
@@ -74,8 +75,14 @@ const DataFlow = ({ FormValues, dashboard }) => {
   const dataFlowData = useSelector((state) => state.dataFlow);
   const dashboardData = useSelector((state) => state.dashboard);
   const dataSetCount = dashboardData?.selectedDataFlow?.dataSets;
-  const { selectedLocation, createTriggered, error, loading, dataFlowdetail } =
-    dataFlowData;
+  const {
+    selectedLocation,
+    createTriggered,
+    error,
+    loading,
+    dataFlowdetail,
+    versionFreezed,
+  } = dataFlowData;
   const [locType, setLocType] = useState("");
   const [modalLocType, setModalLocType] = useState("SFTP");
   const messageContext = useContext(MessageContext);
@@ -202,6 +209,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
         externalSystemName: "CDI",
         dataflowId,
         userId: userInfo.userId,
+        versionFreezed,
       };
       const result = await updateDataflow(payload);
       if (result?.status === 1) {

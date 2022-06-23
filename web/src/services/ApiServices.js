@@ -24,6 +24,8 @@ import {
   ADD_PACKAGE,
   API_URL,
 } from "../constants";
+import store from "../store";
+import { freezeDfVersion } from "../store/actions/DataFlowAction";
 import {
   columnsCreated,
   columnsCreatedFailure,
@@ -61,6 +63,20 @@ axios.interceptors.request.use(
   (error) => {
     return Promise.reject(error);
   }
+);
+
+const responseHandler = (response) => {
+  if (response?.data?.data?.versionBumped) {
+    store.dispatch(freezeDfVersion());
+  }
+  return response;
+};
+const errorHandler = (error) => {
+  return Promise.reject(error);
+};
+axios.interceptors.response.use(
+  (response) => responseHandler(response),
+  (error) => errorHandler(error)
 );
 
 export const checkLocationExistsInDataFlow = async (locId) => {
