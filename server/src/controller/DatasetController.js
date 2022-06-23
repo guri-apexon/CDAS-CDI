@@ -105,7 +105,7 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    const { dpId, studyId, dfId, testFlag, userId } = req.body;
+    const { dpId, studyId, dfId, testFlag, userId, versionFreezed } = req.body;
     const isExist = await checkMnemonicExists(
       values.datasetName,
       studyId,
@@ -124,8 +124,16 @@ exports.saveDatasetData = async (req, res) => {
     }
 
     const curDate = helper.getCurrentTime();
+    // const versionFreezed = false;
 
     Logger.info({ message: "create Dataset" });
+
+    const {
+      rows: [oldVersion],
+    } = await DB.executeQuery(
+      `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${dfId}' order by version DESC limit 1`
+    );
 
     const body = [
       values.datasetName,
@@ -205,16 +213,28 @@ exports.saveDatasetData = async (req, res) => {
         dpId,
         datasetObj.datasetid,
         jsonData,
-        attributeName
+        attributeName,
+        null,
+        null,
+        versionFreezed
       );
       if (!historyVersion) throw new Error("History not updated");
+
+      var resData = {
+        ...response.rows[0],
+        filePwd: values.filePwd,
+        version: historyVersion,
+      };
+      if (oldVersion.version === historyVersion) {
+        resData.versionBumped = false;
+      } else {
+        resData.versionBumped = true;
+      }
+
       return apiResponse.successResponseWithData(
         res,
         "Dataset was saved successfully",
-        {
-          ...response.rows[0],
-          filePwd: values.filePwd,
-        }
+        resData
       );
     });
   } catch (err) {
@@ -348,8 +368,25 @@ exports.updateDatasetData = async (req, res) => {
     const values = req.body;
     const curDate = helper.getCurrentTime();
     Logger.info({ message: "update Dataset" });
-    const { dfId, studyId, dpId, testFlag, datasetid, userId, datasetName } =
-      req.body;
+    const {
+      dfId,
+      studyId,
+      dpId,
+      testFlag,
+      datasetid,
+      userId,
+      datasetName,
+      versionFreezed,
+    } = req.body;
+
+    // const versionFreezed = true;
+    const {
+      rows: [oldVersion],
+    } = await DB.executeQuery(
+      `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${dfId}' order by version DESC limit 1`
+    );
+
     const isExist = await checkMnemonicExists(
       datasetName,
       studyId,
@@ -448,6 +485,7 @@ exports.updateDatasetData = async (req, res) => {
 
     const updateConfg = Object.assign(idObj, diffObj);
 
+    let newVersion = "";
     if (Object.keys(diffObj).length != 0) {
       const historyVersion = await CommonController.addDatasetHistory(
         dfId,
@@ -457,15 +495,27 @@ exports.updateDatasetData = async (req, res) => {
         JSON.stringify(updateConfg),
         null,
         oldData,
-        diffObj
+        diffObj,
+        versionFreezed
       );
       if (!historyVersion) throw new Error("History not updated");
+      newVersion = historyVersion;
+    }
+
+    var resData = {
+      ...updateDS.rows[0],
+      version: newVersion,
+    };
+    if (oldVersion.version === newVersion) {
+      resData.versionBumped = false;
+    } else {
+      resData.versionBumped = true;
     }
 
     return apiResponse.successResponseWithData(
       res,
       "Dataset was updated successfully",
-      updateDS.rows[0]
+      resData
     );
   } catch (err) {
     Logger.error(err);
