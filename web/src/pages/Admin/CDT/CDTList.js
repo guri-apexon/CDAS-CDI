@@ -364,7 +364,10 @@ export default function CDTList() {
               title="Clinical Data Types"
               subtitle={`${tableRows.length} items`}
               columns={columnsState}
-              rows={tableRows}
+              rows={tableRows.map((row) => ({
+                ...row,
+                canUpdateClinicalData,
+              }))}
               rowId="ID"
               hasScroll={true}
               maxHeight="calc(100vh - 162px)"
@@ -379,7 +382,7 @@ export default function CDTList() {
                 truncate: true,
               }}
               showFilterIcon
-              headerProps={canUpdateClinicalData}
+              headerProps={{ canUpdateClinicalData }}
               CustomHeader={(props) => (
                 <CustomButtonHeader {...props} addCDT={handleAddCDT} />
               )}

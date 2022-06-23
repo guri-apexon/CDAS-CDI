@@ -171,7 +171,7 @@ export default function DataflowTab({ updateData }) {
 
   const {
     canUpdate: canUpdateDataFlow,
-    canCreate: CanCreateDataFlow,
+    canCreate: canCreateDataFlow,
     canRead: canReadDataFlow,
   } = usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
   const { canEnabled: canDeleteTest } = usePermission(
@@ -355,7 +355,7 @@ export default function DataflowTab({ updateData }) {
         text: "Clone data flow",
         id: 4,
         onClick: () => cloneDataFlowAction(dataFlowId),
-        disabled: true,
+        disabled: !canCreateDataFlow,
       },
       {
         text: "Hard delete data flow",
@@ -415,7 +415,7 @@ export default function DataflowTab({ updateData }) {
           </SegmentedControlGroup>
         </div>
         <div>
-          {CanCreateDataFlow && (
+          {canCreateDataFlow && (
             <MenuButton
               buttonText="Add data flow"
               menuItems={menuItems}
