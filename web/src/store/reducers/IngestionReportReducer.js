@@ -5,12 +5,15 @@ import {
   FETCH_DATASET_INGESTION_FILE_HISTORY_SUCCESS,
   FETCH_DATASET_INGESTION_ISSUE_TYPES_FAILURE,
   FETCH_DATASET_INGESTION_ISSUE_TYPES_SUCCESS,
+  FETCH_DATASET_INGESTION_TRANSFER_LOG_SUCCESS,
+  FETCH_DATASET_INGESTION_TRANSFER_LOG_FAILURE,
   FETCH_DATASET_PROPERTIES_FAILURE,
   FETCH_DATASET_PROPERTIES_SUCCESS,
   FETCH_TRANSFER_LOG_FAILURE,
   FETCH_TRANSFER_LOG_SUCCESS,
   GET_DATASET_INGESTION_FILE_HISTORY,
   GET_DATASET_INGESTION_ISSUE_TYPES,
+  GET_DATASET_INGESTION_TRANSFER_LOG,
   GET_DATASET_PROPERTIES,
   GET_TRANSFER_LOG,
 } from "../../constants";
@@ -23,6 +26,7 @@ export const initialState = {
   datasetProperties: {},
   issuetypes: [],
   filehistory: [],
+  transferHistory: [],
 };
 
 const IngestionReportReducer = (state = initialState, action) =>
@@ -66,6 +70,16 @@ const IngestionReportReducer = (state = initialState, action) =>
         newState.filehistory = action.filehistory;
         break;
       case FETCH_DATASET_INGESTION_FILE_HISTORY_FAILURE:
+        newState.historyloading = false;
+        break;
+      case GET_DATASET_INGESTION_TRANSFER_LOG:
+        newState.historyloading = true;
+        break;
+      case FETCH_DATASET_INGESTION_TRANSFER_LOG_SUCCESS:
+        newState.historyloading = false;
+        newState.transferHistory = action.transferHistory;
+        break;
+      case FETCH_DATASET_INGESTION_TRANSFER_LOG_FAILURE:
         newState.historyloading = false;
         break;
       default:
