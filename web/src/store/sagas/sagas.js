@@ -35,6 +35,7 @@ import {
   GET_DATASET_PROPERTIES,
   GET_DATASET_INGESTION_ISSUE_TYPES,
   GET_DATASET_INGESTION_FILE_HISTORY,
+  GET_DATASET_INGESTION_TRANSFER_LOG,
   GET_LOCATION_DETAIL,
   GET_PASSWORD_LOCATION,
 } from "../../constants";
@@ -83,6 +84,7 @@ import {
 } from "./cdiAdmin.saga";
 import {
   fetchDatasetIngestionFileHistory,
+  fetchDatasetIngestionTransferLog,
   fetchDatasetIngestionIssueTypes,
   fetchProperties,
   fetchTransferLog,
@@ -133,6 +135,10 @@ function* cdasCoreSaga() {
   yield takeLatest(
     GET_DATASET_INGESTION_FILE_HISTORY,
     fetchDatasetIngestionFileHistory
+  );
+  yield takeLatest(
+    GET_DATASET_INGESTION_TRANSFER_LOG,
+    fetchDatasetIngestionTransferLog
   );
 }
 

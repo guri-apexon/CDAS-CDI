@@ -2,6 +2,7 @@
 import {
   GET_DATASET_INGESTION_FILE_HISTORY,
   GET_DATASET_INGESTION_ISSUE_TYPES,
+  GET_DATASET_INGESTION_TRANSFER_LOG,
   GET_DATASET_PROPERTIES,
   GET_TRANSFER_LOG,
 } from "../../constants";
@@ -32,5 +33,18 @@ export const getDatasetIngestionFileHistory = (datasetId, days = null) => {
     type: GET_DATASET_INGESTION_FILE_HISTORY,
     datasetId,
     days,
+  };
+};
+
+export const getDatasetIngestionTransferLog = (
+  datasetId,
+  days = null,
+  date
+) => {
+  return {
+    type: GET_DATASET_INGESTION_TRANSFER_LOG,
+    datasetId,
+    days,
+    date,
   };
 };
