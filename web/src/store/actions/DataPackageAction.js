@@ -21,6 +21,7 @@ export const getPackagesList = (dfId, searchQuery = "") => {
 export const addPackageBtnAction = () => {
   return {
     type: ADD_PACKAGE_BTN,
+    openAddPackage: true,
   };
 };
 

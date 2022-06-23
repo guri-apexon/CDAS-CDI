@@ -32,6 +32,7 @@ import {
   selectDataPackage,
   getPackagesList,
   updateStatus,
+  addPackageBtnAction,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 import usePermission, {
@@ -95,7 +96,6 @@ const DataPackages = React.memo(() => {
 
   const resetForm = () => {
     setConfigShow(false);
-    setShowForm(false);
     setNamingConvention("");
     setPackagePassword("");
     setSftpPath("");
@@ -115,15 +115,16 @@ const DataPackages = React.memo(() => {
   // };
 
   useEffect(() => {
-    if (packageData && packageData.refreshData) {
+    if (packageData || packageData.openAddPackage) {
       // getPackages();
       resetForm();
-    }
-  }, [packageData.refreshData]);
-  useEffect(() => {
-    if (packageData.openAddPackage || packageData.selectedPackage)
       setShowForm(true);
-    if (packageData.selectedPackage) {
+    }
+  }, [packageData.openAddPackage]);
+
+  useEffect(() => {
+    if (!packageData.openAddPackage && packageData.selectedPackage) {
+      setShowForm(true);
       setConfigShow(true);
       setCompression(packageData.selectedPackage?.type);
       setNamingConvention(packageData.selectedPackage?.name);
@@ -137,6 +138,13 @@ const DataPackages = React.memo(() => {
     )
       setConfigShow(false);
   }, [packageData.openAddPackage, packageData.selectedPackage]);
+
+  useEffect(() => {
+    return () => {
+      console.log("unmounting");
+      dispatch(selectDataPackage({}));
+    };
+  }, []);
 
   // eslint-disable-next-line consistent-return
   const submitPackage = async () => {
@@ -178,7 +186,7 @@ const DataPackages = React.memo(() => {
     } else {
       const sodResult = await submitDataPackage(sodReqBody);
       if (sodResult.status === 1) {
-        showSuccessMessage(sodResult.message);
+        showSuccessMessage("Success! Data Package updated.");
         dispatch(addDataPackage());
         if (sodValue !== null) history.push("/dashboard/dataflow-management");
       } else {
@@ -187,6 +195,7 @@ const DataPackages = React.memo(() => {
     }
 
     resetForm();
+    setShowForm(false);
   };
 
   const handleClose = () => {
@@ -230,8 +239,9 @@ const DataPackages = React.memo(() => {
                   <div className="flex title">
                     <DataPackageIcon />
                     <Typography className="b-font">
-                      {packageData.selectedPackage?.name ||
-                        "Creating New Package"}
+                      {packageData.openAddPackage
+                        ? "Creating New Package"
+                        : packageData.selectedPackage?.name}
                     </Typography>
                   </div>
                   <ButtonGroup
@@ -241,7 +251,7 @@ const DataPackages = React.memo(() => {
                         label: "Cancel",
                         size: "small",
                         onClick: () =>
-                          (packageData.selectedPackage &&
+                          (packageData.selectedPackage?.sod_view_type &&
                             packageData.selectedPackage?.sod_view_type !==
                               null) ||
                           !canUpdateDataFlow
@@ -250,7 +260,7 @@ const DataPackages = React.memo(() => {
                       },
                       {
                         label: `${
-                          packageData.selectedPackage &&
+                          packageData.selectedPackage?.sod_view_type &&
                           packageData.selectedPackage?.sod_view_type !== null
                             ? "Save Data Flow"
                             : "Save"
@@ -280,7 +290,7 @@ const DataPackages = React.memo(() => {
                       checked={configShow}
                       onChange={showConfig}
                       disabled={
-                        (packageData.selectedPackage &&
+                        (packageData.selectedPackage?.sod_view_type &&
                           packageData.selectedPackage?.sod_view_type !==
                             null) ||
                         !canUpdateDataFlow
@@ -295,7 +305,7 @@ const DataPackages = React.memo(() => {
                   )}
                   {configShow && (
                     <div className="package-form">
-                      {packageData.selectedPackage &&
+                      {packageData.selectedPackage?.sod_view_type &&
                       packageData.selectedPackage?.sod_view_type !== null ? (
                         <TextField
                           error={notMatchedType}
@@ -304,8 +314,10 @@ const DataPackages = React.memo(() => {
                           size="small"
                           placeholder="Select type..."
                           disabled={
-                            packageData.selectedPackage?.sod_view_type !==
-                              null || !canUpdateDataFlow
+                            (packageData.selectedPackage?.sod_view_type &&
+                              packageData.selectedPackage?.sod_view_type !==
+                                null) ||
+                            !canUpdateDataFlow
                           }
                           className="mb-20 package-type"
                         />
@@ -422,7 +434,7 @@ const DataPackages = React.memo(() => {
                       onClick={() => {
                         resetForm();
                         setShowForm(true);
-                        dispatch(selectDataPackage());
+                        dispatch(addPackageBtnAction());
                       }}
                     >
                       Add data package
