@@ -287,7 +287,7 @@ const generateColumns = (tableRows = []) => {
 const TransferLog = ({ datasetProperties, transferLogFilter }) => {
   const dispatch = useDispatch();
   const params = useParams();
-  const { transferLogs, loading } = useSelector(
+  const { loading, transferHistory } = useSelector(
     (state) => state.ingestionReports
   );
   const [totalLog, setTotalLog] = useState(0);
@@ -316,9 +316,9 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
     return null;
   };
 
-  const getData = () => {
-    dispatch(getTransferLog(datasetId));
-  };
+  // const getData = () => {
+  //   dispatch(getTransferLog(datasetId));
+  // };
 
   const getFileHistoryData = (days = "") => {
     const date = moment().utc().format("YYYY-MM-DD");
@@ -335,7 +335,6 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
       setSelectedMenuText(`Within past ${val} days`);
     }
   };
-
   useEffect(() => {
     if (datasetProperties?.loadType?.toLowerCase() === "incremental") {
       setLoadType(datasetProperties?.loadType);
@@ -345,14 +344,13 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
   }, [datasetProperties]);
 
   useEffect(() => {
-    getData();
+    getFileHistoryData("10");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   useEffect(() => {
     const rows =
-      transferLogs?.records?.length > 0 && transferLogFilter
-        ? transferLogs?.records.filter((rec) => {
+      transferHistory?.records?.length > 0 && transferLogFilter
+        ? transferHistory?.records.filter((rec) => {
             if (transferLogFilter === "ingestion_issues") {
               return (
                 rec.FileTransferStatus?.toLowerCase() === "loaded with issues"
@@ -366,13 +364,13 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
             }
             return rec;
           })
-        : transferLogs?.records;
+        : transferHistory?.records;
 
     setTableRows(rows ?? []);
-    setTotalLog(transferLogs.totalSize ?? 0);
-    const col = generateColumns(transferLogs?.records);
+    setTotalLog(transferHistory.totalSize ?? 0);
+    const col = generateColumns(transferHistory?.records);
     setColumns([...col]);
-  }, [loading, transferLogs, transferLogFilter]);
+  }, [loading, transferHistory, transferLogFilter]);
 
   const CustomHeader = ({ toggleFilters }) => (
     <div style={{ display: "flex", alignItems: "center" }}>

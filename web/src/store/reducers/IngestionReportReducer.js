@@ -26,6 +26,7 @@ export const initialState = {
   datasetProperties: {},
   issuetypes: [],
   filehistory: [],
+  transferHistory: [],
 };
 
 const IngestionReportReducer = (state = initialState, action) =>
@@ -76,7 +77,7 @@ const IngestionReportReducer = (state = initialState, action) =>
         break;
       case FETCH_DATASET_INGESTION_TRANSFER_LOG_SUCCESS:
         newState.historyloading = false;
-        newState.filehistory = action.filehistory;
+        newState.transferHistory = action.transferHistory;
         break;
       case FETCH_DATASET_INGESTION_TRANSFER_LOG_FAILURE:
         newState.historyloading = false;

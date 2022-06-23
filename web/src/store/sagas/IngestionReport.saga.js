@@ -99,7 +99,7 @@ export function* fetchDatasetIngestionTransferLog(action) {
     );
     yield put({
       type: FETCH_DATASET_INGESTION_TRANSFER_LOG_SUCCESS,
-      filehistory: fetchDatas.data?.data || [],
+      transferHistory: fetchDatas.data?.data || [],
     });
   } catch (e) {
     yield put({
