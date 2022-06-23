@@ -1,7 +1,7 @@
 const apiResponse = require("../helpers/apiResponse");
 const CryptoJS = require("crypto-js");
-const vaultEndpoint = process.env.CDI_ACCESS_VAULT_END_POINT || "";
-const vaultToken = process.env.CDI_ACCESS_VAULT_TOKEN || "";
+const vaultEndpoint = process.env.VAULT_END_POINT || "";
+const vaultToken = process.env.ROOT_TOKEN || "";
 const vaultApiVersion = "v1";
 
 const vault = require("node-vault")({
@@ -12,11 +12,11 @@ const vault = require("node-vault")({
 
 const securedPaths = [
   {
-    url: "/dataflow/create-dataflow",
+    url: "/dataflow/create",
     methods: ["post"],
   },
   {
-    url: "/dataflow/create",
+    url: "/dataflow/create-dataflow",
     methods: ["post"],
   },
   {
@@ -28,12 +28,24 @@ const securedPaths = [
     methods: ["post"],
   },
   {
+    url: "/vendor/list",
+    methods: ["get"],
+  },
+  {
     url: "/datakind/create",
     methods: ["post"],
   },
   {
+    url: "/datakind/table/list",
+    methods: ["get"],
+  },
+  {
     url: "/location/create",
     methods: ["post"],
+  },
+  {
+    url: "/location/list",
+    methods: ["get"],
   },
 ];
 
