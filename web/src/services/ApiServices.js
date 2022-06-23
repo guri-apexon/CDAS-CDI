@@ -1,4 +1,4 @@
-import axios from "axios";
+import _axios from "axios";
 import CryptoJS from "crypto-js";
 import {
   baseURL,
@@ -32,15 +32,17 @@ const userId = getUserId();
 
 const config = { headers: { userId } };
 
-const headers = {
-  api_key: CryptoJS.AES.encrypt(
-    process.env.REACT_APP_API_KEY || "",
-    process.env.REACT_APP_ENCRYPTION_KEY || ""
-  ).toString(),
-  sys_name: process.env.REACT_APP_SYS_NAME,
-  token_type: "",
-  access_token: "",
-};
+const axios = _axios.create({
+  headers: {
+    api_key: CryptoJS.AES.encrypt(
+      process.env.REACT_APP_API_KEY || "",
+      process.env.REACT_APP_ENCRYPTION_KEY || ""
+    ).toString(),
+    sys_name: process.env.REACT_APP_SYS_NAME,
+    token_type: "",
+    access_token: "",
+  },
+});
 
 export const checkLocationExistsInDataFlow = async (locId) => {
   try {
@@ -161,16 +163,10 @@ export const testConnectionFSR = async (reqBody) => {
 
 export const dataflowSave = async (payload) => {
   try {
-    const res = await axios.post(
-      `${baseURL}/${DATAFLOW_SAVE}`,
-      {
-        ...payload,
-        userId,
-      },
-      {
-        headers,
-      }
-    );
+    const res = await axios.post(`${baseURL}/${DATAFLOW_SAVE}`, {
+      ...payload,
+      userId,
+    });
     return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);
@@ -178,16 +174,10 @@ export const dataflowSave = async (payload) => {
 };
 export const updateDataflow = async (payload) => {
   try {
-    const res = await axios.post(
-      `${baseURL}/${DATAFLOW_UPDATE_API}`,
-      {
-        ...payload,
-        userId,
-      },
-      {
-        headers,
-      }
-    );
+    const res = await axios.post(`${baseURL}/${DATAFLOW_UPDATE_API}`, {
+      ...payload,
+      userId,
+    });
     return res.data || [];
   } catch (err) {
     return console.log("Error", err);
@@ -321,9 +311,7 @@ export const updateDK = async (reqBody) => {
   try {
     return new Promise((resolve, reject) => {
       axios
-        .post(`${baseURL}/${DATAKINDAPI}/create`, reqBody, {
-          headers,
-        })
+        .post(`${baseURL}/${DATAKINDAPI}/create`, reqBody)
         .then((res) => {
           resolve(res.data);
         })

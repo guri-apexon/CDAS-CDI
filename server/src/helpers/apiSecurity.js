@@ -1,7 +1,7 @@
 const apiResponse = require("../helpers/apiResponse");
 const CryptoJS = require("crypto-js");
-const vaultEndpoint = process.env.CDI_ACCESS_VAULT_END_POINT || "";
-const vaultToken = process.env.CDI_ACCESS_VAULT_TOKEN || "";
+const vaultEndpoint = process.env.VAULT_END_POINT || "";
+const vaultToken = process.env.ROOT_TOKEN || "";
 const vaultApiVersion = "v1";
 
 const vault = require("node-vault")({
