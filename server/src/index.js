@@ -79,7 +79,7 @@ app.use(express.json({ limit: "50mb" }));
 
 //Route Prefixes
 app.use("/", baseRoutes);
-// app.use("/v1/api/", apiSecurity.secureApi);
+app.use("/v1/api/", apiSecurity.secureApi);
 app.use("/v1/api/", apiRoutes);
 
 app.use(
