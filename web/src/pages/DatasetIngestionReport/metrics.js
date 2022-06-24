@@ -82,13 +82,9 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
           label2: ":test",
           data: [
             {
-              Total: record.new_records + record.modified_records,
-              New: record.new_records,
-              Modified: record.modified_records,
-
-              // Total: 1000 / 1000,
-              // New: 5000 / 1000,
-              // Modified: 1000 / 1000,
+              Total: (record.new_records + record.modified_records) / 1000,
+              New: record.new_records / 1000,
+              Modified: record.modified_records / 1000,
             },
           ],
         });
@@ -99,10 +95,10 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
           label: `${formatDate(record.lastsucceeded)}`,
           data: [
             {
-              Total: record.new_records + record.modified_records,
-              New: record.new_records,
-              Modified: record.modified_records,
-              Unchanged: record.new_records,
+              Total: (record.new_records + record.modified_records) / 1000,
+              New: record.new_records / 1000,
+              Modified: record.modified_records / 1000,
+              Unchanged: record.new_records / 1000,
             },
           ],
         });
@@ -232,12 +228,12 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
             >
               {historyData.length > 0 ? (
                 <ClusterColumnChart
-                  {...(historyData.length > 4 && {
-                    width:
-                      historyData.length > 10
-                        ? historyData.length * 80 + 1000
-                        : "1560",
-                  })}
+                  // {...(historyData.length > 4 && {
+                  //   width:
+                  //     historyData.length > 10
+                  //       ? historyData.length * 80 + 1000
+                  //       : "1560",
+                  // })}
                   data={historyData}
                   suffix="k"
                   yTicks={6}
