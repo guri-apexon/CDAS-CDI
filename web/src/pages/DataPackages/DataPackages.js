@@ -116,7 +116,7 @@ const DataPackages = React.memo(() => {
   // };
 
   useEffect(() => {
-    if (packageData || packageData.openAddPackage) {
+    if (packageData.openAddPackage) {
       // getPackages();
       resetForm();
       setShowForm(true);
@@ -240,9 +240,8 @@ const DataPackages = React.memo(() => {
                   <div className="flex title">
                     <DataPackageIcon />
                     <Typography className="b-font">
-                      {packageData.openAddPackage
-                        ? "Creating New Package"
-                        : packageData.selectedPackage?.name}
+                      {packageData.selectedPackage.name ||
+                        "Creating New Package"}
                     </Typography>
                   </div>
                   <ButtonGroup
@@ -315,10 +314,8 @@ const DataPackages = React.memo(() => {
                           size="small"
                           placeholder="Select type..."
                           disabled={
-                            (packageData.selectedPackage?.sod_view_type &&
-                              packageData.selectedPackage?.sod_view_type !==
-                                null) ||
-                            !canUpdateDataFlow
+                            packageData.selectedPackage?.sod_view_type !==
+                              null || !canUpdateDataFlow
                           }
                           className="mb-20 package-type"
                         />
