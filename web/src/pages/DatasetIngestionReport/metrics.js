@@ -76,7 +76,6 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
     const histories = [];
     if (datasetProperties?.loadType?.toLowerCase() === "incremental") {
       filehistory?.records?.forEach((record) => {
-        console.log(record);
         histories.push({
           label: `${formatDate(record.lastsucceeded)}`,
           label2: ":test",
