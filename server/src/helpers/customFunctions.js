@@ -105,20 +105,14 @@ exports.validation = (data) => {
       typeof val.value === val.type
     ) {
       if (val.maxLength && val.value.length > val.maxLength) {
-        msg.push({
-          err: ` ${val.key} should be less than ${val.maxLength} characters  `,
-        });
+        msg.push(`${val.key} should be less than ${val.maxLength} characters`);
       }
       // console.log(val.key);
     } else {
       if (val.key === "p_path") {
-        msg.push({
-          err: `If Package is opted, then Package Path is mandatory`,
-        });
+        msg.push(`If Package is opted, then Package Path is mandatory`);
       } else {
-        msg.push({
-          err: ` ${val.key} is required and data type should be ${val.type} `,
-        });
+        msg.push(`${val.key} is required and data type should be ${val.type}`);
       }
     }
   });
@@ -276,6 +270,13 @@ exports.isNumbers = (value) => {
 exports.isValidDate = (value) => {
   if (value.includes("$") || String.raw`${value}`.includes("\\")) {
     // return "\\ and $ are not allowed";
+    return false;
+  }
+  return true;
+};
+
+exports.hasSpecialCHar = (str) => {
+  if (/[`!@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?~]/.test(str)) {
     return false;
   }
   return true;

@@ -61,10 +61,30 @@ exports.createDataKind = async (req, res) => {
       );
     }
 
+    if (dkName) {
+      if (/\s/.test(dkName) === true) {
+        return res.status(400).json({
+          // status: 400,
+          message: "Operation failed",
+          data: "Only alphanumeric and ‘_’ are  allowed in Datakind Name. Please amend.",
+        });
+      }
+      if (helper.hasSpecialCHar(dkName) === false) {
+        return res.status(400).json({
+          // status: 400,
+          message: "Operation failed",
+          data: " Only alphanumeric and ‘_’ are  allowed in Datakind Name. Please amend.",
+        });
+      }
+    }
+
+    // return;
+
     let payload = [curDate, dkName, dkDesc || null, dkESName];
 
     // for cdi application
     if (systemName === "CDI") {
+      console.log("UI Create");
       //create datakind for cdi application
       if (!dkId) {
         const inset = await DB.executeQuery(insertQuery, [
@@ -158,6 +178,7 @@ exports.createDataKind = async (req, res) => {
     if (existingDK?.rowCount) {
       // update of datakind for external system
       let id = existingDK?.rows[0]?.datakindid;
+
       const isExist = await checkIsExistInDF(id);
 
       // inactivating status is not allowed
@@ -167,12 +188,13 @@ exports.createDataKind = async (req, res) => {
 
       // update datakind and related dataflow
       if (isExist) {
+        console.log("line 189");
         const updatedData = await DB.executeQuery(updateQuery, [
           ...payload,
           null,
           id,
         ]);
-
+        console.log("line 195");
         if (!updatedData?.rowCount) {
           return apiResponse.ErrorResponse(res, commonError);
         }
@@ -204,7 +226,12 @@ exports.createDataKind = async (req, res) => {
         });
         return apiResponse.successResponseWithMoreData(res, { ExternalId, id });
       } else {
-        await DB.executeQuery(updateActive, [...payload, dkStatus, null, id]);
+        await DB.executeQuery(updateActive, [
+          ...payload,
+          dkStatus,
+          ExternalId, //null // Null value was replace with ExternalId
+          id,
+        ]);
         return apiResponse.successResponseWithMoreData(res, { ExternalId, id });
       }
     } else {
@@ -262,7 +289,16 @@ exports.getDatakindList = function (req, res) {
 
 exports.getDKList = async (req, res) => {
   try {
-    let getDKListQuery = `SELECT datakindid as "ID", name as "dkName", extrnl_sys_nm as "dkESName", extrnl_id as "dkExternalId", dk_desc as "dkDesc", active as "dkStatus" from ${schemaName}.datakind order by name`;
+    // const { extrnl_sys_nm } = req.query;
+    let extrnl_sys_nm = req.query.extrnl_sys_nm || null;
+    let filter = "";
+    if (extrnl_sys_nm) {
+      filter = `where extrnl_sys_nm = '${extrnl_sys_nm}'`;
+    }
+
+    let getDKListQuery = `SELECT datakindid as "ID", name as "dkName", extrnl_sys_nm as "dkESName", extrnl_id as "dkExternalId", dk_desc as "dkDesc", active as "dkStatus" from ${schemaName}.datakind 
+    ${filter} order by name`;
+    // console.log(getDKListQuery);
     let dbQuery = await DB.executeQuery(getDKListQuery);
     Logger.info({ message: "getDKList" });
     const datakind = (await dbQuery.rows) || [];

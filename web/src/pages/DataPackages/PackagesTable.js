@@ -11,17 +11,23 @@ import Menu from "apollo-react/components/Menu";
 import Status from "apollo-react/components/Status";
 import StatusDotSolid from "apollo-react-icons/StatusDotSolid";
 import MenuItem from "apollo-react/components/MenuItem";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { ReactComponent as RoundPlusSvg } from "../../components/Icons/roundplus.svg";
 import { ReactComponent as PackageIcon } from "../../components/Icons/datapackage.svg";
 import {
+  selectDataPackage,
   deletePackage,
   redirectToDataSet,
   updateStatus,
 } from "../../store/actions/DataPackageAction";
 import { updateDSState } from "../../store/actions/DataFlowAction";
 import { updateDSStatus } from "../../store/actions/DataSetsAction";
+import { isSftp } from "../../utils";
+import usePermission, {
+  Categories,
+  Features,
+} from "../../components/Common/usePermission";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
@@ -72,6 +78,13 @@ const PackagesList = ({ data, userInfo }) => {
   const history = useHistory();
   const [expandedRows, setExpandedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
+  const dashboard = useSelector((state) => state.dashboard);
+  const { locationType } = dashboard?.selectedDataFlow;
+
+  const { canUpdate: canUpdateDataFlow } = usePermission(
+    Categories.CONFIGURATION,
+    Features.DATA_FLOW_CONFIGURATION
+  );
 
   const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
@@ -92,8 +105,10 @@ const PackagesList = ({ data, userInfo }) => {
           <span className="add-dataset">
             <Tooltip title="Add dataset" disableFocusListener>
               <RoundPlusSvg
+                disabled={!canUpdateDataFlow}
                 className="add-dataset-btn"
                 onClick={() =>
+                  canUpdateDataFlow &&
                   addDataSet(row.dataflowid, "", row.datapackageid, row.name)
                 }
               />
@@ -196,6 +211,7 @@ const PackagesList = ({ data, userInfo }) => {
     };
     const editAction = () => {
       if (packageId) {
+        dispatch(selectDataPackage(row));
         history.push("/dashboard/data-packages");
       }
     };
@@ -203,20 +219,30 @@ const PackagesList = ({ data, userInfo }) => {
       {
         text: `Set data package ${active === 1 ? "inactive" : "active"}`,
         onClick: () => setActive(active),
+        disabled: !canUpdateDataFlow,
       },
       {
         text: "Set all dataset to active",
         // onClick: () => onRowEdit(packageName),
+        disabled: !canUpdateDataFlow,
       },
       {
         text: "Set all datasets to inactive",
         // onClick: () => onRowEdit(packageName),
+        disabled: !canUpdateDataFlow,
       },
       {
         text: "Delete data package",
         onClick: deleteAction,
+        disabled: !canUpdateDataFlow,
       },
     ];
+    if (isSftp(locationType)) {
+      menuItems.unshift({
+        text: "Edit data package",
+        onClick: editAction,
+      });
+    }
     const openAction = (e) => {
       setAnchorEl(e.currentTarget);
       setOpen(true);
@@ -238,7 +264,12 @@ const PackagesList = ({ data, userInfo }) => {
           >
             {menuItems.map((menu) => {
               return (
-                <MenuItem key={menu.text} size="small" onClick={menu.onClick}>
+                <MenuItem
+                  key={menu.text}
+                  size="small"
+                  disabled={menu.disabled}
+                  onClick={menu.onClick}
+                >
                   {menu.text}
                 </MenuItem>
               );

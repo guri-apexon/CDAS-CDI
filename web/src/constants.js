@@ -50,8 +50,10 @@ export const PACKAGES_LIST_SUCCESS = "PACKAGES_LIST_SUCCESS";
 export const PACKAGES_LIST_FAILURE = "PACKAGES_LIST_FAILURE";
 
 export const ADD_DATA_PACKAGE = "ADD_DATA_PACKAGE";
+export const SELECT_DATA_PACKAGE = "SELECT_DATA_PACKAGE";
 export const ADD_PACKAGE_SUCCESS = "ADD_PACKAGE_SUCCESS";
 export const ADD_PACKAGE_FAILURE = "ADD_PACKAGE_FAILURE";
+export const EDIT_DATA_PACKAGE = "EDIT_DATA_PACKAGE";
 
 export const UPDATE_DATA_PACKAGE = "UPDATE_DATA_PACKAGE";
 export const UPDATE_DATA_PACKAGE_SUCCESS = "UPDATE_DATA_PACKAGE_SUCCESS";
@@ -251,6 +253,7 @@ export const SETTINGAPI = "v1/api/system-settings";
 export const INGESTIONREPORTAPI = "v1/api/dataset/ingestion-report";
 
 export const baseURL = process.env.REACT_APP_API_URL;
+export const API_URL = `${baseURL}/v1/api`;
 
 export const allowedTypes = [
   "xlsx",
