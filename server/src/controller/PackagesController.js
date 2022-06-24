@@ -180,8 +180,10 @@ exports.addPackage = async function (req, res) {
 
     return apiResponse.successResponseWithData(
       res,
-      "Success! Data Package saved.",
-      resData
+      package_id
+        ? "Success! Data Package updated."
+        : "Success! Data Package saved.",
+      {}
     );
   } catch (err) {
     return apiResponse.ErrorResponse(res, err);
