@@ -31,7 +31,6 @@ import {
   addDataPackage,
   selectDataPackage,
   getPackagesList,
-  updateStatus,
   addPackageBtnAction,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
@@ -165,34 +164,19 @@ const DataPackages = React.memo(() => {
       dataflow_id: dfId,
       user_id: userInfo.userId,
     };
-    const sodReqBody = {
+    const updateReqBody = {
+      ...reqBody,
       package_id: packageData.selectedPackage?.datapackageid,
-      compression_type: compression,
-      naming_convention: namingConvention,
-      package_password: packagePassword,
-      sftp_path: sftpPath,
-      study_id: selectedCard.prot_id,
-      dataflow_id: dfId,
-      user_id: userInfo.userId,
       sod_view_type: sodValue,
     };
-    if (!packageData.selectedPackage) {
-      const result = await submitDataPackage(reqBody);
-      if (result.status === 1) {
-        showSuccessMessage(result.message);
-        dispatch(addDataPackage());
-      } else {
-        showErrorMessage(result.message);
-      }
+    const payload = packageData.selectedPackage ? updateReqBody : reqBody;
+    const result = await submitDataPackage(payload);
+    if (result.status === 1) {
+      showSuccessMessage(result.message);
+      dispatch(addDataPackage());
+      if (sodValue !== null) history.push("/dashboard/dataflow-management");
     } else {
-      const sodResult = await submitDataPackage(sodReqBody);
-      if (sodResult.status === 1) {
-        showSuccessMessage("Success! Data Package updated.");
-        dispatch(addDataPackage());
-        if (sodValue !== null) history.push("/dashboard/dataflow-management");
-      } else {
-        showErrorMessage(sodResult.message);
-      }
+      showErrorMessage(result.message);
     }
 
     resetForm();
@@ -251,17 +235,14 @@ const DataPackages = React.memo(() => {
                         label: "Cancel",
                         size: "small",
                         onClick: () =>
-                          (packageData.selectedPackage?.sod_view_type &&
-                            packageData.selectedPackage?.sod_view_type !==
-                              null) ||
+                          packageData.selectedPackage?.sod_view_type ||
                           !canUpdateDataFlow
                             ? history.push("/dashboard")
                             : setShowForm(false),
                       },
                       {
                         label: `${
-                          packageData.selectedPackage?.sod_view_type &&
-                          packageData.selectedPackage?.sod_view_type !== null
+                          packageData.selectedPackage?.sod_view_type
                             ? "Save Data Flow"
                             : "Save"
                         }`,
@@ -290,9 +271,7 @@ const DataPackages = React.memo(() => {
                       checked={configShow}
                       onChange={showConfig}
                       disabled={
-                        (packageData.selectedPackage?.sod_view_type &&
-                          packageData.selectedPackage?.sod_view_type !==
-                            null) ||
+                        packageData.selectedPackage?.sod_view_type ||
                         !canUpdateDataFlow
                       }
                     />
@@ -305,8 +284,7 @@ const DataPackages = React.memo(() => {
                   )}
                   {configShow && (
                     <div className="package-form">
-                      {packageData.selectedPackage?.sod_view_type &&
-                      packageData.selectedPackage?.sod_view_type !== null ? (
+                      {packageData.selectedPackage?.sod_view_type ? (
                         <TextField
                           error={notMatchedType}
                           label="Package Compression Type"
@@ -314,8 +292,8 @@ const DataPackages = React.memo(() => {
                           size="small"
                           placeholder="Select type..."
                           disabled={
-                            packageData.selectedPackage?.sod_view_type !==
-                              null || !canUpdateDataFlow
+                            packageData.selectedPackage?.sod_view_type ||
+                            !canUpdateDataFlow
                           }
                           className="mb-20 package-type"
                         />
