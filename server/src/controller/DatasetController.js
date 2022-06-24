@@ -19,7 +19,15 @@ async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
   return result;
 }
 
-async function saveSQLDataset(res, values, dpId, userId, dfId) {
+async function saveSQLDataset(
+  res,
+  values,
+  dpId,
+  userId,
+  dfId,
+  versionFreezed,
+  existingVersion
+) {
   try {
     Logger.info({ message: "create SQL Dataset" });
     const curDate = helper.getCurrentTime();
@@ -81,14 +89,26 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
       dpId,
       datasetObj.datasetid,
       jsonData,
-      attributeName
+      attributeName,
+      versionFreezed
     );
     if (!historyVersion) throw new Error("History not updated");
+
+    var resData = {
+      ...datasetObj,
+      version: historyVersion,
+    };
+    if (existingVersion === historyVersion) {
+      resData.versionBumped = false;
+    } else {
+      resData.versionBumped = true;
+    }
 
     return apiResponse.successResponseWithData(
       res,
       "Dataset was saved successfully",
-      datasetObj
+      // datasetObj
+      resData
     );
   } catch (err) {
     // console.log(" Catch::::", err);
@@ -119,21 +139,29 @@ exports.saveDatasetData = async (req, res) => {
       );
     }
 
-    if (values.locationType.toLowerCase() === "jdbc") {
-      return saveSQLDataset(res, values, dpId, userId, dfId);
-    }
-
-    const curDate = helper.getCurrentTime();
-    // const versionFreezed = false;
-
-    Logger.info({ message: "create Dataset" });
-
     const {
       rows: [oldVersion],
     } = await DB.executeQuery(
       `SELECT version from ${schemaName}.dataflow_version
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`
     );
+
+    if (values.locationType.toLowerCase() === "jdbc") {
+      return saveSQLDataset(
+        res,
+        values,
+        dpId,
+        userId,
+        dfId,
+        versionFreezed,
+        oldVersion.version
+      );
+    }
+
+    const curDate = helper.getCurrentTime();
+    // const versionFreezed = false;
+
+    Logger.info({ message: "create Dataset" });
 
     const body = [
       values.datasetName,
@@ -246,7 +274,7 @@ exports.saveDatasetData = async (req, res) => {
   }
 };
 
-async function updateSQLDataset(res, values) {
+async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
   try {
     Logger.info({ message: "update SQL Dataset" });
     const curDate = helper.getCurrentTime();
@@ -265,6 +293,7 @@ async function updateSQLDataset(res, values) {
       dpId,
       datasetid,
     } = values;
+
     let updatedSqlQuery = "";
     if (isCustomSQL === "No") {
       const splitted = sQLQuery.split("from");
@@ -333,7 +362,7 @@ async function updateSQLDataset(res, values) {
     };
 
     const updateConfg = Object.assign(idObj, diffObj);
-
+    let newVersion = "";
     if (Object.keys(diffObj).length != 0) {
       const historyVersion = await CommonController.addDatasetHistory(
         dfId,
@@ -343,15 +372,28 @@ async function updateSQLDataset(res, values) {
         JSON.stringify(updateConfg),
         null,
         oldData,
-        diffObj
+        diffObj,
+        versionFreezed
       );
       if (!historyVersion) throw new Error("History not updated");
+      newVersion = historyVersion;
+    }
+
+    var resData = {
+      ...updateDS.rows[0],
+      version: newVersion,
+    };
+    if (existingVersion === newVersion) {
+      resData.versionBumped = false;
+    } else {
+      resData.versionBumped = true;
     }
 
     return apiResponse.successResponseWithData(
       res,
       "Dataset was updated successfully",
-      updateDS.rows[0]
+      // updateDS.rows[0]
+      resData
     );
   } catch (err) {
     //throw error in json response with status 500.
@@ -404,7 +446,7 @@ exports.updateDatasetData = async (req, res) => {
       );
     }
     if (!helper.isSftp(values.locationType)) {
-      return updateSQLDataset(res, values);
+      return updateSQLDataset(res, values, versionFreezed, oldVersion.version);
     }
     // For SFTP Datasets update
     const incremental = values.loadType === "Incremental" ? "Y" : "N";
