@@ -104,18 +104,24 @@ const Dataset = () => {
   const messageContext = useContext(MessageContext);
   const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
-  const dashboard = useSelector((state) => state.dashboard);
   const packageData = useSelector((state) => state.dataPackage);
-  const dataFlow = useSelector((state) => state.dataFlow);
+  const {
+    dataFlowdetail: { name, loctyp, testflag, srclocid },
+    dsProdLock,
+    dsTestLock,
+    dsTestProdLock,
+    isDatasetCreation,
+    versionFreezed,
+  } = useSelector((state) => state.dataFlow);
+  const {
+    selectedCard,
+    selectedDataFlow: { dataFlowId: dfId },
+  } = useSelector((state) => state.dashboard);
 
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
     usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
 
   const { selectedDSDetails } = packageData;
-  const {
-    selectedCard,
-    selectedDataFlow: { dataFlowId: dfId },
-  } = dashboard;
   const {
     datapackageid: dpId,
     datapackageName,
@@ -135,14 +141,6 @@ const Dataset = () => {
   } = dataSets;
   const datasetid = params.datasetId;
   const { prot_id: studyId } = selectedCard;
-  const {
-    dataFlowdetail,
-    dsProdLock,
-    dsTestLock,
-    dsTestProdLock,
-    isDatasetCreation,
-  } = dataFlow;
-  const { name, loctyp, testflag, srclocid } = dataFlowdetail;
   const { datasetid: dsId } = selectedDataset;
   const { isCustomSQL, tableName } = formDataSQL;
 
@@ -301,8 +299,8 @@ const Dataset = () => {
         testFlag: testflag,
         dfId,
         studyId,
+        versionFreezed,
       };
-      console.log("formValue", formValue);
       if (formValue?.sQLQuery?.includes("*")) {
         messageContext.showErrorMessage(
           `Please remove * from query to proceed.`

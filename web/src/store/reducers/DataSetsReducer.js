@@ -118,9 +118,9 @@ const DataFlowReducer = (state = initialState, action) =>
       case FETCH_DATAKIND_FAILURE:
         newState.loading = false;
         break;
-      case PREVENT_CD_VERSION_BUMP:
-        newState.CDVersionBump = action.flag;
-        break;
+      // case PREVENT_CD_VERSION_BUMP:
+      //   newState.CDVersionBump = action.flag;
+      //   break;
       case SAVE_DATASET_DATA:
         newState.loading = true;
         break;
