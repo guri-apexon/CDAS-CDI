@@ -62,10 +62,34 @@ exports.secureApi = async (req, res, next) => {
 
     if (pathIndex === -1) return next();
 
-    const { api_key, sys_name, token_type, access_token } = headers;
+    const api_key = headers["api-key"];
+    const sys_name = headers["sys-name"];
+    const token_type = headers["token-type"];
+    const access_token = headers["access-token"];
 
-    if (!api_key || !process.env.ENCRYPTION_KEY || !sys_name)
-      return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
+    if (!api_key)
+      return apiResponse.unauthorizedResponse(
+        res,
+        "Authentication failed - Invalid Api Key"
+      );
+
+    if (!token_type)
+      return apiResponse.unauthorizedResponse(
+        res,
+        "Authentication failed - Invalid Token Type"
+      );
+
+    if (!access_token)
+      return apiResponse.unauthorizedResponse(
+        res,
+        "Authentication failed - Invalid Token"
+      );
+
+    if (!sys_name)
+      return apiResponse.unauthorizedResponse(
+        res,
+        "Authentication failed - Invalid External System Name"
+      );
 
     const bytes = CryptoJS.AES.decrypt(
       api_key,
@@ -74,13 +98,15 @@ exports.secureApi = async (req, res, next) => {
 
     const original_api_key = bytes.toString(CryptoJS.enc.Utf8);
 
-    const vaultData = await vault.read(`kv/API-KEYS/${sys_name}`);
-
-    if (vaultData && original_api_key === vaultData?.data?.api_key) {
-      return next();
-    } else {
-      return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
+    try {
+      const vaultData = await vault.read(`kv/API-KEYS/${sys_name}`);
+      if (vaultData && original_api_key === vaultData?.data?.api_key)
+        return next();
+    } catch (error) {
+      return apiResponse.ErrorResponse(res, error);
     }
+
+    return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
   } catch (error) {
     return apiResponse.ErrorResponse(res, error);
   }
