@@ -1,4 +1,6 @@
+/* eslint-disable dot-notation */
 import axios from "axios";
+// import CryptoJS from "crypto-js";
 import {
   baseURL,
   STUDYSEARCH,
@@ -30,6 +32,35 @@ import { deleteAllCookies, getUserId } from "../utils/index";
 const userId = getUserId();
 
 const config = { headers: { userId } };
+
+// const axios = _axios.create({
+//   headers: {
+//     api_key: CryptoJS.AES.encrypt(
+//       process.env.REACT_APP_API_KEY || "",
+//       process.env.REACT_APP_ENCRYPTION_KEY || ""
+//     ).toString(),
+//     sys_name: process.env.REACT_APP_SYS_NAME,
+//     token_type: "",
+//     access_token: "",
+//   },
+// });
+
+// axios.interceptors.request.use(
+//   (axiosconfig) => {
+//     axiosconfig.headers["api_key"] = CryptoJS.AES.encrypt(
+//       process.env.REACT_APP_API_KEY || "",
+//       process.env.REACT_APP_ENCRYPTION_KEY || ""
+//     ).toString();
+//     axiosconfig.headers["sys_name"] = process.env.REACT_APP_SYS_NAME;
+//     axiosconfig.headers["token_type"] = "";
+//     axiosconfig.headers["access_token"] = "";
+
+//     return axiosconfig;
+//   },
+//   (error) => {
+//     return Promise.reject(error);
+//   }
+// );
 
 export const checkLocationExistsInDataFlow = async (locId) => {
   try {

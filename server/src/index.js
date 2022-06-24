@@ -7,9 +7,9 @@ const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
-
 const app = express();
 dotenv.config();
+const apiSecurity = require("./helpers/apiSecurity");
 const PORT = process.env.PORT;
 let dir = "./public/exports";
 const apiRoutes = require("./route/apiRoutes");
@@ -45,6 +45,7 @@ app.use(express.json({ limit: "50mb" }));
 
 //Route Prefixes
 app.use("/", baseRoutes);
+// app.use("/v1/api/", apiSecurity.secureApi);
 app.use("/v1/api/", apiRoutes);
 
 app.use(
