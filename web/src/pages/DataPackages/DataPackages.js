@@ -125,7 +125,6 @@ const DataPackages = React.memo(() => {
   }, [packageData.openAddPackage]);
 
   useEffect(() => {
-    console.log("pd", packageData.selectedPackage);
     if (!packageData.openAddPackage && packageData.selectedPackage) {
       setShowForm(true);
       setConfigShow(true);
@@ -173,7 +172,7 @@ const DataPackages = React.memo(() => {
       package_id: packageData.selectedPackage?.datapackageid,
       sod_view_type: sodValue,
     };
-    console.log("req", reqBody, updateReqBody);
+    
     const payload = packageData.selectedPackage ? updateReqBody : reqBody;
     const result = await submitDataPackage(payload);
     if (result.status === 1) {
