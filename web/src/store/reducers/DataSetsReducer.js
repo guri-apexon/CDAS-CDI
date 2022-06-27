@@ -43,7 +43,6 @@ import {
   GET_LOCATION_DETAIL,
   FETCH_LOCATION_DETAIL_FAILURE,
   FETCH_LOCATION_DETAIL_SUCCESS,
-  PREVENT_CD_VERSION_BUMP,
 } from "../../constants";
 
 import { dateTypeForJDBC, parseBool } from "../../utils/index";
