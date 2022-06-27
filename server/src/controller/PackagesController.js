@@ -83,7 +83,7 @@ exports.addPackage = async function (req, res) {
 
       package =
         query_response && query_response.rowCount > 0 && query_response.rows[0];
-      const pp = package_password ? "Yes" : "No";
+      // const pp = package_password ? "Yes" : "No";
       if (package) {
         const updateResult = await DB.executeQuery(
           `UPDATE ${schemaName}.datapackage
@@ -93,7 +93,7 @@ exports.addPackage = async function (req, res) {
             dataflow_id,
             compression_type,
             sftp_path,
-            pp,
+            package_password,
             sod_view_type,
             naming_convention,
           ]
@@ -113,11 +113,11 @@ exports.addPackage = async function (req, res) {
           new_val: sftp_path,
         });
 
-      if (package.password !== pp)
+      if (package.password !== package_password)
         audit_log.push({
           attribute: "password",
           old_val: package.password,
-          new_val: pp,
+          new_val: package_password,
         });
 
       if (package.sod_view_type !== sod_view_type)
@@ -141,7 +141,8 @@ exports.addPackage = async function (req, res) {
           compression_type,
           naming_convention,
           sftp_path,
-          package_password ? "Yes" : "No",
+          package_password,
+          // ? "Yes" : "No",
           "1",
           "N",
         ]
