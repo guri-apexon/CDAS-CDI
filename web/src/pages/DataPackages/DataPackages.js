@@ -39,6 +39,7 @@ import usePermission, {
   Features,
 } from "../../components/Common/usePermission";
 import { packageComprTypes, packageTypes } from "../../utils/constants";
+import Header from "../../components/DataFlow/Header";
 
 const useStyles = makeStyles(() => ({
   rightPanel: {
@@ -65,20 +66,21 @@ const DataPackages = React.memo(() => {
   const [notMatchedType, setNotMatchedType] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const packageData = useSelector((state) => state.dataPackage);
-  const dashboard = useSelector((state) => state.dashboard);
-  const dataFlow = useSelector((state) => state.dataFlow);
+  const { dataFlowdetail, versionFreezed } = useSelector(
+    (state) => state.dataFlow
+  );
   const userInfo = getUserInfo();
   const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
+  const {
+    selectedCard,
+    selectedDataFlow: { dataFlowId: dfId },
+  } = useSelector((state) => state.dashboard);
 
   const { canUpdate: canUpdateDataFlow } = usePermission(
     Categories.CONFIGURATION,
     Features.DATA_FLOW_CONFIGURATION
   );
 
-  const {
-    selectedCard,
-    selectedDataFlow: { dataFlowId: dfId },
-  } = dashboard;
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
@@ -163,6 +165,7 @@ const DataPackages = React.memo(() => {
       study_id: selectedCard.prot_id,
       dataflow_id: dfId,
       user_id: userInfo.userId,
+      versionFreezed,
     };
     const updateReqBody = {
       ...reqBody,
@@ -174,7 +177,8 @@ const DataPackages = React.memo(() => {
     if (result.status === 1) {
       showSuccessMessage(result.message);
       dispatch(addDataPackage());
-      if (sodValue !== null) history.push("/dashboard/dataflow-management");
+      if (sodValue !== null)
+        history.push(`/dashboard/dataflow-management/${dfId}`);
     } else {
       showErrorMessage(result.message);
     }
@@ -205,7 +209,7 @@ const DataPackages = React.memo(() => {
         open={isPanelOpen}
         width={446}
       >
-        <LeftPanel dataflowSource={dataFlow?.dataFlowdetail} />
+        <LeftPanel dataflowSource={dataFlowdetail} />
       </Panel>
       <Panel
         className={
@@ -217,45 +221,24 @@ const DataPackages = React.memo(() => {
         <main className="right-content">
           <Paper className="no-shadow">
             <Box className="top-content">
-              <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />
-              {console.log("renderAgainPackage")}
-              {showForm && (
-                <>
-                  <div className="flex title">
-                    <DataPackageIcon />
-                    <Typography className="b-font">
-                      {packageData.selectedPackage.name ||
-                        "Creating New Package"}
-                    </Typography>
-                  </div>
-                  <ButtonGroup
-                    alignItems="right"
-                    buttonProps={[
-                      {
-                        label: "Cancel",
-                        size: "small",
-                        onClick: () =>
-                          packageData.selectedPackage?.sod_view_type ||
-                          !canUpdateDataFlow
-                            ? history.push("/dashboard")
-                            : setShowForm(false),
-                      },
-                      {
-                        label: `${
-                          packageData.selectedPackage?.sod_view_type
-                            ? "Save Data Flow"
-                            : "Save"
-                        }`,
-                        disabled: !canUpdateDataFlow,
-                        size: "small",
-                        onClick: submitPackage,
-                      },
-                    ]}
-                  />
-                </>
-              )}
+              <Header
+                close={() => history.push("/dashboard")}
+                submit={submitPackage}
+                breadcrumbItems={breadcrumpItems}
+                headerTitle={
+                  packageData.selectedPackage?.name || "Creating New Package"
+                }
+                icon={<DataPackageIcon className={classes.contentIcon} />}
+                saveBtnLabel={
+                  packageData.selectedPackage?.sod_view_type
+                    ? "Save Data Flow"
+                    : "Save"
+                }
+                saveDisabled={!canUpdateDataFlow}
+              />
             </Box>
           </Paper>
+
           <Box style={{ padding: 24, backgroundColor: "#f6f7fb" }}>
             <Paper className="add-package-box">
               {showForm ? (

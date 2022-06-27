@@ -14,7 +14,7 @@ import {
   UPDATE_DS,
   RESET_DF_FORMDATA,
   TOGGLE_DF_BTN,
-  PREVENT_CD_VERSION_BUMP,
+  SET_VERSION_FREEZED,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -111,9 +111,16 @@ export const resetDfFormData = () => {
   };
 };
 
-export const preventCDVersionBump = (flag = true) => {
+// export const preventCDVersionBump = (flag = true) => {
+//   return {
+//     type: PREVENT_CD_VERSION_BUMP,
+//     flag: !flag,
+//   };
+// };
+
+export const freezeDfVersion = (flag = true) => {
   return {
-    type: PREVENT_CD_VERSION_BUMP,
-    flag: !flag,
+    type: SET_VERSION_FREEZED,
+    freezed: flag,
   };
 };

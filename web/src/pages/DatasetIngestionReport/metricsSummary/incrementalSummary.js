@@ -80,11 +80,11 @@ const IncrementalSummary = ({
           }
         />
         <div className="post-ingestion-issues">
-          <Typography variant="h2" gutterBottom darkMode>
-            {totalRecords}
-          </Typography>
+          {/* <Typography variant="h2" gutterBottom darkMode>
+            
+          </Typography> */}
           <Typography gutterBottom darkMode style={{ marginBottom: 32 }}>
-            Total Records
+            {`${totalRecords} Total Records`}
           </Typography>
 
           <Link
@@ -162,11 +162,8 @@ const IncrementalSummary = ({
           }
         />
         <div className="post-ingestion-issues">
-          <Typography variant="h2" gutterBottom darkMode>
-            {totalFileIngested}
-          </Typography>
           <Typography gutterBottom darkMode style={{ marginBottom: 32 }}>
-            Total files ingested
+            {`${totalFileIngested} Total files ingested `}
           </Typography>
 
           <Link

@@ -59,7 +59,7 @@ export const updateDatasetColumns = (
   dfId,
   dpId,
   userId,
-  CDVersionBump
+  versionFreezed
 ) => {
   return {
     type: UPDATE_COLUMNS_DATA,
@@ -68,7 +68,7 @@ export const updateDatasetColumns = (
     dfId,
     dpId,
     userId,
-    CDVersionBump,
+    versionFreezed,
   };
 };
 
