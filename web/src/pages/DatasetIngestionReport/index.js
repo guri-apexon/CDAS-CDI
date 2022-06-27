@@ -163,7 +163,11 @@ const DatasetIngestionReport = () => {
             {datasetProperties?.DatasetName}
           </Typography>
 
-          <Tooltip title="test" placement="top" style={{ marginLeft: 0 }}>
+          <Tooltip
+            title={datasetProperties?.Vendor}
+            placement="top"
+            style={{ marginLeft: 0 }}
+          >
             <span>{datasetProperties?.Vendor}</span>
           </Tooltip>
         </Box>
