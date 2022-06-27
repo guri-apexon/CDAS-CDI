@@ -181,7 +181,7 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
                   variant="body2"
                   style={{ fontSize: 14, marginTop: 0 }}
                 >
-                  {`${totalSize} files transfered`}
+                  {`<${totalSize}> files transfered`}
                 </Typography>
               </div>
               <div className="right-part">
@@ -227,12 +227,12 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
             >
               {historyData.length > 0 ? (
                 <ClusterColumnChart
-                  {...(historyData.length > 4 && {
-                    width:
-                      historyData.length > 10
-                        ? historyData.length * 80 + 1000
-                        : "1560",
-                  })}
+                  // {...(historyData.length > 4 && {
+                  //   width:
+                  //     historyData.length > 10
+                  //       ? historyData.length * 80 + 1000
+                  //       : "1560",
+                  // })}
                   data={historyData}
                   suffix="k"
                   yTicks={6}
