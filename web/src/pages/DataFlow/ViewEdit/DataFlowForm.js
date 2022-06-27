@@ -2,6 +2,7 @@
 import React, { createRef, useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch } from "react-redux";
+import { useHistory } from "react-router";
 import { reduxForm, getFormValues } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
@@ -86,7 +87,8 @@ const styles = {
 
 const DataFlowFormBase = (props) => {
   const [locationOpen, setLocationOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const history = useHistory();
   const {
     handleSubmit,
     classes,
@@ -171,6 +173,11 @@ const DataFlowFormBase = (props) => {
     }
   }, [dataFlowdetail]);
 
+  useEffect(() => {
+    if (history.location?.state?.from === "dashboard") {
+      setIsModalOpen(true);
+    }
+  }, [history]);
   useEffect(() => {
     return () => {
       setDataLoaded(false);

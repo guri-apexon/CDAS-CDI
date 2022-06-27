@@ -177,7 +177,8 @@ const DataPackages = React.memo(() => {
     if (result.status === 1) {
       showSuccessMessage(result.message);
       dispatch(addDataPackage());
-      if (sodValue !== null) history.push("/dashboard/dataflow-management");
+      if (sodValue !== null)
+        history.push(`/dashboard/dataflow-management/${dfId}`);
     } else {
       showErrorMessage(result.message);
     }
