@@ -362,6 +362,7 @@ module.exports = {
         if (versionFreezed != true) {
           version = Number(historyVersion) + 1;
         }
+
         const values = [dfId, version, config_json, userId, curDate];
         if (versionFreezed != true) {
           const insertVersion = await DB.executeQuery(

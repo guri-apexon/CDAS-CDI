@@ -63,6 +63,8 @@ exports.addPackage = async function (req, res) {
       versionFreezed,
     } = req.body;
 
+    // const versionFreezed = true;
+
     if (study_id == null || dataflow_id == null || user_id == null) {
       return apiResponse.ErrorResponse(res, "Study not found");
     }
@@ -183,7 +185,7 @@ exports.addPackage = async function (req, res) {
       package_id
         ? "Success! Data Package updated."
         : "Success! Data Package saved.",
-      {}
+      resData
     );
   } catch (err) {
     return apiResponse.ErrorResponse(res, err);
@@ -199,7 +201,7 @@ exports.changeStatus = function (req, res) {
     SET active = ${active}
     WHERE datapackageid = '${package_id}' RETURNING *`;
 
-    // const versionFreezed = false;
+    // const versionFreezed = true;
 
     DB.executeQuery(query).then(async (response) => {
       const package = response.rows[0] || [];
