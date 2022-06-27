@@ -90,6 +90,8 @@ async function saveSQLDataset(
       datasetObj.datasetid,
       jsonData,
       attributeName,
+      null,
+      null,
       versionFreezed
     );
     if (!historyVersion) throw new Error("History not updated");
@@ -139,12 +141,16 @@ exports.saveDatasetData = async (req, res) => {
       );
     }
 
+    // const versionFreezed = true;
+
     const {
       rows: [oldVersion],
     } = await DB.executeQuery(
       `SELECT version from ${schemaName}.dataflow_version
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`
     );
+
+    console.log("oldVersion", oldVersion);
 
     if (values.locationType.toLowerCase() === "jdbc") {
       return saveSQLDataset(
@@ -154,7 +160,7 @@ exports.saveDatasetData = async (req, res) => {
         userId,
         dfId,
         versionFreezed,
-        oldVersion.version
+        null // oldVersion.version
       );
     }
 
@@ -266,6 +272,7 @@ exports.saveDatasetData = async (req, res) => {
       );
     });
   } catch (err) {
+    console.log(err);
     Logger.error("catch :storeDataset");
     return apiResponse.ErrorResponse(
       res,
