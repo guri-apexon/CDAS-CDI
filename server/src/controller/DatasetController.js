@@ -160,7 +160,7 @@ exports.saveDatasetData = async (req, res) => {
         userId,
         dfId,
         versionFreezed,
-        null // oldVersion.version
+        oldVersion.version
       );
     }
 
