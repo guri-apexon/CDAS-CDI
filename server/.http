@@ -775,6 +775,9 @@ content-type: application/json
 
 POST http://localhost:4001/v1/api/location/get_password/7u6g7ihq2trdfctu HTTP/1.1
 
+### get password of dataflow
+
+GET  http://localhost:4001/v1/api/data-package/getPassword/DF00000000038717/DP00000000038718 HTTP/1.1
 ### get Web API Tables
 
 POST http://localhost:4001/v1/api/dataset/getTables HTTP/1.1

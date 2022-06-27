@@ -45,6 +45,25 @@ exports.searchList = async (req, res) => {
   }
 };
 
+exports.getPassword = async function (req, res) {
+  try {
+    const id = req.params.datapackageid;
+    const flowid = req.params.dataflowid;
+    Logger.info({ message: "getPasswordOfLocation" });
+    const response = await helper.readVaultData(`${flowid}/${id}`);
+    return apiResponse.successResponseWithData(
+      res,
+      "Operation success",
+      response
+    );
+  } catch (err) {
+    Logger.error("catch :getPasswordOfLocation");
+    const errMsg = err.message || COMMON_ERR;
+    Logger.error(errMsg);
+    return apiResponse.ErrorResponse(res, errMsg);
+  }
+};
+
 exports.addPackage = async function (req, res) {
   let package = {};
   const audit_log = [];

@@ -3,6 +3,7 @@ import {
   SELECT_DATA_PACKAGE,
   ADD_PACKAGE_BTN,
   ADD_PACKAGE_SUCCESS,
+  GET_PASSWORD_PACKAGE,
   PACKAGES_LIST,
   REDIRECT_TO_DATASET,
   UPDATE_DATA_PACKAGE,
@@ -35,6 +36,14 @@ export const selectDataPackage = (packageResult) => {
     type: SELECT_DATA_PACKAGE,
     refreshData: true,
     packageResult,
+  };
+};
+
+export const getPackagePassword = (val, id) => {
+  return {
+    type: GET_PASSWORD_PACKAGE,
+    val,
+    id,
   };
 };
 
