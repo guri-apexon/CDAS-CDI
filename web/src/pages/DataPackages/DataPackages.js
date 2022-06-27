@@ -125,6 +125,7 @@ const DataPackages = React.memo(() => {
   }, [packageData.openAddPackage]);
 
   useEffect(() => {
+    console.log("pd", packageData.selectedPackage);
     if (!packageData.openAddPackage && packageData.selectedPackage) {
       setShowForm(true);
       setConfigShow(true);
@@ -172,7 +173,7 @@ const DataPackages = React.memo(() => {
       package_id: packageData.selectedPackage?.datapackageid,
       sod_view_type: sodValue,
     };
-
+    console.log("req", reqBody, updateReqBody);
     const payload = packageData.selectedPackage ? updateReqBody : reqBody;
     const result = await submitDataPackage(payload);
     if (result.status === 1) {
@@ -328,7 +329,7 @@ const DataPackages = React.memo(() => {
                       <PasswordInput
                         size="small"
                         icon={false}
-                        defaultValue={packagePassword}
+                        value={packagePassword}
                         label="Package Password (Optional)"
                         className="mb-20"
                         style={{ width: "70%" }}
