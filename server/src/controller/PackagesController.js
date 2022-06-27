@@ -49,7 +49,7 @@ exports.getPassword = async function (req, res) {
   try {
     const id = req.params.datapackageid;
     const flowid = req.params.dataflowid;
-    Logger.info({ message: "getPasswordOfLocation" });
+    Logger.info({ message: "getPasswordOfPackage" });
     const response = await helper.readVaultData(`${flowid}/${id}`);
     return apiResponse.successResponseWithData(
       res,
@@ -57,7 +57,7 @@ exports.getPassword = async function (req, res) {
       response
     );
   } catch (err) {
-    Logger.error("catch :getPasswordOfLocation");
+    Logger.error("catch :getPasswordOfPackage");
     const errMsg = err.message || COMMON_ERR;
     Logger.error(errMsg);
     return apiResponse.ErrorResponse(res, errMsg);
