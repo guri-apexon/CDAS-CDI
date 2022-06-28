@@ -98,6 +98,10 @@ export const FETCH_LOCATION_PASSWORD_SUCCESS =
 export const FETCH_LOCATION_PASSWORD_FAILURE =
   "FETCH_LOCATION_PASSWORD_FAILURE";
 
+export const GET_PASSWORD_PACKAGE = "GET_PASSWORD_PACKAGE";
+export const FETCH_PACKAGE_PASSWORD_SUCCESS = "FETCH_PACKAGE_PASSWORD_SUCCESS";
+export const FETCH_PACKAGE_PASSWORD_FAILURE = "FETCH_PACKAGE_PASSWORD_FAILURE";
+
 export const GET_DATAFLOW_DETAIL = "GET_DATAFLOW_DETAIL";
 export const RESET_DF_FORMDATA = "RESET_DF_FORMDATA";
 export const FETCH_DATAFLOW_DETAIL_SUCCESS = "FETCH_DATAFLOW_DETAIL_SUCCESS";
@@ -226,7 +230,7 @@ export const TOGGLE_DF_BTN = "TOGGLE_DF_BTN";
 
 export const PACKAGES_SEARCH = "v1/api/data-package/search";
 export const ADD_PACKAGE = "v1/api/data-package/add";
-export const DATAPACKAGEPASSWORD = "v1/api/data-package/get_password";
+export const DATAPACKAGEPASSWORD = "v1/api/data-package/getpassword";
 
 export const DELETE_PACKAGE = "v1/api/data-package/delete";
 export const UPDATE_PACKAGE = "v1/api/data-package/update-status";

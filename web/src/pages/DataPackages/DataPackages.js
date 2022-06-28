@@ -32,6 +32,7 @@ import {
   selectDataPackage,
   getPackagesList,
   updateStatus,
+  getPackagePassword,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 import usePermission, {
@@ -66,9 +67,11 @@ const DataPackages = React.memo(() => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const packageData = useSelector((state) => state.dataPackage);
   const dashboard = useSelector((state) => state.dashboard);
+  const [passwordUpdate, setPasswordUpdate] = useState(false);
   const dataFlow = useSelector((state) => state.dataFlow);
   const userInfo = getUserInfo();
   const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
+  const { packageSODPassword } = packageData;
 
   const { canUpdate: canUpdateDataFlow } = usePermission(
     Categories.CONFIGURATION,
@@ -120,23 +123,52 @@ const DataPackages = React.memo(() => {
       resetForm();
     }
   }, [packageData.refreshData]);
+
+  const PackagePassswordData = async () => {
+    await dispatch(
+      getPackagePassword(
+        packageData.packagesList[0]?.dataflowid,
+        packageData.packagesList[0]?.datapackageid
+      )
+    );
+    setPasswordUpdate(true);
+  };
+
   useEffect(() => {
     if (packageData.openAddPackage || packageData.selectedPackage)
       setShowForm(true);
     if (packageData.selectedPackage) {
-      setConfigShow(true);
       setCompression(packageData.selectedPackage?.type);
       setNamingConvention(packageData.selectedPackage?.name);
       setSodValue(packageData.selectedPackage?.sod_view_type);
-      setPackagePassword(packageData.selectedPackage?.password);
       setSftpPath(packageData.selectedPackage?.path);
+      if (packageData.selectedPackage?.password === "Yes") {
+        PackagePassswordData();
+        if (packageSODPassword === "") {
+          setConfigShow(false);
+        } else if (packageSODPassword !== "" && !passwordUpdate) {
+          setConfigShow(false);
+        } else {
+          setPackagePassword(packageSODPassword);
+          setTimeout(() => {
+            setConfigShow(true);
+          }, 2000);
+        }
+      } else {
+        setConfigShow(true);
+        setPackagePassword("");
+      }
     }
     if (
       packageData.selectedPackage &&
       packageData.selectedPackage?.type === null
     )
       setConfigShow(false);
-  }, [packageData.openAddPackage, packageData.selectedPackage]);
+  }, [
+    packageData.openAddPackage,
+    packageData.selectedPackage,
+    packageData.packageSODPassword,
+  ]);
 
   // eslint-disable-next-line consistent-return
   const submitPackage = async () => {

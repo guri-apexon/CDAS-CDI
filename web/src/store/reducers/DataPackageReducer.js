@@ -7,6 +7,9 @@ import {
   ADD_DATA_PACKAGE,
   SELECT_DATA_PACKAGE,
   ADD_PACKAGE_SUCCESS,
+  GET_PASSWORD_PACKAGE,
+  FETCH_PACKAGE_PASSWORD_SUCCESS,
+  FETCH_PACKAGE_PASSWORD_FAILURE,
   UPDATE_DATA_PACKAGE,
   UPDATE_DATA_PACKAGE_SUCCESS,
   REDIRECT_TO_DATASET,
@@ -21,6 +24,7 @@ export const initialState = {
   selectedDSDetails: {},
   loading: false,
   refreshData: false,
+  packageSODPassword: "",
 };
 
 const DataPackageReducer = (state = initialState, action) =>
@@ -58,6 +62,18 @@ const DataPackageReducer = (state = initialState, action) =>
       case ADD_PACKAGE_SUCCESS:
         newState.loading = false;
         newState.refreshData = action.refreshData;
+        newState.packageSODPassword = "";
+        break;
+
+      case GET_PASSWORD_PACKAGE:
+        newState.loading = false;
+        break;
+      case FETCH_PACKAGE_PASSWORD_FAILURE:
+        newState.loading = false;
+        break;
+      case FETCH_PACKAGE_PASSWORD_SUCCESS:
+        newState.loading = false;
+        newState.packageSODPassword = action.packageSODPassword;
         break;
 
       case UPDATE_LEFT_PANEL:
