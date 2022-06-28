@@ -4,6 +4,7 @@ const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
+const moment = require("moment");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const createTemporaryLog = async (
@@ -81,8 +82,19 @@ exports.getDatasetIngestionReportTransferLog = (req, res) => {
   try {
     const id = req.params.datasetid;
     const userId = req.headers["userid"];
+    const dayFilter = req.query.dayFilter ?? 10;
+    const currentDate =
+      req.query.currentDate !== undefined
+        ? moment(req.query.currentDate).format("YYYY-MM-DD")
+        : moment().format("YYYY-MM-DD");
+
+    var fromDate = moment(currentDate);
+    fromDate = fromDate.subtract(dayFilter - 1, "days");
+    fromDate = fromDate.format("YYYY-MM-DD");
+
     const searchQuery = `SELECT "DatasetName", "Vendor", "TransferDate", "FileName", datasetname, "FileTransferStatus", "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords", "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate", "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue", "DownloadStart", "ProcessStart", "SourceOrigin", dataflowid, "DataflowName", fst_prd_file_recvd from ${schemaName}.dataset_transfer_log 
-              WHERE datasetid = $1`;
+              WHERE datasetid = $1 AND "LastCompleted" between  to_date('${fromDate}','yyyy-mm-dd') and to_date('${currentDate}','yyyy-mm-dd')`;
+      
     Logger.info({ message: "getDatasetIngestionReportTransferLog" });
 
     DB.executeQuery(searchQuery, [id])
@@ -230,11 +242,12 @@ exports.getFileTransferHistory = (req, res) => {
     const dayFilter = req.query.dayFilter ?? "10";
     const page = req.query.page ? req.query.page * 10 : 10;
     const searchQuery = `SELECT count(datasetid) OVER() AS total_transfered, dataflowid, executionid, "VERSION", datapackageid, datasetid, mnemonicfile, datapackagename, datasetname, datasettype, processtype, "user", downloadstatus, downloadstarttime, downloadendtime, processstatus, processstarttime, processendtime, downloadtrnx, processtrnx, filerpath, lastsucceeded, lastattempted, failurecat, refreshtimestamp, stage, fst_prd_file_recvd, deleted_records, modified_records, new_records from ${schemaName}.transaction_summary
-              WHERE datasetid = $1 and lastsucceeded BETWEEN NOW() - INTERVAL '${dayFilter} days' AND NOW() order by lastsucceeded desc limit $2 `;
+              WHERE datasetid = $1 and lastsucceeded BETWEEN NOW() - INTERVAL '${dayFilter} days' AND NOW() order by lastsucceeded desc  `;
+    // limit $2
     //  and lastattempted BETWEEN NOW() - INTERVAL '${dayFilter} days' AND NOW()
     Logger.info({ message: "getFileTransferHistory" });
 
-    DB.executeQuery(searchQuery, [id, page])
+    DB.executeQuery(searchQuery, [id])
       .then((response) => {
         const records = response.rows || [];
         return apiResponse.successResponseWithData(res, "Operation success", {

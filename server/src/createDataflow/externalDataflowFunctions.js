@@ -10,11 +10,34 @@ const constants = require("../config/constants");
 const { Console } = require("winston/lib/winston/transports");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
+const dataTyperForamtValidate = (exports.dataTyperForamtValidate = (
+  dataType,
+  format
+) => {
+  if (dataType.toLowerCase() === "alphanumeric") {
+    if (helper.isAlphaNumeric(format) === false) {
+      return "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.";
+    }
+  }
+  if (dataType.toLowerCase() === "numeric") {
+    if (helper.isNumbers(format) === false) {
+      return "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.";
+    }
+  }
+  if (dataType.toLowerCase() === "date") {
+    if (helper.isValidDate(format) === false) {
+      return "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend.";
+    }
+  }
+  return;
+});
+
 exports.insertValidation = (req) => {
   var validate = [];
   var str1 = /[~]/;
   var str2 = /[.]/;
   var str3 = /[< >]/;
+
   var error = [];
 
   const Data = [
@@ -57,52 +80,42 @@ exports.insertValidation = (req) => {
         /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/;
       if (!pattern.test(date)) {
         // errMessage += "Invalid date of birth\n";
-        validate.push({
-          err: "exptDtOfFirstProdFile optional and data format should be [YYYY-MM-DD HH:MI:SS]",
-        });
+        validate.push(
+          "exptDtOfFirstProdFile optional and data format should be [YYYY-MM-DD HH:MI:SS]"
+        );
       }
     }
     validateDOB(req.exptDtOfFirstProdFile);
   }
   if (!externalID) {
-    validate.push({
-      err: "externalID is required and data type should be string or number",
-    });
+    validate.push(
+      "externalID is required and data type should be string or number"
+    );
   }
   if (req.serviceOwners) {
     if (Array.isArray(req.serviceOwners) === false)
-      validate.push({
-        err: "serviceOwners its optional and it should be array",
-      });
+      validate.push("serviceOwners its optional and it should be array");
   }
   if (!req.userId) {
-    validate.push({
-      err: "userId required and data type should be string or Number",
-    });
+    validate.push("userId required and data type should be string or Number");
   }
   if (req.delFlag !== 0) {
-    validate.push({
-      err: "Data flow Level delFlag required and value should be 0",
-    });
+    validate.push("Data flow Level delFlag required and value should be 0");
   }
   if (!ConnectionType) {
-    validate.push({
-      err: "locationType is required and data type should be string",
-    });
+    validate.push("locationType is required and data type should be string");
   } else {
     if (!helper.isConnectionType(ConnectionType)) {
-      validate.push({
-        err: "locationType supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server",
-      });
+      validate.push(
+        "locationType supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server"
+      );
     }
   }
 
   if (description) {
     if (description.length <= 30) {
     } else {
-      validate.push({
-        err: "Description length, max of 30 characters",
-      });
+      validate.push("Description length, max of 30 characters");
     }
   }
 
@@ -116,14 +129,14 @@ exports.insertValidation = (req) => {
       for (let each of req.dataPackage) {
         var LocationType = req.locationType;
         if (each.delFlag !== 0) {
-          validate.push({
-            err: "Data Package Level delFlag required and value should be 0",
-          });
+          validate.push(
+            "Data Package Level delFlag required and value should be 0"
+          );
         }
         if (!each.ExternalId) {
-          validate.push({
-            err: "Datapackage, level ExternalId is required and data type should be string or number",
-          });
+          validate.push(
+            "Datapackage, level ExternalId is required and data type should be string or number"
+          );
         } else {
           if (helper.isSftp(LocationType)) {
             // if (LocationType === "Hive CDH") {
@@ -163,9 +176,7 @@ exports.insertValidation = (req) => {
 
               if (each.type) {
                 if (!helper.isPackageType(each.type)) {
-                  validate.push({
-                    err: "type supported values : 7Z, ZIP, RAR, SAS ",
-                  });
+                  validate.push("type supported values : 7Z, ZIP, RAR, SAS");
                 }
               }
 
@@ -183,9 +194,9 @@ exports.insertValidation = (req) => {
                 each.namingConvention ||
                 each.password
               ) {
-                validate.push({
-                  err: "if there is no package then type, sasXptMethod, path, namingConvention, password should be blank",
-                });
+                validate.push(
+                  "if there is no package then type, sasXptMethod, path, namingConvention, password should be blank"
+                );
               }
             }
 
@@ -207,14 +218,12 @@ exports.insertValidation = (req) => {
                 each.namingConvention.charAt(0)
               );
               if (str2.test(each.namingConvention) === false) {
-                validate.push({
-                  err: "Package namingConvention should be end with dot extension",
-                });
+                validate.push(
+                  "Package namingConvention should be end with dot extension"
+                );
               } else {
                 if (last === "." || first === ".") {
-                  validate.push({
-                    err: "Dot(.) can't be used start or end of string",
-                  });
+                  validate.push("Dot(.) can't be used start or end of string");
                 }
               }
 
@@ -225,41 +234,41 @@ exports.insertValidation = (req) => {
 
                 if (each.type.toLowerCase() === "rar") {
                   if (name !== "rar") {
-                    validate.push({
-                      err: "If Package type is RAR then package naming convention should be end with (.rar)",
-                    });
+                    validate.push(
+                      "If Package type is RAR then package naming convention should be end with (.rar)"
+                    );
                   }
                 }
 
                 if (each.type.toLowerCase() === "7z") {
                   if (name !== "7z") {
-                    validate.push({
-                      err: "If Package type is 7z then package naming convention should be end with (.7z)",
-                    });
+                    validate.push(
+                      "If Package type is 7z then package naming convention should be end with (.7z)"
+                    );
                   }
                 }
 
                 if (each.type.toLowerCase() === "zip") {
                   if (name !== "zip") {
-                    validate.push({
-                      err: "If Package type is Zip then package naming convention should be end with (.zip)",
-                    });
+                    validate.push(
+                      "If Package type is Zip then package naming convention should be end with (.zip)"
+                    );
                   }
                 }
 
                 if (each.type.toLowerCase() === "sas") {
                   if (name !== "xpt") {
-                    validate.push({
-                      err: "If Package type is SAS then package naming convention should be end with (.xpt)",
-                    });
+                    validate.push(
+                      "If Package type is SAS then package naming convention should be end with (.xpt)"
+                    );
                   }
                 }
               }
 
               if (str3.test(each.namingConvention) === true) {
-                validate.push({
-                  err: "Package naming convention should not have the following special characters < >",
-                });
+                validate.push(
+                  "Package naming convention should not have the following special characters < >"
+                );
               }
             }
 
@@ -270,15 +279,15 @@ exports.insertValidation = (req) => {
               if (each.dataSet && each.dataSet.length > 0) {
                 for (let obj of each.dataSet) {
                   if (!obj.ExternalId) {
-                    validate.push({
-                      err: "Dataset level, ExternalId is required and data type should be string or number",
-                    });
+                    validate.push(
+                      "Dataset level, ExternalId is required and data type should be string or number"
+                    );
                   }
 
                   if (obj.delFlag !== 0) {
-                    validate.push({
-                      err: "Data Set Level delFlag required and value should be 0",
-                    });
+                    validate.push(
+                      "Data Set Level delFlag required and value should be 0"
+                    );
                   }
 
                   const dsArray = [
@@ -334,16 +343,16 @@ exports.insertValidation = (req) => {
 
                   //point - 28 story - 72771
                   if (obj.columncount === 0) {
-                    validate.push({
-                      err: "Data set column count should be minimum 1 or greater than 1. Please amend.",
-                    });
+                    validate.push(
+                      "Data set column count should be minimum 1 or greater than 1. Please amend."
+                    );
                   }
 
                   if (obj.fileType) {
                     if (!helper.isFileType(obj.fileType)) {
-                      validate.push({
-                        err: "fileType supported values : EXCEL, DELIMITED, FIXED WIDTH, SAS",
-                      });
+                      validate.push(
+                        "fileType supported values : EXCEL, DELIMITED, FIXED WIDTH, SAS"
+                      );
                     }
                   }
                   //point - 28 story - 727712
@@ -355,14 +364,14 @@ exports.insertValidation = (req) => {
                       obj.fileNamingConvention.charAt(0)
                     );
                     if (str2.test(obj.fileNamingConvention) === false) {
-                      validate.push({
-                        err: "fileNamingConvention should be end with dot(.) extension",
-                      });
+                      validate.push(
+                        "fileNamingConvention should be end with dot(.) extension"
+                      );
                     } else {
                       if (last === "." || first === ".") {
-                        validate.push({
-                          err: "Dot(.) can't be used start or end of string",
-                        });
+                        validate.push(
+                          "Dot(.) can't be used start or end of string"
+                        );
                       }
                     }
 
@@ -373,71 +382,71 @@ exports.insertValidation = (req) => {
 
                       if (obj.fileType.toLowerCase() === "sas") {
                         if (name !== "sas7bdat") {
-                          validate.push({
-                            err: "If fileType SAS then fileNamingConvention should be end with (.sas7bdat)",
-                          });
+                          validate.push(
+                            "If fileType SAS then fileNamingConvention should be end with (.sas7bdat)"
+                          );
                         }
                       }
 
                       if (obj.fileType.toLowerCase() === "fixed width") {
                         if (name !== "txt") {
-                          validate.push({
-                            err: "If fileType FIXED WIDTH then fileNamingConvention should be end with (.txt)",
-                          });
+                          validate.push(
+                            "If fileType FIXED WIDTH then fileNamingConvention should be end with (.txt)"
+                          );
                         }
                       }
 
                       if (obj.fileType.toLowerCase() === "excel") {
                         if (name !== "xls" && name !== "xlsx") {
-                          validate.push({
-                            err: "If fileType EXCEL then fileNamingConvention should be end with (.xls or .xlsx)",
-                          });
+                          validate.push(
+                            "If fileType EXCEL then fileNamingConvention should be end with (.xls or .xlsx)"
+                          );
                         }
                       }
 
                       if (obj.fileType.toLowerCase() === "delimited") {
                         if (name !== "csv" && name !== "txt") {
-                          validate.push({
-                            err: "If fileType Delimited then fileNamingConvention should be end with (.csv or .txt)",
-                          });
+                          validate.push(
+                            "If fileType Delimited then fileNamingConvention should be end with (.csv or .txt)"
+                          );
                         }
                       }
                     }
 
                     if (str3.test(obj.fileNamingConvention) === true) {
-                      validate.push({
-                        err: "fileNamingConvention should not have the following special characters < >",
-                      });
+                      validate.push(
+                        "fileNamingConvention should not have the following special characters < >"
+                      );
                     }
                   }
 
                   if (obj.dataTransferFrequency === 0) {
-                    validate.push({
-                      err: "dataTransferFrequency must be greater than zero",
-                    });
+                    validate.push(
+                      "dataTransferFrequency must be greater than zero"
+                    );
                   }
 
                   if (obj.headerRowNumber) {
                     if (typeof obj.headerRowNumber != "number") {
-                      validate.push({
-                        err: "In SFTP/FTPS headerRowNumber is Optional and data type should be Number",
-                      });
+                      validate.push(
+                        "In SFTP/FTPS headerRowNumber is Optional and data type should be Number"
+                      );
                     }
                   }
 
                   if (obj.footerRowNumber) {
                     if (typeof obj.footerRowNumber != "number") {
-                      validate.push({
-                        err: "In SFTP/FTPS footerRowNumber is Optional and data type should be Number",
-                      });
+                      validate.push(
+                        "In SFTP/FTPS footerRowNumber is Optional and data type should be Number"
+                      );
                     }
                   }
 
                   if (obj.OverrideStaleAlert) {
                     if (typeof obj.OverrideStaleAlert != "number") {
-                      validate.push({
-                        err: "In SFTP/FTPS OverrideStaleAlert is Optional and data type should be Number",
-                      });
+                      validate.push(
+                        "In SFTP/FTPS OverrideStaleAlert is Optional and data type should be Number"
+                      );
                     }
                   }
 
@@ -451,9 +460,9 @@ exports.insertValidation = (req) => {
                     obj.offsetcolumn ||
                     obj.offset_val
                   ) {
-                    validate.push({
-                      err: "In SFTP/FTPS customsql_yn, customsql, conditionalExpression, offsetcolumn, offset_val should be blank",
-                    });
+                    validate.push(
+                      "In SFTP/FTPS customsql_yn, customsql, conditionalExpression, offsetcolumn, offset_val should be blank"
+                    );
                   }
 
                   if (obj.fileType) {
@@ -480,6 +489,12 @@ exports.insertValidation = (req) => {
                     }
                   }
 
+                  if (!obj.columnDefinition) {
+                    validate.push(
+                      "While adding a new dataset, please provide at least one columnDefinition details"
+                    );
+                  }
+
                   let dsRes = helper.validation(dsArray);
                   if (dsRes.length > 0) {
                     validate.push(dsRes);
@@ -490,15 +505,15 @@ exports.insertValidation = (req) => {
                     ) {
                       for (let el of obj.columnDefinition) {
                         if (!el.ExternalId) {
-                          validate.push({
-                            err: "Column definition level, ExternalId is required and data type should be string or Number",
-                          });
+                          validate.push(
+                            "Column definition level, ExternalId is required and data type should be string or Number"
+                          );
                         }
 
                         if (el.delFlag !== 0) {
-                          validate.push({
-                            err: "Column definition level delFlag required and value should be 0",
-                          });
+                          validate.push(
+                            "Column definition level delFlag required and value should be 0"
+                          );
                         }
                         //testttt
                         const clArray = [
@@ -532,9 +547,44 @@ exports.insertValidation = (req) => {
 
                         if (el.dataType) {
                           if (!helper.isColumnType(el.dataType)) {
-                            validate.push({
-                              err: "dataType's supported values : Numeric, Alphanumeric or Date",
-                            });
+                            validate.push(
+                              "dataType's supported values : Numeric, Alphanumeric or Date"
+                            );
+                          }
+                        }
+
+                        // line 548
+                        // if (el.dataType && el.format) {
+                        //   if (el.dataType.toLowerCase() === "alphanumeric") {
+                        //     if (helper.isAlphaNumeric(el.format) === false) {
+                        //       validate.push({
+                        //         err: "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.",
+                        //       });
+                        //     }
+                        //   }
+                        //   if (el.dataType.toLowerCase() === "numeric") {
+                        //     if (helper.isNumbers(el.format) === false) {
+                        //       validate.push({
+                        //         err: "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.",
+                        //       });
+                        //     }
+                        //   }
+                        //   if (el.dataType.toLowerCase() === "date") {
+                        //     if (helper.isValidDate(el.format) === false) {
+                        //       validate.push({
+                        //         err: "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend.",
+                        //       });
+                        //     }
+                        //   }
+                        // }
+
+                        if (el.dataType && el.format) {
+                          let dataTypeValidate = dataTyperForamtValidate(
+                            el.dataType,
+                            el.format
+                          );
+                          if (dataTypeValidate) {
+                            validate.push(dataTypeValidate);
                           }
                         }
 
@@ -546,45 +596,50 @@ exports.insertValidation = (req) => {
 
                         if (el.position || el.position === 0) {
                           if (typeof el.position != "number") {
-                            validate.push({
-                              err: "In SFTP/FTPS position is Optional and data type should be Number",
-                            });
+                            validate.push(
+                              "In SFTP/FTPS position is Optional and data type should be Number"
+                            );
                           } else {
                             if (el.position === 0) {
-                              validate.push({
-                                err: "Position must be equal to 1 or greater with no decimals. Please amend.",
-                              });
+                              validate.push(
+                                "Position must be equal to 1 or greater with no decimals. Please amend."
+                              );
                             }
                           }
                         }
 
                         if (!obj.headerRowNumber) {
                           if (!el.position) {
-                            validate.push({
-                              err: "When Header row is not provided, then column Position must be provided",
-                            });
+                            validate.push(
+                              "When Header row is not provided, then column Position must be provided"
+                            );
                           }
                         }
 
                         if (el.minLength) {
                           if (typeof el.minLength != "number") {
-                            validate.push({
-                              err: "In SFTP/FTPS minLength is Optional and data type should be Number",
-                            });
+                            validate.push(
+                              "In SFTP/FTPS minLength is Optional and data type should be Number"
+                            );
                           }
                         }
 
-                        if (el.maxLength) {
+                        if (el.maxLength || el.maxLength === 0) {
                           if (typeof el.maxLength != "number") {
-                            validate.push({
-                              err: "In SFTP/FTPS maxLength is Optional and data type should be Number",
-                            });
+                            validate.push(
+                              "In SFTP/FTPS maxLength is Optional and data type should be Number"
+                            );
                           } // testing
                           else {
                             if (el.maxLength >= 10001) {
-                              validate.push({
-                                err: "Max Length must be between values of 1 and 10,000. Please amend",
-                              });
+                              validate.push(
+                                "Max Length must be between values of 1 and 10,000. Please amend"
+                              );
+                            }
+                            if (el.maxLength === 0) {
+                              validate.push(
+                                "Max Length must be between values of 1 and 10,000. Please amend"
+                              );
                             }
                           }
                         }
@@ -595,9 +650,9 @@ exports.insertValidation = (req) => {
                           ) {
                             if (el.minLength <= el.maxLength) {
                             } else {
-                              validate.push({
-                                err: "minLength always less than maxLength",
-                              });
+                              validate.push(
+                                "minLength always less than maxLength"
+                              );
                             }
                           }
                         }
@@ -606,14 +661,14 @@ exports.insertValidation = (req) => {
                           const first = el.lov.charAt(el.lov.charAt(0));
 
                           if (str1.test(el.lov) === false) {
-                            validate.push({
-                              err: "LOV should be seperated by tilde(~)",
-                            });
+                            validate.push(
+                              "LOV should be seperated by tilde(~)"
+                            );
                           } else {
                             if (last === "~" || first === "~") {
-                              validate.push({
-                                err: "Tilde(~) can't be used start or end of string",
-                              });
+                              validate.push(
+                                "Tilde(~) can't be used start or end of string"
+                              );
                             }
                           }
                         }
@@ -665,9 +720,9 @@ exports.insertValidation = (req) => {
                           // }
                           if (vl.action) {
                             if (!helper.isAction(vl.action)) {
-                              validate.push({
-                                err: "action's supported values : Reject or Report",
-                              });
+                              validate.push(
+                                "action's supported values : Reject or Report"
+                              );
                             }
                             if (vl.action.toLowerCase() === "report") {
                               const rVlcArr = [
@@ -696,9 +751,9 @@ exports.insertValidation = (req) => {
                     if (obj.conditionalExpressions) {
                       if (obj.conditionalExpressions.length > 0) {
                         if (!obj.qcType || obj.qcType.toLowerCase() !== "vlc") {
-                          validate.push({
-                            err: "qcType required and Value should be VLC",
-                          });
+                          validate.push(
+                            "qcType required and Value should be VLC"
+                          );
                         }
                       }
                     }
@@ -712,9 +767,7 @@ exports.insertValidation = (req) => {
               helper.stringToBoolean(each.active) === true
             ) {
             } else {
-              validate.push({
-                err: "In jdbc noPackageConfig, active should be true",
-              });
+              validate.push("In jdbc noPackageConfig, active should be true");
             }
 
             if (
@@ -723,23 +776,23 @@ exports.insertValidation = (req) => {
               each.path ||
               each.namingConvention
             ) {
-              validate.push({
-                err: "In jdbc datapackage level type, sasXptMethod, path, namingConvention should be blank",
-              });
+              validate.push(
+                "In jdbc datapackage level type, sasXptMethod, path, namingConvention should be blank"
+              );
             }
 
             if (each.dataSet && each.dataSet.length > 0) {
               for (let obj of each.dataSet) {
                 if (!obj.ExternalId) {
-                  validate.push({
-                    err: "Dataset level, ExternalId is required and data type should be string or number",
-                  });
+                  validate.push(
+                    "Dataset level, ExternalId is required and data type should be string or number"
+                  );
                 }
 
                 if (obj.delFlag !== 0) {
-                  validate.push({
-                    err: "Data Set Level delFlag required and value should be 0",
-                  });
+                  validate.push(
+                    "Data Set Level delFlag required and value should be 0"
+                  );
                 }
 
                 if (
@@ -761,9 +814,9 @@ exports.insertValidation = (req) => {
                   obj.path ||
                   obj.encoding
                 ) {
-                  validate.push({
-                    err: "In jdbc dataset level fileType, fileNamingConvention, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, escapeCharacter, path, headerRowNumber, footerRowNumber, overrideStaleAlert, encoding  should be blank",
-                  });
+                  validate.push(
+                    "In jdbc dataset level fileType, fileNamingConvention, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, escapeCharacter, path, headerRowNumber, footerRowNumber, overrideStaleAlert, encoding  should be blank"
+                  );
                 }
 
                 const dsArray = [
@@ -801,35 +854,27 @@ exports.insertValidation = (req) => {
 
                 // point - 28 story - 7277
                 if (obj.columncount === 0) {
-                  validate.push({
-                    err: "Data set column count should be minimum 1 or greater than 1. Please amend.",
-                  });
+                  validate.push(
+                    "Data set column count should be minimum 1 or greater than 1. Please amend."
+                  );
                 }
 
                 if (obj.customsql_yn) {
                   if (obj.customsql_yn.toLowerCase() == "yes") {
                     if (!obj.customsql) {
-                      validate.push({
-                        err: "customsql is required ",
-                      });
+                      validate.push("customsql is required ");
                     } else {
                       if (obj.customsql.length >= 131072) {
-                        validate.push({
-                          err: "customsql max of 131072 characters  ",
-                        });
+                        validate.push("customsql max of 131072 characters  ");
                       }
                     }
                   }
                   if (obj.customsql_yn.toLowerCase() == "no") {
                     if (!obj.tbl_nm) {
-                      validate.push({
-                        err: "tbl_nm is required ",
-                      });
+                      validate.push("tbl_nm is required ");
                     } else {
                       if (obj.tbl_nm.length >= 255) {
-                        validate.push({
-                          err: "tbl_nm max of 255 characters  ",
-                        });
+                        validate.push("tbl_nm max of 255 characters  ");
                       }
                     }
                     if (helper.stringToBoolean(obj.incremental)) {
@@ -840,12 +885,18 @@ exports.insertValidation = (req) => {
                         typeof obj.offsetcolumn === "string"
                       ) {
                       } else {
-                        validate.push({
-                          err: "offsetcolumn is required and data type should be string",
-                        });
+                        validate.push(
+                          "offsetcolumn is required and data type should be string"
+                        );
                       }
                     }
                   }
+                }
+
+                if (!obj.columnDefinition) {
+                  validate.push(
+                    "While adding a new dataset, please provide at least one columnDefinition details"
+                  );
                 }
 
                 // Validation Function call for data set
@@ -858,15 +909,15 @@ exports.insertValidation = (req) => {
                   if (obj.columnDefinition && obj.columnDefinition.length > 0) {
                     for (let el of obj.columnDefinition) {
                       if (!el.ExternalId) {
-                        validate.push({
-                          err: "Column Definition Level, ExternalId  is required and data type should be string or Number",
-                        });
+                        validate.push(
+                          "Column Definition Level, ExternalId  is required and data type should be string or Number"
+                        );
                       }
 
                       if (el.delFlag !== 0) {
-                        validate.push({
-                          err: "Column Definition Level delFlag required and value should be 0",
-                        });
+                        validate.push(
+                          "Column Definition Level delFlag required and value should be 0"
+                        );
                       }
 
                       const clArray = [
@@ -905,9 +956,44 @@ exports.insertValidation = (req) => {
 
                       if (el.dataType) {
                         if (!helper.isColumnType(el.dataType)) {
-                          validate.push({
-                            err: "dataType's supported values : Numeric, Alphanumeric or Date",
-                          });
+                          validate.push(
+                            "dataType's supported values : Numeric, Alphanumeric or Date"
+                          );
+                        }
+                      }
+
+                      // line 957
+                      // if (el.dataType && el.format) {
+                      //   if (el.dataType.toLowerCase() === "alphanumeric") {
+                      //     if (helper.isAlphaNumeric(el.format) === false) {
+                      //       validate.push({
+                      //         err: "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.",
+                      //       });
+                      //     }
+                      //   }
+                      //   if (el.dataType.toLowerCase() === "numeric") {
+                      //     if (helper.isNumbers(el.format) === false) {
+                      //       validate.push({
+                      //         err: "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.",
+                      //       });
+                      //     }
+                      //   }
+                      //   if (el.dataType.toLowerCase() === "date") {
+                      //     if (helper.isValidDate(el.format) === false) {
+                      //       validate.push({
+                      //         err: "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend.",
+                      //       });
+                      //     }
+                      //   }
+                      // }
+
+                      if (el.dataType && el.format) {
+                        const dataTypeValidate = dataTyperForamtValidate(
+                          el.dataType,
+                          el.format
+                        );
+                        if (dataTypeValidate) {
+                          validate.push(dataTypeValidate);
                         }
                       }
 
@@ -925,9 +1011,9 @@ exports.insertValidation = (req) => {
                         el.lov ||
                         el.position
                       ) {
-                        validate.push({
-                          err: "In jdbc minLength, maxLength, position, lov should be blank",
-                        });
+                        validate.push(
+                          "In jdbc minLength, maxLength, position, lov should be blank"
+                        );
                       }
                     }
                   }
@@ -978,9 +1064,9 @@ exports.insertValidation = (req) => {
                         // }
                         if (vl.action) {
                           if (!helper.isAction(vl.action)) {
-                            validate.push({
-                              err: "action's Supported values : Reject or Report",
-                            });
+                            validate.push(
+                              "action's Supported values : Reject or Report"
+                            );
                           }
                           if (vl.action.toLowerCase() === "report") {
                             const rVlcArr = [
@@ -1009,9 +1095,9 @@ exports.insertValidation = (req) => {
                   if (obj.conditionalExpressions) {
                     if (obj.conditionalExpressions.length > 0) {
                       if (!obj.qcType || obj.qcType.toLowerCase() !== "vlc") {
-                        validate.push({
-                          err: "qcType required and Value should be VLC ",
-                        });
+                        validate.push(
+                          "qcType required and Value should be VLC"
+                        );
                       }
                     }
                   }
@@ -1085,7 +1171,7 @@ exports.packageLevelInsert = async (
               type: "string",
             },
             {
-              key: "Package path  ",
+              key: "p_path",
               value: data.path,
               type: "string",
             },
@@ -1216,10 +1302,9 @@ exports.packageLevelInsert = async (
 
     if (errorPackage.length > 0) {
       errorPackage.splice(0, 0, `Datapackage external id -${ExternalId} `);
-      return { sucRes: dataPackage, errRes: errorPackage };
+      return { errRes: errorPackage };
     }
 
-    let DpObj = {};
     let dPTimestamp = new Date();
 
     let dPBody = [
@@ -1234,13 +1319,14 @@ exports.packageLevelInsert = async (
       dPTimestamp,
       DFId,
       0,
+      data.sod_view_type || null,
     ];
 
     const {
       rows: [createdDP],
     } = await DB.executeQuery(
-      `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage( type, name, path, sasxptmethod, password, active, nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid, del_flg)
-            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$9,$10, $11) returning datapackageid as "dataPackageId";`,
+      `INSERT INTO ${constants.DB_SCHEMA_NAME}.datapackage( type, name, path, sasxptmethod, password, active, nopackageconfig, externalid, insrt_tm, updt_tm, dataflowid, del_flg, sod_view_type)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$9,$10, $11, $12) returning datapackageid as "dataPackageId";`,
       dPBody
     );
 
@@ -1258,11 +1344,14 @@ exports.packageLevelInsert = async (
       }
     }
 
-    DpObj.externalId = data.ExternalId;
-    DpObj.datapackageid = dpUid;
-    DpObj.action = "DataPackage created successfully.";
-    DpObj.timestamp = ts;
-    dataPackage.push(DpObj);
+    let DpObj = {
+      ExternalId: data.ExternalId,
+      ID: dpUid,
+    };
+    // DpObj.action = "DataPackage created successfully.";
+    // DpObj.timestamp = ts;
+    // dataPackage.push(DpObj);
+
     // // each.datapackageid = dpUid;
 
     await DB.executeQuery(
@@ -1284,7 +1373,7 @@ exports.packageLevelInsert = async (
     );
 
     if (data.dataSet && data.dataSet.length > 0) {
-      dataPackage.data_sets = [];
+      DpObj.dataSets = [];
       for (let obj of data.dataSet) {
         const dataSetExternalId = obj.ExternalId;
         await saveDataset(
@@ -1299,14 +1388,18 @@ exports.packageLevelInsert = async (
           userId,
           isNew
         ).then((res) => {
-          if (res.errRes && res.errRes.length) {
+          if (res && res.errRes.length) {
             errorPackage.push(res.errRes);
           }
-          dataPackage.push(res.sucRes);
+          if (res && res.sucRes) {
+            DpObj.dataSets.push(res.sucRes);
+          }
+          // console.log("data set function call ", res.sucRes);
         });
       }
     }
-    return { sucRes: dataPackage, errRes: errorPackage };
+    // console.log("package insert ", DpObj);
+    return { sucRes: DpObj, errRes: errorPackage };
     // return;
   } catch (err) {
     console.log(err);
@@ -1336,6 +1429,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
     var str1 = /[~]/;
     var str2 = /[.]/;
     var str3 = /[< >]/;
+
+    const isCDI = externalSysName === "CDI" ? true : false;
 
     if (!isNew) {
       if (!obj.columnDefinition) {
@@ -1654,55 +1749,55 @@ const saveDataset = (exports.datasetLevelInsert = async (
     }
     // console.log("insert data set");
 
-    let dsObj = {};
+    if (!isCDI) {
+      if (obj.dataKindID) {
+        let checkDataKind = await DB.executeQuery(
+          `select datakindid, active from ${schemaName}.datakind where datakindid='${obj.dataKindID}';`
+        );
 
-    if (obj.dataKindID) {
-      let checkDataKind = await DB.executeQuery(
-        `select datakindid, active from ${schemaName}.datakind where datakindid='${obj.dataKindID}';`
-      );
-
-      if (checkDataKind.rows.length > 0) {
-        if (checkDataKind.rows[0].active !== 1) {
+        if (checkDataKind.rows.length > 0) {
+          if (checkDataKind.rows[0].active !== 1) {
+            errorDataset.push(
+              `Clinical Data Type is inactive from ${externalSysName}, Description in TA cannot be integrated.`
+            );
+            if (isNew) {
+              const dataSetRollBack = await dfRollBack(DFId);
+            }
+          }
+        } else {
           errorDataset.push(
-            `Clinical Data Type is inactive from ${externalSysName}, Description in TA cannot be integrated.`
+            `Clinical Data Type is missing from ${externalSysName}, Description in TA cannot be integrated.`
           );
           if (isNew) {
             const dataSetRollBack = await dfRollBack(DFId);
           }
         }
-      } else {
-        errorDataset.push(
-          `Clinical Data Type is missing from ${externalSysName}, Description in TA cannot be integrated.`
-        );
-        if (isNew) {
-          const dataSetRollBack = await dfRollBack(DFId);
-        }
       }
-    }
 
-    if (obj.datasetName) {
-      const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
-      let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
+      if (obj.datasetName) {
+        const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
+        let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
                 left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
                 left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
                 where ds.mnemonic ='${obj.datasetName}' and df.testflag ='${tFlg}'`;
 
-      let queryMnemonic = await DB.executeQuery(selectMnemonic);
+        let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
-      if (queryMnemonic.rows.length > 0) {
-        errorDataset.push(
-          "In this environment this mnemonic name already Exist!"
-        );
+        if (queryMnemonic.rows.length > 0) {
+          errorDataset.push(
+            "In this environment this datasetName(mnemonic) name already Exist!"
+          );
 
-        if (isNew) {
-          const dataSetRollBack = await dfRollBack(DFId);
+          if (isNew) {
+            const dataSetRollBack = await dfRollBack(DFId);
+          }
         }
       }
     }
 
     if (errorDataset.length > 0) {
       errorDataset.splice(0, 0, `DataSet external id -${externalID} `);
-      return { sucRes: dataSet, errRes: errorDataset };
+      return { errRes: errorDataset };
     }
 
     let sqlQuery = "";
@@ -1784,11 +1879,13 @@ const saveDataset = (exports.datasetLevelInsert = async (
       }
     }
 
-    dsObj.externalId = obj.ExternalId;
-    dsObj.datasetid = dsUid;
-    dsObj.action = "Dataset created successfully.";
-    dsObj.timestamp = ts;
-    dataSet.push(dsObj);
+    let dsObj = {
+      ExternalId: obj.ExternalId,
+      ID: dsUid,
+    };
+    // dsObj.action = "Dataset created successfully.";
+    // dsObj.timestamp = ts;
+    // dataSet.push(dsObj);
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -1810,7 +1907,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
     if (obj.qcType) {
       if (obj.conditionalExpressions && obj.conditionalExpressions.length > 0) {
-        dataSet.vlc = [];
+        dsObj.vlc = [];
         for (let vlc of obj.conditionalExpressions) {
           // let vlcRes = [];
           await saveVlc(
@@ -1822,10 +1919,12 @@ const saveDataset = (exports.datasetLevelInsert = async (
             version,
             userId
           ).then((res) => {
-            if (res.errRes && res.errRes.length) {
+            if (res && res.errRes.length) {
               errorDataset.push(res.errRes);
             }
-            dataSet.push(res.sucRes);
+            if (res && res.sucRes) {
+              dsObj.vlc.push(res.sucRes);
+            }
           });
           // dataSet.push(vlcRes);
         }
@@ -1833,7 +1932,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
     }
 
     if (obj.columnDefinition && obj.columnDefinition.length) {
-      let column_definition = [];
+      // let column_definition = [];
+      dsObj.columnDefinition = [];
       for (let el of obj.columnDefinition) {
         await columnSave(
           el,
@@ -1847,16 +1947,20 @@ const saveDataset = (exports.datasetLevelInsert = async (
           isNew,
           obj.headerRowNumber
         ).then((res) => {
-          if (res.errRes && res.errRes.length) {
+          if (res && res.errRes.length) {
             errorDataset.push(res.errRes);
           }
-          dataSet.push(res.sucRes);
+          // console.log("column function call ", res.sucRes);
+          if (res && res.sucRes) {
+            dsObj.columnDefinition.push(res.sucRes);
+          }
         });
       }
     }
-    return { sucRes: dataSet, errRes: errorDataset };
+    // console.log("dataset insert", dsObj);
+    return { sucRes: dsObj, errRes: errorDataset };
   } catch (err) {
-    console.log(err);
+    console.log("dataset catch", err);
     //throw error in json response with status 500.
     Logger.error("catch :Dataset level insert");
     Logger.error(err);
@@ -1927,6 +2031,38 @@ const columnSave = (exports.columnDefinationInsert = async (
           }
         }
 
+        //po09
+        // if (el.dataType && el.format) {
+        //   if (el.dataType.toLowerCase() === "alphanumeric") {
+        //     if (helper.isAlphaNumeric(el.format) === false) {
+        //       errorColumnDef.push(
+        //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+        //       );
+        //     }
+        //   }
+        //   if (el.dataType.toLowerCase() === "numeric") {
+        //     if (helper.isNumbers(el.format) === false) {
+        //       errorColumnDef.push(
+        //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+        //       );
+        //     }
+        //   }
+        //   if (el.dataType.toLowerCase() === "date") {
+        //     if (helper.isValidDate(el.format) === false) {
+        //       errorColumnDef.push(
+        //         "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend."
+        //       );
+        //     }
+        //   }
+        // }
+
+        if (el.dataType && el.format) {
+          const validate = dataTyperForamtValidate(el.dataType, el.format);
+          if (validate) {
+            errorColumnDef.push(validate);
+          }
+        }
+
         let clResIf = helper.validation(clArrayIf);
         if (clResIf.length > 0) {
           errorColumnDef.push(clResIf);
@@ -1963,13 +2099,18 @@ const columnSave = (exports.columnDefinationInsert = async (
           }
         }
 
-        if (el.maxLength) {
+        if (el.maxLength || el.maxLength === 0) {
           if (typeof el.maxLength != "number") {
             errorColumnDef.push(
               "In SFTP/FTPS maxLength is Optional and data type should be Number"
             );
           } else {
             if (el.maxLength >= 10001) {
+              errorColumnDef.push(
+                "Max Length must be between values of 1 and 10,000. Please amend."
+              );
+            }
+            if (el.maxLength === 0) {
               errorColumnDef.push(
                 "Max Length must be between values of 1 and 10,000. Please amend."
               );
@@ -2045,6 +2186,38 @@ const columnSave = (exports.columnDefinationInsert = async (
           }
         }
 
+        //ppp
+        // if (el.dataType && el.format) {
+        //   if (el.dataType.toLowerCase() === "alphanumeric") {
+        //     if (helper.isAlphaNumeric(el.format) === false) {
+        //       errorColumnDef.push(
+        //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+        //       );
+        //     }
+        //   }
+        //   if (el.dataType.toLowerCase() === "numeric") {
+        //     if (helper.isNumbers(el.format) === false) {
+        //       errorColumnDef.push(
+        //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+        //       );
+        //     }
+        //   }
+        //   if (el.dataType.toLowerCase() === "date") {
+        //     if (helper.isValidDate(el.format) === false) {
+        //       errorColumnDef.push(
+        //         "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend."
+        //       );
+        //     }
+        //   }
+        // }
+
+        if (el.dataType && el.format) {
+          const validate = dataTyperForamtValidate(el.dataType, el.format);
+          if (validate) {
+            errorColumnDef.push(validate);
+          }
+        }
+
         let clRes = helper.validation(clArray);
         if (clRes.length > 0) {
           errorColumnDef.push(clRes);
@@ -2074,7 +2247,7 @@ const columnSave = (exports.columnDefinationInsert = async (
       //new changes1
       if (clName.rows.length > 0) {
         errorColumnDef.push(
-          " This Column Definition columnName already exists!"
+          " Column Names (Headers) must be unique in a data set file structure. Please amend."
         );
         if (isNew) {
           await dfRollBack(DFId);
@@ -2088,10 +2261,9 @@ const columnSave = (exports.columnDefinationInsert = async (
         0,
         `Column definition External Id -${cdExternalId} `
       );
-      return { sucRes: ColumnDef, errRes: errorColumnDef };
+      return { errRes: errorColumnDef };
     }
 
-    let cdObj = {};
     let CDBody = [
       DSId,
       el.columnName || null,
@@ -2145,11 +2317,13 @@ const columnSave = (exports.columnDefinationInsert = async (
     // const dsCountUpdate = `update ${schemaName}.dataset set columncount='${Count.rows[0].count}' where datasetid ='${DSId}'`;
     // const clCountUpdate = await DB.executeQuery(dsCountUpdate);
 
-    cdObj.externalId = cdExternalId;
-    cdObj.colmunid = CDUid;
-    cdObj.action = "column definition created successfully.";
-    cdObj.timestamp = ts;
-    ColumnDef.push(cdObj);
+    let cdObj = {
+      ExternalId: cdExternalId,
+      ID: CDUid,
+    };
+    // cdObj.action = "column definition created successfully.";
+    // cdObj.timestamp = ts;
+    // ColumnDef.push(cdObj);
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -2169,7 +2343,8 @@ const columnSave = (exports.columnDefinationInsert = async (
       ]
     );
 
-    return { sucRes: ColumnDef, errRes: errorColumnDef };
+    // console.log("column insert", cdObj);
+    return { sucRes: cdObj, errRes: errorColumnDef };
   } catch (e) {
     console.log(e);
     Logger.error("catch :New Column def add");
@@ -2273,10 +2448,8 @@ const saveVlc = (exports.VlcInsert = async (
         0,
         `VLC Conditional Expression Number -${vl.conditionalExpressionNumber} `
       );
-      return { sucRes: vlc, errRes: errorVlc };
+      return { errRes: errorVlc };
     }
-
-    let vlcObj = {};
 
     let vlcBody = [
       DFId,
@@ -2293,17 +2466,27 @@ const saveVlc = (exports.VlcInsert = async (
       userId,
     ];
 
-    let createVlc = await DB.executeQuery(
+    const {
+      rows: [createdVlc],
+    } = await DB.executeQuery(
       `insert into ${schemaName}.dataset_qc_rules(dataflowid, datapackageid, datasetid, ext_ruleid, qc_type,
         ruleseq, action, ruleexpr, errormessage, active_yn,created_dttm,updated_dttm,created_by_user,updated_by_user)
-        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11,$12,$12 )`,
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11,$12,$12 ) returning dsqcruleid as "vlcID";`,
       vlcBody
     );
-    vlcObj.conditionalExpressionNumber = vl.conditionalExpressionNumber;
-    vlcObj.datasetid = dsUid;
-    vlcObj.action = "VLC created successfully.";
-    vlcObj.timestamp = ts;
-    vlc.push(vlcObj);
+
+    // const createdVlc = "";
+
+    const vlcId = createdVlc?.vlcID || null;
+    // const vlcId = null;
+
+    let vlcObj = {
+      conditionalExpressionNumber: vl.conditionalExpressionNumber,
+      ID: vlcId,
+    };
+    // vlcObj.action = "VLC created successfully.";
+    // vlcObj.timestamp = ts;
+    // vlc.push(vlcObj);
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -2323,9 +2506,10 @@ const saveVlc = (exports.VlcInsert = async (
       ]
     );
 
-    return { sucRes: vlc, errRes: errorVlc };
+    // console.log("vlc insert ", vlcObj);
+    return { sucRes: vlcObj, errRes: errorVlc };
   } catch (err) {
-    console.log(err);
+    console.log("vlc", err);
     //throw error in json response with status 500.
     Logger.error("catch :Data Set VLC Insert");
     Logger.error(err);
@@ -2511,14 +2695,15 @@ exports.dataflowUpdate = async (
     }
 
     if (Object.keys(diffObj).length === 0) {
-      return { sucRes: dataflow };
+      // return { sucRes: dataflow };
+      return;
     } else {
-      newDfobj.externalId = externalID;
-      newDfobj.dataFlowId = DFId;
-      newDfobj.action = "Dataflow update successfully.";
-      newDfobj.timestamp = ts;
-      dataflow.push(newDfobj);
-      return { sucRes: dataflow };
+      newDfobj.ExternalId = externalID;
+      newDfobj.ID = DFId;
+      // newDfobj.action = "Dataflow update successfully.";
+      // newDfobj.timestamp = ts;
+      // dataflow.push(newDfobj);
+      return { sucRes: newDfobj };
     }
   } catch (e) {
     console.log(e);
@@ -2591,7 +2776,7 @@ exports.packageUpdate = async (
         }
         if (typeof data.path != "undefined") {
           TypeSas.push({
-            key: "path",
+            key: "p_path",
             value: data.path,
             type: "string",
           });
@@ -2728,7 +2913,8 @@ exports.packageUpdate = async (
 
     if (errorPackage.length > 0) {
       errorPackage.splice(0, 0, `Datapackage external id -${externalID} `);
-      return { sucRes: data_packages, errRes: errorPackage };
+      // return { sucRes: {}, errRes: errorPackage };
+      return { errRes: errorPackage };
     }
 
     let updateQueryDP = `update ${schemaName}.datapackage set updt_tm=NOW()`;
@@ -2789,15 +2975,15 @@ exports.packageUpdate = async (
     }
 
     if (Object.keys(diffObj).length === 0) {
-      return { sucRes: data_packages, errRes: errorPackage };
+      return;
     } else {
-      newObj.externalId = externalID;
-      newObj.datapackageid = DPId;
+      newObj.ExternalId = externalID;
+      newObj.ID = DPId;
       newObj.action = "Datapackage update successfully.";
-      newObj.timestamp = ts;
-      data_packages.push(newObj);
+      // newObj.timestamp = ts;
+      // data_packages.push(newObj);
 
-      return { sucRes: data_packages, errRes: errorPackage };
+      return { sucRes: newObj, errRes: errorPackage };
     }
   } catch (e) {
     console.log(e);
@@ -2853,13 +3039,15 @@ exports.datasetUpdate = async (
       let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
                 left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
                 left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
-                where ds.mnemonic ='${data.datasetName}' and df.testflag ='${tFlg}'`;
+                where ds.mnemonic ='${data.datasetName}' 
+                and ds.datasetid !=$1
+                and df.testflag ='${tFlg}'`;
 
-      let queryMnemonic = await DB.executeQuery(selectMnemonic);
+      let queryMnemonic = await DB.executeQuery(selectMnemonic, [DSId]);
 
       if (queryMnemonic.rows.length > 0) {
         errorDataset.push(
-          "In this environment this mnemonic name already Exist!"
+          "In this environment this datasetName(mnemonic) name already Exist!"
         );
       }
     }
@@ -3203,7 +3391,8 @@ exports.datasetUpdate = async (
 
     if (errorDataset.length > 0) {
       errorDataset.splice(0, 0, `DataSet external id -${externalID} `);
-      return { sucRes: dataset_update, errRes: errorDataset };
+      // return { sucRes: {}, errRes: errorDataset };
+      return { errRes: errorDataset };
     }
 
     let sqlQuery = custSql;
@@ -3253,7 +3442,7 @@ exports.datasetUpdate = async (
     if (data.OverrideStaleAlert) {
       updateQueryDS += `,ovrd_stale_alert='${data.OverrideStaleAlert}'`;
     }
-    if (data.headerRowNumber) {
+    if (data.headerRowNumber || data.headerRowNumber === 0) {
       updateQueryDS += `,headerrow='${data.headerRowNumber}'`;
       updateQueryDS += `,headerrownumber='${data.headerRowNumber}'`;
     }
@@ -3341,15 +3530,15 @@ exports.datasetUpdate = async (
     }
 
     if (Object.keys(diffObj).length === 0) {
-      return { sucRes: dataset_update, errRes: errorDataset };
+      return;
     } else {
-      newObj.externalId = externalID;
-      newObj.dataSetid = DSId;
+      newObj.ExternalId = externalID;
+      newObj.ID = DSId;
       newObj.action = "Dataset update successfully.";
-      newObj.timestamp = ts;
-      dataset_update.push(newObj);
+      // newObj.timestamp = ts;
+      // dataset_update.push(newObj);
 
-      return { sucRes: dataset_update, errRes: errorDataset };
+      return { sucRes: newObj, errRes: errorDataset };
     }
   } catch (e) {
     console.log(e);
@@ -3368,7 +3557,9 @@ exports.clDefUpdate = async (
   version,
   ConnectionType,
   userId,
-  DSheaderRow
+  DSheaderRow,
+  oldDataType,
+  oldFormat
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -3401,6 +3592,57 @@ exports.clDefUpdate = async (
           );
         }
       }
+
+      //plo
+      // if ((data.dataType && !data.format) || (!data.dataType && data.format)) {
+      //   errorcolDef.push("dataType and format both are required");
+      // } else {
+      //   if (data.dataType.toLowerCase() === "alphanumeric") {
+      //     if (helper.isAlphaNumeric(data.format) === false) {
+      //       errorcolDef.push(
+      //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+      //       );
+      //     }
+      //   }
+      //   if (data.dataType.toLowerCase() === "numeric") {
+      //     if (helper.isNumbers(data.format) === false) {
+      //       errorcolDef.push(
+      //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+      //       );
+      //     }
+      //   }
+      //   if (data.dataType.toLowerCase() === "date") {
+      //     if (helper.isValidDate(data.format) === false) {
+      //       errorcolDef.push(
+      //         "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend."
+      //       );
+      //     }
+      //   }
+      // }
+
+      if (data.dataType && data.format) {
+        const validate = dataTyperForamtValidate(data.dataType, data.format);
+        if (validate) {
+          errorcolDef.push(validate);
+        }
+      } else {
+        if (oldDataType && data.format) {
+          const validate = dataTyperForamtValidate(oldDataType, data.format);
+          if (validate) {
+            errorcolDef.push(["Format is not matching with existing DataType"]);
+          }
+        }
+
+        if (data.dataType && oldFormat) {
+          const validate = dataTyperForamtValidate(data.dataType, oldFormat);
+          if (validate) {
+            errorcolDef.push([
+              "DataType is not matching with existing format value",
+            ]);
+          }
+        }
+      }
+
       if (data.position || data.position === 0) {
         if (typeof data.position != "number") {
           errorcolDef.push(
@@ -3430,13 +3672,18 @@ exports.clDefUpdate = async (
           );
         }
       }
-      if (data.maxLength) {
+      if (data.maxLength || data.maxLength === 0) {
         if (typeof data.maxLength != "number") {
           errorcolDef.push(
             "In SFTP/FTPS maxLength is Optional and data type should be Number"
           );
         } else {
           if (data.maxLength >= 10001) {
+            errorcolDef.push(
+              "Max Length must be between values of 1 and 10,000. Please amend."
+            );
+          }
+          if (data.maxLength === 0) {
             errorcolDef.push(
               "Max Length must be between values of 1 and 10,000. Please amend."
             );
@@ -3559,6 +3806,54 @@ exports.clDefUpdate = async (
         errorcolDef.push(colDefRes);
       }
 
+      //last add
+      // if ((data.dataType && !data.format) || (!data.dataType && data.format)) {
+      //   errorcolDef.push("dataType and format both are required");
+      // } else {
+      //   if (data.dataType.toLowerCase() === "alphanumeric") {
+      //     if (helper.isAlphaNumeric(data.format) === false) {
+      //       errorcolDef.push(
+      //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+      //       );
+      //     }
+      //   }
+      //   if (data.dataType.toLowerCase() === "numeric") {
+      //     if (helper.isNumbers(data.format) === false) {
+      //       errorcolDef.push(
+      //         "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend."
+      //       );
+      //     }
+      //   }
+      //   if (data.dataType.toLowerCase() === "date") {
+      //     if (helper.isValidDate(data.format) === false) {
+      //       errorcolDef.push(
+      //         "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend."
+      //       );
+      //     }
+      //   }
+      // }
+
+      if (data.dataType && data.format) {
+        const validate = dataTyperForamtValidate(data.dataType, data.format);
+        if (validate) {
+          errorcolDef.push(validate);
+        }
+      } else {
+        if (oldDataType && data.format) {
+          const validate = dataTyperForamtValidate(oldDataType, data.format);
+          if (validate) {
+            errorcolDef.push(["Format is not matching with existing DataType"]);
+          }
+        }
+
+        if (data.dataType && oldFormat) {
+          const validate = dataTyperForamtValidate(data.dataType, oldFormat);
+          if (validate) {
+            errorcolDef.push(["DataType is not matching with existing format"]);
+          }
+        }
+      }
+
       if (
         data.minLength ||
         data.minLength === 0 ||
@@ -3575,16 +3870,19 @@ exports.clDefUpdate = async (
 
     if (data.columnName) {
       let clName = await DB.executeQuery(
-        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${data.columnName}';`
+        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and columnid !='${cdId}' and name='${data.columnName}';`
       );
       if (clName.rows.length > 0) {
-        errorcolDef.push("This Column Definition columnName already exist!");
+        errorcolDef.push(
+          "Column Names (Headers) must be unique in a data set file structure. Please amend."
+        );
       }
     }
 
     if (errorcolDef.length > 0) {
       errorcolDef.splice(0, 0, `Column Definition Id -${externalId} `);
-      return { sucRes: colDef_update, errRes: errorcolDef };
+      // return { sucRes: {}, errRes: errorcolDef };
+      return { errRes: errorcolDef };
     }
 
     // columndefinition(datasetid,columnid,name,datatype,
@@ -3672,15 +3970,15 @@ exports.clDefUpdate = async (
     }
 
     if (Object.keys(diffObj).length === 0) {
-      return { sucRes: colDef_update, errRes: errorcolDef };
+      return;
     } else {
-      newObj.externalId = externalId;
-      newObj.clDefid = cdId;
+      newObj.ExternalId = externalId;
+      newObj.ID = cdId;
       newObj.action = "Column Defination update successfully.";
-      newObj.timestamp = ts;
-      colDef_update.push(newObj);
+      // newObj.timestamp = ts;
+      // colDef_update.push(newObj);
 
-      return { sucRes: colDef_update, errRes: errorcolDef };
+      return { sucRes: newObj, errRes: errorcolDef };
     }
   } catch (err) {
     console.log(err);
@@ -3764,7 +4062,8 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
         0,
         `VLC Conditional Expression Number -${vl.conditionalExpressionNumber}`
       );
-      return { sucRes: vlc_update, errRes: errorVlc };
+      // return { sucRes: {}, errRes: errorVlc };
+      return { errRes: errorVlc };
     }
 
     //heeheheheh
@@ -3826,15 +4125,15 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
     }
 
     if (Object.keys(diffObj).length === 0) {
-      return { sucRes: vlc_update, errRes: errorVlc };
+      return;
     } else {
       newObj.conditionalExpressionNumber = vl.conditionalExpressionNumber;
-      newObj.DataSetId = DSId;
+      newObj.ID = vlcUpdate.rows[0].dsqcruleid;
       newObj.action = "VLC update successfully.";
-      newObj.timestamp = ts;
-      vlc_update.push(newObj);
+      // newObj.timestamp = ts;
+      // vlc_update.push(newObj);
 
-      return { sucRes: vlc_update, errRes: errorVlc };
+      return { sucRes: newObj, errRes: errorVlc };
     }
   } catch (err) {
     console.log(err);
@@ -3854,7 +4153,6 @@ exports.removeDataflow = async (
   try {
     let ts = new Date().toLocaleString();
     var dataflow = [];
-    var newDfobj = {};
 
     const deleteQueryDF = `update ${schemaName}.dataflow set updt_tm=NOW(),refreshtimestamp=NOW(),updated_by_user='${userId}', del_flg=1 where dataflowid='${DFId}' `;
     const removeDf = await DB.executeQuery(deleteQueryDF);
@@ -3878,11 +4176,14 @@ exports.removeDataflow = async (
     const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
     const qcDelete = await DB.executeQuery(deleteQc);
 
-    newDfobj.externalId = externalID;
-    newDfobj.dataflowid = DFId;
-    newDfobj.action = "Data Flow Removed successfully.";
-    newDfobj.timestamp = ts;
-    dataflow.push(newDfobj);
+    let newDfobj = {
+      ExternalId: externalID,
+      ID: DFId,
+      action: "Data Flow Removed successfully.",
+      // timestamp: ts,
+    };
+    // newDfobj.timestamp = ts;
+    // dataflow.push(newDfobj);
 
     // Version Table enrty
     let dataflow_version_query = `INSERT INTO ${schemaName}.dataflow_version
@@ -3915,7 +4216,7 @@ exports.removeDataflow = async (
       ]
     );
 
-    return { sucRes: dataflow };
+    return { sucRes: newDfobj };
   } catch (err) {
     console.log(err);
     Logger.error("catch : DataFlow Removed");
@@ -3944,11 +4245,11 @@ exports.removeDataPackage = async (externalID, DPID, DFId, version, userId) => {
     const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
     const qcDelete = await DB.executeQuery(deleteQc);
 
-    newDfobj.externalId = externalID;
-    newDfobj.dataPackageId = DPID;
+    newDfobj.ExternalId = externalID;
+    newDfobj.ID = DPID;
     newDfobj.action = "Data Package Removed successfully.";
-    newDfobj.timestamp = ts;
-    dataPackage.push(newDfobj);
+    // newDfobj.timestamp = ts;
+    // dataPackage.push(newDfobj);
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -3968,7 +4269,7 @@ exports.removeDataPackage = async (externalID, DPID, DFId, version, userId) => {
       ]
     );
 
-    return { sucRes: dataPackage };
+    return { sucRes: newDfobj };
   } catch (err) {
     console.log(err);
     Logger.error("catch : Data Package Removed");
@@ -3998,11 +4299,11 @@ exports.removeDataSet = async (
     const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
     const qcDelete = await DB.executeQuery(deleteQc);
 
-    newDfobj.externalId = externalID;
-    newDfobj.dataSetid = DSID;
+    newDfobj.ExternalId = externalID;
+    newDfobj.ID = DSID;
     newDfobj.action = "Data Set Removed successfully.";
-    newDfobj.timestamp = ts;
-    dataSet.push(newDfobj);
+    // newDfobj.timestamp = ts;
+    // dataSet.push(newDfobj);
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -4022,7 +4323,7 @@ exports.removeDataSet = async (
       ]
     );
 
-    return { sucRes: dataSet };
+    return { sucRes: newDfobj };
   } catch (err) {
     console.log(err);
     Logger.error("catch : Data Set Removed");
@@ -4047,11 +4348,11 @@ exports.removeColumnDefination = async (
     const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where columnid='${cdId}';`;
     const removeCd = await DB.executeQuery(deleteQueryCD);
 
-    newDfobj.externalId = externalID;
-    newDfobj.columnDefId = cdId;
+    newDfobj.ExternalId = externalID;
+    newDfobj.ID = cdId;
     newDfobj.action = "Column Definition Removed successfully.";
-    newDfobj.timestamp = ts;
-    ColumnDefinition.push(newDfobj);
+    // newDfobj.timestamp = ts;
+    // ColumnDefinition.push(newDfobj);
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -4071,7 +4372,7 @@ exports.removeColumnDefination = async (
       ]
     );
 
-    return { sucRes: ColumnDefinition };
+    return { sucRes: newDfobj };
   } catch (err) {
     console.log(err);
     Logger.error("catch : Column Def Removed ");

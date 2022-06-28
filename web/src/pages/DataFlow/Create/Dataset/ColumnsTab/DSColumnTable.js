@@ -682,7 +682,7 @@ export default function DSColumnTable({
       <Modal
         open={showOverWrite}
         variant="warning"
-        title="Overwritte set column attributes"
+        title="Overwrite set column attributes"
         onClose={hideOverWrite}
         message="The existing data set column attributes will be overwritten. Continue?"
         buttonProps={[

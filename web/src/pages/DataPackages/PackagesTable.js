@@ -11,17 +11,23 @@ import Menu from "apollo-react/components/Menu";
 import Status from "apollo-react/components/Status";
 import StatusDotSolid from "apollo-react-icons/StatusDotSolid";
 import MenuItem from "apollo-react/components/MenuItem";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { ReactComponent as RoundPlusSvg } from "../../components/Icons/roundplus.svg";
 import { ReactComponent as PackageIcon } from "../../components/Icons/datapackage.svg";
 import {
+  selectDataPackage,
   deletePackage,
   redirectToDataSet,
   updateStatus,
 } from "../../store/actions/DataPackageAction";
 import { updateDSState } from "../../store/actions/DataFlowAction";
 import { updateDSStatus } from "../../store/actions/DataSetsAction";
+import { isSftp } from "../../utils";
+import usePermission, {
+  Categories,
+  Features,
+} from "../../components/Common/usePermission";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
@@ -72,6 +78,15 @@ const PackagesList = ({ data, userInfo }) => {
   const history = useHistory();
   const [expandedRows, setExpandedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
+  const {
+    selectedDataFlow: { locationType },
+  } = useSelector((state) => state.dashboard);
+  const { versionFreezed } = useSelector((state) => state.dataFlow);
+
+  const { canUpdate: canUpdateDataFlow } = usePermission(
+    Categories.CONFIGURATION,
+    Features.DATA_FLOW_CONFIGURATION
+  );
 
   const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
@@ -88,16 +103,20 @@ const PackagesList = ({ data, userInfo }) => {
         <Typography variant="caption" className="datasetCount">
           {datasets.length || 0}
         </Typography>
-        <span className="add-dataset">
-          <Tooltip title="Add dataset" disableFocusListener>
-            <RoundPlusSvg
-              className="add-dataset-btn"
-              onClick={() =>
-                addDataSet(row.dataflowid, "", row.datapackageid, row.name)
-              }
-            />
-          </Tooltip>
-        </span>
+        {row.sod_view_type === null && (
+          <span className="add-dataset">
+            <Tooltip title="Add dataset" disableFocusListener>
+              <RoundPlusSvg
+                disabled={!canUpdateDataFlow}
+                className="add-dataset-btn"
+                onClick={() =>
+                  canUpdateDataFlow &&
+                  addDataSet(row.dataflowid, "", row.datapackageid, row.name)
+                }
+              />
+            </Tooltip>
+          </span>
+        )}
       </div>
     );
   };
@@ -119,19 +138,28 @@ const PackagesList = ({ data, userInfo }) => {
               key={dataset.datasetid}
               role="button"
               tabIndex={0}
-              onClick={() =>
-                goToDataSet(
-                  row.dataflowid,
-                  "",
-                  row.datapackageid,
-                  row.name,
-                  dataset.datasetid,
-                  dataset.mnemonic
-                )
+              onClick={
+                row.sod_view_type === null &&
+                (() =>
+                  goToDataSet(
+                    row.dataflowid,
+                    "",
+                    row.datapackageid,
+                    row.name,
+                    dataset.datasetid,
+                    dataset.mnemonic
+                  ))
               }
             >
               <div className="dataset-details">
-                <Typography variant="caption" className="dataset-name">
+                <Typography
+                  variant="caption"
+                  className={
+                    row.sod_view_type !== null
+                      ? "sod-datasetName"
+                      : "dataset-name"
+                  }
+                >
                   {dataset.name?.toUpperCase() ||
                     dataset.mnemonic ||
                     "DataSet Name"}
@@ -172,6 +200,7 @@ const PackagesList = ({ data, userInfo }) => {
             package_id: packageId,
             active: status === 1 ? "0" : "1",
             user_id: userInfo.userId,
+            versionFreezed,
           })
         );
       }
@@ -179,28 +208,48 @@ const PackagesList = ({ data, userInfo }) => {
     const deleteAction = () => {
       if (packageId) {
         dispatch(
-          deletePackage({ package_id: packageId, user_id: userInfo.userId })
+          deletePackage({
+            package_id: packageId,
+            user_id: userInfo.userId,
+            versionFreezed,
+          })
         );
+      }
+    };
+    const editAction = () => {
+      if (packageId) {
+        dispatch(selectDataPackage(row));
+        history.push("/dashboard/data-packages");
       }
     };
     const menuItems = [
       {
         text: `Set data package ${active === 1 ? "inactive" : "active"}`,
         onClick: () => setActive(active),
+        disabled: !canUpdateDataFlow,
       },
       {
         text: "Set all dataset to active",
         // onClick: () => onRowEdit(packageName),
+        disabled: !canUpdateDataFlow,
       },
       {
         text: "Set all datasets to inactive",
         // onClick: () => onRowEdit(packageName),
+        disabled: !canUpdateDataFlow,
       },
       {
         text: "Delete data package",
         onClick: deleteAction,
+        disabled: !canUpdateDataFlow,
       },
     ];
+    if (isSftp(locationType)) {
+      menuItems.unshift({
+        text: "Edit data package",
+        onClick: editAction,
+      });
+    }
     const openAction = (e) => {
       setAnchorEl(e.currentTarget);
       setOpen(true);
@@ -213,20 +262,38 @@ const PackagesList = ({ data, userInfo }) => {
           onClick={openAction}
           style={{ cursor: "pointer" }}
         />
-        <Menu
-          id="tableMenu"
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleRequestClose}
-        >
-          {menuItems.map((menu) => {
-            return (
-              <MenuItem key={menu.text} size="small" onClick={menu.onClick}>
-                {menu.text}
-              </MenuItem>
-            );
-          })}
-        </Menu>
+        {row.sod_view_type === null ? (
+          <Menu
+            id="tableMenu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleRequestClose}
+          >
+            {menuItems.map((menu) => {
+              return (
+                <MenuItem
+                  key={menu.text}
+                  size="small"
+                  disabled={menu.disabled}
+                  onClick={menu.onClick}
+                >
+                  {menu.text}
+                </MenuItem>
+              );
+            })}
+          </Menu>
+        ) : (
+          <Menu
+            id="tableMenu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleRequestClose}
+          >
+            <MenuItem size="small" onClick={editAction}>
+              Edit data package
+            </MenuItem>
+          </Menu>
+        )}
       </div>
     );
   };

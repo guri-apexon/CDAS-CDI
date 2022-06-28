@@ -1,4 +1,6 @@
+/* eslint-disable dot-notation */
 import axios from "axios";
+import CryptoJS from "crypto-js";
 import {
   baseURL,
   STUDYSEARCH,
@@ -20,7 +22,10 @@ import {
   COLUMNSAPI,
   DATAFLOW_UPDATE_API,
   ADD_PACKAGE,
+  API_URL,
 } from "../constants";
+import store from "../store";
+import { freezeDfVersion } from "../store/actions/DataFlowAction";
 import {
   columnsCreated,
   columnsCreatedFailure,
@@ -30,6 +35,28 @@ import { deleteAllCookies, getUserId } from "../utils/index";
 const userId = getUserId();
 
 const config = { headers: { userId } };
+
+axios.defaults.headers.common["api-key"] = CryptoJS.AES.encrypt(
+  process.env.REACT_APP_API_KEY || "",
+  process.env.REACT_APP_ENCRYPTION_KEY || ""
+).toString();
+axios.defaults.headers.common["sys-name"] = process.env.REACT_APP_SYS_NAME;
+axios.defaults.headers.common["token-type"] = "sample";
+axios.defaults.headers.common["access-token"] = "sample";
+
+const responseHandler = (response) => {
+  if (response?.data?.data?.versionBumped) {
+    store.dispatch(freezeDfVersion());
+  }
+  return response;
+};
+const errorHandler = (error) => {
+  return Promise.reject(error);
+};
+axios.interceptors.response.use(
+  (response) => responseHandler(response),
+  (error) => errorHandler(error)
+);
 
 export const checkLocationExistsInDataFlow = async (locId) => {
   try {
@@ -399,6 +426,30 @@ export const submitDataPackage = async (reqBody) => {
   try {
     const res = await axios.post(`${baseURL}/${ADD_PACKAGE}`, reqBody);
     return res.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const getRolesPermissions = () => {
+  try {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${API_URL}/role/getUserRolesPermissions`, {
+          userId,
+          productName: "Ingestion",
+        })
+        .then((res) => {
+          resolve(res.data?.data || res.data);
+        })
+        .catch((err) => {
+          if (err.response?.data) {
+            resolve(err.response?.data);
+          } else {
+            resolve({ message: "Something went wrong" });
+          }
+        });
+    });
   } catch (err) {
     return console.log("Error", err);
   }

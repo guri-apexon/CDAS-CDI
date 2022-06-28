@@ -55,6 +55,11 @@ import {
   TextFieldFilter,
 } from "../../../utils/index";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
+
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
   const date =
@@ -163,6 +168,24 @@ export default function DataflowTab({ updateData }) {
   const { dfCount, dsCount } = selectedCard;
 
   const [expandedRows, setExpandedRows] = useState([]);
+
+  const {
+    canUpdate: canUpdateDataFlow,
+    canCreate: canCreateDataFlow,
+    canRead: canReadDataFlow,
+  } = usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+  const { canEnabled: canDeleteTest } = usePermission(
+    Categories.MENU,
+    Features.DATA_FLOW_HARD_DELETE_TEST
+  );
+  const { canEnabled: canDeleteProd } = usePermission(
+    Categories.MENU,
+    Features.DATA_FLOW_HARD_DELETE_PROD
+  );
+  const { canEnabled: canSync } = usePermission(
+    Categories.MENU,
+    Features.SYNC_NOW
+  );
 
   const handleToggleRow = (dataFlowId) => {
     // eslint-disable-next-line no-shadow
@@ -282,17 +305,28 @@ export default function DataflowTab({ updateData }) {
 
   const handleLink = (dataFlowId, dataFlow) => {
     dispatch(SelectedDataflow(dataFlow));
-    history.push(`/dashboard/dataflow-management/${dataFlowId}`);
+    history.push(`/dashboard/dataflow-management/${dataFlowId}`, {
+      from: "dashboard",
+    });
   };
 
   const LinkCell = ({ row, column: { accessor } }) => {
     const rowValue = row[accessor] || 0;
     const { dataFlowId } = row;
-    return <Link onClick={() => handleLink(dataFlowId, row)}>{rowValue}</Link>;
+    return (
+      <Link
+        disabled={!canReadDataFlow}
+        onClick={() => canReadDataFlow && handleLink(dataFlowId, row)}
+      >
+        {rowValue}
+      </Link>
+    );
   };
 
   const ActionCell = ({ row }) => {
-    const { dataFlowId, status, version, dataSets } = row;
+    const { dataFlowId, status, version, dataSets, type } = row;
+    const canDelete =
+      type.trim().toLowerCase() === "test" ? canDeleteTest : canDeleteProd;
     const activeText =
       status === "Active"
         ? "Change status to inactive"
@@ -303,28 +337,33 @@ export default function DataflowTab({ updateData }) {
         id: 1,
         onClick: () => viewAuditLogAction(dataFlowId, row),
       },
-      {
-        text: activeText,
-        id: 2,
-        onClick: () =>
-          changeStatusAction({ dataFlowId, status, version, dataSets }),
-      },
+      ...(canUpdateDataFlow
+        ? [
+            {
+              text: activeText,
+              id: 2,
+              onClick: () =>
+                changeStatusAction({ dataFlowId, status, version, dataSets }),
+            },
+          ]
+        : []),
       {
         text: "Send sync request",
         id: 3,
         onClick: () => sendSyncRequest(row),
-        disabled: status !== "Active",
+        disabled: status !== "Active" || !canSync,
       },
       {
         text: "Clone data flow",
         id: 4,
         onClick: () => cloneDataFlowAction(dataFlowId),
-        disabled: true,
+        disabled: !canCreateDataFlow,
       },
       {
         text: "Hard delete data flow",
         id: 5,
         onClick: () => hardDeleteAction(row),
+        disabled: !canDelete,
       },
     ];
     return (
@@ -378,12 +417,14 @@ export default function DataflowTab({ updateData }) {
           </SegmentedControlGroup>
         </div>
         <div>
-          <MenuButton
-            buttonText="Add data flow"
-            menuItems={menuItems}
-            size="small"
-            style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
-          />
+          {canCreateDataFlow && (
+            <MenuButton
+              buttonText="Add data flow"
+              menuItems={menuItems}
+              size="small"
+              style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
+            />
+          )}
           <Button
             size="small"
             variant="secondary"

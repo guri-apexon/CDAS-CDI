@@ -11,9 +11,9 @@ exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
     const { dataflowId } = req.params;
-    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 'Y');`;
+    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 'Y');`;
     if (searchParam) {
-      searchQuery = `SELECT datapackageid, dataflowid, name, active, type from ${schemaName}.datapackage 
+      searchQuery = `SELECT datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm from ${schemaName}.datapackage 
       WHERE LOWER(name) LIKE '%${searchParam}%' and dataflowid='${dataflowId}';`;
     }
     const datasetQuery = `SELECT datasetid, mnemonic, active, type from ${schemaName}.dataset where datapackageid = $1`;
@@ -45,7 +45,9 @@ exports.searchList = async (req, res) => {
   }
 };
 
-exports.addPackage = function (req, res) {
+exports.addPackage = async function (req, res) {
+  let package = {};
+  const audit_log = [];
   try {
     Logger.info({ message: "addPackage" });
     const {
@@ -56,50 +58,135 @@ exports.addPackage = function (req, res) {
       study_id,
       dataflow_id,
       user_id,
+      sod_view_type = "",
+      package_id,
+      versionFreezed,
     } = req.body;
+
+    // const versionFreezed = true;
 
     if (study_id == null || dataflow_id == null || user_id == null) {
       return apiResponse.ErrorResponse(res, "Study not found");
     }
 
-    const insertValues = [
-      dataflow_id,
-      compression_type,
-      naming_convention,
-      sftp_path,
-      package_password ? "Yes" : "No",
-      "1",
-      "N",
-    ];
-    DB.executeQuery(
-      `INSERT INTO ${schemaName}.datapackage(dataflowid, type, name, path, password, active, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      insertValues
-    ).then(async (response) => {
-      const {
-        rows: [package],
-      } = response;
-      if (package_password) {
-        console.log(
-          "package_password",
-          package_password,
-          package.datapackageid
+    const {
+      rows: [oldVersion],
+    } = await DB.executeQuery(
+      `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${dataflow_id}' order by version DESC limit 1`
+    );
+
+    if (package_id) {
+      const query_response =
+        await DB.executeQuery(`SELECT * FROM ${schemaName}.datapackage
+      WHERE datapackageid = '${package_id}' LIMIT 1`);
+
+      package =
+        query_response && query_response.rowCount > 0 && query_response.rows[0];
+      const pp = package_password ? "Yes" : "No";
+      if (package) {
+        const updateResult = await DB.executeQuery(
+          `UPDATE ${schemaName}.datapackage
+           SET dataflowid=$1, "type"=$2, "path"=$3, "password"=$4, sod_view_type=$5, name=$6
+           WHERE datapackageid='${package_id}' RETURNING*`,
+          [
+            dataflow_id,
+            compression_type,
+            sftp_path,
+            pp,
+            sod_view_type,
+            naming_convention,
+          ]
         );
-        helper.writeVaultData(`${dataflow_id}/${package.datapackageid}`, {
-          password: package_password,
-        });
       }
-      const historyVersion = await CommonController.addPackageHistory(
-        package,
-        user_id,
-        "New Package"
+      if (package.type !== compression_type)
+        audit_log.push({
+          attribute: "type",
+          old_val: package.type,
+          new_val: compression_type,
+        });
+
+      if (package.path !== sftp_path)
+        audit_log.push({
+          attribute: "path",
+          old_val: package.path,
+          new_val: sftp_path,
+        });
+
+      if (package.password !== pp)
+        audit_log.push({
+          attribute: "password",
+          old_val: package.password,
+          new_val: pp,
+        });
+
+      if (package.sod_view_type !== sod_view_type)
+        audit_log.push({
+          attribute: "sod_view_type",
+          old_val: package.sod_view_type,
+          new_val: sod_view_type,
+        });
+
+      if (package.name !== naming_convention)
+        audit_log.push({
+          attribute: "name",
+          old_val: package.name,
+          new_val: naming_convention,
+        });
+    } else {
+      const query_response = await DB.executeQuery(
+        `INSERT INTO ${schemaName}.datapackage(dataflowid, type, name, path, password, active, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [
+          dataflow_id,
+          compression_type,
+          naming_convention,
+          sftp_path,
+          package_password ? "Yes" : "No",
+          "1",
+          "N",
+        ]
       );
-      if (!historyVersion) throw new Error("History not updated");
-      return apiResponse.successResponseWithData(
-        res,
-        "Success! Data Package saved.",
-        {}
-      );
-    });
+
+      package =
+        query_response && query_response.rowCount > 0 && query_response.rows[0];
+
+      audit_log.push({ attribute: "New Package", old_val: "", new_val: "" });
+    }
+
+    if (package_password) {
+      helper.writeVaultData(`${dataflow_id}/${package.datapackageid}`, {
+        password: package_password,
+      });
+    }
+
+    // const versionFreezed = false;
+    const historyVersion = await CommonController.addPackageHistory(
+      package,
+      user_id,
+      audit_log,
+      versionFreezed
+    );
+    if (!historyVersion) throw new Error("History not updated");
+
+    if (oldVersion.version === historyVersion) {
+      var resData = {
+        version: historyVersion,
+        versionBumped: false,
+      };
+    } else {
+      var resData = {
+        version: historyVersion,
+        versionBumped: true,
+      };
+    }
+
+    return apiResponse.successResponseWithData(
+      res,
+      package_id
+        ? "Success! Data Package updated."
+        : "Success! Data Package saved.",
+      resData
+    );
   } catch (err) {
     return apiResponse.ErrorResponse(res, err);
   }
@@ -107,28 +194,51 @@ exports.addPackage = function (req, res) {
 
 exports.changeStatus = function (req, res) {
   try {
-    const { active, package_id, user_id } = req.body;
+    const { active, package_id, user_id, versionFreezed } = req.body;
+
     Logger.info({ message: "Package changeStatus" });
     const query = `UPDATE ${schemaName}.datapackage
     SET active = ${active}
     WHERE datapackageid = '${package_id}' RETURNING *`;
 
+    // const versionFreezed = true;
+
     DB.executeQuery(query).then(async (response) => {
       const package = response.rows[0] || [];
+
+      const {
+        rows: [oldVersion],
+      } = await DB.executeQuery(
+        `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${package.dataflowid}' order by version DESC limit 1`
+      );
+
       const oldActive = Number(active) == 1 ? "0" : "1";
       const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
-        "active",
-        oldActive,
-        active
+        [{ attribute: "active", old_val: oldActive, new_val: active }],
+        versionFreezed
       );
 
       if (!historyVersion) throw new Error("History not updated");
+
+      if (oldVersion.version === historyVersion) {
+        var resData = {
+          version: historyVersion,
+          versionBumped: false,
+        };
+      } else {
+        var resData = {
+          version: historyVersion,
+          versionBumped: true,
+        };
+      }
+
       return apiResponse.successResponseWithData(
         res,
         "Success! Data Package updated.",
-        {}
+        resData
       );
     });
   } catch (err) {
@@ -138,11 +248,12 @@ exports.changeStatus = function (req, res) {
 
 exports.deletePackage = function (req, res) {
   try {
-    const { active, package_id, user_id } = req.body;
+    const { active, package_id, user_id, versionFreezed } = req.body;
     const query = `UPDATE ${schemaName}.datapackage
     SET del_flg = 'Y'
     WHERE datapackageid = '${package_id}' RETURNING *`;
 
+    // const versionFreezed = false;
     Logger.info({ message: "deletePackage" });
 
     const dataSetQuery = `UPDATE ${schemaName}.dataset SET del_flg = 'Y' WHERE datapackageid = '${package_id}' RETURNING datasetid`;
@@ -150,12 +261,19 @@ exports.deletePackage = function (req, res) {
 
     DB.executeQuery(query).then(async (response) => {
       const package = response.rows[0] || [];
+
+      const {
+        rows: [oldVersion],
+      } = await DB.executeQuery(
+        `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${package.dataflowid}' order by version DESC limit 1`
+      );
+
       const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
-        "del_flg",
-        "N",
-        "Y"
+        [{ attribute: "del_flg", old_val: "N", new_val: "Y" }],
+        versionFreezed
       );
       if (!historyVersion) throw new Error("History not updated");
 
@@ -168,10 +286,22 @@ exports.deletePackage = function (req, res) {
         ]);
       }
 
+      if (oldVersion.version === historyVersion) {
+        var resData = {
+          version: historyVersion,
+          versionBumped: false,
+        };
+      } else {
+        var resData = {
+          version: historyVersion,
+          versionBumped: true,
+        };
+      }
+
       return apiResponse.successResponseWithData(
         res,
         "Success! Data Package deleted.",
-        {}
+        resData
       );
     });
   } catch (err) {

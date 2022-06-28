@@ -28,7 +28,10 @@ import {
 } from "../../../utils/index";
 import { allowedTypes } from "../../../constants";
 import { validateRow } from "../../../components/FormComponents/validators";
-import { preventCDVersionBump } from "../../../store/actions/DataFlowAction";
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
 
 const maxSize = 150000;
 
@@ -45,17 +48,24 @@ export default function DSColumnTable({
   const { selectedCard } = dashboard;
   const { protocolnumber } = selectedCard;
   const dataSets = useSelector((state) => state.dataSets);
-  const { datasetColumns, selectedDataset, haveHeader, CDVersionBump } =
-    dataSets;
+
+  const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
+    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+
   const {
-    type: fileType,
-    datasetid: dsId,
-    customsql,
-    customsql_yn: isCustomSQL,
-    tbl_nm: tableName,
-  } = selectedDataset;
-  const dataFlow = useSelector((state) => state.dataFlow);
-  const { dsProdLock, dsTestLock } = dataFlow;
+    datasetColumns,
+    selectedDataset: {
+      type: fileType,
+      datasetid: dsId,
+      customsql,
+      customsql_yn: isCustomSQL,
+      tbl_nm: tableName,
+    },
+    haveHeader,
+  } = dataSets;
+  const { dsProdLock, dsTestLock, versionFreezed } = useSelector(
+    (state) => state.dataFlow
+  );
 
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
@@ -99,7 +109,6 @@ export default function DSColumnTable({
       // setSelectedRows(forImport);
       // setEditedRows(formattedData);
     }
-    dispatch(preventCDVersionBump(false));
   }, []);
 
   useEffect(() => {
@@ -281,7 +290,7 @@ export default function DSColumnTable({
           dfId,
           dpId,
           userInfo.userId,
-          CDVersionBump
+          versionFreezed
         )
       );
 
@@ -395,10 +404,12 @@ export default function DSColumnTable({
     {
       text: "Add 1 column definition",
       onClick: addSingleRow,
+      disabled: !canUpdateDataFlow,
     },
     {
       text: "Add multiple column definitions",
       onClick: addMultipleRows,
+      disabled: !canUpdateDataFlow,
     },
   ];
 
@@ -519,17 +530,15 @@ export default function DSColumnTable({
     // setRows([...newData]);
 
     if (newCD?.length) {
-      console.log("CDVersionBump::::", CDVersionBump);
       const created = await createColumns({
         values: newCD,
         dsId,
         dfId,
         dpId,
         userId: userInfo.userId,
-        CDVersionBump,
+        versionFreezed,
       });
       if (created?.status && created.data?.length) {
-        dispatch(preventCDVersionBump());
         const prevRows = [...rows];
         created.data.forEach((d) => {
           const obj = prevRows.find((x) => x.uniqueId === d.frontendUniqueRef);
@@ -550,7 +559,7 @@ export default function DSColumnTable({
           dfId,
           dpId,
           userInfo.userId,
-          CDVersionBump
+          versionFreezed
         )
       );
       setRows((prevRows) => prevRows.map((x) => ({ ...x, isEditMode: false })));
@@ -560,7 +569,6 @@ export default function DSColumnTable({
   };
 
   const onRowSave = async (uniqueId) => {
-    console.log("CDVersionBump::::", CDVersionBump);
     const editedRowData = _.filter(
       getEditedRows(),
       (e) => e.uniqueId === uniqueId
@@ -612,7 +620,7 @@ export default function DSColumnTable({
             dfId,
             dpId,
             userInfo.userId,
-            CDVersionBump
+            versionFreezed
           )
         );
       } else {
@@ -622,11 +630,10 @@ export default function DSColumnTable({
           dfId,
           dpId,
           userId: userInfo.userId,
-          CDVersionBump,
+          versionFreezed,
         });
 
         if (created?.status) {
-          dispatch(preventCDVersionBump());
           const createdId = created.data[0]?.columnid;
           if (createdId) {
             editedRowData.dbColumnId = createdId;
@@ -690,9 +697,8 @@ export default function DSColumnTable({
           dsId,
           dpId,
           dfId,
-          CDVersionBump
+          versionFreezed
         );
-        if (deleteRes) dispatch(preventCDVersionBump());
       }
     }
     setRows((prevRows) => prevRows.filter((e) => e.uniqueId !== uniqueId));
@@ -743,6 +749,7 @@ export default function DSColumnTable({
           id="file"
           ref={inputFile}
           onChange={handleFileUpdate}
+          disabled={!canUpdateDataFlow}
           style={{ display: "none" }}
         />
         <Table
@@ -774,6 +781,7 @@ export default function DSColumnTable({
             pkDisabled,
             haveHeader,
             editedCount,
+            canUpdateDataFlow,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}
@@ -805,6 +813,7 @@ export default function DSColumnTable({
             changeHandler,
             haveHeader,
             editedCount,
+            canUpdateDataFlow,
           }}
         />
       </div>
@@ -836,6 +845,7 @@ export default function DSColumnTable({
                     sizeAdjustable
                     minWidth={340}
                     minHeight={278}
+                    disabled={!canUpdateDataFlow}
                   />
                 </div>
               ) : (
@@ -849,11 +859,19 @@ export default function DSColumnTable({
         buttonProps={
           isEditLOVs
             ? [
-                { label: "Save", onClick: handleSaveLOV },
+                {
+                  label: "Save",
+                  onClick: handleSaveLOV,
+                  disabled: !canUpdateDataFlow,
+                },
                 { label: "Cancel", onClick: hideViewLOVs },
               ]
             : [
-                { label: "Edit", onClick: () => setIsEditLOVs(true) },
+                {
+                  label: "Edit",
+                  onClick: () => setIsEditLOVs(true),
+                  disabled: !canUpdateDataFlow,
+                },
                 { label: "Ok", onClick: hideViewLOVs },
               ]
         }
@@ -862,12 +880,16 @@ export default function DSColumnTable({
       <Modal
         open={showOverWrite}
         variant="warning"
-        title="Overwritte set column attributes"
+        title="Overwrite set column attributes"
         onClose={hideOverWrite}
         message="The existing data set column attributes will be overwritten. Continue?"
         buttonProps={[
           { label: "Cancel", onClick: hideOverWrite },
-          { label: "Ok", onClick: handleOverWrite },
+          {
+            label: "Ok",
+            onClick: handleOverWrite,
+            disabled: !canUpdateDataFlow,
+          },
         ]}
         id="overWrite"
       />

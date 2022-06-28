@@ -6,12 +6,14 @@ exports.successResponse = function (res, msg) {
   return res.status(200).json(data);
 };
 
-exports.successResponseWithData = function (res, msg, data) {
+exports.successResponseWithData = function (res, msg, data, code) {
   var resData = {
     status: 1,
     message: msg,
-    data: data,
   };
+  if (code) resData.ResponseCode = code;
+  if (data) resData.data = data;
+
   return res.status(200).json(resData);
 };
 
@@ -55,4 +57,13 @@ exports.unauthorizedResponse = function (res, msg) {
     message: msg,
   };
   return res.status(401).json(data);
+};
+
+exports.errResponse = function (res, msg, data) {
+  var resData = {
+    status: 0,
+    message: msg,
+    ...data,
+  };
+  return res.status(400).json(resData);
 };

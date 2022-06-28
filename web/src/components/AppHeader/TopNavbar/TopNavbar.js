@@ -16,10 +16,11 @@ import Button from "apollo-react/components/Button";
 import Modal from "apollo-react/components/Modal";
 import NavigationPanel from "../NavigationPanel/NavigationPanel";
 import { MessageContext } from "../../Providers/MessageProvider";
+import { AppContext } from "../../Providers/AppProvider";
 // eslint-disable-next-line import/named
 import { getUserInfo } from "../../../utils/index";
 // eslint-disable-next-line import/named
-import { userLogOut } from "../../../services/ApiServices";
+import { userLogOut, getRolesPermissions } from "../../../services/ApiServices";
 
 const styles = {
   root: {
@@ -98,6 +99,9 @@ const useStyles = makeStyles(styles);
 const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
   const classes = useStyles();
   const [panelOpen, setpanelOpen] = useState(true);
+  const appContext = useContext(AppContext);
+  const { permissions } = appContext.user;
+
   const [notLoggedOutErr, setNotLoggedOutErr] = useState(false);
   const [open, setOpen] = useState(false);
   const messageContext = useContext(MessageContext);
@@ -136,6 +140,44 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
       />
     );
   });
+  const getPermisions = async () => {
+    if (permissions.length === 0) {
+      let uniquePermissions = [];
+      const data = await getRolesPermissions();
+      console.log(">>> all permissions", data);
+      if (data.message === "Something went wrong") {
+        messageContext.showErrorMessage(
+          `There was an issue authorizing your login information. Please contact your Administrator.`
+        );
+      } else {
+        uniquePermissions = Array.from(
+          data
+            .reduce((acc, { categoryName, featureName, allowedPermission }) => {
+              const current = acc.get(featureName) || {
+                allowedPermission: [],
+              };
+              return acc.set(featureName, {
+                ...current,
+                categoryName,
+                featureName,
+                allowedPermission: [
+                  ...current.allowedPermission,
+                  allowedPermission,
+                ],
+              });
+            }, new Map())
+            .values()
+        );
+        appContext.updateUser({ permissions: uniquePermissions });
+      }
+
+      // console.log(uniquePermissions);
+    }
+  };
+
+  useEffect(() => {
+    getPermisions();
+  }, []);
   const LogOut = async () => {
     setOpen(true);
     const isLogout = await userLogOut();
@@ -205,7 +247,7 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
             : item.menuItems.some((e) => e.pathname === pathname)
         }
         waves
-        notificationsMenuProps={notificationsMenuProps}
+        // notificationsMenuProps={notificationsMenuProps}
         otherButtons={
           // eslint-disable-next-line react/jsx-wrap-multilines
           <div className={classes.centerAligned}>

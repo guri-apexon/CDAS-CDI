@@ -6,6 +6,11 @@ export const packageComprTypes = [
   { text: "SAS XPT", value: "sas" },
   { text: "RAR", value: "rar" },
 ];
+export const packageTypes = [
+  { text: "Regular", value: "Regular" },
+  { text: "Raw", value: "Raw" },
+  { text: "All", value: "All" },
+];
 export const DATA_TYPES = {
   alphanumeric: [
     "RAW",
@@ -66,5 +71,4 @@ export const DATA_TYPES = {
     "TIMESTAMP(6)",
   ],
 };
-
 export const IDLE_LOGOUT_TIME = 900000;

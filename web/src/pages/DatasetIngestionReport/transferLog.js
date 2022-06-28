@@ -5,6 +5,11 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
 import moment from "moment";
+import Typography from "apollo-react/components/Typography";
+import SelectButton from "apollo-react/components/SelectButton";
+import MenuItem from "apollo-react/components/MenuItem";
+import Modal from "apollo-react/components/Modal";
+import TextField from "apollo-react/components/TextField";
 import Button from "apollo-react/components/Button";
 import Link from "apollo-react/components/Link";
 import DownloadIcon from "apollo-react-icons/Download";
@@ -20,7 +25,10 @@ import Table, {
   compareDates,
 } from "apollo-react/components/Table";
 import Search from "apollo-react/components/Search";
-import { getTransferLog } from "../../store/actions/IngestionReportAction";
+import {
+  getTransferLog,
+  getDatasetIngestionTransferLog,
+} from "../../store/actions/IngestionReportAction";
 import {
   createStringArraySearchFilter,
   createSourceFromKey,
@@ -32,6 +40,11 @@ import {
 
 import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
 import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
+
+import usePermission, {
+  Categories,
+  Features,
+} from "../../components/Common/usePermission";
 
 const TimeCell = ({ row, column: { accessor } }) => {
   const value = row[accessor];
@@ -74,6 +87,7 @@ const DateCell = ({ row, column: { accessor } }) => {
 
 const StatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
+  const { canReadIngestionIssues } = row;
   if (
     status?.toLowerCase() === "loaded without issues" ||
     status?.toLowerCase() === "successful" ||
@@ -133,6 +147,7 @@ const StatusCell = ({ row, column: { accessor } }) => {
           />
           {status}
           <Link
+            disabled={!canReadIngestionIssues}
             onClick={() => console.log("link clicked")}
             style={{ fontWeight: 500, marginLeft: 8 }}
           >
@@ -279,9 +294,15 @@ const generateColumns = (tableRows = []) => {
 const TransferLog = ({ datasetProperties, transferLogFilter }) => {
   const dispatch = useDispatch();
   const params = useParams();
-  const { transferLogs, loading } = useSelector(
+  const { loading, transferHistory } = useSelector(
     (state) => state.ingestionReports
   );
+
+  const { canEnabled: canReadIngestionIssues } = usePermission(
+    Categories.MENU,
+    Features.CDI_INGESTION_ISSUES
+  );
+
   const [totalLog, setTotalLog] = useState(0);
   const [tableRows, setTableRows] = useState([]);
   const [, setHasUpdated] = useState(false);
@@ -289,11 +310,44 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
   const [columnsState, setColumns] = useState([...columns]);
   const [loadType, setLoadType] = useState("");
   const { datasetId } = params;
+  const [selectedMenuText, setSelectedMenuText] = useState(
+    "Within past 10 days"
+  );
 
-  const getData = () => {
-    dispatch(getTransferLog(datasetId));
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [errorInput, setErrorInput] = useState(false);
+  const [customValue, setCustomValue] = useState(null);
+
+  const changeCustomDays = (val) => {
+    if (val < 1 || val > 120) {
+      setErrorInput(true);
+      return false;
+    }
+    setCustomValue(val);
+    setSelectedMenuText(`Within past ${val} days`);
+    setErrorInput(false);
+    return null;
   };
 
+  // const getData = () => {
+  //   dispatch(getTransferLog(datasetId));
+  // };
+
+  const getFileHistoryData = (days = "") => {
+    const date = moment().utc().format("YYYY-MM-DD");
+    dispatch(getDatasetIngestionTransferLog(datasetId, days, date));
+    setMenuOpen(false);
+  };
+
+  const selectChangeView = (val) => {
+    if (val === "custom") {
+      setMenuOpen(true);
+    } else {
+      setMenuOpen(false);
+      getFileHistoryData(val);
+      setSelectedMenuText(`Within past ${val} days`);
+    }
+  };
   useEffect(() => {
     if (datasetProperties?.loadType?.toLowerCase() === "incremental") {
       setLoadType(datasetProperties?.loadType);
@@ -303,14 +357,13 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
   }, [datasetProperties]);
 
   useEffect(() => {
-    getData();
+    getFileHistoryData("10");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   useEffect(() => {
     const rows =
-      transferLogs?.records?.length > 0 && transferLogFilter
-        ? transferLogs?.records.filter((rec) => {
+      transferHistory?.records?.length > 0 && transferLogFilter
+        ? transferHistory?.records.filter((rec) => {
             if (transferLogFilter === "ingestion_issues") {
               return (
                 rec.FileTransferStatus?.toLowerCase() === "loaded with issues"
@@ -324,16 +377,41 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
             }
             return rec;
           })
-        : transferLogs?.records;
+        : transferHistory?.records;
 
     setTableRows(rows ?? []);
-    setTotalLog(transferLogs.totalSize ?? 0);
-    const col = generateColumns(transferLogs?.records);
+    setTotalLog(transferHistory.totalSize ?? 0);
+    const col = generateColumns(transferHistory?.records);
     setColumns([...col]);
-  }, [loading, transferLogs, transferLogFilter]);
+  }, [loading, transferHistory, transferLogFilter]);
 
   const CustomHeader = ({ toggleFilters }) => (
-    <div>
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <Typography variant="body2" style={{ fontSize: 14, marginRight: 10 }}>
+          Change View:
+        </Typography>
+        <SelectButton
+          size="small"
+          placeholder="Within past 10 days"
+          style={{ marginRight: 10 }}
+          onChange={selectChangeView}
+          displayText={selectedMenuText}
+          noDeselect
+        >
+          <MenuItem value="10">Within past 10 days</MenuItem>
+          <MenuItem value="30">Within past 30 days</MenuItem>
+          <MenuItem value="custom">Custom date range</MenuItem>
+        </SelectButton>
+      </div>
+      <Button
+        id="addLocationBtn"
+        icon={<DownloadIcon />}
+        size="small"
+        style={{ marginLeft: 16 }}
+      >
+        Download
+      </Button>
       <Button
         size="small"
         id="filterBtn"
@@ -342,14 +420,6 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
         onClick={toggleFilters}
       >
         Filters
-      </Button>
-      <Button
-        id="addLocationBtn"
-        icon={<DownloadIcon />}
-        size="small"
-        style={{ marginLeft: 16 }}
-      >
-        Download
       </Button>
     </div>
   );
@@ -369,7 +439,7 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
           </div>
         }
         columns={columnsState}
-        rows={tableRows}
+        rows={tableRows.map((row) => ({ ...row, canReadIngestionIssues }))}
         rowId="src_loc_id"
         initialSortedColumn="TransferDate"
         initialSortOrder="desc"
@@ -389,6 +459,29 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
           defaultColumns: columns,
           frozenColumnsEnabled: true,
         }}
+      />
+      <Modal
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        title="Choose Custom Days"
+        message={
+          <TextField
+            type="number"
+            label="Choose upto past 120 days"
+            value={customValue}
+            inputProps={{ min: 1, max: 120, pattern: "[0-9]" }}
+            onChange={(e) => changeCustomDays(e.target.value)}
+            helperText={errorInput ? "Select valid input" : null}
+            error={errorInput}
+          />
+        }
+        buttonProps={[
+          {
+            label: "Ok",
+            disabled: errorInput || !customValue,
+            onClick: () => getFileHistoryData(customValue),
+          },
+        ]}
       />
     </div>
   );

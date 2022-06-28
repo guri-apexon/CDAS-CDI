@@ -95,6 +95,7 @@ const DataFlow = ({
   const datasetRef = useRef();
   const [myform, setForm] = useState({});
   const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
@@ -121,6 +122,7 @@ const DataFlow = ({
     (state) => state.cdiadmin
   );
   const [locType, setLocType] = useState("SFTP");
+  const [tabularSod, setTabularSod] = useState(false);
   const [modalLocType, setModalLocType] = useState("SFTP");
 
   const pullVendorandLocation = () => {
@@ -157,6 +159,13 @@ const DataFlow = ({
     dispatch(getLocationByType(value));
     setLocType(value);
     setChangeLocationRequire(true);
+  };
+  const changeDataStrucuture = (value) => {
+    if (value === "TabularRaveSOD") {
+      setTabularSod(true);
+    } else {
+      setTabularSod(false);
+    }
   };
   const modalLocationType = (value) => {
     setModalLocType(value);
@@ -244,6 +253,18 @@ const DataFlow = ({
     setCurrentStep();
   };
 
+  const AddSodDatapackage = (payload) => {
+    const newForm = { ...myform };
+    if (payload) {
+      const obj = {
+        dataSet: [],
+        ...payload,
+      };
+      newForm.dataPackage[0] = obj;
+      setForm(newForm);
+    }
+  };
+
   const AddDatasetData = (data) => {
     const datasetObj = { ...data };
     if (
@@ -328,6 +349,30 @@ const DataFlow = ({
     }
     setSubmitting(false);
   };
+
+  const submitFinaRodForm = async () => {
+    packagesRef.current.submitForm();
+
+    if (myform.dataPackage[0].name === undefined) {
+      messageContext.showErrorMessage(
+        "Please add naming convention to continue"
+      );
+      return false;
+    }
+
+    const reqBody = {
+      ...myform,
+    };
+
+    setSubmitting(true);
+    const result = await dataflowSave(reqBody);
+    if (result?.dataflowDetails) setCreatedDataflow(result.dataflowDetails);
+    if (result) {
+      setSaveSuccess(true);
+    }
+    setSubmitting(false);
+  };
+
   const redirectToDataflow = () => {
     dispatch(SelectedDataflow(createdDataflow));
     history.push(
@@ -336,24 +381,37 @@ const DataFlow = ({
   };
   const nextStep = async () => {
     console.log("datasetFormValues?", datasetFormValues, currentStep);
-    switch (currentStep) {
-      case 1:
-        AddDataflowData();
-        break;
-      case 2:
-        packagesRef.current.submitForm();
-        break;
-      case 3:
-        datasetRef.current.submitForm();
-        break;
-      case 4:
-        datasetRef.current.checkvalidation();
-        break;
-      case 5:
-        submitFinalForm();
-        break;
-      default:
-        break;
+    if (tabularSod) {
+      switch (currentStep) {
+        case 1:
+          AddDataflowData();
+          break;
+        case 2:
+          submitFinaRodForm();
+          break;
+        default:
+          break;
+      }
+    } else {
+      switch (currentStep) {
+        case 1:
+          AddDataflowData();
+          break;
+        case 2:
+          packagesRef.current.submitForm();
+          break;
+        case 3:
+          datasetRef.current.submitForm();
+          break;
+        case 4:
+          datasetRef.current.checkvalidation();
+          break;
+        case 5:
+          submitFinalForm();
+          break;
+        default:
+          break;
+      }
     }
   };
 
@@ -396,6 +454,8 @@ const DataFlow = ({
             onSubmit={onSubmit}
             changeLocationData={changeLocationData}
             changeFormField={changeFormField}
+            tabularSod={tabularSod}
+            changeDataStrucuture={changeDataStrucuture}
             changeLocationType={changeLocationType}
             modalLocationType={modalLocationType}
             userName={selectedLocation?.usr_nm}
@@ -406,9 +466,11 @@ const DataFlow = ({
         <div style={{ display: currentStep === 2 ? "block" : "none" }}>
           <DataPackages
             locType={locType}
+            tabularSod={tabularSod}
             toast={messageContext}
             ref={packagesRef}
             payloadBack={AddDatapackage}
+            payloadSodBack={AddSodDatapackage}
           />
         </div>
         <div
@@ -460,31 +522,47 @@ const DataFlow = ({
           message={error}
         />
       )}
+      <Modal
+        open={isModalOpen}
+        title="Warning"
+        message="No file with unblinded or unmasked data should be configured"
+        buttonProps={[
+          {
+            label: "OK",
+            variant: "primary",
+            onClick: () => setIsModalOpen(false),
+          },
+        ]}
+        id="neutral"
+      />
       <Panel
         onClose={handleClose}
         onOpen={handleOpen}
         open={isPanelOpen}
         width={20}
       />
-      <Panel className={classes.rightPanelExtended} width="100%" hideButton>
-        <main className={classes.content}>
-          <div className="content">
-            <div className={classes.contentHeader}>
-              <Header
-                close={closeForm}
-                submit={nextStep}
-                back={() => backStep()}
-                currentStep={currentStep}
-                breadcrumbItems={breadcrumbItems}
-                icon={<DataPackageIcon className={classes.contentIcon} />}
-                submitting={submitting}
-              />
+      {!isModalOpen && (
+        <Panel className={classes.rightPanelExtended} width="100%" hideButton>
+          <main className={classes.content}>
+            <div className="content">
+              <div className={classes.contentHeader}>
+                <Header
+                  close={closeForm}
+                  submit={nextStep}
+                  back={() => backStep()}
+                  currentStep={currentStep}
+                  breadcrumbItems={breadcrumbItems}
+                  icon={<DataPackageIcon className={classes.contentIcon} />}
+                  submitting={submitting}
+                  tabularSod={tabularSod}
+                />
+              </div>
+              <Divider />
+              <div className={classes.formSection}>{RenderForm()}</div>
             </div>
-            <Divider />
-            <div className={classes.formSection}>{RenderForm()}</div>
-          </div>
-        </main>
-      </Panel>
+          </main>
+        </Panel>
+      )}
       <Modal
         open={saveSuccess}
         variant="success"

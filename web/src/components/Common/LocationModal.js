@@ -146,9 +146,9 @@ const LocationForm = (props) => {
                   selectedPort,
                   selectedDB
                 );
-                if (v.target.value?.includes("Dynamic Port")) {
-                  dispatch(change("AddLocationForm", "port", ""));
-                }
+                // if (v.target.value?.includes("Dynamic Port")) {
+                //   dispatch(change("AddLocationForm", "port", ""));
+                // } Don't remove this is using for portless story CDAS-11093
               }}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
               fullWidth
@@ -186,30 +186,32 @@ const LocationForm = (props) => {
         </Grid>
         {locType !== "SFTP" && locType !== "FTPS" && (
           <>
-            {!locType?.includes("Dynamic Port") && (
-              <Grid container spacing={2}>
-                <Grid item md={5} id="for-port">
-                  <ReduxFormTextField
-                    fullWidth
-                    size="small"
-                    name="port"
-                    label="Port"
-                    inputProps={{
-                      maxLength: 5,
-                      readOnly: props.locationViewMode,
-                    }}
-                    onChange={(v) =>
-                      props.generateUrl(
-                        locType,
-                        selectedHost,
-                        v.target.value,
-                        selectedDB
-                      )
-                    }
-                  />
-                </Grid>
+            {/* {!locType?.includes("Dynamic Port") && (
+            )} */}
+            {/* Don't remove this commented code is using for portless story CDAS-11093 */}
+
+            <Grid container spacing={2}>
+              <Grid item md={5} id="for-port">
+                <ReduxFormTextField
+                  fullWidth
+                  size="small"
+                  name="port"
+                  label="Port"
+                  inputProps={{
+                    maxLength: 5,
+                    readOnly: props.locationViewMode,
+                  }}
+                  onChange={(v) =>
+                    props.generateUrl(
+                      locType,
+                      selectedHost,
+                      v.target.value,
+                      selectedDB
+                    )
+                  }
+                />
               </Grid>
-            )}
+            </Grid>
             <Grid container spacing={2}>
               <Grid item md={5} id="for-dbName">
                 <ReduxFormTextField
@@ -300,6 +302,9 @@ const LocationModal = (props) => {
   const { error, success, createTriggered, locationPassword } = useSelector(
     (state) => state.cdiadmin
   );
+
+  const { canCreate, canUpdate, isNew } = props;
+
   const [existErr, setExistErr] = useState("");
   const onSubmit = async (values) => {
     // eslint-disable-next-line no-console
@@ -381,12 +386,14 @@ const LocationModal = (props) => {
     };
     if (locationType) {
       if (!isSftp(locationType)) {
-        let dbPort;
-        if (locationType.includes("Dynamic Port")) {
-          dbPort = 1433;
-        } else {
-          dbPort = port ? port : "";
-        }
+        // let dbPort;
+        // if (locationType.includes("Dynamic Port")) {
+        //   dbPort = 1433;
+        // } else {
+        //   dbPort = port ? port : "";
+        // }
+        /* Don't remove this commented code is using for portless story CDAS-11093 */
+
         reqBody = {
           ...reqBody,
           endPoint: "/checkconnection/jdbc",
@@ -394,7 +401,7 @@ const LocationModal = (props) => {
           databaseName: dbName || "",
           userId: "",
           database: generatedBName(locationType),
-          port: dbPort,
+          port: port ? port : "",
         };
       } else {
         reqBody = {
@@ -416,6 +423,28 @@ const LocationModal = (props) => {
       showLocationMessage(result?.message || "Something went wrong");
     }
   };
+
+  const btnProps =
+    // eslint-disable-next-line no-nested-ternary
+    isNew && canCreate
+      ? [
+          {
+            label: "Save",
+            onClick: () => dispatch(submit("AddLocationForm")),
+          },
+        ]
+      : !isNew && canUpdate
+      ? [
+          {
+            label: props.locationViewMode ? "Edit" : "Save",
+            onClick: () =>
+              props.locationViewMode
+                ? props.changeLocationEditMode(true)
+                : dispatch(submit("AddLocationForm")),
+          },
+        ]
+      : [];
+
   return (
     <>
       {connectionResponse && (
@@ -466,16 +495,7 @@ const LocationModal = (props) => {
           />
         }
         className={classes.modal}
-        buttonProps={[
-          { label: "Cancel" },
-          {
-            label: props.locationViewMode ? "Edit" : "Save",
-            onClick: () =>
-              props.locationViewMode
-                ? props.changeLocationEditMode(true)
-                : dispatch(submit("AddLocationForm")),
-          },
-        ]}
+        buttonProps={[{ label: "Cancel" }, ...btnProps]}
         id="locationModal"
       />
     </>

@@ -4,6 +4,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
+import moment from "moment";
 import Paper from "apollo-react/components/Paper";
 import Typography from "apollo-react/components/Typography";
 import Box from "apollo-react/components/Box";
@@ -16,6 +17,8 @@ import MenuItem from "apollo-react/components/MenuItem";
 import Select from "apollo-react/components/Select";
 import Panel from "apollo-react/components/Panel";
 import { makeStyles } from "@material-ui/core/styles";
+import InfoIcon from "apollo-react-icons/Info";
+import Tooltip from "apollo-react/components/Tooltip";
 // import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
@@ -26,10 +29,17 @@ import { getUserInfo, toast, validateFields } from "../../utils";
 import { submitDataPackage } from "../../services/ApiServices";
 import {
   addDataPackage,
+  selectDataPackage,
   getPackagesList,
+  addPackageBtnAction,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
-import { packageComprTypes } from "../../utils/constants";
+import usePermission, {
+  Categories,
+  Features,
+} from "../../components/Common/usePermission";
+import { packageComprTypes, packageTypes } from "../../utils/constants";
+import Header from "../../components/DataFlow/Header";
 
 const useStyles = makeStyles(() => ({
   rightPanel: {
@@ -48,6 +58,7 @@ const DataPackages = React.memo(() => {
   const history = useHistory();
   const [showForm, setShowForm] = useState(false);
   const [configShow, setConfigShow] = useState(false);
+  const [sodValue, setSodValue] = useState("");
   const [compression, setCompression] = useState("");
   const [namingConvention, setNamingConvention] = useState("");
   const [packagePassword, setPackagePassword] = useState("");
@@ -55,15 +66,20 @@ const DataPackages = React.memo(() => {
   const [notMatchedType, setNotMatchedType] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const packageData = useSelector((state) => state.dataPackage);
-  const dashboard = useSelector((state) => state.dashboard);
-  const dataFlow = useSelector((state) => state.dataFlow);
+  const { dataFlowdetail, versionFreezed } = useSelector(
+    (state) => state.dataFlow
+  );
   const userInfo = getUserInfo();
   const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
-
   const {
     selectedCard,
     selectedDataFlow: { dataFlowId: dfId },
-  } = dashboard;
+  } = useSelector((state) => state.dashboard);
+
+  const { canUpdate: canUpdateDataFlow } = usePermission(
+    Categories.CONFIGURATION,
+    Features.DATA_FLOW_CONFIGURATION
+  );
 
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -81,7 +97,6 @@ const DataPackages = React.memo(() => {
 
   const resetForm = () => {
     setConfigShow(false);
-    setShowForm(false);
     setNamingConvention("");
     setPackagePassword("");
     setSftpPath("");
@@ -90,7 +105,9 @@ const DataPackages = React.memo(() => {
   };
   const showConfig = (e, checked) => {
     if (!checked) {
-      resetForm();
+      // resetForm();
+      // setShowForm(true);
+      setConfigShow(checked);
     } else {
       setConfigShow(checked);
     }
@@ -100,14 +117,36 @@ const DataPackages = React.memo(() => {
   // };
 
   useEffect(() => {
-    if (packageData && packageData.refreshData) {
+    if (packageData.openAddPackage) {
       // getPackages();
       resetForm();
+      setShowForm(true);
     }
-  }, [packageData.refreshData]);
-  useEffect(() => {
-    if (packageData.openAddPackage) setShowForm(true);
   }, [packageData.openAddPackage]);
+
+  useEffect(() => {
+    if (!packageData.openAddPackage && packageData.selectedPackage) {
+      setShowForm(true);
+      setConfigShow(true);
+      setCompression(packageData.selectedPackage?.type);
+      setNamingConvention(packageData.selectedPackage?.name);
+      setSodValue(packageData.selectedPackage?.sod_view_type);
+      setPackagePassword(packageData.selectedPackage?.password);
+      setSftpPath(packageData.selectedPackage?.path);
+    }
+    if (
+      packageData.selectedPackage &&
+      packageData.selectedPackage?.type === null
+    )
+      setConfigShow(false);
+  }, [packageData.openAddPackage, packageData.selectedPackage]);
+
+  useEffect(() => {
+    return () => {
+      console.log("unmounting");
+      dispatch(selectDataPackage({}));
+    };
+  }, []);
 
   // eslint-disable-next-line consistent-return
   const submitPackage = async () => {
@@ -126,15 +165,26 @@ const DataPackages = React.memo(() => {
       study_id: selectedCard.prot_id,
       dataflow_id: dfId,
       user_id: userInfo.userId,
+      versionFreezed,
     };
-    const result = await submitDataPackage(reqBody);
+    const updateReqBody = {
+      ...reqBody,
+      package_id: packageData.selectedPackage?.datapackageid,
+      sod_view_type: sodValue,
+    };
+    const payload = packageData.selectedPackage ? updateReqBody : reqBody;
+    const result = await submitDataPackage(payload);
     if (result.status === 1) {
       showSuccessMessage(result.message);
       dispatch(addDataPackage());
+      if (sodValue !== null)
+        history.push(`/dashboard/dataflow-management/${dfId}`);
     } else {
       showErrorMessage(result.message);
     }
+
     resetForm();
+    setShowForm(false);
   };
 
   const handleClose = () => {
@@ -148,6 +198,9 @@ const DataPackages = React.memo(() => {
   useEffect(() => {
     console.log("packageRender");
   }, []);
+  const lastModifieddate =
+    packageData.selectedPackage?.updt_tm &&
+    moment(packageData.selectedPackage?.updt_tm).format("DD-MMM-YYYY hh:mm A");
   return (
     <div className="data-packages-wrapper">
       <Panel
@@ -156,7 +209,7 @@ const DataPackages = React.memo(() => {
         open={isPanelOpen}
         width={446}
       >
-        <LeftPanel dataflowSource={dataFlow?.dataFlowdetail} />
+        <LeftPanel dataflowSource={dataFlowdetail} />
       </Panel>
       <Panel
         className={
@@ -168,35 +221,24 @@ const DataPackages = React.memo(() => {
         <main className="right-content">
           <Paper className="no-shadow">
             <Box className="top-content">
-              <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />
-              {console.log("renderAgainPackage")}
-              {showForm && (
-                <>
-                  <div className="flex title">
-                    <DataPackageIcon />
-                    <Typography className="b-font">
-                      Creating New Package
-                    </Typography>
-                  </div>
-                  <ButtonGroup
-                    alignItems="right"
-                    buttonProps={[
-                      {
-                        label: "Cancel",
-                        size: "small",
-                        onClick: () => setShowForm(false),
-                      },
-                      {
-                        label: "Save",
-                        size: "small",
-                        onClick: submitPackage,
-                      },
-                    ]}
-                  />
-                </>
-              )}
+              <Header
+                close={() => history.push("/dashboard")}
+                submit={submitPackage}
+                breadcrumbItems={breadcrumpItems}
+                headerTitle={
+                  packageData.selectedPackage?.name || "Creating New Package"
+                }
+                icon={<DataPackageIcon className={classes.contentIcon} />}
+                saveBtnLabel={
+                  packageData.selectedPackage?.sod_view_type
+                    ? "Save Data Flow"
+                    : "Save"
+                }
+                saveDisabled={!canUpdateDataFlow}
+              />
             </Box>
           </Paper>
+
           <Box style={{ padding: 24, backgroundColor: "#f6f7fb" }}>
             <Paper className="add-package-box">
               {showForm ? (
@@ -211,30 +253,56 @@ const DataPackages = React.memo(() => {
                       label="Package Level Configuration"
                       checked={configShow}
                       onChange={showConfig}
+                      disabled={
+                        packageData.selectedPackage?.sod_view_type ||
+                        !canUpdateDataFlow
+                      }
                     />
                   </div>
+                  {packageData.selectedPackage?.updt_tm && (
+                    <span>
+                      Last modified &nbsp;&nbsp;
+                      {lastModifieddate}
+                    </span>
+                  )}
                   {configShow && (
                     <div className="package-form">
-                      <Select
-                        error={notMatchedType}
-                        label="Package Compression Type"
-                        value={compression}
-                        size="small"
-                        placeholder="Select type..."
-                        onChange={(e) => {
-                          setCompression(e.target.value);
-                          if (e.target.value === "") {
-                            setNotMatchedType(false);
+                      {packageData.selectedPackage?.sod_view_type ? (
+                        <TextField
+                          error={notMatchedType}
+                          label="Package Compression Type"
+                          value={compression}
+                          size="small"
+                          placeholder="Select type..."
+                          disabled={
+                            packageData.selectedPackage?.sod_view_type ||
+                            !canUpdateDataFlow
                           }
-                        }}
-                        className="mb-20 package-type"
-                      >
-                        {packageComprTypes.map((type, i) => (
-                          <MenuItem key={i} value={type.value}>
-                            {type.text}
-                          </MenuItem>
-                        ))}
-                      </Select>
+                          className="mb-20 package-type"
+                        />
+                      ) : (
+                        <Select
+                          error={notMatchedType}
+                          label="Package Compression Type"
+                          value={compression || ""}
+                          size="small"
+                          placeholder="Select type..."
+                          onChange={(e) => {
+                            setCompression(e.target.value);
+                            if (e.target.value === "") {
+                              setNotMatchedType(false);
+                            }
+                          }}
+                          disabled={!canUpdateDataFlow}
+                          className="mb-20 package-type"
+                        >
+                          {packageComprTypes.map((type, i) => (
+                            <MenuItem key={i} value={type.value}>
+                              {type.text}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      )}
                       <TextField
                         error={notMatchedType}
                         className="mb-20"
@@ -242,31 +310,71 @@ const DataPackages = React.memo(() => {
                         placeholder=""
                         size="small"
                         fullWidth
-                        helperText="File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
+                        value={namingConvention}
+                        helperText={
+                          packageData.selectedPackage?.sod_view_type === null
+                            ? "File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
+                            : "File extension must match package compression type e.g.zip"
+                        }
                         onChange={(e) => {
                           setNotMatchedType(
                             !validateFields(e.target.value, compression)
                           );
                           setNamingConvention(e.target.value);
                         }}
+                        disabled={!canUpdateDataFlow}
                       />
                       <PasswordInput
-                        defaultValue=""
                         size="small"
                         icon={false}
+                        defaultValue={packagePassword}
                         label="Package Password (Optional)"
                         className="mb-20"
                         style={{ width: "70%" }}
                         onChange={(e) => setPackagePassword(e.target.value)}
+                        disabled={!canUpdateDataFlow}
                       />
                       <TextField
                         className="mb-20"
                         label="sFTP Folder Path (Optional)"
                         placeholder=""
+                        defaultValue={sftpPath}
                         size="small"
                         fullWidth
                         onChange={(e) => setSftpPath(e.target.value)}
+                        disabled={!canUpdateDataFlow}
                       />
+                      {packageData.selectedPackage?.sod_view_type && (
+                        <div>
+                          <Select
+                            label="SOD View Type to Process"
+                            value={sodValue}
+                            size="small"
+                            onChange={(e) => {
+                              setSodValue(e.target.value);
+                            }}
+                            disabled={!canUpdateDataFlow}
+                            className="mb-20 package-type"
+                          >
+                            {packageTypes.map((type, i) => (
+                              // eslint-disable-next-line react/no-array-index-key
+                              <MenuItem key={i} value={type.value}>
+                                {type.text}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                          <Tooltip
+                            title="SOD View Type to Process"
+                            subtitle="Files in the SOD package which match your selection will be processed. Please make sure that your selection and the generated SOD view type are in sync."
+                            placement="left"
+                            style={{ marginRight: 48 }}
+                          >
+                            <InfoIcon
+                              style={{ height: "2em", marginLeft: 10 }}
+                            />
+                          </Tooltip>
+                        </div>
+                      )}
                     </div>
                   )}
                 </>
@@ -281,7 +389,12 @@ const DataPackages = React.memo(() => {
                       variant="secondary"
                       icon={<PlusIcon />}
                       size="small"
-                      onClick={setShowForm}
+                      disabled={!canUpdateDataFlow}
+                      onClick={() => {
+                        resetForm();
+                        setShowForm(true);
+                        dispatch(addPackageBtnAction());
+                      }}
                     >
                       Add data package
                     </Button>

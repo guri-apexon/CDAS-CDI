@@ -23,6 +23,11 @@ import {
   addPackageBtnAction,
 } from "../../../store/actions/DataPackageAction";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../Common/usePermission";
+
 import "./LeftPanel.scss";
 
 const useStyles = makeStyles(() => ({
@@ -74,12 +79,26 @@ const LeftPanel = () => {
   const [searchTxt, setSearchTxt] = useState("");
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
-  const { dataFlowdetail, isDatasetCreation } = dataFlow;
+  const { dataFlowdetail, isDatasetCreation, dataflowType: type } = dataFlow;
   const { description, dataflowid, vendorname, name, testflag, active } =
     dataFlowdetail;
   const { loading, packagesList, refreshData } = packageData;
   const userInfo = getUserInfo();
   const location = useLocation();
+
+  const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
+    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+
+  const { canEnabled: canDeleteTest } = usePermission(
+    Categories.MENU,
+    Features.DATA_FLOW_HARD_DELETE_TEST
+  );
+
+  const { canEnabled: canDeleteProd } = usePermission(
+    Categories.MENU,
+    Features.DATA_FLOW_HARD_DELETE_PROD
+  );
+
   const viewAuditLog = () => {
     history.push(`/dashboard/audit-logs/${dataflowid}`);
   };
@@ -105,8 +124,12 @@ const LeftPanel = () => {
   };
   const menuItems = [
     { text: "View audit log", onClick: viewAuditLog },
-    { text: "Clone data flow" },
-    { text: "Hard delete data flow" },
+    { text: "Clone data flow", disabled: !CanCreateDataFlow },
+    {
+      text: "Hard delete data flow",
+      disabled:
+        type.trim().toLowerCase() === "test" ? !canDeleteTest : !canDeleteProd,
+    },
   ];
   useEffect(() => {
     getPackages();
@@ -137,6 +160,7 @@ const LeftPanel = () => {
             className="inline-checkbox"
             checked={!(active === 0)}
             // onChange={handleActive}
+            disabled={!canUpdateDataFlow}
             size="small"
           />
           <ContextMenu />
@@ -169,14 +193,17 @@ const LeftPanel = () => {
       <div className="packages-list-header">
         <div className="flex flex-center justify-between">
           <Typography className="b-font">Data Packages & Datasets</Typography>
-          <Button
-            variant="secondary"
-            icon={<PlusIcon />}
-            size="small"
-            onClick={redirectDataPackage}
-          >
-            Add data package
-          </Button>
+          {packageData.packagesList[0]?.sod_view_type === null && (
+            <Button
+              variant="secondary"
+              icon={<PlusIcon />}
+              size="small"
+              onClick={redirectDataPackage}
+              disabled={!canUpdateDataFlow}
+            >
+              Add data package
+            </Button>
+          )}
         </div>
 
         <div style={{ maxWidth: 400 }}>

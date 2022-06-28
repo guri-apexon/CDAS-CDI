@@ -39,11 +39,17 @@ import {
 
 import "./CDTList.scss";
 
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
+
 const statusList = ["Active", "Inactive"];
 
 const StatusCell =
   (handleStatusChange) =>
   ({ row, column: { accessor } }) => {
+    const { canUpdateClinicalData } = row;
     const value = row[accessor];
     return (
       <Tooltip
@@ -52,6 +58,7 @@ const StatusCell =
       >
         <Switch
           className="table-checkbox"
+          disabled={!canUpdateClinicalData}
           checked={value === 1 ? true : false}
           onChange={(e) => handleStatusChange(e, row.ID, value)}
           size="small"
@@ -144,6 +151,9 @@ export default function CDTList() {
   const dispatch = useDispatch();
   const { cdtList, loading } = useSelector((state) => state.cdiadmin);
   const [ensList, setENSList] = useState([]);
+
+  const { canUpdate: canUpdateClinicalData, canCreate: canCreateClinicalData } =
+    usePermission(Categories.CONFIGURATION, Features.CLINICAL_DATA_TYPE_SETUP);
 
   const getData = () => {
     dispatch(getCDTList());
@@ -320,15 +330,17 @@ export default function CDTList() {
 
   const CustomButtonHeader = ({ toggleFilters, addCDT }) => (
     <div>
-      <Button
-        size="small"
-        variant="secondary"
-        icon={PlusIcon}
-        onClick={addCDT}
-        style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
-      >
-        Add data type
-      </Button>
+      {canCreateClinicalData && (
+        <Button
+          size="small"
+          variant="secondary"
+          icon={PlusIcon}
+          onClick={addCDT}
+          style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
+        >
+          Add data type
+        </Button>
+      )}
       <Button
         size="small"
         variant="secondary"
@@ -352,7 +364,10 @@ export default function CDTList() {
               title="Clinical Data Types"
               subtitle={`${tableRows.length} items`}
               columns={columnsState}
-              rows={tableRows}
+              rows={tableRows.map((row) => ({
+                ...row,
+                canUpdateClinicalData,
+              }))}
               rowId="ID"
               hasScroll={true}
               maxHeight="calc(100vh - 162px)"
@@ -367,6 +382,7 @@ export default function CDTList() {
                 truncate: true,
               }}
               showFilterIcon
+              headerProps={{ canUpdateClinicalData }}
               CustomHeader={(props) => (
                 <CustomButtonHeader {...props} addCDT={handleAddCDT} />
               )}
@@ -406,6 +422,7 @@ export default function CDTList() {
                       (reqNameError && "Data type name shouldn't be empty")
                     }
                     error={nameError || reqNameError}
+                    disabled={selectedRow && !canUpdateClinicalData}
                   />
                 </div>
                 <div style={{ display: "flex" }}>
@@ -417,6 +434,7 @@ export default function CDTList() {
                       name="status"
                       onChange={handleStatusUpdate}
                       size="small"
+                      disabled={selectedRow && !canUpdateClinicalData}
                     />
                   </div>
                 </div>
@@ -436,6 +454,7 @@ export default function CDTList() {
                       reqENSError && "External system shouldn't be empty"
                     }
                     error={reqENSError}
+                    disabled={selectedRow && !canUpdateClinicalData}
                   >
                     {ensList.map((option) => (
                       <MenuItem key={option.value} value={option.label}>
@@ -455,6 +474,7 @@ export default function CDTList() {
                     onChange={(e) => handleChange(e)}
                     optional
                     sizeAdjustable
+                    disabled={selectedRow && !canUpdateClinicalData}
                   />
                 </div>
               </div>
@@ -463,7 +483,11 @@ export default function CDTList() {
         }
         buttonProps={[
           { label: "Cancel", onClick: hideViewData },
-          { label: "Save", onClick: handleSave },
+          {
+            label: "Save",
+            onClick: handleSave,
+            disabled: selectedRow && !canUpdateClinicalData,
+          },
         ]}
         id="createDataKind"
       />

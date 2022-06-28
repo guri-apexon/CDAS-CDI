@@ -23,7 +23,7 @@ import {
 import validate from "../../../components/FormComponents/validation";
 import LocationModal from "../../../components/Common/LocationModal";
 
-import { locationTypes, dataStruct } from "../../../utils";
+import { locationTypes, dataStruct, SodLocationTypes } from "../../../utils";
 
 const styles = {
   paper: {
@@ -92,6 +92,8 @@ const DataFlowFormBase = (props) => {
     password,
     serviceOwners,
     changeLocationData,
+    tabularSod,
+    changeDataStrucuture,
     changeFormField,
     changeLocationType,
     connLink,
@@ -199,6 +201,9 @@ const DataFlowFormBase = (props) => {
                 name="dataStructure"
                 id="dataStructure"
                 label="Data Structure"
+                onChange={(e) => {
+                  changeDataStrucuture(e.target.value);
+                }}
                 fullWidth
                 required
               >
@@ -208,19 +213,35 @@ const DataFlowFormBase = (props) => {
                   </MenuItem>
                 ))}
               </ReduxFormSelect>
-              <ReduxFormSelect
-                name="locationType"
-                label="Location Type"
-                required
-                onChange={(e) => changeLocationType(e.target.value)}
-                fullWidth
-              >
-                {locationTypes?.map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {type}
-                  </MenuItem>
-                ))}
-              </ReduxFormSelect>
+              {tabularSod ? (
+                <ReduxFormSelect
+                  name="locationType"
+                  label="Location Type"
+                  required
+                  onChange={(e) => changeLocationType(e.target.value)}
+                  fullWidth
+                >
+                  {SodLocationTypes?.map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {type}
+                    </MenuItem>
+                  ))}
+                </ReduxFormSelect>
+              ) : (
+                <ReduxFormSelect
+                  name="locationType"
+                  label="Location Type"
+                  required
+                  onChange={(e) => changeLocationType(e.target.value)}
+                  fullWidth
+                >
+                  {locationTypes?.map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {type}
+                    </MenuItem>
+                  ))}
+                </ReduxFormSelect>
+              )}
               {/* <ReduxFormAutocomplete
                 name="locationName"
                 label="Location Name"

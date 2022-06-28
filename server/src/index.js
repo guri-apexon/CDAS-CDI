@@ -7,9 +7,9 @@ const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
-
 const app = express();
 dotenv.config();
+const apiSecurity = require("./helpers/apiSecurity");
 const PORT = process.env.PORT;
 let dir = "./public/exports";
 const apiRoutes = require("./route/apiRoutes");
@@ -31,7 +31,41 @@ app.use(
     threshold: 0,
   })
 );
-app.use(cors());
+
+// saved for whitelisting domains for future purpose
+// var whitelist = ['http://example1.com', 'http://example2.com']
+// var corsOptions = {
+//   origin: function (origin, callback) {
+//     if (whitelist.indexOf(origin) !== -1) {
+//       callback(null, true)
+//     } else {
+//       callback(new Error('Not allowed by CORS'))
+//     }
+//   }
+// }
+const corsOptions = {
+  origin: (origin, callback) => {
+    callback(null, true);
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTION"],
+  allowedHeaders: [
+    "Access-Control-Allow-Origin",
+    "Origin",
+    "X-Requested-With",
+    "Content-Type",
+    "Accept",
+    "Authorization",
+    "api-key",
+    "api-name",
+    "sys-name",
+    "token-type",
+    "access-token",
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(
@@ -45,6 +79,7 @@ app.use(express.json({ limit: "50mb" }));
 
 //Route Prefixes
 app.use("/", baseRoutes);
+app.use("/v1/api/", apiSecurity.secureApi);
 app.use("/v1/api/", apiRoutes);
 
 app.use(

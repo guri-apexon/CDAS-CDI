@@ -12,6 +12,7 @@ import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
+import Modal from "apollo-react/components/Modal/Modal";
 import Banner from "apollo-react/components/Banner";
 import { ReactComponent as DatasetsIcon } from "../../components/Icons/dataset.svg";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
@@ -36,6 +37,11 @@ import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
+
+import usePermission, {
+  Categories,
+  Features,
+} from "../../components/Common/usePermission";
 
 const userInfo = getUserInfo();
 
@@ -94,19 +100,30 @@ const Dataset = () => {
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("sftp");
   const [columnsActive, setColumnsActive] = useState(false);
+  const [openModal, setopenModal] = useState(false);
   const dispatch = useDispatch();
   const params = useParams();
   const messageContext = useContext(MessageContext);
   const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
-  const dashboard = useSelector((state) => state.dashboard);
   const packageData = useSelector((state) => state.dataPackage);
-  const dataFlow = useSelector((state) => state.dataFlow);
-  const { selectedDSDetails } = packageData;
+  const {
+    dataFlowdetail: { name, loctyp, testflag, srclocid },
+    dsProdLock,
+    dsTestLock,
+    dsTestProdLock,
+    isDatasetCreation,
+    versionFreezed,
+  } = useSelector((state) => state.dataFlow);
   const {
     selectedCard,
     selectedDataFlow: { dataFlowId: dfId },
-  } = dashboard;
+  } = useSelector((state) => state.dashboard);
+
+  const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
+    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+
+  const { selectedDSDetails } = packageData;
   const {
     datapackageid: dpId,
     datapackageName,
@@ -126,14 +143,6 @@ const Dataset = () => {
   } = dataSets;
   const datasetid = params.datasetId;
   const { prot_id: studyId } = selectedCard;
-  const {
-    dataFlowdetail,
-    dsProdLock,
-    dsTestLock,
-    dsTestProdLock,
-    isDatasetCreation,
-  } = dataFlow;
-  const { name, loctyp, testflag, srclocid } = dataFlowdetail;
   const { datasetid: dsId } = selectedDataset;
   const { isCustomSQL, tableName } = formDataSQL;
 
@@ -292,8 +301,8 @@ const Dataset = () => {
         testFlag: testflag,
         dfId,
         studyId,
+        versionFreezed,
       };
-      console.log("formValue", formValue);
       if (formValue?.sQLQuery?.includes("*")) {
         messageContext.showErrorMessage(
           `Please remove * from query to proceed.`
@@ -363,6 +372,28 @@ const Dataset = () => {
         >
           <main className={classes.content}>
             <div className={classes.contentHeader}>
+              <Modal
+                open={openModal}
+                variant="warning"
+                onClose={() => setopenModal(false)}
+                title="Exit"
+                message="Do you really want to exit and discard dataflow changes"
+                buttonProps={[
+                  {
+                    label: "Discard changes",
+                    onClick: () => {
+                      setopenModal(false);
+                      closeForm();
+                    },
+                  },
+                  {
+                    label: "Continue editing data flow",
+                    variant: "primary",
+                    onClick: () => setopenModal(false),
+                  },
+                ]}
+                id="success"
+              />
               <BreadcrumbsUI
                 className={classes.breadcrumbs}
                 id="dataaset-breadcrumb"
@@ -399,11 +430,12 @@ const Dataset = () => {
                     buttonProps={[
                       {
                         label: "Cancel",
-                        onClick: () => closeForm(),
+                        onClick: () => setopenModal(true),
                       },
                       {
                         label: "Save",
                         onClick: () => submitForm(),
+                        disabled: !canUpdateDataFlow,
                       },
                     ]}
                   />

@@ -10,6 +10,7 @@ const AppProvider = ({ children }) => {
     lastlogin: "",
     token: null,
     actions: "",
+    permissions: [],
   });
 
   const updateUser = (userData) => {
@@ -20,6 +21,7 @@ const AppProvider = ({ children }) => {
       lastlogin: userData.lastlogin,
       token: userData.token,
       actions: userData.actions,
+      permissions: userData.permissions,
     });
   };
 

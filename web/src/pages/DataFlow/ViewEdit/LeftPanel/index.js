@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -23,6 +23,10 @@ import {
 } from "../../../../store/actions/DataPackageAction";
 import { updateDFStatus } from "../../../../store/actions/DashboardAction";
 import { activateDF, inActivateDF } from "../../../../services/ApiServices";
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../../components/Common/usePermission";
 
 import "./LeftPanel.scss";
 
@@ -75,6 +79,23 @@ const LeftPanel = () => {
   const [searchTxt, setSearchTxt] = useState("");
   const packageData = useSelector((state) => state.dataPackage);
   const dashboard = useSelector((state) => state.dashboard);
+
+  const {
+    canUpdate: canUpdateDataFlow,
+    canCreate: CanCreateDataFlow,
+    canRead: canReadDataFlow,
+  } = usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+
+  const { canEnabled: canDeleteTest } = usePermission(
+    Categories.MENU,
+    Features.DATA_FLOW_HARD_DELETE_TEST
+  );
+
+  const { canEnabled: canDeleteProd } = usePermission(
+    Categories.MENU,
+    Features.DATA_FLOW_HARD_DELETE_PROD
+  );
+
   // const dataflow = useSelector((state) => state.dataFlow);
   const {
     dataFlowId,
@@ -117,8 +138,12 @@ const LeftPanel = () => {
   };
   const menuItems = [
     { text: "View audit log", onClick: viewAuditLog },
-    { text: "Clone data flow" },
-    { text: "Hard delete data flow" },
+    { text: "Clone data flow", disabled: !CanCreateDataFlow },
+    {
+      text: "Hard delete data flow",
+      disabled:
+        type.trim().toLowerCase() === "test" ? !canDeleteTest : !canDeleteProd,
+    },
   ];
   const ContextMenu = () => {
     return (
@@ -161,6 +186,7 @@ const LeftPanel = () => {
             className="inline-checkbox"
             checked={status === "Active"}
             onChange={handleStatusUpdate}
+            disabled={!canUpdateDataFlow}
             size="small"
           />
           <ContextMenu />
@@ -193,15 +219,17 @@ const LeftPanel = () => {
       <div className="packages-list-header">
         <div className="flex flex-center justify-between">
           <Typography className="b-font">Data Packages & Datasets</Typography>
-          <Button
-            variant="secondary"
-            icon={<PlusIcon />}
-            size="small"
-            onClick={redirectDataPackage}
-            disabled={!isSftp(locationType)}
-          >
-            Add data package
-          </Button>
+          {packageData.packagesList[0]?.sod_view_type === null && (
+            <Button
+              variant="secondary"
+              icon={<PlusIcon />}
+              size="small"
+              onClick={redirectDataPackage}
+              disabled={!isSftp(locationType) || !canUpdateDataFlow}
+            >
+              Add data package
+            </Button>
+          )}
         </div>
 
         <div style={{ maxWidth: 400 }} className="search-package">

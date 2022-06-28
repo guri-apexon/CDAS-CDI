@@ -1,6 +1,5 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable consistent-return */
-import { includes, isEmpty } from "lodash";
 
 export const checkRequired = (value) => {
   if (!value || (typeof value === "string" && !value.trim())) {
@@ -199,6 +198,110 @@ export const checkFormat = (value, key = "", dataType = "") => {
     if (value.includes("$") || String.raw`${value}`.includes("\\")) {
       return "\\ and $ are not allowed";
     }
+    if (value && value.length > 0) {
+      const allowedSymbols = [
+        "SSSSSS",
+        "MONTH",
+        "YYYY",
+        "yyyy",
+        "SSSZ",
+        "SSS",
+        "DAY",
+        "EEE",
+        "MMM",
+        "MM",
+        "mm",
+        "YY",
+        "yy",
+        "HH",
+        "hh",
+        "KK",
+        "kk",
+        "MI",
+        "mi",
+        "ss",
+        "dd",
+        "DD",
+      ];
+
+      const invalidFormat = /<(.*)?>/;
+      const regexPattern = new RegExp(invalidFormat, "g");
+      if (!regexPattern.test(value)) {
+        return "Not a valid date format.";
+      }
+
+      const invalidFormatChars = /<[aGzZ].>|<>|>>|<</;
+      const regexPatternChars = new RegExp(invalidFormatChars, "gm");
+      if (regexPatternChars.test(value)) {
+        return "Not a valid date format.";
+      }
+
+      const invalidFormatSpace =
+        /<[aGzZ].>|<\s+.*\s+>|<\s+.*>|<.*\s+>|<.*?\s\s+.*?>/;
+
+      const regexPatternSpace = new RegExp(invalidFormatSpace, "gm");
+      if (regexPatternSpace.test(value)) {
+        return "Not a valid date format.";
+      }
+
+      const invalidFormatDuplicate =
+        /<[!@#^*&+=._:/,\s-]+?>|<.*[!@#^*&+=._:/,\s-]+>|<[!@#^*&+=._:/,\s-]+.*>/;
+      const regexPatternDuplicate = new RegExp(invalidFormatDuplicate, "gm");
+      if (regexPatternDuplicate.test(value)) {
+        return "Not a valid date format.";
+      }
+
+      const regPattern = /<(.*?)>/g;
+      let result;
+      let invalidDateFormat = false;
+      // eslint-disable-next-line no-cond-assign
+      while ((result = regPattern.exec(value)) !== null) {
+        let matchedToken = result[0];
+        if (
+          /(>|<)|([!@#^*&+=._:/,\s-][!@#^*&+=._:/,\s-])|[dm]y|[my]d|[dy]m|(\wmonth\w?|\w?month\w)/gi.test(
+            result[1]
+          )
+        ) {
+          invalidDateFormat = true;
+          break;
+        }
+        const timeFormat = /(HH|hh)\W((MI|mi|mm)\W)?((ss)(Z|z))?/;
+        const timePattern = new RegExp(timeFormat, "g");
+        matchedToken = matchedToken.replace(timePattern, "");
+
+        const singleDateFormats = /<[z|Z|%|a|G]>/;
+        const singlePattern = new RegExp(singleDateFormats, "g");
+        matchedToken = matchedToken.replace(singlePattern, "");
+
+        allowedSymbols.forEach((item) => {
+          const find = `<${item}>`;
+          const re = new RegExp(find, "g");
+          matchedToken = matchedToken.replace(re, "");
+        });
+
+        allowedSymbols.forEach((item) => {
+          const find = `<(.*?)${item}(.*?)>`;
+          const re = new RegExp(find, "g");
+          matchedToken = matchedToken.replace(re, "<$1$2>");
+        });
+
+        const find = /<[!@#^*&+=._:/,\s-]*?>/;
+        const findRegex = new RegExp(find, "g");
+        matchedToken = matchedToken.replace(findRegex, "");
+
+        const regex = `<(.*)?>`;
+        const pattern = new RegExp(regex, "g");
+        if (pattern.test(matchedToken)) {
+          invalidDateFormat = true;
+          break;
+        }
+      }
+
+      if (invalidDateFormat) {
+        return "Not a valid date format.";
+      }
+    }
+
     // const optionArr = [
     //   "Date:<dd><MM><yyyy>Time:<hh>:<mm>:<ss>",
     //   "Date:<dd><MM><yyyy>",
@@ -241,15 +344,7 @@ export const removeUndefined = (arr) =>
     }, {});
 
 export const validateRow = (row) => {
-  const {
-    minLength,
-    maxLength,
-    dataType,
-    columnName,
-    primaryKey,
-    required,
-    format,
-  } = row;
+  const { minLength, maxLength, dataType, columnName, format } = row;
 
   const min = Number.parseInt(minLength, 10);
   const max = Number.parseInt(maxLength, 10);
@@ -261,8 +356,7 @@ export const validateRow = (row) => {
     ((minLength || maxLength) &&
       (Number.isNaN(min) ||
         Number.isNaN(max) ||
-        !(!Number.isNaN(min) && !Number.isNaN(max) && min <= max))) ||
-    (primaryKey?.toLowerCase() === "yes" && required?.toLowerCase() === "no")
+        !(!Number.isNaN(min) && !Number.isNaN(max) && min <= max)))
   ) {
     return false;
   }
