@@ -28,19 +28,22 @@ import {
   columnsCreated,
   columnsCreatedFailure,
 } from "../store/actions/DataSetsAction";
-import { deleteAllCookies, getUserId } from "../utils/index";
+import { deleteAllCookies, getCookie, getUserId } from "../utils/index";
 
 const userId = getUserId();
 
 const config = { headers: { userId } };
+
+const token = getCookie("user.token");
 
 axios.defaults.headers.common["api-key"] = CryptoJS.AES.encrypt(
   process.env.REACT_APP_API_KEY || "",
   process.env.REACT_APP_ENCRYPTION_KEY || ""
 ).toString();
 axios.defaults.headers.common["sys-name"] = process.env.REACT_APP_SYS_NAME;
-axios.defaults.headers.common["token-type"] = "sample";
+axios.defaults.headers.common["token-type"] = "JWT";
 axios.defaults.headers.common["access-token"] = "sample";
+axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
 export const checkLocationExistsInDataFlow = async (locId) => {
   try {
