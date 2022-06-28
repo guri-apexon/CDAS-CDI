@@ -224,6 +224,7 @@ const JobstatusCell = ({ row, column: { accessor } }) => {
 
 const StatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
+  const { canReadIngestionIssues } = row;
   if (
     status?.toLowerCase() === "loaded without issues" ||
     status?.toLowerCase() === "successful" ||
@@ -282,12 +283,13 @@ const StatusCell = ({ row, column: { accessor } }) => {
             }}
           />
           {status}
-          {/* <Link
+          <Link
+            disabled={!canReadIngestionIssues}
             onClick={() => console.log("link clicked")}
             style={{ fontWeight: 500, marginLeft: 8 }}
           >
             View
-          </Link> */}
+          </Link>
         </div>
       </div>
     );
