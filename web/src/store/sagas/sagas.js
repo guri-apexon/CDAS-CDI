@@ -38,9 +38,14 @@ import {
   GET_DATASET_INGESTION_TRANSFER_LOG,
   GET_LOCATION_DETAIL,
   GET_PASSWORD_LOCATION,
+  GET_PASSWORD_PACKAGE,
 } from "../../constants";
 
-import { fetchPackagesData, updateDataPackage } from "./dataPackage.saga";
+import {
+  fetchPackagesData,
+  updateDataPackage,
+  fetchPackagepassword,
+} from "./dataPackage.saga";
 
 import {
   fetchFlowData,
@@ -101,6 +106,7 @@ function* cdasCoreSaga() {
   yield takeLatest(ADD_DATAFLOW, addDataFlow);
   yield takeLatest(PACKAGES_LIST, fetchPackagesData);
   yield takeLatest(UPDATE_DATA_PACKAGE, updateDataPackage);
+  yield takeLatest(GET_PASSWORD_PACKAGE, fetchPackagepassword);
   yield takeLatest(GET_VENDORS_DATA, fetchVendorsData);
   yield takeLatest(GET_LOCATIONS_DATA, fetchLocationsData);
   yield takeLatest(SAVE_LOCATION_DATA, saveLocationData);
