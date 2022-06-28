@@ -7,6 +7,9 @@ import {
   PACKAGES_LIST_FAILURE,
   ADD_PACKAGE,
   ADD_PACKAGE_SUCCESS,
+  FETCH_PACKAGE_PASSWORD_SUCCESS,
+  FETCH_PACKAGE_PASSWORD_FAILURE,
+  DATAPACKAGEPASSWORD,
   UPDATE_PACKAGE,
   UPDATE_DATA_PACKAGE_SUCCESS,
   DELETE_PACKAGE,
@@ -26,6 +29,22 @@ export function* fetchPackagesData(params) {
     });
   } catch (e) {
     yield put({ type: PACKAGES_LIST_FAILURE, message: e.message });
+  }
+}
+
+export function* fetchPackagepassword(action) {
+  try {
+    const fetchSBData = yield call(
+      axios.get,
+      `${baseURL}/${DATAPACKAGEPASSWORD}/${action.val}/${action.id}`,
+      {}
+    );
+    yield put({
+      type: FETCH_PACKAGE_PASSWORD_SUCCESS,
+      packageSODPassword: fetchSBData.data.data.password,
+    });
+  } catch (e) {
+    yield put({ type: FETCH_PACKAGE_PASSWORD_FAILURE, message: e.message });
   }
 }
 
