@@ -32,6 +32,8 @@ import {
   selectDataPackage,
   getPackagesList,
   addPackageBtnAction,
+  updateStatus,
+  getPackagePassword,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 import usePermission, {
@@ -66,6 +68,7 @@ const DataPackages = React.memo(() => {
   const [notMatchedType, setNotMatchedType] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const packageData = useSelector((state) => state.dataPackage);
+
   const { dataFlowdetail, versionFreezed } = useSelector(
     (state) => state.dataFlow
   );
@@ -75,6 +78,8 @@ const DataPackages = React.memo(() => {
     selectedCard,
     selectedDataFlow: { dataFlowId: dfId },
   } = useSelector((state) => state.dashboard);
+  const { packageSODPassword } = packageData;
+  const [passwordUpdate, setPasswordUpdate] = useState(false);
 
   const { canUpdate: canUpdateDataFlow } = usePermission(
     Categories.CONFIGURATION,
@@ -124,6 +129,16 @@ const DataPackages = React.memo(() => {
     }
   }, [packageData.openAddPackage]);
 
+  const PackagePassswordData = async () => {
+    await dispatch(
+      getPackagePassword(
+        packageData.packagesList[0]?.dataflowid,
+        packageData.packagesList[0]?.datapackageid
+      )
+    );
+    setPasswordUpdate(true);
+  };
+
   useEffect(() => {
     if (!packageData.openAddPackage && packageData.selectedPackage) {
       setShowForm(true);
@@ -131,15 +146,34 @@ const DataPackages = React.memo(() => {
       setCompression(packageData.selectedPackage?.type);
       setNamingConvention(packageData.selectedPackage?.name);
       setSodValue(packageData.selectedPackage?.sod_view_type);
-      setPackagePassword(packageData.selectedPackage?.password);
       setSftpPath(packageData.selectedPackage?.path);
+      if (packageData.selectedPackage?.password === "Yes") {
+        PackagePassswordData();
+        if (packageSODPassword === "") {
+          setConfigShow(false);
+        } else if (packageSODPassword !== "" && !passwordUpdate) {
+          setConfigShow(false);
+        } else {
+          setPackagePassword(packageSODPassword);
+          setTimeout(() => {
+            setConfigShow(true);
+          }, 2000);
+        }
+      } else {
+        setConfigShow(true);
+        setPackagePassword("");
+      }
     }
     if (
       packageData.selectedPackage &&
       packageData.selectedPackage?.type === null
     )
       setConfigShow(false);
-  }, [packageData.openAddPackage, packageData.selectedPackage]);
+  }, [
+    packageData.openAddPackage,
+    packageData.selectedPackage,
+    packageData.packageSODPassword,
+  ]);
 
   useEffect(() => {
     return () => {
