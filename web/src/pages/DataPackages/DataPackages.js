@@ -129,11 +129,21 @@ const DataPackages = React.memo(() => {
     }
   }, [packageData.openAddPackage]);
 
+  // const PackagePassswordData = async () => {
+  //   await dispatch(
+  //     getPackagePassword(
+  //       packageData.packagesList[0]?.dataflowid,
+  //       packageData.packagesList[0]?.datapackageid
+  //     )
+  //   );
+  //   setPasswordUpdate(true);
+  // };
+
   const PackagePassswordData = async () => {
     await dispatch(
       getPackagePassword(
-        packageData.packagesList[0]?.dataflowid,
-        packageData.packagesList[0]?.datapackageid
+        packageData.selectedPackage?.dataflowid,
+        packageData.selectedPackage?.datapackageid
       )
     );
     setPasswordUpdate(true);
@@ -164,11 +174,11 @@ const DataPackages = React.memo(() => {
         setPackagePassword("");
       }
     }
-    if (
-      packageData.selectedPackage &&
-      packageData.selectedPackage?.type === null
-    )
-      setConfigShow(false);
+    // if (
+    //   packageData.selectedPackage &&
+    //   packageData.selectedPackage?.type === null
+    // )
+    //   setConfigShow(false);
   }, [
     packageData.openAddPackage,
     packageData.selectedPackage,
@@ -212,14 +222,13 @@ const DataPackages = React.memo(() => {
     if (result.status === 1) {
       showSuccessMessage(result.message);
       dispatch(addDataPackage());
+      resetForm();
+      setShowForm(false);
       if (sodValue !== null)
         history.push(`/dashboard/dataflow-management/${dfId}`);
     } else {
       showErrorMessage(result.message);
     }
-
-    resetForm();
-    setShowForm(false);
   };
 
   const handleClose = () => {

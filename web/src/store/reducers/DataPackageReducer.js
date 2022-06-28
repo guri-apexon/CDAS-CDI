@@ -64,6 +64,7 @@ const DataPackageReducer = (state = initialState, action) =>
       case ADD_PACKAGE_SUCCESS:
         newState.loading = false;
         newState.refreshData = action.refreshData;
+        newState.selectedPackage = {};
         newState.packageSODPassword = "";
         break;
 
