@@ -7,5 +7,9 @@ router.get("/search/:dataflowId/:query?", PackagesController.searchList);
 router.post("/add", PackagesController.addPackage);
 router.post("/delete", PackagesController.deletePackage);
 router.post("/update-status", PackagesController.changeStatus);
+router.get(
+  "/getpassword/:dataflowid/:datapackageid",
+  PackagesController.getPassword
+);
 
 module.exports = router;
