@@ -174,6 +174,7 @@ const Location = () => {
   const [selectedLoc, setSelectedLoc] = useState({});
   const [locationViewMode, setLocationViewMode] = useState(false);
   const [locationEditMode, setLocationEditMode] = useState(false);
+
   const getData = () => {
     dispatch(getLocationsData("all"));
   };
@@ -240,7 +241,18 @@ const Location = () => {
       if (update.status === 0) {
         messageContext.showErrorMessage(update.data, 56);
       }
-      getData();
+      const records = locations?.records || [];
+      const copyRecords = JSON.parse(JSON.stringify(records));
+      const updatedObject = update?.data?.[0];
+      const index = copyRecords.findIndex(
+        ({ src_loc_id: locId }) => locId === updatedObject?.src_loc_id
+      );
+      if (index !== -1) {
+        copyRecords[index].active = updatedObject?.active;
+        setTableRows(copyRecords);
+        const col = generateColumns(copyRecords, handleStatusChange);
+        setColumns([...col]);
+      }
     }
     setStatusUpdating(false);
     return null;
