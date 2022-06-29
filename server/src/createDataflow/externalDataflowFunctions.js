@@ -276,7 +276,7 @@ exports.insertValidation = (req) => {
 
                 if (nameValidate === false) {
                   validate.push(
-                    "Package naming convention should not have the following special characters /:*?”<|> but < and > are allowed IF they are in a pair to specify a dynamic date."
+                    "Package naming convention should not have the following special characters /:*?”<|>"
                   );
                 }
 
@@ -434,7 +434,7 @@ exports.insertValidation = (req) => {
 
                       if (fileNameValidate === false) {
                         validate.push(
-                          "File naming convention should not have the following special characters /:*?”<|> but < and > are allowed IF they are in a pair to specify a dynamic date."
+                          "File naming convention should not have the following special characters /:*?”<|>"
                         );
                       }
 
@@ -1296,7 +1296,7 @@ exports.packageLevelInsert = async (
             let nameValidate = this.namingCconventionValidate(nameData);
             if (nameValidate === false) {
               errorPackage.push(
-                "Package naming convention should not have the following special characters /:*?”<|> but < and > are allowed IF they are in a pair to specify a dynamic date."
+                "Package naming convention should not have the following special characters /:*?”<|>"
               );
             }
 
@@ -1619,7 +1619,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
             if (fileNameValidate === false) {
               errorDataset.push(
-                "File naming convention should not have the following special characters /:*?”<|> but < and > are allowed IF they are in a pair to specify a dynamic date."
+                "File naming convention should not have the following special characters /:*?”<|>"
               );
             }
             if (obj.fileType.toLowerCase() === "sas") {
@@ -2942,7 +2942,7 @@ exports.packageUpdate = async (
             let nameValidate = this.namingCconventionValidate(nameData);
             if (nameValidate === false) {
               errorPackage.push(
-                "Package naming convention should not have the following special characters /:*?”<|> but < and > are allowed IF they are in a pair to specify a dynamic date."
+                "Package naming convention should not have the following special characters /:*?”<|>"
               );
             }
 
@@ -3222,7 +3222,7 @@ exports.datasetUpdate = async (
             let nameValidate = this.namingCconventionValidate(nameData);
             if (nameValidate === false) {
               errorDataset.push(
-                "File naming convention should not have the following special characters /:*?”<|> but < and > are allowed IF they are in a pair to specify a dynamic date."
+                "File naming convention should not have the following special characters /:*?”<|>"
               );
             }
 
