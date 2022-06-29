@@ -335,6 +335,7 @@ export default function DataflowTab({ updateData }) {
       {
         text: "View audit log",
         id: 1,
+        disabled: !canUpdateDataFlow,
         onClick: () => viewAuditLogAction(dataFlowId, row),
       },
       ...(canUpdateDataFlow

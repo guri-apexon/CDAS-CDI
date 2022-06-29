@@ -1916,6 +1916,8 @@ exports.updateDataflowConfig = async (req, res) => {
       }
       const diffObj = helper.getdiffKeys(comparisionObj, existDf);
 
+      // console.log("diffObj", diffObj, "existDf", existDf);
+
       const updatedLogs = await addDataflowHistory({
         dataflowId,
         externalSystemName,
