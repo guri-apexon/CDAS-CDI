@@ -342,10 +342,21 @@ const DataFlow = ({
     };
 
     setSubmitting(true);
-    const result = await dataflowSave(reqBody);
-    if (result?.dataflowDetails) setCreatedDataflow(result.dataflowDetails);
-    if (result) {
-      setSaveSuccess(true);
+    try {
+      const result = await dataflowSave(reqBody);
+      if (result && result.success === false) {
+        messageContext.showErrorMessage(result?.data?.message);
+        setSaveSuccess(false);
+        setSubmitting(false);
+        return;
+      }
+
+      if (result?.dataflowDetails) setCreatedDataflow(result.dataflowDetails);
+      if (result) {
+        setSaveSuccess(true);
+      }
+    } catch (saveerror) {
+      setSaveSuccess(false);
     }
     setSubmitting(false);
   };
@@ -366,6 +377,13 @@ const DataFlow = ({
 
     setSubmitting(true);
     const result = await dataflowSave(reqBody);
+    if (result && result.success === false) {
+      messageContext.showErrorMessage(result?.data?.message);
+      setSaveSuccess(false);
+      setSubmitting(false);
+      return;
+    }
+
     if (result?.dataflowDetails) setCreatedDataflow(result.dataflowDetails);
     if (result) {
       setSaveSuccess(true);
