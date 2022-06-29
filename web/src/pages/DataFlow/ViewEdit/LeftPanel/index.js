@@ -142,7 +142,7 @@ const LeftPanel = () => {
     {
       text: "Hard delete data flow",
       disabled:
-        type.trim().toLowerCase() === "test" ? !canDeleteTest : !canDeleteProd,
+        type?.trim().toLowerCase() === "test" ? !canDeleteTest : !canDeleteProd,
     },
   ];
   const ContextMenu = () => {
