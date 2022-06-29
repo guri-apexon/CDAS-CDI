@@ -6,6 +6,11 @@ const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 const CommonController = require("./CommonController");
+const {
+  datasetLevelInsert,
+} = require("../createDataflow/externalDataflowFunctions");
+const datasetHelper = require("../helpers/datasetHelper");
+const dataflowHelper = require("../helpers/dataflowHelper");
 
 async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
   let searchQuery = `select distinct d3.mnemonic from ${schemaName}.study s left join ${schemaName}.dataflow d on s.prot_id = d.prot_id left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid left join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where s.prot_id=$1 and d.testflag=$2`;
@@ -105,18 +110,31 @@ async function saveSQLDataset(res, values, dpId, userId, dfId) {
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    const { dpId, studyId, dfId, testFlag, userId } = req.body;
-    const isExist = await checkMnemonicExists(
-      values.datasetName,
-      studyId,
-      testFlag
-    );
+    const { dpId, studyId, dfId, testFlag, userId, clinicalDataType } =
+      req.body;
 
-    if (isExist) {
-      return apiResponse.ErrorResponse(
-        res,
-        `Mnemonic ${values.datasetName} is not unique.`
+    // const isExist = await checkMnemonicExists(
+    //   values.datasetName,
+    //   studyId,
+    //   testFlag
+    // );
+
+    const dataflow = await dataflowHelper.findById(dfId);
+    if (dataflow) {
+      const isExist = await datasetHelper.findByMnemonic(
+        dataflow.prot_id,
+        dataflow.testflag,
+        dataflow.vend_id,
+        clinicalDataType[0],
+        values.datasetName
       );
+
+      if (isExist) {
+        return apiResponse.ErrorResponse(
+          res,
+          `Mnemonic ${values.datasetName} is not unique.`
+        );
+      }
     }
 
     if (values.locationType.toLowerCase() === "jdbc") {
@@ -348,12 +366,28 @@ exports.updateDatasetData = async (req, res) => {
     const values = req.body;
     const curDate = helper.getCurrentTime();
     Logger.info({ message: "update Dataset" });
-    const { dfId, studyId, dpId, testFlag, datasetid, userId, datasetName } =
-      req.body;
-    const isExist = await checkMnemonicExists(
-      datasetName,
+    const {
+      dfId,
       studyId,
+      dpId,
       testFlag,
+      datasetid,
+      userId,
+      datasetName,
+      clinicalDataType,
+    } = req.body;
+    // const isExist = await checkMnemonicExists(
+    //   datasetName,
+    //   studyId,
+    //   testFlag,
+    //   datasetid
+    // );
+    const isExist = await datasetHelper.findByMnemonic(
+      "",
+      "",
+      "",
+      clinicalDataType[0],
+      datasetName,
       datasetid
     );
     const selectQuery = `select datasetid, datapackageid, mnemonic, type, charset, delimiter , escapecode, quote,
