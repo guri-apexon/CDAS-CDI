@@ -429,6 +429,7 @@ const Dataset = () => {
                       loading={loading}
                       onSubmit={onSubmit}
                       prodLock={dsProdLock}
+                      testLock={dsTestLock}
                     />
                   ) : (
                     <DataSetsFormSQL
