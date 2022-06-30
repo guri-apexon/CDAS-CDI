@@ -65,6 +65,7 @@ module.exports = {
 
         const anditLogsQueries = [];
         Object.keys(diffObj).map((key) => {
+          // if (diffObj[key] || diffObj[key] == 0) {
           anditLogsQueries.push(
             DB.executeQuery(
               `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid, datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
@@ -81,6 +82,7 @@ module.exports = {
               ]
             )
           );
+          // }
         });
         Promise.all(anditLogsQueries).then((values) => {
           DB.executeQuery(
