@@ -132,8 +132,15 @@ async function saveSQLDataset(
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    const { dpId, studyId, dfId, testFlag, userId, clinicalDataType, versionFreezed } =
-      req.body;
+    const {
+      dpId,
+      studyId,
+      dfId,
+      testFlag,
+      userId,
+      clinicalDataType,
+      versionFreezed,
+    } = req.body;
 
     // const isExist = await checkMnemonicExists(
     //   values.datasetName,
