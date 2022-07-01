@@ -82,34 +82,37 @@ module.exports = {
             )
           );
         });
-        Promise.all(anditLogsQueries).then((values) => {
-          DB.executeQuery(
-            `INSERT INTO ${schemaName}.cdr_ta_queue
+        if (versionFreezed != true) {
+          console.log("data q");
+          Promise.all(anditLogsQueries).then((values) => {
+            DB.executeQuery(
+              `INSERT INTO ${schemaName}.cdr_ta_queue
             (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
             VALUES($1, 'CONFIG', $2, 'QUEUE', $4, $4, '', $3, '', 1, '', 0)`,
-            [
-              dataflowId,
-              externalSystemName === "CDI" ? userId : externalSystemName,
-              version,
-              curDate,
-            ]
-          )
-            .then(async (response) => {
-              DB.executeQuery(
-                `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
-                [dataflowId, curDate]
-              )
-                .then((res) => {
-                  resolve(version);
-                })
-                .catch((err) => {
-                  resolve(false);
-                });
-            })
-            .catch((err) => {
-              resolve(false);
-            });
-        });
+              [
+                dataflowId,
+                externalSystemName === "CDI" ? userId : externalSystemName,
+                version,
+                curDate,
+              ]
+            )
+              .then(async (response) => {
+                DB.executeQuery(
+                  `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
+                  [dataflowId, curDate]
+                )
+                  .then((res) => {
+                    resolve(version);
+                  })
+                  .catch((err) => {
+                    resolve(false);
+                  });
+              })
+              .catch((err) => {
+                resolve(false);
+              });
+          });
+        }
       });
     });
   },
@@ -224,13 +227,14 @@ module.exports = {
         );
       }
 
-      await DB.executeQuery(
-        `INSERT INTO ${schemaName}.cdr_ta_queue
+      if (versionFreezed != true) {
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.cdr_ta_queue
             (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count, datapackageid)
             VALUES($1, 'CONFIG', $2, 'QUEUE', $5, $5, '', $3, '', 1, '', 0, $4)`,
-        [package.dataflowid, user_id, version, package.datapackageid, curDate]
-      );
-
+          [package.dataflowid, user_id, version, package.datapackageid, curDate]
+        );
+      }
       await DB.executeQuery(
         `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
         [package.dataflowid, curDate]
@@ -409,29 +413,31 @@ module.exports = {
             );
           });
         }
-        Promise.all(anditLogsQueries).then((values) => {
-          DB.executeQuery(
-            `INSERT INTO ${schemaName}.cdr_ta_queue
+        if (versionFreezed != true) {
+          Promise.all(anditLogsQueries).then((values) => {
+            DB.executeQuery(
+              `INSERT INTO ${schemaName}.cdr_ta_queue
               (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count, datapackageid, datasetid)
               VALUES($1, 'CONFIG', $2, 'QUEUE', $6, $6, '', $3, '', 1, '', 0, $4, $5)`,
-            [dfId, userId, version, datapackageid, datasetid, curDate]
-          )
-            .then(async (response) => {
-              DB.executeQuery(
-                `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
-                [dfId, curDate]
-              )
-                .then((res) => {
-                  resolve(version);
-                })
-                .catch((err) => {
-                  resolve(false);
-                });
-            })
-            .catch((err) => {
-              resolve(false);
-            });
-        });
+              [dfId, userId, version, datapackageid, datasetid, curDate]
+            )
+              .then(async (response) => {
+                DB.executeQuery(
+                  `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
+                  [dfId, curDate]
+                )
+                  .then((res) => {
+                    resolve(version);
+                  })
+                  .catch((err) => {
+                    resolve(false);
+                  });
+              })
+              .catch((err) => {
+                resolve(false);
+              });
+          });
+        }
       });
     });
   },

@@ -150,7 +150,7 @@ exports.saveDatasetData = async (req, res) => {
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`
     );
 
-    console.log("oldVersion", oldVersion);
+    // console.log("oldVersion", oldVersion);
 
     if (values.locationType.toLowerCase() === "jdbc") {
       return saveSQLDataset(
