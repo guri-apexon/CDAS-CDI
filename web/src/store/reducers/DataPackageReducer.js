@@ -36,6 +36,7 @@ const DataPackageReducer = (state = initialState, action) =>
 
       case ADD_PACKAGE_BTN:
         newState.openAddPackage = true;
+        newState.selectedPackage = {};
         break;
 
       case PACKAGES_LIST_SUCCESS:
@@ -57,6 +58,7 @@ const DataPackageReducer = (state = initialState, action) =>
 
       case SELECT_DATA_PACKAGE:
         newState.selectedPackage = action.packageResult;
+        newState.openAddPackage = false;
         break;
 
       case ADD_PACKAGE_SUCCESS:

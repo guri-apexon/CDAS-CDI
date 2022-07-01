@@ -21,6 +21,7 @@ import {
   SAVE_DATAFLOW_LOCAL_DETAIL,
   UPDATE_DS,
   TOGGLE_DF_BTN,
+  SET_VERSION_FREEZED,
 } from "../../constants";
 
 export const initialState = {
@@ -49,6 +50,7 @@ export const initialState = {
   isDatasetCreation: true,
   updated: false,
   disableCreateBtn: false,
+  versionFreezed: false,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -112,6 +114,9 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case GET_SERVICE_OWNERS:
         newState.loading = true;
+        break;
+      case SET_VERSION_FREEZED:
+        newState.versionFreezed = action.freezed ? true : false;
         break;
       case RESET_DF_FORMDATA:
         newState.formData = {};

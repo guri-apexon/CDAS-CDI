@@ -24,6 +24,8 @@ import {
   ADD_PACKAGE,
   API_URL,
 } from "../constants";
+import store from "../store";
+import { freezeDfVersion } from "../store/actions/DataFlowAction";
 import {
   columnsCreated,
   columnsCreatedFailure,
@@ -41,6 +43,20 @@ axios.defaults.headers.common["api-key"] = CryptoJS.AES.encrypt(
 axios.defaults.headers.common["sys-name"] = process.env.REACT_APP_SYS_NAME;
 axios.defaults.headers.common["token-type"] = "sample";
 axios.defaults.headers.common["access-token"] = "sample";
+
+const responseHandler = (response) => {
+  if (response?.data?.data?.versionBumped) {
+    store.dispatch(freezeDfVersion());
+  }
+  return response;
+};
+const errorHandler = (error) => {
+  return Promise.reject(error);
+};
+axios.interceptors.response.use(
+  (response) => responseHandler(response),
+  (error) => errorHandler(error)
+);
 
 export const checkLocationExistsInDataFlow = async (locId) => {
   try {
@@ -78,15 +94,11 @@ export const statusUpdate = async (id, status) => {
   try {
     return new Promise((resolve, reject) => {
       axios
-        .post(
-          `${baseURL}/${LOCATIONAPI}/statusUpdate`,
-          {
-            id,
-            status,
-            userId,
-          },
-          config
-        )
+        .post(`${baseURL}/${LOCATIONAPI}/statusUpdate`, {
+          id,
+          status,
+          userId,
+        })
         .then((res) => {
           resolve(res.data);
         })

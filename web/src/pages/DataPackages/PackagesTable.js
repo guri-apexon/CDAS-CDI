@@ -78,8 +78,10 @@ const PackagesList = ({ data, userInfo }) => {
   const history = useHistory();
   const [expandedRows, setExpandedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
-  const dashboard = useSelector((state) => state.dashboard);
-  const { locationType } = dashboard?.selectedDataFlow;
+  const {
+    selectedDataFlow: { locationType },
+  } = useSelector((state) => state.dashboard);
+  const { versionFreezed } = useSelector((state) => state.dataFlow);
 
   const { canUpdate: canUpdateDataFlow } = usePermission(
     Categories.CONFIGURATION,
@@ -198,6 +200,7 @@ const PackagesList = ({ data, userInfo }) => {
             package_id: packageId,
             active: status === 1 ? "0" : "1",
             user_id: userInfo.userId,
+            versionFreezed,
           })
         );
       }
@@ -205,7 +208,11 @@ const PackagesList = ({ data, userInfo }) => {
     const deleteAction = () => {
       if (packageId) {
         dispatch(
-          deletePackage({ package_id: packageId, user_id: userInfo.userId })
+          deletePackage({
+            package_id: packageId,
+            user_id: userInfo.userId,
+            versionFreezed,
+          })
         );
       }
     };

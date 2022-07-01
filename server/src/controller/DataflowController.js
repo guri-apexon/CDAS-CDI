@@ -1428,8 +1428,15 @@ exports.updateDataFlow = async (req, res) => {
 
 exports.activateDataFlow = async (req, res) => {
   try {
-    const { dataFlowId, userId } = req.body;
+    const { dataFlowId, userId, versionFreezed } = req.body;
     Logger.info({ message: "activateDataFlow" });
+
+    const {
+      rows: [oldVersion],
+    } = await DB.executeQuery(
+      `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${dataFlowId}' order by version DESC limit 1`
+    );
 
     const q0 = `select d3.active from ${schemaName}.dataflow d
     inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid  
@@ -1454,17 +1461,23 @@ exports.activateDataFlow = async (req, res) => {
         config_json: dataflowObj,
         diffObj,
         existDf,
+        versionFreezed,
       });
 
-      // var resData = { ...dataflowObj, version: updatedLogs };
-      // if (versionFreezed === false || !versionFreezed) {
-      //   resData.versionBumped = true;
-      // }
+      // console.log(oldVersion.version, updatedLogs);
+      var resData = { ...dataflowObj, version: updatedLogs };
+      if (oldVersion.version === updatedLogs) {
+        resData.versionBumped = false;
+      } else {
+        resData.versionBumped = true;
+      }
+
       if (updatedLogs) {
         return apiResponse.successResponseWithData(
           res,
           "Dataflow config updated successfully.",
-          { ...dataflowObj, version: updatedLogs }
+          // { ...dataflowObj, version: updatedLogs }
+          resData
         );
       }
 
@@ -1477,6 +1490,7 @@ exports.activateDataFlow = async (req, res) => {
       success: false,
     });
   } catch (err) {
+    console.log(err);
     Logger.error("catch :activateDataFlow");
     return apiResponse.ErrorResponse(res, err);
   }
@@ -1484,8 +1498,15 @@ exports.activateDataFlow = async (req, res) => {
 
 exports.inActivateDataFlow = async (req, res) => {
   try {
-    const { dataFlowId, userId } = req.body;
+    const { dataFlowId, userId, versionFreezed } = req.body;
     Logger.info({ message: "inActivateDataFlow" });
+
+    const {
+      rows: [oldVersion],
+    } = await DB.executeQuery(
+      `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${dataFlowId}' order by version DESC limit 1`
+    );
 
     const q1 = `UPDATE ${schemaName}.dataflow set active=0 WHERE dataflowid=$1 returning *`;
     const updatedDF = await DB.executeQuery(q1, [dataFlowId]);
@@ -1504,18 +1525,22 @@ exports.inActivateDataFlow = async (req, res) => {
       config_json: dataflowObj,
       diffObj,
       existDf,
+      versionFreezed,
     });
 
-    // var resData = { ...dataflowObj, version: updatedLogs };
-    // if (versionFreezed === false || !versionFreezed) {
-    //   resData.versionBumped = true;
-    // }
+    var resData = { ...dataflowObj, version: updatedLogs };
+    if (oldVersion.version === updatedLogs) {
+      resData.versionBumped = false;
+    } else {
+      resData.versionBumped = true;
+    }
 
     if (updatedLogs) {
       return apiResponse.successResponseWithData(
         res,
         "Dataflow config updated successfully.",
-        { ...dataflowObj, version: updatedLogs }
+        // { ...dataflowObj, version: updatedLogs }
+        resData
       );
     }
 
@@ -1829,8 +1854,15 @@ exports.updateDataflowConfig = async (req, res) => {
       vendorID,
       dataflowId,
       userId,
-      // versionFreezed,
+      versionFreezed,
     } = req.body;
+
+    const {
+      rows: [oldVersion],
+    } = await DB.executeQuery(
+      `SELECT version from ${schemaName}.dataflow_version
+      WHERE dataflowid = '${dataflowId}' order by version DESC limit 1`
+    );
 
     if (
       vendorID !== null &&
@@ -1907,6 +1939,9 @@ exports.updateDataflowConfig = async (req, res) => {
         comparisionObj.firstFileDate = firstFileDate;
       }
       const diffObj = helper.getdiffKeys(comparisionObj, existDf);
+
+      // console.log("diffObj", diffObj, "existDf", existDf);
+
       const updatedLogs = await addDataflowHistory({
         dataflowId,
         externalSystemName,
@@ -1914,18 +1949,23 @@ exports.updateDataflowConfig = async (req, res) => {
         config_json: dataflowObj,
         diffObj,
         existDf,
+        versionFreezed,
       });
 
-      // var resData = { ...dataflowObj, version: updatedLogs };
-      // if (versionFreezed === false || !versionFreezed) {
-      //   resData.versionBumped = true;
-      // }
+      var resData = { ...dataflowObj, version: updatedLogs };
+      // console.log(oldVersion.version, updatedLogs);
+      if (oldVersion.version === updatedLogs) {
+        resData.versionBumped = false;
+      } else {
+        resData.versionBumped = true;
+      }
 
       if (updatedLogs) {
         return apiResponse.successResponseWithData(
           res,
           "Dataflow config updated successfully.",
-          { ...dataflowObj, version: updatedLogs }
+          // { ...dataflowObj, version: updatedLogs }
+          resData
         );
       }
     } else {
