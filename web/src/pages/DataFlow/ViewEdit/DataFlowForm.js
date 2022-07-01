@@ -167,7 +167,7 @@ const DataFlowFormBase = (props) => {
   useEffect(() => {
     if (dataFlowdetail) {
       const { isSync, testflag } = dataFlowdetail;
-      setDisabledVendor(isSync === "Y" && testflag === 0);
+      setDisabledVendor(isSync === "Y" && (testflag === 0 || testflag === 1));
     }
   }, [dataFlowdetail]);
 
