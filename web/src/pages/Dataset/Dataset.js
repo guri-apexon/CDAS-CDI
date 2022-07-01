@@ -41,6 +41,7 @@ import VLCTab from "./VLCTab";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../components/Common/usePermission";
 
 const userInfo = getUserInfo();
@@ -119,9 +120,14 @@ const Dataset = () => {
     selectedCard,
     selectedDataFlow: { dataFlowId: dfId },
   } = useSelector((state) => state.dashboard);
+  const { prot_id: studyId } = selectedCard;
 
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
-    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+    useStudyPermission(
+      Categories.CONFIGURATION,
+      Features.DATA_FLOW_CONFIGURATION,
+      studyId
+    );
 
   const { selectedDSDetails } = packageData;
   const {
@@ -142,7 +148,6 @@ const Dataset = () => {
     VLCData,
   } = dataSets;
   const datasetid = params.datasetId;
-  const { prot_id: studyId } = selectedCard;
   const { datasetid: dsId } = selectedDataset;
   const { isCustomSQL, tableName } = formDataSQL;
 
