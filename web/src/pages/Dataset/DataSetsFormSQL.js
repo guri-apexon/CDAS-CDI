@@ -222,7 +222,7 @@ const DataSetsFormBase = (props) => {
                 label="Dataset Name (Mnemonic)"
                 size="small"
                 // required
-                disabled={prodLock || !canUpdateDataFlow}
+                disabled={prodLock || testLock || !canUpdateDataFlow}
               />
             </Grid>
             <Grid item md={6}>
