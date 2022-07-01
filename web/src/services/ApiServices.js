@@ -178,10 +178,15 @@ export const dataflowSave = async (payload) => {
       userId,
     });
     return res.data?.data || [];
-  } catch (err) {
-    return console.log("Error", err);
+  } catch (error) {
+    return {
+      success: false,
+      data: error.response.data,
+      status: error.response.status,
+    };
   }
 };
+
 export const updateDataflow = async (payload) => {
   try {
     const res = await axios.post(`${baseURL}/${DATAFLOW_UPDATE_API}`, {

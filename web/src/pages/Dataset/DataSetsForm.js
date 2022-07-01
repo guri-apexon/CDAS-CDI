@@ -57,6 +57,7 @@ const DataSetsFormBase = (props) => {
     defaultFooterRowNumber,
     defaultLoadType,
     prodLock,
+    testLock,
     values,
   } = props;
 
@@ -152,7 +153,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 inputProps={{ maxLength: 30 }}
                 label="Dataset Name (Mnemonic)"
-                disabled={prodLock || !canUpdateDataFlow}
+                disabled={prodLock || testLock || !canUpdateDataFlow}
                 // required
               />
               <ReduxFormSelect
@@ -288,7 +289,7 @@ const DataSetsFormBase = (props) => {
                   singleSelect
                   fullWidth
                   // required
-                  disabled={prodLock || !canUpdateDataFlow}
+                  disabled={prodLock || testLock || !canUpdateDataFlow}
                 />
               )}
               {formValues.fileType === "Excel" && (
