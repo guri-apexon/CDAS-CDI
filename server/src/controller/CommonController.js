@@ -85,7 +85,6 @@ module.exports = {
           // }
         });
         if (versionFreezed != true) {
-          console.log("data q");
           Promise.all(anditLogsQueries).then((values) => {
             DB.executeQuery(
               `INSERT INTO ${schemaName}.cdr_ta_queue
