@@ -305,7 +305,9 @@ export default function DataflowTab({ updateData }) {
 
   const handleLink = (dataFlowId, dataFlow) => {
     dispatch(SelectedDataflow(dataFlow));
-    history.push(`/dashboard/dataflow-management/${dataFlowId}`);
+    history.push(`/dashboard/dataflow-management/${dataFlowId}`, {
+      from: "dashboard",
+    });
   };
 
   const LinkCell = ({ row, column: { accessor } }) => {
@@ -333,6 +335,7 @@ export default function DataflowTab({ updateData }) {
       {
         text: "View audit log",
         id: 1,
+        disabled: !canUpdateDataFlow,
         onClick: () => viewAuditLogAction(dataFlowId, row),
       },
       ...(canUpdateDataFlow

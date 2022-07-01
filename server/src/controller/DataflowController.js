@@ -9,6 +9,7 @@ const constants = require("../config/constants");
 const { addDataflowHistory } = require("./CommonController");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 const externalFunction = require("../createDataflow/externalDataflowFunctions");
+const datasetHelper = require("../helpers/datasetHelper");
 
 exports.getStudyDataflows = async (req, res) => {
   try {
@@ -236,8 +237,31 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     if (!studyRows?.length) {
       return apiResponse.ErrorResponse(res, "Study not found");
     }
-    testFlag = helper.stringToBoolean(testFlag);
     studyId = studyRows[0].prot_id;
+
+    // check for duplicate mnemonics
+    if (dataPackage && Array.isArray(dataPackage)) {
+      for (let i = 0; i < dataPackage.length; i++) {
+        if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
+          for (let j = 0; j < dataPackage[0].dataSet.length; j++) {
+            const comp = await datasetHelper.findByMnemonic(
+              studyId,
+              testFlag,
+              vendorid,
+              dataPackage[i].dataSet[j].dataKindID,
+              dataPackage[i].dataSet[j].datasetName
+            );
+            if (comp) {
+              return apiResponse.ErrorResponse(
+                res,
+                `Mnemonic ${dataPackage[i].dataSet[j].datasetName} is not unique.`
+              );
+            }
+          }
+        }
+      }
+    }
+    testFlag = helper.stringToBoolean(testFlag);
 
     if (locationID) {
       const {
@@ -1915,6 +1939,8 @@ exports.updateDataflowConfig = async (req, res) => {
         comparisionObj.firstFileDate = firstFileDate;
       }
       const diffObj = helper.getdiffKeys(comparisionObj, existDf);
+
+      // console.log("diffObj", diffObj, "existDf", existDf);
 
       const updatedLogs = await addDataflowHistory({
         dataflowId,

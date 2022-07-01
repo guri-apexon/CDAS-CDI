@@ -43,7 +43,6 @@ import {
   GET_LOCATION_DETAIL,
   FETCH_LOCATION_DETAIL_FAILURE,
   FETCH_LOCATION_DETAIL_SUCCESS,
-  PREVENT_CD_VERSION_BUMP,
 } from "../../constants";
 
 import { dateTypeForJDBC, parseBool } from "../../utils/index";
@@ -118,9 +117,9 @@ const DataFlowReducer = (state = initialState, action) =>
       case FETCH_DATAKIND_FAILURE:
         newState.loading = false;
         break;
-      case PREVENT_CD_VERSION_BUMP:
-        newState.CDVersionBump = action.flag;
-        break;
+      // case PREVENT_CD_VERSION_BUMP:
+      //   newState.CDVersionBump = action.flag;
+      //   break;
       case SAVE_DATASET_DATA:
         newState.loading = true;
         break;

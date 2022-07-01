@@ -32,6 +32,8 @@ import {
   selectDataPackage,
   getPackagesList,
   addPackageBtnAction,
+  updateStatus,
+  getPackagePassword,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 import usePermission, {
@@ -39,6 +41,7 @@ import usePermission, {
   Features,
 } from "../../components/Common/usePermission";
 import { packageComprTypes, packageTypes } from "../../utils/constants";
+import Header from "../../components/DataFlow/Header";
 
 const useStyles = makeStyles(() => ({
   rightPanel: {
@@ -65,20 +68,24 @@ const DataPackages = React.memo(() => {
   const [notMatchedType, setNotMatchedType] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const packageData = useSelector((state) => state.dataPackage);
-  const dashboard = useSelector((state) => state.dashboard);
-  const dataFlow = useSelector((state) => state.dataFlow);
+
+  const { dataFlowdetail, versionFreezed } = useSelector(
+    (state) => state.dataFlow
+  );
   const userInfo = getUserInfo();
   const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
+  const {
+    selectedCard,
+    selectedDataFlow: { dataFlowId: dfId },
+  } = useSelector((state) => state.dashboard);
+  const { packageSODPassword } = packageData;
+  const [passwordUpdate, setPasswordUpdate] = useState(false);
 
   const { canUpdate: canUpdateDataFlow } = usePermission(
     Categories.CONFIGURATION,
     Features.DATA_FLOW_CONFIGURATION
   );
 
-  const {
-    selectedCard,
-    selectedDataFlow: { dataFlowId: dfId },
-  } = dashboard;
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
@@ -122,6 +129,26 @@ const DataPackages = React.memo(() => {
     }
   }, [packageData.openAddPackage]);
 
+  // const PackagePassswordData = async () => {
+  //   await dispatch(
+  //     getPackagePassword(
+  //       packageData.packagesList[0]?.dataflowid,
+  //       packageData.packagesList[0]?.datapackageid
+  //     )
+  //   );
+  //   setPasswordUpdate(true);
+  // };
+
+  const PackagePassswordData = async () => {
+    await dispatch(
+      getPackagePassword(
+        packageData.selectedPackage?.dataflowid,
+        packageData.selectedPackage?.datapackageid
+      )
+    );
+    setPasswordUpdate(true);
+  };
+
   useEffect(() => {
     if (!packageData.openAddPackage && packageData.selectedPackage) {
       setShowForm(true);
@@ -129,15 +156,34 @@ const DataPackages = React.memo(() => {
       setCompression(packageData.selectedPackage?.type);
       setNamingConvention(packageData.selectedPackage?.name);
       setSodValue(packageData.selectedPackage?.sod_view_type);
-      setPackagePassword(packageData.selectedPackage?.password);
       setSftpPath(packageData.selectedPackage?.path);
+      if (packageData.selectedPackage?.password === "Yes") {
+        PackagePassswordData();
+        if (packageSODPassword === "") {
+          setConfigShow(false);
+        } else if (packageSODPassword !== "" && !passwordUpdate) {
+          setConfigShow(false);
+        } else {
+          setPackagePassword(packageSODPassword);
+          setTimeout(() => {
+            setConfigShow(true);
+          }, 2000);
+        }
+      } else {
+        setConfigShow(true);
+        setPackagePassword("");
+      }
     }
-    if (
-      packageData.selectedPackage &&
-      packageData.selectedPackage?.type === null
-    )
-      setConfigShow(false);
-  }, [packageData.openAddPackage, packageData.selectedPackage]);
+    // if (
+    //   packageData.selectedPackage &&
+    //   packageData.selectedPackage?.type === null
+    // )
+    //   setConfigShow(false);
+  }, [
+    packageData.openAddPackage,
+    packageData.selectedPackage,
+    packageData.packageSODPassword,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -163,24 +209,26 @@ const DataPackages = React.memo(() => {
       study_id: selectedCard.prot_id,
       dataflow_id: dfId,
       user_id: userInfo.userId,
+      versionFreezed,
     };
     const updateReqBody = {
       ...reqBody,
       package_id: packageData.selectedPackage?.datapackageid,
       sod_view_type: sodValue,
     };
+
     const payload = packageData.selectedPackage ? updateReqBody : reqBody;
     const result = await submitDataPackage(payload);
     if (result.status === 1) {
       showSuccessMessage(result.message);
       dispatch(addDataPackage());
-      if (sodValue !== null) history.push("/dashboard/dataflow-management");
+      resetForm();
+      setShowForm(false);
+      if (sodValue !== null)
+        history.push(`/dashboard/dataflow-management/${dfId}`);
     } else {
       showErrorMessage(result.message);
     }
-
-    resetForm();
-    setShowForm(false);
   };
 
   const handleClose = () => {
@@ -205,7 +253,7 @@ const DataPackages = React.memo(() => {
         open={isPanelOpen}
         width={446}
       >
-        <LeftPanel dataflowSource={dataFlow?.dataFlowdetail} />
+        <LeftPanel dataflowSource={dataFlowdetail} />
       </Panel>
       <Panel
         className={
@@ -217,45 +265,24 @@ const DataPackages = React.memo(() => {
         <main className="right-content">
           <Paper className="no-shadow">
             <Box className="top-content">
-              <BreadcrumbsUI className="breadcrump" items={breadcrumpItems} />
-              {console.log("renderAgainPackage")}
-              {showForm && (
-                <>
-                  <div className="flex title">
-                    <DataPackageIcon />
-                    <Typography className="b-font">
-                      {packageData.selectedPackage.name ||
-                        "Creating New Package"}
-                    </Typography>
-                  </div>
-                  <ButtonGroup
-                    alignItems="right"
-                    buttonProps={[
-                      {
-                        label: "Cancel",
-                        size: "small",
-                        onClick: () =>
-                          packageData.selectedPackage?.sod_view_type ||
-                          !canUpdateDataFlow
-                            ? history.push("/dashboard")
-                            : setShowForm(false),
-                      },
-                      {
-                        label: `${
-                          packageData.selectedPackage?.sod_view_type
-                            ? "Save Data Flow"
-                            : "Save"
-                        }`,
-                        disabled: !canUpdateDataFlow,
-                        size: "small",
-                        onClick: submitPackage,
-                      },
-                    ]}
-                  />
-                </>
-              )}
+              <Header
+                close={() => history.push("/dashboard")}
+                submit={submitPackage}
+                breadcrumbItems={breadcrumpItems}
+                headerTitle={
+                  packageData.selectedPackage?.name || "Creating New Package"
+                }
+                icon={<DataPackageIcon className={classes.contentIcon} />}
+                saveBtnLabel={
+                  packageData.selectedPackage?.sod_view_type
+                    ? "Save Data Flow"
+                    : "Save"
+                }
+                saveDisabled={!canUpdateDataFlow}
+              />
             </Box>
           </Paper>
+
           <Box style={{ padding: 24, backgroundColor: "#f6f7fb" }}>
             <Paper className="add-package-box">
               {showForm ? (
@@ -344,7 +371,7 @@ const DataPackages = React.memo(() => {
                       <PasswordInput
                         size="small"
                         icon={false}
-                        defaultValue={packagePassword}
+                        value={packagePassword}
                         label="Package Password (Optional)"
                         className="mb-20"
                         style={{ width: "70%" }}

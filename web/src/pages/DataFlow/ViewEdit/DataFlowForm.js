@@ -2,6 +2,7 @@
 import React, { createRef, useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch } from "react-redux";
+import { useHistory } from "react-router";
 import { reduxForm, getFormValues } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
@@ -86,7 +87,8 @@ const styles = {
 
 const DataFlowFormBase = (props) => {
   const [locationOpen, setLocationOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const history = useHistory();
   const {
     handleSubmit,
     classes,
@@ -113,10 +115,11 @@ const DataFlowFormBase = (props) => {
   const [selectedVendor, setSelectedVendor] = useState(null);
   // const [selectedLocation, setSelectedLocation] = useState(null);
 
-  const { canUpdate, canCreate } = usePermission(
-    Categories.CONFIGURATION,
-    Features.DATA_FLOW_CONFIGURATION
-  );
+  const { canUpdate: canUpdateDataFlow, canCreate: canCreateDataFlow } =
+    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+
+  const { canUpdate: canUpdateLocation, canCreate: canCreateLocation } =
+    usePermission(Categories.CONFIGURATION, Features.LOCATION_SETUP);
 
   const dispatch = useDispatch();
   const onChangeServiceOwner = (v) => {
@@ -167,10 +170,15 @@ const DataFlowFormBase = (props) => {
   useEffect(() => {
     if (dataFlowdetail) {
       const { isSync, testflag } = dataFlowdetail;
-      setDisabledVendor(isSync === "Y" && testflag === 0);
+      setDisabledVendor(isSync === "Y" && (testflag === 0 || testflag === 1));
     }
   }, [dataFlowdetail]);
 
+  useEffect(() => {
+    if (history.location?.state?.from === "dashboard") {
+      setIsModalOpen(true);
+    }
+  }, [history]);
   useEffect(() => {
     return () => {
       setDataLoaded(false);
@@ -214,7 +222,7 @@ const DataFlowFormBase = (props) => {
                   input={{
                     value: selectedVendor,
                     onChange: onChangeVendor,
-                    disabled: disabledVendor || !canUpdate,
+                    disabled: disabledVendor || !canUpdateDataFlow,
                   }}
                   enableVirtualization
                   className="autocomplete_field"
@@ -230,7 +238,7 @@ const DataFlowFormBase = (props) => {
                   inputProps={{ maxLength: 30 }}
                   onChange={(v) => changeFormField(v, "description")}
                   label="Description"
-                  disabled={testLock || prodLock || !canUpdate}
+                  disabled={testLock || prodLock || !canUpdateDataFlow}
                 />
                 <div className="expected-date">
                   <ReduxFormDatePickerV2
@@ -240,14 +248,14 @@ const DataFlowFormBase = (props) => {
                     placeholder="DD MMM YYYY"
                     label="Expected First File Date"
                     onChange={changeFirstFlDt}
-                    disabled={!canUpdate}
+                    disabled={!canUpdateDataFlow}
                   />
                 </div>
                 <ReduxFormRadioGroup
                   name="dataflowType"
                   onChange={(v) => changeFormField(v, "dataflowType")}
                   label="Data Flow Type"
-                  disabled={testLock || prodLock || !canUpdate}
+                  disabled={testLock || prodLock || !canUpdateDataFlow}
                 >
                   <Radio value="test" label="Test" />
                   <Radio value="production" label="Production" />
@@ -267,7 +275,7 @@ const DataFlowFormBase = (props) => {
                     label="Data Structure"
                     fullWidth
                     canDeselect={false}
-                    disabled={testLock || prodLock || !canUpdate}
+                    disabled={testLock || prodLock || !canUpdateDataFlow}
                   >
                     {dataStruct?.map((type) => (
                       <MenuItem key={type.value} value={type.value}>
@@ -284,7 +292,7 @@ const DataFlowFormBase = (props) => {
                     }}
                     fullWidth
                     canDeselect={false}
-                    disabled={testLock || prodLock || !canUpdate}
+                    disabled={testLock || prodLock || !canUpdateDataFlow}
                   >
                     {locationTypes?.map((type) => (
                       <MenuItem key={type} value={type}>
@@ -299,7 +307,7 @@ const DataFlowFormBase = (props) => {
                       input={{
                         onChange: changeLocationData,
                         value: locationDetail,
-                        disabled: !canUpdate,
+                        disabled: !canUpdateDataFlow,
                       }}
                       enableVirtualization
                       ref={locationNameRef}
@@ -311,7 +319,7 @@ const DataFlowFormBase = (props) => {
                     />
                   )}
                   <Link
-                    disabled={!canCreate || !canUpdate}
+                    disabled={!canCreateLocation || !canUpdateDataFlow}
                     onClick={() => openLocationModal()}
                     style={{ fontWeight: 600 }}
                   >
@@ -320,10 +328,10 @@ const DataFlowFormBase = (props) => {
                     />
                     New Location
                   </Link>
-                  {canUpdate && canCreate && (
+                  {canUpdateDataFlow && canCreateLocation && (
                     <LocationModal
-                      canCreate={canCreate}
-                      canUpdate={canUpdate}
+                      canCreate={canCreateLocation}
+                      canUpdate={canUpdateDataFlow}
                       isNew={true}
                       locationModalOpen={locationOpen}
                       modalLocationType={props.modalLocationType}
@@ -370,7 +378,7 @@ const DataFlowFormBase = (props) => {
                           initialValues?.serviceOwner.includes(x.value)
                         ),
                       onChange: onChangeServiceOwner,
-                      disabled: !canUpdate,
+                      disabled: !canUpdateDataFlow,
                     }}
                     label="Service Owners (Optional)"
                     source={serviceOwners ?? []}

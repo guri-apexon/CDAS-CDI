@@ -32,11 +32,50 @@ const dataTyperForamtValidate = (exports.dataTyperForamtValidate = (
   return;
 });
 
+exports.namingCconventionValidate = (name) => {
+  const str1 = /[\/:*?”|]/;
+  const str2 = /\<(.*?)\>/g;
+
+  const matched = name.match(str2);
+
+  const g = name.split("<");
+  const l = name.split(">");
+
+  if (str1.test(name) === true) {
+    return false;
+  } else {
+    if (g.length != l.length) {
+      return false;
+    } else {
+      if (matched?.length > 0) {
+        const isValid = matched.map((e) => {
+          if (
+            e === "<ddmmyyyy>" ||
+            e === "<mmddyyyy>" ||
+            e === "<mmyyyydd>" ||
+            e === "<ddyyyymm>" ||
+            e === "<yyyymmdd>" ||
+            e === "<yyyyddmm>"
+          ) {
+            return true;
+          } else {
+            return false;
+          }
+        });
+
+        return !isValid.some((res) => !res);
+      }
+    }
+  }
+  return true;
+};
+
 exports.insertValidation = (req) => {
   var validate = [];
   var str1 = /[~]/;
   var str2 = /[.]/;
-  var str3 = /[< >]/;
+  // var str3 = /[< >]/;
+  var str3 = /[\/:*?”<|>]/;
 
   var error = [];
 
@@ -231,6 +270,15 @@ exports.insertValidation = (req) => {
 
               if (nameArray.length > 1) {
                 const name = nameArray[1].toLowerCase();
+                const nameData = nameArray[0].toLowerCase();
+
+                let nameValidate = this.namingCconventionValidate(nameData);
+
+                if (nameValidate === false) {
+                  validate.push(
+                    "Package naming convention should not have the following special characters /:*?”<|>"
+                  );
+                }
 
                 if (each.type.toLowerCase() === "rar") {
                   if (name !== "rar") {
@@ -265,11 +313,11 @@ exports.insertValidation = (req) => {
                 }
               }
 
-              if (str3.test(each.namingConvention) === true) {
-                validate.push(
-                  "Package naming convention should not have the following special characters < >"
-                );
-              }
+              // if (str3.test(each.namingConvention) === true) {
+              //   validate.push(
+              //     "Package naming convention should not have the following special characters < >"
+              //   );
+              // }
             }
 
             let dpRes = helper.validation(dpArray);
@@ -379,6 +427,16 @@ exports.insertValidation = (req) => {
 
                     if (nameArray.length > 1) {
                       const name = nameArray[1].toLowerCase();
+                      const nameData = nameArray[0].toLowerCase();
+
+                      let fileNameValidate =
+                        this.namingCconventionValidate(nameData);
+
+                      if (fileNameValidate === false) {
+                        validate.push(
+                          "File naming convention should not have the following special characters /:*?”<|>"
+                        );
+                      }
 
                       if (obj.fileType.toLowerCase() === "sas") {
                         if (name !== "sas7bdat") {
@@ -413,11 +471,11 @@ exports.insertValidation = (req) => {
                       }
                     }
 
-                    if (str3.test(obj.fileNamingConvention) === true) {
-                      validate.push(
-                        "fileNamingConvention should not have the following special characters < >"
-                      );
-                    }
+                    // if (str3.test(obj.fileNamingConvention) === true) {
+                    //   validate.push(
+                    //     "fileNamingConvention should not have the following special characters < >"
+                    //   );
+                    // }
                   }
 
                   if (obj.dataTransferFrequency === 0) {
@@ -1132,7 +1190,8 @@ exports.packageLevelInsert = async (
     var dataPackage = [];
     var str1 = /[~]/;
     var str2 = /[.]/;
-    var str3 = /[< >]/;
+    // var str3 = /[< >]/;
+    var str3 = /[\/:*?”<|>]/;
 
     if (!isNew) {
       if (helper.isSftp(LocationType)) {
@@ -1209,12 +1268,12 @@ exports.packageLevelInsert = async (
         //iuyiuyiuy
 
         if (namingConvention && data.type) {
-          //hhyy
-          if (str3.test(namingConvention) === true) {
-            errorPackage.push(
-              "Package naming convention should not have the following special characters < >"
-            );
-          }
+          // //hhyy
+          // if (str3.test(namingConvention) === true) {
+          //   errorPackage.push(
+          //     "Package naming convention should not have the following special characters < >"
+          //   );
+          // }
 
           const last = namingConvention.charAt(namingConvention.length - 1);
           const first = namingConvention.charAt(namingConvention.charAt(0));
@@ -1232,6 +1291,15 @@ exports.packageLevelInsert = async (
 
           if (nameArray.length > 1) {
             const name = nameArray[1].toLowerCase();
+            const nameData = nameArray[0].toLowerCase();
+
+            let nameValidate = this.namingCconventionValidate(nameData);
+            if (nameValidate === false) {
+              errorPackage.push(
+                "Package naming convention should not have the following special characters /:*?”<|>"
+              );
+            }
+
             if (data.type.toLowerCase() === "rar") {
               if (name !== "rar") {
                 errorPackage.push(
@@ -1428,7 +1496,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
     var dataSet = [];
     var str1 = /[~]/;
     var str2 = /[.]/;
-    var str3 = /[< >]/;
+    // var str3 = /[< >]/;
+    var str3 = /[\/:*?”<|>]/;
 
     const isCDI = externalSysName === "CDI" ? true : false;
 
@@ -1519,11 +1588,11 @@ const saveDataset = (exports.datasetLevelInsert = async (
         }
 
         if (obj.fileNamingConvention && obj.fileType) {
-          if (str3.test(obj.fileNamingConvention) === true) {
-            errorDataset.push(
-              "fileNamingConvention should not have the following special characters < > "
-            );
-          }
+          // if (str3.test(obj.fileNamingConvention) === true) {
+          //   errorDataset.push(
+          //     "fileNamingConvention should not have the following special characters < > "
+          //   );
+          // }
           const last = obj.fileNamingConvention.charAt(
             obj.fileNamingConvention.length - 1
           );
@@ -1544,6 +1613,15 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
           if (nameArray.length > 1) {
             const name = nameArray[1].toLowerCase();
+            const nameData = nameArray[0].toLowerCase();
+
+            let fileNameValidate = this.namingCconventionValidate(nameData);
+
+            if (fileNameValidate === false) {
+              errorDataset.push(
+                "File naming convention should not have the following special characters /:*?”<|>"
+              );
+            }
             if (obj.fileType.toLowerCase() === "sas") {
               if (name !== "sas7bdat") {
                 errorDataset.push(
@@ -2730,7 +2808,8 @@ exports.packageUpdate = async (
     var data_packages = [];
     var str1 = /[~]/;
     var str2 = /[.]/;
-    var str3 = /[< >]/;
+    // var str3 = /[< >]/;
+    var str3 = /[\/:*?”<|>]/;
 
     if (helper.isSftp(LocationType)) {
       // if (LocationType == "Hive CDH") {
@@ -2830,11 +2909,11 @@ exports.packageUpdate = async (
       } else {
         if (data.namingConvention) {
           if (typeof data.namingConvention != "undefined") {
-            if (str3.test(data.namingConvention) === true) {
-              errorPackage.push(
-                "Package naming convention should not have the following special characters < >"
-              );
-            }
+            // if (str3.test(data.namingConvention) === true) {
+            //   errorPackage.push(
+            //     "Package naming convention should not have the following special characters < >"
+            //   );
+            // }
             const last = data.namingConvention.charAt(
               data.namingConvention.length - 1
             );
@@ -2858,6 +2937,15 @@ exports.packageUpdate = async (
 
           if (nameArray.length > 1) {
             const name = nameArray[1].toLowerCase();
+            const nameData = nameArray[0].toLowerCase();
+
+            let nameValidate = this.namingCconventionValidate(nameData);
+            if (nameValidate === false) {
+              errorPackage.push(
+                "Package naming convention should not have the following special characters /:*?”<|>"
+              );
+            }
+
             if (data.type.toLowerCase() === "rar") {
               if (name !== "rar") {
                 errorPackage.push(
@@ -3013,7 +3101,8 @@ exports.datasetUpdate = async (
     const valDataset = [];
     let errorDataset = [];
     var str2 = /[.]/;
-    var str3 = /[< >]/;
+    // var str3 = /[< >]/;
+    var str3 = /[\/:*?”<|>]/;
 
     if (data.dataKindID) {
       let checkDataKind = await DB.executeQuery(
@@ -3103,11 +3192,11 @@ exports.datasetUpdate = async (
         );
       } else {
         if (data.fileNamingConvention) {
-          if (str3.test(data.fileNamingConvention) === true) {
-            errorDataset.push(
-              "fileNamingConvention should not have the following special characters < >"
-            );
-          }
+          // if (str3.test(data.fileNamingConvention) === true) {
+          //   errorDataset.push(
+          //     "fileNamingConvention should not have the following special characters < >"
+          //   );
+          // }
           const last = data.fileNamingConvention.charAt(
             data.fileNamingConvention.length - 1
           );
@@ -3128,6 +3217,15 @@ exports.datasetUpdate = async (
 
           if (nameArray.length > 1) {
             const name = nameArray[1].toLowerCase();
+            const nameData = nameArray[0].toLowerCase();
+
+            let nameValidate = this.namingCconventionValidate(nameData);
+            if (nameValidate === false) {
+              errorDataset.push(
+                "File naming convention should not have the following special characters /:*?”<|>"
+              );
+            }
+
             if (data.fileType.toLowerCase() === "sas") {
               if (name !== "sas7bdat") {
                 errorDataset.push(

@@ -19,6 +19,7 @@ import "./Dashboard.scss";
 
 import DataflowTab from "./DataflowTab/DataflowTab";
 import MonitorTab from "./MonitorTab/MonitorTab";
+import { freezeDfVersion } from "../../store/actions/DataFlowAction";
 
 const styles = {
   pageRootInnerWrapper: {
@@ -95,6 +96,9 @@ const Dashboard = () => {
       // fetchLatestData();
     }
   }, [dashboard.selectedCard]);
+  useEffect(() => {
+    dispatch(freezeDfVersion(false));
+  }, []);
 
   return (
     <>

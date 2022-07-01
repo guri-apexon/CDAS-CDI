@@ -318,9 +318,12 @@ const LocationModal = (props) => {
         return null;
       }
     }
+    const numberActive = values.active === 0 ? false : true;
+    const active =
+      typeof values.active === "boolean" ? values.active : numberActive;
     const reqBody = {
       ...values,
-      active: values.active === 0 ? false : true,
+      active,
       systemName: "CDI",
     };
     setExistErr("");
