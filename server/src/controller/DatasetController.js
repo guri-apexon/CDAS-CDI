@@ -132,8 +132,15 @@ async function saveSQLDataset(
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    const { dpId, studyId, dfId, testFlag, userId, clinicalDataType, versionFreezed } =
-      req.body;
+    const {
+      dpId,
+      studyId,
+      dfId,
+      testFlag,
+      userId,
+      clinicalDataType,
+      versionFreezed,
+    } = req.body;
 
     // const isExist = await checkMnemonicExists(
     //   values.datasetName,
@@ -168,7 +175,7 @@ exports.saveDatasetData = async (req, res) => {
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`
     );
 
-    console.log("oldVersion", oldVersion);
+    // console.log("oldVersion", oldVersion);
 
     if (values.locationType.toLowerCase() === "jdbc") {
       return saveSQLDataset(
