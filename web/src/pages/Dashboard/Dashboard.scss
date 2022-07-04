@@ -12,10 +12,10 @@
       font-size: 14px;
       line-height: 20px;
       padding: 0px 5px;
-      background: rgba($color: #e20000, $alpha: 0.1);
+      // background: rgba($color: #e20000, $alpha: 0.1);
       font-weight: 600;
       border-radius: 2px;
-      color: #e20000;
+      color: #444444;
     }
     span.priority {
       background: rgba($color: #e20000, $alpha: 1);
@@ -142,3 +142,6 @@
     max-height: none !important;
   }
 }
+svg.card-icon path {
+  fill: #444444;
+  }
