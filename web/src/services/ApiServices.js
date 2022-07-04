@@ -435,13 +435,14 @@ export const submitDataPackage = async (reqBody) => {
   }
 };
 
-export const getRolesPermissions = () => {
+export const getRolesPermissions = (studyId) => {
   try {
     return new Promise((resolve, reject) => {
       axios
         .post(`${API_URL}/role/getUserRolesPermissions`, {
           userId,
           productName: "Ingestion",
+          studyId,
         })
         .then((res) => {
           resolve(res.data?.data || res.data);

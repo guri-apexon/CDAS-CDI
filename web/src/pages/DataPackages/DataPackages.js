@@ -39,6 +39,7 @@ import { MessageContext } from "../../components/Providers/MessageProvider";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../components/Common/usePermission";
 import { packageComprTypes, packageTypes } from "../../utils/constants";
 import Header from "../../components/DataFlow/Header";
@@ -80,10 +81,12 @@ const DataPackages = React.memo(() => {
   } = useSelector((state) => state.dashboard);
   const { packageSODPassword } = packageData;
   const [passwordUpdate, setPasswordUpdate] = useState(false);
+  const { prot_id: protId } = selectedCard;
 
-  const { canUpdate: canUpdateDataFlow } = usePermission(
+  const { canUpdate: canUpdateDataFlow } = useStudyPermission(
     Categories.CONFIGURATION,
-    Features.DATA_FLOW_CONFIGURATION
+    Features.DATA_FLOW_CONFIGURATION,
+    protId
   );
 
   const breadcrumpItems = [
