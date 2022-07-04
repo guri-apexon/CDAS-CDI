@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { neutral7 } from "apollo-react/colors";
 import Divider from "apollo-react/components/Divider";
@@ -9,6 +9,8 @@ import _ from "lodash";
 import Progress from "../../components/Common/Progress/Progress";
 import { debounceFunction, getUserInfo } from "../../utils";
 import searchStudy, { unPinStudy, pinStudy } from "../../services/ApiServices";
+import { AppContext } from "../../components/Providers/AppProvider";
+
 import {
   updateSelectedStudy,
   getPinnedData,
@@ -78,6 +80,9 @@ const LeftPanel = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const dashboard = useSelector((state) => state.dashboard);
+  const appContext = useContext(AppContext);
+  const { getStudyPermissions } = appContext;
+
   const [selectedStudy, setSelectedStudy] = useState(null);
   const [loading, setLoading] = useState(false);
   const [studyList, setStudyList] = useState([]);
@@ -158,6 +163,7 @@ const LeftPanel = () => {
   useEffect(() => {
     if (selectedStudy != null) {
       const clicked = studyList.filter((e) => e.prot_id === selectedStudy)[0];
+      getStudyPermissions(selectedStudy);
       dispatch(updateSelectedStudy(clicked));
     }
   }, [selectedStudy]);

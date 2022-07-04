@@ -1,12 +1,17 @@
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import { useSelector } from "react-redux";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import Modal from "apollo-react/components/Modal/Modal";
-import usePermission, { Categories, Features } from "../Common/usePermission";
+import usePermission, {
+  Categories,
+  Features,
+  useStudyPermission,
+} from "../Common/usePermission";
 
 const useStyles = makeStyles(() => ({
   breadcrumbs: {
@@ -48,11 +53,19 @@ const Header = (props) => {
   const { headerTitle, saveBtnLabel, saveDisabled } = props;
   const [openModal, setopenModal] = useState(false);
   const classes = useStyles();
+
+  const dashboard = useSelector((state) => state.dashboard);
+  const { prot_id: protId } = dashboard?.selectedCard;
+
   const {
     canUpdate: canUpdateDataFlow,
     canCreate: CanCreateDataFlow,
     canRead: canReadDataFlow,
-  } = usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+  } = useStudyPermission(
+    Categories.CONFIGURATION,
+    Features.DATA_FLOW_CONFIGURATION,
+    protId
+  );
 
   const onCancel = () => {
     setopenModal(true);
