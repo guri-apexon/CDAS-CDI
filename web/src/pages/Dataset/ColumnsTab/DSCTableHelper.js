@@ -40,6 +40,7 @@ import {
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../../components/Common/usePermission";
 
 const fieldStyles = {
@@ -445,9 +446,14 @@ export const CustomHeader = ({
   changeHandler,
   haveHeader,
   editedCount,
+  protId,
 }) => {
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
-    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+    useStudyPermission(
+      Categories.CONFIGURATION,
+      Features.DATA_FLOW_CONFIGURATION,
+      protId
+    );
   return (
     <div>
       <Grid container alignItems="center">

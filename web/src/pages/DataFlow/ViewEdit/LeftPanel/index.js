@@ -26,6 +26,7 @@ import { activateDF, inActivateDF } from "../../../../services/ApiServices";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../../../components/Common/usePermission";
 
 import "./LeftPanel.scss";
@@ -80,20 +81,28 @@ const LeftPanel = () => {
   const packageData = useSelector((state) => state.dataPackage);
   const dashboard = useSelector((state) => state.dashboard);
 
+  const { prot_id: protId } = dashboard?.selectedCard;
+
   const {
     canUpdate: canUpdateDataFlow,
     canCreate: CanCreateDataFlow,
     canRead: canReadDataFlow,
-  } = usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
-
-  const { canEnabled: canDeleteTest } = usePermission(
-    Categories.MENU,
-    Features.DATA_FLOW_HARD_DELETE_TEST
+  } = useStudyPermission(
+    Categories.CONFIGURATION,
+    Features.DATA_FLOW_CONFIGURATION,
+    protId
   );
 
-  const { canEnabled: canDeleteProd } = usePermission(
+  const { canEnabled: canDeleteTest } = useStudyPermission(
     Categories.MENU,
-    Features.DATA_FLOW_HARD_DELETE_PROD
+    Features.DATA_FLOW_HARD_DELETE_TEST,
+    protId
+  );
+
+  const { canEnabled: canDeleteProd } = useStudyPermission(
+    Categories.MENU,
+    Features.DATA_FLOW_HARD_DELETE_PROD,
+    protId
   );
 
   // const dataflow = useSelector((state) => state.dataFlow);
@@ -137,7 +146,11 @@ const LeftPanel = () => {
     }
   };
   const menuItems = [
-    { text: "View audit log", onClick: viewAuditLog },
+    {
+      text: "View audit log",
+      disabled: !canUpdateDataFlow,
+      onClick: viewAuditLog,
+    },
     { text: "Clone data flow", disabled: !CanCreateDataFlow },
     {
       text: "Hard delete data flow",
