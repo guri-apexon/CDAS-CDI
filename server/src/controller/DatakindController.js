@@ -66,7 +66,7 @@ exports.createDataKind = async (req, res) => {
         return res.status(400).json({
           // status: 400,
           message: "Operation failed",
-          data: "Only alphanumeric and ‘_’ are  allowed in Datakind Name. Please amend.",
+          data: "Only Alphanumeric or underscore are allowed in the Clinical Data Type Name.",
         });
       }
       if (helper.hasSpecialCHar(dkName) === false) {
@@ -74,6 +74,13 @@ exports.createDataKind = async (req, res) => {
           // status: 400,
           message: "Operation failed",
           data: " Only alphanumeric and ‘_’ are  allowed in Datakind Name. Please amend.",
+        });
+      }
+      if (dkName.length >80) {
+        return res.status(400).json({
+          // status: 400,
+          message: "Operation failed",
+          data: " The Clinical Data Type Name value is too long. The maximum allowed length is 80 characters.",
         });
       }
     }

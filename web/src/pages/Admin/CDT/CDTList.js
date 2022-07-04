@@ -144,6 +144,7 @@ export default function CDTList() {
   const [desc, setDesc] = useState("");
   const [selectedRow, setSelectedRow] = useState(null);
   const [nameError, setNameError] = useState(false);
+  const [CharError, setCharError] = useState(false);
   const [reqNameError, setReqNameError] = useState(false);
   const [reqENSError, setReqENSError] = useState(false);
   const columns = generateColumns(tableRows);
@@ -170,6 +171,7 @@ export default function CDTList() {
       setNameError(false);
       setReqENSError(false);
       setReqNameError(false);
+      setCharError(false);
     }, 500);
   };
 
@@ -270,9 +272,14 @@ export default function CDTList() {
       setNameError(true);
       return false;
     }
+    if (cName.length > 80) {
+      setCharError(true);
+      return false;
+    }
 
     setReqNameError(false);
     setNameError(false);
+    setCharError(false);
 
     if (ens === "") {
       setReqENSError(true);
@@ -419,9 +426,10 @@ export default function CDTList() {
                     fullWidth
                     helperText={
                       (nameError && "Only alphanumeric and '_' are allowed") ||
-                      (reqNameError && "Data type name shouldn't be empty")
+                      (reqNameError && "Data type name shouldn't be empty") ||
+                      (CharError && "Exceeds allowed length of 80 characters.")
                     }
-                    error={nameError || reqNameError}
+                    error={nameError || reqNameError || CharError}
                     disabled={selectedRow && !canUpdateClinicalData}
                   />
                 </div>
