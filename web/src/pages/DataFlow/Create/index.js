@@ -394,7 +394,10 @@ const DataFlow = ({
   const redirectToDataflow = () => {
     dispatch(SelectedDataflow(createdDataflow));
     history.push(
-      `/dashboard/dataflow-management/${createdDataflow?.dataFlowId}`
+      `/dashboard/dataflow-management/${createdDataflow?.dataFlowId}`,
+      {
+        from: "dashboard",
+      }
     );
   };
   const nextStep = async () => {
