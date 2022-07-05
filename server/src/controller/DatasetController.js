@@ -677,6 +677,10 @@ exports.getDatasetDetail = async (req, res) => {
 };
 
 exports.previewSql = async (req, res) => {
+  const validateCustomSQL = (customSqlQuery) => {
+    return customSqlQuery?.includes("*") ? false : true;
+  };
+
   try {
     let {
       locationType,
@@ -687,30 +691,40 @@ exports.previewSql = async (req, res) => {
       customSql,
       driverName,
     } = req.body;
+
+    const isValidSQL = validateCustomSQL(customSql);
+
     if (customQuery === "Yes") {
-      let q = customSql;
-      let recordsCount = 10;
-      switch (locationType?.toLowerCase()) {
-        case "oracle":
-          q = `${q} FETCH FIRST ${recordsCount} ROWS ONLY`;
-          break;
-        case "sql server":
-        case "sqlserver":
-          q = `${q} SET ROWCOUNT ${recordsCount}`;
-          break;
-        default:
-          q = `${q} LIMIT ${recordsCount};`;
-          break;
+      if (isValidSQL) {
+        let q = customSql;
+        let recordsCount = 10;
+        switch (locationType?.toLowerCase()) {
+          case "oracle":
+            q = `${q} FETCH FIRST ${recordsCount} ROWS ONLY`;
+            break;
+          case "sql server":
+          case "sqlserver":
+            q = `${q} SET ROWCOUNT ${recordsCount}`;
+            break;
+          default:
+            q = `${q} LIMIT ${recordsCount};`;
+            break;
+        }
+        await jdbc(
+          connectionUserName,
+          connectionPassword,
+          connectionUrl,
+          driverName,
+          q,
+          "query executed successfully.",
+          res
+        );
+      } else {
+        return apiResponse.ErrorResponse(
+          res,
+          "customQuery: An asterisk (*) cannot be used to specify that a query should return all columns, columns must be named. Please revise the query."
+        );
       }
-      await jdbc(
-        connectionUserName,
-        connectionPassword,
-        connectionUrl,
-        driverName,
-        q,
-        "query executed successfully.",
-        res
-      );
     } else {
       return apiResponse.ErrorResponse(
         res,
