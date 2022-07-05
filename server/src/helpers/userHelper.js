@@ -3,7 +3,11 @@ const DB = require("../config/db");
 const Logger = require("../config/logger");
 
 exports.findUserByEmailAndId = async (userid, email) => {
-  const query = `SELECT count(1) FROM ${schemaName}.user WHERE usr_id = '${userid}' and UPPER(usr_mail_id)='${email.toUpperCase()}';`;
+  const query = `
+    SELECT count(1) 
+    FROM ${schemaName}.user 
+    WHERE usr_id = '${userid}' 
+   ${email ? ` and UPPER(usr_mail_id)='${email.toUpperCase()}';` : ""}`;
   try {
     const rows = await DB.executeQuery(query);
     if (rows.rowCount > 0) {

@@ -52,10 +52,37 @@ const securedPaths = [
   },
 ];
 
+const decodeJWToken = (jwt_token) => {
+  const decodedValue = jwt.decode(jwt_token) || {};
+  return decodedValue;
+};
+
+const validateUserInDataBase = async (jwt_token) => {
+  let isUserExist = false;
+  if (jwt_token) {
+    const { userid, email } = decodeJWToken(jwt_token);
+    isUserExist = await findUserByEmailAndId(userid, email);
+  }
+  return isUserExist;
+};
+
+const decrypt = (api_key, iv) => {
+  if (!process.env.ENCRYPTION_KEY || !api_key) return "";
+  const key = iv
+    ? CryptoJS.AES.decrypt(
+        api_key,
+        CryptoJS.enc.Utf8.parse(process.env.ENCRYPTION_KEY),
+        { iv: CryptoJS.enc.Utf8.parse(iv) }
+      ).toString(CryptoJS.enc.Utf8)
+    : CryptoJS.AES.decrypt(api_key, process.env.ENCRYPTION_KEY).toString(
+        CryptoJS.enc.Utf8
+      );
+  return key;
+};
+
 exports.secureApi = async (req, res, next) => {
   try {
     const { path, headers, method } = req;
-
     const pathIndex = securedPaths.findIndex(
       (s) =>
         path.trim().toLowerCase().startsWith(s.url) &&
@@ -102,41 +129,42 @@ exports.secureApi = async (req, res, next) => {
       );
     } */
 
-    const decodeJWToken = () => {
-      const decodedValue = jwt.decode(jwt_token) || {};
-      return decodedValue;
-    };
-
-    const validateUserInDataBase = async () => {
-      let isUserExist = false;
-      if (jwt_token) {
-        const { userid, email } = decodeJWToken();
-        isUserExist = await findUserByEmailAndId(userid, email);
-      }
-      return isUserExist;
-    };
-
-    const bytes = CryptoJS.AES.decrypt(
-      api_key,
-      process.env.ENCRYPTION_KEY || ""
-    );
-
-    const original_api_key = bytes.toString(CryptoJS.enc.Utf8);
+    const vaultData = await vault.read(`kv/API-KEYS/${sys_name}`);
 
     try {
-      if (token_type === "JWT") {
-        const isValidUser = await validateUserInDataBase();
-        // console.log("valid user found in db=======>", isValidUser);
-      }
-      const vaultData = await vault.read(`kv/API-KEYS/${sys_name}`);
-      if (vaultData && original_api_key === vaultData?.data?.api_key) {
-        return next();
+      switch (token_type.toUpperCase()) {
+        case "JWT":
+          const isValidUser = await validateUserInDataBase(jwt_token);
+          // console.log("valid user found in db=======>", isValidUser);
+          return apiResponse.unauthorizedResponse(res, "JWT not supported");
+
+        case "USER":
+          const isUserExist = await findUserByEmailAndId(decrypt(access_token));
+          if (!isUserExist)
+            return apiResponse.unauthorizedResponse(res, "User ID not found");
+
+          if (
+            vaultData &&
+            decrypt(api_key, vaultData?.data?.iv) ===
+              vaultData?.data?.api_key &&
+            isUserExist
+          )
+            return next();
+          else
+            return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
+
+        case "SAML":
+          return apiResponse.unauthorizedResponse(res, "SAML not supported");
+
+        default:
+          return apiResponse.unauthorizedResponse(
+            res,
+            "Not authorized to perform this action"
+          );
       }
     } catch (error) {
       return apiResponse.ErrorResponse(res, error);
     }
-
-    return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
   } catch (error) {
     return apiResponse.ErrorResponse(res, error);
   }
