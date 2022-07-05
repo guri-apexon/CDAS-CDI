@@ -6,8 +6,13 @@ import { useParams } from "react-router";
 import { useHistory } from "react-router-dom";
 
 import "../ingestionReport.scss";
-import Header from "../../../components/DataFlow/Header";
-import { ReactComponent as IssueIcon } from "../../../components/Icons/datapackage.svg";
+import "./index.scss";
+import Box from "apollo-react/components/Box";
+import Paper from "apollo-react/components/Paper";
+import Typography from "apollo-react/components/Typography/Typography";
+import Panel from "apollo-react/components/Panel/Panel";
+import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
+import Header from "../Header";
 
 const IngestionIssues = () => {
   const history = useHistory();
@@ -25,11 +30,7 @@ const IngestionIssues = () => {
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
       href: "javascript:void(0)",
-      title: "Study Ingestion Report",
-    },
-    {
-      href: "javascript:void(0)",
-      title: datasetProperties?.DatasetName ?? "",
+      title: "File Ingestion Issues",
     },
   ];
   const downloadSummery = () => {
@@ -45,10 +46,24 @@ const IngestionIssues = () => {
         submit={downloadSummery}
         breadcrumbItems={breadcrumpItems}
         headerTitle="Header Issue title"
-        icon={<IssueIcon />}
-        saveBtnLabel="Download summery"
+        subTitle="tst_pharmacokinetic_tabular_labcorp_results_current"
+        icon={<IssueIcon className="black-icon" />}
+        saveBtnLabel="View summery"
+        hideCancel
+        tabs={["Data", "Properties"]}
+        selectedTab={0}
+        onTabChange={(v) => console.log("Hello", v)}
       />
-      Hello Issues
+      <section className="content-wrapper">
+        <Panel
+          onClose={(v) => console.log("Hello", v)}
+          onOpen={(v) => console.log("Hello", v)}
+          open={true}
+          width={446}
+        >
+          <Typography>Filter</Typography>
+        </Panel>
+      </section>
     </main>
   );
 };
