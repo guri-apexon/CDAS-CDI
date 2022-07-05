@@ -38,13 +38,29 @@ const config = { headers: { userId } };
 
 const token = getCookie("user.token");
 
-axios.defaults.headers.common["api-key"] = CryptoJS.AES.encrypt(
-  process.env.REACT_APP_API_KEY || "",
-  process.env.REACT_APP_ENCRYPTION_KEY || ""
-).toString();
+const encrypt = (key) => {
+  if (!key || !process.env.REACT_APP_ENCRYPTION_KEY)
+    return "Encryption key not found";
+
+  // Sample: to be used in case of passing Iv
+  // return CryptoJS.AES.encrypt(
+  //   CryptoJS.enc.Utf8.parse(key),
+  //   CryptoJS.enc.Utf8.parse(process.env.REACT_APP_ENCRYPTION_KEY),
+  //       { iv: CryptoJS.enc.Utf8.parse("aaa") }
+  // ).toString();
+
+  return CryptoJS.AES.encrypt(
+    key,
+    process.env.REACT_APP_ENCRYPTION_KEY
+  ).toString();
+};
+
+axios.defaults.headers.common["api-key"] = encrypt(
+  process.env.REACT_APP_API_KEY
+);
 axios.defaults.headers.common["sys-name"] = process.env.REACT_APP_SYS_NAME;
-axios.defaults.headers.common["token-type"] = "JWT";
-axios.defaults.headers.common["access-token"] = "sample";
+axios.defaults.headers.common["token-type"] = "user";
+axios.defaults.headers.common["access-token"] = encrypt(userId);
 axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
 const responseHandler = (response) => {
