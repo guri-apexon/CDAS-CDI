@@ -27,6 +27,7 @@ import { isSftp } from "../../utils";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../components/Common/usePermission";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
@@ -80,12 +81,15 @@ const PackagesList = ({ data, userInfo }) => {
   const [tableData, setTableData] = useState([]);
   const {
     selectedDataFlow: { locationType },
+    selectedCard,
   } = useSelector((state) => state.dashboard);
   const { versionFreezed } = useSelector((state) => state.dataFlow);
+  const { prot_id: protId } = selectedCard;
 
-  const { canUpdate: canUpdateDataFlow } = usePermission(
+  const { canUpdate: canUpdateDataFlow } = useStudyPermission(
     Categories.CONFIGURATION,
-    Features.DATA_FLOW_CONFIGURATION
+    Features.DATA_FLOW_CONFIGURATION,
+    protId
   );
 
   const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {

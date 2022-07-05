@@ -34,6 +34,7 @@ import "../Dashboard.scss";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../../components/Common/usePermission";
 
 export default function MonitorTab({ fetchLatestData, protId }) {
@@ -56,9 +57,10 @@ export default function MonitorTab({ fetchLatestData, protId }) {
 
   const history = useHistory();
 
-  const { canEnabled: canReadIngestionIssues } = usePermission(
+  const { canEnabled: canReadIngestionIssues } = useStudyPermission(
     Categories.MENU,
-    Features.CDI_INGESTION_ISSUES
+    Features.CDI_INGESTION_ISSUES,
+    protId
   );
 
   useEffect(() => {

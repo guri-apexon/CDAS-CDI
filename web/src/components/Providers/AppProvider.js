@@ -1,4 +1,5 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useEffect } from "react";
+import { getRolesPermissions } from "../../services/ApiServices";
 
 export const AppContext = createContext();
 
@@ -11,18 +12,62 @@ const AppProvider = ({ children }) => {
     token: null,
     actions: "",
     permissions: [],
+    studyPermissions: {},
+    studyPermissionsStatus: {},
   });
+  const [loading, setLoading] = useState({});
 
   const updateUser = (userData) => {
-    setUser({
-      id: userData.id,
-      name: userData.name,
-      username: userData.username,
-      lastlogin: userData.lastlogin,
-      token: userData.token,
-      actions: userData.actions,
-      permissions: userData.permissions,
-    });
+    const data = { ...user, ...userData };
+    setUser(data);
+  };
+
+  const changeStudyLoading = (status, studyId) => {
+    const studyLoading = { ...loading };
+    studyLoading[studyId] = status;
+    setLoading(studyLoading);
+  };
+
+  const getStudyPermissions = async (studyId) => {
+    const studyPermissions = user.studyPermissions[studyId] || [];
+    if (studyPermissions.length === 0) {
+      changeStudyLoading(true, studyId);
+
+      let uniquePermissions = [];
+      const data = await getRolesPermissions(studyId);
+      console.log(`>>> study (${studyId}) permissions`, data);
+      if (data.message === "Something went wrong") {
+        console.log(
+          `There was an issue authorizing your login information. Please contact your Administrator.`
+        );
+      } else {
+        uniquePermissions = Array.from(
+          data
+            .reduce((acc, { categoryName, featureName, allowedPermission }) => {
+              const current = acc.get(featureName) || {
+                allowedPermission: [],
+              };
+              return acc.set(featureName, {
+                ...current,
+                categoryName,
+                featureName,
+                allowedPermission: [
+                  ...current.allowedPermission,
+                  allowedPermission,
+                ],
+              });
+            }, new Map())
+            .values()
+        );
+        updateUser({
+          studyPermissions: {
+            ...user.studyPermissions,
+            [studyId]: uniquePermissions,
+          },
+        });
+      }
+      changeStudyLoading(true, studyId);
+    }
   };
 
   return (
@@ -30,6 +75,8 @@ const AppProvider = ({ children }) => {
       value={{
         user,
         updateUser,
+        getStudyPermissions,
+        loading,
       }}
     >
       {children}

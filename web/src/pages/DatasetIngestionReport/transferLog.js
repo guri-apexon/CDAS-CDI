@@ -44,6 +44,7 @@ import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../components/Common/usePermission";
 
 const TimeCell = ({ row, column: { accessor } }) => {
@@ -298,9 +299,13 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
     (state) => state.ingestionReports
   );
 
-  const { canEnabled: canReadIngestionIssues } = usePermission(
+  const dashboard = useSelector((state) => state.dashboard);
+  const { prot_id: protId } = dashboard?.selectedCard;
+
+  const { canEnabled: canReadIngestionIssues } = useStudyPermission(
     Categories.MENU,
-    Features.CDI_INGESTION_ISSUES
+    Features.CDI_INGESTION_ISSUES,
+    protId
   );
 
   const [totalLog, setTotalLog] = useState(0);
