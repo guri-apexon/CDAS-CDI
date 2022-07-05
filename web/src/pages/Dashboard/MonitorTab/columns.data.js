@@ -2,6 +2,7 @@
 import React from "react";
 import moment from "moment";
 import { useSelector } from "react-redux";
+import { useHistory } from "react-router";
 import Check from "apollo-react-icons/Check";
 import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
 import Arrow2Up from "apollo-react-icons/Arrow2Up";
@@ -224,6 +225,7 @@ const JobstatusCell = ({ row, column: { accessor } }) => {
 
 const StatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
+  const history = useHistory();
   const { canReadIngestionIssues } = row;
   if (
     status?.toLowerCase() === "loaded without issues" ||
@@ -285,7 +287,9 @@ const StatusCell = ({ row, column: { accessor } }) => {
           {status}
           <Link
             disabled={!canReadIngestionIssues}
-            onClick={() => console.log("link clicked")}
+            onClick={() =>
+              history.push(`/dashboard/ingestion-issues/${row.datasetid}`)
+            }
             style={{ fontWeight: 500, marginLeft: 8 }}
           >
             View
