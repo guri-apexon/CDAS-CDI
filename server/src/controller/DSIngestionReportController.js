@@ -92,7 +92,7 @@ exports.getDatasetIngestionReportTransferLog = (req, res) => {
     fromDate = fromDate.subtract(dayFilter - 1, "days");
     fromDate = fromDate.format("YYYY-MM-DD");
 
-    const searchQuery = `SELECT "DatasetName", "Vendor", "TransferDate", "FileName", datasetname, "FileTransferStatus", "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords", "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate", "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue", "DownloadStart", "ProcessStart", "SourceOrigin", dataflowid, "DataflowName", fst_prd_file_recvd from ${schemaName}.dataset_transfer_log 
+    const searchQuery = `SELECT "DatasetName", "Vendor", "TransferDate", "FileName", datasetname, "FileTransferStatus", "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords", "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate", "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue", "DownloadStart", "ProcessStart", "SourceOrigin", dataflowid, "DataflowName", "errmsg", fst_prd_file_recvd from ${schemaName}.dataset_transfer_log 
               WHERE datasetid = $1 AND "LastCompleted" between  to_date('${fromDate}','yyyy-mm-dd') and to_date('${currentDate}','yyyy-mm-dd')`;
       
     Logger.info({ message: "getDatasetIngestionReportTransferLog" });
