@@ -157,7 +157,7 @@ exports.secureApi = async (req, res, next) => {
           return apiResponse.unauthorizedResponse(res, "JWT not supported");
 
         case "USER":
-          const user_id = decrypt(access_token);
+          const user_id = decrypt(access_token, vaultData?.data?.iv);
           const user = await userHelper.findByUserId(user_id);
           if (!user || !user.isActive)
             return apiResponse.unauthorizedResponse(res, "User ID not found");
