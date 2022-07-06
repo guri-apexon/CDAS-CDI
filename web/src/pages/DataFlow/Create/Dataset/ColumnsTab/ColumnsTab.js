@@ -17,7 +17,13 @@ import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 import Progress from "../../../../../components/Common/Progress/Progress";
 
-const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
+const ColumnsTab = ({
+  locationType,
+  headerValue,
+  columnFunc,
+  myForm,
+  moveNext,
+}) => {
   // const history = useHistory();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -277,6 +283,7 @@ const ColumnsTab = ({ locationType, headerValue, columnFunc, moveNext }) => {
           dataOrigin={selectedMethod}
           locationType={locationType}
           headerValue={headerValue}
+          myForm={myForm}
         />
       )}
     </>

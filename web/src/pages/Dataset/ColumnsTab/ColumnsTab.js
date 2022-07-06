@@ -22,7 +22,7 @@ import usePermission, {
   useStudyPermission,
 } from "../../../components/Common/usePermission";
 
-const ColumnsTab = ({ locationType, dfId, dpId }) => {
+const ColumnsTab = ({ locationType, dfId, dpId, selectedDataset }) => {
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
@@ -213,6 +213,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
           locationType={locationType}
           dfId={dfId}
           dpId={dpId}
+          selectedDataset={selectedDataset}
         />
       </>
     );
