@@ -261,7 +261,35 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
         }
       }
     }
-    testFlag = helper.stringToBoolean(testFlag);
+
+    // check for primaryKey
+    if (dataStructure !== "TabularRaveSOD") {
+      let saveflagyes = false;
+      if (dataPackage && Array.isArray(dataPackage)) {
+        for (let i = 0; i < dataPackage.length; i++) {
+          if (dataPackage[i].dataSet[i].loadType === "Incremental") {
+            for (
+              let j = 0;
+              j < dataPackage[0].dataSet[0].columnDefinition.length;
+              j++
+            ) {
+              if (
+                dataPackage[0].dataSet[0].columnDefinition[j].primaryKey ===
+                "Yes"
+              )
+                saveflagyes = true;
+            }
+            if (!saveflagyes)
+              return apiResponse.ErrorResponse(
+                res,
+                `At least one primaryKey column must be identified when incremental is true.`
+              );
+          }
+        }
+      }
+
+      testFlag = helper.stringToBoolean(testFlag);
+    }
 
     if (locationID) {
       const {
