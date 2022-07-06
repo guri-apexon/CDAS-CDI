@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { createRef, useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
-import { connect, useDispatch } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router";
 import { reduxForm, getFormValues } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
@@ -29,6 +29,7 @@ import { locationTypes, dataStruct } from "../../../utils";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../../components/Common/usePermission";
 
 const styles = {
@@ -115,11 +116,22 @@ const DataFlowFormBase = (props) => {
   const [selectedVendor, setSelectedVendor] = useState(null);
   // const [selectedLocation, setSelectedLocation] = useState(null);
 
+  const dashboard = useSelector((state) => state.dashboard);
+  const { prot_id: protId } = dashboard?.selectedCard;
+
   const { canUpdate: canUpdateDataFlow, canCreate: canCreateDataFlow } =
-    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+    useStudyPermission(
+      Categories.CONFIGURATION,
+      Features.DATA_FLOW_CONFIGURATION,
+      protId
+    );
 
   const { canUpdate: canUpdateLocation, canCreate: canCreateLocation } =
-    usePermission(Categories.CONFIGURATION, Features.LOCATION_SETUP);
+    useStudyPermission(
+      Categories.CONFIGURATION,
+      Features.LOCATION_SETUP,
+      protId
+    );
 
   const dispatch = useDispatch();
   const onChangeServiceOwner = (v) => {

@@ -263,7 +263,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
               dataPackage[i].dataSet[j].datasetName
             );
             if (comp) {
-              return apiResponse.ErrorResponse(
+              return apiResponse.validationErrorWithData(
                 res,
                 `Mnemonic ${dataPackage[i].dataSet[j].datasetName} is not unique.`
               );

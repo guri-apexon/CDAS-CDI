@@ -31,6 +31,7 @@ import { validateRow } from "../../../components/FormComponents/validators";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../../components/Common/usePermission";
 
 const maxSize = 150000;
@@ -46,11 +47,15 @@ export default function DSColumnTable({
   const messageContext = useContext(MessageContext);
   const dashboard = useSelector((state) => state.dashboard);
   const { selectedCard } = dashboard;
-  const { protocolnumber } = selectedCard;
+  const { protocolnumber, prot_id: protId } = selectedCard;
   const dataSets = useSelector((state) => state.dataSets);
 
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
-    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+    useStudyPermission(
+      Categories.CONFIGURATION,
+      Features.DATA_FLOW_CONFIGURATION,
+      protId
+    );
 
   const {
     datasetColumns,
@@ -814,6 +819,7 @@ export default function DSColumnTable({
             haveHeader,
             editedCount,
             canUpdateDataFlow,
+            protId,
           }}
         />
       </div>

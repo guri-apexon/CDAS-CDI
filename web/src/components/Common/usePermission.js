@@ -63,6 +63,43 @@ const Permissions = {
   ENABLE,
 };
 
+const useStudyPermission = (category, feature, studyId) => {
+  const appContext = useContext(AppContext);
+  const { studyPermissions } = appContext.user;
+  const permission = studyPermissions?.[studyId]?.find(
+    (p) =>
+      p.categoryName?.trim().toUpperCase() === category?.trim().toUpperCase() &&
+      p.featureName?.trim().toUpperCase() === feature?.trim().toUpperCase()
+  );
+
+  const checkPermission = (mode) =>
+    !!(
+      permission &&
+      permission?.allowedPermission.find(
+        (p) => p.toUpperCase() === mode.toUpperCase()
+      )
+    );
+
+  const canCreate = checkPermission(Permissions.CREATE);
+  const canRead = checkPermission(Permissions.READ);
+  const canUpdate = checkPermission(Permissions.UPDATE);
+  const canDownload = checkPermission(Permissions.DOWNLOAD);
+  const readOnly = canRead && !canUpdate && !canCreate;
+  const canEnabled = checkPermission(Permissions.ENABLE);
+  const noPermission = permission && permission.allowedPermission?.length === 0;
+
+  return {
+    canCreate,
+    canRead,
+    canUpdate,
+    canDownload,
+    canEnabled,
+    checkPermission,
+    noPermission,
+    readOnly,
+  };
+};
+
 /** custom hook to proviede permissions of a particular categopry and feature */
 const usePermission = (category, feature) => {
   const appContext = useContext(AppContext);
@@ -102,4 +139,4 @@ const usePermission = (category, feature) => {
 };
 
 export default usePermission;
-export { Categories, Features, Permissions };
+export { Categories, Features, Permissions, useStudyPermission };

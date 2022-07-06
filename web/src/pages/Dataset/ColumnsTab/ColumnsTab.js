@@ -19,6 +19,7 @@ import { checkHeaders, formatDataNew, isSftp } from "../../../utils/index";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../../components/Common/usePermission";
 
 const ColumnsTab = ({ locationType, dfId, dpId }) => {
@@ -28,9 +29,15 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const dataFlow = useSelector((state) => state.dataFlow);
   const { dsProdLock, dsTestLock } = dataFlow;
   const { datasetColumns, sqlColumns, haveHeader } = dataSets;
+  const { selectedCard } = dashboard;
+  const { protocolnumber, prot_id: protId } = selectedCard;
 
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
-    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+    useStudyPermission(
+      Categories.CONFIGURATION,
+      Features.DATA_FLOW_CONFIGURATION,
+      protId
+    );
 
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState();
@@ -39,8 +46,6 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
   const [formattedData, setFormattedData] = useState([]);
-  const { selectedCard } = dashboard;
-  const { protocolnumber } = selectedCard;
 
   const maxSize = 150000;
 
