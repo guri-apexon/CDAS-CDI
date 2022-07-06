@@ -124,7 +124,7 @@ exports.searchStudyList = function (req, res) {
       searchParam,
     });
     // console.log("search", searchParam, userId);
-    const searchQuery = `SELECT prot_id, protocolnumber, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
+    const searchQuery = `SELECT prot_id, protocolnumber, protocolnumberstandard, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
     FROM  ${schemaName}.study_ingestion_dashboard
     WHERE prot_id in (select prot_id from study_user where usr_id=$2) AND (LOWER(protocolnumber) LIKE $1 OR LOWER(sponsorname) LIKE $1 OR LOWER(projectcode) LIKE $1) LIMIT 10`;
 
