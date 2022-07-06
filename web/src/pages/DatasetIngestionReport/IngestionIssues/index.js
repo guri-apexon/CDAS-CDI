@@ -11,19 +11,51 @@ import Box from "apollo-react/components/Box";
 import Paper from "apollo-react/components/Paper";
 import Typography from "apollo-react/components/Typography/Typography";
 import Panel from "apollo-react/components/Panel/Panel";
+import Blade from "apollo-react/components/Blade";
+import Download from "apollo-react-icons/Download";
+import Table from "apollo-react/components/Table/Table";
+import FilterIcon from "apollo-react-icons/Filter";
+import Switch from "apollo-react/components/Switch/Switch";
+import Button from "apollo-react/components/Button/Button";
+import {
+  compareNumbers,
+  compareStrings,
+  createStringSearchFilter,
+  numberSearchFilter,
+} from "apollo-react/components/Table";
 import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
 import Header from "../Header";
+import IssueLeftPanel from "./LeftSidebar.js";
+import { TextFieldFilter } from "../../../utils";
+import IssuesProperties from "./Properties";
+
+const rows = [
+  {
+    record_no: "1",
+    sub_id: "1221321",
+  },
+  {
+    record_no: "2",
+    sub_id: "3213232",
+  },
+  {
+    record_no: "3",
+    sub_id: "4343",
+  },
+  {
+    record_no: "4",
+    sub_id: "443243",
+  },
+];
 
 const IngestionIssues = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const { datasetProperties } = useSelector((state) => state.ingestionReports);
-  const [tabvalue, setTabValue] = useState(0);
-  const [transferLogFilter, setTransferLogFilter] = useState("");
-  const handleChangeTab = (event, value, filter = "") => {
-    setTabValue(value);
-    setTransferLogFilter(filter);
-  };
+  const [tableRows, setTableRows] = useState(rows);
+  const [currentTab, setCurrentTab] = useState(0);
+  const [viewAllCol, setViewAllCol] = useState(false);
+  const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
   const { datasetId } = useParams();
 
   const breadcrumpItems = [
@@ -33,8 +65,58 @@ const IngestionIssues = () => {
       title: "File Ingestion Issues",
     },
   ];
+
+  const columns = [
+    {
+      header: "Record #",
+      accessor: "record_no",
+      sortFunction: compareStrings,
+      filterFunction: createStringSearchFilter("record_no"),
+      filterComponent: TextFieldFilter,
+    },
+    {
+      header: (
+        <>
+          <IssueIcon className="black-icon table-th" />
+          sub_id
+        </>
+      ),
+      accessor: "sub_id",
+      filterFunction: createStringSearchFilter("sub_id"),
+      filterComponent: TextFieldFilter,
+    },
+  ];
   const downloadSummery = () => {
     console.log("downloadSummery");
+  };
+
+  const CustomButtonHeader = ({ toggleFilters }) => {
+    return (
+      <>
+        <div>
+          <Switch
+            className="inline-checkbox"
+            label="View all columns"
+            checked={viewAllCol}
+            onChange={(e, v) => setViewAllCol(v)}
+            size="small"
+          />
+          <span className="v-line">&nbsp;</span>
+          <Button icon={<Download />} size="small">
+            Download
+          </Button>
+          &nbsp;&nbsp;
+          <Button
+            size="small"
+            variant="secondary"
+            icon={FilterIcon}
+            onClick={toggleFilters}
+          >
+            Filter
+          </Button>
+        </div>
+      </>
+    );
   };
 
   useEffect(() => {}, []);
@@ -52,18 +134,58 @@ const IngestionIssues = () => {
         hideCancel
         tabs={["Data", "Properties"]}
         selectedTab={0}
-        onTabChange={(v) => console.log("Hello", v)}
+        onTabChange={(v) => setCurrentTab(v)}
       />
-      <section className="content-wrapper">
-        <Panel
-          onClose={(v) => console.log("Hello", v)}
-          onOpen={(v) => console.log("Hello", v)}
-          open={true}
-          width={446}
-        >
-          <Typography>Filter</Typography>
-        </Panel>
-      </section>
+      {currentTab === 0 && (
+        <section className="content-wrapper flex">
+          <IssueLeftPanel
+            width={346}
+            closePanel={() => setLeftPanelCollapsed(true)}
+            openPanel={() => setLeftPanelCollapsed(false)}
+          />
+          <div
+            id="mainTable"
+            style={{
+              width: leftPanelCollapsed ? "100%" : "calc(100% - 346px)",
+            }}
+          >
+            <Table
+              title="Ingestion Issues"
+              subtitle="20 records with issues"
+              columns={columns}
+              rows={tableRows}
+              rowId="record_no"
+              initialSortedColumn="record_no"
+              initialSortOrder="asc"
+              rowsPerPageOptions={[5, 10, 15, "All"]}
+              tablePaginationProps={{
+                labelDisplayedRows: ({ from, to, count }) =>
+                  `${
+                    count === 1 ? "Issue" : "Issues"
+                  } ${from}-${to} of ${count}`,
+                truncate: true,
+              }}
+              CustomHeader={(props) => <CustomButtonHeader {...props} />}
+            />
+          </div>
+          <Panel
+            id="rightSidebar"
+            width={288}
+            side="right"
+            hideButton
+            open={true}
+            // onClose={this.onClose}
+            title="Right Blade"
+            subtitle="This blade has actions"
+          >
+            <div className="header">
+              <Typography variant="title1">Records 22</Typography>
+              <Typography variant="title">Record issues</Typography>
+            </div>
+          </Panel>
+        </section>
+      )}
+      {currentTab === 1 && <IssuesProperties />}
     </main>
   );
 };

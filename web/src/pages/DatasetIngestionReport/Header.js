@@ -135,7 +135,7 @@ const Header = (props) => {
                           variant: "primary",
                           size: "small",
                           label: saveBtnLabel || "Save",
-                          disabled: !canUpdateDataFlow || saveDisabled,
+                          // disabled: !canUpdateDataFlow || saveDisabled,
                           onClick: () => props.submit(),
                         },
                       ]),

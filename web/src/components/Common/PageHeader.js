@@ -27,7 +27,7 @@ const PageHeader = ({ height = 120 }) => {
   useEffect(() => {
     if (location.pathname !== "/dashboard") {
       if (selectedCard?.prot_id === "") {
-        history.push("/dashboard");
+        // history.push("/dashboard");
       }
     }
   }, [location]);
