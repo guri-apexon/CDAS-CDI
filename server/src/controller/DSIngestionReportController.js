@@ -1,5 +1,6 @@
 const DB = require("../config/db");
 const oracleDB = require("../config/oracleDB");
+const jdbc = require("../config/JDBC");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
@@ -383,12 +384,24 @@ exports.getIssueColumns = async (req, res) => {
         "Please check your hive db credentials"
       );
     }
-    selectedIssues.forEach((issue) => {
+    // const hostName = "ca2u02hdks03d";
+    // const port = "10001";
+    selectedIssues.forEach(async (issue) => {
       const { databasename, tablename, errorrownumbers, errorcolumnnames } =
         issue;
       if (databasename && tablename && errorrownumbers && errorcolumnnames) {
         const query = `SELECT '_rowno', ${errorcolumnnames} from ${databasename}.${tablename} WHERE '_rowno' in (${errorrownumbers});`;
         console.log("dbUser", dbUser, dbPass, query);
+
+        // await jdbc(
+        //   dbUser,
+        //   dbPass,
+        //   `jdbc:hive2://${hostName}:${port}/${databasename};transportMode=http;httpPath=cliservice;ssl=1;AllowSelfSignedCerts=1;AuthMech=3`,
+        //   "com.cloudera.hive.jdbc41.HS2Driver",
+        //   query,
+        //   "query executed successfully.",
+        //   res
+        // );
       }
     });
   } catch (err) {
