@@ -252,8 +252,14 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
           // eslint-disable-next-line react/jsx-wrap-multilines
           <div className={classes.centerAligned}>
             <Button
-              onClick={() => setShowVersionModal(true)}
-              className={classes.fullNavHeight}
+              // onClick={() => setShowVersionModal(true)}
+              // className={classes.fullNavHeight}
+              onClick={() =>
+                window.open(
+                  "https://docs.ims.io/CDAS/CDI/1.1/USG/Default.htm",
+                  "_blank"
+                )
+              }
             >
               <Question className={classes.appIcon} />
             </Button>
