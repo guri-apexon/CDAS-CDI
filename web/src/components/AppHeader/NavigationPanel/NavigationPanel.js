@@ -68,7 +68,7 @@ const NavigationPanel = ({
     {
       title: "Clinical Data Mapper",
       imgUrl: "/assets/svg/CDM_ICON_96x96.svg",
-      // haveAccess: checkAccess("Launchpad-CDM"),
+      haveAccess: checkAccess("Launchpad-CDM"),
       url: getAppUrl("CDM"),
     },
     {
