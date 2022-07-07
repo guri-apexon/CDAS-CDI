@@ -38,9 +38,13 @@ export const initialState = {
     ingestionCount: "",
     priorityCount: "",
     staleFilesCount: "",
-    dfCount: "",
+    ActiveDfCount: "",
+    InActiveDfCount: "",
     vCount: "",
     dpCount: "",
+    ActiveDsCount: "",
+    InActiveDsCount: "",
+    dfCount: "",
     dsCount: "",
   },
   dfId: "",
@@ -130,6 +134,10 @@ const DashboardReducer = (state = initialState, action) =>
           ...state?.selectedCard,
           dfCount: action.dfCount,
           dsCount: action.dsCount,
+          ActiveDfCount: action.ActiveDfCount,
+          InActiveDfCount: action.InActiveDfCount,
+          ActiveDsCount: action.ActiveDsCount,
+          InActiveDsCount: action.InActiveDsCount,
         };
         newState.userStudies = state?.userStudies?.map((e) => {
           let newObj = {};
@@ -138,6 +146,10 @@ const DashboardReducer = (state = initialState, action) =>
               ...e,
               dfCount: action.dfCount,
               dsCount: action.dsCount,
+              ActiveDfCount: action.ActiveDfCount,
+              InActiveDfCount: action.InActiveDfCount,
+              ActiveDsCount: action.ActiveDsCount,
+              InActiveDsCount: action.InActiveDsCount,
             };
           } else {
             newObj = {

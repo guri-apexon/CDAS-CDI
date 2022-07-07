@@ -1688,7 +1688,7 @@ exports.fetchdataflowSource = async (req, res) => {
 exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
-    let q = `select d."name" as dataflowname, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
+    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
     d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, S.prot_nbr_stnd
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
@@ -1801,6 +1801,9 @@ exports.fetchdataflowDetails = async (req, res) => {
       configured: rows[0].configured,
       active: rows[0].active,
       dataPackage: newArr,
+      dataStructure: rows[0].datastructure,
+      protocolNumberStandard: rows[0].prot_nbr_stnd,
+      serviceOwners: rows[0]?.serv_ownr?.split(","),
     };
     return apiResponse.successResponseWithData(
       res,
