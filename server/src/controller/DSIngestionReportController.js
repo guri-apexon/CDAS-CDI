@@ -98,7 +98,7 @@ exports.getDatasetIngestionReportTransferLog = (req, res) => {
               "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate",
               "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue",
               "DownloadStart", "ProcessStart", "SourceOrigin",
-              dataflowid, "DataflowName", fst_prd_file_recvd
+              dataflowid, "DataflowName", "errmsg", fst_prd_file_recvd
               from cdascfg.dataset_transfer_log
               WHERE datasetid = $1
               AND to_char("LastCompleted",'yyyy-mm-dd')::date between date '${fromDate}' and date '${currentDate}'`;
