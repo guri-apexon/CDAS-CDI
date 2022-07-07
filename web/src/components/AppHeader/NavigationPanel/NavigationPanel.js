@@ -12,7 +12,7 @@ import Arrow2Down from "apollo-react-icons/Arrow2Down";
 import App from "apollo-react-icons/App";
 import Tooltip from "apollo-react/components/Tooltip/Tooltip";
 import "./NavigationPanel.scss";
-import { goToCore } from "../../../utils";
+import { getAppUrl, goToCore, goToApp } from "../../../utils";
 import { AppContext } from "../../Providers/AppProvider";
 
 const styles = {
@@ -63,13 +63,13 @@ const NavigationPanel = ({
       title: "Clinical Data Ingestion",
       imgUrl: "/assets/svg/CDI_ICON_96x96.svg",
       haveAccess: checkAccess("Launchpad-CDI"),
-      url: "cdi",
+      url: getAppUrl("CDI"),
     },
     {
       title: "Clinical Data Mapper",
       imgUrl: "/assets/svg/CDM_ICON_96x96.svg",
-      haveAccess: checkAccess("Launchpad-CDM"),
-      url: "cdm",
+      // haveAccess: checkAccess("Launchpad-CDM"),
+      url: getAppUrl("CDM"),
     },
     {
       title: "Clinical Data Review",
@@ -158,11 +158,7 @@ const NavigationPanel = ({
         <Box display="flex" className="flexWrap left-align">
           {linksArr.map((link, i) => {
             const buttonLInk = (
-              <Button
-                darkMode
-                variant="text"
-                onClick={() => link.haveAccess && history.push(link.url)}
-              >
+              <Button darkMode variant="text" onClick={() => goToApp(link.url)}>
                 <img src={link.imgUrl} alt={link.title} />
                 {link.title}
               </Button>
