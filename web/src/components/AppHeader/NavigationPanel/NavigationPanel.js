@@ -158,7 +158,11 @@ const NavigationPanel = ({
         <Box display="flex" className="flexWrap left-align">
           {linksArr.map((link, i) => {
             const buttonLInk = (
-              <Button darkMode variant="text" onClick={() => goToApp(link.url)}>
+              <Button
+                darkMode
+                variant="text"
+                onClick={() => link.haveAccess && goToApp(link.url)}
+              >
                 <img src={link.imgUrl} alt={link.title} />
                 {link.title}
               </Button>
