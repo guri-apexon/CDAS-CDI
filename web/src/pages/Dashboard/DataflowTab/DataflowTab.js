@@ -407,7 +407,8 @@ export default function DataflowTab({ updateData }) {
       {
         text: "Clone data flow",
         onClick: async () => {
-          setOpenClone(true);
+          // setOpenClone(true);
+          history.push("/dashboard/dataflow/clone");
           // await getStudies();
         },
       },

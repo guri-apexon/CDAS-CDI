@@ -671,7 +671,7 @@ export const dateFilterCustom = (accessor) => (row, filters) => {
 };
 
 export const isSftp = (str = "") => {
-  return ["SFTP", "FTPS"].includes(str.toUpperCase());
+  return ["SFTP", "FTPS"].includes(str?.toUpperCase());
 };
 
 export const validateFields = (name, ext) => {
