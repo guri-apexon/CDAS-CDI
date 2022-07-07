@@ -23,6 +23,7 @@ import {
   DATAFLOW_UPDATE_API,
   ADD_PACKAGE,
   API_URL,
+  INGESTION_ISSUE_URL,
 } from "../constants";
 import store from "../store";
 import { freezeDfVersion } from "../store/actions/DataFlowAction";
@@ -452,6 +453,17 @@ export const getRolesPermissions = (studyId) => {
           }
         });
     });
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+export const getIngestionIssues = async (datasetId) => {
+  try {
+    const res = await axios.get(
+      `${baseURL}/${INGESTION_ISSUE_URL}/${datasetId}`
+    );
+    return res.data?.data || [];
   } catch (err) {
     return console.log("Error", err);
   }

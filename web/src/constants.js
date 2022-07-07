@@ -256,6 +256,7 @@ export const SQLCOLUMNSAPI = "v1/api/dataset/getColumns";
 export const PREVIEWSQLAPI = "v1/api/dataset/previewSQL";
 export const SETTINGAPI = "v1/api/system-settings";
 export const INGESTIONREPORTAPI = "v1/api/dataset/ingestion-report";
+export const INGESTION_ISSUE_URL = "v1/api/dataset/ingestion-issues";
 
 export const baseURL = process.env.REACT_APP_API_URL;
 export const API_URL = `${baseURL}/v1/api`;

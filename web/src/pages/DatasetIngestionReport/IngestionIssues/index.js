@@ -31,6 +31,7 @@ import IssueLeftPanel from "./LeftSidebar";
 import { TextFieldFilter } from "../../../utils";
 import IssuesProperties from "./Properties";
 import IssueRightPanel from "./RightSidebar";
+import { getIngestionIssues } from "../../../services/ApiServices";
 
 const rows = [
   {
@@ -60,6 +61,7 @@ const IngestionIssues = () => {
   const [viewAllCol, setViewAllCol] = useState(false);
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
   const [showRightPanel, setShowRightPanel] = useState(true);
+  const [issuesArr, setIssuesArr] = useState([]);
   const { datasetId } = useParams();
 
   const openRightPanel = (row) => {
@@ -134,8 +136,16 @@ const IngestionIssues = () => {
       </>
     );
   };
+  const fetchIssues = async () => {
+    console.log("Mount Issue", datasetId);
+    const issuesRes = await getIngestionIssues(datasetId);
+    if (issuesRes) setIssuesArr(issuesRes);
+    console.log("Response::", issuesRes);
+  };
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    fetchIssues();
+  }, []);
 
   return (
     <main className="ingestion-issues">
@@ -158,6 +168,7 @@ const IngestionIssues = () => {
             width={346}
             closePanel={() => setLeftPanelCollapsed(true)}
             openPanel={() => setLeftPanelCollapsed(false)}
+            listArr={issuesArr}
           />
           <div
             id="mainTable"

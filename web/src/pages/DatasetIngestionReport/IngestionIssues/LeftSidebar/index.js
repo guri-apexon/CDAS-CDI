@@ -36,9 +36,9 @@ const rows = [
   },
 ];
 
-const IssueLeftPanel = ({ closePanel, openPanel, width, opened }) => {
+const IssueLeftPanel = ({ closePanel, openPanel, width, opened, listArr }) => {
   const [selectedAll, setSelectedAll] = useState(false);
-  const [tableRows, setTableRows] = useState(rows);
+  const [tableRows, setTableRows] = useState([]);
   const [open, setOpen] = useState(opened || true);
   const selectAll = (e, v) => {
     setSelectedAll(v);
@@ -93,6 +93,14 @@ const IssueLeftPanel = ({ closePanel, openPanel, width, opened }) => {
       setSelectedAll(tableRows.every((x) => x.checked));
     }
   }, [tableRows]);
+  useEffect(() => {
+    const data = listArr.map((row) => ({
+      records_no: row.nooferrors,
+      issue_type: row.issue_type,
+      checked: false,
+    }));
+    setTableRows(data);
+  }, [listArr]);
 
   return (
     <Panel
