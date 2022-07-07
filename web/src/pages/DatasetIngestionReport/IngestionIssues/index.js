@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-script-url */
 import React, { useState, useEffect } from "react";
@@ -9,6 +10,7 @@ import "../ingestionReport.scss";
 import "./index.scss";
 import Box from "apollo-react/components/Box";
 import Paper from "apollo-react/components/Paper";
+import Link from "apollo-react/components/Link";
 import Typography from "apollo-react/components/Typography/Typography";
 import Panel from "apollo-react/components/Panel/Panel";
 import Blade from "apollo-react/components/Blade";
@@ -25,9 +27,10 @@ import {
 } from "apollo-react/components/Table";
 import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
 import Header from "../Header";
-import IssueLeftPanel from "./LeftSidebar.js";
+import IssueLeftPanel from "./LeftSidebar";
 import { TextFieldFilter } from "../../../utils";
 import IssuesProperties from "./Properties";
+import IssueRightPanel from "./RightSidebar";
 
 const rows = [
   {
@@ -56,7 +59,13 @@ const IngestionIssues = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [viewAllCol, setViewAllCol] = useState(false);
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
+  const [showRightPanel, setShowRightPanel] = useState(true);
   const { datasetId } = useParams();
+
+  const openRightPanel = (row) => {
+    console.log("openRightPanel", row);
+    setShowRightPanel(true);
+  };
 
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -73,6 +82,13 @@ const IngestionIssues = () => {
       sortFunction: compareStrings,
       filterFunction: createStringSearchFilter("record_no"),
       filterComponent: TextFieldFilter,
+      customCell: ({ row, column: { accessor: key } }) => {
+        return (
+          <Link className="rightpanel-link" onClick={() => openRightPanel(row)}>
+            {row[key]}
+          </Link>
+        );
+      },
     },
     {
       header: (
@@ -168,21 +184,23 @@ const IngestionIssues = () => {
               CustomHeader={(props) => <CustomButtonHeader {...props} />}
             />
           </div>
-          <Panel
-            id="rightSidebar"
-            width={288}
-            side="right"
-            hideButton
-            open={true}
-            // onClose={this.onClose}
-            title="Right Blade"
-            subtitle="This blade has actions"
-          >
-            <div className="header">
-              <Typography variant="title1">Records 22</Typography>
-              <Typography variant="title">Record issues</Typography>
-            </div>
-          </Panel>
+          {showRightPanel && (
+            <Panel
+              id="rightSidebar"
+              side="right"
+              hideButton
+              open={true}
+              onOpen={() => {
+                console.log("Opened");
+              }}
+            >
+              <IssueRightPanel
+                closePanel={() => {
+                  setShowRightPanel(false);
+                }}
+              />
+            </Panel>
+          )}
         </section>
       )}
       {currentTab === 1 && <IssuesProperties />}

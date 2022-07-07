@@ -1,5 +1,7 @@
 .ingestion-issues {
   .content-wrapper {
+    max-width: 100%;
+    overflow: hidden;
     #rightSidebar {
       .header {
       }
@@ -30,6 +32,10 @@
     }
     .inline-checkbox {
       margin-right: 12px;
+    }
+    .rightpanel-link {
+      min-width: 20px;
+      display: inline-block;
     }
   }
 }
