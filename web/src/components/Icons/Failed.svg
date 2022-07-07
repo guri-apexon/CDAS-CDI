@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="14px" height="14px" viewBox="0 0 14 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>inprogress copy</title>
+    <defs>
+        <path d="M7,0 C3.13400675,0 0,3.13400675 0,7 C0,10.8659932 3.13400675,14 7,14 C10.8659932,14 14,10.8659932 14,7 C13.9958205,3.13573928 10.8642607,0.00417949444 7,0 Z M7,1.75 C4.10050506,1.75 1.75,4.10050506 1.75,7 C1.75,9.89949494 4.10050506,12.25 7,12.25 C9.89949494,12.25 12.25,9.89949494 12.25,7 C12.2468654,4.10180446 9.89819554,1.75313462 7,1.75 Z M10.7916667,7.58333333 C10.7916667,7.74441639 10.6610831,7.875 10.5,7.875 L3.5,7.875 C3.33891695,7.875 3.20833333,7.74441639 3.20833333,7.58333333 L3.20833333,6.41666667 C3.20833333,6.25558361 3.33891695,6.125 3.5,6.125 L10.5,6.125 C10.6610831,6.125 10.7916667,6.25558361 10.7916667,6.41666667 L10.7916667,7.58333333 Z" id="path-1"></path>
+    </defs>
+    <g id="3.-UI-MidFi" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="color-Clipped">
+            <mask id="mask-2" fill="white">
+                <use xlink:href="#path-1"></use>
+            </mask>
+            <g id="path-1"></g>
+            <g id="color" mask="url(#mask-2)" fill="#FFFFFF" fill-rule="nonzero">
+                <rect id="Rectangle" x="0" y="0" width="14" height="14"></rect>
+            </g>
+        </g>
+    </g>
+</svg>
