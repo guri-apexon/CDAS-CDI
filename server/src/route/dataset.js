@@ -41,5 +41,9 @@ router.get(
   "/ingestion-issues/:datasetid",
   DSIngestionReportController.getIssues
 );
+router.post(
+  "/ingestion-issues-columns",
+  DSIngestionReportController.getIssueColumns
+);
 
 module.exports = router;

@@ -10,7 +10,7 @@ import "../ingestionReport.scss";
 import "./index.scss";
 import Box from "apollo-react/components/Box";
 import Paper from "apollo-react/components/Paper";
-import Link from "apollo-react/components/Link";
+import Link from "apollo-react/components/Link/Link";
 import Typography from "apollo-react/components/Typography/Typography";
 import Panel from "apollo-react/components/Panel/Panel";
 import Blade from "apollo-react/components/Blade";
@@ -31,7 +31,10 @@ import IssueLeftPanel from "./LeftSidebar";
 import { TextFieldFilter } from "../../../utils";
 import IssuesProperties from "./Properties";
 import IssueRightPanel from "./RightSidebar";
-import { getIngestionIssues } from "../../../services/ApiServices";
+import {
+  getIngestionIssueCols,
+  getIngestionIssues,
+} from "../../../services/ApiServices";
 
 const rows = [
   {
@@ -60,7 +63,7 @@ const IngestionIssues = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [viewAllCol, setViewAllCol] = useState(false);
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
-  const [showRightPanel, setShowRightPanel] = useState(true);
+  const [showRightPanel, setShowRightPanel] = useState(false);
   const [issuesArr, setIssuesArr] = useState([]);
   const { datasetId } = useParams();
 
@@ -142,6 +145,15 @@ const IngestionIssues = () => {
     if (issuesRes) setIssuesArr(issuesRes);
     console.log("Response::", issuesRes);
   };
+  const refreshData = async (data) => {
+    const filteredIssue = issuesArr.filter((x) => data.includes(x.issue_type));
+    if (filteredIssue?.length) {
+      const refreshedData = await getIngestionIssueCols({
+        selectedIssues: filteredIssue,
+      });
+      console.log("refreshedData", refreshedData);
+    }
+  };
 
   useEffect(() => {
     fetchIssues();
@@ -169,6 +181,7 @@ const IngestionIssues = () => {
             closePanel={() => setLeftPanelCollapsed(true)}
             openPanel={() => setLeftPanelCollapsed(false)}
             listArr={issuesArr}
+            setSelectedIssues={(data) => refreshData(data)}
           />
           <div
             id="mainTable"

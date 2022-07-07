@@ -26,7 +26,7 @@ const IssueRightPanel = ({ closePanel, openPanel, width, opened }) => {
   return (
     <aside id="rightSidebar">
       <div className="header">
-        <Typography variant="title1">Records 22</Typography>
+        <Typography variant="title1">Record 22</Typography>
         <Typography variant="title">Record issues</Typography>
         <IconButton className="close" size="small">
           <Close onClick={closePanel} />

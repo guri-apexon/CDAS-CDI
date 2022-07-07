@@ -24,6 +24,7 @@ import {
   ADD_PACKAGE,
   API_URL,
   INGESTION_ISSUE_URL,
+  INGESTION_ISSUE_COL_URL,
 } from "../constants";
 import store from "../store";
 import { freezeDfVersion } from "../store/actions/DataFlowAction";
@@ -467,6 +468,14 @@ export const getIngestionIssues = async (datasetId) => {
   } catch (err) {
     return console.log("Error", err);
   }
+};
+
+export const getIngestionIssueCols = async (reqBody) => {
+  const res = await axios.post(
+    `${baseURL}/${INGESTION_ISSUE_COL_URL}`,
+    reqBody
+  );
+  return res.data.data || [];
 };
 
 export default searchStudy;

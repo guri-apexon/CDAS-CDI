@@ -6,6 +6,7 @@ const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const moment = require("moment");
 const { COMMON_ERR } = require("../config/messageConstants");
+const { forEach } = require("lodash");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const createTemporaryLog = async (
@@ -360,8 +361,39 @@ exports.getIssues = async (req, res) => {
     Logger.info({ message: "getIngestionIssues" });
   } catch (err) {
     const msg = err.message || COMMON_ERR;
-    console.log("catch :getIssues", msg);
     Logger.error("catch :getIssues");
+    Logger.error(msg);
+    return apiResponse.ErrorResponse(res, msg);
+  }
+};
+
+exports.getIssueColumns = async (req, res) => {
+  try {
+    const { selectedIssues } = req.body;
+    if (!selectedIssues || (selectedIssues && !Array.isArray(selectedIssues))) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Please select atleast one issue to proceed"
+      );
+    }
+    const { HIVE_USER: dbUser, HIVE_PASS: dbPass } = process.env;
+    if (!dbPass || !dbUser) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Please check your hive db credentials"
+      );
+    }
+    selectedIssues.forEach((issue) => {
+      const { databasename, tablename, errorrownumbers, errorcolumnnames } =
+        issue;
+      if (databasename && tablename && errorrownumbers && errorcolumnnames) {
+        const query = `SELECT '_rowno', ${errorcolumnnames} from ${databasename}.${tablename} WHERE '_rowno' in (${errorrownumbers});`;
+        console.log("dbUser", dbUser, dbPass, query);
+      }
+    });
+  } catch (err) {
+    const msg = err.message || COMMON_ERR;
+    Logger.error("catch :getIssueColumns");
     Logger.error(msg);
     return apiResponse.ErrorResponse(res, msg);
   }
