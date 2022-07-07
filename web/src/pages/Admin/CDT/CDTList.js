@@ -272,13 +272,13 @@ export default function CDTList() {
       setNameError(true);
       return false;
     }
+    setReqNameError(false);
+    setNameError(false);
+
     if (cName.length > 80) {
       setCharError(true);
       return false;
     }
-
-    setReqNameError(false);
-    setNameError(false);
     setCharError(false);
 
     if (ens === "") {

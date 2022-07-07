@@ -92,16 +92,17 @@ exports.getDatasetIngestionReportTransferLog = (req, res) => {
     fromDate = fromDate.subtract(dayFilter - 1, "days");
     fromDate = fromDate.format("YYYY-MM-DD");
 
-    const searchQuery = `SELECT
-    "DatasetName", "Vendor", "TransferDate", "FileName", datasetname, "FileTransferStatus",
-    "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords",
-    "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate",
-    "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue",
-    "DownloadStart", "ProcessStart", "SourceOrigin",
-    dataflowid, "DataflowName", fst_prd_file_recvd
-    from cdascfg.dataset_transfer_log
-    WHERE datasetid = $1
-    AND to_char("LastCompleted",'yyyy-mm-dd')::date between date '${fromDate}' and date '${currentDate}'`;
+   const searchQuery = `SELECT
+              "DatasetName", "Vendor", "TransferDate", "FileName", datasetname, "FileTransferStatus",
+              "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords",
+              "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate",
+              "PackageName", "ClinicalDataType", "DataSetMnemonic", "LoadType", "DownloadEndingOffsetValue",
+              "DownloadStart", "ProcessStart", "SourceOrigin",
+              dataflowid, "DataflowName", fst_prd_file_recvd
+              from cdascfg.dataset_transfer_log
+              WHERE datasetid = $1
+              AND to_char("LastCompleted",'yyyy-mm-dd')::date between date '${fromDate}' and date '${currentDate}'`;
+
     Logger.info({ message: "getDatasetIngestionReportTransferLog" });
 
     DB.executeQuery(searchQuery, [id])
