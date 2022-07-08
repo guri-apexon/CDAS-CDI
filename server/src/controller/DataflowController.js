@@ -766,7 +766,7 @@ exports.updateDataFlow = async (req, res) => {
     let {
       rows: [existDf],
     } = await DB.executeQuery(
-      `select * from ${schemaName}.dataflow where externalsystemname='${externalSystemName}' and externalid='${ExternalId}'`
+      `select * from ${schemaName}.dataflow where UPPER(externalsystemname)='${externalSystemName.toUpperCase()}' and externalid='${ExternalId}'`
     );
 
     if (existDf && !isCDI) {
