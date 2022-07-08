@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="14px" height="14px" viewBox="0 0 14 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Quarantine</title>
+    <g id="3.-UI-MidFi" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Quarantine" fill="#FFFFFF" fill-rule="nonzero">
+            <g id="Mask">
+                <g id="shape">
+                    <path d="M7,14 C10.8659932,14 14,10.8659932 14,7 C14,3.13400675 10.8659932,0 7,0 C3.13400675,0 0,3.13400675 0,7 C0,10.8659932 3.13400675,14 7,14 Z M7,12 C4.23857625,12 2,9.76142375 2,7 C2,4.23857625 4.23857625,2 7,2 C9.76142375,2 12,4.23857625 12,7 C12,9.76142375 9.76142375,12 7,12 Z" id="path-1"></path>
+                </g>
+                <path d="M1.16666663,1.16664021 C4.42980125,1.40758717 7.0003581,4.05780329 7.0003581,7.29166667 C7.0003581,10.52553 4.42980125,13.1757462 1.16666663,13.4166931 L1.16666663,1.16664021 Z" id="Combined-Shape" transform="translate(4.083512, 7.291667) scale(-1, 1) translate(-4.083512, -7.291667) "></path>
+            </g>
+        </g>
+    </g>
+</svg>

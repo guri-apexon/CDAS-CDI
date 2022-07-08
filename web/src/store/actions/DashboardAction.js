@@ -65,9 +65,20 @@ export const SelectedDataflow = (dataflow) => {
   };
 };
 
-export const updateHeaderCount = (dfCount, dsCount) => {
+export const updateHeaderCount = (
+  dsCount,
+  dfCount,
+  ActiveDfCount,
+  InActiveDfCount,
+  ActiveDsCount,
+  InActiveDsCount
+) => {
   return {
     type: UPDATE_HEADER_COUNT,
+    ActiveDfCount,
+    InActiveDfCount,
+    ActiveDsCount,
+    InActiveDsCount,
     dfCount,
     dsCount,
   };

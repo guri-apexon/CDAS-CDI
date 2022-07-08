@@ -9,7 +9,7 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 exports.getUserStudyList = function (req, res) {
   try {
     const userId = req.params.userId;
-    const newQuery = `SELECT prot_id, protocolnumber, protocolnumberstandard, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
+    const newQuery = `SELECT prot_id, protocolnumber, protocolnumberstandard, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "ActiveDfCount","InActiveDfCount",  "vCount", "dpCount", "ActiveDsCount", "InActiveDsCount"
     FROM ${schemaName}.study_ingestion_dashboard
     WHERE prot_id in (select prot_id from ${schemaName}.study_user where coalesce (act_flg,1) != 0 and usr_id=$1) order by "priorityCount" desc, "ingestionCount" desc, "staleFilesCount" desc, sponsorname asc, protocolnumber asc`;
 
@@ -124,7 +124,7 @@ exports.searchStudyList = function (req, res) {
       searchParam,
     });
     // console.log("search", searchParam, userId);
-    const searchQuery = `SELECT prot_id, protocolnumber, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
+    const searchQuery = `SELECT prot_id, protocolnumber, protocolnumberstandard, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
     FROM  ${schemaName}.study_ingestion_dashboard
     WHERE prot_id in (select prot_id from study_user where usr_id=$2) AND (LOWER(protocolnumber) LIKE $1 OR LOWER(sponsorname) LIKE $1 OR LOWER(projectcode) LIKE $1) LIMIT 10`;
 
