@@ -229,6 +229,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       }
     }
 
+    console.log("Success");
     // return;
 
     let ResponseBody = {};
@@ -805,7 +806,8 @@ exports.updateDataFlow = async (req, res) => {
             DFVer,
             externalSysName,
             conf_data,
-            userId
+            userId,
+            ConnectionType
           )
           .then((res) => {
             if (res && res.errRes?.length) {
