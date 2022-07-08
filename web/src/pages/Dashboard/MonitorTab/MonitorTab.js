@@ -21,14 +21,18 @@ import Button from "apollo-react/components/Button";
 import Switch from "apollo-react/components/Switch";
 import DownloadIcon from "apollo-react-icons/Download";
 import FilterIcon from "apollo-react-icons/Filter";
+import StatusCheckIcon from "apollo-react-icons/StatusCheck";
+import StatusDotOutlineIcon from "apollo-react-icons/StatusDotOutline";
+import StatusExclamationIcon from "apollo-react-icons/StatusExclamation";
 
 import { moreColumnsWithFrozen } from "./columns.data";
+import InfoCard from "./InfoCard";
 
 import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg";
 import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
 import { ReactComponent as DatasetsIcon } from "../../../components/Icons/dataset.svg";
 import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
-
+import { ReactComponent as QuarantineIcon } from "../../../components/Icons/Failed.svg";
 import "../Dashboard.scss";
 
 import usePermission, {
@@ -36,6 +40,8 @@ import usePermission, {
   Features,
   useStudyPermission,
 } from "../../../components/Common/usePermission";
+import DatasetTable from "./DatasetTable";
+import { queryParams } from "./helper";
 
 export default function MonitorTab({ fetchLatestData, protId }) {
   const [open, setOpen] = useState(false);
@@ -46,6 +52,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
   const [activeOnly, setActiveOnly] = useState(true);
   const [columnsState, setColumns] = useState(moreColumnsWithFrozen);
   const [hasUpdated, setHasUpdated] = useState(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [summary, setSummary] = useState({
     failed_loads: 0,
     quarantined_files: 0,
@@ -73,7 +80,19 @@ export default function MonitorTab({ fetchLatestData, protId }) {
 
   useEffect(() => {
     fetchLatestData(control, activeOnly);
+    const intervalId = setInterval(() => {
+      fetchLatestData(control, activeOnly);
+    }, 60000);
+    return () => {
+      clearInterval(intervalId);
+    };
   }, [activeOnly, control, protId]);
+
+  useEffect(() => {
+    if (dashboard?.summaryLoading === false && !hasLoadedOnce && protId) {
+      setHasLoadedOnce(true);
+    }
+  }, [dashboard?.summaryLoading]);
 
   const handleChange = (e, checked) => {
     setActiveOnly(checked);
@@ -88,23 +107,6 @@ export default function MonitorTab({ fetchLatestData, protId }) {
   };
   const CustomHeader = ({ toggleFilters }) => (
     <div>
-      <Switch
-        label="Show active datasets"
-        size="small"
-        checked={activeOnly}
-        labelPlacement="start"
-        className="MuiSwitch"
-        onChange={handleChange}
-        style={{ marginRight: 21 }}
-      />
-      <Button
-        id="downloadBtn"
-        icon={<DownloadIcon />}
-        size="small"
-        style={{ marginRight: 16 }}
-      >
-        Download
-      </Button>
       <Button
         size="small"
         id="filterBtn"
@@ -149,7 +151,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
   }
   return (
     <div>
-      {dashboard.summaryLoading && <Loader />}
+      {dashboard.summaryLoading && !hasLoadedOnce && <Loader />}
       <Hero>
         <div className="topContainer">
           <Typography
@@ -177,137 +179,117 @@ export default function MonitorTab({ fetchLatestData, protId }) {
           </div>
         </div>
         <div className="dashboardSummary">
-          <div className="dashInfo">
-            <div className="dashCounter">
-              <FailureIcon
-                className="conter-icon failureIcon"
-                style={{ fill: "#000000" }}
-              />
-              <Typography variant="h1" darkMode id="failed_loads_count">
-                {summary.failed_loads || 0}
-              </Typography>
-            </div>
-            <div className="dashInfoLabel">
-              <Typography darkMode style={{ marginRight: 5 }}>
-                Failed Loads
-              </Typography>
-              <InfoIcon
-                onMouseOver={() =>
-                  handlePeekOpen(
-                    "Failed Loads",
-                    "Files that did not load due to file/table issues"
-                  )
-                }
-                onMouseOut={() => setOpen(false)}
-              />
-            </div>
-          </div>
-          <div className="dashInfo">
-            <div className="dashCounter">
-              <StatusNegativeIcon className="conter-icon" />
-              <Typography variant="h1" darkMode id="quarantined_files_count">
-                {summary.quarantined_files || 0}
-              </Typography>
-            </div>
-            <div className="dashInfoLabel">
-              <Typography darkMode style={{ marginRight: 5 }}>
-                Quarantined Files
-              </Typography>
-              <InfoIcon
-                onMouseOver={() =>
-                  handlePeekOpen(
-                    "Quarantined Files",
-                    "Files being processed for value level conformance rules assigned the action of 'reject'."
-                  )
-                }
-                onMouseOut={() => setOpen(false)}
-              />
-            </div>
-          </div>
-          <div className="dashInfo">
-            <div className="dashCounter">
-              <SwapVertIcon className="conter-icon" />
-              <Typography variant="h1" darkMode id="files_exceeding_count">
-                {summary.files_exceeding || 0}
-              </Typography>
-            </div>
-            <div className="dashInfoLabel">
-              <Typography darkMode style={{ marginRight: 5 }}>
-                Files exceeding % change
-              </Typography>
-              <InfoIcon
-                onMouseOver={() =>
-                  handlePeekOpen(
-                    "Files exceeding % change",
-                    "Files in which the change in the number of records received exceeded the configured % row count decrease allowed"
-                  )
-                }
-                onMouseOut={() => setOpen(false)}
-              />
-            </div>
-          </div>
-          <div className="dashInfo">
-            <div className="dashCounter">
-              <IssueIcon className="conter-icon" style={{ fill: "#000000" }} />
-              <Typography variant="h1" darkMode id="fileswith_issues_count">
-                {summary.fileswith_issues || 0}
-              </Typography>
-            </div>
-            <div className="dashInfoLabel">
-              <Typography darkMode style={{ marginRight: 5 }}>
-                Files with Ingestion Issues
-              </Typography>
-              <InfoIcon
-                onMouseOver={() =>
-                  handlePeekOpen(
-                    "Files with Ingestion Issues",
-                    "Files that were successfully loaded, but validation issues were found"
-                  )
-                }
-                onMouseOut={() => setOpen(false)}
-              />
-            </div>
-          </div>
-          <div className="dashInfo">
-            <div className="dashCounter">
-              <StaleIcon className="conter-icon" />
-              <Typography variant="h1" darkMode id="stale_datasets_count">
-                {summary.stale_datasets || 0}
-              </Typography>
-            </div>
-            <div className="dashInfoLabel">
-              <Typography darkMode style={{ marginRight: 5 }}>
-                Stale Datasets
-              </Typography>
-              <InfoIcon
-                onMouseOver={() =>
-                  handlePeekOpen(
-                    "Stale Datasets",
-                    "Datasets for which a file has not been received within the specified number of days"
-                  )
-                }
-                onMouseOut={() => setOpen(false)}
-              />
-            </div>
-          </div>
-          <Peek
-            open={open}
-            followCursor
-            placement="bottom"
-            content={
-              <div style={{ maxWidth: 400 }}>
-                <Typography
-                  variant="title2"
-                  gutterBottom
-                  style={{ fontWeight: 600 }}
-                >
-                  {curRow.name}
-                </Typography>
-                <Typography variant="body2" style={{ color: neutral8 }}>
-                  {curRow.description}
-                </Typography>
-              </div>
-            }
+          <InfoCard
+            title="Dataset Pipelines"
+            subtitle="Count of the Active Datasets, i.e. All the Datasets associated with the user’s studies."
+            value={totalCount}
+            icon={StatusCheckIcon}
+            color="green"
+            handlePeekOpen={handlePeekOpen}
+            closePeek={() => setOpen(false)}
+            handleViewClick={() => {
+              history.push("/dashboard/monitor");
+            }}
+          />
+          <InfoCard
+            title="In Queue"
+            subtitle="Count of all datasets whose latest job status is Queued"
+            value={summary?.in_queue}
+            icon={StatusDotOutlineIcon}
+            color="blueDark"
+            handlePeekOpen={handlePeekOpen}
+            closePeek={() => setOpen(false)}
+            handleViewClick={() => {
+              history.push(
+                `/dashboard/monitor?${queryParams.JOB_STATUS_IN_QUEUE}`
+              );
+            }}
+          />
+          <InfoCard
+            title="Data Refresh Alerts"
+            subtitle="Count of all datasets whose latest job status is Failed."
+            value={summary?.data_refresh_alerts}
+            icon={() => {
+              return <FailureIcon style={{ fill: "#e20000" }} />;
+            }}
+            handlePeekOpen={handlePeekOpen}
+            closePeek={() => setOpen(false)}
+            handleViewClick={() => {
+              history.push(
+                `/dashboard/monitor?${queryParams.JOB_STATUS_FAILED}`
+              );
+            }}
+          />
+          <InfoCard
+            title="Data Latency Warnings"
+            subtitle="Count of all jobs which breached the SLA (SLA = 3 hours) for the latest job run"
+            value={summary?.data_latency_warnings}
+            icon={StatusExclamationIcon}
+            color="orange"
+            handlePeekOpen={handlePeekOpen}
+            closePeek={() => setOpen(false)}
+            handleViewClick={() => {
+              history.push(`/dashboard/monitor?${queryParams.LATENCY_WARNING}`);
+            }}
+          />
+          <InfoCard
+            title="Files exceed % of change"
+            subtitle="Files in which the change in the number of records received exceeded the configured % row count decrease allowed."
+            value={summary?.files_exceeding}
+            icon={() => {
+              return (
+                <SwapVertIcon
+                  style={{ fill: "#595959" }}
+                  className="conter-icon"
+                />
+              );
+            }}
+            color="orange"
+            handlePeekOpen={handlePeekOpen}
+            closePeek={() => setOpen(false)}
+            handleViewClick={() => {
+              history.push(
+                `/dashboard/monitor?${queryParams.EXCEEDS_PER_CHANGE}`
+              );
+            }}
+          />
+          <InfoCard
+            title="Stale  Datasets"
+            subtitle="Datasets for which a file has not been received within the specified number of days."
+            value={summary?.stale_datasets}
+            icon={() => {
+              return (
+                <StaleIcon
+                  style={{ fill: "#e20000" }}
+                  className="conter-icon"
+                />
+              );
+            }}
+            color="orange"
+            handlePeekOpen={handlePeekOpen}
+            closePeek={() => setOpen(false)}
+            handleViewClick={() => {
+              history.push(`/dashboard/monitor?${queryParams.STALE}`);
+            }}
+          />
+          <InfoCard
+            title="Quarantined Files"
+            subtitle="Files being processed for value level conformance rules assigned the action of 'reject'."
+            value={summary?.quarantined_files}
+            icon={() => {
+              return (
+                <QuarantineIcon
+                  style={{ fill: "#e20000", color: "#e20000" }}
+                  className="conter-icon"
+                />
+              );
+            }}
+            color="red"
+            handlePeekOpen={handlePeekOpen}
+            closePeek={() => setOpen(false)}
+            handleViewClick={() => {
+              history.push(`/dashboard/monitor?${queryParams.QUARANTINE}`);
+            }}
           />
         </div>
       </Hero>
@@ -317,47 +299,9 @@ export default function MonitorTab({ fetchLatestData, protId }) {
         style={{ padding: "12px 5px 24px 5px", backgroundColor: "#f8f9fb" }}
       >
         <Grid item sm={12}>
-          <Table
-            key="studyDatasets"
-            title="Study Datasets"
-            subtitle={
-              <div style={{ position: "relative" }}>
-                <DatasetsIcon
-                  style={{
-                    position: "relative",
-                    top: 2,
-                    marginRight: 5,
-                    width: "14px",
-                    height: "14px",
-                  }}
-                />
-                {`${totalCount} datasets`}
-              </div>
-            }
-            columns={columnsState}
-            rows={rows.map((row) => ({
-              ...row,
-              canReadIngestionIssues,
-              history,
-            }))}
-            initialSortedColumn="datasetname"
-            rowsPerPageOptions={[10, 50, 100, "All"]}
-            tablePaginationProps={{
-              labelDisplayedRows: ({ from, to, count }) =>
-                `${count === 1 ? "Item " : "Items"} ${from}-${to} of ${count}`,
-              truncate: true,
-            }}
-            CustomHeader={(props) => <CustomHeader {...props} />}
-            columnSettings={{
-              enabled: true,
-              onChange: (columns) => {
-                setHasUpdated(true);
-                setColumns(columns);
-              },
-              defaultColumns: moreColumnsWithFrozen,
-              frozenColumnsEnabled: true,
-            }}
-          />
+          <div className="hide-pagination">
+            <DatasetTable rows={rows} CustomHeader={CustomHeader} />
+          </div>
         </Grid>
       </Grid>
     </div>
