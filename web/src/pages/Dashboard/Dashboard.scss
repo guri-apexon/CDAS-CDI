@@ -83,6 +83,7 @@
   align-items: center;
   justify-content: space-around;
   padding: 50px 0;
+  column-gap: 16px;
   .dashInfo {
     display: flex;
     flex-direction: column;
@@ -126,6 +127,12 @@
     fill: #ffffff;
   }
 }
+.successStatus svg {
+  width: 14px;
+}
+.inProgressStatus svg {
+  width: 14px;
+}
 .queueStatus {
   background-color: transparent;
   border: 1px solid #9e54b0;
@@ -144,4 +151,10 @@
 }
 svg.card-icon path {
   fill: #444444;
+}
+
+.hide-pagination {
+  table tfoot {
+    display: none;
   }
+}
