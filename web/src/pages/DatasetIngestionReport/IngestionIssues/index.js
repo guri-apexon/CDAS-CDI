@@ -28,7 +28,7 @@ import {
 import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
 import Header from "../Header";
 import IssueLeftPanel from "./LeftSidebar";
-import { TextFieldFilter } from "../../../utils";
+import { IntegerFilter, TextFieldFilter } from "../../../utils";
 import IssuesProperties from "./Properties";
 import IssueRightPanel from "./RightSidebar";
 import {
@@ -80,13 +80,13 @@ const IngestionIssues = () => {
     },
   ];
 
-  const columns = [
+  const fixedColumns = [
     {
       header: "Record #",
-      accessor: "record_no",
-      sortFunction: compareStrings,
-      filterFunction: createStringSearchFilter("record_no"),
-      filterComponent: TextFieldFilter,
+      accessor: "_rowno",
+      sortFunction: compareNumbers,
+      filterFunction: numberSearchFilter("_rowno"),
+      filterComponent: IntegerFilter,
       customCell: ({ row, column: { accessor: key } }) => {
         return (
           <Link className="rightpanel-link" onClick={() => openRightPanel(row)}>
@@ -95,18 +95,8 @@ const IngestionIssues = () => {
         );
       },
     },
-    {
-      header: (
-        <>
-          <IssueIcon className="black-icon table-th" />
-          sub_id
-        </>
-      ),
-      accessor: "sub_id",
-      filterFunction: createStringSearchFilter("sub_id"),
-      filterComponent: TextFieldFilter,
-    },
   ];
+  const [columns, setColumns] = useState(fixedColumns);
   const downloadSummery = () => {
     console.log("downloadSummery");
   };
@@ -145,13 +135,37 @@ const IngestionIssues = () => {
     if (issuesRes) setIssuesArr(issuesRes);
     console.log("Response::", issuesRes);
   };
+  const addDynamicCol = (cols) => {
+    const columnsArr = [...fixedColumns];
+    cols.forEach((col) => {
+      const columnObj = {
+        header: (
+          <>
+            <IssueIcon className="black-icon table-th" />
+            {col}
+          </>
+        ),
+        accessor: col,
+        filterFunction: createStringSearchFilter(col),
+        filterComponent: TextFieldFilter,
+      };
+      columnsArr.push(columnObj);
+    });
+    setColumns(columnsArr);
+  };
   const refreshData = async (data) => {
     const filteredIssue = issuesArr.filter((x) => data.includes(x.issue_type));
     if (filteredIssue?.length) {
       const refreshedData = await getIngestionIssueCols({
         selectedIssues: filteredIssue,
       });
-      console.log("refreshedData", refreshedData);
+      const issuesColumns = Object.keys(refreshedData[0]).filter(
+        (x) => x !== "_rowno"
+      );
+      addDynamicCol(issuesColumns);
+      setTimeout(() => {
+        setTableRows(refreshedData);
+      }, 1000);
     }
   };
 
@@ -191,11 +205,11 @@ const IngestionIssues = () => {
           >
             <Table
               title="Ingestion Issues"
-              subtitle="20 records with issues"
+              subtitle={`${tableRows.length} records with issues`}
               columns={columns}
               rows={tableRows}
-              rowId="record_no"
-              initialSortedColumn="record_no"
+              rowId="_rowno"
+              initialSortedColumn="_rowno"
               initialSortOrder="asc"
               rowsPerPageOptions={[5, 10, 15, "All"]}
               tablePaginationProps={{
