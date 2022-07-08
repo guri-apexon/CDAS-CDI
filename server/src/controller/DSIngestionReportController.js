@@ -334,8 +334,8 @@ exports.getIssues = async (req, res) => {
       Issue_Type,
       count(distinct rownumbers) as NoOfErrors,
          STRING_AGG (distinct pkColumns, ',') as pkColumns,
-         STRING_AGG (distinct rownumbers, ',') as errorrownumbers,
-      STRING_AGG (distinct Columnname, ',') as errorcolumnnames,
+         array_agg (distinct rownumbers::INTEGER) as errorrownumbers,
+         array_agg (distinct Columnname) as errorcolumnnames,
       allcolumns
       from 
       (
@@ -404,7 +404,7 @@ exports.getIssueColumns = async (req, res) => {
         // await jdbc(
         //   dbUser,
         //   dbPass,
-        //   `jdbc:hive2://${hostName}:${port}/${databasename};transportMode=https;httpPath=cliservice;ssl=1;AllowSelfSignedCerts=1;AuthMech=3`,
+        //   `jdbc:hive2://ca2u01hdku01d.quintiles.net:10000/default;ssl=1;principal=hive/ca2u01hdku01d.quintiles.net@QUINTILES.NET;sslTrustStore=C://Program Files//Java//jdk-16.0.1//lib//security//jssecacerts;trustStorePassword=changeit`,
         //   "com.cloudera.hive.jdbc41.HS2Driver",
         //   query,
         //   "query executed successfully.",
@@ -752,11 +752,11 @@ exports.getIssueColumns = async (req, res) => {
         date_format_9: "10-10-20202_T_23:59:59",
       },
     ];
-    // return apiResponse.successResponseWithData(
-    //   res,
-    //   "Issues columns retieved successfully",
-    //   columns
-    // );
+    return apiResponse.successResponseWithData(
+      res,
+      "Issues columns retieved successfully",
+      columns
+    );
   } catch (err) {
     const msg = err.message || COMMON_ERR;
     Logger.error("catch :getIssueColumns");

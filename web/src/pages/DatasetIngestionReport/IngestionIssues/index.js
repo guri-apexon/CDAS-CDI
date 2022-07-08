@@ -1,3 +1,5 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-script-url */
@@ -36,40 +38,41 @@ import {
   getIngestionIssues,
 } from "../../../services/ApiServices";
 
-const rows = [
-  {
-    record_no: "1",
-    sub_id: "1221321",
-  },
-  {
-    record_no: "2",
-    sub_id: "3213232",
-  },
-  {
-    record_no: "3",
-    sub_id: "4343",
-  },
-  {
-    record_no: "4",
-    sub_id: "443243",
-  },
-];
-
 const IngestionIssues = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const { datasetProperties } = useSelector((state) => state.ingestionReports);
-  const [tableRows, setTableRows] = useState(rows);
+  const [tableRows, setTableRows] = useState([]);
   const [currentTab, setCurrentTab] = useState(0);
   const [viewAllCol, setViewAllCol] = useState(false);
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
-  const [showRightPanel, setShowRightPanel] = useState(false);
-  const [issuesArr, setIssuesArr] = useState([]);
+  const [rowDetails, setRowDetails] = useState(null);
+  const [selectedIssues, setSelectedIssues] = useState([]);
+  const [tableLoading, setTableloading] = useState(false);
   const { datasetId } = useParams();
 
+  const rowNoCell = ({ row, column: { accessor: key } }) => {
+    return (
+      <Link className="rightpanel-link" onClick={(e) => openRightPanel(row)}>
+        {row[key]}
+      </Link>
+    );
+  };
+  const fixedColumns = [
+    {
+      header: "Record #",
+      accessor: "_rowno",
+      sortFunction: compareNumbers,
+      filterFunction: numberSearchFilter("_rowno"),
+      filterComponent: IntegerFilter,
+      customCell: rowNoCell,
+    },
+  ];
+  const [columns, setColumns] = useState(fixedColumns);
+
   const openRightPanel = (row) => {
-    console.log("openRightPanel", row);
-    setShowRightPanel(true);
+    const rowId = row._rowno;
+    setRowDetails(row);
   };
 
   const breadcrumpItems = [
@@ -80,23 +83,6 @@ const IngestionIssues = () => {
     },
   ];
 
-  const fixedColumns = [
-    {
-      header: "Record #",
-      accessor: "_rowno",
-      sortFunction: compareNumbers,
-      filterFunction: numberSearchFilter("_rowno"),
-      filterComponent: IntegerFilter,
-      customCell: ({ row, column: { accessor: key } }) => {
-        return (
-          <Link className="rightpanel-link" onClick={() => openRightPanel(row)}>
-            {row[key]}
-          </Link>
-        );
-      },
-    },
-  ];
-  const [columns, setColumns] = useState(fixedColumns);
   const downloadSummery = () => {
     console.log("downloadSummery");
   };
@@ -129,12 +115,6 @@ const IngestionIssues = () => {
       </>
     );
   };
-  const fetchIssues = async () => {
-    console.log("Mount Issue", datasetId);
-    const issuesRes = await getIngestionIssues(datasetId);
-    if (issuesRes) setIssuesArr(issuesRes);
-    console.log("Response::", issuesRes);
-  };
   const addDynamicCol = (cols) => {
     const columnsArr = [...fixedColumns];
     cols.forEach((col) => {
@@ -154,24 +134,21 @@ const IngestionIssues = () => {
     setColumns(columnsArr);
   };
   const refreshData = async (data) => {
-    const filteredIssue = issuesArr.filter((x) => data.includes(x.issue_type));
-    if (filteredIssue?.length) {
+    console.log("refreshData", data);
+    setSelectedIssues(data);
+    if (data?.length) {
+      setTableloading(true);
       const refreshedData = await getIngestionIssueCols({
-        selectedIssues: filteredIssue,
+        selectedIssues: data,
       });
       const issuesColumns = Object.keys(refreshedData[0]).filter(
         (x) => x !== "_rowno"
       );
       addDynamicCol(issuesColumns);
-      setTimeout(() => {
-        setTableRows(refreshedData);
-      }, 1000);
+      setTableRows(refreshedData);
+      setTableloading(false);
     }
   };
-
-  useEffect(() => {
-    fetchIssues();
-  }, []);
 
   return (
     <main className="ingestion-issues">
@@ -191,19 +168,20 @@ const IngestionIssues = () => {
       {currentTab === 0 && (
         <section className="content-wrapper flex">
           <IssueLeftPanel
+            datasetId={datasetId}
             width={346}
             closePanel={() => setLeftPanelCollapsed(true)}
             openPanel={() => setLeftPanelCollapsed(false)}
-            listArr={issuesArr}
             setSelectedIssues={(data) => refreshData(data)}
           />
           <div
             id="mainTable"
             style={{
-              width: leftPanelCollapsed ? "100%" : "calc(100% - 346px)",
+              width: rowDetails ? "calc(100% - 634px)" : "100%",
             }}
           >
             <Table
+              isLoading={tableLoading}
               title="Ingestion Issues"
               subtitle={`${tableRows.length} records with issues`}
               columns={columns}
@@ -222,10 +200,11 @@ const IngestionIssues = () => {
               CustomHeader={(props) => <CustomButtonHeader {...props} />}
             />
           </div>
-          {showRightPanel && (
+          {rowDetails && (
             <Panel
               id="rightSidebar"
               side="right"
+              width={288}
               hideButton
               open={true}
               onOpen={() => {
@@ -233,8 +212,10 @@ const IngestionIssues = () => {
               }}
             >
               <IssueRightPanel
+                rowDetails={rowDetails}
+                selectedIssues={selectedIssues}
                 closePanel={() => {
-                  setShowRightPanel(false);
+                  setRowDetails(null);
                 }}
               />
             </Panel>

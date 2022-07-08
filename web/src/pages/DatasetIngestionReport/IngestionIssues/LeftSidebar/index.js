@@ -12,41 +12,21 @@ import Table from "apollo-react/components/Table/Table";
 import Checkbox from "apollo-react/components/Checkbox/Checkbox";
 import { compareNumbers } from "apollo-react/components/Table";
 import "./index.scss";
-
-const rows = [
-  {
-    issue_type: "Issue Type1",
-    records_no: 10,
-    checked: true,
-  },
-  {
-    issue_type: "Issue Type2",
-    records_no: 20,
-    checked: true,
-  },
-  {
-    issue_type: "Issue Type3",
-    records_no: 30,
-    checked: false,
-  },
-  {
-    issue_type: "Issue Type4",
-    records_no: 40,
-    checked: false,
-  },
-];
+import { getIngestionIssues } from "../../../../services/ApiServices";
 
 const IssueLeftPanel = ({
   closePanel,
   openPanel,
   width,
   opened,
-  listArr,
   setSelectedIssues,
+  datasetId,
 }) => {
   const [selectedAll, setSelectedAll] = useState(false);
   const [tableRows, setTableRows] = useState([]);
   const [open, setOpen] = useState(opened || true);
+  const [issuesArr, setIssuesArr] = useState([]);
+  const [listLoading, setListLoading] = useState(true);
   const selectAll = (e, v) => {
     setSelectedAll(v);
     setTableRows((prevRows) => prevRows.map((x) => ({ ...x, checked: v })));
@@ -87,7 +67,7 @@ const IssueLeftPanel = ({
     },
     {
       header: "# of records",
-      accessor: "records_no",
+      accessor: "nooferrors",
       sortFunction: compareNumbers,
       width: 120,
       customCell: ({ row, column: { accessor: key } }) => {
@@ -95,23 +75,22 @@ const IssueLeftPanel = ({
       },
     },
   ];
+  const fetchIssues = async () => {
+    const issuesRes = await getIngestionIssues(datasetId);
+    setListLoading(false);
+    if (issuesRes) setIssuesArr(issuesRes);
+    setTableRows(issuesRes);
+  };
   useEffect(() => {
     if (tableRows.length) {
       setSelectedAll(tableRows.every((x) => x.checked));
-      const selectedIssues = tableRows
-        .filter((x) => x.checked)
-        .map((x) => x.issue_type);
+      const selectedIssues = tableRows.filter((x) => x.checked);
       setSelectedIssues(selectedIssues);
     }
   }, [tableRows]);
   useEffect(() => {
-    const data = listArr.map((row) => ({
-      records_no: row.nooferrors,
-      issue_type: row.issue_type,
-      checked: false,
-    }));
-    setTableRows(data);
-  }, [listArr]);
+    fetchIssues();
+  }, []);
 
   return (
     <Panel
@@ -126,6 +105,7 @@ const IssueLeftPanel = ({
       width={width || 446}
     >
       <Table
+        isLoading={listLoading}
         title="Filter"
         subtitle="Ingestion Issue Types"
         columns={columns}

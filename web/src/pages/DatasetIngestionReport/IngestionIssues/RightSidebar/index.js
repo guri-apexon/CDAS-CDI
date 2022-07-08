@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-script-url */
 import React, { useState, useEffect } from "react";
@@ -19,14 +20,39 @@ const ListHeader = ({ menu }) => {
     </div>
   );
 };
-const IssueRightPanel = ({ closePanel, openPanel, width, opened }) => {
+const IssueRightPanel = ({
+  closePanel,
+  openPanel,
+  width,
+  opened,
+  rowDetails,
+  selectedIssues,
+}) => {
   const [selectedTab, setSelectedTab] = useState(1);
-  useEffect(() => {}, []);
+  const [columns, setColumns] = useState([]);
+  const [rowFilters, setRowFilters] = useState([]);
+  useEffect(() => {
+    const { _rowno, ...rest } = rowDetails;
+    setColumns(rest);
+  }, [rowDetails]);
+  useEffect(() => {
+    const rowId = rowDetails?._rowno; // errorrownumbers
+    if (rowId) {
+      const data = selectedIssues.filter((x) =>
+        x.errorrownumbers.includes(rowId)
+      );
+      setRowFilters(data);
+      console.log("selectedIssues", rowFilters);
+    }
+  }, [selectedIssues]);
 
   return (
     <aside id="rightSidebar">
       <div className="header">
-        <Typography variant="title1">Record 22</Typography>
+        <Typography variant="title1">
+          Record&nbsp;
+          {rowDetails._rowno}
+        </Typography>
         <Typography variant="title">Record issues</Typography>
         <IconButton className="close" size="small">
           <Close onClick={closePanel} />
@@ -52,25 +78,26 @@ const IssueRightPanel = ({ closePanel, openPanel, width, opened }) => {
       {selectedTab === 1 && (
         <div className="issues-list">
           <ListHeader menu={["Issue name", "Columns with issues"]} />
-          {[1, 2, 3, 4].map((issue) => {
+          {rowFilters.map((issue, i) => {
             return (
-              <Accordion defaultExpanded>
+              <Accordion defaultExpanded={i === 0}>
                 <AccordionSummary className="issue-header">
                   <Typography>
-                    Header
-                    <span>2</span>
+                    {issue.issue_type}
+                    <span>{Object.keys(columns).length}</span>
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <ul>
-                    {[1, 2].map((err) => {
-                      return (
-                        <li key={err}>
-                          <small>sex:</small>
-                          <span>Female</span>
-                        </li>
-                      );
-                    })}
+                    {columns &&
+                      Object.keys(columns).map((col) => {
+                        return (
+                          <li key={col}>
+                            <small>{`${col}:`}</small>
+                            <span>{columns[col]}</span>
+                          </li>
+                        );
+                      })}
                   </ul>
                 </AccordionDetails>
               </Accordion>
@@ -81,30 +108,35 @@ const IssueRightPanel = ({ closePanel, openPanel, width, opened }) => {
       {selectedTab === 2 && (
         <div className="columns-list">
           <ListHeader menu={["Column name", "Issues"]} />
-          {[1, 2, 3, 4].map((issue) => {
-            return (
-              <Accordion defaultExpanded>
-                <AccordionSummary className="issue-header">
-                  <Typography>
-                    Header
-                    <span>2</span>
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <ul>
-                    {[1, 2].map((err) => {
-                      return (
-                        <li key={err}>
-                          <span>sex:</span>
-                          <span>Female</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </AccordionDetails>
-              </Accordion>
-            );
-          })}
+          {columns &&
+            Object.keys(columns).map((col, i) => {
+              return (
+                <Accordion defaultExpanded={i === 0}>
+                  <AccordionSummary className="issue-header">
+                    <Typography>
+                      {col}
+                      <span>2</span>
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <ul>
+                      <li>
+                        <span>Value:&nbsp;</span>
+                        <span>{columns[col]}</span>
+                      </li>
+                      {[1, 2].map((err) => {
+                        return (
+                          <li key={err}>
+                            <span>sex:</span>
+                            <span>Female</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </AccordionDetails>
+                </Accordion>
+              );
+            })}
         </div>
       )}
     </aside>

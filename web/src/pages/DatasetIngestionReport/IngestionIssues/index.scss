@@ -20,6 +20,7 @@
     }
   }
   #mainTable {
+    flex: 1;
     margin-left: auto;
     padding: 22px;
     .v-line {
@@ -29,6 +30,9 @@
       display: inline-block;
       vertical-align: middle;
       margin-right: 10px;
+    }
+    .MuiTableCell-head {
+      white-space: nowrap;
     }
     .inline-checkbox {
       margin-right: 12px;
