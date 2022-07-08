@@ -229,6 +229,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       }
     }
 
+    console.log("Success");
     // return;
 
     let ResponseBody = {};
@@ -765,7 +766,7 @@ exports.updateDataFlow = async (req, res) => {
     let {
       rows: [existDf],
     } = await DB.executeQuery(
-      `select * from ${schemaName}.dataflow where externalsystemname='${externalSystemName}' and externalid='${ExternalId}'`
+      `select * from ${schemaName}.dataflow where UPPER(externalsystemname)='${externalSystemName.toUpperCase()}' and externalid='${ExternalId}'`
     );
 
     if (existDf && !isCDI) {
@@ -833,7 +834,8 @@ exports.updateDataFlow = async (req, res) => {
             DFVer,
             externalSysName,
             conf_data,
-            userId
+            userId,
+            ConnectionType
           )
           .then((res) => {
             if (res && res.errRes?.length) {
