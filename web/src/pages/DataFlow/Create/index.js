@@ -571,7 +571,12 @@ const DataFlow = ({
                   currentStep={currentStep}
                   breadcrumbItems={breadcrumbItems}
                   icon={<DataPackageIcon className={classes.contentIcon} />}
-                  submitting={submitting}
+                  submitting={
+                    submitting ||
+                    (currentStep >= 5 &&
+                      !(messageContext?.dataflowObj?.columnDefinition || [])
+                        .length)
+                  }
                   tabularSod={tabularSod}
                 />
               </div>

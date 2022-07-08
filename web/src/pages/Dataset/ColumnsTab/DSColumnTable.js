@@ -42,6 +42,7 @@ export default function DSColumnTable({
   locationType,
   dfId,
   dpId,
+  setDatasetColumnsExist,
 }) {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
@@ -71,6 +72,7 @@ export default function DSColumnTable({
   const { dsProdLock, dsTestLock, versionFreezed } = useSelector(
     (state) => state.dataFlow
   );
+  const dataFlowdetail = useSelector((state) => state.dataFlow.dataFlowdetail);
 
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
@@ -134,6 +136,9 @@ export default function DSColumnTable({
     if (rows.length) {
       setFilteredRows(rows);
     }
+    setDatasetColumnsExist(
+      rows.find((e) => e?.isSaved === true)?.isSaved ? true : false
+    );
   }, [rows]);
 
   // useEffect(() => {
@@ -695,7 +700,9 @@ export default function DSColumnTable({
 
   const onRowDelete = async (uniqueId) => {
     const isInDB = rows.find((row) => row.uniqueId === uniqueId);
-    if (isInDB) {
+    if (dataFlowdetail.active) {
+      messageContext.showErrorMessage(`Please Inactivate the data flow first`);
+    } else if (isInDB) {
       if (isInDB.dbColumnId !== ("" || undefined || null)) {
         const deleteRes = await deleteCD(
           isInDB.dbColumnId,
@@ -705,8 +712,8 @@ export default function DSColumnTable({
           versionFreezed
         );
       }
+      setRows((prevRows) => prevRows.filter((e) => e.uniqueId !== uniqueId));
     }
-    setRows((prevRows) => prevRows.filter((e) => e.uniqueId !== uniqueId));
     // setEditedRows([...newData]);
   };
 

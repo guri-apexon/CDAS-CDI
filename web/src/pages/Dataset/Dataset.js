@@ -102,6 +102,7 @@ const Dataset = () => {
   const [locationType, setLocationType] = useState("sftp");
   const [columnsActive, setColumnsActive] = useState(false);
   const [openModal, setopenModal] = useState(false);
+  const [checkDatasetColumnsExist, setDatasetColumnsExist] = useState(true);
   const dispatch = useDispatch();
   const params = useParams();
   const messageContext = useContext(MessageContext);
@@ -146,7 +147,9 @@ const Dataset = () => {
     formDataSQL,
     isDatasetFetched,
     VLCData,
+    datasetColumns,
   } = dataSets;
+
   const datasetid = params.datasetId;
   const { datasetid: dsId } = selectedDataset;
   const { isCustomSQL, tableName } = formDataSQL;
@@ -194,7 +197,12 @@ const Dataset = () => {
         history.push("/dashboard");
       }
     }
+    setDatasetColumnsExist(datasetColumns.length ? true : false);
   }, []);
+
+  useEffect(() => {
+    setDatasetColumnsExist(datasetColumns.length ? true : false);
+  }, [datasetColumns.length]);
 
   useEffect(() => {
     setValue(0);
@@ -429,22 +437,20 @@ const Dataset = () => {
                     ))}
                   </Tabs>
                 )}
-                {(!value || value === 0) && (
-                  <ButtonGroup
-                    alignItems="right"
-                    buttonProps={[
-                      {
-                        label: "Cancel",
-                        onClick: () => setopenModal(true),
-                      },
-                      {
-                        label: "Save",
-                        onClick: () => submitForm(),
-                        disabled: !canUpdateDataFlow,
-                      },
-                    ]}
-                  />
-                )}
+                <ButtonGroup
+                  alignItems="right"
+                  buttonProps={[
+                    {
+                      label: "Cancel",
+                      onClick: () => setopenModal(true),
+                    },
+                    {
+                      label: "Save",
+                      onClick: () => submitForm(),
+                      disabled: !canUpdateDataFlow || !checkDatasetColumnsExist,
+                    },
+                  ]}
+                />
               </div>
             </div>
 
@@ -487,6 +493,9 @@ const Dataset = () => {
                   locationType={locationType}
                   dfId={dfId}
                   dpId={dpId}
+                  setDatasetColumnsExist={(disableSave) =>
+                    setDatasetColumnsExist(disableSave)
+                  }
                 />
               )}
               {datasetid !== "new" && value === 2 && !!VLCData?.length && (
