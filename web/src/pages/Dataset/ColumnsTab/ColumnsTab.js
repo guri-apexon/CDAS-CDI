@@ -22,7 +22,13 @@ import usePermission, {
   useStudyPermission,
 } from "../../../components/Common/usePermission";
 
-const ColumnsTab = ({ locationType, dfId, dpId, setDatasetColumnsExist }) => {
+const ColumnsTab = ({
+  locationType,
+  dfId,
+  dpId,
+  setDatasetColumnsExist,
+  selectedDataset,
+}) => {
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
@@ -217,6 +223,7 @@ const ColumnsTab = ({ locationType, dfId, dpId, setDatasetColumnsExist }) => {
           setDatasetColumnsExist={(disableSave) =>
             setDatasetColumnsExist(disableSave)
           }
+          selectedDataset={selectedDataset}
         />
       </>
     );

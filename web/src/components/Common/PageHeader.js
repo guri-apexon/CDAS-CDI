@@ -12,14 +12,20 @@ const PageHeader = ({ height = 120 }) => {
   const { selectedCard } = dashboard;
 
   useEffect(() => {
+    const dataflowCount =
+      selectedCard?.ActiveDfCount &&
+      `${selectedCard?.ActiveDfCount} Active / ${selectedCard?.InActiveDfCount} Inactive`;
+    const datasetCount =
+      selectedCard?.ActiveDsCount &&
+      `${selectedCard?.ActiveDsCount} Active / ${selectedCard?.InActiveDsCount} Inactive`;
     const updateData = [
       { label: "Protocol Number", value: selectedCard?.protocolnumber },
       { label: "Sponsor", value: selectedCard?.sponsorname },
       { label: "Project Code", value: selectedCard?.projectcode },
       { label: "Study Status", value: selectedCard?.protocolstatus },
       { label: "Vendors", value: selectedCard?.vCount },
-      { label: "Data Flows", value: selectedCard?.dfCount },
-      { label: "Datasets", value: selectedCard?.dsCount },
+      { label: "Data Flows", value: dataflowCount },
+      { label: "Datasets", value: datasetCount },
     ];
     setStateMenuItems([...updateData]);
   }, [selectedCard]);

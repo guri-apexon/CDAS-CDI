@@ -43,10 +43,12 @@ export default function DSColumnTable({
   dfId,
   dpId,
   setDatasetColumnsExist,
+  selectedDataset,
 }) {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dashboard = useSelector((state) => state.dashboard);
+  const [errorPrimary, setErrorprimary] = useState(false);
   const { selectedCard } = dashboard;
   const { protocolnumber, prot_id: protId } = selectedCard;
   const dataSets = useSelector((state) => state.dataSets);
@@ -531,6 +533,17 @@ export default function DSColumnTable({
       return false;
     }
 
+    if (
+      rows?.length &&
+      (selectedDataset?.loadType === "Incremental" ||
+        selectedDataset?.incremental === "Y") &&
+      rows.every((x) => x.primaryKey === "No")
+    ) {
+      setErrorprimary(true);
+      return false;
+    }
+    setErrorprimary(false);
+
     const existingCD = formattedColumnData.filter((e) => e.dbColumnId);
     const newCD = formattedColumnData.filter((e) => !e.dbColumnId);
 
@@ -617,7 +630,16 @@ export default function DSColumnTable({
       messageContext.showErrorMessage(
         "Column name should be unique for a dataset"
       );
+    } else if (
+      rows?.length &&
+      (selectedDataset?.loadType === "Incremental" ||
+        selectedDataset?.incremental === "Y") &&
+      rows.every((x) => x.primaryKey === "No")
+    ) {
+      setErrorprimary(true);
+      return false;
     } else {
+      setErrorprimary(false);
       // const removeRow = selectedRows.filter((e) => e !== uniqueId);
       // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
       const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
@@ -794,6 +816,7 @@ export default function DSColumnTable({
             haveHeader,
             editedCount,
             canUpdateDataFlow,
+            errorPrimary,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}

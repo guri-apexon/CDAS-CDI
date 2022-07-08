@@ -12,12 +12,17 @@ import Modal from "apollo-react/components/Modal";
 import TextField from "apollo-react/components/TextField";
 import Button from "apollo-react/components/Button";
 import Link from "apollo-react/components/Link";
+import Tag from "apollo-react/components/Tag";
 import DownloadIcon from "apollo-react-icons/Download";
 import FilterIcon from "apollo-react-icons/Filter";
 import FileIcon from "apollo-react-icons/File";
 import Check from "apollo-react-icons/Check";
 import FileZipIcon from "apollo-react-icons/FileZip";
+import Tooltip from "apollo-react/components/Tooltip";
 import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
+import StatusCheck from "apollo-react-icons/StatusCheck";
+import StatusDotOutline from "apollo-react-icons/StatusDotOutline";
+import StatusExclamation from "apollo-react-icons/StatusExclamation";
 import Table, {
   createStringSearchFilter,
   compareStrings,
@@ -38,8 +43,9 @@ import {
   dateFilterCustom,
 } from "../../utils/index";
 
-import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
+import { ReactComponent as FailedIcon } from "../../components/Icons/Failed.svg";
 import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
+import { ReactComponent as InprogressIcon } from "../../components/Icons/In Progress.svg";
 
 import usePermission, {
   Categories,
@@ -89,64 +95,136 @@ const DateCell = ({ row, column: { accessor } }) => {
 const StatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
   const { canReadIngestionIssues } = row;
-  if (
-    status?.toLowerCase() === "loaded without issues" ||
-    status?.toLowerCase() === "successful" ||
-    status?.toLowerCase() === "in progress"
-  ) {
-    return (
-      <div>
-        <div style={{ position: "relative" }}>
-          <Check
+  const [open, setOpen] = useState(false);
+
+  // if (
+  //   status?.toLowerCase() === "loaded without issues" ||
+  //   status?.toLowerCase() === "successful"
+  // ) {
+  //   return (
+  //     <div>
+  //       <Tag
+  //         label={status}
+  //         className=""
+  //         style={{
+  //           backgroundColor: "#00C221",
+  //           color: "#FFFFFF",
+  //           Width: 100,
+  //         }}
+  //         Icon={SuccessIcon}
+  //       />
+  //     </div>
+  //   );
+  // }
+  // if (status?.toLowerCase() === "in progress") {
+  //   return (
+  //     <div>
+  //       <Tag
+  //         label={status}
+  //         className=""
+  //         style={{
+  //           backgroundColor: "#00C221",
+  //           color: "#FFFFFF",
+  //           Width: 100,
+  //         }}
+  //         Icon={InprogressIcon}
+  //       />
+  //     </div>
+  //   );
+  // }
+  // if (
+  //   status?.toLowerCase() === "quarantined"
+  //   // status?.toLowerCase() === "queued for new file check" ||
+  //   // status?.toLowerCase() === "skipped"
+  // ) {
+  //   return (
+  //     <div>
+  //       <Tag
+  //         label={status}
+  //         className=""
+  //         style={{
+  //           backgroundColor: "#FF9300",
+  //           color: "#FFFFFF",
+  //           Width: 100,
+  //         }}
+  //         Icon={QuarantineIcon}
+  //       />
+  //     </div>
+  //   );
+  // }
+  // if (status?.toLowerCase() === "queued for new file check") {
+  //   return (
+  //     <div>
+  //       <Tag
+  //         label="Queued"
+  //         className=""
+  //         style={{
+  //           backgroundColor: "#10558A",
+  //           color: "#FFFFFF",
+  //           Width: 100,
+  //         }}
+  //         Icon={IssueIcon}
+  //       />
+  //     </div>
+  //   );
+  // }
+  // if (status?.toLowerCase() === "loaded with issues") {
+  //   return (
+  //     <div>
+  //       <Tag
+  //         label="Processed"
+  //         className=""
+  //         style={{
+  //           backgroundColor: "#FF9300",
+  //           color: "#FFFFFF",
+  //           width: 100,
+  //         }}
+  //         Icon={ProcessedIcon}
+  //       />
+  //       <Link
+  //         disabled={!canReadIngestionIssues}
+  //         onClick={() => console.log("link clicked")}
+  //         style={{ fontWeight: 500, marginLeft: 8 }}
+  //       >
+  //         View
+  //       </Link>
+  //     </div>
+  //   );
+  // }
+  return (
+    <div>
+      {status?.toLowerCase() === "successful" && (
+        <div>
+          <Tag
+            label="Successful"
             style={{
-              position: "relative",
-              top: 4,
-              fontSize: 14,
-              color: "#00C221",
-              marginRight: 8,
+              backgroundColor: "#00C221",
+              color: "#FFFFFF",
+              minWidth: 100,
             }}
+            Icon={StatusCheck}
           />
-          {status}
         </div>
-      </div>
-    );
-  }
-  if (
-    status?.toLowerCase() === "quarantined" ||
-    status?.toLowerCase() === "queued for new file check" ||
-    status?.toLowerCase() === "skipped"
-  ) {
-    return (
-      <div>
-        <div style={{ position: "relative" }}>
-          <StatusNegativeIcon
-            style={{
-              position: "relative",
-              top: 4,
-              fontSize: 14,
-              color: "#e20000",
-              marginRight: 8,
-            }}
-          />
-          {status}
-        </div>
-      </div>
-    );
-  }
-  if (status?.toLowerCase() === "loaded with issues") {
-    return (
-      <div>
-        <div style={{ position: "relative" }}>
-          <IssueIcon
-            style={{
-              position: "relative",
-              top: 4,
-              marginRight: 8,
-              width: "14px",
-              height: "17px",
-            }}
-          />
-          {status}
+      )}
+      {status?.toLowerCase() === "processed with errors" && (
+        <div>
+          <Tooltip
+            variant="dark"
+            title={open && status}
+            placement="top"
+            style={{ marginRight: 48 }}
+          >
+            <Tag
+              label="Processed"
+              style={{
+                backgroundColor: "#FF9300",
+                color: "#FFFFFF",
+                minwidth: 100,
+              }}
+              onMouseOver={() => setOpen(true)}
+              Icon={StatusExclamation}
+            />
+          </Tooltip>
           <Link
             disabled={!canReadIngestionIssues}
             onClick={() => console.log("link clicked")}
@@ -155,23 +233,71 @@ const StatusCell = ({ row, column: { accessor } }) => {
             View
           </Link>
         </div>
-      </div>
-    );
-  }
-  return (
-    <div>
-      <div style={{ position: "relative" }}>
-        <FailureIcon
+      )}
+      {status?.toLowerCase() === "queued" && (
+        <div>
+          <Tag
+            label={status}
+            style={{
+              backgroundColor: "#10558A",
+              color: "#FFFFFF",
+              minWidth: 100,
+            }}
+            Icon={StatusDotOutline}
+          />
+        </div>
+      )}
+      {status?.toLowerCase() === "failed" && (
+        <div>
+          <Tag
+            label={status}
+            style={{
+              backgroundColor: "#E20000",
+              color: "#FFFFFF",
+              minWidth: 100,
+            }}
+            Icon={FailedIcon}
+          />
+        </div>
+      )}
+      {status?.toLowerCase() === "skipped" && (
+        <div>
+          <Tag
+            label={status}
+            style={{
+              backgroundColor: "#E20000",
+              color: "#FFFFFF",
+              minWidth: 100,
+            }}
+            Icon={FailedIcon}
+          />
+        </div>
+      )}
+      {status?.toLowerCase() === "in progress" && (
+        <div>
+          <Tag
+            label={status}
+            style={{
+              backgroundColor: "#00C221",
+              color: "#FFFFFF",
+              minWidth: 100,
+            }}
+            Icon={InprogressIcon}
+          />
+        </div>
+      )}
+      {/* <div style={{ position: "relative" }}>
+        <Tag
+          label={status}
+          className=""
           style={{
-            position: "relative",
-            top: 4,
-            marginRight: 8,
-            width: "14px",
-            height: "17px",
+            backgroundColor: "#E20000",
+            color: "#FFFFFF",
+            Width: 100,
           }}
+          Icon={FailedIcon}
         />
-        {status}
-      </div>
+      </div> */}
     </div>
   );
 };
@@ -283,10 +409,8 @@ const generateColumns = (tableRows = []) => {
       hidden: true,
     },
     {
-      header: "Last Loaded Date",
-      accessor: "LastLoadedDate",
-      customCell: DateCell,
-      sortFunction: compareDates,
+      header: "Error Message",
+      accessor: "errmsg",
       hidden: true,
     },
   ];

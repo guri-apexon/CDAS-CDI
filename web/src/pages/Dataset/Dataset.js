@@ -173,7 +173,7 @@ const Dataset = () => {
 
   const handleChangeTab = (event, v) => {
     setValue(v);
-    if (v === 1 && datasetid !== "new" && datasetid !== null) {
+    if (datasetid !== "new" && datasetid !== null) {
       dispatch(getDatasetColumns(datasetid));
     }
   };
@@ -321,6 +321,17 @@ const Dataset = () => {
           `Please remove * from query to proceed.`
         );
         return false;
+      }
+      if (data.datasetid) {
+        if (
+          datasetColumns.every((x) => x.primarykey !== 1) &&
+          formValue.loadType === "Incremental"
+        ) {
+          messageContext.showErrorMessage(
+            `Load type cannot be changed to incremental because no primaryKey is defined for the dataset.`
+          );
+          return false;
+        }
       }
       if (data.datasetid) {
         dispatch(updateDatasetData(data));
@@ -496,6 +507,7 @@ const Dataset = () => {
                   setDatasetColumnsExist={(disableSave) =>
                     setDatasetColumnsExist(disableSave)
                   }
+                  selectedDataset={selectedDataset}
                 />
               )}
               {datasetid !== "new" && value === 2 && !!VLCData?.length && (

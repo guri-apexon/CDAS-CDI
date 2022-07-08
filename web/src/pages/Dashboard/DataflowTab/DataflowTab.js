@@ -407,7 +407,8 @@ export default function DataflowTab({ updateData }) {
       {
         text: "Clone data flow",
         onClick: async () => {
-          setOpenClone(true);
+          // setOpenClone(true);
+          history.push("/dashboard/dataflow/clone");
           // await getStudies();
         },
       },
@@ -447,6 +448,10 @@ export default function DataflowTab({ updateData }) {
     );
   };
 
+  const TextCell = ({ row, column: { accessor } }) => {
+    return <span className="word-wrap">{row[accessor]}</span>;
+  };
+
   const columns = [
     {
       accessor: "expand",
@@ -457,6 +462,7 @@ export default function DataflowTab({ updateData }) {
       accessor: "vendorSource",
       frozen: true,
       sortFunction: compareStrings,
+      customCell: TextCell,
       filterFunction: createStringArraySearchFilter("vendorSource"),
       filterComponent: createAutocompleteFilter(
         Array.from(

@@ -327,13 +327,27 @@ const DataFlow = ({
     }
   };
   const submitFinalForm = async () => {
+    const myformprimary = myform.dataPackage[0]?.dataSet[0];
     if (
-      (isSftp(locType) && !myform.dataPackage[0]?.dataSet[0]?.columncount) ||
-      (myform.dataPackage[0]?.dataSet[0]?.customQuery === "No" &&
-        !myform.dataPackage[0]?.dataSet[0]?.columncount)
+      (isSftp(locType) && !myformprimary?.columncount) ||
+      (myformprimary?.customQuery === "No" && !myformprimary?.columncount)
     ) {
       messageContext.showErrorMessage(
         "Please add atleast one column to proceed"
+      );
+      return false;
+    }
+
+    const reqprimary = myformprimary.columnDefinition.some(
+      (c) => c.primaryKey === "Yes"
+    );
+    if (
+      myformprimary?.loadType === "Incremental" &&
+      !reqprimary &&
+      isSftp(locType)
+    ) {
+      messageContext.showErrorMessage(
+        "Error - At least one primary key is required for Incremental loads"
       );
       return false;
     }
@@ -394,7 +408,10 @@ const DataFlow = ({
   const redirectToDataflow = () => {
     dispatch(SelectedDataflow(createdDataflow));
     history.push(
-      `/dashboard/dataflow-management/${createdDataflow?.dataFlowId}`
+      `/dashboard/dataflow-management/${createdDataflow?.dataFlowId}`,
+      {
+        from: "dashboard",
+      }
     );
   };
   const nextStep = async () => {
