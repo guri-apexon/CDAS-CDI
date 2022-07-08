@@ -30,13 +30,14 @@ const useStyles = makeStyles(() => ({
     fontWeight: "600",
   },
   contentHeader: {
-    padding: "0px 25px 0",
+    padding: "16px 25px 0",
     backgroundColor: "#ffffff",
   },
 
   breadcrumbs: {
     marginBottom: 16,
     paddingLeft: 0,
+    marginTop: 0,
   },
 }));
 
