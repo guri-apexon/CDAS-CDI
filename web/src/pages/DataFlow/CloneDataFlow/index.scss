@@ -2,6 +2,20 @@
   font-weight: 700;
 }
 .selected-study-table {
+  &.transparent thead {
+    background-color: transparent;
+  }
+  &.nohover {
+    tr {
+      td {
+        color: black;
+      }
+      &:hover,
+      &:hover td {
+        background-color: transparent;
+      }
+    }
+  }
   tr:last-child {
     height: 0 !important;
   }
