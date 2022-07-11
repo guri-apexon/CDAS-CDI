@@ -1907,6 +1907,20 @@ exports.updateDataflowConfig = async (req, res) => {
       if (!existDf) {
         return apiResponse.ErrorResponse(res, "Dataflow doesn't exist");
       }
+
+      const checkUnique = await datasetHelper.isNotUniqueAmongstDatasets(
+        protocolNumberStandard,
+        testFlag ? "1" : "0",
+        vendorID,
+        dataflowId
+      );
+
+      if (checkUnique)
+        return apiResponse.ErrorResponse(
+          res,
+          "Changes will make duplicate mnemonic"
+        );
+
       let dfUpdatedName = false;
       if (
         existDf.vendorID != vendorID ||
