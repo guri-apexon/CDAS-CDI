@@ -448,20 +448,22 @@ const Dataset = () => {
                     ))}
                   </Tabs>
                 )}
-                <ButtonGroup
-                  alignItems="right"
-                  buttonProps={[
-                    {
-                      label: "Cancel",
-                      onClick: () => setopenModal(true),
-                    },
-                    {
-                      label: "Save",
-                      onClick: () => submitForm(),
-                      disabled: !canUpdateDataFlow || !checkDatasetColumnsExist,
-                    },
-                  ]}
-                />
+                {(!value || value === 0) && (
+                  <ButtonGroup
+                    alignItems="right"
+                    buttonProps={[
+                      {
+                        label: "Cancel",
+                        onClick: () => setopenModal(true),
+                      },
+                      {
+                        label: "Save",
+                        onClick: () => submitForm(),
+                        disabled: !canUpdateDataFlow,
+                      },
+                    ]}
+                  />
+                )}
               </div>
             </div>
 
