@@ -1,8 +1,15 @@
-.wrapper{
-    background: linear-gradient(#c61138, #7b2883);
-    width: 100vw;
-    background-position: center;
-    background-size: cover;
-    color: #000000;
-    height: 100vh;
+.wrapper {
+  background: url("../../components/Icons/bg-image.png"),
+    linear-gradient(#595959, #999999);
+  width: 100vw;
+  background-position: center;
+  background-size: cover;
+  color: #000000;
+  height: 100vh;
+}
+h3 button {
+  display: none !important;
+}
+#errorLogout .MuiDialog-paperWidthSm {
+  width: 443px !important;
 }

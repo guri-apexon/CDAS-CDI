@@ -77,6 +77,7 @@ exports.findByEmail = async (email) =>
  * @returns on success user usr_id and usr_stat (in upper case) , on error reurns false
  */
 exports.isUserExists = async (email) => this.findByEmail(email);
+
 exports.checkPermission = async (userid, feature) => {
   const query = `select count(1) 
       from ${schemaName}."user" u 
@@ -95,6 +96,60 @@ exports.checkPermission = async (userid, feature) => {
       sur.usr_id ='${userid}' and 
       UPPER(u.usr_stat) = 'ACTIVE' 
       `;
+  try {
+    const result = await DB.executeQuery(query);
+    if (result && result.rowCount > 0) return result.rows[0].count !== "0";
+  } catch (error) {}
+  return false;
+};
+
+exports.checkPermissionReadOnly = async (userid, feature) => {
+  const query = `select count(1) 
+  from ${schemaName}."user" u 
+  join ${schemaName}.study_user_role sur on u.usr_id = sur.usr_id 
+  join ${schemaName}."role" r on sur.role_id =r.role_id  
+  left join ${schemaName}.role_policy rp on r.role_id = rp.role_id
+  left join ${schemaName}.policy pm on pm.plcy_id = rp.plcy_id
+  left join ${schemaName}.policy_product_permission pppm on pppm.plcy_id = pm.plcy_id
+  left join ${schemaName}.product_permission pp on pp.prod_permsn_id = pppm.prod_permsn_id
+  left join ${schemaName}.product p2 on p2.prod_id = pp.prod_id
+  left join ${schemaName}.feature f2 on f2.feat_id = pp.feat_id
+  left join ${schemaName}."permission" p3 on p3.permsn_id = pp.permsn_id
+  left join ${schemaName}.category c2 on c2.ctgy_id = pp.ctgy_id
+  where p3.permsn_nm in ('Read') and 
+  f2.feat_nm = '${feature}' and 
+  sur.usr_id ='${userid}' and 
+  UPPER(u.usr_stat) = 'ACTIVE' 
+`;
+  try {
+    const result = await DB.executeQuery(query);
+    if (result && result.rowCount > 0) return result.rows[0].count !== "0";
+  } catch (error) {}
+  return false;
+};
+
+exports.checkPermissionStudy = async (userid, feature, prot_nbr_stnd) => {
+  const query = `select count(1) 
+  from ${schemaName}."user" u 
+  join ${schemaName}.study_user su on u.usr_id = su.usr_id 
+  join ${schemaName}.study_user_role sur on su.usr_id = sur.usr_id and  su.prot_id = sur.prot_id 
+  join ${schemaName}.study s on s.prot_id = su.prot_id 
+  join ${schemaName}."role" r on sur.role_id =r.role_id  
+  left join ${schemaName}.role_policy rp on r.role_id = rp.role_id
+  left join ${schemaName}.policy pm on pm.plcy_id = rp.plcy_id
+  left join ${schemaName}.policy_product_permission pppm on pppm.plcy_id = pm.plcy_id
+  left join ${schemaName}.product_permission pp on pp.prod_permsn_id = pppm.prod_permsn_id
+  left join ${schemaName}.product p2 on p2.prod_id = pp.prod_id
+  left join ${schemaName}.feature f2 on f2.feat_id = pp.feat_id
+  left join ${schemaName}."permission" p3 on p3.permsn_id = pp.permsn_id
+  left join ${schemaName}.category c2 on c2.ctgy_id = pp.ctgy_id
+  where p3.permsn_nm in ('Create','Update') and 
+  f2.feat_nm = '${feature}' and 
+  sur.usr_id ='${userid}' and 
+  UPPER(u.usr_stat)= 'ACTIVE' and 
+  s.prot_nbr_stnd ='${prot_nbr_stnd}' 
+      `;
+
   try {
     const result = await DB.executeQuery(query);
     if (result && result.rowCount > 0) return result.rows[0].count !== "0";
