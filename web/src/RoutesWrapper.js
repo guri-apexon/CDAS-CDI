@@ -12,6 +12,7 @@ import PageHeader from "./components/Common/PageHeader";
 import { userLogOut } from "./services/ApiServices";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
+const Monitor = lazy(() => import("./pages/Dashboard/MonitorTab/ViewAll"));
 const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
 const DataFlowCreate = lazy(() => import("./pages/DataFlow/Create"));
 const DataFlowClone = lazy(() => import("./pages/CloneDataFlow/index"));
@@ -34,6 +35,11 @@ const WithPageHeader = () => {
       <PageHeader height={64} />
       <Switch>
         <Route path={`${match.path}`} exact render={() => <Dashboard />} />
+        <Route
+          path={`${match.path}/monitor`}
+          exact
+          render={() => <Monitor />}
+        />
         <Route
           path={`${match.path}/audit-logs/:dataflowId`}
           exact
