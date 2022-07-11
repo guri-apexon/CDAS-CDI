@@ -404,7 +404,7 @@ exports.getIssueColumns = async (req, res) => {
         // await jdbc(
         //   dbUser,
         //   dbPass,
-        //   `jdbc:hive2://ca2u01hdku01d.quintiles.net:10000/default;ssl=1;principal=hive/ca2u01hdku01d.quintiles.net@QUINTILES.NET;sslTrustStore=C://Program Files//Java//jdk-16.0.1//lib//security//jssecacerts;trustStorePassword=changeit`,
+        //   `jdbc:hive2://uskhdphive.quintiles.net:10000/default;ssl=1;principal=hive/uskhdphive.quintiles.net@QUINTILES.NET;sslTrustStore=C:\\Program Files\\Java\\jdk-16.0.1\\lib\\security\\jssecacerts;trustStorePassword=changeit`,
         //   "com.cloudera.hive.jdbc41.HS2Driver",
         //   query,
         //   "query executed successfully.",
