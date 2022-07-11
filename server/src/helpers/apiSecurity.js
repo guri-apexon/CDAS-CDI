@@ -18,55 +18,55 @@ const securedPaths = [
     url: "/dataflow/create",
     methods: ["post"],
     feature: "Data Flow Configuration",
-    checkPermission: true,
+    checkModificationPermission: true,
   },
   {
     url: "/dataflow/create-dataflow",
     methods: ["post"],
     feature: "Data Flow Configuration",
-    checkPermission: true,
+    checkModificationPermission: true,
   },
   {
     url: "/dataflow/update-config",
     methods: ["post"],
     feature: "Data Flow Configuration",
-    checkPermission: true,
+    checkModificationPermission: true,
   },
   {
     url: "/vendor/create",
     methods: ["post"],
     feature: "Vendor Management",
-    checkPermission: true,
+    checkModificationPermission: true,
   },
   {
     url: "/vendor/list",
     methods: ["get"],
     feature: "Vendor Management",
-    checkPermission: false,
+    checkModificationPermission: false,
   },
   {
     url: "/datakind/create",
     methods: ["post"],
     feature: "Clinical Data Type Setup",
-    checkPermission: true,
+    checkModificationPermission: true,
   },
   {
     url: "/datakind/table/list",
     methods: ["get"],
     feature: "Clinical Data Type Setup",
-    checkPermission: false,
+    checkModificationPermission: false,
   },
   {
     url: "/location/create",
     methods: ["post"],
     feature: "Location Setup",
-    checkPermission: true,
+    checkModificationPermission: true,
   },
   {
     url: "/location/list",
     methods: ["get"],
     feature: "Location Setup",
-    checkPermission: false,
+    checkModificationPermission: false,
   },
 ];
 
@@ -162,11 +162,13 @@ exports.secureApi = async (req, res, next) => {
           if (!user || !user.isActive)
             return apiResponse.unauthorizedResponse(res, "User ID not found");
 
-          if (route?.checkPermission) {
-            const permission = await userHelper.checkPermission(
-              user_id,
-              route.feature
-            );
+          if (route) {
+            const permission = route.checkModificationPermission
+              ? await userHelper.checkPermission(user_id, route.feature)
+              : await userHelper.checkPermissionReadOnly(
+                  user_id,
+                  route.feature
+                );
 
             if (!permission)
               return apiResponse.unauthorizedResponse(
