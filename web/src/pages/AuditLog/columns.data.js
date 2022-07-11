@@ -18,6 +18,19 @@ const DateCell = ({ row, column: { accessor } }) => {
   return <span>{date}</span>;
 };
 
+const displayTextFn = ({ row, column: { accessor } }) => {
+  const rowValue = row[accessor];
+  let displayText;
+  if (rowValue === "1") {
+    displayText = "true";
+  } else if (rowValue === "0") {
+    displayText = "false";
+  } else {
+    displayText = rowValue;
+  }
+  return <span>{displayText}</span>;
+};
+
 const columns = [
   {
     header: "Data Package Name",
@@ -84,6 +97,7 @@ const columns = [
     header: "Old Value",
     accessor: "old_val",
     sortFunction: compareStrings,
+    customCell: displayTextFn,
     filterFunction: createStringSearchFilter("old_val"),
     filterComponent: TextFieldFilter,
     width: 120,
@@ -92,6 +106,7 @@ const columns = [
     header: "New Value",
     accessor: "new_val",
     sortFunction: compareStrings,
+    customCell: displayTextFn,
     filterFunction: createStringSearchFilter("new_val"),
     filterComponent: TextFieldFilter,
     width: 150,
