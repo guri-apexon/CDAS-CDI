@@ -115,9 +115,9 @@ exports.insertValidation = async (req) => {
   ];
 
   // return;
-  if (req.vendorid) {
+  if (req.vendorid && req.externalSystemName) {
     let { rows: existVendor } = await DB.executeQuery(
-      `select vend_id,active from ${schemaName}.vendor where vend_id=$1;`,
+      `select vend_id,active from ${schemaName}.vendor where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and vend_id=$1;`,
       [req.vendorid]
     );
     if (existVendor.length) {
@@ -125,20 +125,18 @@ exports.insertValidation = async (req) => {
         dfArray.push(`Vendor is not active in ${req.externalSystemName}`);
       }
     } else {
-      // returnData.push([`Vendor does not exist for ${externalSystemName}`]);
-      dfArray.push(`Vendor does not exist for in ${req.externalSystemName}`);
+      dfArray.push(`Vendor does not exist for ${req.externalSystemName}`);
     }
   }
 
-  if (req.locationID) {
+  if (req.locationID && req.locationType && req.externalSystemName) {
     let locationData = await DB.executeQuery(
-      `select src_loc_id,active from ${schemaName}.source_location where src_loc_id=$1;`,
+      `select src_loc_id,active from ${schemaName}.source_location where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and UPPER(loc_typ)='${req.locationType.toUpperCase()}' and src_loc_id=$1;`,
       [req.locationID]
     );
 
     if (locationData.rows.length) {
       if (locationData.rows[0].active !== 1) {
-        // returnData.push([`Location is not active in ${externalSystemName}`]);
         dfArray.push(`Location is not active in ${req.externalSystemName}`);
       }
     } else {
@@ -412,6 +410,26 @@ exports.insertValidation = async (req) => {
                 dsErrArray.push(
                   "Data Set Level delFlag required and value should be 0"
                 );
+              }
+
+              if (obj.dataKindID && req.externalSystemName) {
+                let checkDataKind = await DB.executeQuery(
+                  `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and datakindid='${
+                    obj.dataKindID
+                  }';`
+                );
+
+                if (checkDataKind.rows.length > 0) {
+                  if (checkDataKind.rows[0].active !== 1) {
+                    dsErrArray.push(
+                      `Clinical Data Type is inactive from ${req.externalSystemName}, Description in TA cannot be integrated.`
+                    );
+                  }
+                } else {
+                  dsErrArray.push(
+                    `Clinical Data Type is missing from ${req.externalSystemName}, Description in TA cannot be integrated.`
+                  );
+                }
               }
 
               const dsArray = [
@@ -945,6 +963,26 @@ exports.insertValidation = async (req) => {
                 );
               }
 
+              if (obj.dataKindID && req.externalSystemName) {
+                let checkDataKind = await DB.executeQuery(
+                  `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and datakindid='${
+                    obj.dataKindID
+                  }';`
+                );
+
+                if (checkDataKind.rows.length > 0) {
+                  if (checkDataKind.rows[0].active !== 1) {
+                    dsErrArray.push(
+                      `Clinical Data Type is inactive from ${req.externalSystemName}, Description in TA cannot be integrated.`
+                    );
+                  }
+                } else {
+                  dsErrArray.push(
+                    `Clinical Data Type is missing from ${req.externalSystemName}, Description in TA cannot be integrated.`
+                  );
+                }
+              }
+
               if (
                 obj.fileType ||
                 obj.fileNamingConvention ||
@@ -1259,8 +1297,6 @@ exports.insertValidation = async (req) => {
                       isval = true;
                     }
                     dsNewObj.vlc.push(vlcNewObj);
-
-                    console.log("JDBV END dsNewObj", dsNewObj, "isval", isval);
                   }
                 }
               }
@@ -1958,9 +1994,11 @@ const saveDataset = (exports.datasetLevelInsert = async (
     // console.log("insert data set");
 
     if (!isCDI) {
-      if (obj.dataKindID) {
+      if (obj.dataKindID && externalSysName) {
         let checkDataKind = await DB.executeQuery(
-          `select datakindid, active from ${schemaName}.datakind where datakindid='${obj.dataKindID}';`
+          `select datakindid, active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${
+            obj.dataKindID
+          }';`
         );
 
         if (checkDataKind.rows.length > 0) {
@@ -2775,7 +2813,8 @@ exports.dataflowUpdate = async (
   version,
   externalSysName,
   conf_data,
-  userId
+  userId,
+  ConnectionType
 ) => {
   try {
     let ts = new Date().toLocaleString();
@@ -2789,9 +2828,9 @@ exports.dataflowUpdate = async (
     var newDfobj = {};
     let valData = [];
 
-    if (data.vendorid) {
+    if (data.vendorid && externalSysName) {
       let { rows: existVendor } = await DB.executeQuery(
-        `select vend_id,active from ${schemaName}.vendor where vend_id=$1;`,
+        `select vend_id,active from ${schemaName}.vendor where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and vend_id=$1;`,
         [data.vendorid]
       );
       if (existVendor.length) {
@@ -2799,13 +2838,13 @@ exports.dataflowUpdate = async (
           errorDF.push(`Vendor is not active in ${externalSysName}`);
         }
       } else {
-        errorDF.push(`Vendor does not exist for in ${externalSysName}`);
+        errorDF.push(`Vendor does not exist for ${externalSysName}`);
       }
     }
 
-    if (data.locationID) {
+    if (data.locationID && externalSysName) {
       let locationData = await DB.executeQuery(
-        `select src_loc_id,active from ${schemaName}.source_location where src_loc_id=$1;`,
+        `select src_loc_id,active from ${schemaName}.source_location where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and UPPER(loc_typ)='${ConnectionType.toUpperCase()}' and src_loc_id=$1;`,
         [data.locationID]
       );
 
@@ -3385,14 +3424,16 @@ exports.datasetUpdate = async (
     // var str3 = /[< >]/;
     var str3 = /[\/:*?”<|>]/;
 
-    if (data.dataKindID) {
+    if (data.dataKindID && externalSysName) {
       let checkDataKind = await DB.executeQuery(
-        `select datakindid,active from ${schemaName}.datakind where datakindid='${data.dataKindID}';`
+        `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${
+          data.dataKindID
+        }';`
       );
 
       // console.log("create", checkDataKind.rows[0]);
       if (checkDataKind.rows.length > 0) {
-        if (checkDataKind.rows[0].active !== 01) {
+        if (checkDataKind.rows[0].active !== 1) {
           errorDataset.push(
             `Clinical Data Type is inactive from ${externalSysName}, Description in TA cannot be integrated.`
           );
