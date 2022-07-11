@@ -21,6 +21,8 @@ import FileZipIcon from "apollo-react-icons/FileZip";
 import Tooltip from "apollo-react/components/Tooltip";
 import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
 import StatusCheck from "apollo-react-icons/StatusCheck";
+import StatusDotOutline from "apollo-react-icons/StatusDotOutline";
+import StatusExclamation from "apollo-react-icons/StatusExclamation";
 import Table, {
   createStringSearchFilter,
   compareStrings,
@@ -43,7 +45,6 @@ import {
 
 import { ReactComponent as FailedIcon } from "../../components/Icons/Failed.svg";
 import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
-import { ReactComponent as ProcessedIcon } from "../../components/Icons/Processed.svg";
 import { ReactComponent as InprogressIcon } from "../../components/Icons/In Progress.svg";
 
 import usePermission, {
@@ -195,7 +196,7 @@ const StatusCell = ({ row, column: { accessor } }) => {
       {status?.toLowerCase() === "successful" && (
         <div>
           <Tag
-            label="Successful aaaa"
+            label="Successful"
             style={{
               backgroundColor: "#00C221",
               color: "#FFFFFF",
@@ -221,7 +222,7 @@ const StatusCell = ({ row, column: { accessor } }) => {
                 minwidth: 100,
               }}
               onMouseOver={() => setOpen(true)}
-              Icon={ProcessedIcon}
+              Icon={StatusExclamation}
             />
           </Tooltip>
           <Link
@@ -242,11 +243,24 @@ const StatusCell = ({ row, column: { accessor } }) => {
               color: "#FFFFFF",
               minWidth: 100,
             }}
-            Icon={IssueIcon}
+            Icon={StatusDotOutline}
           />
         </div>
       )}
       {status?.toLowerCase() === "failed" && (
+        <div>
+          <Tag
+            label={status}
+            style={{
+              backgroundColor: "#E20000",
+              color: "#FFFFFF",
+              minWidth: 100,
+            }}
+            Icon={FailedIcon}
+          />
+        </div>
+      )}
+      {status?.toLowerCase() === "skipped" && (
         <div>
           <Tag
             label={status}
