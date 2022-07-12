@@ -6,6 +6,7 @@ const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const CommonController = require("./CommonController");
+const { isClinicalDataPartOfDataFlow } = require("../helpers/userHelper");
 
 async function checkIsExistInDF(dkId) {
   let listQuery = `select distinct (d3.datakindid) from ${schemaName}.dataflow d 
@@ -36,6 +37,10 @@ inner join ${schemaName}.dataflow_version dv on d.dataflowid = dv.dataflowid
 right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid 
 right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid
 where d.active = 1 and d2.active = 1 and d3.active = 1 and d3.datakindid=$1 group by d.dataflowid`;
+
+const getClinicalTypeErrorMsg = (dkName) => {
+  return `Clinical Data Type ${dkName} cannot be updated because it is currently in use by a dataflow.`;
+};
 
 exports.createDataKind = async (req, res) => {
   try {
@@ -76,7 +81,7 @@ exports.createDataKind = async (req, res) => {
           data: " Only alphanumeric and ‘_’ are  allowed in Datakind Name. Please amend.",
         });
       }
-      if (dkName.length >80) {
+      if (dkName.length > 80) {
         return res.status(400).json({
           // status: 400,
           message: "Operation failed",
@@ -118,7 +123,16 @@ exports.createDataKind = async (req, res) => {
           return apiResponse.ErrorResponse(res, inactiveNotAllowed);
         }
 
-        // update datakind and related dataflow
+        // update datakind and related dataflow'
+        const isDKPartOfDataFlow = await isClinicalDataPartOfDataFlow(dkId);
+
+        if (isDKPartOfDataFlow) {
+          return apiResponse.ErrorResponse(
+            res,
+            getClinicalTypeErrorMsg(dkName)
+          );
+        }
+
         if (isExist) {
           const updatedData = await DB.executeQuery(updateQuery, [
             ...payload,
