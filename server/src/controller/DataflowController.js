@@ -10,6 +10,7 @@ const { addDataflowHistory } = require("./CommonController");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 const externalFunction = require("../createDataflow/externalDataflowFunctions");
 const datasetHelper = require("../helpers/datasetHelper");
+const { checkPermissionStudy } = require("../helpers/userHelper");
 
 exports.getStudyDataflows = async (req, res) => {
   try {
@@ -201,6 +202,15 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       externalSystemName: externalSystemName,
     };
     errorBody.errors = [];
+
+    const permission = await checkPermissionStudy(
+      userId,
+      "Data Flow Configuration",
+      protocolNumberStandard
+    );
+
+    if (!permission)
+      return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
 
     if (externalSystemName !== "CDI") {
       var dataRes = await externalFunction.insertValidation(req.body);

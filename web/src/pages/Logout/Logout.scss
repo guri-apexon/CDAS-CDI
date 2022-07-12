@@ -7,9 +7,14 @@
   color: #000000;
   height: 100vh;
 }
-h3 button {
+#errorLogout {
+  h3 button {
   display: none !important;
-}
-.MuiDialog-paperWidthSm {
-  width: 443px !important;
+  }
+  .MuiDialog-paperWidthSm {
+    width: 443px !important;
+  }
+  button {
+    padding: 0 33px;
+  }
 }

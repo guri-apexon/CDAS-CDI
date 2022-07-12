@@ -21,7 +21,7 @@ const Logout = () => {
         id="errorLogout"
         buttonProps={[
           {
-            label: "Return to Launchpad",
+            label: "Log in",
             variant: "primary",
             onClick: () => {
               goToCore();

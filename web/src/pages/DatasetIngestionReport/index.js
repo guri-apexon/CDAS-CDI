@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import Paper from "apollo-react/components/Paper";
 import Loader from "apollo-react/components/Loader";
 import Typography from "apollo-react/components/Typography";
@@ -28,6 +28,8 @@ import {
   getDatasetProperties,
   getDatasetIngestionIssueTypes,
 } from "../../store/actions/IngestionReportAction";
+
+const queryString = require("query-string");
 
 const getDatasetStatus = (status) => {
   return (
@@ -93,6 +95,7 @@ const getDatasetStatus = (status) => {
 
 const DatasetIngestionReport = () => {
   const history = useHistory();
+  const location = useLocation();
   const dispatch = useDispatch();
   const {
     datasetProperties,
@@ -108,6 +111,7 @@ const DatasetIngestionReport = () => {
     setTransferLogFilter(filter);
   };
   const { datasetId } = useParams();
+  const parsedQuery = queryString.parse(location.search);
 
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
@@ -132,6 +136,9 @@ const DatasetIngestionReport = () => {
   useEffect(() => {
     getProperties();
     getIngestionIssueTypes();
+    if (Object.keys(parsedQuery)?.includes("logs")) {
+      setTabValue(1);
+    }
   }, []);
 
   return (
