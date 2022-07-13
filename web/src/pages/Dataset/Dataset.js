@@ -102,6 +102,7 @@ const Dataset = () => {
   const [locationType, setLocationType] = useState("sftp");
   const [columnsActive, setColumnsActive] = useState(false);
   const [openModal, setopenModal] = useState(false);
+  const [checkDatasetColumnsExist, setDatasetColumnsExist] = useState(true);
   const dispatch = useDispatch();
   const params = useParams();
   const messageContext = useContext(MessageContext);
@@ -146,7 +147,9 @@ const Dataset = () => {
     formDataSQL,
     isDatasetFetched,
     VLCData,
+    datasetColumns,
   } = dataSets;
+
   const datasetid = params.datasetId;
   const { datasetid: dsId } = selectedDataset;
   const { isCustomSQL, tableName } = formDataSQL;
@@ -170,7 +173,7 @@ const Dataset = () => {
 
   const handleChangeTab = (event, v) => {
     setValue(v);
-    if (v === 1 && datasetid !== "new" && datasetid !== null) {
+    if (datasetid !== "new" && datasetid !== null) {
       dispatch(getDatasetColumns(datasetid));
     }
   };
@@ -194,7 +197,12 @@ const Dataset = () => {
         history.push("/dashboard");
       }
     }
+    setDatasetColumnsExist(datasetColumns.length ? true : false);
   }, []);
+
+  useEffect(() => {
+    setDatasetColumnsExist(datasetColumns.length ? true : false);
+  }, [datasetColumns.length]);
 
   useEffect(() => {
     setValue(0);
@@ -313,6 +321,17 @@ const Dataset = () => {
           `Please remove * from query to proceed.`
         );
         return false;
+      }
+      if (data.datasetid) {
+        if (
+          datasetColumns.every((x) => x.primarykey !== 1) &&
+          formValue.loadType === "Incremental"
+        ) {
+          messageContext.showErrorMessage(
+            `Load type cannot be changed to incremental because no primaryKey is defined for the dataset.`
+          );
+          return false;
+        }
       }
       if (data.datasetid) {
         dispatch(updateDatasetData(data));
@@ -487,6 +506,10 @@ const Dataset = () => {
                   locationType={locationType}
                   dfId={dfId}
                   dpId={dpId}
+                  setDatasetColumnsExist={(disableSave) =>
+                    setDatasetColumnsExist(disableSave)
+                  }
+                  selectedDataset={selectedDataset}
                 />
               )}
               {datasetid !== "new" && value === 2 && !!VLCData?.length && (

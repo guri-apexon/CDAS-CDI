@@ -22,7 +22,13 @@ import usePermission, {
   useStudyPermission,
 } from "../../../components/Common/usePermission";
 
-const ColumnsTab = ({ locationType, dfId, dpId }) => {
+const ColumnsTab = ({
+  locationType,
+  dfId,
+  dpId,
+  setDatasetColumnsExist,
+  selectedDataset,
+}) => {
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
@@ -192,6 +198,7 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
       formatJDBCColumns(sqlColumns);
       setSelectedMethod("fromAPICall");
     }
+    console.log({ datasetColumns, sqlColumns });
   }, [datasetColumns, sqlColumns]);
 
   useEffect(() => {
@@ -213,6 +220,10 @@ const ColumnsTab = ({ locationType, dfId, dpId }) => {
           locationType={locationType}
           dfId={dfId}
           dpId={dpId}
+          setDatasetColumnsExist={(disableSave) =>
+            setDatasetColumnsExist(disableSave)
+          }
+          selectedDataset={selectedDataset}
         />
       </>
     );

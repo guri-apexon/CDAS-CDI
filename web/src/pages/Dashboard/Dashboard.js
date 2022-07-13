@@ -1,6 +1,7 @@
 /* eslint-disable react/button-has-type */
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import { useLocation } from "react-router-dom";
 import Panel from "apollo-react/components/Panel";
 import Typography from "apollo-react/components/Typography";
 import Tab from "apollo-react/components/Tab";
@@ -20,6 +21,8 @@ import "./Dashboard.scss";
 import DataflowTab from "./DataflowTab/DataflowTab";
 import MonitorTab from "./MonitorTab/MonitorTab";
 import { freezeDfVersion } from "../../store/actions/DataFlowAction";
+
+const queryString = require("query-string");
 
 const styles = {
   pageRootInnerWrapper: {
@@ -58,9 +61,12 @@ const Dashboard = () => {
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
+  const location = useLocation();
 
   const dashboard = useSelector((state) => state.dashboard);
   const dispatch = useDispatch();
+
+  const parsedQuery = queryString.parse(location.search);
 
   const handleClose = () => {
     setIsPanelOpen(false);
@@ -96,8 +102,12 @@ const Dashboard = () => {
       // fetchLatestData();
     }
   }, [dashboard.selectedCard]);
+
   useEffect(() => {
     dispatch(freezeDfVersion(false));
+    if (Object.keys(parsedQuery)?.includes("monitor")) {
+      setValue(0);
+    }
   }, []);
 
   return (

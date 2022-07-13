@@ -452,9 +452,39 @@ exports.updateDatasetData = async (req, res) => {
       datasetName,
       versionFreezed,
       clinicalDataType,
+      loadType,
     } = req.body;
 
     // const versionFreezed = true;
+    const dataflow = await dataflowHelper.findById(dfId);
+    const dataset = await datasetHelper.findById(datasetid);
+    const searchQuery = `SELECT "columnid", "variable", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "format", "lov", "unique", insrt_tm from ${schemaName}.columndefinition WHERE coalesce (del_flg,0) != 1 AND datasetid = $1 ORDER BY insrt_tm`;
+    const row = await DB.executeQuery(searchQuery, [datasetid]);
+    const test = row.rows;
+
+    // check for primaryKey
+    if (testFlag === 0 && loadType === "Incremental") {
+      let saveflagyes = false;
+      for (let i = 0; i < test.length; i++) {
+        if (test[i].primarykey === 1) saveflagyes = true;
+      }
+      if (!saveflagyes)
+        return apiResponse.ErrorResponse(
+          res,
+          `Cannot switch to Incremental if a primaryKey has not been defined as primaryKey is mandatory for incremental.`
+        );
+    }
+
+    if (
+      dataflow.data_in_cdr === "Y" && dataset.incremental === "Y" &&
+      testFlag === 0 &&
+      loadType === "Cumulative"
+    ) {
+      return apiResponse.ErrorResponse(
+        res,
+        `Cannot switch to Cumulative if the dataflow has been synced once.`
+      );
+    }
     const {
       rows: [oldVersion],
     } = await DB.executeQuery(
@@ -677,6 +707,10 @@ exports.getDatasetDetail = async (req, res) => {
 };
 
 exports.previewSql = async (req, res) => {
+  const validateCustomSQL = (customSqlQuery) => {
+    return customSqlQuery?.includes("*") ? false : true;
+  };
+
   try {
     let {
       locationType,
@@ -687,30 +721,40 @@ exports.previewSql = async (req, res) => {
       customSql,
       driverName,
     } = req.body;
+
+    const isValidSQL = validateCustomSQL(customSql);
+
     if (customQuery === "Yes") {
-      let q = customSql;
-      let recordsCount = 10;
-      switch (locationType?.toLowerCase()) {
-        case "oracle":
-          q = `${q} FETCH FIRST ${recordsCount} ROWS ONLY`;
-          break;
-        case "sql server":
-        case "sqlserver":
-          q = `${q} SET ROWCOUNT ${recordsCount}`;
-          break;
-        default:
-          q = `${q} LIMIT ${recordsCount};`;
-          break;
+      if (isValidSQL) {
+        let q = customSql;
+        let recordsCount = 10;
+        switch (locationType?.toLowerCase()) {
+          case "oracle":
+            q = `${q} FETCH FIRST ${recordsCount} ROWS ONLY`;
+            break;
+          case "sql server":
+          case "sqlserver":
+            q = `${q} SET ROWCOUNT ${recordsCount}`;
+            break;
+          default:
+            q = `${q} LIMIT ${recordsCount};`;
+            break;
+        }
+        await jdbc(
+          connectionUserName,
+          connectionPassword,
+          connectionUrl,
+          driverName,
+          q,
+          "query executed successfully.",
+          res
+        );
+      } else {
+        return apiResponse.ErrorResponse(
+          res,
+          "customQuery: An asterisk (*) cannot be used to specify that a query should return all columns, columns must be named. Please revise the query."
+        );
       }
-      await jdbc(
-        connectionUserName,
-        connectionPassword,
-        connectionUrl,
-        driverName,
-        q,
-        "query executed successfully.",
-        res
-      );
     } else {
       return apiResponse.ErrorResponse(
         res,

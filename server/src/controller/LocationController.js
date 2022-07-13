@@ -532,11 +532,18 @@ exports.saveLocationData = async function (req, res) {
         });
       }
 
-      return apiResponse.successResponseWithData(
-        res,
-        "Operation success",
-        true
-      );
+      if (systemName === "CDI") {
+        return apiResponse.successResponseWithData(
+          res,
+          "Operation success",
+          true
+        );
+      } else {
+        return apiResponse.successResponseWithMoreData(res, {
+          ExternalId,
+          id: updatedID,
+        });
+      }
     }
   } catch (err) {
     //throw error in json response with status 500.

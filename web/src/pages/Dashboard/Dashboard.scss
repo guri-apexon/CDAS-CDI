@@ -83,6 +83,7 @@
   align-items: center;
   justify-content: space-around;
   padding: 50px 0;
+  column-gap: 16px;
   .dashInfo {
     display: flex;
     flex-direction: column;
@@ -93,6 +94,12 @@
     height: 36px;
     width: 36px;
   }
+  
+  .newMonitor-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
   .dashInfoLabel {
     display: flex;
     align-items: center;
@@ -126,6 +133,13 @@
     fill: #ffffff;
   }
 }
+.successStatus svg {
+  width: 14px;
+}
+.inProgressStatus svg {
+  width: 14px;
+  top: 2px;
+}
 .queueStatus {
   background-color: transparent;
   border: 1px solid #9e54b0;
@@ -145,11 +159,17 @@
 svg.card-icon path {
   fill: #444444;
 }
-
-#add-data-flow-dropdown .MuiListItem-button {
-  background-color: inherit;
+#add-data-flow-dropdown {
+  .MuiListItem-button {
+    background-color: inherit;
+  }
+  .MuiListItem-button:hover {
+    color: #000000;
+    background-color: rgba(35, 114, 253, 0.08);
+  }
 }
-#add-data-flow-dropdown .MuiListItem-button:hover {
-  color: #000000;
-  background-color: rgba(35, 114, 253, 0.08);
+.hide-pagination {
+  table tfoot {
+    display: none;
+  }
 }
