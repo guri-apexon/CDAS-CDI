@@ -1,6 +1,7 @@
 /* eslint-disable no-use-before-define */
-import { withRouter } from "react-router";
 import { useState, useContext, useEffect, useRef, memo } from "react";
+import { withRouter } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
 import NavigationBar from "apollo-react/components/NavigationBar";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import { neutral7 } from "apollo-react/colors";
@@ -21,6 +22,10 @@ import { AppContext } from "../../Providers/AppProvider";
 import { getUserInfo } from "../../../utils/index";
 // eslint-disable-next-line import/named
 import { userLogOut, getRolesPermissions } from "../../../services/ApiServices";
+import {
+  hideAppSwitcher,
+  showAlert,
+} from "../../../store/actions/AlertActions";
 
 const styles = {
   root: {
@@ -101,6 +106,9 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
   const [panelOpen, setpanelOpen] = useState(true);
   const appContext = useContext(AppContext);
   const { permissions } = appContext.user;
+
+  const dispatch = useDispatch();
+  const alertStore = useSelector((state) => state.alert);
 
   const [notLoggedOutErr, setNotLoggedOutErr] = useState(false);
   const [open, setOpen] = useState(false);
@@ -202,9 +210,26 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
       },
     ],
   };
+
+  useEffect(() => {
+    // console.log(alertStore);
+    if (alertStore?.showAppSwitcher) {
+      setpanelOpen(true);
+    }
+  }, [alertStore]);
+
   const toggleMenu = () => {
     // eslint-disable-next-line no-shadow
-    setpanelOpen((panelOpen) => !panelOpen);
+    // setpanelOpen((panelOpen) => !panelOpen);
+
+    if (alertStore.isFormComponentActive && panelOpen === false) {
+      dispatch(hideAppSwitcher());
+      dispatch(showAlert());
+    }
+    if (alertStore.isFormComponentActive === false || undefined) {
+      // eslint-disable-next-line no-shadow
+      setpanelOpen((panelOpen) => !panelOpen);
+    }
   };
   const onPanelClose = () => {
     setpanelOpen(false);

@@ -222,6 +222,7 @@ exports.insertValidation = async (req) => {
 
     let dpErrArray = [];
     for (let each of req.dataPackage) {
+      dpErrArray = [];
       let dpNewObj = {
         ExternalId: each.ExternalId,
       };
@@ -397,6 +398,7 @@ exports.insertValidation = async (req) => {
             dpNewObj.dataSets = [];
             let dsErrArray = [];
             for (let obj of each.dataSet) {
+              dsErrArray = [];
               let dsNewObj = {
                 ExternalId: obj.ExternalId,
               };
@@ -673,6 +675,7 @@ exports.insertValidation = async (req) => {
                 dsNewObj.columnDefinition = [];
                 let clErrArray = [];
                 for (let el of obj.columnDefinition) {
+                  clErrArray = [];
                   let clNewObj = {
                     ExternalId: el.ExternalId,
                   };
@@ -835,10 +838,12 @@ exports.insertValidation = async (req) => {
                   let vlcErrArray = [];
 
                   for (let vl of obj.conditionalExpressions) {
+                    vlcErrArray = [];
                     let vlcNewObj = {
                       conditionalExpressionNumber:
                         vl.conditionalExpressionNumber,
                     };
+
                     const vlcArray = [
                       {
                         key: "conditionalExpressionNumber",
@@ -909,8 +914,10 @@ exports.insertValidation = async (req) => {
                       let clErrRes = vlcErrArray.join(" '|' ");
                       vlcNewObj.message = clErrRes;
                       isval = true;
+                      // vlcErrArray = [];
                     }
                     dsNewObj.vlc.push(vlcNewObj);
+                    // vlcErrArray = [];
                   }
                 }
               }
@@ -947,6 +954,7 @@ exports.insertValidation = async (req) => {
             dpNewObj.dataSets = [];
             let dsErrArray = [];
             for (let obj of each.dataSet) {
+              dsErrArray = [];
               let dsNewObj = {
                 ExternalId: obj.ExternalId,
               };
@@ -1113,6 +1121,7 @@ exports.insertValidation = async (req) => {
                 dsNewObj.columnDefinition = [];
                 let clErrArray = [];
                 for (let el of obj.columnDefinition) {
+                  clErrArray = [];
                   let clNewObj = {
                     ExternalId: el.ExternalId,
                   };
@@ -1220,6 +1229,7 @@ exports.insertValidation = async (req) => {
                   let vlcErrArray = [];
 
                   for (let vl of obj.conditionalExpressions) {
+                    vlcErrArray = [];
                     let vlcNewObj = {
                       conditionalExpressionNumber:
                         vl.conditionalExpressionNumber,

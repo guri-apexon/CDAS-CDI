@@ -10,6 +10,7 @@ const { addDataflowHistory } = require("./CommonController");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 const externalFunction = require("../createDataflow/externalDataflowFunctions");
 const datasetHelper = require("../helpers/datasetHelper");
+const { checkPermissionStudy } = require("../helpers/userHelper");
 
 exports.getStudyDataflows = async (req, res) => {
   try {
@@ -202,6 +203,15 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     };
     errorBody.errors = [];
 
+    const permission = await checkPermissionStudy(
+      userId,
+      "Data Flow Configuration",
+      protocolNumberStandard
+    );
+
+    if (!permission)
+      return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
+
     if (externalSystemName !== "CDI") {
       var dataRes = await externalFunction.insertValidation(req.body);
       if (serviceOwners && Array.isArray(serviceOwners)) {
@@ -252,7 +262,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     studyId = studyRows[0].prot_id;
 
     // check for duplicate mnemonics
-    if (dataPackage && Array.isArray(dataPackage)) {
+    if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
       for (let i = 0; i < dataPackage.length; i++) {
         if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
           for (let j = 0; j < dataPackage[0].dataSet.length; j++) {
@@ -397,7 +407,9 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       version: 1,
       timestamp: ts,
       // dataflowDetails: createdDF,
+
       ExternalId: ExternalId,
+      dataFlowName: DFTestname,
       ID: createdDF.dataFlowId,
       // ResponseCode: "00000",
       // ResponseMessage: "Dataflow created successfully",
@@ -790,6 +802,7 @@ exports.updateDataFlow = async (req, res) => {
         version: DFVer,
         timestamp: ts,
         ExternalId: ExternalId,
+        dataFlowName: existDf.name,
         ID: DFId,
         // ResponseCode: "00000",
         // ResponseMessage: "Dataflow update successfully",

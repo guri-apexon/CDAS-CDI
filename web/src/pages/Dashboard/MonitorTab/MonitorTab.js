@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { neutral8 } from "apollo-react/colors";
+import { neutral8, orange } from "apollo-react/colors";
 import Hero from "apollo-react/components/Hero";
 import Grid from "apollo-react/components/Grid";
 import Box from "apollo-react/components/Box";
@@ -32,7 +32,7 @@ import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg
 import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
 import { ReactComponent as DatasetsIcon } from "../../../components/Icons/dataset.svg";
 import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
-import { ReactComponent as QuarantineIcon } from "../../../components/Icons/Failed.svg";
+import { ReactComponent as QuarantineIcon } from "../../../components/Icons/Quarantine.svg";
 import "../Dashboard.scss";
 
 import usePermission, {
@@ -183,8 +183,14 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             title="Dataset Pipelines"
             subtitle="Count of the Active Datasets, i.e. All the Datasets associated with the user’s studies."
             value={totalCount}
-            icon={StatusCheckIcon}
-            color="green"
+            icon={() => {
+              return (
+                <StatusCheckIcon
+                  style={{ fill: "#00C221" }}
+                  className="newMonitor-icon"
+                />
+              );
+            }}
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
@@ -224,7 +230,14 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             title="Data Latency Warnings"
             subtitle="Count of all jobs which breached the SLA (SLA = 3 hours) for the latest job run"
             value={summary?.data_latency_warnings}
-            icon={StatusExclamationIcon}
+            icon={() => {
+              return (
+                <StatusExclamationIcon
+                  style={{ color: orange }}
+                  className="newMonitor-icon"
+                />
+              );
+            }}
             color="orange"
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
@@ -258,12 +271,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             subtitle="Datasets for which a file has not been received within the specified number of days."
             value={summary?.stale_datasets}
             icon={() => {
-              return (
-                <StaleIcon
-                  style={{ fill: "#e20000" }}
-                  className="conter-icon"
-                />
-              );
+              return <StaleIcon style={{ fill: "#e20000" }} />;
             }}
             color="orange"
             handlePeekOpen={handlePeekOpen}
@@ -279,8 +287,12 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             icon={() => {
               return (
                 <QuarantineIcon
-                  style={{ fill: "#e20000", color: "#e20000" }}
-                  className="conter-icon"
+                  style={{
+                    fill: "#FF9300",
+                    color: "#FF9300",
+                    width: 24,
+                    height: 24,
+                  }}
                 />
               );
             }}
