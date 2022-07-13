@@ -399,7 +399,6 @@ exports.getIssueColumns = async (req, res) => {
     let errRows = [];
     let dbName = null;
     let tableName = null;
-    console.log("Hello1");
     selectedIssues.forEach(async (issue) => {
       const { databasename, tablename, errorrownumbers, errorcolumnnames } =
         issue;

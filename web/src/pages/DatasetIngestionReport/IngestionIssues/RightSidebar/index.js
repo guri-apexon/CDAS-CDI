@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-script-url */
@@ -31,20 +32,25 @@ const IssueRightPanel = ({
   const [selectedTab, setSelectedTab] = useState(1);
   const [columns, setColumns] = useState([]);
   const [rowFilters, setRowFilters] = useState([]);
+  const getColumnsIssue = (column) => {
+    if (rowFilters?.length && column) {
+      return rowFilters
+        .filter((x) => x.errorcolumnnames.includes(column))
+        .map((x) => x.issue_type);
+    }
+    return [];
+  };
   useEffect(() => {
     const { _rowno, ...rest } = rowDetails;
     setColumns(rest);
-  }, [rowDetails]);
-  useEffect(() => {
-    const rowId = rowDetails?._rowno; // errorrownumbers
-    if (rowId) {
+    if (_rowno) {
       const data = selectedIssues.filter((x) =>
-        x.errorrownumbers.includes(rowId)
+        x.errorrownumbers.includes(_rowno)
       );
       setRowFilters(data);
-      console.log("selectedIssues", rowFilters);
+      console.log("selectedIssues", rowFilters, rest);
     }
-  }, [selectedIssues]);
+  }, [rowDetails]);
 
   return (
     <aside id="rightSidebar">
@@ -124,11 +130,10 @@ const IssueRightPanel = ({
                         <span>Value:&nbsp;</span>
                         <span>{columns[col]}</span>
                       </li>
-                      {[1, 2].map((err) => {
+                      {getColumnsIssue(col).map((err) => {
                         return (
                           <li key={err}>
-                            <span>sex:</span>
-                            <span>Female</span>
+                            <span>{err}</span>
                           </li>
                         );
                       })}
