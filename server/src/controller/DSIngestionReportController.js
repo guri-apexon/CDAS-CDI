@@ -395,15 +395,31 @@ exports.getIssueColumns = async (req, res) => {
     const hostName = "uskhdphive.quintiles.net";
     const driverName = "com.cloudera.hive.jdbc41.HS2Driver";
     const connectionUrl = `jdbc:hive2://${hostName}:10000/default;KrbRealm=QUINTILES.NET;AuthMech=1;KrbHostFQDN=${hostName};KrbServiceName=hive;principal=hive/${hostName}@QUINTILES.NET;ssl=1;`;
-    let concatQuery = "";
+    let errColumns = [];
+    let errRows = [];
+    let dbName = null;
+    let tableName = null;
+    console.log("Hello1");
     selectedIssues.forEach(async (issue) => {
       const { databasename, tablename, errorrownumbers, errorcolumnnames } =
         issue;
-      if (databasename && tablename && errorrownumbers && errorcolumnnames) {
-        concatQuery += `SELECT \`_rowno\`, ${errorcolumnnames} from ${databasename}.${tablename} WHERE \`_rowno\` in (${errorrownumbers});`;
+      if (
+        databasename &&
+        tablename &&
+        errorrownumbers &&
+        errorcolumnnames &&
+        Array.isArray(errorrownumbers) &&
+        Array.isArray(errorcolumnnames)
+      ) {
+        errColumns = errColumns.concat(errorcolumnnames);
+        errRows = errRows.concat(errorrownumbers);
+        dbName = databasename;
+        tableName = tablename;
       }
     });
-    console.log("dbUser", dbUser, dbPass, concatQuery);
+    errColumns = [...new Set(errColumns)];
+    errRows = [...new Set(errRows)];
+    const concatQuery = `SELECT \`_rowno\`, ${errColumns} from ${dbName}.${tableName} WHERE \`_rowno\` in (${errRows});`;
     await jdbc(
       dbUser,
       dbPass,
