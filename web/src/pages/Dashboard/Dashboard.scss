@@ -144,4 +144,12 @@
 }
 svg.card-icon path {
   fill: #444444;
-  }
+}
+
+#add-data-flow-dropdown .MuiListItem-button {
+  background-color: inherit;
+}
+#add-data-flow-dropdown .MuiListItem-button:hover {
+  color: #000000;
+  background-color: rgba(35, 114, 253, 0.08);
+}
