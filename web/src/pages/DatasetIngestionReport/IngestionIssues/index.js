@@ -37,6 +37,7 @@ import {
   getIngestionIssueCols,
   getIngestionIssues,
 } from "../../../services/ApiServices";
+import { getDatasetProperties } from "../../../store/actions/IngestionReportAction";
 
 const IngestionIssues = () => {
   const history = useHistory();
@@ -149,7 +150,13 @@ const IngestionIssues = () => {
       setTableloading(false);
     }
   };
+  const getProperties = () => {
+    dispatch(getDatasetProperties(datasetId));
+  };
 
+  useEffect(() => {
+    getProperties();
+  }, []);
   return (
     <main className="ingestion-issues">
       <Header
