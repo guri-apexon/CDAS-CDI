@@ -453,8 +453,7 @@ exports.saveLocationData = async function (req, res) {
     // create location
     if (!updatedID) {
       const inset = await DB.executeQuery($insertLocation, body);
-
-      if (password === "Yes") {
+      if (password) {
         try {
           await helper.writeVaultData(inset?.rows[0].src_loc_id, vaultData);
         } catch (error) {
