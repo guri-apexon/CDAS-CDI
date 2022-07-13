@@ -46,7 +46,7 @@ import { queryParams } from "./helper";
 export default function MonitorTab({ fetchLatestData, protId }) {
   const [open, setOpen] = useState(false);
   const [curRow, setCurRow] = useState({});
-  const [control, setSegmentControl] = useState("all");
+  const [control, setSegmentControl] = useState("0");
   const [rows, setRowData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [activeOnly, setActiveOnly] = useState(true);
@@ -105,6 +105,20 @@ export default function MonitorTab({ fetchLatestData, protId }) {
   const onSegmentChange = (value) => {
     setSegmentControl(value);
   };
+  const handleViewButton = (query = "") => {
+    let q = query;
+    if (q.length && control !== "all") {
+      q += `&${queryParams.CONTROL}=${control}`;
+    } else if (control !== "all") {
+      q += `${queryParams.CONTROL}=${control}`;
+    }
+    if (q.length) {
+      history.push(`/dashboard/monitor?${q}`);
+    } else {
+      history.push("/dashboard/monitor");
+    }
+  };
+
   const CustomHeader = ({ toggleFilters }) => (
     <div>
       <Button
@@ -118,6 +132,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
       </Button>
     </div>
   );
+
   if (!protId) {
     return (
       <div>
@@ -149,9 +164,11 @@ export default function MonitorTab({ fetchLatestData, protId }) {
       </div>
     );
   }
+
   return (
     <div>
-      {dashboard.summaryLoading && !hasLoadedOnce && <Loader />}
+      {/* {dashboard.summaryLoading && !hasLoadedOnce && <Loader />} */}
+      {dashboard.summaryLoading && <Loader />}
       <Hero>
         <div className="topContainer">
           <Typography
@@ -194,7 +211,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push("/dashboard/monitor");
+              handleViewButton();
             }}
           />
           <InfoCard
@@ -206,9 +223,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push(
-                `/dashboard/monitor?${queryParams.JOB_STATUS_IN_QUEUE}`
-              );
+              handleViewButton(queryParams.JOB_STATUS_IN_QUEUE);
             }}
           />
           <InfoCard
@@ -221,9 +236,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push(
-                `/dashboard/monitor?${queryParams.JOB_STATUS_FAILED}`
-              );
+              handleViewButton(queryParams.JOB_STATUS_FAILED);
             }}
           />
           <InfoCard
@@ -242,7 +255,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push(`/dashboard/monitor?${queryParams.LATENCY_WARNING}`);
+              handleViewButton(queryParams.LATENCY_WARNING);
             }}
           />
           <InfoCard
@@ -261,9 +274,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push(
-                `/dashboard/monitor?${queryParams.EXCEEDS_PER_CHANGE}`
-              );
+              handleViewButton(queryParams.EXCEEDS_PER_CHANGE);
             }}
           />
           <InfoCard
@@ -277,7 +288,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push(`/dashboard/monitor?${queryParams.STALE}`);
+              handleViewButton(queryParams.STALE);
             }}
           />
           <InfoCard
@@ -300,8 +311,27 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push(`/dashboard/monitor?${queryParams.QUARANTINE}`);
+              handleViewButton(queryParams.QUARANTINE);
             }}
+          />
+          <Peek
+            open={open}
+            followCursor
+            placement="top"
+            content={
+              <div style={{ maxWidth: 400 }}>
+                <Typography
+                  variant="title2"
+                  gutterBottom
+                  style={{ fontWeight: 600 }}
+                >
+                  {curRow.name}
+                </Typography>
+                <Typography variant="body2" style={{ color: neutral8 }}>
+                  {curRow.description}
+                </Typography>
+              </div>
+            }
           />
         </div>
       </Hero>
