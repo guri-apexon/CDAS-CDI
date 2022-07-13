@@ -38,8 +38,8 @@ right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
 right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid
 where d.active = 1 and d2.active = 1 and d3.active = 1 and d3.datakindid=$1 group by d.dataflowid`;
 
-const getClinicalTypeErrorMsg = (dkName) => {
-  return `Clinical Data Type ${dkName} cannot be updated because it is currently in use by a dataflow.`;
+const getClinicalTypeErrorMsg = (dataKindName) => {
+  return `Clinical Data Type ${dataKindName} cannot be updated because it is currently in use by a dataflow.`;
 };
 
 exports.createDataKind = async (req, res) => {
@@ -124,12 +124,14 @@ exports.createDataKind = async (req, res) => {
         }
 
         // update datakind and related dataflow'
-        const isDKPartOfDataFlow = await isClinicalDataPartOfDataFlow(dkId);
+        const isDataKindPartOfDataFlow = await isClinicalDataPartOfDataFlow(
+          dkId
+        );
 
-        if (isDKPartOfDataFlow) {
+        if (isDataKindPartOfDataFlow) {
           return apiResponse.ErrorResponse(
             res,
-            getClinicalTypeErrorMsg(dkName)
+            getClinicalTypeErrorMsg(existingDK?.rows[0]?.name)
           );
         }
 
