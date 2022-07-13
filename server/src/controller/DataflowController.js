@@ -1962,6 +1962,24 @@ exports.updateDataflowConfig = async (req, res) => {
       if (!existDf) {
         return apiResponse.ErrorResponse(res, "Dataflow doesn't exist");
       }
+
+      // NOTE: getting protocol id in protocolNumberStandard, this is to be fixed by the original developer
+      const checkUnique = await datasetHelper.isNotUniqueAmongstDatasets(
+        protocolNumberStandard,
+        testFlag === "true" ? "1" : "0",
+        vendorID,
+        dataflowId
+      );
+
+      if (checkUnique)
+        return apiResponse.validationErrorWithData(
+          res,
+          "Changes will make duplicate mnemonic",
+          {
+            success: false,
+          }
+        );
+
       let dfUpdatedName = false;
       if (
         existDf.vendorID != vendorID ||
