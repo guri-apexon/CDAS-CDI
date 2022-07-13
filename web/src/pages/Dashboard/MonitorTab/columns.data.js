@@ -647,6 +647,14 @@ const columns = [
   //   filterComponent: DateFilter,
   // },
   {
+    header: "Last Attempted Date/Time",
+    accessor: "lastattempted",
+    sortFunction: compareDates,
+    customCell: DateCell,
+    filterFunction: dateFilterCustom("lastattempted"),
+    filterComponent: DateFilter,
+  },
+  {
     header: "Error message",
     accessor: "errmsg",
     filterFunction: createStringSearchFilter("errmsg"),
