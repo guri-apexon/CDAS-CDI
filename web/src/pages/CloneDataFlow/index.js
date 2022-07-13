@@ -119,6 +119,7 @@ const useStyles = makeStyles(() => ({
   },
   stepLabel: {
     minHeight: "48px",
+    cursor: "pointer",
   },
   step: {
     display: "none",

@@ -339,7 +339,7 @@ const ProcessStatusCell = ({ row, column: { accessor } }) => {
           <Tooltip title="Processed with errors" placement="top">
             <Tag
               label="Processed"
-              className="inProgressStatus"
+              className="successStatus"
               style={{
                 backgroundColor: "#ff9300",
                 fontWeight: 600,
