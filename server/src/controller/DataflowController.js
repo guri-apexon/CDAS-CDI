@@ -1960,17 +1960,21 @@ exports.updateDataflowConfig = async (req, res) => {
         return apiResponse.ErrorResponse(res, "Dataflow doesn't exist");
       }
 
+      // NOTE: getting protocol id in protocolNumberStandard, this is to be fixed by the original developer
       const checkUnique = await datasetHelper.isNotUniqueAmongstDatasets(
         protocolNumberStandard,
-        testFlag ? "1" : "0",
+        testFlag === "true" ? "1" : "0",
         vendorID,
         dataflowId
       );
 
       if (checkUnique)
-        return apiResponse.ErrorResponse(
+        return apiResponse.validationErrorWithData(
           res,
-          "Changes will make duplicate mnemonic"
+          "Changes will make duplicate mnemonic",
+          {
+            success: false,
+          }
         );
 
       let dfUpdatedName = false;

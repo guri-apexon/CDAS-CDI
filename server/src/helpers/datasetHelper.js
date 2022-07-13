@@ -62,7 +62,7 @@ exports.findByMnemonic = async (
 };
 
 exports.isNotUniqueAmongstDatasets = async (
-  protocolNumberStandard,
+  prot_id,
   testFlag,
   vendorID,
   dataflowid
@@ -79,9 +79,10 @@ exports.isNotUniqueAmongstDatasets = async (
   join dataset ds on
     (dp.datapackageid = ds.datapackageid )
   where
-    s.prot_nbr_stnd = '${protocolNumberStandard}'
+    s.prot_id = '${prot_id}'
     and df.vend_id = '${vendorID}'
     and df.testflag = ${testFlag}
+    and df.dataflowid != '${dataflowid}'
     and ds.mnemonic in (
     select distinct
       ds.mnemonic
