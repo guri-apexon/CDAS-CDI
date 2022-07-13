@@ -94,6 +94,12 @@
     height: 36px;
     width: 36px;
   }
+  
+  .newMonitor-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
   .dashInfoLabel {
     display: flex;
     align-items: center;
@@ -132,6 +138,7 @@
 }
 .inProgressStatus svg {
   width: 14px;
+  top: 2px;
 }
 .queueStatus {
   background-color: transparent;

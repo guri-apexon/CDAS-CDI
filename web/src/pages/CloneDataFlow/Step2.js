@@ -220,7 +220,7 @@ const Step2 = ({
         </div>
         <div className={`${classes.mt24} flex justify-between`}>
           {/* <Button onClick={goToPreviousStep}>Previous</Button> */}
-          <Button onClick={handleCancel}>Previous</Button>
+          <Button onClick={handleCancel}>Cancel</Button>
           <Button
             disabled={nextDisabled}
             variant="primary"
