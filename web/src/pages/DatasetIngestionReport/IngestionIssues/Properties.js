@@ -12,9 +12,12 @@ import IconButton from "apollo-react/components/IconButton";
 import Tooltip from "apollo-react/components/Tooltip";
 import Modal from "apollo-react/components/Modal";
 import { ReactComponent as DataFlowIcon } from "../../../components/Icons/dataflow.svg";
+import { ReactComponent as DatasetIcon } from "../../../components/Icons/dataset.svg";
+import { ReactComponent as FileIcon } from "../../../components/Icons/file.svg";
 import { ReactComponent as DataPackageIcon } from "../../../components/Icons/datapackage.svg";
 import { redirectToDataSet } from "../../../store/actions/DataPackageAction";
 import { updateDSState } from "../../../store/actions/DataFlowAction";
+import "./properties.scss";
 
 const formatDate = (v) => {
   return v && moment(v, "YYYY-MM-DD HH:mm:ss").isValid()
@@ -22,19 +25,33 @@ const formatDate = (v) => {
     : "";
 };
 
-const IssuesProperties = () => {
+const IssuesProperties = ({ datasetProperties }) => {
   const history = useHistory();
   const params = useParams();
   const dispatch = useDispatch();
   const [copyText, setCopyText] = useState("Copy");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const { datasetProperties } = useSelector((state) => state.ingestionReports);
+  const [loading, setLoading] = useState(false);
   const { datasetId } = params;
   const connectionTypeCheck = ["sftp", "ftps"];
+  const {
+    DatasetName,
+    DataFlowName,
+    datapackageid,
+    dataflowid,
+    DataPackageNamingConvention,
+    VendorContactInformation,
+    Vendor,
+    DateLastChecked,
+    DateofLastSuccessfulProcess,
+    SourceOrigin,
+    ExpectedDateofNextTransfer,
+    ExpectedTransferFrequency,
+    loadType,
+    FileName,
+  } = datasetProperties;
   const copyVendor = async () => {
     await navigator.clipboard
-      .writeText(datasetProperties?.VendorContactInformation)
+      .writeText(VendorContactInformation)
       .then(() => {
         setCopyText("Copied");
       })
@@ -42,66 +59,33 @@ const IssuesProperties = () => {
         console.log("clipboard err", err);
       });
   };
-  const {
-    DatasetName,
-    DataFlowName,
-    datapackageid,
-    dataflowid,
-    DataPackageNamingConvention,
-  } = datasetProperties;
-  const goToDataset = () => {
-    dispatch(
-      redirectToDataSet(
-        dataflowid,
-        DataFlowName,
-        datapackageid,
-        DataPackageNamingConvention,
-        datasetId,
-        DatasetName,
-        "IngestionProperties"
-      )
-    );
-    dispatch(updateDSState(false));
-    history.push(`/dashboard/dataset/${datasetId}`, datasetId);
-  };
-  useEffect(() => {
-    console.log("datasetProperties", datasetProperties);
-    if (datasetProperties?.dataflowid) {
-      setLoading(false);
-    }
-  }, [datasetProperties]);
+  // useEffect(() => {
+  //   if (datasetProperties?.dataflowid) {
+  //     setLoading(false);
+  //   }
+  // }, [datasetProperties]);
   return (
-    <div style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24 }}>
-      <Paper
-        style={{ padding: 24, backgroundColor: "#fff" }}
-        id="properties-box"
-      >
+    <section className="properties-wrapper">
+      <Paper id="properties-box">
         {loading ? (
-          <ApolloProgress />
+          <div className="flex loader">
+            <ApolloProgress />
+          </div>
         ) : (
           <>
             <div className="panel-header">
-              <Typography
-                variant="title1"
-                style={{ fontSize: 16, marginTop: 0 }}
-              >
-                Dataset Properties
-              </Typography>
-              <Button
-                variant="text"
-                onClick={() => setModalOpen(true)}
-                size="small"
-                style={{ marginRight: 10 }}
-              >
-                View dataset settings
-              </Button>
+              <Typography variant="title1">File Properties</Typography>
             </div>
             <div className="panel-body">
-              <Grid container style={{ width: "calc(50% + 16px)" }} spacing={2}>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <div className="label">Vendor Name</div>
+                  <div className="text">{Vendor || "------"}</div>
+                </Grid>
                 <Grid item xs={12}>
                   <div className="label">Vendor Contact Information</div>
                   <div className="text">
-                    {datasetProperties?.VendorContactInformation}
+                    {datasetProperties?.VendorContactInformation || "------"}
                     {datasetProperties?.VendorContactInformation && (
                       <Tooltip title={copyText} placement="top">
                         <IconButton color="primary" size="small">
@@ -116,88 +100,74 @@ const IssuesProperties = () => {
                 </Grid>
                 <Grid item xs={6}>
                   <div className="label">Date Last Checked</div>
-                  <div className="text">
-                    {formatDate(datasetProperties?.DateLastChecked)}
-                  </div>
+                  <div className="text">{formatDate(DateLastChecked)}</div>
                 </Grid>
                 <Grid item xs={6}>
                   <div className="label">Date of Last Succesful Process</div>
                   <div className="text">
-                    {formatDate(datasetProperties?.DateofLastSuccessfulProcess)}
+                    {formatDate(DateofLastSuccessfulProcess)}
                   </div>
                 </Grid>
-                {connectionTypeCheck.indexOf(
-                  datasetProperties?.SourceOrigin?.toLowerCase()
-                ) !== -1 && (
+                {connectionTypeCheck.indexOf(SourceOrigin?.toLowerCase()) !==
+                  -1 && (
                   <>
                     <Grid item xs={6}>
                       <div className="label">
                         Expected Date of Next Transfer
                       </div>
                       <div className="text">
-                        {formatDate(
-                          datasetProperties?.ExpectedDateofNextTransfer
-                        )}
+                        {formatDate(ExpectedDateofNextTransfer)}
                       </div>
                     </Grid>
 
                     <Grid item xs={6}>
                       <div className="label">Expected Transfer Frequency</div>
                       <div className="text">
-                        {datasetProperties?.ExpectedTransferFrequency}
+                        {ExpectedTransferFrequency || "------"}
                       </div>
                     </Grid>
                   </>
                 )}
                 <Grid item xs={6}>
                   <div className="label">Load Type</div>
+                  <div className="text">{loadType}</div>
+                </Grid>
+                <Grid item xs={12}>
+                  <div className="label">File Naming Convention</div>
                   <div className="text">
-                    {datasetProperties?.loadType?.toLowerCase() ===
-                    "incremental"
-                      ? datasetProperties?.loadType
-                      : "Cumulative"}
+                    <FileIcon className="properties-icon" />
+                    {FileName || "------"}
                   </div>
                 </Grid>
                 <Grid item xs={6}>
-                  <div className="label">Source Origin</div>
-                  <div className="text">{datasetProperties?.SourceOrigin}</div>
+                  <div className="label">Dataset Name</div>
+                  <div className="text">
+                    <DatasetIcon className="properties-icon" />
+                    {DatasetName || "------"}
+                  </div>
+                </Grid>
+                <Grid item xs={6}>
+                  <div className="label">
+                    Data Package Naming Convention (zip files)
+                  </div>
+                  <div className="text">
+                    <DataPackageIcon className="properties-icon" />
+                    {DataPackageNamingConvention || "------"}
+                  </div>
                 </Grid>
                 <Grid item xs={12}>
-                  <div className="label">
+                  <div className="label">Data Flow Name</div>
+                  <div className="text">
                     <DataFlowIcon className="properties-icon" />
-                    Data Flow Name
+                    {DataFlowName || "------"}
                   </div>
-                  <div className="text">{datasetProperties?.DataFlowName}</div>
                 </Grid>
-                {connectionTypeCheck.indexOf(
-                  datasetProperties?.SourceOrigin?.toLowerCase()
-                ) !== -1 && (
-                  <Grid item xs={12}>
-                    <div className="label">
-                      <DataPackageIcon className="properties-icon" />
-                      Data Package Naming Convention (zip files)
-                    </div>
-                    <div className="text">
-                      {datasetProperties?.DataPackageNamingConvention}
-                    </div>
-                  </Grid>
-                )}
               </Grid>
             </div>
-            <Modal
-              open={modalOpen}
-              onClose={() => setModalOpen(false)}
-              title="You are about to leave dashboard page?"
-              id="neutral"
-              buttonProps={[
-                {},
-                { label: "Continue", onClick: () => goToDataset() },
-              ]}
-            />
           </>
         )}
       </Paper>
-    </div>
+    </section>
   );
 };
 

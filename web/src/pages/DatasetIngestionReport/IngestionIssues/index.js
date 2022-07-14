@@ -87,6 +87,12 @@ const IngestionIssues = () => {
   const downloadSummery = () => {
     console.log("downloadSummery");
   };
+  const getTitle = () => {
+    if (!datasetProperties?.dataflowid) return "------";
+    return datasetProperties.loadType?.toLowerCase() === "increament"
+      ? datasetProperties.DatasetName || "------"
+      : datasetProperties.FileName || "------";
+  };
 
   const CustomButtonHeader = ({ toggleFilters }) => {
     return (
@@ -116,36 +122,55 @@ const IngestionIssues = () => {
       </>
     );
   };
-  const addDynamicCol = (cols) => {
-    const columnsArr = [...fixedColumns];
-    cols.forEach((col) => {
-      const columnObj = {
-        header: (
-          <>
-            <IssueIcon className="black-icon table-th" />
-            {col}
-          </>
-        ),
-        accessor: col,
-        filterFunction: createStringSearchFilter(col),
-        filterComponent: TextFieldFilter,
-      };
-      columnsArr.push(columnObj);
-    });
-    setColumns(columnsArr);
+  // eslint-disable-next-line no-shadow
+  const addDynamicCol = (data, selectedIssues, viewAll) => {
+    const tableData = data ? data : tableRows;
+    if (tableData?.length) {
+      const issuesColumns = Object.keys(tableData[0]).filter(
+        (x) => x !== "_rowno"
+      );
+      const columnsArr = [...fixedColumns];
+      console.log("viewAll", viewAll, selectedIssues);
+      if (selectedIssues?.length) {
+        const allColumns = JSON.parse(selectedIssues[0].allcolumns);
+
+        (viewAll ? allColumns : issuesColumns).forEach((col) => {
+          const colName = col?.toLowerCase();
+          const haveIssue =
+            !viewAll || (viewAll && issuesColumns.includes(colName));
+          const columnObj = {
+            header: haveIssue ? (
+              <>
+                <IssueIcon className="black-icon table-th" />
+                {colName}
+              </>
+            ) : (
+              colName
+            ),
+            accessor: colName,
+            filterFunction: createStringSearchFilter(colName),
+            filterComponent: TextFieldFilter,
+          };
+          if (haveIssue) {
+            columnObj.customCell = ({ row, column: { accessor: key } }) => {
+              return <span className="issue-td">{row[key] || "----"}</span>;
+            };
+          }
+          columnsArr.push(columnObj);
+        });
+      }
+      setColumns(columnsArr);
+    }
   };
   const refreshData = async (data) => {
-    console.log("refreshData", data);
+    setRowDetails(null);
     setSelectedIssues(data);
     if (data?.length) {
       setTableloading(true);
       const refreshedData = await getIngestionIssueCols({
         selectedIssues: data,
       });
-      const issuesColumns = Object.keys(refreshedData[0]).filter(
-        (x) => x !== "_rowno"
-      );
-      addDynamicCol(issuesColumns);
+      addDynamicCol(refreshedData, data);
       setTableRows(refreshedData);
       setTableloading(false);
     }
@@ -153,6 +178,9 @@ const IngestionIssues = () => {
   const getProperties = () => {
     dispatch(getDatasetProperties(datasetId));
   };
+  useEffect(() => {
+    addDynamicCol(tableRows, selectedIssues, viewAllCol);
+  }, [viewAllCol]);
 
   useEffect(() => {
     getProperties();
@@ -163,8 +191,8 @@ const IngestionIssues = () => {
         close={() => history.push("/dashboard")}
         submit={downloadSummery}
         breadcrumbItems={breadcrumpItems}
-        headerTitle="Header Issue title"
-        subTitle="tst_pharmacokinetic_tabular_labcorp_results_current"
+        headerTitle="Ingestion Issue Report"
+        subTitle={getTitle()}
         icon={<IssueIcon className="black-icon" />}
         saveBtnLabel="View summery"
         hideCancel
@@ -184,7 +212,12 @@ const IngestionIssues = () => {
           <div
             id="mainTable"
             style={{
-              width: rowDetails ? "calc(100% - 634px)" : "100%",
+              // eslint-disable-next-line no-nested-ternary
+              width: rowDetails
+                ? "calc(100% - 634px)"
+                : leftPanelCollapsed
+                ? "100%"
+                : "calc(100% - 346px)",
             }}
           >
             <Table
@@ -229,7 +262,9 @@ const IngestionIssues = () => {
           )}
         </section>
       )}
-      {currentTab === 1 && <IssuesProperties />}
+      {currentTab === 1 && (
+        <IssuesProperties datasetProperties={datasetProperties} />
+      )}
     </main>
   );
 };

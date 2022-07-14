@@ -8,7 +8,7 @@
     }
   }
   svg.black-icon {
-    width: 20px;
+    width: 17px;
     path {
       fill: #444444;
     }
@@ -40,6 +40,17 @@
     .rightpanel-link {
       padding: 0 10px;
       display: inline-block;
+    }
+    .MuiTableCell-body:not(:first-child) {
+      padding: 0;
+    }
+    .issue-td {
+      background: #fdebeb;
+      display: flex;
+      min-height: 48px;
+      align-items: center;
+      padding: 0 10px 0 20px;
+      white-space: nowrap;
     }
   }
 }
