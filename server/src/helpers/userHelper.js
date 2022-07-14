@@ -157,10 +157,10 @@ exports.checkPermissionStudy = async (userid, feature, prot_nbr_stnd) => {
   return false;
 };
 
-exports.isClinicalDataPartOfDataFlow = async function (dkId) {
+exports.isClinicalDataPartOfDataFlow = async function (dataKindId) {
   let query = `select Count(1) from dataflow d, datapackage d2, dataset d3 
   where d.dataflowid=d2.dataflowid and d2.datapackageid=d3.datapackageid 
-  and d.data_in_cdr='Y' and d3.datakindid = '${dkId}'`;
+  and d.data_in_cdr='Y' and d3.datakindid = '${dataKindId}'`;
   try {
     const queryResult = await DB.executeQuery(query);
     if (queryResult && queryResult?.rows[0]?.count > 0) {
