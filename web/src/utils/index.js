@@ -674,12 +674,6 @@ export const isSftp = (str = "") => {
   return ["SFTP", "FTPS"].includes(str?.toUpperCase());
 };
 
-export const isJdbc = (str = "") => {
-  return ["MYSQL", "ORACLE", "POSTGRESQL", "SQL SERVER"].includes(
-    str?.toUpperCase()
-  );
-};
-
 export const validateFields = (name, ext) => {
   if (!name || !ext) return false;
   const fileExt = name.split(".").pop();
