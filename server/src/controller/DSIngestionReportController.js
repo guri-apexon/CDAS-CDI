@@ -428,9 +428,20 @@ exports.getIssueColumns = async (req, res) => {
         tableName = tablename;
       }
     });
-    errColumns = [...new Set(errColumns)];
-    errRows = [...new Set(errRows)];
+    errColumns = [...new Set(errColumns)].filter((el) => {
+      return el !== null && typeof el !== "undefined";
+    });
+    errRows = [...new Set(errRows)].filter((el) => {
+      return el !== null && typeof el !== "undefined";
+    });
+    if (!errColumns.length || !errRows.length) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Selected issue doesn't have any columns"
+      );
+    }
     const concatQuery = `SELECT \`_rowno\`, ${errColumns} from ${dbName}.${tableName} WHERE \`_rowno\` in (${errRows});`;
+    // console.log("concatQuery", concatQuery, errColumns);
     await jdbc(
       dbUser,
       dbPass,
