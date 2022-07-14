@@ -1,0 +1,66 @@
+#rightSidebar {
+  width: 288px;
+  .header {
+    padding: 24px 20px 10px;
+    .close {
+      position: absolute;
+      right: 12px;
+      top: 16px;
+      svg {
+        font-size: 0.9rem;
+      }
+    }
+    .tabs-btns {
+      justify-content: center;
+      border-top: 1px solid #d9d9d9;
+      margin-top: 20px;
+      padding: 16px 0;
+      button {
+        min-width: 100px;
+        &:first-child {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+        &:not(:first-child) {
+          margin-left: 0 !important;
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+      }
+    }
+  }
+  .issues-list,
+  .columns-list {
+    font-size: 14px;
+    p {
+      font-size: 14px;
+    }
+    .issue-header {
+      p > span {
+        float: right;
+      }
+    }
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+      li {
+        margin-bottom: 10px;
+        font-size: 14px;
+        small {
+          color: #0768fd;
+          font-size: 14px;
+          margin-right: 6px;
+        }
+      }
+    }
+    .list-header {
+      background: #f6f7fb;
+      height: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 25px 0 30px;
+    }
+  }
+}

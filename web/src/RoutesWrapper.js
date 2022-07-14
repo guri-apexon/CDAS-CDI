@@ -22,6 +22,9 @@ const CDIAdmin = lazy(() => import("./pages/Admin/CDIAdmin"));
 const DatasetIngestionReport = lazy(() =>
   import("./pages/DatasetIngestionReport")
 );
+const IngestionIssues = lazy(() =>
+  import("./pages/DatasetIngestionReport/IngestionIssues")
+);
 
 const Empty = () => <></>;
 
@@ -71,6 +74,11 @@ const WithPageHeader = () => {
           path={`${match.path}/ingestion-report/:datasetId`}
           exact
           render={() => <DatasetIngestionReport />}
+        />
+        <Route
+          path={`${match.path}/ingestion-issues/:datasetId`}
+          exact
+          render={() => <IngestionIssues />}
         />
         <Redirect from="*" to="/dashboard" />
       </Switch>

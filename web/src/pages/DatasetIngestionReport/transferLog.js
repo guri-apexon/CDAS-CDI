@@ -3,7 +3,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
+import { useHistory, useParams } from "react-router";
 import moment from "moment";
 import Typography from "apollo-react/components/Typography";
 import SelectButton from "apollo-react/components/SelectButton";
@@ -96,6 +96,8 @@ const StatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
   const { canReadIngestionIssues } = row;
   const [open, setOpen] = useState(false);
+  const history = useHistory();
+  const { datasetId } = useParams();
 
   // if (
   //   status?.toLowerCase() === "loaded without issues" ||
@@ -227,7 +229,9 @@ const StatusCell = ({ row, column: { accessor } }) => {
           </Tooltip>
           <Link
             disabled={!canReadIngestionIssues}
-            onClick={() => console.log("link clicked")}
+            onClick={() =>
+              history.push(`/dashboard/ingestion-issues/${datasetId}`)
+            }
             style={{ fontWeight: 500, marginLeft: 8 }}
           >
             View
