@@ -1,10 +1,13 @@
 const DB = require("../config/db");
 const oracleDB = require("../config/oracleDB");
+const jdbc = require("../config/JDBC");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const moment = require("moment");
+const { COMMON_ERR } = require("../config/messageConstants");
+const { forEach } = require("lodash");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const createTemporaryLog = async (
@@ -92,7 +95,7 @@ exports.getDatasetIngestionReportTransferLog = (req, res) => {
     fromDate = fromDate.subtract(dayFilter - 1, "days");
     fromDate = fromDate.format("YYYY-MM-DD");
 
-   const searchQuery = `SELECT
+    const searchQuery = `SELECT
               "DatasetName", "Vendor", "TransferDate", "FileName", datasetname, "FileTransferStatus",
               "DownloadTime", "ProcessTime", "DownloadTransactions", "ProcessTransactions", "NewRecords",
               "ModifiedRecords", "DownloadDate", "ProcessDate", "LastCompleted", "LastAttempted", "LastLoadedDate",
@@ -159,6 +162,7 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
             ExpectedTransferFrequency: records.ExpectedTransferFrequency,
             SourceOrigin: records.SourceOrigin,
             dataflowid: records.dataflowid,
+            datasetid: records.datasetid,
             DataFlowName: records.DataFlowName,
             datapackageid: records.datapackageid,
             FileName: records.FileName,
@@ -184,6 +188,7 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
             ExpectedTransferFrequency: records.ExpectedTransferFrequency,
             SourceOrigin: records.SourceOrigin,
             dataflowid: records.dataflowid,
+            datasetid: records.datasetid,
             DataFlowName: records.DataFlowName,
             datapackageid: records.datapackageid,
             FileName: records.FileName,
@@ -272,5 +277,163 @@ exports.getFileTransferHistory = (req, res) => {
     Logger.error("catch :getFileTransferHistory");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.getIssues = async (req, res) => {
+  try {
+    const { datasetid } = req.params;
+    const {
+      rows: [dfObj],
+    } = await DB.executeQuery(`SELECT DF.prot_id from ${schemaName}.dataset DS
+    left join ${schemaName}.datapackage DP on (DS.datapackageid = DP.datapackageid)
+    left join ${schemaName}.dataflow DF on (DF.dataflowid = DP.dataflowid)
+    where datasetid='${datasetid}';`);
+    if (!dfObj) {
+      return apiResponse.ErrorResponse(res, "Study now found for this dataset");
+    }
+
+    const query = `with LATEST_TRANS as (
+      select prot_id,datasetid,externalid,dbname_prefix||tenant_mnemonic_nm||'_'||prot_mnemonic_nm as databasename,tablename_prefix,
+      datakindmnemonic,datastructure,vendormnemonic,datasetmnemonic,
+      allcolumns,"name" ,primarykey from (
+      select ts.datasetid ,ts.externalid ,
+      case when d.testflag =1 then (select value from config c where component ='hive' and "name" ='test_table_prefix') 
+      else null end as tablename_prefix,
+      (select value from config c where component ='hive' and "name" ='db_prefix') as dbname_prefix,
+      dk."name" as datakindmnemonic,
+      d.type as datastructure,
+      v.vend_nm_stnd as vendormnemonic,
+      ds.mnemonic as datasetmnemonic,
+      case when s.prot_mnemonic_nm is not null then lower(s.prot_mnemonic_nm)
+      else lower(regexp_replace(s.prot_mnemonic_nm, '[^0-9A-Za-z]', '','g'))
+      end as prot_mnemonic_nm,t.tenant_mnemonic_nm ,
+      dcs."columns" as allcolumns,s.prot_id,c."name" ,c.primarykey,
+      row_number() over(partition by ts.datasetid order by ts.executionid,TS.EXTERNALID desc) as rnk 
+      from transaction_summary ts
+      inner join dataflow d on (ts.dataflowid=d.dataflowid)
+      inner join study s on (d.prot_id=s.prot_id and s.prot_id='${dfObj.prot_id}'
+      )
+      inner join study_sponsor sp on (s.prot_id=sp.prot_id)
+      inner join sponsor s1 on (sp.spnsr_id=s1.spnsr_id)
+      inner join tenant t on (s1.tenant_id=t.tenant_id)
+      inner join datapackage dp on (ts.datapackageid=dp.datapackageid)
+      inner join dataset ds on (ts.datasetid=ds.datasetid and ts.datasetid in ('${datasetid}') 
+      )
+      inner join datakind dk on (ds.datakindid=dk.datakindid)
+      inner join vendor v on (d.vend_id=v.vend_id)
+      left join columndefinition c on (ds.datasetid=c.datasetid and primarykey=1 )
+      inner join dataset_current_schema dcs on (dcs.dataflowid=ts.dataflowid and ts.executionid=dcs.executionid
+      and dcs.mnemonic=ds.mnemonic)
+      where upper(processstatus) !='SKIPPED' 
+      ) R where RNK=1 
+      )
+      select distinct datasetid,databasename as databasename,
+      case when tablename_prefix is null then
+        datakindmnemonic||'_'||datastructure||'_'||vendormnemonic||'_'||datasetmnemonic||'_current' 
+        else tablename_prefix||datakindmnemonic||'_'||datastructure||'_'||vendormnemonic||'_'||datasetmnemonic||'_current' 
+        end as tablename,originalAttributeName,
+      Issue_Type,
+      count(distinct rownumbers) as NoOfErrors,
+         STRING_AGG (distinct pkColumns, ',') as pkColumns,
+         array_agg (distinct rownumbers::INTEGER) as errorrownumbers,
+         array_agg (distinct Columnname) as errorcolumnnames,
+      allcolumns
+      from 
+      (
+      select distinct lt.*,
+      lt."name"  as pkColumns,ta.attributename as originalAttributeName,
+      case when ta.attributename='pkvRow' then 'Primary Key Violation'
+         when ta.attributename='dupRecRow' then 'Duplicate Row'
+         when ta.attributename ='typeMismatchRow' then 'Data Type Mismatch'
+         when ta.attributename ='fldLenOutOfRngRow' then 'Field Length Out of Range'
+         when ta.attributename ='formatMismatchedRow' then 'Format Mismatch'
+         when ta.attributename ='LOVFailedRow' then 'LOV Fail'
+         when ta.attributename ='reqFldEmptyRow' then 'Required Field Null'
+         when ta.attributename ='decColCnt' then 'Column Count Mismatch'
+         when ta.attributename ='uniqueConstViolation' then 'Unique Constraint Violation' 
+         when ta.attributename ='excelFormViolation' then 'Excel Formula Violation'
+         else ta.attributename end as Issue_Type ,
+        case when ta.rowcol not like '%:%' then ta.rowcol
+        else replace("substring"(ta.rowcol::text, 1, "position"(ta.rowcol::text, ':'::text)),':','') end as rownumbers,
+      case WHEN "position"(ta.rowcol::text, ':'::text) > 0 
+        THEN "substring"(ta.rowcol::text,  "position"(ta.rowcol::text, ':'::text) + 1)
+        ELSE NULL::text END as Columnname 
+        from latest_trans lt
+        join transaction_alerts ta on (lt.externalid=ta.externalid)	 
+      ) a --where Issue_Type in ('Format Mismatch')
+      group by datasetid,databasename,tablename,originalAttributeName,Issue_Type,allcolumns,prot_id;`;
+    const { rows: issues } = await DB.executeQuery(query);
+    return apiResponse.successResponseWithData(
+      res,
+      "Issues retieved successfully",
+      issues
+    );
+    Logger.info({ message: "getIngestionIssues" });
+  } catch (err) {
+    const msg = err.message || COMMON_ERR;
+    Logger.error("catch :getIssues");
+    Logger.error(msg);
+    return apiResponse.ErrorResponse(res, msg);
+  }
+};
+
+exports.getIssueColumns = async (req, res) => {
+  try {
+    const { selectedIssues } = req.body;
+    if (!selectedIssues || (selectedIssues && !Array.isArray(selectedIssues))) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Please select atleast one issue to proceed"
+      );
+    }
+    const { HIVE_USER: dbUser, HIVE_PASS: dbPass } = process.env;
+    if (!dbPass || !dbUser) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Please check your hive db credentials"
+      );
+    }
+    const hostName = "uskhdphive.quintiles.net";
+    const driverName = "com.cloudera.hive.jdbc41.HS2Driver";
+    const connectionUrl = `jdbc:hive2://${hostName}:10000/default;KrbRealm=QUINTILES.NET;AuthMech=1;KrbHostFQDN=${hostName};KrbServiceName=hive;principal=hive/${hostName}@QUINTILES.NET;ssl=1;`;
+    let errColumns = [];
+    let errRows = [];
+    let dbName = null;
+    let tableName = null;
+    selectedIssues.forEach(async (issue) => {
+      const { databasename, tablename, errorrownumbers, errorcolumnnames } =
+        issue;
+      if (
+        databasename &&
+        tablename &&
+        errorrownumbers &&
+        errorcolumnnames &&
+        Array.isArray(errorrownumbers) &&
+        Array.isArray(errorcolumnnames)
+      ) {
+        errColumns = errColumns.concat(errorcolumnnames);
+        errRows = errRows.concat(errorrownumbers);
+        dbName = databasename;
+        tableName = tablename;
+      }
+    });
+    errColumns = [...new Set(errColumns)];
+    errRows = [...new Set(errRows)];
+    const concatQuery = `SELECT \`_rowno\`, ${errColumns} from ${dbName}.${tableName} WHERE \`_rowno\` in (${errRows});`;
+    await jdbc(
+      dbUser,
+      dbPass,
+      connectionUrl,
+      driverName,
+      concatQuery,
+      "Issue retrieved successfully.",
+      res
+    );
+  } catch (err) {
+    const msg = err.message || COMMON_ERR;
+    Logger.error("catch :getIssueColumns");
+    Logger.error(msg);
+    return apiResponse.ErrorResponse(res, msg);
   }
 };
