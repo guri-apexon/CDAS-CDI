@@ -323,6 +323,7 @@ const CloneDataFlow = () => {
         messageContext.showSuccessMessage(
           `Selected dataflow has been cloned to this study.`
         );
+        unblockRouter();
         history.push(
           `/dashboard/dataflow-management/${dataflowDetails?.dataFlowId}`
         );
