@@ -17,7 +17,7 @@ import InfoIcon from "apollo-react-icons/Info";
 import Tooltip from "apollo-react/components/Tooltip";
 import { ReactComponent as DataPackageIcon } from "../../../../components/Icons/datapackage.svg";
 import "./index.scss";
-import { getUserInfo, isJdbc, isSftp, validateFields } from "../../../../utils";
+import { getUserInfo, isSftp, validateFields } from "../../../../utils";
 import { packageComprTypes, packageTypes } from "../../../../utils/constants";
 
 // import {
