@@ -13,12 +13,12 @@ const AlertBox = ({ onClose, submit, title, message }) => {
       message={message}
       buttonProps={[
         {
-          label: "Dismiss",
+          label: "Cancel",
           onClick: onClose,
           // disabled: loading,
         },
         {
-          label: "Yes cancel",
+          label: "Yes",
           onClick: submit,
           // disabled: loading,
         },
