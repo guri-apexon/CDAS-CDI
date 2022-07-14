@@ -349,20 +349,20 @@ const CloneDataFlow = () => {
         <AlertBox
           onClose={keepEditingBtn}
           submit={leavePageBtn}
-          title="Are you sure you want to leave the page?"
-          message="The data flow configuration will be lost."
+          message="Are you sure you want to leave the page?"
+          title="The data flow configuration will be lost."
         />
       )}
       <Modal
         open={showCancelPopup}
         variant="warning"
         onClose={() => setShowCancelPopup(false)}
-        title="Are you sure you want to leave the page?"
-        message="The data flow configuration will be lost."
+        title="The data flow configuration will be lost."
+        message="Are you sure you want to leave the page?"
         buttonProps={[
-          { label: "Dismiss", onClick: () => setShowCancelPopup(false) },
+          { label: "Cancel", onClick: () => setShowCancelPopup(false) },
           {
-            label: "Yes cancel",
+            label: "Yes",
             onClick: cancelButton,
           },
         ]}
