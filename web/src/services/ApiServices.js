@@ -490,12 +490,20 @@ export const getIngestionIssues = async (datasetId) => {
   }
 };
 
+// eslint-disable-next-line consistent-return
 export const getIngestionIssueCols = async (reqBody) => {
-  const res = await axios.post(
-    `${baseURL}/${INGESTION_ISSUE_COL_URL}`,
-    reqBody
-  );
-  return res.data.data || [];
+  try {
+    const res = await axios.post(
+      `${baseURL}/${INGESTION_ISSUE_COL_URL}`,
+      reqBody
+    );
+    return res.data || [];
+  } catch (err) {
+    return {
+      data: [],
+      error: err.response?.data?.message || "Something went wrong",
+    };
+  }
 };
 
 export default searchStudy;

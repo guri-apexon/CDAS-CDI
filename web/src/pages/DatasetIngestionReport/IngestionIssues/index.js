@@ -3,7 +3,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-script-url */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
 import { useHistory } from "react-router-dom";
@@ -38,8 +38,10 @@ import {
   getIngestionIssues,
 } from "../../../services/ApiServices";
 import { getDatasetProperties } from "../../../store/actions/IngestionReportAction";
+import { MessageContext } from "../../../components/Providers/MessageProvider";
 
 const IngestionIssues = () => {
+  const toast = useContext(MessageContext);
   const history = useHistory();
   const dispatch = useDispatch();
   const { datasetProperties } = useSelector((state) => state.ingestionReports);
@@ -167,12 +169,20 @@ const IngestionIssues = () => {
     setSelectedIssues(data);
     if (data?.length) {
       setTableloading(true);
-      const refreshedData = await getIngestionIssueCols({
+      const { data: refreshedData, error } = await getIngestionIssueCols({
         selectedIssues: data,
       });
-      addDynamicCol(refreshedData, data);
-      setTableRows(refreshedData);
-      setTableloading(false);
+      if (error) {
+        toast.showErrorMessage(error);
+        setTableloading(false);
+        return;
+      }
+      if (refreshedData) {
+        // console.log("refreshedData", refreshedData, error);
+        addDynamicCol(refreshedData, data);
+        setTableRows(refreshedData);
+        setTableloading(false);
+      }
     }
   };
   const getProperties = () => {
