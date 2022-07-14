@@ -6,12 +6,14 @@ import BarChart from "apollo-react/components/BarChart";
 import Typography from "apollo-react/components/Typography";
 import Link from "apollo-react/components/Link";
 import Divider from "apollo-react/components/Divider";
+import { useHistory } from "react-router";
 
 const CummulativeSummary = ({
   datasetProperties,
   setModalOpen,
   handleChangeTab,
 }) => {
+  const history = useHistory();
   const data = [
     {
       type: "New Records",
@@ -35,6 +37,7 @@ const CummulativeSummary = ({
   const totalRecords = datasetProperties?.totalRecords || 0;
   const recordsWithIssuesPer =
     totalRecords > 0 ? (recordsWithIssues * 100) / totalRecords : 0;
+  console.log("datasetProperties", datasetProperties);
   return (
     <div className="summary-body">
       <div className="post-ingestion-issues">
@@ -102,7 +105,11 @@ const CummulativeSummary = ({
             Total Records
           </Typography>
           <Link
-            onClick={() => handleChangeTab("ingestion_issues")}
+            onClick={() =>
+              history.push(
+                `/dashboard/ingestion-issues/${datasetProperties?.datasetid}`
+              )
+            }
             style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
           >
             View issues in file
