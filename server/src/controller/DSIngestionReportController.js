@@ -169,6 +169,11 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
             DataPackageNamingConvention: records.DataPackageNamingConvention,
             DatasetStatus: records.DatasetStatus,
             DatasetName: records.DatasetName,
+            DownloadStart: records.DownloadStart,
+            DownloadTransactions: records.DownloadTransactions,
+            ProcessTransactions: records.ProcessTransactions,
+            ProcessDate: records.ProcessDate,
+            LastCompleted: records.LastCompleted,
           };
         } else if (records && records.LoadType === "Full") {
           metrics = {
@@ -195,6 +200,11 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
             DataPackageNamingConvention: records.DataPackageNamingConvention,
             DatasetStatus: records.DatasetStatus,
             DatasetName: records.DatasetName,
+            DownloadStart: records.DownloadStart,
+            DownloadTransactions: records.DownloadTransactions,
+            ProcessTransactions: records.ProcessTransactions,
+            ProcessDate: records.ProcessDate,
+            LastCompleted: records.LastCompleted,
           };
         }
         await createTemporaryLog(
