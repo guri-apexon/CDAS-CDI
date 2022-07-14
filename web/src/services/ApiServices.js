@@ -216,7 +216,8 @@ export const updateDataflow = async (payload) => {
     });
     return res.data || [];
   } catch (err) {
-    return console.log("Error", err);
+    console.log("Error", err);
+    return err?.response?.data;
   }
 };
 

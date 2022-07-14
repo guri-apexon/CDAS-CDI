@@ -344,7 +344,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Load Type"
                 canDeselect={false}
-                disabled={prodLock || !canUpdateDataFlow}
+                disabled={!canUpdateDataFlow}
                 // required
               >
                 {loadTypes?.map((type) => (
