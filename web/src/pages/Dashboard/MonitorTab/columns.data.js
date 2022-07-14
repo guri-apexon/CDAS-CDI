@@ -15,6 +15,7 @@ import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import Search from "apollo-react/components/Search";
 import SuccessIcon from "apollo-react/icons/StatusCheck";
 import ProcessedIcon from "apollo-react-icons/StatusExclamation";
+import QuarantineIcon from "apollo-react-icons/EyeHidden";
 import Tooltip from "apollo-react/components/Tooltip";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
@@ -235,6 +236,23 @@ const DownloadStatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
   return (
     <div>
+      {status?.toLowerCase() === "quarantined" && (
+        <div>
+          <Tooltip title="Quarantined" placement="top">
+            <Tag
+              label="Quarantined"
+              className="failedStatus"
+              style={{
+                backgroundColor: "#FF9300",
+                fontWeight: 600,
+                color: "#fff",
+                minWidth: 100,
+              }}
+              Icon={QuarantineIcon}
+            />
+          </Tooltip>
+        </div>
+      )}
       {status?.toLowerCase() === "failed" && (
         <div>
           <Tooltip title="Failed" placement="top">
@@ -257,7 +275,7 @@ const DownloadStatusCell = ({ row, column: { accessor } }) => {
           <Tooltip title="Successful" placement="top">
             <Tag
               label="Successful"
-              className="failedStatus"
+              className="successStatus"
               style={{
                 backgroundColor: "#00c221",
                 fontWeight: 600,

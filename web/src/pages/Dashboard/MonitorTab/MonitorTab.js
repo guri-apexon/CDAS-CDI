@@ -24,6 +24,7 @@ import FilterIcon from "apollo-react-icons/Filter";
 import StatusCheckIcon from "apollo-react-icons/StatusCheck";
 import StatusDotOutlineIcon from "apollo-react-icons/StatusDotOutline";
 import StatusExclamationIcon from "apollo-react-icons/StatusExclamation";
+import QuarantineIcon from "apollo-react-icons/EyeHidden";
 
 import { moreColumnsWithFrozen } from "./columns.data";
 import InfoCard from "./InfoCard";
@@ -32,7 +33,7 @@ import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg
 import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
 import { ReactComponent as DatasetsIcon } from "../../../components/Icons/dataset.svg";
 import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
-import { ReactComponent as QuarantineIcon } from "../../../components/Icons/Quarantine.svg";
+// import { ReactComponent as QuarantineIcon } from "../../../components/Icons/Quarantine.svg";
 import "../Dashboard.scss";
 
 import usePermission, {
@@ -301,13 +302,11 @@ export default function MonitorTab({ fetchLatestData, protId }) {
                   style={{
                     fill: "#FF9300",
                     color: "#FF9300",
-                    width: 24,
-                    height: 24,
                   }}
+                  className="newMonitor-icon"
                 />
               );
             }}
-            color="red"
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
