@@ -339,7 +339,7 @@ const ProcessStatusCell = ({ row, column: { accessor } }) => {
           <Tooltip title="Processed with errors" placement="top">
             <Tag
               label="Processed"
-              className="inProgressStatus"
+              className="successStatus"
               style={{
                 backgroundColor: "#ff9300",
                 fontWeight: 600,
@@ -646,6 +646,14 @@ const columns = [
   //   filterFunction: dateFilterCustom("lastfiletransferred"),
   //   filterComponent: DateFilter,
   // },
+  {
+    header: "Last Attempted Date/Time",
+    accessor: "lastattempted",
+    sortFunction: compareDates,
+    customCell: DateCell,
+    filterFunction: dateFilterCustom("lastattempted"),
+    filterComponent: DateFilter,
+  },
   {
     header: "Error message",
     accessor: "errmsg",
