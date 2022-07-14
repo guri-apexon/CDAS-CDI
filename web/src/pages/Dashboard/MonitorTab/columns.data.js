@@ -684,9 +684,9 @@ const columns = [
   },
   {
     header: "File Name",
-    accessor: "mnemonicfile",
-    filterFunction: createStringArraySearchFilter("mnemonicfile"),
-    filterComponent: createAutocompleteFilter("mnemonicfile"),
+    accessor: "filename",
+    filterFunction: createStringArraySearchFilter("filename"),
+    filterComponent: createAutocompleteFilter("filename"),
   },
   {
     header: "Data Flow Name",

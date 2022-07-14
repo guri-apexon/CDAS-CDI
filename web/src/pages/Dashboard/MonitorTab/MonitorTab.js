@@ -29,6 +29,7 @@ import QuarantineIcon from "apollo-react-icons/EyeHidden";
 import { moreColumnsWithFrozen } from "./columns.data";
 import InfoCard from "./InfoCard";
 
+import { getUserInfo, titleCase } from "../../../utils/index";
 import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg";
 import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
 import { ReactComponent as DatasetsIcon } from "../../../components/Icons/dataset.svg";
@@ -54,6 +55,8 @@ export default function MonitorTab({ fetchLatestData, protId }) {
   const [columnsState, setColumns] = useState(moreColumnsWithFrozen);
   const [hasUpdated, setHasUpdated] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const { firstName } = getUserInfo();
+
   const [summary, setSummary] = useState({
     failed_loads: 0,
     quarantined_files: 0,
@@ -171,13 +174,27 @@ export default function MonitorTab({ fetchLatestData, protId }) {
       {/* {dashboard.summaryLoading && !hasLoadedOnce && <Loader />} */}
       {dashboard.summaryLoading && <Loader />}
       <Hero>
-        <div className="topContainer">
+        <Typography
+          variant="h2"
+          style={{
+            lineHeight: "32px",
+            fontWeight: 600,
+            display: "inline-flex",
+          }}
+          darkMode
+        >
+          {`Welcome back, ${titleCase(firstName)}!`}
+        </Typography>
+
+        <div className="topContainer" style={{ position: "relative" }}>
           <Typography
             variant="title1"
             style={{
               lineHeight: "32px",
               fontWeight: 600,
               display: "inline-flex",
+              position: "absolute",
+              left: "0",
             }}
             darkMode
           >
