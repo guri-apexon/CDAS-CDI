@@ -453,8 +453,7 @@ exports.saveLocationData = async function (req, res) {
     // create location
     if (!updatedID) {
       const inset = await DB.executeQuery($insertLocation, body);
-
-      if (password === "Yes") {
+      if (password) {
         try {
           await helper.writeVaultData(inset?.rows[0].src_loc_id, vaultData);
         } catch (error) {
@@ -532,11 +531,18 @@ exports.saveLocationData = async function (req, res) {
         });
       }
 
-      return apiResponse.successResponseWithData(
-        res,
-        "Operation success",
-        true
-      );
+      if (systemName === "CDI") {
+        return apiResponse.successResponseWithData(
+          res,
+          "Operation success",
+          true
+        );
+      } else {
+        return apiResponse.successResponseWithMoreData(res, {
+          ExternalId,
+          id: updatedID,
+        });
+      }
     }
   } catch (err) {
     //throw error in json response with status 500.

@@ -1,6 +1,6 @@
 /* eslint-disable no-script-url */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import { connect, useDispatch, useSelector } from "react-redux";
@@ -20,6 +20,14 @@ import {
 import { getDataFlowDetails, dataflowSave } from "../../services/ApiServices";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 import { getVendorsData } from "../../store/actions/DataFlowAction";
+import {
+  formComponentActive,
+  hideAlert,
+  showAppSwitcher,
+  formComponentInActive,
+  hideAppSwitcher,
+} from "../../store/actions/AlertActions";
+import AlertBox from "../AlertBox/AlertBox";
 
 import Step1 from "./Step1";
 import Step2 from "./Step2";
@@ -111,6 +119,7 @@ const useStyles = makeStyles(() => ({
   },
   stepLabel: {
     minHeight: "48px",
+    cursor: "pointer",
   },
   step: {
     display: "none",
@@ -131,20 +140,75 @@ const CloneDataFlow = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [showCancelPopup, setShowCancelPopup] = useState(false);
+  const [targetRoute, setTargetRoute] = useState("");
+  const [isShowAlertBox, setShowAlertBox] = useState(false);
+
+  const routerHandle = useRef();
 
   const history = useHistory();
   const classes = useStyles();
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
+  const alertStore = useSelector((state) => state.alert);
   const dashboard = useSelector((state) => state.dashboard);
   const { protocolnumberstandard: protocolNumberStandard } =
     dashboard?.selectedCard;
 
+  const unblockRouter = () => {
+    dispatch(formComponentInActive());
+    dispatch(hideAlert());
+    dispatch(hideAppSwitcher());
+    if (routerHandle) {
+      routerHandle.current();
+    }
+  };
+
+  const cancelButton = () => {
+    unblockRouter();
+    if (targetRoute === "") {
+      unblockRouter(); // should be above history push
+      history.push("/dashboard");
+      // console.log("==================>", "dashboard");
+    } else {
+      history.push(targetRoute);
+      // console.log("==================>", targetRoute);
+    }
+  };
+
+  const leavePageBtn = () => {
+    dispatch(hideAlert());
+    dispatch(showAppSwitcher());
+    setShowAlertBox(false);
+  };
+  const keepEditingBtn = () => {
+    dispatch(hideAlert());
+    setShowAlertBox(false);
+  };
+
+  useEffect(() => {
+    if (alertStore?.showAlertBox) {
+      setShowAlertBox(true);
+    }
+  }, [alertStore]);
+
+  useEffect(() => {
+    routerHandle.current = history.block((tr) => {
+      setTargetRoute(tr?.pathname);
+      setShowCancelPopup(true);
+      return false;
+    });
+
+    return function () {
+      /* eslint-disable */
+      routerHandle.current();
+    };
+  });
+
   const goToDashboard = () => {
-    setShowCancelPopup(true);
+    history.push("/dashboard");
   };
   const handleCancel = () => {
-    setShowCancelPopup(true);
+    goToDashboard();
   };
 
   const breadcrumbItems = [
@@ -178,6 +242,7 @@ const CloneDataFlow = () => {
 
   useEffect(() => {
     dispatch(getVendorsData());
+    dispatch(formComponentActive());
   }, []);
 
   // useEffect(() => {
@@ -280,6 +345,14 @@ const CloneDataFlow = () => {
   return (
     <div className={classes.root} style={{ height: `calc(100vh - 120px)` }}>
       {/* {loading && <Loader />} */}
+      {isShowAlertBox && (
+        <AlertBox
+          onClose={keepEditingBtn}
+          submit={leavePageBtn}
+          title="Are you sure you want to leave the page?"
+          message="The data flow configuration will be lost."
+        />
+      )}
       <Modal
         open={showCancelPopup}
         variant="warning"
@@ -287,12 +360,10 @@ const CloneDataFlow = () => {
         title="Are you sure you want to leave the page?"
         message="The data flow configuration will be lost."
         buttonProps={[
-          { label: "Dismiss" },
+          { label: "Dismiss", onClick: () => setShowCancelPopup(false) },
           {
             label: "Yes cancel",
-            onClick: () => {
-              history.push("/dashboard");
-            },
+            onClick: cancelButton,
           },
         ]}
         id="warning"

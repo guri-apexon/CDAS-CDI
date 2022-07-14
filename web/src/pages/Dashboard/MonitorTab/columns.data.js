@@ -2,6 +2,7 @@
 import React from "react";
 import moment from "moment";
 import { useSelector } from "react-redux";
+import { useHistory } from "react-router";
 import Check from "apollo-react-icons/Check";
 import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
 import Arrow2Up from "apollo-react-icons/Arrow2Up";
@@ -12,6 +13,11 @@ import Tag from "apollo-react/components/Tag";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import Search from "apollo-react/components/Search";
+import SuccessIcon from "apollo-react/icons/StatusCheck";
+import ProcessedIcon from "apollo-react-icons/StatusExclamation";
+import Tooltip from "apollo-react/components/Tooltip";
+import IconMenuButton from "apollo-react/components/IconMenuButton";
+import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
 
 import {
   compareDates,
@@ -23,6 +29,9 @@ import {
 import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg";
 import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
 import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
+import { ReactComponent as FailedIcon } from "../../../components/Icons/Failed.svg";
+import { ReactComponent as InProgressIcon } from "../../../components/Icons/In Progress.svg";
+
 import "../Dashboard.scss";
 import { dateFilterCustom, IntegerFilter } from "../../../utils/index";
 
@@ -222,8 +231,146 @@ const JobstatusCell = ({ row, column: { accessor } }) => {
   );
 };
 
+const DownloadStatusCell = ({ row, column: { accessor } }) => {
+  const status = row[accessor] || "";
+  return (
+    <div>
+      {status?.toLowerCase() === "failed" && (
+        <div>
+          <Tooltip title="Failed" placement="top">
+            <Tag
+              label="Failed"
+              className="failedStatus"
+              style={{
+                backgroundColor: "#e20000",
+                fontWeight: 600,
+                color: "#fff",
+                minWidth: 100,
+              }}
+              Icon={FailedIcon}
+            />
+          </Tooltip>
+        </div>
+      )}
+      {status?.toLowerCase() === "successful" && (
+        <div>
+          <Tooltip title="Successful" placement="top">
+            <Tag
+              label="Successful"
+              className="failedStatus"
+              style={{
+                backgroundColor: "#00c221",
+                fontWeight: 600,
+                color: "#fff",
+                minWidth: 100,
+              }}
+              Icon={SuccessIcon}
+            />
+          </Tooltip>
+        </div>
+      )}
+
+      {(status?.toLowerCase() === "in progress" ||
+        status?.toLowerCase() === "queued") && (
+        <div>
+          <Tag label={status} className="queueStatus" />
+        </div>
+      )}
+    </div>
+  );
+};
+const ProcessStatusCell = ({ row, column: { accessor } }) => {
+  const status = row[accessor] || "";
+  const { history } = row;
+  return (
+    <div>
+      {status?.toLowerCase() === "failed" && (
+        <div>
+          <Tooltip title="Failed" placement="top">
+            <Tag
+              label="Failed"
+              className="failedStatus"
+              style={{
+                backgroundColor: "#e20000",
+                fontWeight: 600,
+                color: "#fff",
+                minWidth: 100,
+              }}
+              Icon={FailedIcon}
+            />
+          </Tooltip>
+        </div>
+      )}
+      {status?.toLowerCase() === "successful" && (
+        <div>
+          <Tooltip title="Successful" placement="top">
+            <Tag
+              label="Successful"
+              className="successStatus"
+              style={{
+                backgroundColor: "#00c221",
+                fontWeight: 600,
+                color: "#fff",
+                minWidth: 100,
+              }}
+              Icon={SuccessIcon}
+            />
+          </Tooltip>
+        </div>
+      )}
+      {status?.toLowerCase() === "in progress" && (
+        <div>
+          <Tooltip title="In Progress" placement="top">
+            <Tag
+              label="In Progress"
+              className="inProgressStatus"
+              style={{
+                backgroundColor: "#10558a",
+                fontWeight: 600,
+                color: "#fff",
+                minWidth: 100,
+              }}
+              Icon={InProgressIcon}
+            />
+          </Tooltip>
+        </div>
+      )}
+      {status?.toLowerCase() === "processed with errors" && (
+        <div>
+          <Tooltip title="Processed with errors" placement="top">
+            <Tag
+              label="Processed"
+              className="successStatus"
+              style={{
+                backgroundColor: "#ff9300",
+                fontWeight: 600,
+                color: "#fff",
+                cursor: "pointer",
+                minWidth: 100,
+              }}
+              onClick={() => {
+                history.push(
+                  `/dashboard/ingestion-report/${row.datasetid}?logs`
+                );
+              }}
+              Icon={ProcessedIcon}
+            />
+          </Tooltip>
+        </div>
+      )}
+
+      {status?.toLowerCase() === "skipped" && (
+        <div>
+          <Tag label={status} className="queueStatus" />
+        </div>
+      )}
+    </div>
+  );
+};
+
 const StatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
+  const history = useHistory();
   const { canReadIngestionIssues } = row;
   if (
     status?.toLowerCase() === "loaded without issues" ||
@@ -285,7 +432,9 @@ const StatusCell = ({ row, column: { accessor } }) => {
           {status}
           <Link
             disabled={!canReadIngestionIssues}
-            onClick={() => console.log("link clicked")}
+            onClick={() =>
+              history.push(`/dashboard/ingestion-issues/${row.datasetid}`)
+            }
             style={{ fontWeight: 500, marginLeft: 8 }}
           >
             View
@@ -373,14 +522,43 @@ const TextFieldFilter = ({ accessor, filters, updateFilterValue }) => {
   );
 };
 
+const ActionCell = ({ row }) => {
+  const menuItems = [
+    {
+      text: "View",
+      id: 1,
+    },
+    {
+      text: "Data Refresh History",
+      id: 3,
+    },
+    {
+      text: "Refresh Data",
+      id: 4,
+    },
+    {
+      text: "Reload Data",
+      id: 5,
+    },
+  ];
+  return (
+    <div style={{ display: "flex", justifyContent: "end" }}>
+      <Tooltip title="Actions" disableFocusListener>
+        <IconMenuButton id="actionsDropdown" menuItems={menuItems} size="small">
+          <EllipsisVertical />
+        </IconMenuButton>
+      </Tooltip>
+    </div>
+  );
+};
+
 const columns = [
   {
-    header: "Dataset Name",
-    accessor: "datasetname",
+    header: "Protocol Number",
+    accessor: "prot_nbr",
     sortFunction: compareStrings,
-    filterFunction: createStringSearchFilter("datasetname"),
+    filterFunction: createStringSearchFilter("prot_nbr"),
     filterComponent: TextFieldFilter,
-    customCell: DatasetCell,
     frozen: true,
   },
   {
@@ -392,53 +570,99 @@ const columns = [
     frozen: true,
   },
   {
-    header: "Dataset Status",
-    accessor: "jobstatus",
+    header: "Dataset Name (Mnemonic)",
+    accessor: "datasetname",
     sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("jobstatus"),
-    filterComponent: createAutocompleteFilter("jobstatus"),
-    customCell: JobstatusCell,
+    filterFunction: createStringSearchFilter("datasetname"),
+    filterComponent: TextFieldFilter,
+    customCell: DatasetCell,
     frozen: true,
   },
   {
-    header: "Last File Transferred",
-    accessor: "filename",
+    header: "Last Download Status",
+    accessor: "downloadstatus",
     sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("filename"),
-    filterComponent: createAutocompleteFilter("filename"),
+    filterFunction: createStringArraySearchFilter("downloadstatus"),
+    filterComponent: createAutocompleteFilter("downloadstatus"),
+    customCell: DownloadStatusCell,
   },
   {
-    header: "Last File Transfer Status",
-    accessor: "datasetstatus",
+    header: "Last Download Date/Time",
+    accessor: "downloadendtime",
     sortFunction: compareStrings,
-    filterFunction: createStringArraySearchFilter("datasetstatus"),
-    filterComponent: createAutocompleteFilter("datasetstatus"),
-    customCell: StatusCell,
+    filterFunction: dateFilterCustom("downloadendtime"),
+    filterComponent: DateFilter,
+    customCell: DateCell,
   },
   {
-    header: "Exceeds % change indicator",
-    accessor: "exceeds_pct_cng",
-    sortFunction: compareNumbers,
-    filterFunction: numberSearchFilter("exceeds_pct_cng"),
-    filterComponent: IntegerFilter,
-    customCell: exceedPerCell,
+    header: "Last Process Status",
+    accessor: "processstatus",
+    sortFunction: compareStrings,
+    filterFunction: createStringArraySearchFilter("processstatus"),
+    filterComponent: createAutocompleteFilter("processstatus"),
+    customCell: ProcessStatusCell,
   },
   {
-    header: "Last File Transfer Date",
-    accessor: "lastfiletransferred",
+    header: "Last Process Date/Time",
+    accessor: "processendtime",
+    sortFunction: compareStrings,
+    filterFunction: dateFilterCustom("processendtime"),
+    filterComponent: DateFilter,
+    customCell: DateCell,
+  },
+  // {
+  //   header: "Dataset Status",
+  //   accessor: "jobstatus",
+  //   sortFunction: compareStrings,
+  //   filterFunction: createStringArraySearchFilter("jobstatus"),
+  //   filterComponent: createAutocompleteFilter("jobstatus"),
+  //   customCell: JobstatusCell,
+  //   frozen: false,
+  // },
+  // {
+  //   header: "Last File Transferred",
+  //   accessor: "filename",
+  //   sortFunction: compareStrings,
+  //   filterFunction: createStringArraySearchFilter("filename"),
+  //   filterComponent: createAutocompleteFilter("filename"),
+  // },
+  // {
+  //   header: "Last File Transfer Status",
+  //   accessor: "datasetstatus",
+  //   sortFunction: compareStrings,
+  //   filterFunction: createStringArraySearchFilter("datasetstatus"),
+  //   filterComponent: createAutocompleteFilter("datasetstatus"),
+  //   customCell: StatusCell,
+  // },
+  // {
+  //   header: "Exceeds % change indicator",
+  //   accessor: "exceeds_pct_cng",
+  //   sortFunction: compareNumbers,
+  //   filterFunction: numberSearchFilter("exceeds_pct_cng"),
+  //   filterComponent: IntegerFilter,
+  //   customCell: exceedPerCell,
+  // },
+  // {
+  //   header: "Last File Transfer Date",
+  //   accessor: "lastfiletransferred",
+  //   sortFunction: compareDates,
+  //   customCell: DateCell,
+  //   filterFunction: dateFilterCustom("lastfiletransferred"),
+  //   filterComponent: DateFilter,
+  // },
+  {
+    header: "Last Attempted Date/Time",
+    accessor: "lastattempted",
     sortFunction: compareDates,
     customCell: DateCell,
-    filterFunction: dateFilterCustom("lastfiletransferred"),
+    filterFunction: dateFilterCustom("lastattempted"),
     filterComponent: DateFilter,
   },
-];
-
-const columnsToAdd = [
   {
-    header: "Package name",
-    accessor: "packagename",
-    filterFunction: createStringArraySearchFilter("packagename"),
-    filterComponent: createAutocompleteFilter("packagename"),
+    header: "Error message",
+    accessor: "errmsg",
+    filterFunction: createStringSearchFilter("errmsg"),
+    filterComponent: TextFieldFilter,
   },
   {
     header: "File Name",
@@ -446,6 +670,30 @@ const columnsToAdd = [
     filterFunction: createStringArraySearchFilter("mnemonicfile"),
     filterComponent: createAutocompleteFilter("mnemonicfile"),
   },
+  {
+    header: "Data Flow Name",
+    accessor: "dataflow_name",
+    sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("dataflow_name"),
+    filterComponent: TextFieldFilter,
+  },
+];
+
+const ActionColumn = [
+  {
+    accessor: "action",
+    customCell: ActionCell,
+    width: 32,
+  },
+];
+
+const columnsToAdd = [
+  // {
+  //   header: "Package name",
+  //   accessor: "packagename",
+  //   filterFunction: createStringArraySearchFilter("packagename"),
+  //   filterComponent: createAutocompleteFilter("packagename"),
+  // },
   {
     header: "Clinical Data Type",
     accessor: "clinicaldatatypename",
@@ -476,17 +724,12 @@ const columnsToAdd = [
     filterFunction: createStringArraySearchFilter("offset_val"),
     filterComponent: createAutocompleteFilter("offset_val"),
   },
-  {
-    header: "Error message",
-    accessor: "errmsg",
-    filterFunction: createStringSearchFilter("errmsg"),
-    filterComponent: TextFieldFilter,
-  },
 ];
 
 const moreColumnsWithFrozen = [
   ...columns.map((column) => ({ ...column })),
   ...columnsToAdd.map((column) => ({ ...column, hidden: true })),
+  ...ActionColumn,
 ];
 
 export { moreColumnsWithFrozen };

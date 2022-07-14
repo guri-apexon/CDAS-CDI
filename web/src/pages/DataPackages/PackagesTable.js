@@ -351,6 +351,13 @@ const PackagesList = ({ data, userInfo }) => {
     setTableData(newData);
     // console.log("newData", newData);
   }, [data.packagesList]);
+
+  const dataSets = useSelector((state) => state.dataSets);
+  const { selectedDataset } = dataSets;
+  useEffect(() => {
+    handleToggleRow(selectedDataset.datapackageid);
+  }, [Object.keys(selectedDataset).length]);
+
   return (
     <div className="remove-table-border-bottom">
       <Table

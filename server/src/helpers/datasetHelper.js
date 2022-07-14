@@ -60,3 +60,59 @@ exports.findByMnemonic = async (
   }
   return false;
 };
+
+exports.isNotUniqueAmongstDatasets = async (
+  prot_id,
+  testFlag,
+  vendorID,
+  dataflowid
+) => {
+  const query = `
+  select
+    count(*)
+  from
+    study s
+  join dataflow df on
+    df.prot_id = s.prot_id
+  join datapackage dp on
+    (df.dataflowid = dp.dataflowid )
+  join dataset ds on
+    (dp.datapackageid = ds.datapackageid )
+  where
+    s.prot_id = '${prot_id}'
+    and df.vend_id = '${vendorID}'
+    and df.testflag = ${testFlag}
+    and df.dataflowid != '${dataflowid}'
+    and ds.mnemonic in (
+    select distinct
+      ds.mnemonic
+    from
+      dataflow df
+    join datapackage dp on
+      (df.dataflowid = dp.dataflowid )
+    join dataset ds on
+      (dp.datapackageid = ds.datapackageid )
+    where
+      df.dataflowid = '${dataflowid}'
+
+  )
+    and ds.datakindid in (
+    select distinct
+      ds.datakindid
+    from
+      dataflow df
+    join datapackage dp on
+      (df.dataflowid = dp.dataflowid )
+    join dataset ds on
+      (dp.datapackageid = ds.datapackageid )
+    where
+      df.dataflowid = '${dataflowid}'
+);
+  `;
+
+  try {
+    const result = await DB.executeQuery(query);
+    if (result && result.rowCount > 0) return result.rows[0].count !== "0";
+  } catch (error) {}
+  return false;
+};
