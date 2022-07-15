@@ -286,8 +286,10 @@ const CloneDataFlow = () => {
 
     try {
       setLoading(true);
+      setShowAlertBox(false);
       const res = await getDataFlowDetails(selectedStudy?.dataflow?.dataflowid);
       if (!res) {
+        setShowAlertBox(true);
         messageContext.showErrorMessage(`Something went wrong`);
         return false;
       }
@@ -323,14 +325,18 @@ const CloneDataFlow = () => {
         messageContext.showSuccessMessage(
           `Selected dataflow has been cloned to this study.`
         );
+        unblockRouter();
         history.push(
           `/dashboard/dataflow-management/${dataflowDetails?.dataFlowId}`
         );
+        return true;
       } else {
         messageContext.showErrorMessage(`Something wrong with clone`);
       }
+      setShowAlertBox(true);
       return true;
     } catch (error) {
+      setShowAlertBox(true);
       console.log(error);
       setLoading(false);
       messageContext.showErrorMessage(`Something went wrong`);
@@ -349,20 +355,20 @@ const CloneDataFlow = () => {
         <AlertBox
           onClose={keepEditingBtn}
           submit={leavePageBtn}
-          title="Are you sure you want to leave the page?"
-          message="The data flow configuration will be lost."
+          message="Are you sure you want to leave the page?"
+          title="The data flow configuration will be lost."
         />
       )}
       <Modal
         open={showCancelPopup}
         variant="warning"
         onClose={() => setShowCancelPopup(false)}
-        title="Are you sure you want to leave the page?"
-        message="The data flow configuration will be lost."
+        title="The data flow configuration will be lost."
+        message="Are you sure you want to leave the page?"
         buttonProps={[
-          { label: "Dismiss", onClick: () => setShowCancelPopup(false) },
+          { label: "Cancel", onClick: () => setShowCancelPopup(false) },
           {
-            label: "Yes cancel",
+            label: "Yes",
             onClick: cancelButton,
           },
         ]}

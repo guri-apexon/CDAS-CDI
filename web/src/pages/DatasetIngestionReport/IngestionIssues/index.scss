@@ -1,0 +1,57 @@
+.ingestion-issues {
+  .content-wrapper {
+    max-width: 100%;
+    overflow: hidden;
+    #rightSidebar {
+      .header {
+      }
+    }
+  }
+  svg.black-icon {
+    width: 17px;
+    path {
+      fill: #444444;
+    }
+    &.table-th {
+      width: 12px;
+      vertical-align: middle;
+      margin-right: 6px;
+      margin-top: -4px;
+    }
+  }
+  #mainTable {
+    flex: 1;
+    margin-left: auto;
+    padding: 22px;
+    .v-line {
+      height: 80px;
+      width: 1px;
+      background: #e9e9e9;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    .MuiTableCell-head {
+      white-space: nowrap;
+    }
+    .inline-checkbox {
+      margin-right: 12px;
+    }
+    .rightpanel-link {
+      padding: 0 10px;
+      display: inline-block;
+    }
+    .MuiTableCell-body:not(:first-child) {
+      padding: 0;
+    }
+    .issue-td {
+      background: #fdebeb;
+      display: flex;
+      min-height: 48px;
+      align-items: center;
+      padding: 0 10px 0 20px;
+      white-space: nowrap;
+      color: #0768fd;
+    }
+  }
+}

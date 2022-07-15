@@ -347,10 +347,34 @@ const PackagesList = ({ data, userInfo }) => {
     // }, 1000);
   };
   useEffect(() => {
-    const newData = data.packagesList || [];
-    setTableData(newData);
+    const packagesList = data.packagesList || [];
+    if (packagesList.length) {
+      const newData = packagesList.map((e) => ({
+        ...e,
+        datasets: e?.datasets?.slice()?.sort(function (a, b) {
+          if (a.mnemonic?.toUpperCase() < b.mnemonic?.toUpperCase()) {
+            return -1;
+          }
+          if (a.mnemonic?.toUpperCase() > b.mnemonic?.toUpperCase()) {
+            return 1;
+          }
+          return 0;
+        }),
+      }));
+      setTableData(newData);
+    } else {
+      setTableData(packagesList);
+    }
+
     // console.log("newData", newData);
   }, [data.packagesList]);
+
+  const dataSets = useSelector((state) => state.dataSets);
+  const { selectedDataset } = dataSets;
+  useEffect(() => {
+    handleToggleRow(selectedDataset.datapackageid);
+  }, [Object.keys(selectedDataset).length]);
+
   return (
     <div className="remove-table-border-bottom">
       <Table

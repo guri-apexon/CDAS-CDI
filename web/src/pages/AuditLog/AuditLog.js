@@ -30,8 +30,8 @@ const AuditLog = () => {
   const auditData = auditLogs.data;
   const dataSetCount = dashboard?.selectedDataFlow?.dataSets;
   const dataflowName = dashboard?.selectedDataFlow?.dataFlowName || "";
-  const [sortedColumnValue, setSortedColumnValue] = useState("log_version");
-  const [sortOrderValue, setSortOrderValue] = useState("dsc");
+  const [sortedColumnValue, setSortedColumnValue] = useState("update_dt");
+  const [sortOrderValue, setSortOrderValue] = useState("asc");
   const [inlineFilters, setInlineFilters] = useState([]);
 
   const [tableRows, setTableRows] = useState([...auditData]);
@@ -50,7 +50,8 @@ const AuditLog = () => {
     {
       href: "javascript:void(0)",
       title: "Data Flow Settings",
-      onClick: () => history.push("/dashboard/dataflow-management"),
+      onClick: () =>
+        history.push(`/dashboard/dataflow-management/${dataflowId}`),
     },
     {
       title: "Audit Log",
@@ -71,7 +72,7 @@ const AuditLog = () => {
         }
       }
     });
-    if (sortedColumnValue === "log_version") {
+    if (sortedColumnValue === "update_dt") {
       filteredRows.sort((a, b) => {
         return (
           sortOrderValue === "asc"
@@ -177,7 +178,7 @@ const AuditLog = () => {
         title="Data Flow Audit Log"
         columns={tableColumns}
         rows={tableRows}
-        initialSortedColumn="log_version"
+        initialSortedColumn="update_dt"
         sortedColumn={sortedColumnValue}
         sortOrder={sortOrderValue}
         rowsPerPageOptions={[10, 20, 50, "All"]}
