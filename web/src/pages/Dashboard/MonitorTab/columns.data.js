@@ -367,9 +367,7 @@ const ProcessStatusCell = ({ row, column: { accessor } }) => {
                 minWidth: 100,
               }}
               onClick={() => {
-                history.push(
-                  `/dashboard/ingestion-report/${row.datasetid}?logs`
-                );
+                history.push(`/dashboard/ingestion-issues/${row.datasetid}`);
               }}
               Icon={ProcessedIcon}
             />
