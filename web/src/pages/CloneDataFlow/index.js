@@ -286,8 +286,10 @@ const CloneDataFlow = () => {
 
     try {
       setLoading(true);
+      setShowAlertBox(false);
       const res = await getDataFlowDetails(selectedStudy?.dataflow?.dataflowid);
       if (!res) {
+        setShowAlertBox(true);
         messageContext.showErrorMessage(`Something went wrong`);
         return false;
       }
@@ -327,11 +329,14 @@ const CloneDataFlow = () => {
         history.push(
           `/dashboard/dataflow-management/${dataflowDetails?.dataFlowId}`
         );
+        return true;
       } else {
         messageContext.showErrorMessage(`Something wrong with clone`);
       }
+      setShowAlertBox(true);
       return true;
     } catch (error) {
+      setShowAlertBox(true);
       console.log(error);
       setLoading(false);
       messageContext.showErrorMessage(`Something went wrong`);
