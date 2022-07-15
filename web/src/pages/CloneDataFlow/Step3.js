@@ -115,7 +115,7 @@ const Step3 = ({
         </Typography>
         <Typography
           variant="title3"
-          className={`${classes.ml8} ${classes.bold}`}
+          className={`${classes.ml8} ${classes.bold} ${classes.subtitle}`}
         >
           Verify data flow to clone
         </Typography>

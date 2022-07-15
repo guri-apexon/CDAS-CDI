@@ -35,9 +35,9 @@ import Step3 from "./Step3";
 import Step4 from "./Step4";
 
 const steps = [
-  "Select a Study to Clone from",
-  "Select a Source Data Flow",
-  "Verify Data Flow to Clone",
+  "Select a study to Clone from",
+  "Select a source data flow",
+  "Verify data flow to clone",
   "Provide required details",
 ];
 
@@ -49,7 +49,7 @@ const useStyles = makeStyles(() => ({
     fontSize: "24px",
     fontWeight: "600",
     marginLeft: "8px",
-    marginTop: "12px",
+    marginTop: "4px",
   },
   bold: {
     fontWeight: "600",
@@ -89,6 +89,7 @@ const useStyles = makeStyles(() => ({
     margin: "24px 24px",
   },
   breadcrumbs: {
+    marginTop: 0,
     marginBottom: 16,
     paddingLeft: 0,
   },
@@ -111,8 +112,12 @@ const useStyles = makeStyles(() => ({
     letterSpacing: 0,
     lineHeight: "24px",
   },
+  subtitle: {
+    marginTop: "8px",
+    display: "block",
+  },
   stepperContent: {
-    padding: "24px",
+    padding: "20px 22px",
   },
   divider: {
     margin: "20px 0 40px",
@@ -120,11 +125,19 @@ const useStyles = makeStyles(() => ({
   stepLabel: {
     minHeight: "48px",
     cursor: "pointer",
+    "& .MuiStepLabel-iconContainer": {
+      paddingRight: "16px",
+    },
   },
   step: {
     display: "none",
     "&.active": {
       display: "block",
+    },
+  },
+  tableCursor: {
+    "& table tr": {
+      cursor: "pointer !important",
     },
   },
 }));
@@ -374,7 +387,7 @@ const CloneDataFlow = () => {
         ]}
         id="warning"
       />
-      <Panel width={300} hideButton>
+      <Panel width={305} hideButton>
         <div className={classes.stepperContent}>
           <Typography variant="title1">Clone Data Flow</Typography>
           <Divider className={classes.divider} />

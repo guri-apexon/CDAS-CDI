@@ -202,7 +202,7 @@ const Step2 = ({
               <ApolloProgress />
             </Box>
           ) : (
-            <Paper className={classes.mt24}>
+            <Paper className={`${classes.tableCursor} ${classes.mt24}`}>
               <Table
                 columns={dataflowColumns}
                 rows={datflows}
