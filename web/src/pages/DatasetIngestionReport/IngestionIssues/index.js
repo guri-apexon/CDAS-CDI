@@ -39,6 +39,7 @@ import {
 } from "../../../services/ApiServices";
 import { getDatasetProperties } from "../../../store/actions/IngestionReportAction";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
+import { exportToCSV } from "../../../utils/downloadData";
 
 const IngestionIssues = () => {
   const toast = useContext(MessageContext);
@@ -86,8 +87,57 @@ const IngestionIssues = () => {
     },
   ];
 
+  // const exportDataRows = () => {
+  //   const toBeExportRows = [...auditData];
+  //   const sortedFilteredData = applyFilter(
+  //     tableColumns,
+  //     toBeExportRows,
+  //     inlineFilters
+  //   );
+  //   // console.log(
+  //   //   "sortedFilteredData::::",
+  //   //   sortedFilteredData,
+  //   //   tableColumns,
+  //   //   toBeExportRows,
+  //   //   inlineFilters
+  //   // );
+  //   setExportTableRows(sortedFilteredData);
+  //   return sortedFilteredData;
+  // };
+
   const downloadSummery = () => {
-    console.log("downloadSummery");
+    // const fileExtension = ".xlsx";
+    // const fileName = `Ingestion-issue`;
+    // // console.log("inDown", exportHeader);
+    // const exportRows = exportDataRows();
+    // const tempObj = {};
+    // // console.log("tableColumns", tableColumns);
+    // const temp = columns
+    //   .filter((d) => d.hidden !== true && d.ignore !== true)
+    //   .map((d) => {
+    //     tempObj[d.accessor] = d.header;
+    //     return d;
+    //   });
+    // const newData = exportRows.map((obj) => {
+    //   const newObj = pick(obj, Object.keys(tempObj));
+    //   return newObj;
+    // });
+    // exportToCSV(
+    //   newData,
+    //   tempObj,
+    //   fileName + fileExtension,
+    //   "data",
+    //   pageNo,
+    //   rowsPerPageRecord
+    // );
+    // if (exportRows.length <= 0) {
+    //   e.preventDefault();
+    //   const message = `There is no data on the screen to download because of which an empty file has been downloaded.`;
+    //   toast.showErrorMessage(message);
+    // } else {
+    //   const message = `File downloaded successfully.`;
+    //   toast.showSuccessMessage(message);
+    // }
   };
   const getTitle = () => {
     if (!datasetProperties?.dataflowid) return "------";
@@ -108,7 +158,7 @@ const IngestionIssues = () => {
             size="small"
           />
           <span className="v-line">&nbsp;</span>
-          <Button icon={<Download />} size="small">
+          <Button onClick={downloadSummery} icon={<Download />} size="small">
             Download
           </Button>
           &nbsp;&nbsp;
