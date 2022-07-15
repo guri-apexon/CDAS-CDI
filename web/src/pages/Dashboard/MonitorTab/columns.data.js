@@ -376,12 +376,6 @@ const ProcessStatusCell = ({ row, column: { accessor } }) => {
           </Tooltip>
         </div>
       )}
-
-      {status?.toLowerCase() === "skipped" && (
-        <div>
-          <Tag label={status} className="queueStatus" />
-        </div>
-      )}
     </div>
   );
 };
@@ -570,6 +564,33 @@ const ActionCell = ({ row }) => {
   );
 };
 
+// 'Failed', 'Blank', 'Processed w/Errors', 'In Progress', and 'Successful'.
+
+const customProcessStatusSortFunction = (accessor, sortOrder) => {
+  const POINTS = {
+    failed: 1,
+    blank: 2,
+    "processed with errors": 3,
+    "in progress": 4,
+    successful: 5,
+  };
+  return (rowA, rowB) => {
+    let result;
+    const stringA = (rowA[accessor] || "blank").toLowerCase();
+    const stringB = (rowB[accessor] || "blank").toLowerCase();
+
+    if (POINTS[stringA] < POINTS[stringB]) {
+      result = -1;
+    } else if (POINTS[stringA] > POINTS[stringB]) {
+      result = 1;
+    } else {
+      return 0;
+    }
+
+    return sortOrder === "asc" ? result : -result;
+  };
+};
+
 const columns = [
   {
     header: "Protocol Number",
@@ -615,7 +636,7 @@ const columns = [
   {
     header: "Last Process Status",
     accessor: "processstatus",
-    sortFunction: compareStrings,
+    sortFunction: customProcessStatusSortFunction,
     filterFunction: createStringArraySearchFilter("processstatus"),
     filterComponent: createAutocompleteFilter("processstatus"),
     customCell: ProcessStatusCell,

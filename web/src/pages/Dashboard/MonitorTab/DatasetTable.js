@@ -51,7 +51,7 @@ const DatasetTable = ({ rows, CustomHeader }) => {
         history,
       }))}
       defaultRowsPerPage={10}
-      // initialSortedColumn="datasetname"
+      initialSortedColumn="processstatus"
       rowsPerPageOptions={[10, 50, 100, "All"]}
       tablePaginationProps={{
         labelDisplayedRows: ({ from, to, count }) =>
