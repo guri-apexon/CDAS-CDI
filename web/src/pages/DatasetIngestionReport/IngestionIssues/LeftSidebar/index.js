@@ -78,8 +78,10 @@ const IssueLeftPanel = ({
   const fetchIssues = async () => {
     const issuesRes = await getIngestionIssues(datasetId);
     setListLoading(false);
-    if (issuesRes) setIssuesArr(issuesRes);
-    setTableRows(issuesRes);
+    if (issuesRes) {
+      setIssuesArr(issuesRes);
+      setTableRows(issuesRes);
+    }
   };
   useEffect(() => {
     if (tableRows.length) {
