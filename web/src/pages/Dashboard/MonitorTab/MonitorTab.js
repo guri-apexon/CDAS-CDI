@@ -254,7 +254,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.JOB_STATUS_FAILED);
+              handleViewButton(queryParams.REFRESH_ALERTS);
             }}
           />
           <InfoCard

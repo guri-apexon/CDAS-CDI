@@ -376,12 +376,6 @@ const ProcessStatusCell = ({ row, column: { accessor } }) => {
           </Tooltip>
         </div>
       )}
-
-      {status?.toLowerCase() === "skipped" && (
-        <div>
-          <Tag label={status} className="queueStatus" />
-        </div>
-      )}
     </div>
   );
 };
