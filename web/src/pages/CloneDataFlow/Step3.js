@@ -44,31 +44,37 @@ const Step3 = ({
       header: "Vendor Source",
       accessor: "vendorname",
       customCell: boldCell,
+      width: "16%",
     },
     {
       header: "Description",
       accessor: "description",
       customCell: boldCell,
+      width: "16%",
     },
     {
       header: "Type",
       accessor: "testflag",
       customCell: boldCell,
+      width: "15%",
     },
     {
       header: "External Source System",
       accessor: "externalsystemname",
       customCell: boldCell,
+      width: "22%",
     },
     {
       header: "Location Type",
       accessor: "locationtype",
       customCell: boldCell,
+      width: "16%",
     },
     {
       header: "Adapter",
       accessor: "type",
       customCell: boldCell,
+      width: "16%",
     },
   ];
 
@@ -115,7 +121,7 @@ const Step3 = ({
         </Typography>
         <Typography
           variant="title3"
-          className={`${classes.ml8} ${classes.bold}`}
+          className={`${classes.ml8} ${classes.bold} ${classes.subtitle}`}
         >
           Verify data flow to clone
         </Typography>

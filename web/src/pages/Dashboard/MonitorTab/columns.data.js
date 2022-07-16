@@ -10,6 +10,7 @@ import Arrow2Down from "apollo-react-icons/Arrow2Down";
 // import { Link } from "react-router-dom";
 import Link from "apollo-react/components/Link";
 import Tag from "apollo-react/components/Tag";
+import * as colors from "apollo-react/colors";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import Search from "apollo-react/components/Search";
@@ -19,6 +20,8 @@ import QuarantineIcon from "apollo-react-icons/EyeHidden";
 import Tooltip from "apollo-react/components/Tooltip";
 import IconMenuButton from "apollo-react/components/IconMenuButton";
 import EllipsisVertical from "apollo-react-icons/EllipsisVertical";
+import InfoIcon from "apollo-react-icons/Info";
+import Typography from "apollo-react/components/Typography";
 
 import {
   compareDates,
@@ -367,9 +370,7 @@ const ProcessStatusCell = ({ row, column: { accessor } }) => {
                 minWidth: 100,
               }}
               onClick={() => {
-                history.push(
-                  `/dashboard/ingestion-report/${row.datasetid}?logs`
-                );
+                history.push(`/dashboard/ingestion-issues/${row.datasetid}`);
               }}
               Icon={ProcessedIcon}
             />
@@ -591,6 +592,29 @@ const customProcessStatusSortFunction = (accessor, sortOrder) => {
   };
 };
 
+const fileNameHeader = () => {
+  return (
+    <div>
+      <Typography
+        style={{
+          color: "#595959",
+          fontSize: "14px",
+          fontWeight: "500",
+          verticalAllign: "middle",
+          display: "flex",
+        }}
+      >
+        File Name
+        <Tooltip placement="top" title="Package and Dataset Concatenation">
+          <InfoIcon
+            fontSize="small"
+            style={{ color: colors.neutral7, paddingLeft: "5px" }}
+          />
+        </Tooltip>
+      </Typography>
+    </div>
+  );
+};
 const columns = [
   {
     header: "Protocol Number",
@@ -704,7 +728,7 @@ const columns = [
     filterComponent: TextFieldFilter,
   },
   {
-    header: "File Name",
+    header: fileNameHeader(),
     accessor: "filename",
     filterFunction: createStringArraySearchFilter("filename"),
     filterComponent: createAutocompleteFilter("filename"),
