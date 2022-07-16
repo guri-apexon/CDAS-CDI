@@ -280,15 +280,6 @@ const Dataset = () => {
     );
     const firstDatasetUnfreezed = {
       ...firstDataset,
-      datasets: firstDataset.datasets?.slice()?.sort((a, b) => {
-        if (a.mnemonic?.toUpperCase() < b.mnemonic?.toUpperCase()) {
-          return -1;
-        }
-        if (a.mnemonic?.toUpperCase() > b.mnemonic?.toUpperCase()) {
-          return 1;
-        }
-        return 0;
-      }),
     };
     if (firstDatasetUnfreezed?.datasets[0]?.datasetid) {
       dispatch(
