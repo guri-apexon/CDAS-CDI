@@ -1,3 +1,4 @@
+@import "../../styles/customscroll.scss";
 .cardTopBar {
   display: block;
   .cardLeft {
@@ -77,6 +78,9 @@
 }
 .topContainer {
   padding-bottom: 20px;
+  .monitor-btn {
+    width: 102px;
+  }
 }
 .dashboardSummary {
   display: flex;
@@ -169,6 +173,9 @@ svg.card-icon path {
   }
 }
 .hide-pagination {
+  div[class*=" Table-scrollRoot-"] {
+    @extend .customscroll;
+  }
   table tfoot {
     display: none;
   }

@@ -30,6 +30,7 @@ const DatasetTable = ({ rows, CustomHeader }) => {
     <Table
       key="studyDatasets"
       title="Dataset Pipeline Summary"
+      hasScroll={true}
       // subtitle={
       //   <div style={{ position: "relative" }}>
       //     <DatasetsIcon
