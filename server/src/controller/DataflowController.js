@@ -2025,6 +2025,13 @@ exports.updateDataflowConfig = async (req, res) => {
 
       // console.log("diffObj", diffObj, "existDf", existDf);
 
+      if (!Object.keys(diffObj).length) {
+        return apiResponse.ErrorResponse(
+          res,
+          "Please change something to update"
+        );
+      }
+
       const updatedLogs = await addDataflowHistory({
         dataflowId,
         externalSystemName,
@@ -2036,7 +2043,7 @@ exports.updateDataflowConfig = async (req, res) => {
       });
 
       var resData = { ...dataflowObj, version: updatedLogs };
-      // console.log(oldVersion.version, updatedLogs);
+
       if (oldVersion.version === updatedLogs) {
         resData.versionBumped = false;
       } else {
