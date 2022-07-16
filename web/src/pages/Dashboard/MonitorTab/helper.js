@@ -6,6 +6,8 @@ const queryParams = {
   STALE: "stale",
   QUARANTINE: "quarantine",
   LATENCY_WARNING: "lw",
+  REFRESH_ALERTS: "ra",
+  CONTROL: "control",
 };
 
 export { queryParams };

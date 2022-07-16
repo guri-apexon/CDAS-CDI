@@ -24,15 +24,17 @@ import FilterIcon from "apollo-react-icons/Filter";
 import StatusCheckIcon from "apollo-react-icons/StatusCheck";
 import StatusDotOutlineIcon from "apollo-react-icons/StatusDotOutline";
 import StatusExclamationIcon from "apollo-react-icons/StatusExclamation";
+import QuarantineIcon from "apollo-react-icons/EyeHidden";
 
 import { moreColumnsWithFrozen } from "./columns.data";
 import InfoCard from "./InfoCard";
 
+import { getUserInfo, titleCase } from "../../../utils/index";
 import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg";
 import { ReactComponent as IssueIcon } from "../../../components/Icons/Issue.svg";
 import { ReactComponent as DatasetsIcon } from "../../../components/Icons/dataset.svg";
 import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
-import { ReactComponent as QuarantineIcon } from "../../../components/Icons/Quarantine.svg";
+// import { ReactComponent as QuarantineIcon } from "../../../components/Icons/Quarantine.svg";
 import "../Dashboard.scss";
 
 import usePermission, {
@@ -46,13 +48,15 @@ import { queryParams } from "./helper";
 export default function MonitorTab({ fetchLatestData, protId }) {
   const [open, setOpen] = useState(false);
   const [curRow, setCurRow] = useState({});
-  const [control, setSegmentControl] = useState("all");
+  const [control, setSegmentControl] = useState("0");
   const [rows, setRowData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [activeOnly, setActiveOnly] = useState(true);
   const [columnsState, setColumns] = useState(moreColumnsWithFrozen);
   const [hasUpdated, setHasUpdated] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const { firstName } = getUserInfo();
+
   const [summary, setSummary] = useState({
     failed_loads: 0,
     quarantined_files: 0,
@@ -105,6 +109,20 @@ export default function MonitorTab({ fetchLatestData, protId }) {
   const onSegmentChange = (value) => {
     setSegmentControl(value);
   };
+  const handleViewButton = (query = "") => {
+    let q = query;
+    if (q.length && control !== "all") {
+      q += `&${queryParams.CONTROL}=${control}`;
+    } else if (control !== "all") {
+      q += `${queryParams.CONTROL}=${control}`;
+    }
+    if (q.length) {
+      history.push(`/dashboard/monitor?${q}`);
+    } else {
+      history.push("/dashboard/monitor");
+    }
+  };
+
   const CustomHeader = ({ toggleFilters }) => (
     <div>
       <Button
@@ -118,6 +136,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
       </Button>
     </div>
   );
+
   if (!protId) {
     return (
       <div>
@@ -149,32 +168,54 @@ export default function MonitorTab({ fetchLatestData, protId }) {
       </div>
     );
   }
+
   return (
     <div>
-      {dashboard.summaryLoading && !hasLoadedOnce && <Loader />}
+      {/* {dashboard.summaryLoading && !hasLoadedOnce && <Loader />} */}
+      {dashboard.summaryLoading && <Loader />}
       <Hero>
-        <div className="topContainer">
-          <Typography
+        {/* <Typography
+          variant="h2"
+          style={{
+            lineHeight: "32px",
+            fontWeight: 600,
+            display: "inline-flex",
+          }}
+          darkMode
+        >
+          {`Welcome back, ${titleCase(firstName)}!`}
+        </Typography> */}
+
+        <div className="topContainer" style={{ position: "relative" }}>
+          {/* <Typography
             variant="title1"
             style={{
               lineHeight: "32px",
               fontWeight: 600,
               display: "inline-flex",
+              position: "absolute",
+              left: "0",
             }}
             darkMode
           >
             Study Monitor Summary
-          </Typography>
-          <div style={{ textAlign: "center" }}>
+          </Typography> */}
+          <div style={{ textAlign: "center", marginTop: "114px" }}>
             <SegmentedControlGroup
               value={control}
               exclusive
               style={{ margin: "auto 20%" }}
               onChange={(event, value) => onSegmentChange(value)}
             >
-              <SegmentedControl value="all">All</SegmentedControl>
-              <SegmentedControl value="0">Production</SegmentedControl>
-              <SegmentedControl value="1">Test</SegmentedControl>
+              <SegmentedControl className="monitor-btn" value="all">
+                All
+              </SegmentedControl>
+              <SegmentedControl className="monitor-btn" value="0">
+                Production
+              </SegmentedControl>
+              <SegmentedControl className="monitor-btn" value="1">
+                Test
+              </SegmentedControl>
             </SegmentedControlGroup>
           </div>
         </div>
@@ -194,7 +235,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push("/dashboard/monitor");
+              handleViewButton();
             }}
           />
           <InfoCard
@@ -206,9 +247,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push(
-                `/dashboard/monitor?${queryParams.JOB_STATUS_IN_QUEUE}`
-              );
+              handleViewButton(queryParams.JOB_STATUS_IN_QUEUE);
             }}
           />
           <InfoCard
@@ -221,9 +260,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push(
-                `/dashboard/monitor?${queryParams.JOB_STATUS_FAILED}`
-              );
+              handleViewButton(queryParams.REFRESH_ALERTS);
             }}
           />
           <InfoCard
@@ -242,7 +279,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push(`/dashboard/monitor?${queryParams.LATENCY_WARNING}`);
+              handleViewButton(queryParams.LATENCY_WARNING);
             }}
           />
           <InfoCard
@@ -261,9 +298,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push(
-                `/dashboard/monitor?${queryParams.EXCEEDS_PER_CHANGE}`
-              );
+              handleViewButton(queryParams.EXCEEDS_PER_CHANGE);
             }}
           />
           <InfoCard
@@ -277,7 +312,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push(`/dashboard/monitor?${queryParams.STALE}`);
+              handleViewButton(queryParams.STALE);
             }}
           />
           <InfoCard
@@ -290,18 +325,35 @@ export default function MonitorTab({ fetchLatestData, protId }) {
                   style={{
                     fill: "#FF9300",
                     color: "#FF9300",
-                    width: 24,
-                    height: 24,
                   }}
+                  className="newMonitor-icon"
                 />
               );
             }}
-            color="red"
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              history.push(`/dashboard/monitor?${queryParams.QUARANTINE}`);
+              handleViewButton(queryParams.QUARANTINE);
             }}
+          />
+          <Peek
+            open={open}
+            followCursor
+            placement="top"
+            content={
+              <div style={{ maxWidth: 400 }}>
+                <Typography
+                  variant="title2"
+                  gutterBottom
+                  style={{ fontWeight: 600 }}
+                >
+                  {curRow.name}
+                </Typography>
+                <Typography variant="body2" style={{ color: neutral8 }}>
+                  {curRow.description}
+                </Typography>
+              </div>
+            }
           />
         </div>
       </Hero>

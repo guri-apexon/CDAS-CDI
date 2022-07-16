@@ -29,15 +29,21 @@ import {
   resetJDBC,
   getVLCData,
 } from "../../store/actions/DataSetsAction";
-import { updatePanel } from "../../store/actions/DataPackageAction";
-import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
+import {
+  updatePanel,
+  redirectToDataSet,
+} from "../../store/actions/DataPackageAction";
+
+import {
+  getDataFlowDetail,
+  updateDSState,
+} from "../../store/actions/DataFlowAction";
 import { getUserInfo, isSftp } from "../../utils";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
-
 import usePermission, {
   Categories,
   Features,
@@ -269,7 +275,37 @@ const Dataset = () => {
   };
 
   const gotoDataPackage = () => {
-    if (dpId) {
+    const firstDataset = packageData?.packagesList?.find(
+      (e) => e?.datapackageid === selectedDSDetails?.datapackageid
+    );
+    const firstDatasetUnfreezed = {
+      ...firstDataset,
+      datasets: firstDataset.datasets?.slice()?.sort((a, b) => {
+        if (a.mnemonic?.toUpperCase() < b.mnemonic?.toUpperCase()) {
+          return -1;
+        }
+        if (a.mnemonic?.toUpperCase() > b.mnemonic?.toUpperCase()) {
+          return 1;
+        }
+        return 0;
+      }),
+    };
+    if (firstDatasetUnfreezed?.datasets[0]?.datasetid) {
+      dispatch(
+        redirectToDataSet(
+          dfId,
+          firstDatasetUnfreezed.dataflowid,
+          dpId,
+          datapackageName,
+          dsId,
+          firstDatasetUnfreezed.datasets[0].mnemonic
+        )
+      );
+      dispatch(updateDSState(false));
+      history.push(
+        `/dashboard/dataset/${firstDatasetUnfreezed.datasets[0].datasetid}`
+      );
+    } else if (dpId) {
       history.push("/dashboard/data-packages");
     }
   };

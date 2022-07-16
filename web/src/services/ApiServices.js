@@ -23,6 +23,8 @@ import {
   DATAFLOW_UPDATE_API,
   ADD_PACKAGE,
   API_URL,
+  INGESTION_ISSUE_URL,
+  INGESTION_ISSUE_COL_URL,
 } from "../constants";
 import store from "../store";
 import { freezeDfVersion } from "../store/actions/DataFlowAction";
@@ -214,7 +216,8 @@ export const updateDataflow = async (payload) => {
     });
     return res.data || [];
   } catch (err) {
-    return console.log("Error", err);
+    console.log("Error", err);
+    return err?.response?.data;
   }
 };
 
@@ -473,6 +476,33 @@ export const getRolesPermissions = (studyId) => {
     });
   } catch (err) {
     return console.log("Error", err);
+  }
+};
+
+export const getIngestionIssues = async (datasetId) => {
+  try {
+    const res = await axios.get(
+      `${baseURL}/${INGESTION_ISSUE_URL}/${datasetId}`
+    );
+    return res.data?.data || [];
+  } catch (err) {
+    return console.log("Error", err);
+  }
+};
+
+// eslint-disable-next-line consistent-return
+export const getIngestionIssueCols = async (reqBody) => {
+  try {
+    const res = await axios.post(
+      `${baseURL}/${INGESTION_ISSUE_COL_URL}`,
+      reqBody
+    );
+    return res.data || [];
+  } catch (err) {
+    return {
+      data: [],
+      error: err.response?.data?.message || "Something went wrong",
+    };
   }
 };
 

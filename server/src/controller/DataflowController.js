@@ -289,7 +289,8 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       let saveflagyes = false;
       if (dataPackage && Array.isArray(dataPackage)) {
         for (let i = 0; i < dataPackage.length; i++) {
-          if (dataPackage[i].dataSet[i].loadType === "Incremental") {
+          /// Below value check is for incremental instead of loadtype
+          if (dataPackage[i].dataSet[i].incremental === true) {
             for (
               let j = 0;
               j < dataPackage[0].dataSet[0].columnDefinition.length;
@@ -792,6 +793,8 @@ exports.updateDataFlow = async (req, res) => {
       const DFVer = (versions[0]?.version || 0) + 1;
       const ConnectionType = existDf.connectiontype;
       const externalSysName = existDf.externalsystemname;
+      const dataflowHelper = require("../helpers/dataflowHelper");
+      const datasetHelper = require("../helpers/datasetHelper");
 
       const cData = { dataFlowId: DFId };
       const conf_data = Object.assign(cData, req.body);
@@ -947,7 +950,49 @@ exports.updateDataFlow = async (req, res) => {
                         const DSId = currentDs.datasetid;
                         const custSql = currentDs.customsql;
                         const DSheaderRow = currentDs.headerrow;
+                        const dataflow = await dataflowHelper.findById(DFId);
+                        const dataset = await datasetHelper.findById(DSId);
 
+                        // check for primaryKey for Prod
+                        let saveyesflag = false;
+                        if (testFlag === 0) {
+                          for (let i = 0; i < dataPackage.length; i++) {
+                            if (
+                              dataPackage[i].dataSet[i].incremental === true
+                            ) {
+                              for (
+                                let j = 0;
+                                j <
+                                dataPackage[0].dataSet[0].columnDefinition
+                                  .length;
+                                j++
+                              ) {
+                                if (
+                                  dataPackage[0].dataSet[0].columnDefinition[j]
+                                    .primaryKey === "Yes"
+                                )
+                                  saveyesflag = true;
+                              }
+                              if (!saveyesflag)
+                                return apiResponse.ErrorResponse(
+                                  res,
+                                  `Cannot switch to Incremental if a primaryKey has not been defined as primaryKey is mandatory for incremental.`
+                                );
+                            }
+                          }
+                        }
+                        if (
+                          dataflow.data_in_cdr === "Y" &&
+                          dataset.incremental === "Y" &&
+                          testFlag === 0 &&
+                          dataPackage[0].dataSet[0].incremental === false
+                        ) {
+                          return apiResponse.ErrorResponse(
+                            res,
+                            `Cannot switch to Cumulative if the dataflow has been synced once.`
+                          );
+                        }
+                        
                         dsResObj.ExternalId = datasetExternalId;
                         dsResObj.ID = DSId;
 
@@ -1962,6 +2007,24 @@ exports.updateDataflowConfig = async (req, res) => {
       if (!existDf) {
         return apiResponse.ErrorResponse(res, "Dataflow doesn't exist");
       }
+
+      // NOTE: getting protocol id in protocolNumberStandard, this is to be fixed by the original developer
+      const checkUnique = await datasetHelper.isNotUniqueAmongstDatasets(
+        protocolNumberStandard,
+        testFlag === "true" ? "1" : "0",
+        vendorID,
+        dataflowId
+      );
+
+      if (checkUnique)
+        return apiResponse.validationErrorWithData(
+          res,
+          "Changes will make duplicate mnemonic",
+          {
+            success: false,
+          }
+        );
+
       let dfUpdatedName = false;
       if (
         existDf.vendorID != vendorID ||

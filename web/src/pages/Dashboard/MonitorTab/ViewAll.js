@@ -50,9 +50,12 @@ const ViewAll = () => {
 
   const [rows, setRowData] = useState([]);
   const [activeOnly, setActiveOnly] = useState(true);
-  const [control, setSegmentControl] = useState("all");
 
   const parsedQuery = queryString.parse(location.search);
+
+  const [control, setSegmentControl] = useState(
+    parsedQuery[queryParams.CONTROL] || "all"
+  );
 
   const fetchLatestData = (c = "", active = 1) => {
     if (dashboard?.selectedCard?.prot_id) {
@@ -77,6 +80,9 @@ const ViewAll = () => {
         }
         if (params.includes(queryParams.LATENCY_WARNING)) {
           return !!r.data_latency_warnings;
+        }
+        if (params.includes(queryParams.REFRESH_ALERTS)) {
+          return !!r.data_refresh_alerts;
         }
         if (params.includes(queryParams.EXCEEDS_PER_CHANGE)) {
           return !!r.exceeds_pct_cng;

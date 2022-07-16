@@ -3,7 +3,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
+import { useHistory, useParams } from "react-router";
 import moment from "moment";
 import Typography from "apollo-react/components/Typography";
 import SelectButton from "apollo-react/components/SelectButton";
@@ -23,6 +23,7 @@ import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
 import StatusCheck from "apollo-react-icons/StatusCheck";
 import StatusDotOutline from "apollo-react-icons/StatusDotOutline";
 import StatusExclamation from "apollo-react-icons/StatusExclamation";
+import QuarantineIcon from "apollo-react-icons/EyeHidden";
 import Table, {
   createStringSearchFilter,
   compareStrings,
@@ -95,7 +96,8 @@ const DateCell = ({ row, column: { accessor } }) => {
 const StatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
   const { canReadIngestionIssues } = row;
-  const [open, setOpen] = useState(false);
+  const history = useHistory();
+  const { datasetId } = useParams();
 
   // if (
   //   status?.toLowerCase() === "loaded without issues" ||
@@ -195,25 +197,22 @@ const StatusCell = ({ row, column: { accessor } }) => {
     <div>
       {status?.toLowerCase() === "successful" && (
         <div>
-          <Tag
-            label="Successful"
-            style={{
-              backgroundColor: "#00C221",
-              color: "#FFFFFF",
-              minWidth: 100,
-            }}
-            Icon={StatusCheck}
-          />
+          <Tooltip title="Successful" placement="top">
+            <Tag
+              label="Successful"
+              style={{
+                backgroundColor: "#00C221",
+                color: "#FFFFFF",
+                minWidth: 100,
+              }}
+              Icon={StatusCheck}
+            />
+          </Tooltip>
         </div>
       )}
       {status?.toLowerCase() === "processed with errors" && (
         <div>
-          <Tooltip
-            variant="dark"
-            title={open && status}
-            placement="top"
-            style={{ marginRight: 48 }}
-          >
+          <Tooltip title="Processed with Ingestion Issues" placement="top">
             <Tag
               label="Processed"
               style={{
@@ -221,13 +220,14 @@ const StatusCell = ({ row, column: { accessor } }) => {
                 color: "#FFFFFF",
                 minwidth: 100,
               }}
-              onMouseOver={() => setOpen(true)}
               Icon={StatusExclamation}
             />
           </Tooltip>
           <Link
             disabled={!canReadIngestionIssues}
-            onClick={() => console.log("link clicked")}
+            onClick={() =>
+              history.push(`/dashboard/ingestion-issues/${datasetId}`)
+            }
             style={{ fontWeight: 500, marginLeft: 8 }}
           >
             View
@@ -249,41 +249,47 @@ const StatusCell = ({ row, column: { accessor } }) => {
       )}
       {status?.toLowerCase() === "failed" && (
         <div>
-          <Tag
-            label={status}
-            style={{
-              backgroundColor: "#E20000",
-              color: "#FFFFFF",
-              minWidth: 100,
-            }}
-            Icon={FailedIcon}
-          />
+          <Tooltip title="Failed" placement="top">
+            <Tag
+              label="Failed"
+              style={{
+                backgroundColor: "#E20000",
+                color: "#FFFFFF",
+                minWidth: 100,
+              }}
+              Icon={FailedIcon}
+            />
+          </Tooltip>
         </div>
       )}
-      {status?.toLowerCase() === "skipped" && (
+      {status?.toLowerCase() === "quarantined" && (
         <div>
-          <Tag
-            label={status}
-            style={{
-              backgroundColor: "#E20000",
-              color: "#FFFFFF",
-              minWidth: 100,
-            }}
-            Icon={FailedIcon}
-          />
+          <Tooltip title="Quarantined" placement="top">
+            <Tag
+              label="Quarantined"
+              style={{
+                backgroundColor: "#FF9300",
+                color: "#FFFFFF",
+                minWidth: 100,
+              }}
+              Icon={QuarantineIcon}
+            />
+          </Tooltip>
         </div>
       )}
       {status?.toLowerCase() === "in progress" && (
         <div>
-          <Tag
-            label={status}
-            style={{
-              backgroundColor: "#00C221",
-              color: "#FFFFFF",
-              minWidth: 100,
-            }}
-            Icon={InprogressIcon}
-          />
+          <Tooltip title="In Progress" placement="top">
+            <Tag
+              label="In Progress"
+              style={{
+                backgroundColor: "#00C221",
+                color: "#FFFFFF",
+                minWidth: 100,
+              }}
+              Icon={InprogressIcon}
+            />
+          </Tooltip>
         </div>
       )}
       {/* <div style={{ position: "relative" }}>

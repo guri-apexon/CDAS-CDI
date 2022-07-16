@@ -35,9 +35,9 @@ import Step3 from "./Step3";
 import Step4 from "./Step4";
 
 const steps = [
-  "Select a Study to Clone from",
-  "Select a Source Data Flow",
-  "Verify Data Flow to Clone",
+  "Select a study to Clone from",
+  "Select a source data flow",
+  "Verify data flow to clone",
   "Provide required details",
 ];
 
@@ -49,7 +49,7 @@ const useStyles = makeStyles(() => ({
     fontSize: "24px",
     fontWeight: "600",
     marginLeft: "8px",
-    marginTop: "12px",
+    marginTop: "4px",
   },
   bold: {
     fontWeight: "600",
@@ -89,6 +89,7 @@ const useStyles = makeStyles(() => ({
     margin: "24px 24px",
   },
   breadcrumbs: {
+    marginTop: 0,
     marginBottom: 16,
     paddingLeft: 0,
   },
@@ -111,19 +112,32 @@ const useStyles = makeStyles(() => ({
     letterSpacing: 0,
     lineHeight: "24px",
   },
+  subtitle: {
+    marginTop: "8px",
+    display: "block",
+  },
   stepperContent: {
-    padding: "24px",
+    padding: "20px 22px",
   },
   divider: {
     margin: "20px 0 40px",
   },
   stepLabel: {
     minHeight: "48px",
+    cursor: "pointer",
+    "& .MuiStepLabel-iconContainer": {
+      paddingRight: "16px",
+    },
   },
   step: {
     display: "none",
     "&.active": {
       display: "block",
+    },
+  },
+  tableCursor: {
+    "& table tr": {
+      cursor: "pointer !important",
     },
   },
 }));
@@ -285,8 +299,10 @@ const CloneDataFlow = () => {
 
     try {
       setLoading(true);
+      setShowAlertBox(false);
       const res = await getDataFlowDetails(selectedStudy?.dataflow?.dataflowid);
       if (!res) {
+        setShowAlertBox(true);
         messageContext.showErrorMessage(`Something went wrong`);
         return false;
       }
@@ -322,14 +338,18 @@ const CloneDataFlow = () => {
         messageContext.showSuccessMessage(
           `Selected dataflow has been cloned to this study.`
         );
+        unblockRouter();
         history.push(
           `/dashboard/dataflow-management/${dataflowDetails?.dataFlowId}`
         );
+        return true;
       } else {
         messageContext.showErrorMessage(`Something wrong with clone`);
       }
+      setShowAlertBox(true);
       return true;
     } catch (error) {
+      setShowAlertBox(true);
       console.log(error);
       setLoading(false);
       messageContext.showErrorMessage(`Something went wrong`);
@@ -348,26 +368,26 @@ const CloneDataFlow = () => {
         <AlertBox
           onClose={keepEditingBtn}
           submit={leavePageBtn}
-          title="Are you sure you want to leave the page?"
-          message="The data flow configuration will be lost."
+          message="Are you sure you want to leave the page?"
+          title="The data flow configuration will be lost."
         />
       )}
       <Modal
         open={showCancelPopup}
         variant="warning"
         onClose={() => setShowCancelPopup(false)}
-        title="Are you sure you want to leave the page?"
-        message="The data flow configuration will be lost."
+        title="The data flow configuration will be lost."
+        message="Are you sure you want to leave the page?"
         buttonProps={[
-          { label: "Dismiss", onClick: () => setShowCancelPopup(false) },
+          { label: "Cancel", onClick: () => setShowCancelPopup(false) },
           {
-            label: "Yes cancel",
+            label: "Yes",
             onClick: cancelButton,
           },
         ]}
         id="warning"
       />
-      <Panel width={300} hideButton>
+      <Panel width={305} hideButton>
         <div className={classes.stepperContent}>
           <Typography variant="title1">Clone Data Flow</Typography>
           <Divider className={classes.divider} />
