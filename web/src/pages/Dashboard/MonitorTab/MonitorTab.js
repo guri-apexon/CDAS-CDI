@@ -174,7 +174,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
       {/* {dashboard.summaryLoading && !hasLoadedOnce && <Loader />} */}
       {dashboard.summaryLoading && <Loader />}
       <Hero>
-        <Typography
+        {/* <Typography
           variant="h2"
           style={{
             lineHeight: "32px",
@@ -184,10 +184,10 @@ export default function MonitorTab({ fetchLatestData, protId }) {
           darkMode
         >
           {`Welcome back, ${titleCase(firstName)}!`}
-        </Typography>
+        </Typography> */}
 
         <div className="topContainer" style={{ position: "relative" }}>
-          <Typography
+          {/* <Typography
             variant="title1"
             style={{
               lineHeight: "32px",
@@ -199,17 +199,23 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             darkMode
           >
             Study Monitor Summary
-          </Typography>
-          <div style={{ textAlign: "center" }}>
+          </Typography> */}
+          <div style={{ textAlign: "center", marginTop: "114px" }}>
             <SegmentedControlGroup
               value={control}
               exclusive
               style={{ margin: "auto 20%" }}
               onChange={(event, value) => onSegmentChange(value)}
             >
-              <SegmentedControl value="all">All</SegmentedControl>
-              <SegmentedControl value="0">Production</SegmentedControl>
-              <SegmentedControl value="1">Test</SegmentedControl>
+              <SegmentedControl className="monitor-btn" value="all">
+                All
+              </SegmentedControl>
+              <SegmentedControl className="monitor-btn" value="0">
+                Production
+              </SegmentedControl>
+              <SegmentedControl className="monitor-btn" value="1">
+                Test
+              </SegmentedControl>
             </SegmentedControlGroup>
           </div>
         </div>
@@ -254,7 +260,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.JOB_STATUS_FAILED);
+              handleViewButton(queryParams.REFRESH_ALERTS);
             }}
           />
           <InfoCard

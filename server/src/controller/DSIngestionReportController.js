@@ -304,7 +304,11 @@ exports.getIssues = async (req, res) => {
     }
 
     const query = `with LATEST_TRANS as (
-      select prot_id,datasetid,externalid,dbname_prefix||tenant_mnemonic_nm||'_'||prot_mnemonic_nm as databasename,tablename_prefix,
+      select prot_id,datasetid,externalid,
+      case when tenant_mnemonic_nm is not null then 
+      dbname_prefix||tenant_mnemonic_nm||'_'||prot_mnemonic_nm
+      else dbname_prefix||prot_mnemonic_nm end as databasename,
+      tablename_prefix,
       datakindmnemonic,datastructure,vendormnemonic,datasetmnemonic,
       allcolumns,"name" ,primarykey from (
       select ts.datasetid ,ts.externalid ,

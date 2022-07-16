@@ -117,6 +117,7 @@ const Step4 = ({
           value={vendorDetails?.description}
           sizeAdjustable
           minHeight={280}
+          inputProps={{ maxLength: 30 }}
           fullWidth
           onChange={handleChange}
           required
