@@ -39,6 +39,7 @@ import {
 } from "../../../services/ApiServices";
 import { getDatasetProperties } from "../../../store/actions/IngestionReportAction";
 import { MessageContext } from "../../../components/Providers/MessageProvider";
+import { downloadRows, exportToCSV } from "../../../utils/downloadData";
 
 const IngestionIssues = () => {
   const toast = useContext(MessageContext);
@@ -86,14 +87,36 @@ const IngestionIssues = () => {
     },
   ];
 
-  const downloadSummery = () => {
-    console.log("downloadSummery");
-  };
   const getTitle = () => {
     if (!datasetProperties?.dataflowid) return "------";
     return datasetProperties.loadType?.toLowerCase() === "increament"
       ? datasetProperties.DatasetName || "------"
       : datasetProperties.FileName || "------";
+  };
+  const [rowsPerPage, setRowPerPage] = useState(10);
+  const [pageNo, setPageNo] = useState(0);
+  const [sortedColumn, setSortedColumnValue] = useState("update_dt");
+  const [sortedValue, setSortOrderValue] = useState("asc");
+  const [inlineFilters, setInlineFilters] = useState([]);
+  const downloadSummery = (e) => {
+    // const filteredColumns = [...columns].map((x) => {
+    //   return x.header.props
+    //     ? { ...x, header: x.header.props?.children[1] || "" }
+    //     : x;
+    // });
+    // downloadRows({
+    //   name: "Ingestion-issue",
+    //   ext: "xlsx",
+    //   columns: filteredColumns,
+    //   pageNo,
+    //   rowsPerPage,
+    //   event: e,
+    //   toast,
+    //   rows: tableRows,
+    //   inlineFilters,
+    //   sortedColumn,
+    //   sortedValue,
+    // });
   };
 
   const CustomButtonHeader = ({ toggleFilters }) => {
@@ -108,7 +131,7 @@ const IngestionIssues = () => {
             size="small"
           />
           <span className="v-line">&nbsp;</span>
-          <Button icon={<Download />} size="small">
+          <Button onClick={downloadSummery} icon={<Download />} size="small">
             Download
           </Button>
           &nbsp;&nbsp;
@@ -155,7 +178,7 @@ const IngestionIssues = () => {
           };
           if (haveIssue) {
             columnObj.customCell = ({ row, column: { accessor: key } }) => {
-              return <span className="issue-td">{row[key] || "----"}</span>;
+              return <span>{row[key] || "----"}</span>; // className="issue-td" For Highlited
             };
           }
           columnsArr.push(columnObj);
@@ -246,6 +269,13 @@ const IngestionIssues = () => {
                     count === 1 ? "Issue" : "Issues"
                   } ${from}-${to} of ${count}`,
                 truncate: true,
+              }}
+              onChange={(rpp, sc, so, filts, page) => {
+                setRowPerPage(rpp);
+                setSortedColumnValue(sc);
+                setSortOrderValue(so);
+                setInlineFilters(filts);
+                setPageNo(page);
               }}
               CustomHeader={(props) => <CustomButtonHeader {...props} />}
             />

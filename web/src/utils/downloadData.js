@@ -1,3 +1,4 @@
+import { pick } from "lodash";
 import * as XLSX from "xlsx";
 import { convertLocalFormat } from ".";
 
@@ -68,3 +69,89 @@ export const downloadTemplate = () => {
     rowsPerPageRecord
   );
 };
+// *****************************
+// Download Table Rows Feature Start
+// *****************************
+const applyFilter = (cols, rows, filts, sortedColumn, sortedValue) => {
+  let filteredRows = rows;
+  Object.values(cols).forEach((column) => {
+    if (column.filterFunction) {
+      filteredRows = filteredRows.filter((row) => {
+        return column.filterFunction(row, filts);
+      });
+      if (column.sortFunction) {
+        filteredRows.sort(column.sortFunction(sortedColumn, sortedValue));
+      }
+    }
+  });
+  return filteredRows;
+};
+const exportDataRows = (
+  rows,
+  columns,
+  setExportRows,
+  inlineFilters,
+  sortedColumn,
+  sortedValue
+) => {
+  const toBeExportRows = [...rows];
+  const sortedFilteredData = applyFilter(
+    columns,
+    toBeExportRows,
+    inlineFilters,
+    sortedColumn,
+    sortedValue
+  );
+  if (setExportRows) setExportRows(sortedFilteredData);
+  return sortedFilteredData;
+};
+
+export const downloadRows = (props) => {
+  const {
+    name,
+    ext,
+    columns,
+    pageNo,
+    rowsPerPage,
+    event,
+    toast,
+    rows,
+    setExportRows,
+    inlineFilters,
+    sortedColumn,
+    sortedValue,
+  } = props;
+  // console.log("inDown", exportHeader);
+  const exportRows = exportDataRows(
+    rows,
+    columns,
+    setExportRows,
+    inlineFilters,
+    sortedColumn,
+    sortedValue
+  );
+  const tempObj = {};
+  // console.log("tableColumns", tableColumns);
+  const temp = columns
+    .filter((d) => d.hidden !== true && d.ignore !== true)
+    .map((d) => {
+      tempObj[d.accessor] = d.header;
+      return d;
+    });
+  const newData = exportRows.map((obj) => {
+    const newObj = pick(obj, Object.keys(tempObj));
+    return newObj;
+  });
+  exportToCSV(newData, tempObj, `${name}.${ext}`, "data", pageNo, rowsPerPage);
+  if (exportRows.length <= 0) {
+    if (event) event.preventDefault();
+    const message = `There is no data on the screen to download because of which an empty file has been downloaded.`;
+    if (toast) toast.showErrorMessage(message);
+  } else {
+    const message = `File downloaded successfully.`;
+    if (toast) toast.showSuccessMessage(message);
+  }
+};
+// *****************************
+// Download Table Rows Feature End
+// *****************************
