@@ -204,7 +204,7 @@ const IngestionIssues = () => {
         headerTitle="Ingestion Issue Report"
         subTitle={getTitle()}
         icon={<IssueIcon className="black-icon" />}
-        saveBtnLabel="View summery"
+        saveBtnLabel="View summary"
         hideCancel
         tabs={["Data", "Properties"]}
         selectedTab={0}
