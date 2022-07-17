@@ -32,6 +32,7 @@ import {
 import {
   updatePanel,
   redirectToDataSet,
+  selectDataPackage,
 } from "../../store/actions/DataPackageAction";
 
 import {
@@ -275,39 +276,11 @@ const Dataset = () => {
   };
 
   const gotoDataPackage = () => {
-    const firstDataset = packageData?.packagesList?.find(
+    const selectedPackage = packageData?.packagesList?.find(
       (e) => e?.datapackageid === selectedDSDetails?.datapackageid
     );
-    const firstDatasetUnfreezed = {
-      ...firstDataset,
-      datasets: firstDataset.datasets?.slice()?.sort((a, b) => {
-        if (a.mnemonic?.toUpperCase() < b.mnemonic?.toUpperCase()) {
-          return -1;
-        }
-        if (a.mnemonic?.toUpperCase() > b.mnemonic?.toUpperCase()) {
-          return 1;
-        }
-        return 0;
-      }),
-    };
-    if (firstDatasetUnfreezed?.datasets[0]?.datasetid) {
-      dispatch(
-        redirectToDataSet(
-          dfId,
-          firstDatasetUnfreezed.dataflowid,
-          dpId,
-          datapackageName,
-          dsId,
-          firstDatasetUnfreezed.datasets[0].mnemonic
-        )
-      );
-      dispatch(updateDSState(false));
-      history.push(
-        `/dashboard/dataset/${firstDatasetUnfreezed.datasets[0].datasetid}`
-      );
-    } else if (dpId) {
-      history.push("/dashboard/data-packages");
-    }
+    dispatch(selectDataPackage(selectedPackage));
+    history.push("/dashboard/data-packages");
   };
 
   const breadcrumbItems = [
