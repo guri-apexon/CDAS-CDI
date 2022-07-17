@@ -28,7 +28,7 @@ import Table, {
   createStringSearchFilter,
   compareStrings,
   compareNumbers,
-  compareDates,
+  // compareDates,
 } from "apollo-react/components/Table";
 import Search from "apollo-react/components/Search";
 import {
@@ -42,6 +42,7 @@ import {
   secondsToHms,
   DateFilter,
   dateFilterCustom,
+  compareDates,
 } from "../../utils/index";
 
 import { ReactComponent as FailedIcon } from "../../components/Icons/Failed.svg";
