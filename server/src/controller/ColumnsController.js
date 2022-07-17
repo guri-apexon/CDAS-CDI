@@ -171,7 +171,7 @@ exports.updateColumns = async (req, res) => {
     const curDate = helper.getCurrentTime();
 
     Logger.info({ message: "update set columns" });
-    // const versionFreezed = true;
+    // const versionFreezed = false;
 
     const {
       rows: [oldVersion],
@@ -237,7 +237,7 @@ exports.updateColumns = async (req, res) => {
       }
       await updateSqlQuery(dsId);
       // let versionBumped = false;
-      let newVersion = "";
+      let newVersion = null;
       if (Object.keys(diffValuesObj).length) {
         const historyVersion = await CommonController.addColumnHistory(
           dsId,
@@ -256,11 +256,13 @@ exports.updateColumns = async (req, res) => {
       }
 
       const datasetColumns = values;
-      var resData = { columns: datasetColumns, version: newVersion };
-      if (oldVersion.version === newVersion) {
-        resData.versionBumped = false;
-      } else {
+      var resData = { columns: datasetColumns };
+      if (oldVersion.version < newVersion) {
+        resData.version = newVersion;
         resData.versionBumped = true;
+      } else {
+        resData.version = oldVersion.version;
+        resData.versionBumped = false;
       }
 
       return apiResponse.successResponseWithData(

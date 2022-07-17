@@ -394,7 +394,7 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
     };
 
     const updateConfg = Object.assign(idObj, diffObj);
-    let newVersion = "";
+    let newVersion = null;
     if (Object.keys(diffObj).length != 0) {
       const historyVersion = await CommonController.addDatasetHistory(
         dfId,
@@ -413,12 +413,13 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
 
     var resData = {
       ...updateDS.rows[0],
-      version: newVersion,
     };
-    if (existingVersion === newVersion) {
-      resData.versionBumped = false;
-    } else {
+    if (existingVersion < newVersion) {
+      resData.version = newVersion;
       resData.versionBumped = true;
+    } else {
+      resData.version = existingVersion;
+      resData.versionBumped = false;
     }
 
     return apiResponse.successResponseWithData(
@@ -455,7 +456,7 @@ exports.updateDatasetData = async (req, res) => {
       loadType,
     } = req.body;
 
-    // const versionFreezed = true;
+    // const versionFreezed = false;
     const dataflow = await dataflowHelper.findById(dfId);
     const dataset = await datasetHelper.findById(datasetid);
     const searchQuery = `SELECT "columnid", "variable", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "format", "lov", "unique", insrt_tm from ${schemaName}.columndefinition WHERE coalesce (del_flg,0) != 1 AND datasetid = $1 ORDER BY insrt_tm`;
@@ -476,7 +477,8 @@ exports.updateDatasetData = async (req, res) => {
     }
 
     if (
-      dataflow.data_in_cdr === "Y" && dataset.incremental === "Y" &&
+      dataflow.data_in_cdr === "Y" &&
+      dataset.incremental === "Y" &&
       testFlag === 0 &&
       loadType === "Cumulative"
     ) {
@@ -598,7 +600,7 @@ exports.updateDatasetData = async (req, res) => {
 
     const updateConfg = Object.assign(idObj, diffObj);
 
-    let newVersion = "";
+    let newVersion = null;
     if (Object.keys(diffObj).length != 0) {
       const historyVersion = await CommonController.addDatasetHistory(
         dfId,
@@ -617,12 +619,13 @@ exports.updateDatasetData = async (req, res) => {
 
     var resData = {
       ...updateDS.rows[0],
-      version: newVersion,
     };
-    if (oldVersion.version === newVersion) {
-      resData.versionBumped = false;
-    } else {
+    if (oldVersion.version < newVersion) {
+      resData.version = newVersion;
       resData.versionBumped = true;
+    } else {
+      resData.version = oldVersion.version;
+      resData.versionBumped = false;
     }
 
     return apiResponse.successResponseWithData(
