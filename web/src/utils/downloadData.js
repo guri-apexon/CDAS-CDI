@@ -17,14 +17,13 @@ export const exportToCSV = (
   const from = pageNo * rowPerPage;
   const to = from + rowPerPage;
   const newData = exportData.slice(from, to);
-  const newXlsData = newData.map((x) => ({
-    ...x,
-    update_dt: convertLocalFormat(x.update_dt),
-  }));
-  newXlsData.unshift(headers);
-  // console.log("newXlsData", newXlsData, exportData);
+  // const newData = newData.map((x) => ({
+  //   ...x,
+  //   update_dt: convertLocalFormat(x.update_dt),
+  // }));
+  newData.unshift(headers);
 
-  ws = XLSX.utils.json_to_sheet(newXlsData, { skipHeader: true });
+  ws = XLSX.utils.json_to_sheet(newData, { skipHeader: true });
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
   XLSX.writeFile(wb, fileName);
 };
@@ -131,12 +130,11 @@ export const downloadRows = (props) => {
     sortedValue
   );
   const tempObj = {};
-  // console.log("tableColumns", tableColumns);
-  const temp = columns
+  // console.log("exportRows", exportRows);
+  columns
     .filter((d) => d.hidden !== true && d.ignore !== true)
-    .map((d) => {
+    .forEach((d) => {
       tempObj[d.accessor] = d.header;
-      return d;
     });
   const newData = exportRows.map((obj) => {
     const newObj = pick(obj, Object.keys(tempObj));
