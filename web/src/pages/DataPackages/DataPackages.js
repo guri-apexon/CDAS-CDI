@@ -25,7 +25,7 @@ import ButtonGroup from "apollo-react/components/ButtonGroup";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import "./DataPackages.scss";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
-import { getUserInfo, toast, validateFields } from "../../utils";
+import { getUserInfo, toast, validateFields, isSftp } from "../../utils";
 import { submitDataPackage } from "../../services/ApiServices";
 import {
   addDataPackage,
@@ -68,6 +68,7 @@ const DataPackages = React.memo(() => {
   const [sftpPath, setSftpPath] = useState("");
   const [notMatchedType, setNotMatchedType] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const [disablePackageLevel, setDisablePackageLevel] = useState(false);
   const packageData = useSelector((state) => state.dataPackage);
 
   const { dataFlowdetail, versionFreezed } = useSelector(
@@ -189,6 +190,10 @@ const DataPackages = React.memo(() => {
   ]);
 
   useEffect(() => {
+    if (!isSftp(dataFlowdetail.loctyp)) {
+      setConfigShow(false);
+      setDisablePackageLevel(true);
+    }
     return () => {
       console.log("unmounting");
       dispatch(selectDataPackage({}));
@@ -302,7 +307,8 @@ const DataPackages = React.memo(() => {
                       onChange={showConfig}
                       disabled={
                         packageData.selectedPackage?.sod_view_type ||
-                        !canUpdateDataFlow
+                        !canUpdateDataFlow ||
+                        disablePackageLevel
                       }
                     />
                   </div>
