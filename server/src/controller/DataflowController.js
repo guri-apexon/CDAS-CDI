@@ -69,8 +69,6 @@ exports.getStudyDataflows = async (req, res) => {
       group by "studyId","dataFlowId","studyName","version","dataFlowName","type","dateCreated","vendorSource",description,adapter,status,"externalSourceSystem",
       "fsrStatus","locationType","lastModified","lastSyncDate";`;
 
-      console.log(">>>>", protocolId);
-      // Logger.info({ message: "getStudyDataflows" });
       const $q1 = await DB.executeQuery(query, [protocolId]);
 
       const formatDateValues = await $q1.rows.map((e) => {
