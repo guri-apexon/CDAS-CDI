@@ -174,20 +174,8 @@ export default function MonitorTab({ fetchLatestData, protId }) {
       {/* {dashboard.summaryLoading && !hasLoadedOnce && <Loader />} */}
       {dashboard.summaryLoading && <Loader />}
       <Hero>
-        {/* <Typography
-          variant="h2"
-          style={{
-            lineHeight: "32px",
-            fontWeight: 600,
-            display: "inline-flex",
-          }}
-          darkMode
-        >
-          {`Welcome back, ${titleCase(firstName)}!`}
-        </Typography> */}
-
         <div className="topContainer" style={{ position: "relative" }}>
-          {/* <Typography
+          <Typography
             variant="title1"
             style={{
               lineHeight: "32px",
@@ -199,8 +187,8 @@ export default function MonitorTab({ fetchLatestData, protId }) {
             darkMode
           >
             Study Monitor Summary
-          </Typography> */}
-          <div style={{ textAlign: "center", marginTop: "114px" }}>
+          </Typography>
+          <div style={{ textAlign: "center" }}>
             <SegmentedControlGroup
               value={control}
               exclusive

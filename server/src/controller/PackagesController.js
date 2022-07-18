@@ -6,17 +6,18 @@ const CommonController = require("./CommonController");
 const constants = require("../config/constants");
 const helper = require("../helpers/customFunctions");
 const { DB_SCHEMA_NAME: schemaName } = constants;
+const { getCurrentTime } = require("../helpers/customFunctions");
 
 exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
     const { dataflowId } = req.params;
-    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 'Y');`;
+    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 'Y') ORDER BY insrt_tm DESC;`;
     if (searchParam) {
-      searchQuery = `SELECT datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm from ${schemaName}.datapackage 
-      WHERE LOWER(name) LIKE '%${searchParam}%' and dataflowid='${dataflowId}';`;
+      searchQuery = `SELECT datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage 
+      WHERE LOWER(name) LIKE '%${searchParam}%' and dataflowid='${dataflowId}' ORDER BY insrt_tm DESC;`;
     }
-    const datasetQuery = `SELECT datasetid, mnemonic, active, type from ${schemaName}.dataset where datapackageid = $1`;
+    const datasetQuery = `SELECT datasetid, mnemonic, active, type, insrt_tm from ${schemaName}.dataset where datapackageid = $1 ORDER BY insrt_tm DESC`;
     Logger.info({ message: "packagesList" });
 
     DB.executeQuery(searchQuery).then(async (response) => {
@@ -154,7 +155,7 @@ exports.addPackage = async function (req, res) {
         });
     } else {
       const query_response = await DB.executeQuery(
-        `INSERT INTO ${schemaName}.datapackage(dataflowid, type, name, path, password, active, del_flg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        `INSERT INTO ${schemaName}.datapackage(dataflowid, type, name, path, password, active, del_flg, insrt_tm) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
         [
           dataflow_id,
           compression_type,
@@ -163,9 +164,9 @@ exports.addPackage = async function (req, res) {
           package_password ? "Yes" : "No",
           "0",
           "N",
+          getCurrentTime()
         ]
       );
-
       package =
         query_response && query_response.rowCount > 0 && query_response.rows[0];
 

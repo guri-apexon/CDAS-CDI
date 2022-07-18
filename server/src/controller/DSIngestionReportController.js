@@ -435,17 +435,31 @@ exports.getIssueColumns = async (req, res) => {
     errColumns = [...new Set(errColumns)].filter((el) => {
       return el !== null && typeof el !== "undefined";
     });
-    errRows = [...new Set(errRows)].filter((el) => {
-      return el !== null && typeof el !== "undefined";
-    });
+    errRows = [...new Set(errRows)]
+      .filter((el) => {
+        return el !== null && typeof el !== "undefined";
+      })
+      .sort(function (a, b) {
+        return a - b;
+      });
     if (!errColumns.length || !errRows.length) {
       return apiResponse.ErrorResponse(
         res,
         "Selected issue doesn't have any columns"
       );
     }
-    const concatQuery = `SELECT \`_rowno\`, ${errColumns} from ${dbName}.${tableName} WHERE \`_rowno\` in (${errRows});`;
-    // console.log("concatQuery", concatQuery, errColumns);
+    const baseQuery = `SELECT \`_rowno\`, ${errColumns} from ${dbName}.${tableName} WHERE \`_rowno\` in`;
+    let concatQuery = "";
+    if (errRows.length > 1000) {
+      for (let i = 0; i < errRows.length; i += 1000) {
+        const chunk = errRows.slice(i, i + 1000);
+        concatQuery += `${i > 0 ? "\nunion all\n" : ""}${baseQuery} (${chunk})`;
+      }
+      concatQuery += `;`;
+    } else {
+      concatQuery += `${baseQuery} (${errRows});`;
+    }
+    // console.log("concatQuery", concatQuery);
     await jdbc(
       dbUser,
       dbPass,

@@ -99,24 +99,25 @@ const IngestionIssues = () => {
   const [sortedValue, setSortOrderValue] = useState("asc");
   const [inlineFilters, setInlineFilters] = useState([]);
   const downloadSummery = (e) => {
-    // const filteredColumns = [...columns].map((x) => {
-    //   return x.header.props
-    //     ? { ...x, header: x.header.props?.children[1] || "" }
-    //     : x;
-    // });
-    // downloadRows({
-    //   name: "Ingestion-issue",
-    //   ext: "xlsx",
-    //   columns: filteredColumns,
-    //   pageNo,
-    //   rowsPerPage,
-    //   event: e,
-    //   toast,
-    //   rows: tableRows,
-    //   inlineFilters,
-    //   sortedColumn,
-    //   sortedValue,
-    // });
+    const filteredColumns = [...columns].map((x) => {
+      return x.header.props
+        ? { ...x, header: x.header.props?.children[1] || "" }
+        : x;
+    });
+    console.log("filteredColumns", filteredColumns, tableRows);
+    downloadRows({
+      name: `Dataset-(${datasetId})-Ingestion-issue`,
+      ext: "xlsx",
+      columns: filteredColumns,
+      pageNo,
+      rowsPerPage,
+      event: e,
+      toast,
+      rows: tableRows,
+      inlineFilters,
+      sortedColumn,
+      sortedValue,
+    });
   };
 
   const CustomButtonHeader = ({ toggleFilters }) => {
