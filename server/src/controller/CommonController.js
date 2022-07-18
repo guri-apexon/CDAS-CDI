@@ -197,12 +197,12 @@ module.exports = {
 
       const historyVersion = response.rows[0]?.version || 0;
       var version = Number(historyVersion);
-      if (!versionFreezed) {
+      if (!versionFreezed && values.length) {
         version = Number(historyVersion) + 1;
       }
       const curDate = helper.getCurrentTime();
 
-      if (!versionFreezed) {
+      if (!versionFreezed && values.length) {
         await DB.executeQuery(
           `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5)`,
           [package.dataflowid, version, package, user_id, curDate]
@@ -226,7 +226,7 @@ module.exports = {
         );
       }
 
-      if (!versionFreezed) {
+      if (!versionFreezed && values.length) {
         await DB.executeQuery(
           `INSERT INTO ${schemaName}.cdr_ta_queue
             (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count, datapackageid)
