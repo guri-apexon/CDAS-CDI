@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Typography from "apollo-react/components/Typography";
 import Tooltip from "apollo-react/components/Tooltip";
 import IconButton from "apollo-react/components/IconButton";
@@ -29,6 +29,8 @@ import usePermission, {
   Features,
   useStudyPermission,
 } from "../../components/Common/usePermission";
+import { toggleDatasetsStatus } from "../../services/ApiServices";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
@@ -79,6 +81,7 @@ const PackagesList = ({ data, userInfo }) => {
   const history = useHistory();
   const [expandedRows, setExpandedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
+  const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
   const {
     selectedDataFlow: { locationType },
     selectedCard,
@@ -209,6 +212,26 @@ const PackagesList = ({ data, userInfo }) => {
         );
       }
     };
+    const toggleDatasetActive = async (status) => {
+      const result = await toggleDatasetsStatus({
+        packageId,
+        active: status,
+      });
+      showSuccessMessage(
+        `All Datasets marked ${status ? "Active" : "Inactive"}`
+      );
+      console.log("toggleDatasetActive::::", packageId, status, result);
+      // if (packageId) {
+      //   dispatch(
+      //     updateStatus({
+      //       package_id: packageId,
+      //       active: status === 1 ? "0" : "1",
+      //       user_id: userInfo.userId,
+      //       versionFreezed,
+      //     })
+      //   );
+      // }
+    };
     const deleteAction = () => {
       if (packageId) {
         dispatch(
@@ -234,12 +257,12 @@ const PackagesList = ({ data, userInfo }) => {
       },
       {
         text: "Set all dataset to active",
-        // onClick: () => onRowEdit(packageName),
+        onClick: () => toggleDatasetActive(true),
         disabled: !canUpdateDataFlow,
       },
       {
         text: "Set all datasets to inactive",
-        // onClick: () => onRowEdit(packageName),
+        onClick: () => toggleDatasetActive(),
         disabled: !canUpdateDataFlow,
       },
       {

@@ -19,6 +19,7 @@ import Panel from "apollo-react/components/Panel";
 import { makeStyles } from "@material-ui/core/styles";
 import InfoIcon from "apollo-react-icons/Info";
 import Tooltip from "apollo-react/components/Tooltip";
+import Modal from "apollo-react/components/Modal/Modal";
 // import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
@@ -70,6 +71,7 @@ const DataPackages = React.memo(() => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [disablePackageLevel, setDisablePackageLevel] = useState(false);
   const packageData = useSelector((state) => state.dataPackage);
+  const [addedPackage, setAddedPackage] = useState(false);
 
   const { dataFlowdetail, versionFreezed } = useSelector(
     (state) => state.dataFlow
@@ -200,6 +202,14 @@ const DataPackages = React.memo(() => {
     };
   }, []);
 
+  const handleAddedSuccess = (message) => {
+    if (message) showSuccessMessage(message);
+    dispatch(addDataPackage());
+    resetForm();
+    setAddedPackage(false);
+    setShowForm(false);
+    history.push(`/dashboard/dataflow-management/${dfId}`);
+  };
   // eslint-disable-next-line consistent-return
   const submitPackage = async () => {
     const validated = validateFields(namingConvention, compression);
@@ -209,7 +219,7 @@ const DataPackages = React.memo(() => {
       toast("Please fill all fields to proceed", "error");
       return false;
     }
-    const reqBody = {
+    let reqBody = {
       compression_type: compression,
       naming_convention: namingConvention,
       package_password: packagePassword,
@@ -219,21 +229,22 @@ const DataPackages = React.memo(() => {
       user_id: userInfo.userId,
       versionFreezed,
     };
-    const updateReqBody = {
-      ...reqBody,
-      package_id: packageData.selectedPackage?.datapackageid,
-      sod_view_type: sodValue,
-    };
+    const updatedReq = !!packageData.selectedPackage?.datapackageid;
+    if (updatedReq) {
+      reqBody = {
+        ...reqBody,
+        package_id: packageData.selectedPackage?.datapackageid,
+        sod_view_type: sodValue,
+      };
+    }
 
-    const payload = packageData.selectedPackage ? updateReqBody : reqBody;
-    const result = await submitDataPackage(payload);
+    const result = await submitDataPackage(reqBody);
     if (result.status === 1) {
-      showSuccessMessage(result.message);
-      dispatch(addDataPackage());
-      resetForm();
-      setShowForm(false);
-      if (sodValue !== null)
-        history.push(`/dashboard/dataflow-management/${dfId}`);
+      if (updatedReq) {
+        handleAddedSuccess(result.message);
+      } else {
+        setAddedPackage(true);
+      }
     } else {
       showErrorMessage(result.message);
     }
@@ -271,6 +282,20 @@ const DataPackages = React.memo(() => {
         hideButton
       >
         <main className="right-content">
+          <Modal
+            open={addedPackage}
+            // disableBackdropClick="true"
+            onClose={() => handleAddedSuccess()}
+            message="Data Package has been created as Inactive. Please add an active
+        Data Set, then activate the data package."
+            buttonProps={[
+              {
+                label: "OK",
+                variant: "primary",
+                onClick: () => handleAddedSuccess(),
+              },
+            ]}
+          />
           <Paper className="no-shadow">
             <Box className="top-content">
               <Header

@@ -25,6 +25,7 @@ import {
   API_URL,
   INGESTION_ISSUE_URL,
   INGESTION_ISSUE_COL_URL,
+  DATASETS_STATUS_TOGGLE,
 } from "../constants";
 import store from "../store";
 import { freezeDfVersion } from "../store/actions/DataFlowAction";
@@ -498,6 +499,21 @@ export const getIngestionIssueCols = async (reqBody) => {
       reqBody
     );
     return res.data || [];
+  } catch (err) {
+    return {
+      data: [],
+      error: err.response?.data?.message || "Something went wrong",
+    };
+  }
+};
+
+export const toggleDatasetsStatus = async (reqBody) => {
+  try {
+    const res = await axios.post(
+      `${baseURL}/${DATASETS_STATUS_TOGGLE}`,
+      reqBody
+    );
+    return res.data.data || [];
   } catch (err) {
     return {
       data: [],
