@@ -161,7 +161,7 @@ exports.addPackage = async function (req, res) {
           naming_convention,
           sftp_path,
           package_password ? "Yes" : "No",
-          "1",
+          "0",
           "N",
         ]
       );
@@ -212,11 +212,27 @@ exports.addPackage = async function (req, res) {
   }
 };
 
-exports.changeStatus = function (req, res) {
+exports.changeStatus = async (req, res) => {
   try {
     const { active, package_id, user_id, versionFreezed } = req.body;
 
     Logger.info({ message: "Package changeStatus" });
+
+    if (active == 1) {
+      const {
+        rows: [dataSetCount],
+      } = await DB.executeQuery(
+        `SELECT count(1) from ${schemaName}.dataset WHERE datapackageid = '${package_id}'`
+      );
+
+      if (dataSetCount.count == 0) {
+        return apiResponse.ErrorResponse(
+          res,
+          "Please add at-least one dataset in order to make active"
+        );
+      }
+    }
+
     const query = `UPDATE ${schemaName}.datapackage
     SET active = ${active}
     WHERE datapackageid = '${package_id}' RETURNING *`;
@@ -266,7 +282,7 @@ exports.changeStatus = function (req, res) {
   }
 };
 
-exports.deletePackage = function (req, res) {
+exports.deletePackage = async (req, res) => {
   try {
     const { active, package_id, user_id, versionFreezed } = req.body;
     const query = `UPDATE ${schemaName}.datapackage
@@ -275,6 +291,25 @@ exports.deletePackage = function (req, res) {
 
     // const versionFreezed = false;
     Logger.info({ message: "deletePackage" });
+
+    const {
+      rows: [dfId],
+    } = await DB.executeQuery(
+      `SELECT dataflowid from ${schemaName}.datapackage WHERE datapackageid = '${package_id}'`
+    );
+
+    const {
+      rows: [dataPackageCount],
+    } = await DB.executeQuery(
+      `SELECT count(1) from ${schemaName}.datapackage WHERE dataflowid = '${dfId.dataflowid}'`
+    );
+
+    if (dataPackageCount.count < 2) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Please inactivate the dataflow in order to delete the package"
+      );
+    }
 
     const dataSetQuery = `UPDATE ${schemaName}.dataset SET del_flg = 'Y' WHERE datapackageid = '${package_id}' RETURNING datasetid`;
     const columnQuery = `UPDATE ${schemaName}.columndefinition SET del_flg = 1 WHERE datasetid = $1`;
@@ -325,6 +360,32 @@ exports.deletePackage = function (req, res) {
       );
     });
   } catch (err) {
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.changeDatasetsStatus = async (req, res) => {
+  try {
+    const { active, packageId, userId, versionFreezed } = req.body;
+
+    Logger.info({ message: "change Datasets Status" });
+
+    const query = `UPDATE ${schemaName}.dataset
+    SET active = ${active}
+    WHERE datapackageid = '${packageId}' RETURNING *`;
+
+    // const versionFreezed = true;
+    DB.executeQuery(query).then(async (response) => {
+      const datasets = response.rows[0] || [];
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Success! Datasets Status updated."
+        // resData
+      );
+    });
+  } catch (err) {
+    Logger.error("catch :change Datasets Status");
     return apiResponse.ErrorResponse(res, err);
   }
 };

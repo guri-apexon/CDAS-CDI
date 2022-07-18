@@ -456,6 +456,33 @@ exports.updateDatasetData = async (req, res) => {
       loadType,
     } = req.body;
 
+    if (values.active) {
+      let dataSet_count = 0;
+      const dataPackage = await DB.executeQuery(
+        `SELECT datapackageid from ${schemaName}.datapackage WHERE dataflowid='${dfId}'`
+      );
+      const DPID = dataPackage.rows;
+
+      if (DPID) {
+        for (let id of DPID) {
+          const {
+            rows: [datasetCount],
+          } = await DB.executeQuery(
+            `SELECT count(1) from ${schemaName}.dataset where datapackageid='${id.datapackageid}' and active=1`
+          );
+
+          dataSet_count += parseInt(datasetCount.count);
+        }
+      }
+
+      if (dataSet_count < 2) {
+        return apiResponse.ErrorResponse(
+          res,
+          "Please inactivate the dataflow in order to inactive datasets"
+        );
+      }
+    }
+
     // const versionFreezed = false;
     const dataflow = await dataflowHelper.findById(dfId);
     const dataset = await datasetHelper.findById(datasetid);

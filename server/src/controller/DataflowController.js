@@ -992,7 +992,7 @@ exports.updateDataFlow = async (req, res) => {
                             `Cannot switch to Cumulative if the dataflow has been synced once.`
                           );
                         }
-                        
+
                         dsResObj.ExternalId = datasetExternalId;
                         dsResObj.ID = DSId;
 
@@ -1984,6 +1984,43 @@ exports.updateDataflowConfig = async (req, res) => {
       userId,
       versionFreezed,
     } = req.body;
+
+    const {
+      rows: [dataFlowCount],
+    } = await DB.executeQuery(
+      `SELECT count(1) from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}' and active=1`
+    );
+
+    let dataSet_count = 0;
+    const dataPackage = await DB.executeQuery(
+      `SELECT datapackageid from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}'`
+    );
+    const DPID = dataPackage.rows;
+
+    if (DPID) {
+      for (let id of DPID) {
+        const {
+          rows: [datasetCount],
+        } = await DB.executeQuery(
+          `SELECT count(1) from ${schemaName}.dataset where datapackageid='${id.datapackageid}' and active=1`
+        );
+
+        dataSet_count += parseInt(datasetCount.count);
+      }
+    }
+
+    if (dataFlowCount.count == 0) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Please make dataFlow active in order to save the configuration"
+      );
+    }
+    if (dataSet_count == 0) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Please add or active at-least one dataset in order to save the configuration"
+      );
+    }
 
     const {
       rows: [oldVersion],
