@@ -496,7 +496,7 @@ export const CustomHeader = ({
               onClick={onSaveAll}
               disabled={disableSaveAll || !canUpdateDataFlow}
             >
-              Save
+              Save All
             </Button>
           </>
         )}

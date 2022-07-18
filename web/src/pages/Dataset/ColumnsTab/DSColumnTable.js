@@ -551,7 +551,6 @@ export default function DSColumnTable({
     // const newData = _.orderBy([...formattedColumnData], ["uniqueId"], ["asc"]);
     // setEditedRows([...newData]);
     // setRows([...newData]);
-
     if (newCD?.length) {
       const created = await createColumns({
         values: newCD,
@@ -561,16 +560,18 @@ export default function DSColumnTable({
         userId: userInfo.userId,
         versionFreezed,
       });
-      if (created?.status && created.data?.length) {
+      if (created?.status && Object.keys(created?.data).length) {
         const prevRows = [...rows];
-        created.data.forEach((d) => {
-          const obj = prevRows.find((x) => x.uniqueId === d.frontendUniqueRef);
-          if (obj) {
-            obj.dbColumnId = d.columnid;
-            obj.isEditMode = false;
+        Object.keys(created.data).map((key) => {
+          if (typeof created.data[key] === "object") {
+            const objIndex = prevRows.findIndex(
+              (x) => x.uniqueId === created.data[key].frontendUniqueRef
+            );
+            prevRows[objIndex].dbColumnId = created.data[key].columnid;
+            prevRows[objIndex].isEditMode = false;
           }
         });
-        setRows(prevRows);
+        setRows([...prevRows]);
       }
     }
 

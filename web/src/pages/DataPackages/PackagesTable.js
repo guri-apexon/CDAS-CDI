@@ -347,10 +347,16 @@ const PackagesList = ({ data, userInfo }) => {
     // }, 1000);
   };
   useEffect(() => {
-    const newData = data.packagesList || [];
-    setTableData(newData);
-    // console.log("newData", newData);
+    const packagesList = data.packagesList || [];
+    setTableData(packagesList);
   }, [data.packagesList]);
+
+  const dataSets = useSelector((state) => state.dataSets);
+  const { selectedDataset } = dataSets;
+  useEffect(() => {
+    handleToggleRow(selectedDataset.datapackageid);
+  }, [Object.keys(selectedDataset).length]);
+
   return (
     <div className="remove-table-border-bottom">
       <Table
