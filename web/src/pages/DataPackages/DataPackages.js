@@ -398,7 +398,9 @@ const DataPackages = React.memo(() => {
                             value={sodValue}
                             size="small"
                             onChange={(e) => {
-                              setSodValue(e.target.value);
+                              setSodValue(
+                                e.target.value || sodValue || "Regular"
+                              );
                             }}
                             disabled={!canUpdateDataFlow}
                             className="mb-20 package-type"
