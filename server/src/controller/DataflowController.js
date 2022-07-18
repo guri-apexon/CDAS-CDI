@@ -16,7 +16,62 @@ exports.getStudyDataflows = async (req, res) => {
   try {
     const { protocolId } = req.body;
     if (protocolId) {
-      const query = `select distinct
+      // const query = `select distinct
+      // "studyId",
+      // "dataFlowId",
+      // count(distinct datasetid) as "dsCount",
+      // count(distinct datapackageid) as "dpCount",
+      // "studyName",
+      // "version",
+      // "dataFlowName",
+      // "type",
+      // "dateCreated",
+      // "vendorSource",
+      // description,
+      // adapter,
+      // status,
+      // "externalSourceSystem",
+      // "fsrStatus",
+      // "locationType",
+      // "lastModified",
+      // "lastSyncDate"
+      // from
+      // (
+      // select
+      // s.prot_id as "studyId",
+      // d.dataflowid as "dataFlowId",
+      // d3.datapackageid ,
+      // d4.datasetid ,
+      // s.prot_nbr as "studyName",
+      // dh."version",
+      // d.name as "dataFlowName",
+      // d.fsrstatus as "fsrStatus",
+      // d.testflag as "type",
+      // d.insrt_tm as "dateCreated",
+      // vend_nm as "vendorSource",
+      // d.description,
+      // d.type as "adapter",
+      // d.active as "status",
+      // d.externalsystemname as "externalSourceSystem",
+      // loc_typ as "locationType",
+      // d.updt_tm as "lastModified",
+      // d.refreshtimestamp as "lastSyncDate"
+      // from
+      // ${schemaName}.dataflow d
+      // left join ${schemaName}.vendor v on d.vend_id = v.vend_id
+      // left join ${schemaName}.source_location sl on d.src_loc_id = sl.src_loc_id
+      // left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
+      // left join ${schemaName}.study s on d.prot_id = s.prot_id
+      // left join ${schemaName}.datapackage d3 on (d.dataflowid=d3.dataflowid)
+      // left join ${schemaName}.dataset d4 on (d3.datapackageid=d4.datapackageid)
+      // left join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid = d.dataflowid
+      // where s.prot_id = $1
+      // and coalesce (d.del_flg,0) != 1
+      // ) as df
+      // group by "studyId","dataFlowId","studyName","version","dataFlowName","type","dateCreated","vendorSource",description,adapter,status,"externalSourceSystem",
+      // "fsrStatus","locationType","lastModified","lastSyncDate"`;
+
+      const query = `select 
       "studyId",
       "dataFlowId",
       count(distinct datasetid) as "dsCount",
@@ -39,38 +94,37 @@ exports.getStudyDataflows = async (req, res) => {
       (
       select
       s.prot_id as "studyId",
-      d.dataflowid as "dataFlowId",
-      d3.datapackageid ,
-      d4.datasetid ,
+      df.dataflowid as "dataFlowId",
+      dp.datapackageid ,
+      ds.datasetid ,
       s.prot_nbr as "studyName",
       dh."version",
-      d.name as "dataFlowName",
-      d.fsrstatus as "fsrStatus",
-      d.testflag as "type",
-      d.insrt_tm as "dateCreated",
-      vend_nm as "vendorSource",
-      d.description,
-      d.type as "adapter",
-      d.active as "status",
-      d.externalsystemname as "externalSourceSystem",
-      loc_typ as "locationType",
-      d.updt_tm as "lastModified",
-      d.refreshtimestamp as "lastSyncDate"
-      from
-      ${schemaName}.dataflow d
-      left join ${schemaName}.vendor v on d.vend_id = v.vend_id
-      left join ${schemaName}.source_location sl on d.src_loc_id = sl.src_loc_id
-      left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
-      left join ${schemaName}.study s on d.prot_id = s.prot_id
-      left join ${schemaName}.datapackage d3 on (d.dataflowid=d3.dataflowid)
-      left join ${schemaName}.dataset d4 on (d3.datapackageid=d4.datapackageid)
-      left join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid = d.dataflowid
+      df.name as "dataFlowName",
+      df.fsrstatus as "fsrStatus",
+      df.testflag as "type",
+      df.insrt_tm as "dateCreated",
+      v.vend_nm as "vendorSource",
+      df.description,
+      df.type as "adapter",
+      df.active as "status",
+      df.externalsystemname as "externalSourceSystem",
+      sl.loc_typ as "locationType",
+      df.updt_tm as "lastModified",
+      df.refreshtimestamp as "lastSyncDate"
+      from ${schemaName}.study s 
+      Inner JOIN ${schemaName}.dataflow df on s.prot_id = df.prot_id
+      inner join ${schemaName}.vendor v on df.vend_id = v.vend_id
+      inner join ${schemaName}.source_location sl on sl.src_loc_id = df.src_loc_id
+      inner join ${schemaName}.datapackage dp on dp.dataflowid = df.dataflowid
+      left join ${schemaName}.dataset ds on (ds.datapackageid= dp.datapackageid)
+      left join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid = df.dataflowid
       where s.prot_id = $1
-      and coalesce (d.del_flg,0) != 1
+      and coalesce (df.del_flg,0) != 1
       ) as df
       group by "studyId","dataFlowId","studyName","version","dataFlowName","type","dateCreated","vendorSource",description,adapter,status,"externalSourceSystem",
-      "fsrStatus","locationType","lastModified","lastSyncDate"`;
+      "fsrStatus","locationType","lastModified","lastSyncDate";`;
 
+      console.log(">>>>", protocolId);
       // Logger.info({ message: "getStudyDataflows" });
       const $q1 = await DB.executeQuery(query, [protocolId]);
 
@@ -992,7 +1046,7 @@ exports.updateDataFlow = async (req, res) => {
                             `Cannot switch to Cumulative if the dataflow has been synced once.`
                           );
                         }
-                        
+
                         dsResObj.ExternalId = datasetExternalId;
                         dsResObj.ID = DSId;
 
