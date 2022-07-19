@@ -9,6 +9,17 @@ import {
 } from "apollo-react/components/Table";
 import { TextFieldFilter, DateFilter } from "../../utils/index";
 
+const compareCustomDates = (column, order) => {
+  console.log({ column, order });
+  return (s, d) => {
+    if (new Date(s.update_dt).getTime() > new Date(d.update_dt).getTime())
+      return order === "asc" ? 1 : -1;
+    if (new Date(s.update_dt).getTime() < new Date(d.update_dt).getTime())
+      return order === "asc" ? -1 : 1;
+    return 1;
+  };
+};
+
 const DateCell = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
   const date = rowValue
@@ -74,7 +85,7 @@ const columns = [
   {
     header: "Update Date",
     accessor: "update_dt",
-    sortFunction: compareDates,
+    sortFunction: compareCustomDates,
     customCell: DateCell,
     filterFunction: dateFilterV2("update_dt"),
     filterComponent: DateFilter,
