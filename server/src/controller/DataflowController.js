@@ -1588,7 +1588,7 @@ exports.activateDataFlow = async (req, res) => {
 
       // console.log(oldVersion.version, updatedLogs);
       var resData = { ...dataflowObj, version: updatedLogs };
-      if (oldVersion.version === updatedLogs) {
+      if (oldVersion?.version === updatedLogs) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
@@ -1651,7 +1651,7 @@ exports.inActivateDataFlow = async (req, res) => {
     });
 
     var resData = { ...dataflowObj, version: updatedLogs };
-    if (oldVersion.version === updatedLogs) {
+    if (oldVersion?.version === updatedLogs) {
       resData.versionBumped = false;
     } else {
       resData.versionBumped = true;
@@ -2141,7 +2141,7 @@ exports.updateDataflowConfig = async (req, res) => {
 
       var resData = { ...dataflowObj, version: updatedLogs };
 
-      if (oldVersion.version === updatedLogs) {
+      if (oldVersion?.version === updatedLogs) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
