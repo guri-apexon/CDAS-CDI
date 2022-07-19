@@ -266,6 +266,7 @@ export default function DataflowTab({ updateData }) {
   const handleSync = async () => {
     const { dataFlowId, version } = selectedFlow;
     const syncStatus = await syncNowDataFlow({ version, dataFlowId });
+    messageContext.showSuccessMessage(syncStatus.message);
     if (syncStatus.success) {
       await updateData();
     }
