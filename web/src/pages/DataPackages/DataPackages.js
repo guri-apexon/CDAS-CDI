@@ -94,12 +94,12 @@ const DataPackages = React.memo(() => {
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
       href: "javascript:void(0)",
-      title: "Data Flow Settings",
+      title: dataFlowdetail?.name || "Data Flow Settings",
       onClick: () => history.push("/dashboard/dataflow-management"),
     },
     {
       href: "javascript:void(0)",
-      title: "Data Package Settings",
+      title: packageData?.selectedPackage?.name || "Data Package Settings",
       onClick: () => history.push("/dashboard/data-packages"),
     },
   ];
