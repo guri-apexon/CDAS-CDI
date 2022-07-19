@@ -10,7 +10,6 @@ import {
 import { TextFieldFilter, DateFilter } from "../../utils/index";
 
 const compareCustomDates = (column, order) => {
-  console.log({ column, order });
   return (s, d) => {
     if (new Date(s.update_dt).getTime() > new Date(d.update_dt).getTime())
       return order === "asc" ? 1 : -1;
