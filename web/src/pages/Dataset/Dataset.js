@@ -366,6 +366,12 @@ const Dataset = () => {
     }, 7500);
   }, [error, sucessMsg]);
 
+  useEffect(() => {
+    if (sucessMsg && !error && selectedDataset) {
+      dispatch(updatePanel());
+    }
+  }, [sucessMsg, error, selectedDataset]);
+
   const getLeftPanel = React.useMemo(
     () => (
       <>

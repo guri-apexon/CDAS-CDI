@@ -136,7 +136,7 @@ exports.saveDatasetColumns = async (req, res) => {
       if (!historyVersion) throw new Error("History not updated");
 
       var resData = { ...datasetColumns, version: historyVersion };
-      if (oldVersion.version === historyVersion) {
+      if (oldVersion?.version === historyVersion) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
@@ -257,11 +257,11 @@ exports.updateColumns = async (req, res) => {
 
       const datasetColumns = values;
       var resData = { columns: datasetColumns };
-      if (oldVersion.version < newVersion) {
+      if (oldVersion?.version < newVersion) {
         resData.version = newVersion;
         resData.versionBumped = true;
       } else {
-        resData.version = oldVersion.version;
+        resData.version = oldVersion?.version || 0;
         resData.versionBumped = false;
       }
 
@@ -325,7 +325,7 @@ exports.deleteColumns = async (req, res) => {
       if (!historyVersion) throw new Error("History not updated");
 
       var resData = { version: historyVersion };
-      if (oldVersion.version === historyVersion) {
+      if (oldVersion?.version === historyVersion) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
