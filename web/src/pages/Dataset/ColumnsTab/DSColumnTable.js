@@ -31,6 +31,7 @@ import { validateRow } from "../../../components/FormComponents/validators";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../../components/Common/usePermission";
 
 const maxSize = 150000;
@@ -41,16 +42,23 @@ export default function DSColumnTable({
   locationType,
   dfId,
   dpId,
+  setDatasetColumnsExist,
+  selectedDataset,
 }) {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dashboard = useSelector((state) => state.dashboard);
+  const [errorPrimary, setErrorprimary] = useState(false);
   const { selectedCard } = dashboard;
-  const { protocolnumber } = selectedCard;
+  const { protocolnumber, prot_id: protId } = selectedCard;
   const dataSets = useSelector((state) => state.dataSets);
 
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
-    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+    useStudyPermission(
+      Categories.CONFIGURATION,
+      Features.DATA_FLOW_CONFIGURATION,
+      protId
+    );
 
   const {
     datasetColumns,
@@ -66,6 +74,7 @@ export default function DSColumnTable({
   const { dsProdLock, dsTestLock, versionFreezed } = useSelector(
     (state) => state.dataFlow
   );
+  const dataFlowdetail = useSelector((state) => state.dataFlow.dataFlowdetail);
 
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
@@ -129,6 +138,9 @@ export default function DSColumnTable({
     if (rows.length) {
       setFilteredRows(rows);
     }
+    setDatasetColumnsExist(
+      rows.find((e) => e?.isSaved === true)?.isSaved ? true : false
+    );
   }, [rows]);
 
   // useEffect(() => {
@@ -521,6 +533,17 @@ export default function DSColumnTable({
       return false;
     }
 
+    if (
+      rows?.length &&
+      (selectedDataset?.loadType === "Incremental" ||
+        selectedDataset?.incremental === "Y") &&
+      rows.every((x) => x.primaryKey === "No")
+    ) {
+      setErrorprimary(true);
+      return false;
+    }
+    setErrorprimary(false);
+
     const existingCD = formattedColumnData.filter((e) => e.dbColumnId);
     const newCD = formattedColumnData.filter((e) => !e.dbColumnId);
 
@@ -528,7 +551,6 @@ export default function DSColumnTable({
     // const newData = _.orderBy([...formattedColumnData], ["uniqueId"], ["asc"]);
     // setEditedRows([...newData]);
     // setRows([...newData]);
-
     if (newCD?.length) {
       const created = await createColumns({
         values: newCD,
@@ -538,16 +560,18 @@ export default function DSColumnTable({
         userId: userInfo.userId,
         versionFreezed,
       });
-      if (created?.status && created.data?.length) {
+      if (created?.status && Object.keys(created?.data).length) {
         const prevRows = [...rows];
-        created.data.forEach((d) => {
-          const obj = prevRows.find((x) => x.uniqueId === d.frontendUniqueRef);
-          if (obj) {
-            obj.dbColumnId = d.columnid;
-            obj.isEditMode = false;
+        Object.keys(created.data).map((key) => {
+          if (typeof created.data[key] === "object") {
+            const objIndex = prevRows.findIndex(
+              (x) => x.uniqueId === created.data[key].frontendUniqueRef
+            );
+            prevRows[objIndex].dbColumnId = created.data[key].columnid;
+            prevRows[objIndex].isEditMode = false;
           }
         });
-        setRows(prevRows);
+        setRows([...prevRows]);
       }
     }
 
@@ -607,7 +631,16 @@ export default function DSColumnTable({
       messageContext.showErrorMessage(
         "Column name should be unique for a dataset"
       );
+    } else if (
+      rows?.length &&
+      (selectedDataset?.loadType === "Incremental" ||
+        selectedDataset?.incremental === "Y") &&
+      rows.every((x) => x.primaryKey === "No")
+    ) {
+      setErrorprimary(true);
+      return false;
     } else {
+      setErrorprimary(false);
       // const removeRow = selectedRows.filter((e) => e !== uniqueId);
       // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
       const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
@@ -690,7 +723,9 @@ export default function DSColumnTable({
 
   const onRowDelete = async (uniqueId) => {
     const isInDB = rows.find((row) => row.uniqueId === uniqueId);
-    if (isInDB) {
+    if (dataFlowdetail.active) {
+      messageContext.showErrorMessage(`Please Inactivate the data flow first`);
+    } else if (isInDB) {
       if (isInDB.dbColumnId !== ("" || undefined || null)) {
         const deleteRes = await deleteCD(
           isInDB.dbColumnId,
@@ -700,8 +735,8 @@ export default function DSColumnTable({
           versionFreezed
         );
       }
+      setRows((prevRows) => prevRows.filter((e) => e.uniqueId !== uniqueId));
     }
-    setRows((prevRows) => prevRows.filter((e) => e.uniqueId !== uniqueId));
     // setEditedRows([...newData]);
   };
 
@@ -782,6 +817,7 @@ export default function DSColumnTable({
             haveHeader,
             editedCount,
             canUpdateDataFlow,
+            errorPrimary,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}
@@ -814,6 +850,7 @@ export default function DSColumnTable({
             haveHeader,
             editedCount,
             canUpdateDataFlow,
+            protId,
           }}
         />
       </div>

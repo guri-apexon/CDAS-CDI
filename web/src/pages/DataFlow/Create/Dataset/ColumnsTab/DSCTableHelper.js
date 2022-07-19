@@ -127,6 +127,30 @@ export const editableSelectCell =
     );
   };
 
+export const editablePrimarySelectCell =
+  (options) =>
+  ({ row, column: { accessor: key } }) => {
+    return row.editMode ? (
+      <Select
+        size="small"
+        fullWidth
+        canDeselect={false}
+        value={row[key]}
+        error={row.errorPrimary}
+        onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
+        {...fieldStyles}
+      >
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </Select>
+    ) : (
+      row[key]
+    );
+  };
+
 export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
   const errorText =
     checkNumeric(row[key]) ||
@@ -352,7 +376,7 @@ export const columns = [
   {
     header: "Primary?",
     accessor: "primaryKey",
-    customCell: editableSelectCell(["Yes", "No"]),
+    customCell: editablePrimarySelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("primaryKey"),
     filterComponent: createSelectFilterComponent(["Yes", "No"], {

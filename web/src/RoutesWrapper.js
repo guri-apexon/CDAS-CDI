@@ -12,13 +12,18 @@ import PageHeader from "./components/Common/PageHeader";
 import { userLogOut } from "./services/ApiServices";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
+const Monitor = lazy(() => import("./pages/Dashboard/MonitorTab/ViewAll"));
 const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
 const DataFlowCreate = lazy(() => import("./pages/DataFlow/Create"));
+const DataFlowClone = lazy(() => import("./pages/CloneDataFlow/index"));
 const Dataset = lazy(() => import("./pages/Dataset/Dataset"));
 // const ColumnsTab = lazy(() => import("./pages/Dataset/ColumnsTab/ColumnsTab"));
 const CDIAdmin = lazy(() => import("./pages/Admin/CDIAdmin"));
 const DatasetIngestionReport = lazy(() =>
   import("./pages/DatasetIngestionReport")
+);
+const IngestionIssues = lazy(() =>
+  import("./pages/DatasetIngestionReport/IngestionIssues")
 );
 
 const Empty = () => <></>;
@@ -30,6 +35,11 @@ const WithPageHeader = () => {
       <PageHeader height={64} />
       <Switch>
         <Route path={`${match.path}`} exact render={() => <Dashboard />} />
+        <Route
+          path={`${match.path}/monitor`}
+          exact
+          render={() => <Monitor />}
+        />
         <Route
           path={`${match.path}/audit-logs/:dataflowId`}
           exact
@@ -51,6 +61,11 @@ const WithPageHeader = () => {
           render={() => <DataFlowCreate />}
         />
         <Route
+          path={`${match.path}/dataflow/clone`}
+          exact
+          render={() => <DataFlowClone />}
+        />
+        <Route
           path={`${match.path}/dataset/:datasetId`}
           exact
           render={() => <Dataset />}
@@ -59,6 +74,11 @@ const WithPageHeader = () => {
           path={`${match.path}/ingestion-report/:datasetId`}
           exact
           render={() => <DatasetIngestionReport />}
+        />
+        <Route
+          path={`${match.path}/ingestion-issues/:datasetId`}
+          exact
+          render={() => <IngestionIssues />}
         />
         <Redirect from="*" to="/dashboard" />
       </Switch>

@@ -58,6 +58,7 @@ import {
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../../components/Common/usePermission";
 
 const DateCell = ({ row, column: { accessor } }) => {
@@ -165,7 +166,7 @@ export default function DataflowTab({ updateData }) {
   const dashboard = useSelector((state) => state.dashboard);
   const [tableRows, setTableRows] = useState([...rowData]);
   const { selectedCard, loading: dLoading } = dashboard;
-  const { dfCount, dsCount } = selectedCard;
+  const { dfCount, dsCount, prot_id: protId } = selectedCard;
 
   const [expandedRows, setExpandedRows] = useState([]);
 
@@ -173,18 +174,25 @@ export default function DataflowTab({ updateData }) {
     canUpdate: canUpdateDataFlow,
     canCreate: canCreateDataFlow,
     canRead: canReadDataFlow,
-  } = usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
-  const { canEnabled: canDeleteTest } = usePermission(
-    Categories.MENU,
-    Features.DATA_FLOW_HARD_DELETE_TEST
+  } = useStudyPermission(
+    Categories.CONFIGURATION,
+    Features.DATA_FLOW_CONFIGURATION,
+    protId
   );
-  const { canEnabled: canDeleteProd } = usePermission(
+  const { canEnabled: canDeleteTest } = useStudyPermission(
     Categories.MENU,
-    Features.DATA_FLOW_HARD_DELETE_PROD
+    Features.DATA_FLOW_HARD_DELETE_TEST,
+    protId
   );
-  const { canEnabled: canSync } = usePermission(
+  const { canEnabled: canDeleteProd } = useStudyPermission(
     Categories.MENU,
-    Features.SYNC_NOW
+    Features.DATA_FLOW_HARD_DELETE_PROD,
+    protId
+  );
+  const { canEnabled: canSync } = useStudyPermission(
+    Categories.MENU,
+    Features.SYNC_NOW,
+    protId
   );
 
   const handleToggleRow = (dataFlowId) => {
@@ -335,6 +343,7 @@ export default function DataflowTab({ updateData }) {
       {
         text: "View audit log",
         id: 1,
+        disabled: !canUpdateDataFlow,
         onClick: () => viewAuditLogAction(dataFlowId, row),
       },
       ...(canUpdateDataFlow
@@ -398,7 +407,8 @@ export default function DataflowTab({ updateData }) {
       {
         text: "Clone data flow",
         onClick: async () => {
-          setOpenClone(true);
+          // setOpenClone(true);
+          history.push("/dashboard/dataflow/clone");
           // await getStudies();
         },
       },
@@ -422,6 +432,7 @@ export default function DataflowTab({ updateData }) {
               buttonText="Add data flow"
               menuItems={menuItems}
               size="small"
+              id="add-data-flow-dropdown"
               style={{ marginRight: "8px", border: "none", boxShadow: "none" }}
             />
           )}
@@ -438,6 +449,10 @@ export default function DataflowTab({ updateData }) {
     );
   };
 
+  const TextCell = ({ row, column: { accessor } }) => {
+    return <span className="word-wrap">{row[accessor]}</span>;
+  };
+
   const columns = [
     {
       accessor: "expand",
@@ -448,6 +463,7 @@ export default function DataflowTab({ updateData }) {
       accessor: "vendorSource",
       frozen: true,
       sortFunction: compareStrings,
+      customCell: TextCell,
       filterFunction: createStringArraySearchFilter("vendorSource"),
       filterComponent: createAutocompleteFilter(
         Array.from(

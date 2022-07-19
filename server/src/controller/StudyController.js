@@ -9,7 +9,7 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 exports.getUserStudyList = function (req, res) {
   try {
     const userId = req.params.userId;
-    const newQuery = `SELECT prot_id, protocolnumber, protocolnumberstandard, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
+    const newQuery = `SELECT prot_id, protocolnumber, protocolnumberstandard, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "ActiveDfCount","InActiveDfCount",  "vCount", "dpCount", "ActiveDsCount", "InActiveDsCount"
     FROM ${schemaName}.study_ingestion_dashboard
     WHERE prot_id in (select prot_id from ${schemaName}.study_user where coalesce (act_flg,1) != 0 and usr_id=$1) order by "priorityCount" desc, "ingestionCount" desc, "staleFilesCount" desc, sponsorname asc, protocolnumber asc`;
 
@@ -124,7 +124,7 @@ exports.searchStudyList = function (req, res) {
       searchParam,
     });
     // console.log("search", searchParam, userId);
-    const searchQuery = `SELECT prot_id, protocolnumber, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
+    const searchQuery = `SELECT prot_id, protocolnumber, protocolnumberstandard, sponsorname, phase, protocolstatus, projectcode, "ingestionCount", "priorityCount", "staleFilesCount", "dfCount", "vCount", "dpCount", "dsCount"
     FROM  ${schemaName}.study_ingestion_dashboard
     WHERE prot_id in (select prot_id from study_user where usr_id=$2) AND (LOWER(protocolnumber) LIKE $1 OR LOWER(sponsorname) LIKE $1 OR LOWER(projectcode) LIKE $1) LIMIT 10`;
 
@@ -154,24 +154,27 @@ exports.getDatasetIngestionDashboardDetail = async function (req, res) {
     const testFlag = req.query.testFlag || null;
     const active = req.query.active || null;
     if (testFlag == 1 || testFlag == 0) {
-      where += ` and testdataflow in (${testFlag}) `;
+      where += ` and sms.testdataflow in (${testFlag}) `;
     }
     if (active == 1 || active == 0) {
-      datasetwhere += ` and activedataset in (${active}) `;
+      datasetwhere += ` and sms.activedataset in (${active}) `;
     }
     Logger.info({
       message: "getDatasetIngestionDashboardDetail",
       prot_id,
     });
-    const countQuery = `select prot_id ,count(failedLoads) as failed_loads,sum(quarantinedFiles) as quarantined_files,
+    const countQuery = `select prot_id,
+    sum(inqueue) as in_queue,
+    sum(datarefreshalerts) as data_refresh_alerts,
+    sum(datalatencywarnings) as data_latency_warnings,
+    count(failedLoads) as failed_loads,
+    sum(quarantinedfiles) as quarantined_files,
     count(EXCEEDS_PCT_CNG) as files_exceeding,
-    count(filesWithIngestionIssues) as fileswith_issues,count(is_stale) as stale_datasets
-    from ${schemaName}.study_monitor_summary
-    where prot_id = $1 ${where}
-    group by prot_id;`;
+    count(filesWithIngestionIssues) as fileswith_issues,
+    count(is_stale) as stale_datasets from ${schemaName}.study_monitor_summary sms where sms.prot_id = $1 ${where} group by prot_id;`;
     const summaryCount = await DB.executeQuery(countQuery, [prot_id]);
 
-    const searchQuery = `select prot_id,datasetid,datasetname,vendorsource,jobstatus,filename,datasetstatus,exceeds_pct_cng,lastfiletransferred,packagename,mnemonicfile,clinicaldatatypename,loadtype,downloadtrnx,processtrnx,offset_val,errmsg  from ${schemaName}.study_monitor_summary where prot_id = $1 ${where} ${datasetwhere}`;
+    const searchQuery = `select quarantinedfiles as quarantined_files, lastattempted, datarefreshalerts as data_refresh_alerts, datalatencywarnings as data_latency_warnings, exceeds_pct_cng, sms.prot_id,df.name as dataflow_name,downloadstatus,downloadendtime,processstatus,processendtime,datasetid,datasetname,vendorsource,jobstatus,filename,datasetstatus,exceeds_pct_cng,lastfiletransferred,packagename,mnemonicfile,clinicaldatatypename,loadtype,downloadtrnx,processtrnx,offset_val,errmsg, s.prot_nbr as prot_nbr  from ${schemaName}.study_monitor_summary sms left join ${schemaName}.study s on sms.prot_id = s.prot_id left join ${schemaName}.dataflow df on sms.dataflowid = df.dataflowid where sms.prot_id = $1 ${where} ${datasetwhere}`;
     DB.executeQuery(searchQuery, [prot_id]).then((response) => {
       const datasets = response.rows || [];
       const summary = summaryCount.rows ? summaryCount.rows[0] : {};

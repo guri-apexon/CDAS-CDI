@@ -40,6 +40,7 @@ import {
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../../components/Common/usePermission";
 
 const fieldStyles = {
@@ -66,6 +67,30 @@ export const makeEditableSelectCell =
         fullWidth
         canDeselect={false}
         value={row[key]}
+        onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
+        {...fieldStyles}
+      >
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </Select>
+    ) : (
+      row[key]
+    );
+  };
+
+export const editablePrimarySelectCell =
+  (options) =>
+  ({ row, column: { accessor: key } }) => {
+    return row.isEditMode ? (
+      <Select
+        size="small"
+        fullWidth
+        canDeselect={false}
+        value={row[key]}
+        error={row.errorPrimary}
         onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
         {...fieldStyles}
       >
@@ -363,7 +388,7 @@ export const columns = [
   {
     header: "Primary?",
     accessor: "primaryKey",
-    customCell: editableSelectCell(["Yes", "No"]),
+    customCell: editablePrimarySelectCell(["Yes", "No"]),
     sortFunction: compareStrings,
     filterFunction: createStringArraySearchFilter("primaryKey"),
     filterComponent: createSelectFilterComponent(["Yes", "No"], {
@@ -445,9 +470,14 @@ export const CustomHeader = ({
   changeHandler,
   haveHeader,
   editedCount,
+  protId,
 }) => {
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
-    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+    useStudyPermission(
+      Categories.CONFIGURATION,
+      Features.DATA_FLOW_CONFIGURATION,
+      protId
+    );
   return (
     <div>
       <Grid container alignItems="center">
@@ -466,7 +496,7 @@ export const CustomHeader = ({
               onClick={onSaveAll}
               disabled={disableSaveAll || !canUpdateDataFlow}
             >
-              Save
+              Save All
             </Button>
           </>
         )}

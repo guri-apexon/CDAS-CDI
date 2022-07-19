@@ -1,0 +1,18 @@
+.header {
+  .top-content {
+    padding: 0 20px 6px;
+    .dataset-count {
+      //   margin-top: 12px;
+    }
+  }
+  .header-tabs {
+    margin-bottom: -2px;
+    border-top: 1px solid #e9e9e9;
+    .MuiTabs-flexContainer {
+      padding: 0 20px;
+    }
+    button {
+      font-size: 16px;
+    }
+  }
+}

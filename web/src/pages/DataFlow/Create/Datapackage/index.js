@@ -103,7 +103,6 @@ const DataPackage = (
   }));
 
   useEffect(() => {
-    setDisabled(locType && !isSftp(locType));
     if (tabularSod) {
       setConfigShow(true);
       setDisabled(true);
@@ -114,6 +113,7 @@ const DataPackage = (
       setDisabled(false);
       setCompression("");
     }
+    setDisabled(locType && !isSftp(locType));
   }, [locType, tabularSod]);
   return (
     <div className="data-packages">

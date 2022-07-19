@@ -29,18 +29,26 @@ import {
   resetJDBC,
   getVLCData,
 } from "../../store/actions/DataSetsAction";
-import { updatePanel } from "../../store/actions/DataPackageAction";
-import { getDataFlowDetail } from "../../store/actions/DataFlowAction";
+import {
+  updatePanel,
+  redirectToDataSet,
+  selectDataPackage,
+} from "../../store/actions/DataPackageAction";
+
+import {
+  getDataFlowDetail,
+  updateDSState,
+} from "../../store/actions/DataFlowAction";
 import { getUserInfo, isSftp } from "../../utils";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
 import ColumnsTab from "./ColumnsTab/ColumnsTab";
 import VLCTab from "./VLCTab";
-
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../components/Common/usePermission";
 
 const userInfo = getUserInfo();
@@ -101,6 +109,7 @@ const Dataset = () => {
   const [locationType, setLocationType] = useState("sftp");
   const [columnsActive, setColumnsActive] = useState(false);
   const [openModal, setopenModal] = useState(false);
+  const [checkDatasetColumnsExist, setDatasetColumnsExist] = useState(true);
   const dispatch = useDispatch();
   const params = useParams();
   const messageContext = useContext(MessageContext);
@@ -119,9 +128,14 @@ const Dataset = () => {
     selectedCard,
     selectedDataFlow: { dataFlowId: dfId },
   } = useSelector((state) => state.dashboard);
+  const { prot_id: studyId } = selectedCard;
 
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
-    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+    useStudyPermission(
+      Categories.CONFIGURATION,
+      Features.DATA_FLOW_CONFIGURATION,
+      studyId
+    );
 
   const { selectedDSDetails } = packageData;
   const {
@@ -140,9 +154,10 @@ const Dataset = () => {
     formDataSQL,
     isDatasetFetched,
     VLCData,
+    datasetColumns,
   } = dataSets;
+
   const datasetid = params.datasetId;
-  const { prot_id: studyId } = selectedCard;
   const { datasetid: dsId } = selectedDataset;
   const { isCustomSQL, tableName } = formDataSQL;
 
@@ -165,7 +180,7 @@ const Dataset = () => {
 
   const handleChangeTab = (event, v) => {
     setValue(v);
-    if (v === 1 && datasetid !== "new" && datasetid !== null) {
+    if (datasetid !== "new" && datasetid !== null) {
       dispatch(getDatasetColumns(datasetid));
     }
   };
@@ -189,7 +204,12 @@ const Dataset = () => {
         history.push("/dashboard");
       }
     }
+    setDatasetColumnsExist(datasetColumns.length ? true : false);
   }, []);
+
+  useEffect(() => {
+    setDatasetColumnsExist(datasetColumns.length ? true : false);
+  }, [datasetColumns.length]);
 
   useEffect(() => {
     setValue(0);
@@ -256,9 +276,11 @@ const Dataset = () => {
   };
 
   const gotoDataPackage = () => {
-    if (dpId) {
-      history.push("/dashboard/data-packages");
-    }
+    const selectedPackage = packageData?.packagesList?.find(
+      (e) => e?.datapackageid === selectedDSDetails?.datapackageid
+    );
+    dispatch(selectDataPackage(selectedPackage));
+    history.push("/dashboard/data-packages");
   };
 
   const breadcrumbItems = [
@@ -308,6 +330,17 @@ const Dataset = () => {
           `Please remove * from query to proceed.`
         );
         return false;
+      }
+      if (data.datasetid) {
+        if (
+          datasetColumns.every((x) => x.primarykey !== 1) &&
+          formValue.loadType === "Incremental"
+        ) {
+          messageContext.showErrorMessage(
+            `Load type cannot be changed to incremental because no primaryKey is defined for the dataset.`
+          );
+          return false;
+        }
       }
       if (data.datasetid) {
         dispatch(updateDatasetData(data));
@@ -451,6 +484,7 @@ const Dataset = () => {
                       loading={loading}
                       onSubmit={onSubmit}
                       prodLock={dsProdLock}
+                      testLock={dsTestLock}
                     />
                   ) : (
                     <DataSetsFormSQL
@@ -481,6 +515,10 @@ const Dataset = () => {
                   locationType={locationType}
                   dfId={dfId}
                   dpId={dpId}
+                  setDatasetColumnsExist={(disableSave) =>
+                    setDatasetColumnsExist(disableSave)
+                  }
+                  selectedDataset={selectedDataset}
                 />
               )}
               {datasetid !== "new" && value === 2 && !!VLCData?.length && (

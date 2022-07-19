@@ -5,6 +5,15 @@
 .flex {
   display: flex;
 }
+
+.word-wrap {
+  word-break: break-word;
+}
+
+.table-limit td {
+  max-width: 350px;
+}
+
 .flex-center {
   align-items: center;
 }

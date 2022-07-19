@@ -1,3 +1,4 @@
+@import "../../styles/customscroll.scss";
 .cardTopBar {
   display: block;
   .cardLeft {
@@ -12,10 +13,10 @@
       font-size: 14px;
       line-height: 20px;
       padding: 0px 5px;
-      background: rgba($color: #e20000, $alpha: 0.1);
+      // background: rgba($color: #e20000, $alpha: 0.1);
       font-weight: 600;
       border-radius: 2px;
-      color: #e20000;
+      color: #444444;
     }
     span.priority {
       background: rgba($color: #e20000, $alpha: 1);
@@ -77,12 +78,16 @@
 }
 .topContainer {
   padding-bottom: 20px;
+  .monitor-btn {
+    width: 102px;
+  }
 }
 .dashboardSummary {
   display: flex;
   align-items: center;
   justify-content: space-around;
   padding: 50px 0;
+  column-gap: 16px;
   .dashInfo {
     display: flex;
     flex-direction: column;
@@ -93,6 +98,12 @@
     height: 36px;
     width: 36px;
   }
+  
+  .newMonitor-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
   .dashInfoLabel {
     display: flex;
     align-items: center;
@@ -126,6 +137,13 @@
     fill: #ffffff;
   }
 }
+.successStatus svg {
+  width: 14px;
+}
+.inProgressStatus svg {
+  width: 14px;
+  top: 2px;
+}
 .queueStatus {
   background-color: transparent;
   border: 1px solid #9e54b0;
@@ -140,5 +158,25 @@
 #actionsDropdown {
   div[class*="MuiPopover-paper-"] {
     max-height: none !important;
+  }
+}
+svg.card-icon path {
+  fill: #444444;
+}
+#add-data-flow-dropdown {
+  .MuiListItem-button {
+    background-color: inherit;
+  }
+  .MuiListItem-button:hover {
+    color: #000000;
+    background-color: rgba(35, 114, 253, 0.08);
+  }
+}
+.hide-pagination {
+  div[class*=" Table-scrollRoot-"] {
+    @extend .customscroll;
+  }
+  table tfoot {
+    display: none;
   }
 }

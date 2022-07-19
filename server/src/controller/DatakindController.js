@@ -6,6 +6,7 @@ const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const CommonController = require("./CommonController");
+const { isClinicalDataPartOfDataFlow } = require("../helpers/userHelper");
 
 async function checkIsExistInDF(dkId) {
   let listQuery = `select distinct (d3.datakindid) from ${schemaName}.dataflow d 
@@ -37,6 +38,10 @@ right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
 right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid
 where d.active = 1 and d2.active = 1 and d3.active = 1 and d3.datakindid=$1 group by d.dataflowid`;
 
+const getClinicalTypeErrorMsg = (dataKindName) => {
+  return `Clinical Data Type ${dataKindName} cannot be updated because it is currently in use by a dataflow.`;
+};
+
 exports.createDataKind = async (req, res) => {
   try {
     Logger.info({ message: "handle datakind" });
@@ -66,7 +71,7 @@ exports.createDataKind = async (req, res) => {
         return res.status(400).json({
           // status: 400,
           message: "Operation failed",
-          data: "Only alphanumeric and ‘_’ are  allowed in Datakind Name. Please amend.",
+          data: "Only Alphanumeric or underscore are allowed in the Clinical Data Type Name.",
         });
       }
       if (helper.hasSpecialCHar(dkName) === false) {
@@ -74,6 +79,13 @@ exports.createDataKind = async (req, res) => {
           // status: 400,
           message: "Operation failed",
           data: " Only alphanumeric and ‘_’ are  allowed in Datakind Name. Please amend.",
+        });
+      }
+      if (dkName.length > 80) {
+        return res.status(400).json({
+          // status: 400,
+          message: "Operation failed",
+          data: " The Clinical Data Type Name value is too long. The maximum allowed length is 80 characters.",
         });
       }
     }
@@ -111,7 +123,18 @@ exports.createDataKind = async (req, res) => {
           return apiResponse.ErrorResponse(res, inactiveNotAllowed);
         }
 
-        // update datakind and related dataflow
+        // update datakind and related dataflow'
+        const isDataKindPartOfDataFlow = await isClinicalDataPartOfDataFlow(
+          dkId
+        );
+
+        if (isDataKindPartOfDataFlow) {
+          return apiResponse.ErrorResponse(
+            res,
+            getClinicalTypeErrorMsg(existingDK?.rows[0]?.name)
+          );
+        }
+
         if (isExist) {
           const updatedData = await DB.executeQuery(updateQuery, [
             ...payload,

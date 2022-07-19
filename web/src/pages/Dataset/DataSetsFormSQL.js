@@ -33,6 +33,7 @@ import { YesNo } from "../../utils";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../components/Common/usePermission";
 
 const styles = {
@@ -66,8 +67,15 @@ const DataSetsFormBase = (props) => {
   const [showPreview, setShowPreview] = useState(false);
   const dataSets = useSelector((state) => state.dataSets);
 
+  const dashboard = useSelector((state) => state.dashboard);
+  const { prot_id: protId } = dashboard?.selectedCard;
+
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
-    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+    useStudyPermission(
+      Categories.CONFIGURATION,
+      Features.DATA_FLOW_CONFIGURATION,
+      protId
+    );
 
   const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
   // const [offsetColsRender, setOffsetColsRender] = useState(0);
@@ -222,7 +230,7 @@ const DataSetsFormBase = (props) => {
                 label="Dataset Name (Mnemonic)"
                 size="small"
                 // required
-                disabled={prodLock || !canUpdateDataFlow}
+                disabled={prodLock || testLock || !canUpdateDataFlow}
               />
             </Grid>
             <Grid item md={6}>

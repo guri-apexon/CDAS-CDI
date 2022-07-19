@@ -46,21 +46,21 @@ const CustomCard = ({
       <CardContent>
         <div className="cardTopBar">
           <div className="cardLeft">
-            {priorityCount && (
+            {priorityCount > 0 && (
               <span className="priority">
                 <PriorityIcon />
                 {priorityCount}
               </span>
             )}
-            {ingestionCount && (
+            {ingestionCount > 0 && (
               <span>
-                <IngestionIcon />
+                <IngestionIcon className="card-icon" />
                 {ingestionCount}
               </span>
             )}
-            {staleFilesCount && (
+            {staleFilesCount > 0 && (
               <span>
-                <StaleFilesIcon />
+                <StaleFilesIcon className="card-icon" />
                 {staleFilesCount}
               </span>
             )}

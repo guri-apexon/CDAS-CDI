@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState } from "react";
 import compose from "@hypnosphi/recompose/compose";
-import { connect, useDispatch } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import {
   reduxForm,
   getFormValues,
@@ -32,6 +32,7 @@ import { fileTypes, delimeters, loadTypes } from "../../utils";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../components/Common/usePermission";
 
 const styles = {
@@ -57,11 +58,19 @@ const DataSetsFormBase = (props) => {
     defaultFooterRowNumber,
     defaultLoadType,
     prodLock,
+    testLock,
     values,
   } = props;
 
+  const dashboard = useSelector((state) => state.dashboard);
+  const { prot_id: protId } = dashboard?.selectedCard;
+
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
-    usePermission(Categories.CONFIGURATION, Features.DATA_FLOW_CONFIGURATION);
+    useStudyPermission(
+      Categories.CONFIGURATION,
+      Features.DATA_FLOW_CONFIGURATION,
+      protId
+    );
 
   // const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
   const [cdtValue, setCdtValue] = useState(null);
@@ -152,7 +161,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 inputProps={{ maxLength: 30 }}
                 label="Dataset Name (Mnemonic)"
-                disabled={prodLock || !canUpdateDataFlow}
+                disabled={prodLock || testLock || !canUpdateDataFlow}
                 // required
               />
               <ReduxFormSelect
@@ -288,7 +297,7 @@ const DataSetsFormBase = (props) => {
                   singleSelect
                   fullWidth
                   // required
-                  disabled={prodLock || !canUpdateDataFlow}
+                  disabled={prodLock || testLock || !canUpdateDataFlow}
                 />
               )}
               {formValues.fileType === "Excel" && (
@@ -335,7 +344,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Load Type"
                 canDeselect={false}
-                disabled={prodLock || !canUpdateDataFlow}
+                disabled={!canUpdateDataFlow}
                 // required
               >
                 {loadTypes?.map((type) => (

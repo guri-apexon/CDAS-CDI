@@ -662,7 +662,7 @@ export const dateFilterCustom = (accessor) => (row, filters) => {
 };
 
 export const isSftp = (str = "") => {
-  return ["SFTP", "FTPS"].includes(str.toUpperCase());
+  return ["SFTP", "FTPS"].includes(str?.toUpperCase());
 };
 
 export const validateFields = (name, ext) => {
@@ -739,4 +739,32 @@ export const convertLocalFormat = (time) => {
   return time
     ? moment.utc(time).local().format("DD-MMM-YYYY hh:mm A")
     : moment().local().format("DD-MMM-YYYY hh:mm A");
+};
+
+export const getAppUrl = (app) => {
+  let appUrl;
+  switch (app) {
+    case "CDI":
+      appUrl =
+        process.env.REACT_APP_CDI_URL ||
+        `${window.location.protocol}//${window.location.hostname}:3001`;
+      break;
+
+    case "CDM":
+      appUrl =
+        process.env.REACT_APP_CDM_URL ||
+        `${window.location.protocol}//${window.location.hostname}:3000`;
+      break;
+
+    default:
+      appUrl = `${window.location.protocol}//${window.location.hostname}:3000`;
+      break;
+  }
+  // eslint-disable-next-line consistent-return
+  return appUrl;
+};
+
+export const goToApp = (path) => {
+  console.log(path);
+  window.location.href = path;
 };

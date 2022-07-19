@@ -6,6 +6,11 @@ const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 const CommonController = require("./CommonController");
+const {
+  datasetLevelInsert,
+} = require("../createDataflow/externalDataflowFunctions");
+const datasetHelper = require("../helpers/datasetHelper");
+const dataflowHelper = require("../helpers/dataflowHelper");
 
 async function checkMnemonicExists(name, studyId, testFlag, dsId = null) {
   let searchQuery = `select distinct d3.mnemonic from ${schemaName}.study s left join ${schemaName}.dataflow d on s.prot_id = d.prot_id left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid left join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where s.prot_id=$1 and d.testflag=$2`;
@@ -127,18 +132,38 @@ async function saveSQLDataset(
 exports.saveDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    const { dpId, studyId, dfId, testFlag, userId, versionFreezed } = req.body;
-    const isExist = await checkMnemonicExists(
-      values.datasetName,
+    const {
+      dpId,
       studyId,
-      testFlag
-    );
+      dfId,
+      testFlag,
+      userId,
+      clinicalDataType,
+      versionFreezed,
+    } = req.body;
 
-    if (isExist) {
-      return apiResponse.ErrorResponse(
-        res,
-        `Mnemonic ${values.datasetName} is not unique.`
+    // const isExist = await checkMnemonicExists(
+    //   values.datasetName,
+    //   studyId,
+    //   testFlag
+    // );
+
+    const dataflow = await dataflowHelper.findById(dfId);
+    if (dataflow) {
+      const isExist = await datasetHelper.findByMnemonic(
+        dataflow.prot_id,
+        dataflow.testflag,
+        dataflow.vend_id,
+        clinicalDataType[0],
+        values.datasetName
       );
+
+      if (isExist) {
+        return apiResponse.ErrorResponse(
+          res,
+          `Mnemonic ${values.datasetName} is not unique.`
+        );
+      }
     }
 
     // const versionFreezed = true;
@@ -150,7 +175,7 @@ exports.saveDatasetData = async (req, res) => {
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`
     );
 
-    console.log("oldVersion", oldVersion);
+    // console.log("oldVersion", oldVersion);
 
     if (values.locationType.toLowerCase() === "jdbc") {
       return saveSQLDataset(
@@ -369,7 +394,7 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
     };
 
     const updateConfg = Object.assign(idObj, diffObj);
-    let newVersion = "";
+    let newVersion = null;
     if (Object.keys(diffObj).length != 0) {
       const historyVersion = await CommonController.addDatasetHistory(
         dfId,
@@ -388,12 +413,13 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
 
     var resData = {
       ...updateDS.rows[0],
-      version: newVersion,
     };
-    if (existingVersion === newVersion) {
-      resData.versionBumped = false;
-    } else {
+    if (existingVersion < newVersion) {
+      resData.version = newVersion;
       resData.versionBumped = true;
+    } else {
+      resData.version = existingVersion;
+      resData.versionBumped = false;
     }
 
     return apiResponse.successResponseWithData(
@@ -426,9 +452,41 @@ exports.updateDatasetData = async (req, res) => {
       userId,
       datasetName,
       versionFreezed,
+      clinicalDataType,
+      loadType,
     } = req.body;
 
-    // const versionFreezed = true;
+    // const versionFreezed = false;
+    const dataflow = await dataflowHelper.findById(dfId);
+    const dataset = await datasetHelper.findById(datasetid);
+    const searchQuery = `SELECT "columnid", "variable", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "format", "lov", "unique", insrt_tm from ${schemaName}.columndefinition WHERE coalesce (del_flg,0) != 1 AND datasetid = $1 ORDER BY insrt_tm`;
+    const row = await DB.executeQuery(searchQuery, [datasetid]);
+    const test = row.rows;
+
+    // check for primaryKey
+    if (testFlag === 0 && loadType === "Incremental") {
+      let saveflagyes = false;
+      for (let i = 0; i < test.length; i++) {
+        if (test[i].primarykey === 1) saveflagyes = true;
+      }
+      if (!saveflagyes)
+        return apiResponse.ErrorResponse(
+          res,
+          `Cannot switch to Incremental if a primaryKey has not been defined as primaryKey is mandatory for incremental.`
+        );
+    }
+
+    if (
+      dataflow.data_in_cdr === "Y" &&
+      dataset.incremental === "Y" &&
+      testFlag === 0 &&
+      loadType === "Cumulative"
+    ) {
+      return apiResponse.ErrorResponse(
+        res,
+        `Cannot switch to Cumulative if the dataflow has been synced once.`
+      );
+    }
     const {
       rows: [oldVersion],
     } = await DB.executeQuery(
@@ -436,10 +494,18 @@ exports.updateDatasetData = async (req, res) => {
       WHERE dataflowid = '${dfId}' order by version DESC limit 1`
     );
 
-    const isExist = await checkMnemonicExists(
+    // const isExist = await checkMnemonicExists(
+    //   datasetName,
+    //   studyId,
+    //   testFlag,
+    //   datasetid
+    // );
+    const isExist = await datasetHelper.findByMnemonic(
+      "",
+      "",
+      "",
+      clinicalDataType[0],
       datasetName,
-      studyId,
-      testFlag,
       datasetid
     );
     const selectQuery = `select datasetid, datapackageid, mnemonic, type, charset, delimiter , escapecode, quote,
@@ -534,7 +600,7 @@ exports.updateDatasetData = async (req, res) => {
 
     const updateConfg = Object.assign(idObj, diffObj);
 
-    let newVersion = "";
+    let newVersion = null;
     if (Object.keys(diffObj).length != 0) {
       const historyVersion = await CommonController.addDatasetHistory(
         dfId,
@@ -553,12 +619,13 @@ exports.updateDatasetData = async (req, res) => {
 
     var resData = {
       ...updateDS.rows[0],
-      version: newVersion,
     };
-    if (oldVersion.version === newVersion) {
-      resData.versionBumped = false;
-    } else {
+    if (oldVersion.version < newVersion) {
+      resData.version = newVersion;
       resData.versionBumped = true;
+    } else {
+      resData.version = oldVersion.version;
+      resData.versionBumped = false;
     }
 
     return apiResponse.successResponseWithData(
@@ -643,6 +710,10 @@ exports.getDatasetDetail = async (req, res) => {
 };
 
 exports.previewSql = async (req, res) => {
+  const validateCustomSQL = (customSqlQuery) => {
+    return customSqlQuery?.includes("*") ? false : true;
+  };
+
   try {
     let {
       locationType,
@@ -653,30 +724,40 @@ exports.previewSql = async (req, res) => {
       customSql,
       driverName,
     } = req.body;
+
+    const isValidSQL = validateCustomSQL(customSql);
+
     if (customQuery === "Yes") {
-      let q = customSql;
-      let recordsCount = 10;
-      switch (locationType?.toLowerCase()) {
-        case "oracle":
-          q = `${q} FETCH FIRST ${recordsCount} ROWS ONLY`;
-          break;
-        case "sql server":
-        case "sqlserver":
-          q = `${q} SET ROWCOUNT ${recordsCount}`;
-          break;
-        default:
-          q = `${q} LIMIT ${recordsCount};`;
-          break;
+      if (isValidSQL) {
+        let q = customSql;
+        let recordsCount = 10;
+        switch (locationType?.toLowerCase()) {
+          case "oracle":
+            q = `${q} FETCH FIRST ${recordsCount} ROWS ONLY`;
+            break;
+          case "sql server":
+          case "sqlserver":
+            q = `${q} SET ROWCOUNT ${recordsCount}`;
+            break;
+          default:
+            q = `${q} LIMIT ${recordsCount};`;
+            break;
+        }
+        await jdbc(
+          connectionUserName,
+          connectionPassword,
+          connectionUrl,
+          driverName,
+          q,
+          "query executed successfully.",
+          res
+        );
+      } else {
+        return apiResponse.ErrorResponse(
+          res,
+          "customQuery: An asterisk (*) cannot be used to specify that a query should return all columns, columns must be named. Please revise the query."
+        );
       }
-      await jdbc(
-        connectionUserName,
-        connectionPassword,
-        connectionUrl,
-        driverName,
-        q,
-        "query executed successfully.",
-        res
-      );
     } else {
       return apiResponse.ErrorResponse(
         res,

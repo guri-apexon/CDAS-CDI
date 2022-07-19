@@ -30,6 +30,7 @@ export default function DSColumnTable({
   formattedData,
   locationType,
   headerValue,
+  myForm,
 }) {
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -65,6 +66,7 @@ export default function DSColumnTable({
   const [isEditAll, setIsEditAll] = useState(false);
   const [isEditLOVs, setIsEditLOVs] = useState(false);
   const [isMultiAdd, setIsMultiAdd] = useState(false);
+  const [errorPrimary, setErrorprimary] = useState(false);
   const [newRows, setNewRows] = useState("");
   const [disableSaveAll, setDisableSaveAll] = useState(true);
   const [moreColumns, setMoreColumns] = useState([...columns]);
@@ -362,7 +364,7 @@ export default function DSColumnTable({
   };
 
   const onSaveAll = async () => {
-    const formattedColumnData = getEditedRows()
+    const removeSpaces = getEditedRows()
       .map((e) => {
         const d = {
           ...e,
@@ -383,11 +385,26 @@ export default function DSColumnTable({
         return e;
       });
 
-    const columnNames = formattedColumnData.map((e) =>
-      e.columnName.toLowerCase()
-    );
+    const myformprimary = myForm.dataPackage[0]?.dataSet[0];
+    if (
+      removeSpaces?.length &&
+      myformprimary?.loadType === "Incremental" &&
+      removeSpaces.every((x) => x.primaryKey === "No")
+    ) {
+      setErrorprimary(true);
+      return false;
+    }
+    setErrorprimary(false);
 
-    if (formattedColumnData.length !== _.uniq(columnNames).length) {
+    if (removeSpaces?.length && removeSpaces.find((x) => x.dataType === "")) {
+      messageContext.showErrorMessage(
+        `Please select data type for all records to save.`
+      );
+      return false;
+    }
+    const columnNames = removeSpaces.map((e) => e.columnName.toLowerCase());
+
+    if (removeSpaces.length !== _.uniq(columnNames).length) {
       messageContext.showErrorMessage(
         "Column name should be unique for a dataset"
       );
@@ -596,6 +613,7 @@ export default function DSColumnTable({
             locationType,
             haveHeader,
             editedCount,
+            errorPrimary,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}
@@ -610,6 +628,7 @@ export default function DSColumnTable({
             onSaveAll,
             onEditAll,
             isEditAll,
+            errorPrimary,
             editMode,
             addMenuItems,
             menuItems,

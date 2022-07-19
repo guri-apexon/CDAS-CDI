@@ -3,7 +3,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
+import { useHistory, useParams } from "react-router";
 import moment from "moment";
 import Typography from "apollo-react/components/Typography";
 import SelectButton from "apollo-react/components/SelectButton";
@@ -12,17 +12,23 @@ import Modal from "apollo-react/components/Modal";
 import TextField from "apollo-react/components/TextField";
 import Button from "apollo-react/components/Button";
 import Link from "apollo-react/components/Link";
+import Tag from "apollo-react/components/Tag";
 import DownloadIcon from "apollo-react-icons/Download";
 import FilterIcon from "apollo-react-icons/Filter";
 import FileIcon from "apollo-react-icons/File";
 import Check from "apollo-react-icons/Check";
 import FileZipIcon from "apollo-react-icons/FileZip";
+import Tooltip from "apollo-react/components/Tooltip";
 import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
+import StatusCheck from "apollo-react-icons/StatusCheck";
+import StatusDotOutline from "apollo-react-icons/StatusDotOutline";
+import StatusExclamation from "apollo-react-icons/StatusExclamation";
+import QuarantineIcon from "apollo-react-icons/EyeHidden";
 import Table, {
   createStringSearchFilter,
   compareStrings,
   compareNumbers,
-  compareDates,
+  // compareDates,
 } from "apollo-react/components/Table";
 import Search from "apollo-react/components/Search";
 import {
@@ -36,14 +42,17 @@ import {
   secondsToHms,
   DateFilter,
   dateFilterCustom,
+  compareDates,
 } from "../../utils/index";
 
-import { ReactComponent as FailureIcon } from "../../components/Icons/failure.svg";
+import { ReactComponent as FailedIcon } from "../../components/Icons/Failed.svg";
 import { ReactComponent as IssueIcon } from "../../components/Icons/Issue.svg";
+import { ReactComponent as InprogressIcon } from "../../components/Icons/In Progress.svg";
 
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../components/Common/usePermission";
 
 const TimeCell = ({ row, column: { accessor } }) => {
@@ -88,89 +97,214 @@ const DateCell = ({ row, column: { accessor } }) => {
 const StatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
   const { canReadIngestionIssues } = row;
-  if (
-    status?.toLowerCase() === "loaded without issues" ||
-    status?.toLowerCase() === "successful" ||
-    status?.toLowerCase() === "in progress"
-  ) {
-    return (
-      <div>
-        <div style={{ position: "relative" }}>
-          <Check
-            style={{
-              position: "relative",
-              top: 4,
-              fontSize: 14,
-              color: "#00C221",
-              marginRight: 8,
-            }}
-          />
-          {status}
+  const history = useHistory();
+  const { datasetId } = useParams();
+
+  // if (
+  //   status?.toLowerCase() === "loaded without issues" ||
+  //   status?.toLowerCase() === "successful"
+  // ) {
+  //   return (
+  //     <div>
+  //       <Tag
+  //         label={status}
+  //         className=""
+  //         style={{
+  //           backgroundColor: "#00C221",
+  //           color: "#FFFFFF",
+  //           Width: 100,
+  //         }}
+  //         Icon={SuccessIcon}
+  //       />
+  //     </div>
+  //   );
+  // }
+  // if (status?.toLowerCase() === "in progress") {
+  //   return (
+  //     <div>
+  //       <Tag
+  //         label={status}
+  //         className=""
+  //         style={{
+  //           backgroundColor: "#00C221",
+  //           color: "#FFFFFF",
+  //           Width: 100,
+  //         }}
+  //         Icon={InprogressIcon}
+  //       />
+  //     </div>
+  //   );
+  // }
+  // if (
+  //   status?.toLowerCase() === "quarantined"
+  //   // status?.toLowerCase() === "queued for new file check" ||
+  //   // status?.toLowerCase() === "skipped"
+  // ) {
+  //   return (
+  //     <div>
+  //       <Tag
+  //         label={status}
+  //         className=""
+  //         style={{
+  //           backgroundColor: "#FF9300",
+  //           color: "#FFFFFF",
+  //           Width: 100,
+  //         }}
+  //         Icon={QuarantineIcon}
+  //       />
+  //     </div>
+  //   );
+  // }
+  // if (status?.toLowerCase() === "queued for new file check") {
+  //   return (
+  //     <div>
+  //       <Tag
+  //         label="Queued"
+  //         className=""
+  //         style={{
+  //           backgroundColor: "#10558A",
+  //           color: "#FFFFFF",
+  //           Width: 100,
+  //         }}
+  //         Icon={IssueIcon}
+  //       />
+  //     </div>
+  //   );
+  // }
+  // if (status?.toLowerCase() === "loaded with issues") {
+  //   return (
+  //     <div>
+  //       <Tag
+  //         label="Processed"
+  //         className=""
+  //         style={{
+  //           backgroundColor: "#FF9300",
+  //           color: "#FFFFFF",
+  //           width: 100,
+  //         }}
+  //         Icon={ProcessedIcon}
+  //       />
+  //       <Link
+  //         disabled={!canReadIngestionIssues}
+  //         onClick={() => console.log("link clicked")}
+  //         style={{ fontWeight: 500, marginLeft: 8 }}
+  //       >
+  //         View
+  //       </Link>
+  //     </div>
+  //   );
+  // }
+  return (
+    <div>
+      {status?.toLowerCase() === "successful" && (
+        <div>
+          <Tooltip title="Successful" placement="top">
+            <Tag
+              label="Successful"
+              style={{
+                backgroundColor: "#00C221",
+                color: "#FFFFFF",
+                minWidth: 100,
+              }}
+              Icon={StatusCheck}
+            />
+          </Tooltip>
         </div>
-      </div>
-    );
-  }
-  if (
-    status?.toLowerCase() === "quarantined" ||
-    status?.toLowerCase() === "queued for new file check" ||
-    status?.toLowerCase() === "skipped"
-  ) {
-    return (
-      <div>
-        <div style={{ position: "relative" }}>
-          <StatusNegativeIcon
-            style={{
-              position: "relative",
-              top: 4,
-              fontSize: 14,
-              color: "#e20000",
-              marginRight: 8,
-            }}
-          />
-          {status}
-        </div>
-      </div>
-    );
-  }
-  if (status?.toLowerCase() === "loaded with issues") {
-    return (
-      <div>
-        <div style={{ position: "relative" }}>
-          <IssueIcon
-            style={{
-              position: "relative",
-              top: 4,
-              marginRight: 8,
-              width: "14px",
-              height: "17px",
-            }}
-          />
-          {status}
+      )}
+      {status?.toLowerCase() === "processed with errors" && (
+        <div>
+          <Tooltip title="Processed with Ingestion Issues" placement="top">
+            <Tag
+              label="Processed"
+              style={{
+                backgroundColor: "#FF9300",
+                color: "#FFFFFF",
+                minwidth: 100,
+              }}
+              Icon={StatusExclamation}
+            />
+          </Tooltip>
           <Link
             disabled={!canReadIngestionIssues}
-            onClick={() => console.log("link clicked")}
+            onClick={() =>
+              history.push(`/dashboard/ingestion-issues/${datasetId}`)
+            }
             style={{ fontWeight: 500, marginLeft: 8 }}
           >
             View
           </Link>
         </div>
-      </div>
-    );
-  }
-  return (
-    <div>
-      <div style={{ position: "relative" }}>
-        <FailureIcon
+      )}
+      {status?.toLowerCase() === "queued" && (
+        <div>
+          <Tag
+            label={status}
+            style={{
+              backgroundColor: "#10558A",
+              color: "#FFFFFF",
+              minWidth: 100,
+            }}
+            Icon={StatusDotOutline}
+          />
+        </div>
+      )}
+      {status?.toLowerCase() === "failed" && (
+        <div>
+          <Tooltip title="Failed" placement="top">
+            <Tag
+              label="Failed"
+              style={{
+                backgroundColor: "#E20000",
+                color: "#FFFFFF",
+                minWidth: 100,
+              }}
+              Icon={FailedIcon}
+            />
+          </Tooltip>
+        </div>
+      )}
+      {status?.toLowerCase() === "quarantined" && (
+        <div>
+          <Tooltip title="Quarantined" placement="top">
+            <Tag
+              label="Quarantined"
+              style={{
+                backgroundColor: "#FF9300",
+                color: "#FFFFFF",
+                minWidth: 100,
+              }}
+              Icon={QuarantineIcon}
+            />
+          </Tooltip>
+        </div>
+      )}
+      {status?.toLowerCase() === "in progress" && (
+        <div>
+          <Tooltip title="In Progress" placement="top">
+            <Tag
+              label="In Progress"
+              style={{
+                backgroundColor: "#00C221",
+                color: "#FFFFFF",
+                minWidth: 100,
+              }}
+              Icon={InprogressIcon}
+            />
+          </Tooltip>
+        </div>
+      )}
+      {/* <div style={{ position: "relative" }}>
+        <Tag
+          label={status}
+          className=""
           style={{
-            position: "relative",
-            top: 4,
-            marginRight: 8,
-            width: "14px",
-            height: "17px",
+            backgroundColor: "#E20000",
+            color: "#FFFFFF",
+            Width: 100,
           }}
+          Icon={FailedIcon}
         />
-        {status}
-      </div>
+      </div> */}
     </div>
   );
 };
@@ -282,10 +416,8 @@ const generateColumns = (tableRows = []) => {
       hidden: true,
     },
     {
-      header: "Last Loaded Date",
-      accessor: "LastLoadedDate",
-      customCell: DateCell,
-      sortFunction: compareDates,
+      header: "Error Message",
+      accessor: "errmsg",
       hidden: true,
     },
   ];
@@ -298,9 +430,13 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
     (state) => state.ingestionReports
   );
 
-  const { canEnabled: canReadIngestionIssues } = usePermission(
+  const dashboard = useSelector((state) => state.dashboard);
+  const { prot_id: protId } = dashboard?.selectedCard;
+
+  const { canEnabled: canReadIngestionIssues } = useStudyPermission(
     Categories.MENU,
-    Features.CDI_INGESTION_ISSUES
+    Features.CDI_INGESTION_ISSUES,
+    protId
   );
 
   const [totalLog, setTotalLog] = useState(0);

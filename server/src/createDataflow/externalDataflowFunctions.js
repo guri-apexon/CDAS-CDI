@@ -6,6 +6,7 @@ const { createUniqueID } = require("../helpers/customFunctions");
 const { addDataflowHistory } = require("../controller/CommonController");
 const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
+const apiResponse = require("../helpers/apiResponse");
 
 const { Console } = require("winston/lib/winston/transports");
 const { DB_SCHEMA_NAME: schemaName } = constants;
@@ -32,11 +33,55 @@ const dataTyperForamtValidate = (exports.dataTyperForamtValidate = (
   return;
 });
 
-exports.insertValidation = (req) => {
+exports.namingCconventionValidate = (name) => {
+  const str1 = /[\/:*?”|]/;
+  const str2 = /\<(.*?)\>/g;
+
+  const matched = name.match(str2);
+
+  const g = name.split("<");
+  const l = name.split(">");
+
+  if (str1.test(name) === true) {
+    return false;
+  } else {
+    if (g.length != l.length) {
+      return false;
+    } else {
+      if (matched?.length > 0) {
+        const isValid = matched.map((e) => {
+          if (
+            e === "<ddmmyyyy>" ||
+            e === "<mmddyyyy>" ||
+            e === "<mmyyyydd>" ||
+            e === "<ddyyyymm>" ||
+            e === "<yyyymmdd>" ||
+            e === "<yyyyddmm>"
+          ) {
+            return true;
+          } else {
+            return false;
+          }
+        });
+
+        return !isValid.some((res) => !res);
+      }
+    }
+  }
+  return true;
+};
+
+exports.insertValidation = async (req) => {
   var validate = [];
+  var dfArray = [];
+  var dfObj = {
+    ExternalId: req.ExternalId,
+  };
+  var isval = false;
   var str1 = /[~]/;
   var str2 = /[.]/;
-  var str3 = /[< >]/;
+  // var str3 = /[< >]/;
+  var str3 = /[\/:*?”<|>]/;
 
   var error = [];
 
@@ -69,6 +114,45 @@ exports.insertValidation = (req) => {
     },
   ];
 
+  // return;
+  if (req.vendorid && req.externalSystemName) {
+    let { rows: existVendor } = await DB.executeQuery(
+      `select vend_id,active from ${schemaName}.vendor where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and vend_id=$1;`,
+      [req.vendorid]
+    );
+    if (existVendor.length) {
+      if (existVendor[0].active !== 1) {
+        dfArray.push(`Vendor is not active in ${req.externalSystemName}`);
+      }
+    } else {
+      dfArray.push(`Vendor does not exist for ${req.externalSystemName}`);
+    }
+  }
+
+  if (req.locationID && req.locationType && req.externalSystemName) {
+    let locationData = await DB.executeQuery(
+      `select src_loc_id,active from ${schemaName}.source_location where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and UPPER(loc_typ)='${req.locationType.toUpperCase()}' and src_loc_id=$1;`,
+      [req.locationID]
+    );
+
+    if (locationData.rows.length) {
+      if (locationData.rows[0].active !== 1) {
+        dfArray.push(`Location is not active in ${req.externalSystemName}`);
+      }
+    } else {
+      dfArray.push(`Location does not exist for ${req.externalSystemName}`);
+    }
+  }
+
+  if (req.protocolNumberStandard) {
+    const studyRows = await DB.executeQuery(
+      `select prot_id from study where prot_nbr_stnd ='${req.protocolNumberStandard}';`
+    );
+    if (!studyRows.rows.length) {
+      dfArray.push("This protocol number doesn't exist");
+    }
+  }
+
   // Validating Connection Type and externalID
   var ConnectionType = req.locationType;
   const description = req.description;
@@ -80,7 +164,7 @@ exports.insertValidation = (req) => {
         /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/;
       if (!pattern.test(date)) {
         // errMessage += "Invalid date of birth\n";
-        validate.push(
+        dfArray.push(
           "exptDtOfFirstProdFile optional and data format should be [YYYY-MM-DD HH:MI:SS]"
         );
       }
@@ -88,25 +172,25 @@ exports.insertValidation = (req) => {
     validateDOB(req.exptDtOfFirstProdFile);
   }
   if (!externalID) {
-    validate.push(
+    dfArray.push(
       "externalID is required and data type should be string or number"
     );
   }
   if (req.serviceOwners) {
     if (Array.isArray(req.serviceOwners) === false)
-      validate.push("serviceOwners its optional and it should be array");
+      dfArray.push("serviceOwners its optional and it should be array");
   }
   if (!req.userId) {
-    validate.push("userId required and data type should be string or Number");
+    dfArray.push("userId required and data type should be string or Number");
   }
   if (req.delFlag !== 0) {
-    validate.push("Data flow Level delFlag required and value should be 0");
+    dfArray.push("Data flow Level delFlag required and value should be 0");
   }
   if (!ConnectionType) {
-    validate.push("locationType is required and data type should be string");
+    dfArray.push("locationType is required and data type should be string");
   } else {
     if (!helper.isConnectionType(ConnectionType)) {
-      validate.push(
+      dfArray.push(
         "locationType supported values : SFTP, FTPS, Oracle, Hive CDP, Hive CDH, Impala, MySQL, PostgreSQL, SQL Server"
       );
     }
@@ -115,991 +199,1114 @@ exports.insertValidation = (req) => {
   if (description) {
     if (description.length <= 30) {
     } else {
-      validate.push("Description length, max of 30 characters");
+      dfArray.push("Description length, max of 30 characters");
     }
   }
 
   // Validation Function call for dataFlow data
   let dataRes = helper.validation(Data);
   if (dataRes.length > 0) {
-    validate.push(dataRes);
-  } else {
-    if (req.dataPackage && req.dataPackage.length > 0) {
-      // console.log("data package data", req.body.dataPackage.length);
-      for (let each of req.dataPackage) {
-        var LocationType = req.locationType;
-        if (each.delFlag !== 0) {
-          validate.push(
-            "Data Package Level delFlag required and value should be 0"
-          );
-        }
-        if (!each.ExternalId) {
-          validate.push(
-            "Datapackage, level ExternalId is required and data type should be string or number"
-          );
-        } else {
-          if (helper.isSftp(LocationType)) {
-            // if (LocationType === "Hive CDH") {
-            const dpArray = [
-              {
-                key: "noPackageConfig",
-                value: each.noPackageConfig,
-                type: "boolean",
-              },
+    // dfArray.push(dataRes);
+    dfArray = dfArray.concat(dataRes);
+  }
 
+  if (dfArray.length > 0) {
+    let dfErrRes = dfArray.join(" '|' ");
+    dfObj.message = dfErrRes;
+    isval = true;
+  }
+
+  if (req.dataPackage && req.dataPackage.length > 0) {
+    // console.log("data package data", req.body.dataPackage.length);
+    dfObj.dataPackages = [];
+
+    let dpErrArray = [];
+    for (let each of req.dataPackage) {
+      dpErrArray = [];
+      let dpNewObj = {
+        ExternalId: each.ExternalId,
+      };
+      var LocationType = req.locationType;
+      if (each.delFlag !== 0) {
+        dpErrArray.push(
+          "Data Package Level delFlag required and value should be 0"
+        );
+      }
+      if (!each.ExternalId) {
+        dpErrArray.push(
+          "Datapackage, level ExternalId is required and data type should be string or number"
+        );
+      } else {
+        if (helper.isSftp(LocationType)) {
+          // if (LocationType === "Hive CDH") {
+          const dpArray = [
+            {
+              key: "noPackageConfig",
+              value: each.noPackageConfig,
+              type: "boolean",
+            },
+
+            {
+              key: "active",
+              value: each.active,
+              type: "boolean",
+            },
+          ];
+
+          if (!helper.stringToBoolean(each.noPackageConfig)) {
+            const dpArrayST = [
+              { key: "type", value: each.type, type: "string" },
               {
-                key: "active",
-                value: each.active,
-                type: "boolean",
+                key: "sasXptMethod ",
+                value: each.sasXptMethod,
+                type: "string",
+              },
+              {
+                key: "namingConvention",
+                value: each.namingConvention,
+                type: "string",
+              },
+              {
+                key: "p_path",
+                value: each.path,
+                type: "string",
               },
             ];
 
-            if (!helper.stringToBoolean(each.noPackageConfig)) {
-              const dpArrayST = [
-                { key: "type", value: each.type, type: "string" },
-                {
-                  key: "sasXptMethod ",
-                  value: each.sasXptMethod,
-                  type: "string",
-                },
-                {
-                  key: "namingConvention",
-                  value: each.namingConvention,
-                  type: "string",
-                },
-                {
-                  key: "p_path",
-                  value: each.path,
-                  type: "string",
-                },
-              ];
-
-              if (each.type) {
-                if (!helper.isPackageType(each.type)) {
-                  validate.push("type supported values : 7Z, ZIP, RAR, SAS");
-                }
-              }
-
-              let dpResST = helper.validation(dpArrayST);
-              if (dpResST.length > 0) {
-                validate.push(dpResST);
+            if (each.type) {
+              if (!helper.isPackageType(each.type)) {
+                dpErrArray.push("type supported values : 7Z, ZIP, RAR, SAS");
               }
             }
 
-            if (helper.stringToBoolean(each.noPackageConfig)) {
-              if (
-                each.type ||
-                each.sasXptMethod ||
-                each.path ||
-                each.namingConvention ||
-                each.password
-              ) {
-                validate.push(
-                  "if there is no package then type, sasXptMethod, path, namingConvention, password should be blank"
-                );
-              }
+            let dpResST = helper.validation(dpArrayST);
+            if (dpResST.length > 0) {
+              // dpErrArray.push(dpResST);
+              dpErrArray = dpErrArray.concat(dpResST);
             }
+          }
 
-            //kkkkk
-
-            // if (each.type) {
-            //   if (!helper.isPackageType(each.type)) {
-            //     validate.push({
-            //       err: " Package type's supported values : 7Z, ZIP, RAR, SAS ",
-            //     });
-            //   }
-            // }
-
-            if (each.namingConvention && each.type) {
-              const last = each.namingConvention.charAt(
-                each.namingConvention.length - 1
-              );
-              const first = each.namingConvention.charAt(
-                each.namingConvention.charAt(0)
-              );
-              if (str2.test(each.namingConvention) === false) {
-                validate.push(
-                  "Package namingConvention should be end with dot extension"
-                );
-              } else {
-                if (last === "." || first === ".") {
-                  validate.push("Dot(.) can't be used start or end of string");
-                }
-              }
-
-              const nameArray = each.namingConvention.split(".");
-
-              if (nameArray.length > 1) {
-                const name = nameArray[1].toLowerCase();
-
-                if (each.type.toLowerCase() === "rar") {
-                  if (name !== "rar") {
-                    validate.push(
-                      "If Package type is RAR then package naming convention should be end with (.rar)"
-                    );
-                  }
-                }
-
-                if (each.type.toLowerCase() === "7z") {
-                  if (name !== "7z") {
-                    validate.push(
-                      "If Package type is 7z then package naming convention should be end with (.7z)"
-                    );
-                  }
-                }
-
-                if (each.type.toLowerCase() === "zip") {
-                  if (name !== "zip") {
-                    validate.push(
-                      "If Package type is Zip then package naming convention should be end with (.zip)"
-                    );
-                  }
-                }
-
-                if (each.type.toLowerCase() === "sas") {
-                  if (name !== "xpt") {
-                    validate.push(
-                      "If Package type is SAS then package naming convention should be end with (.xpt)"
-                    );
-                  }
-                }
-              }
-
-              if (str3.test(each.namingConvention) === true) {
-                validate.push(
-                  "Package naming convention should not have the following special characters < >"
-                );
-              }
-            }
-
-            let dpRes = helper.validation(dpArray);
-            if (dpRes.length > 0) {
-              validate.push(dpRes);
-            } else {
-              if (each.dataSet && each.dataSet.length > 0) {
-                for (let obj of each.dataSet) {
-                  if (!obj.ExternalId) {
-                    validate.push(
-                      "Dataset level, ExternalId is required and data type should be string or number"
-                    );
-                  }
-
-                  if (obj.delFlag !== 0) {
-                    validate.push(
-                      "Data Set Level delFlag required and value should be 0"
-                    );
-                  }
-
-                  const dsArray = [
-                    {
-                      key: "datasetName",
-                      value: obj.datasetName,
-                      type: "string",
-                    },
-                    {
-                      key: "dataKindID ",
-                      value: obj.dataKindID,
-                      type: "string",
-                    },
-                    { key: "fileType", value: obj.fileType, type: "string" },
-                    {
-                      key: "fileNamingConvention ",
-                      value: obj.fileNamingConvention,
-                      type: "string",
-                    },
-
-                    {
-                      key: "Data Set Level, Path",
-                      value: obj.path,
-                      type: "string",
-                    },
-                    {
-                      key: "rowDecreaseAllowed",
-                      value: obj.rowDecreaseAllowed,
-                      type: "number",
-                    },
-
-                    {
-                      key: "dataTransferFrequency",
-                      value: obj.dataTransferFrequency,
-                      type: "number",
-                    },
-                    {
-                      key: "active",
-                      value: obj.active,
-                      type: "boolean",
-                    },
-                    {
-                      key: "incremental",
-                      value: obj.incremental,
-                      type: "boolean",
-                    },
-                    {
-                      key: "columncount",
-                      value: obj.columncount,
-                      type: "number",
-                    },
-                  ];
-
-                  //point - 28 story - 72771
-                  if (obj.columncount === 0) {
-                    validate.push(
-                      "Data set column count should be minimum 1 or greater than 1. Please amend."
-                    );
-                  }
-
-                  if (obj.fileType) {
-                    if (!helper.isFileType(obj.fileType)) {
-                      validate.push(
-                        "fileType supported values : EXCEL, DELIMITED, FIXED WIDTH, SAS"
-                      );
-                    }
-                  }
-                  //point - 28 story - 727712
-                  if (obj.fileNamingConvention && obj.fileType) {
-                    const last = obj.fileNamingConvention.charAt(
-                      obj.fileNamingConvention.length - 1
-                    );
-                    const first = obj.fileNamingConvention.charAt(
-                      obj.fileNamingConvention.charAt(0)
-                    );
-                    if (str2.test(obj.fileNamingConvention) === false) {
-                      validate.push(
-                        "fileNamingConvention should be end with dot(.) extension"
-                      );
-                    } else {
-                      if (last === "." || first === ".") {
-                        validate.push(
-                          "Dot(.) can't be used start or end of string"
-                        );
-                      }
-                    }
-
-                    const nameArray = obj.fileNamingConvention.split(".");
-
-                    if (nameArray.length > 1) {
-                      const name = nameArray[1].toLowerCase();
-
-                      if (obj.fileType.toLowerCase() === "sas") {
-                        if (name !== "sas7bdat") {
-                          validate.push(
-                            "If fileType SAS then fileNamingConvention should be end with (.sas7bdat)"
-                          );
-                        }
-                      }
-
-                      if (obj.fileType.toLowerCase() === "fixed width") {
-                        if (name !== "txt") {
-                          validate.push(
-                            "If fileType FIXED WIDTH then fileNamingConvention should be end with (.txt)"
-                          );
-                        }
-                      }
-
-                      if (obj.fileType.toLowerCase() === "excel") {
-                        if (name !== "xls" && name !== "xlsx") {
-                          validate.push(
-                            "If fileType EXCEL then fileNamingConvention should be end with (.xls or .xlsx)"
-                          );
-                        }
-                      }
-
-                      if (obj.fileType.toLowerCase() === "delimited") {
-                        if (name !== "csv" && name !== "txt") {
-                          validate.push(
-                            "If fileType Delimited then fileNamingConvention should be end with (.csv or .txt)"
-                          );
-                        }
-                      }
-                    }
-
-                    if (str3.test(obj.fileNamingConvention) === true) {
-                      validate.push(
-                        "fileNamingConvention should not have the following special characters < >"
-                      );
-                    }
-                  }
-
-                  if (obj.dataTransferFrequency === 0) {
-                    validate.push(
-                      "dataTransferFrequency must be greater than zero"
-                    );
-                  }
-
-                  if (obj.headerRowNumber) {
-                    if (typeof obj.headerRowNumber != "number") {
-                      validate.push(
-                        "In SFTP/FTPS headerRowNumber is Optional and data type should be Number"
-                      );
-                    }
-                  }
-
-                  if (obj.footerRowNumber) {
-                    if (typeof obj.footerRowNumber != "number") {
-                      validate.push(
-                        "In SFTP/FTPS footerRowNumber is Optional and data type should be Number"
-                      );
-                    }
-                  }
-
-                  if (obj.OverrideStaleAlert) {
-                    if (typeof obj.OverrideStaleAlert != "number") {
-                      validate.push(
-                        "In SFTP/FTPS OverrideStaleAlert is Optional and data type should be Number"
-                      );
-                    }
-                  }
-
-                  if (
-                    obj.customsql_yn ||
-                    obj.customsql_yn === 0 ||
-                    obj.customsql ||
-                    obj.conditionalExpression ||
-                    // obj.incremental ||
-                    // obj.incremental === 0 ||
-                    obj.offsetcolumn ||
-                    obj.offset_val
-                  ) {
-                    validate.push(
-                      "In SFTP/FTPS customsql_yn, customsql, conditionalExpression, offsetcolumn, offset_val should be blank"
-                    );
-                  }
-
-                  if (obj.fileType) {
-                    if (obj.fileType.toLowerCase() === "delimited") {
-                      const dsArrayDt = [
-                        {
-                          key: "delimiter",
-                          value: obj.delimiter,
-                          type: "string",
-                        },
-                        { key: "quote", value: obj.quote, type: "string" },
-
-                        {
-                          key: "escapeCharacter",
-                          value: obj.escapeCharacter,
-                          type: "string",
-                        },
-                      ];
-
-                      let dsResdt = helper.validation(dsArrayDt);
-                      if (dsResdt.length > 0) {
-                        validate.push(dsResdt);
-                      }
-                    }
-                  }
-
-                  if (!obj.columnDefinition) {
-                    validate.push(
-                      "While adding a new dataset, please provide at least one columnDefinition details"
-                    );
-                  }
-
-                  let dsRes = helper.validation(dsArray);
-                  if (dsRes.length > 0) {
-                    validate.push(dsRes);
-                  } else {
-                    if (
-                      obj.columnDefinition &&
-                      obj.columnDefinition.length > 0
-                    ) {
-                      for (let el of obj.columnDefinition) {
-                        if (!el.ExternalId) {
-                          validate.push(
-                            "Column definition level, ExternalId is required and data type should be string or Number"
-                          );
-                        }
-
-                        if (el.delFlag !== 0) {
-                          validate.push(
-                            "Column definition level delFlag required and value should be 0"
-                          );
-                        }
-                        //testttt
-                        const clArray = [
-                          {
-                            key: "columnName",
-                            value: el.columnName,
-                            type: "string",
-                          },
-
-                          {
-                            key: "primaryKey",
-                            value: el.primaryKey,
-                            type: "boolean",
-                          },
-                          {
-                            key: "required",
-                            value: el.required,
-                            type: "boolean",
-                          },
-                          {
-                            key: "unique",
-                            value: el.unique,
-                            type: "boolean",
-                          },
-                          {
-                            key: "dataType",
-                            value: el.dataType,
-                            type: "string",
-                          },
-                        ];
-
-                        if (el.dataType) {
-                          if (!helper.isColumnType(el.dataType)) {
-                            validate.push(
-                              "dataType's supported values : Numeric, Alphanumeric or Date"
-                            );
-                          }
-                        }
-
-                        // line 548
-                        // if (el.dataType && el.format) {
-                        //   if (el.dataType.toLowerCase() === "alphanumeric") {
-                        //     if (helper.isAlphaNumeric(el.format) === false) {
-                        //       validate.push({
-                        //         err: "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.",
-                        //       });
-                        //     }
-                        //   }
-                        //   if (el.dataType.toLowerCase() === "numeric") {
-                        //     if (helper.isNumbers(el.format) === false) {
-                        //       validate.push({
-                        //         err: "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.",
-                        //       });
-                        //     }
-                        //   }
-                        //   if (el.dataType.toLowerCase() === "date") {
-                        //     if (helper.isValidDate(el.format) === false) {
-                        //       validate.push({
-                        //         err: "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend.",
-                        //       });
-                        //     }
-                        //   }
-                        // }
-
-                        if (el.dataType && el.format) {
-                          let dataTypeValidate = dataTyperForamtValidate(
-                            el.dataType,
-                            el.format
-                          );
-                          if (dataTypeValidate) {
-                            validate.push(dataTypeValidate);
-                          }
-                        }
-
-                        // Validation Function call for column defination
-                        let clRes = helper.validation(clArray);
-                        if (clRes.length > 0) {
-                          validate.push(clRes);
-                        }
-
-                        if (el.position || el.position === 0) {
-                          if (typeof el.position != "number") {
-                            validate.push(
-                              "In SFTP/FTPS position is Optional and data type should be Number"
-                            );
-                          } else {
-                            if (el.position === 0) {
-                              validate.push(
-                                "Position must be equal to 1 or greater with no decimals. Please amend."
-                              );
-                            }
-                          }
-                        }
-
-                        if (!obj.headerRowNumber) {
-                          if (!el.position) {
-                            validate.push(
-                              "When Header row is not provided, then column Position must be provided"
-                            );
-                          }
-                        }
-
-                        if (el.minLength) {
-                          if (typeof el.minLength != "number") {
-                            validate.push(
-                              "In SFTP/FTPS minLength is Optional and data type should be Number"
-                            );
-                          }
-                        }
-
-                        if (el.maxLength || el.maxLength === 0) {
-                          if (typeof el.maxLength != "number") {
-                            validate.push(
-                              "In SFTP/FTPS maxLength is Optional and data type should be Number"
-                            );
-                          } // testing
-                          else {
-                            if (el.maxLength >= 10001) {
-                              validate.push(
-                                "Max Length must be between values of 1 and 10,000. Please amend"
-                              );
-                            }
-                            if (el.maxLength === 0) {
-                              validate.push(
-                                "Max Length must be between values of 1 and 10,000. Please amend"
-                              );
-                            }
-                          }
-                        }
-                        if (el.minLength) {
-                          if (
-                            typeof el.minLength != "undefined" &&
-                            typeof el.maxLength != "undefined"
-                          ) {
-                            if (el.minLength <= el.maxLength) {
-                            } else {
-                              validate.push(
-                                "minLength always less than maxLength"
-                              );
-                            }
-                          }
-                        }
-                        if (el.lov) {
-                          const last = el.lov.charAt(el.lov.length - 1);
-                          const first = el.lov.charAt(el.lov.charAt(0));
-
-                          if (str1.test(el.lov) === false) {
-                            validate.push(
-                              "LOV should be seperated by tilde(~)"
-                            );
-                          } else {
-                            if (last === "~" || first === "~") {
-                              validate.push(
-                                "Tilde(~) can't be used start or end of string"
-                              );
-                            }
-                          }
-                        }
-                      }
-                    }
-                    // vlc validation
-                    if (obj.qcType) {
-                      if (
-                        obj.conditionalExpressions &&
-                        obj.conditionalExpressions.length > 0
-                      ) {
-                        for (let vl of obj.conditionalExpressions) {
-                          const vlcArray = [
-                            {
-                              key: "conditionalExpressionNumber",
-                              value: vl.conditionalExpressionNumber,
-                              type: "number",
-                            },
-
-                            {
-                              key: "runSequence",
-                              value: vl.runSequence,
-                              type: "number",
-                            },
-                            {
-                              key: "conditionalExpression",
-                              value: vl.conditionalExpression,
-                              type: "string",
-                            },
-
-                            {
-                              key: "action",
-                              value: vl.action,
-                              type: "string",
-                            },
-                            {
-                              key: "inUse",
-                              value: vl.inUse,
-                              type: "string",
-                            },
-                          ];
-
-                          // if (vl.inUse) {
-                          //   if (!helper.isActive(vl.inUse)) {
-                          //     validate.push({
-                          //       err: " inUse field's supported values : Y or N",
-                          //     });
-                          //   }
-                          // }
-                          if (vl.action) {
-                            if (!helper.isAction(vl.action)) {
-                              validate.push(
-                                "action's supported values : Reject or Report"
-                              );
-                            }
-                            if (vl.action.toLowerCase() === "report") {
-                              const rVlcArr = [
-                                {
-                                  key: "errorMessage",
-                                  value: vl.errorMessage,
-                                  type: "string",
-                                },
-                              ];
-
-                              let rVclres = helper.validation(rVlcArr);
-                              if (rVclres.length > 0) {
-                                validate.push(rVclres);
-                              }
-                            }
-                          }
-
-                          let vlcRes = helper.validation(vlcArray);
-                          if (vlcRes.length > 0) {
-                            validate.push(vlcRes);
-                          }
-                        }
-                      }
-                    }
-
-                    if (obj.conditionalExpressions) {
-                      if (obj.conditionalExpressions.length > 0) {
-                        if (!obj.qcType || obj.qcType.toLowerCase() !== "vlc") {
-                          validate.push(
-                            "qcType required and Value should be VLC"
-                          );
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          } else {
-            if (
-              helper.stringToBoolean(each.noPackageConfig) === true &&
-              helper.stringToBoolean(each.active) === true
-            ) {
-            } else {
-              validate.push("In jdbc noPackageConfig, active should be true");
-            }
-
+          if (helper.stringToBoolean(each.noPackageConfig)) {
             if (
               each.type ||
               each.sasXptMethod ||
               each.path ||
-              each.namingConvention
+              each.namingConvention ||
+              each.password
             ) {
-              validate.push(
-                "In jdbc datapackage level type, sasXptMethod, path, namingConvention should be blank"
+              dpErrArray.push(
+                "if there is no package then type, sasXptMethod, path, namingConvention, password should be blank"
               );
             }
+          }
 
-            if (each.dataSet && each.dataSet.length > 0) {
-              for (let obj of each.dataSet) {
-                if (!obj.ExternalId) {
-                  validate.push(
-                    "Dataset level, ExternalId is required and data type should be string or number"
+          //kkkkk
+
+          // if (each.type) {
+          //   if (!helper.isPackageType(each.type)) {
+          //     validate.push({
+          //       err: " Package type's supported values : 7Z, ZIP, RAR, SAS ",
+          //     });
+          //   }
+          // }
+
+          if (each.namingConvention && each.type) {
+            const last = each.namingConvention.charAt(
+              each.namingConvention.length - 1
+            );
+            const first = each.namingConvention.charAt(
+              each.namingConvention.charAt(0)
+            );
+            if (str2.test(each.namingConvention) === false) {
+              dpErrArray.push(
+                "Package namingConvention should be end with dot extension"
+              );
+            } else {
+              if (last === "." || first === ".") {
+                dpErrArray.push("Dot(.) can't be used start or end of string");
+              }
+            }
+
+            const nameArray = each.namingConvention.split(".");
+
+            if (nameArray.length > 1) {
+              const name = nameArray[1].toLowerCase();
+              const nameData = nameArray[0].toLowerCase();
+
+              let nameValidate = this.namingCconventionValidate(nameData);
+
+              if (nameValidate === false) {
+                dpErrArray.push(
+                  "Package naming convention should not have the following special characters /:*?”<|>"
+                );
+              }
+
+              if (each.type.toLowerCase() === "rar") {
+                if (name !== "rar") {
+                  dpErrArray.push(
+                    "If Package type is RAR then package naming convention should be end with (.rar)"
                   );
                 }
+              }
 
-                if (obj.delFlag !== 0) {
-                  validate.push(
-                    "Data Set Level delFlag required and value should be 0"
+              if (each.type.toLowerCase() === "7z") {
+                if (name !== "7z") {
+                  dpErrArray.push(
+                    "If Package type is 7z then package naming convention should be end with (.7z)"
                   );
                 }
+              }
 
-                if (
-                  obj.fileType ||
-                  obj.fileNamingConvention ||
-                  obj.delimiter ||
-                  obj.quote ||
-                  obj.rowDecreaseAllowed ||
-                  obj.rowDecreaseAllowed === 0 ||
-                  obj.dataTransferFrequency === 0 ||
-                  obj.dataTransferFrequency ||
-                  obj.headerRowNumber ||
-                  obj.footerRowNumber ||
-                  obj.OverrideStaleAlert ||
-                  obj.headerRowNumber === 0 ||
-                  obj.footerRowNumber === 0 ||
-                  obj.OverrideStaleAlert === 0 ||
-                  obj.escapeCharacter ||
-                  obj.path ||
-                  obj.encoding
-                ) {
-                  validate.push(
-                    "In jdbc dataset level fileType, fileNamingConvention, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, escapeCharacter, path, headerRowNumber, footerRowNumber, overrideStaleAlert, encoding  should be blank"
+              if (each.type.toLowerCase() === "zip") {
+                if (name !== "zip") {
+                  dpErrArray.push(
+                    "If Package type is Zip then package naming convention should be end with (.zip)"
                   );
                 }
+              }
 
-                const dsArray = [
-                  {
-                    key: "datasetName",
-                    value: obj.datasetName,
-                    type: "string",
-                  },
-                  {
-                    key: "dataKindID ",
-                    value: obj.dataKindID,
-                    type: "string",
-                  },
-                  {
-                    key: "active",
-                    value: obj.active,
-                    type: "boolean",
-                  },
-                  {
-                    key: "customsql_yn",
-                    value: obj.customsql_yn,
-                    type: "boolean",
-                  },
-                  // {
-                  //   key: "incremental",
-                  //   value: obj.incremental,
-                  //   type: "boolean",
-                  // },
-                  {
-                    key: "columncount",
-                    value: obj.columncount,
-                    type: "number",
-                  },
-                ];
-
-                // point - 28 story - 7277
-                if (obj.columncount === 0) {
-                  validate.push(
-                    "Data set column count should be minimum 1 or greater than 1. Please amend."
+              if (each.type.toLowerCase() === "sas") {
+                if (name !== "xpt") {
+                  dpErrArray.push(
+                    "If Package type is SAS then package naming convention should be end with (.xpt)"
                   );
                 }
+              }
+            }
 
-                if (obj.customsql_yn) {
-                  if (obj.customsql_yn.toLowerCase() == "yes") {
-                    if (!obj.customsql) {
-                      validate.push("customsql is required ");
-                    } else {
-                      if (obj.customsql.length >= 131072) {
-                        validate.push("customsql max of 131072 characters  ");
-                      }
-                    }
+            // if (str3.test(each.namingConvention) === true) {
+            //   validate.push(
+            //     "Package naming convention should not have the following special characters < >"
+            //   );
+            // }
+          }
+
+          let dpRes = helper.validation(dpArray);
+          if (dpRes.length > 0) {
+            // dpErrArray.push(dpRes);
+            dpErrArray = dpErrArray.concat(dpRes);
+          }
+
+          if (dpErrArray.length > 0) {
+            let dpErrRes = dpErrArray.join(" '|' ");
+            dpNewObj.message = dpErrRes;
+            isval = true;
+          }
+          dfObj.dataPackages.push(dpNewObj);
+
+          if (each.dataSet && each.dataSet.length > 0) {
+            dpNewObj.dataSets = [];
+            let dsErrArray = [];
+            for (let obj of each.dataSet) {
+              dsErrArray = [];
+              let dsNewObj = {
+                ExternalId: obj.ExternalId,
+              };
+              if (!obj.ExternalId) {
+                dsErrArray.push(
+                  "Dataset level, ExternalId is required and data type should be string or number"
+                );
+              }
+
+              if (obj.delFlag !== 0) {
+                dsErrArray.push(
+                  "Data Set Level delFlag required and value should be 0"
+                );
+              }
+
+              if (obj.dataKindID && req.externalSystemName) {
+                let checkDataKind = await DB.executeQuery(
+                  `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and datakindid='${
+                    obj.dataKindID
+                  }';`
+                );
+
+                if (checkDataKind.rows.length > 0) {
+                  if (checkDataKind.rows[0].active !== 1) {
+                    dsErrArray.push(
+                      `Clinical Data Type is inactive from ${req.externalSystemName}, Description in TA cannot be integrated.`
+                    );
                   }
-                  if (obj.customsql_yn.toLowerCase() == "no") {
-                    if (!obj.tbl_nm) {
-                      validate.push("tbl_nm is required ");
-                    } else {
-                      if (obj.tbl_nm.length >= 255) {
-                        validate.push("tbl_nm max of 255 characters  ");
-                      }
-                    }
-                    if (helper.stringToBoolean(obj.incremental)) {
-                      if (
-                        !obj.offsetcolumn !== null &&
-                        obj.offsetcolumn !== "" &&
-                        obj.offsetcolumn !== undefined &&
-                        typeof obj.offsetcolumn === "string"
-                      ) {
-                      } else {
-                        validate.push(
-                          "offsetcolumn is required and data type should be string"
-                        );
-                      }
-                    }
-                  }
-                }
-
-                if (!obj.columnDefinition) {
-                  validate.push(
-                    "While adding a new dataset, please provide at least one columnDefinition details"
-                  );
-                }
-
-                // Validation Function call for data set
-                let dsRes = helper.validation(dsArray);
-                if (dsRes.length > 0) {
-                  validate.push(dsRes);
                 } else {
-                  // console.log("data set data", dsData);
+                  dsErrArray.push(
+                    `Clinical Data Type is missing from ${req.externalSystemName}, Description in TA cannot be integrated.`
+                  );
+                }
+              }
 
-                  if (obj.columnDefinition && obj.columnDefinition.length > 0) {
-                    for (let el of obj.columnDefinition) {
-                      if (!el.ExternalId) {
-                        validate.push(
-                          "Column Definition Level, ExternalId  is required and data type should be string or Number"
-                        );
-                      }
+              const dsArray = [
+                {
+                  key: "datasetName",
+                  value: obj.datasetName,
+                  type: "string",
+                },
+                {
+                  key: "dataKindID ",
+                  value: obj.dataKindID,
+                  type: "string",
+                },
+                { key: "fileType", value: obj.fileType, type: "string" },
+                {
+                  key: "fileNamingConvention ",
+                  value: obj.fileNamingConvention,
+                  type: "string",
+                },
 
-                      if (el.delFlag !== 0) {
-                        validate.push(
-                          "Column Definition Level delFlag required and value should be 0"
-                        );
-                      }
+                {
+                  key: "Data Set Level, Path",
+                  value: obj.path,
+                  type: "string",
+                },
+                {
+                  key: "rowDecreaseAllowed",
+                  value: obj.rowDecreaseAllowed,
+                  type: "number",
+                },
 
-                      const clArray = [
-                        {
-                          key: "includeFlag",
-                          value: el.includeFlag,
-                          type: "boolean",
-                        },
-                        {
-                          key: "columnName",
-                          value: el.columnName,
-                          type: "string",
-                        },
+                {
+                  key: "dataTransferFrequency",
+                  value: obj.dataTransferFrequency,
+                  type: "number",
+                },
+                {
+                  key: "active",
+                  value: obj.active,
+                  type: "boolean",
+                },
+                {
+                  key: "incremental",
+                  value: obj.incremental,
+                  type: "boolean",
+                },
+                {
+                  key: "columncount",
+                  value: obj.columncount,
+                  type: "number",
+                },
+              ];
 
-                        {
-                          key: "primaryKey",
-                          value: el.primaryKey,
-                          type: "boolean",
-                        },
-                        {
-                          key: "required",
-                          value: el.required,
-                          type: "boolean",
-                        },
-                        {
-                          key: "unique",
-                          value: el.unique,
-                          type: "boolean",
-                        },
-                        {
-                          key: "dataType",
-                          value: el.dataType,
-                          type: "string",
-                        },
-                      ];
+              //point - 28 story - 72771
+              if (obj.columncount === 0) {
+                dsErrArray.push(
+                  "Data set column count should be minimum 1 or greater than 1. Please amend."
+                );
+              }
 
-                      if (el.dataType) {
-                        if (!helper.isColumnType(el.dataType)) {
-                          validate.push(
-                            "dataType's supported values : Numeric, Alphanumeric or Date"
-                          );
-                        }
-                      }
+              if (obj.fileType) {
+                if (!helper.isFileType(obj.fileType)) {
+                  dsErrArray.push(
+                    "fileType supported values : EXCEL, DELIMITED, FIXED WIDTH, SAS"
+                  );
+                }
+              }
+              //point - 28 story - 727712
+              if (obj.fileNamingConvention && obj.fileType) {
+                const last = obj.fileNamingConvention.charAt(
+                  obj.fileNamingConvention.length - 1
+                );
+                const first = obj.fileNamingConvention.charAt(
+                  obj.fileNamingConvention.charAt(0)
+                );
+                if (str2.test(obj.fileNamingConvention) === false) {
+                  dsErrArray.push(
+                    "fileNamingConvention should be end with dot(.) extension"
+                  );
+                } else {
+                  if (last === "." || first === ".") {
+                    dsErrArray.push(
+                      "Dot(.) can't be used start or end of string"
+                    );
+                  }
+                }
 
-                      // line 957
-                      // if (el.dataType && el.format) {
-                      //   if (el.dataType.toLowerCase() === "alphanumeric") {
-                      //     if (helper.isAlphaNumeric(el.format) === false) {
-                      //       validate.push({
-                      //         err: "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.",
-                      //       });
-                      //     }
-                      //   }
-                      //   if (el.dataType.toLowerCase() === "numeric") {
-                      //     if (helper.isNumbers(el.format) === false) {
-                      //       validate.push({
-                      //         err: "Data Set Column Format should have valid format with % or n or X combinations for Alphanumeric Data Type or % or n for Numeric Data Type inside <> to indicate variable part. Please amend.",
-                      //       });
-                      //     }
-                      //   }
-                      //   if (el.dataType.toLowerCase() === "date") {
-                      //     if (helper.isValidDate(el.format) === false) {
-                      //       validate.push({
-                      //         err: "Data Set Column Format should have '\\ and $ are not allowed' for Date Data Type. Please amend.",
-                      //       });
-                      //     }
-                      //   }
-                      // }
+                const nameArray = obj.fileNamingConvention.split(".");
 
-                      if (el.dataType && el.format) {
-                        const dataTypeValidate = dataTyperForamtValidate(
-                          el.dataType,
-                          el.format
-                        );
-                        if (dataTypeValidate) {
-                          validate.push(dataTypeValidate);
-                        }
-                      }
+                if (nameArray.length > 1) {
+                  const name = nameArray[1].toLowerCase();
+                  const nameData = nameArray[0].toLowerCase();
 
-                      // Validation Function call for column defination
-                      let clRes = helper.validation(clArray);
-                      if (clRes.length > 0) {
-                        validate.push(clRes);
-                      }
+                  let fileNameValidate =
+                    this.namingCconventionValidate(nameData);
 
-                      if (
-                        el.minLength ||
-                        el.maxLength ||
-                        el.minLength === 0 ||
-                        el.maxLength === 0 ||
-                        el.lov ||
-                        el.position
-                      ) {
-                        validate.push(
-                          "In jdbc minLength, maxLength, position, lov should be blank"
+                  if (fileNameValidate === false) {
+                    dsErrArray.push(
+                      "File naming convention should not have the following special characters /:*?”<|>"
+                    );
+                  }
+
+                  if (obj.fileType.toLowerCase() === "sas") {
+                    if (name !== "sas7bdat") {
+                      dsErrArray.push(
+                        "If fileType SAS then fileNamingConvention should be end with (.sas7bdat)"
+                      );
+                    }
+                  }
+
+                  if (obj.fileType.toLowerCase() === "fixed width") {
+                    if (name !== "txt") {
+                      dsErrArray.push(
+                        "If fileType FIXED WIDTH then fileNamingConvention should be end with (.txt)"
+                      );
+                    }
+                  }
+
+                  if (obj.fileType.toLowerCase() === "excel") {
+                    if (name !== "xls" && name !== "xlsx") {
+                      dsErrArray.push(
+                        "If fileType EXCEL then fileNamingConvention should be end with (.xls or .xlsx)"
+                      );
+                    }
+                  }
+
+                  if (obj.fileType.toLowerCase() === "delimited") {
+                    if (name !== "csv" && name !== "txt") {
+                      dsErrArray.push(
+                        "If fileType Delimited then fileNamingConvention should be end with (.csv or .txt)"
+                      );
+                    }
+                  }
+                }
+
+                // if (str3.test(obj.fileNamingConvention) === true) {
+                //   validate.push(
+                //     "fileNamingConvention should not have the following special characters < >"
+                //   );
+                // }
+              }
+
+              if (obj.dataTransferFrequency === 0) {
+                dsErrArray.push(
+                  "dataTransferFrequency must be greater than zero"
+                );
+              }
+
+              if (obj.headerRowNumber) {
+                if (typeof obj.headerRowNumber != "number") {
+                  dsErrArray.push(
+                    "In SFTP/FTPS headerRowNumber is Optional and data type should be Number"
+                  );
+                }
+              }
+
+              if (obj.footerRowNumber) {
+                if (typeof obj.footerRowNumber != "number") {
+                  dsErrArray.push(
+                    "In SFTP/FTPS footerRowNumber is Optional and data type should be Number"
+                  );
+                }
+              }
+
+              if (obj.OverrideStaleAlert) {
+                if (typeof obj.OverrideStaleAlert != "number") {
+                  dsErrArray.push(
+                    "In SFTP/FTPS OverrideStaleAlert is Optional and data type should be Number"
+                  );
+                }
+              }
+
+              if (
+                obj.customsql_yn ||
+                obj.customsql_yn === 0 ||
+                obj.customsql ||
+                obj.conditionalExpression ||
+                // obj.incremental ||
+                // obj.incremental === 0 ||
+                obj.offsetcolumn ||
+                obj.offset_val
+              ) {
+                dsErrArray.push(
+                  "In SFTP/FTPS customsql_yn, customsql, conditionalExpression, offsetcolumn, offset_val should be blank"
+                );
+              }
+
+              if (obj.fileType) {
+                if (obj.fileType.toLowerCase() === "delimited") {
+                  const dsArrayDt = [
+                    {
+                      key: "delimiter",
+                      value: obj.delimiter,
+                      type: "string",
+                    },
+                    { key: "quote", value: obj.quote, type: "string" },
+
+                    {
+                      key: "escapeCharacter",
+                      value: obj.escapeCharacter,
+                      type: "string",
+                    },
+                  ];
+
+                  let dsResdt = helper.validation(dsArrayDt);
+                  if (dsResdt.length > 0) {
+                    // dsErrArray.push(dsResdt);
+                    dsErrArray = dsErrArray.concat(dsResdt);
+                  }
+                }
+              }
+
+              if (!obj.columnDefinition) {
+                dsErrArray.push(
+                  "While adding a new dataset, please provide at least one columnDefinition details"
+                );
+              }
+
+              if (obj.conditionalExpressions) {
+                if (obj.conditionalExpressions.length > 0) {
+                  if (!obj.qcType || obj.qcType.toLowerCase() !== "vlc") {
+                    dsErrArray.push("qcType required and Value should be VLC");
+                  }
+                }
+              }
+
+              let dsRes = helper.validation(dsArray);
+              if (dsRes.length > 0) {
+                // dsErrArray.push(dsRes);
+                dsErrArray = dsErrArray.concat(dsRes);
+              }
+
+              if (dsErrArray.length > 0) {
+                let dsErrRes = dsErrArray.join(" '|' ");
+                dsNewObj.message = dsErrRes;
+                isval = true;
+              }
+              dpNewObj.dataSets.push(dsNewObj);
+
+              if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                dsNewObj.columnDefinition = [];
+                let clErrArray = [];
+                for (let el of obj.columnDefinition) {
+                  clErrArray = [];
+                  let clNewObj = {
+                    ExternalId: el.ExternalId,
+                  };
+
+                  if (!el.ExternalId) {
+                    clErrArray.push(
+                      "Column definition level, ExternalId is required and data type should be string or Number"
+                    );
+                  }
+
+                  if (el.delFlag !== 0) {
+                    clErrArray.push(
+                      "Column definition level delFlag required and value should be 0"
+                    );
+                  }
+
+                  const clArray = [
+                    {
+                      key: "columnName",
+                      value: el.columnName,
+                      type: "string",
+                    },
+
+                    {
+                      key: "primaryKey",
+                      value: el.primaryKey,
+                      type: "boolean",
+                    },
+                    {
+                      key: "required",
+                      value: el.required,
+                      type: "boolean",
+                    },
+                    {
+                      key: "unique",
+                      value: el.unique,
+                      type: "boolean",
+                    },
+                    {
+                      key: "dataType",
+                      value: el.dataType,
+                      type: "string",
+                    },
+                  ];
+
+                  if (el.dataType) {
+                    if (!helper.isColumnType(el.dataType)) {
+                      clErrArray.push(
+                        "dataType's supported values : Numeric, Alphanumeric or Date"
+                      );
+                    }
+                  }
+
+                  if (el.dataType && el.format) {
+                    let dataTypeValidate = dataTyperForamtValidate(
+                      el.dataType,
+                      el.format
+                    );
+                    if (dataTypeValidate) {
+                      clErrArray.push(dataTypeValidate);
+                    }
+                  }
+
+                  // Validation Function call for column defination
+                  let clRes = helper.validation(clArray);
+                  if (clRes.length > 0) {
+                    // clErrArray.push(clRes);
+                    clErrArray = clErrArray.concat(clRes);
+                  }
+
+                  if (el.position || el.position === 0) {
+                    if (typeof el.position != "number") {
+                      clErrArray.push(
+                        "In SFTP/FTPS position is Optional and data type should be Number"
+                      );
+                    } else {
+                      if (el.position === 0) {
+                        clErrArray.push(
+                          "Position must be equal to 1 or greater with no decimals. Please amend."
                         );
                       }
                     }
                   }
 
-                  // vlc validation
-                  if (obj.qcType) {
+                  if (!obj.headerRowNumber) {
+                    if (!el.position) {
+                      clErrArray.push(
+                        "When Header row is not provided, then column Position must be provided"
+                      );
+                    }
+                  }
+
+                  if (el.minLength) {
+                    if (typeof el.minLength != "number") {
+                      clErrArray.push(
+                        "In SFTP/FTPS minLength is Optional and data type should be Number"
+                      );
+                    }
+                  }
+
+                  if (el.maxLength || el.maxLength === 0) {
+                    if (typeof el.maxLength != "number") {
+                      clErrArray.push(
+                        "In SFTP/FTPS maxLength is Optional and data type should be Number"
+                      );
+                    } // testing
+                    else {
+                      if (el.maxLength >= 10001) {
+                        clErrArray.push(
+                          "Max Length must be between values of 1 and 10,000. Please amend"
+                        );
+                      }
+                      if (el.maxLength === 0) {
+                        clErrArray.push(
+                          "Max Length must be between values of 1 and 10,000. Please amend"
+                        );
+                      }
+                    }
+                  }
+                  if (el.minLength) {
                     if (
-                      obj.conditionalExpressions &&
-                      obj.conditionalExpressions.length > 0
+                      typeof el.minLength != "undefined" &&
+                      typeof el.maxLength != "undefined"
                     ) {
-                      for (let vl of obj.conditionalExpressions) {
-                        const vlcArray = [
-                          {
-                            key: "conditionalExpressionNumber",
-                            value: vl.conditionalExpressionNumber,
-                            type: "number",
-                          },
+                      if (el.minLength <= el.maxLength) {
+                      } else {
+                        clErrArray.push("minLength always less than maxLength");
+                      }
+                    }
+                  }
+                  if (el.lov) {
+                    const last = el.lov.charAt(el.lov.length - 1);
+                    const first = el.lov.charAt(el.lov.charAt(0));
 
-                          {
-                            key: "runSequence",
-                            value: vl.runSequence,
-                            type: "number",
-                          },
-                          {
-                            key: "conditionalExpression",
-                            value: vl.conditionalExpression,
-                            type: "string",
-                          },
+                    if (str1.test(el.lov) === false) {
+                      clErrArray.push("LOV should be seperated by tilde(~)");
+                    } else {
+                      if (last === "~" || first === "~") {
+                        clErrArray.push(
+                          "Tilde(~) can't be used start or end of string"
+                        );
+                      }
+                    }
+                  }
+                  if (clErrArray.length > 0) {
+                    let clErrRes = clErrArray.join(" '|' ");
+                    clNewObj.message = clErrRes;
+                    isval = true;
+                  }
+                  dsNewObj.columnDefinition.push(clNewObj);
+                }
+              }
+              // vlc validation11
+              if (obj.qcType) {
+                if (
+                  obj.conditionalExpressions &&
+                  obj.conditionalExpressions.length > 0
+                ) {
+                  dsNewObj.vlc = [];
+                  let vlcErrArray = [];
 
+                  for (let vl of obj.conditionalExpressions) {
+                    vlcErrArray = [];
+                    let vlcNewObj = {
+                      conditionalExpressionNumber:
+                        vl.conditionalExpressionNumber,
+                    };
+
+                    const vlcArray = [
+                      {
+                        key: "conditionalExpressionNumber",
+                        value: vl.conditionalExpressionNumber,
+                        type: "number",
+                      },
+
+                      {
+                        key: "runSequence",
+                        value: vl.runSequence,
+                        type: "number",
+                      },
+                      {
+                        key: "conditionalExpression",
+                        value: vl.conditionalExpression,
+                        type: "string",
+                      },
+
+                      {
+                        key: "action",
+                        value: vl.action,
+                        type: "string",
+                      },
+                      {
+                        key: "inUse",
+                        value: vl.inUse,
+                        type: "string",
+                      },
+                    ];
+
+                    // if (vl.inUse) {
+                    //   if (!helper.isActive(vl.inUse)) {
+                    //     validate.push({
+                    //       err: " inUse field's supported values : Y or N",
+                    //     });
+                    //   }
+                    // }
+                    if (vl.action) {
+                      if (!helper.isAction(vl.action)) {
+                        vlcErrArray.push(
+                          "action's supported values : Reject or Report"
+                        );
+                      }
+                      if (vl.action.toLowerCase() === "report") {
+                        const rVlcArr = [
                           {
-                            key: "Action",
-                            value: vl.action,
-                            type: "string",
-                          },
-                          {
-                            key: "inUse",
-                            value: vl.inUse,
+                            key: "errorMessage",
+                            value: vl.errorMessage,
                             type: "string",
                           },
                         ];
 
-                        // if (vl.inUse) {
-                        //   if (!helper.isActive(vl.inUse)) {
-                        //     validate.push({
-                        //       err: " inUse field's Supported values : Y or N",
-                        //     });
-                        //   }
-                        // }
-                        if (vl.action) {
-                          if (!helper.isAction(vl.action)) {
-                            validate.push(
-                              "action's Supported values : Reject or Report"
-                            );
-                          }
-                          if (vl.action.toLowerCase() === "report") {
-                            const rVlcArr = [
-                              {
-                                key: "errorMessage",
-                                value: vl.errorMessage,
-                                type: "string",
-                              },
-                            ];
-
-                            let rVclres = helper.validation(rVlcArr);
-                            if (rVclres.length > 0) {
-                              validate.push(rVclres);
-                            }
-                          }
-                        }
-
-                        let vlcRes = helper.validation(vlcArray);
-                        if (vlcRes.length > 0) {
-                          validate.push(vlcRes);
+                        let rVclres = helper.validation(rVlcArr);
+                        if (rVclres.length > 0) {
+                          // vlcErrArray.push(rVclres);
+                          vlcErrArray = vlcErrArray.concat(rVclres);
                         }
                       }
+                    }
+
+                    let vlcRes = helper.validation(vlcArray);
+                    if (vlcRes.length > 0) {
+                      // vlcErrArray.push(vlcRes);
+                      vlcErrArray = vlcErrArray.concat(vlcRes);
+                    }
+
+                    if (vlcErrArray.length > 0) {
+                      let clErrRes = vlcErrArray.join(" '|' ");
+                      vlcNewObj.message = clErrRes;
+                      isval = true;
+                      // vlcErrArray = [];
+                    }
+                    dsNewObj.vlc.push(vlcNewObj);
+                    // vlcErrArray = [];
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          if (
+            helper.stringToBoolean(each.noPackageConfig) === true &&
+            helper.stringToBoolean(each.active) === true
+          ) {
+          } else {
+            dpErrArray.push("In jdbc noPackageConfig, active should be true");
+          }
+
+          if (
+            each.type ||
+            each.sasXptMethod ||
+            each.path ||
+            each.namingConvention
+          ) {
+            dpErrArray.push(
+              "In jdbc datapackage level type, sasXptMethod, path, namingConvention should be blank"
+            );
+          }
+
+          if (dpErrArray.length > 0) {
+            let dpErrRes = dpErrArray.join(" '|' ");
+            dpNewObj.message = dpErrRes;
+            isval = true;
+          }
+          dfObj.dataPackages.push(dpNewObj);
+
+          if (each.dataSet && each.dataSet.length > 0) {
+            dpNewObj.dataSets = [];
+            let dsErrArray = [];
+            for (let obj of each.dataSet) {
+              dsErrArray = [];
+              let dsNewObj = {
+                ExternalId: obj.ExternalId,
+              };
+
+              if (!obj.ExternalId) {
+                dsErrArray.push(
+                  "Dataset level, ExternalId is required and data type should be string or number"
+                );
+              }
+
+              if (obj.delFlag !== 0) {
+                dsErrArray.push(
+                  "Data Set Level delFlag required and value should be 0"
+                );
+              }
+
+              if (obj.dataKindID && req.externalSystemName) {
+                let checkDataKind = await DB.executeQuery(
+                  `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and datakindid='${
+                    obj.dataKindID
+                  }';`
+                );
+
+                if (checkDataKind.rows.length > 0) {
+                  if (checkDataKind.rows[0].active !== 1) {
+                    dsErrArray.push(
+                      `Clinical Data Type is inactive from ${req.externalSystemName}, Description in TA cannot be integrated.`
+                    );
+                  }
+                } else {
+                  dsErrArray.push(
+                    `Clinical Data Type is missing from ${req.externalSystemName}, Description in TA cannot be integrated.`
+                  );
+                }
+              }
+
+              if (
+                obj.fileType ||
+                obj.fileNamingConvention ||
+                obj.delimiter ||
+                obj.quote ||
+                obj.rowDecreaseAllowed ||
+                obj.rowDecreaseAllowed === 0 ||
+                obj.dataTransferFrequency === 0 ||
+                obj.dataTransferFrequency ||
+                obj.headerRowNumber ||
+                obj.footerRowNumber ||
+                obj.OverrideStaleAlert ||
+                obj.headerRowNumber === 0 ||
+                obj.footerRowNumber === 0 ||
+                obj.OverrideStaleAlert === 0 ||
+                obj.escapeCharacter ||
+                obj.path ||
+                obj.encoding
+              ) {
+                dsErrArray.push(
+                  "In jdbc dataset level fileType, fileNamingConvention, delimiter, quote, rowDecreaseAllowed, dataTransferFrequency, escapeCharacter, path, headerRowNumber, footerRowNumber, overrideStaleAlert, encoding  should be blank"
+                );
+              }
+
+              const dsArray = [
+                {
+                  key: "datasetName",
+                  value: obj.datasetName,
+                  type: "string",
+                },
+                {
+                  key: "dataKindID ",
+                  value: obj.dataKindID,
+                  type: "string",
+                },
+                {
+                  key: "active",
+                  value: obj.active,
+                  type: "boolean",
+                },
+                {
+                  key: "customsql_yn",
+                  value: obj.customsql_yn,
+                  type: "boolean",
+                },
+                // {
+                //   key: "incremental",
+                //   value: obj.incremental,
+                //   type: "boolean",
+                // },
+                {
+                  key: "columncount",
+                  value: obj.columncount,
+                  type: "number",
+                },
+              ];
+
+              // point - 28 story - 7277
+              if (obj.columncount === 0) {
+                dsErrArray.push(
+                  "Data set column count should be minimum 1 or greater than 1. Please amend."
+                );
+              }
+
+              if (obj.customsql_yn) {
+                if (obj.customsql_yn.toLowerCase() == "yes") {
+                  if (!obj.customsql) {
+                    dsErrArray.push("customsql is required ");
+                  } else {
+                    if (obj.customsql.length >= 131072) {
+                      dsErrArray.push("customsql max of 131072 characters  ");
+                    }
+                  }
+                }
+                if (obj.customsql_yn.toLowerCase() == "no") {
+                  if (!obj.tbl_nm) {
+                    dsErrArray.push("tbl_nm is required ");
+                  } else {
+                    if (obj.tbl_nm.length >= 255) {
+                      dsErrArray.push("tbl_nm max of 255 characters  ");
+                    }
+                  }
+                  if (helper.stringToBoolean(obj.incremental)) {
+                    if (
+                      !obj.offsetcolumn !== null &&
+                      obj.offsetcolumn !== "" &&
+                      obj.offsetcolumn !== undefined &&
+                      typeof obj.offsetcolumn === "string"
+                    ) {
+                    } else {
+                      dsErrArray.push(
+                        "offsetcolumn is required and data type should be string"
+                      );
+                    }
+                  }
+                }
+              }
+
+              if (!obj.columnDefinition) {
+                dsErrArray.push(
+                  "While adding a new dataset, please provide at least one columnDefinition details"
+                );
+              }
+
+              if (obj.conditionalExpressions) {
+                if (obj.conditionalExpressions.length > 0) {
+                  if (!obj.qcType || obj.qcType.toLowerCase() !== "vlc") {
+                    dsErrArray.push("qcType required and Value should be VLC");
+                  }
+                }
+              }
+
+              // Validation Function call for data set
+              let dsRes = helper.validation(dsArray);
+              if (dsRes.length > 0) {
+                // dsErrArray.push(dsRes);
+                dsErrArray = dsErrArray.concat(dsRes);
+              }
+
+              if (dsErrArray.length > 0) {
+                let dsErrRes = dsErrArray.join(" '|' ");
+                dsNewObj.message = dsErrRes;
+                isval = true;
+              }
+              dpNewObj.dataSets.push(dsNewObj);
+
+              if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                dsNewObj.columnDefinition = [];
+                let clErrArray = [];
+                for (let el of obj.columnDefinition) {
+                  clErrArray = [];
+                  let clNewObj = {
+                    ExternalId: el.ExternalId,
+                  };
+
+                  if (!el.ExternalId) {
+                    clErrArray.push(
+                      "Column Definition Level, ExternalId  is required and data type should be string or Number"
+                    );
+                  }
+
+                  if (el.delFlag !== 0) {
+                    clErrArray.push(
+                      "Column Definition Level delFlag required and value should be 0"
+                    );
+                  }
+
+                  const clArray = [
+                    {
+                      key: "includeFlag",
+                      value: el.includeFlag,
+                      type: "boolean",
+                    },
+                    {
+                      key: "columnName",
+                      value: el.columnName,
+                      type: "string",
+                    },
+
+                    {
+                      key: "primaryKey",
+                      value: el.primaryKey,
+                      type: "boolean",
+                    },
+                    {
+                      key: "required",
+                      value: el.required,
+                      type: "boolean",
+                    },
+                    {
+                      key: "unique",
+                      value: el.unique,
+                      type: "boolean",
+                    },
+                    {
+                      key: "dataType",
+                      value: el.dataType,
+                      type: "string",
+                    },
+                  ];
+
+                  if (el.dataType) {
+                    if (!helper.isColumnType(el.dataType)) {
+                      clErrArray.push(
+                        "dataType's supported values : Numeric, Alphanumeric or Date"
+                      );
                     }
                   }
 
-                  if (obj.conditionalExpressions) {
-                    if (obj.conditionalExpressions.length > 0) {
-                      if (!obj.qcType || obj.qcType.toLowerCase() !== "vlc") {
-                        validate.push(
-                          "qcType required and Value should be VLC"
+                  if (el.dataType && el.format) {
+                    const dataTypeValidate = dataTyperForamtValidate(
+                      el.dataType,
+                      el.format
+                    );
+                    if (dataTypeValidate) {
+                      clErrArray.push(dataTypeValidate);
+                    }
+                  }
+
+                  // Validation Function call for column defination
+                  let clRes = helper.validation(clArray);
+                  if (clRes.length > 0) {
+                    // clErrArray.push(clRes);
+                    clErrArray = clErrArray.concat(clRes);
+                  }
+
+                  if (
+                    el.minLength ||
+                    el.maxLength ||
+                    el.minLength === 0 ||
+                    el.maxLength === 0 ||
+                    el.lov ||
+                    el.position
+                  ) {
+                    clErrArray.push(
+                      "In jdbc minLength, maxLength, position, lov should be blank"
+                    );
+                  }
+
+                  if (clErrArray.length > 0) {
+                    let clErrRes = clErrArray.join(" '|' ");
+                    clNewObj.message = clErrRes;
+                    isval = true;
+                  }
+                  dsNewObj.columnDefinition.push(clNewObj);
+                }
+              }
+
+              // vlc validation
+              if (obj.qcType) {
+                if (
+                  obj.conditionalExpressions &&
+                  obj.conditionalExpressions.length > 0
+                ) {
+                  dsNewObj.vlc = [];
+                  let vlcErrArray = [];
+
+                  for (let vl of obj.conditionalExpressions) {
+                    vlcErrArray = [];
+                    let vlcNewObj = {
+                      conditionalExpressionNumber:
+                        vl.conditionalExpressionNumber,
+                    };
+
+                    const vlcArray = [
+                      {
+                        key: "conditionalExpressionNumber",
+                        value: vl.conditionalExpressionNumber,
+                        type: "number",
+                      },
+
+                      {
+                        key: "runSequence",
+                        value: vl.runSequence,
+                        type: "number",
+                      },
+                      {
+                        key: "conditionalExpression",
+                        value: vl.conditionalExpression,
+                        type: "string",
+                      },
+
+                      {
+                        key: "Action",
+                        value: vl.action,
+                        type: "string",
+                      },
+                      {
+                        key: "inUse",
+                        value: vl.inUse,
+                        type: "string",
+                      },
+                    ];
+
+                    // if (vl.inUse) {
+                    //   if (!helper.isActive(vl.inUse)) {
+                    //     validate.push({
+                    //       err: " inUse field's Supported values : Y or N",
+                    //     });
+                    //   }
+                    // }
+                    if (vl.action) {
+                      if (!helper.isAction(vl.action)) {
+                        vlcErrArray.push(
+                          "action's Supported values : Reject or Report"
                         );
                       }
+                      if (vl.action.toLowerCase() === "report") {
+                        const rVlcArr = [
+                          {
+                            key: "errorMessage",
+                            value: vl.errorMessage,
+                            type: "string",
+                          },
+                        ];
+
+                        let rVclres = helper.validation(rVlcArr);
+                        if (rVclres.length > 0) {
+                          // vlcErrArray.push(rVclres);
+                          vlcErrArray = vlcErrArray.concat(rVclres);
+                        }
+                      }
                     }
+
+                    let vlcRes = helper.validation(vlcArray);
+                    if (vlcRes.length > 0) {
+                      // vlcErrArray.push(vlcRes);
+                      vlcErrArray = vlcErrArray.concat(vlcRes);
+                    }
+
+                    if (vlcErrArray.length > 0) {
+                      let clErrRes = vlcErrArray.join(" '|' ");
+                      vlcNewObj.message = clErrRes;
+                      isval = true;
+                    }
+                    dsNewObj.vlc.push(vlcNewObj);
                   }
                 }
               }
@@ -1108,6 +1315,10 @@ exports.insertValidation = (req) => {
         }
       }
     }
+  }
+
+  if (isval) {
+    validate.push(dfObj);
   }
 
   return validate;
@@ -1132,7 +1343,8 @@ exports.packageLevelInsert = async (
     var dataPackage = [];
     var str1 = /[~]/;
     var str2 = /[.]/;
-    var str3 = /[< >]/;
+    // var str3 = /[< >]/;
+    var str3 = /[\/:*?”<|>]/;
 
     if (!isNew) {
       if (helper.isSftp(LocationType)) {
@@ -1188,7 +1400,8 @@ exports.packageLevelInsert = async (
           let dpResST = helper.validation(dpArrayST);
 
           if (dpResST.length > 0) {
-            errorPackage.push(dpResST);
+            // errorPackage.push(dpResST);
+            errorPackage = errorPackage.concat(dpResST);
           }
         }
 
@@ -1209,12 +1422,12 @@ exports.packageLevelInsert = async (
         //iuyiuyiuy
 
         if (namingConvention && data.type) {
-          //hhyy
-          if (str3.test(namingConvention) === true) {
-            errorPackage.push(
-              "Package naming convention should not have the following special characters < >"
-            );
-          }
+          // //hhyy
+          // if (str3.test(namingConvention) === true) {
+          //   errorPackage.push(
+          //     "Package naming convention should not have the following special characters < >"
+          //   );
+          // }
 
           const last = namingConvention.charAt(namingConvention.length - 1);
           const first = namingConvention.charAt(namingConvention.charAt(0));
@@ -1232,6 +1445,15 @@ exports.packageLevelInsert = async (
 
           if (nameArray.length > 1) {
             const name = nameArray[1].toLowerCase();
+            const nameData = nameArray[0].toLowerCase();
+
+            let nameValidate = this.namingCconventionValidate(nameData);
+            if (nameValidate === false) {
+              errorPackage.push(
+                "Package naming convention should not have the following special characters /:*?”<|>"
+              );
+            }
+
             if (data.type.toLowerCase() === "rar") {
               if (name !== "rar") {
                 errorPackage.push(
@@ -1277,7 +1499,8 @@ exports.packageLevelInsert = async (
         let dpRes = helper.validation(dpArray);
 
         if (dpRes.length > 0) {
-          errorPackage.push(dpRes);
+          // errorPackage.push(dpRes);
+          errorPackage = errorPackage.concat(dpRes);
         }
       } else {
         if (delFlag !== 0) {
@@ -1301,8 +1524,15 @@ exports.packageLevelInsert = async (
     }
 
     if (errorPackage.length > 0) {
-      errorPackage.splice(0, 0, `Datapackage external id -${ExternalId} `);
-      return { errRes: errorPackage };
+      //errorPackage.splice(0, 0, `Datapackage external id -${ExternalId} `);
+      let dpErrRes = errorPackage.join(" '|' ");
+      let errObj = {
+        ExternalId: ExternalId,
+        message: dpErrRes,
+      };
+
+      // return { errRes: errorPackage };
+      return { errRes: errObj };
     }
 
     let dPTimestamp = new Date();
@@ -1348,6 +1578,10 @@ exports.packageLevelInsert = async (
       ExternalId: data.ExternalId,
       ID: dpUid,
     };
+    let dpErrObj = {
+      ExternalId: data.ExternalId,
+      ID: dpUid,
+    };
     // DpObj.action = "DataPackage created successfully.";
     // DpObj.timestamp = ts;
     // dataPackage.push(DpObj);
@@ -1371,9 +1605,11 @@ exports.packageLevelInsert = async (
         helper.getCurrentTime(),
       ]
     );
+    let isError = false;
 
     if (data.dataSet && data.dataSet.length > 0) {
       DpObj.dataSets = [];
+      dpErrObj.dataSets = [];
       for (let obj of data.dataSet) {
         const dataSetExternalId = obj.ExternalId;
         await saveDataset(
@@ -1388,18 +1624,23 @@ exports.packageLevelInsert = async (
           userId,
           isNew
         ).then((res) => {
-          if (res && res.errRes.length) {
-            errorPackage.push(res.errRes);
+          if (res && Object.keys(res.errRes)?.length) {
+            dpErrObj.dataSets.push(res.errRes);
+            isError = true;
           }
           if (res && res.sucRes) {
             DpObj.dataSets.push(res.sucRes);
           }
-          // console.log("data set function call ", res.sucRes);
         });
       }
     }
     // console.log("package insert ", DpObj);
-    return { sucRes: DpObj, errRes: errorPackage };
+    if (isError) {
+      return { sucRes: DpObj, errRes: dpErrObj };
+    }
+
+    return { sucRes: DpObj, errRes: {} };
+
     // return;
   } catch (err) {
     console.log(err);
@@ -1428,7 +1669,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
     var dataSet = [];
     var str1 = /[~]/;
     var str2 = /[.]/;
-    var str3 = /[< >]/;
+    // var str3 = /[< >]/;
+    var str3 = /[\/:*?”<|>]/;
 
     const isCDI = externalSysName === "CDI" ? true : false;
 
@@ -1519,11 +1761,11 @@ const saveDataset = (exports.datasetLevelInsert = async (
         }
 
         if (obj.fileNamingConvention && obj.fileType) {
-          if (str3.test(obj.fileNamingConvention) === true) {
-            errorDataset.push(
-              "fileNamingConvention should not have the following special characters < > "
-            );
-          }
+          // if (str3.test(obj.fileNamingConvention) === true) {
+          //   errorDataset.push(
+          //     "fileNamingConvention should not have the following special characters < > "
+          //   );
+          // }
           const last = obj.fileNamingConvention.charAt(
             obj.fileNamingConvention.length - 1
           );
@@ -1544,6 +1786,15 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
           if (nameArray.length > 1) {
             const name = nameArray[1].toLowerCase();
+            const nameData = nameArray[0].toLowerCase();
+
+            let fileNameValidate = this.namingCconventionValidate(nameData);
+
+            if (fileNameValidate === false) {
+              errorDataset.push(
+                "File naming convention should not have the following special characters /:*?”<|>"
+              );
+            }
             if (obj.fileType.toLowerCase() === "sas") {
               if (name !== "sas7bdat") {
                 errorDataset.push(
@@ -1580,7 +1831,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
         let dsArrRes = helper.validation(dsArray);
         if (dsArrRes.length > 0) {
-          errorDataset.push(dsArrRes);
+          // errorDataset.push(dsArrRes);
+          errorDataset = errorDataset.concat(dsArrRes);
         }
 
         if (obj.fileType) {
@@ -1602,7 +1854,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
             let dsResdt = helper.validation(dsArrayDt);
             if (dsResdt.length > 0) {
-              errorDataset.push(dsResdt);
+              // errorDataset.push(dsResdt);
+              errorDataset = errorDataset.concat(dsResdt);
             }
           }
         }
@@ -1715,7 +1968,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
         const dsreqElse = helper.validation(dsElse);
 
         if (dsreqElse.length > 0) {
-          errorDataset.push(dsreqElse);
+          // errorDataset.push(dsreqElse);
+          errorDataset = errorDataset.concat(dsreqElse);
         }
 
         if (obj.customsql_yn) {
@@ -1750,9 +2004,11 @@ const saveDataset = (exports.datasetLevelInsert = async (
     // console.log("insert data set");
 
     if (!isCDI) {
-      if (obj.dataKindID) {
+      if (obj.dataKindID && externalSysName) {
         let checkDataKind = await DB.executeQuery(
-          `select datakindid, active from ${schemaName}.datakind where datakindid='${obj.dataKindID}';`
+          `select datakindid, active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${
+            obj.dataKindID
+          }';`
         );
 
         if (checkDataKind.rows.length > 0) {
@@ -1796,8 +2052,15 @@ const saveDataset = (exports.datasetLevelInsert = async (
     }
 
     if (errorDataset.length > 0) {
-      errorDataset.splice(0, 0, `DataSet external id -${externalID} `);
-      return { errRes: errorDataset };
+      // errorDataset.splice(0, 0, `DataSet external id -${externalID} `);
+      let dsErrRes = errorDataset.join(" '|' ");
+      let errObj = {
+        ExternalId: externalID,
+        message: dsErrRes,
+      };
+
+      //  return { errRes: errorDataset };
+      return { errRes: errObj };
     }
 
     let sqlQuery = "";
@@ -1883,6 +2146,12 @@ const saveDataset = (exports.datasetLevelInsert = async (
       ExternalId: obj.ExternalId,
       ID: dsUid,
     };
+
+    let dsErrObj = {
+      ExternalId: obj.ExternalId,
+      ID: dsUid,
+    };
+    let isError = false;
     // dsObj.action = "Dataset created successfully.";
     // dsObj.timestamp = ts;
     // dataSet.push(dsObj);
@@ -1908,6 +2177,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
     if (obj.qcType) {
       if (obj.conditionalExpressions && obj.conditionalExpressions.length > 0) {
         dsObj.vlc = [];
+        dsErrObj.vlc = [];
+
         for (let vlc of obj.conditionalExpressions) {
           // let vlcRes = [];
           await saveVlc(
@@ -1919,10 +2190,13 @@ const saveDataset = (exports.datasetLevelInsert = async (
             version,
             userId
           ).then((res) => {
-            if (res && res.errRes.length) {
-              errorDataset.push(res.errRes);
+            if (res && Object.keys(res.errRes)?.length) {
+              dsErrObj.vlc.push(res.errRes);
+              isError = true;
+              // errorDataset.push(dsErrObj);
             }
             if (res && res.sucRes) {
+              //
               dsObj.vlc.push(res.sucRes);
             }
           });
@@ -1933,7 +2207,9 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
     if (obj.columnDefinition && obj.columnDefinition.length) {
       // let column_definition = [];
+
       dsObj.columnDefinition = [];
+      dsErrObj.columnDefinition = [];
       for (let el of obj.columnDefinition) {
         await columnSave(
           el,
@@ -1947,18 +2223,23 @@ const saveDataset = (exports.datasetLevelInsert = async (
           isNew,
           obj.headerRowNumber
         ).then((res) => {
-          if (res && res.errRes.length) {
-            errorDataset.push(res.errRes);
+          if (res && Object.keys(res.errRes)?.length) {
+            dsErrObj.columnDefinition.push(res.errRes);
+            isError = true;
           }
-          // console.log("column function call ", res.sucRes);
+
           if (res && res.sucRes) {
             dsObj.columnDefinition.push(res.sucRes);
           }
         });
       }
     }
-    // console.log("dataset insert", dsObj);
-    return { sucRes: dsObj, errRes: errorDataset };
+
+    if (isError) {
+      return { sucRes: dsObj, errRes: dsErrObj };
+    }
+    return { sucRes: dsObj, errRes: {} };
+    // return { sucRes: dsObj, errRes: errorDataset };
   } catch (err) {
     console.log("dataset catch", err);
     //throw error in json response with status 500.
@@ -2065,7 +2346,8 @@ const columnSave = (exports.columnDefinationInsert = async (
 
         let clResIf = helper.validation(clArrayIf);
         if (clResIf.length > 0) {
-          errorColumnDef.push(clResIf);
+          // errorColumnDef.push(clResIf);
+          errorColumnDef = errorColumnDef.concat(clResIf);
         }
 
         if (el.position || el.position === 0) {
@@ -2220,7 +2502,8 @@ const columnSave = (exports.columnDefinationInsert = async (
 
         let clRes = helper.validation(clArray);
         if (clRes.length > 0) {
-          errorColumnDef.push(clRes);
+          // errorColumnDef.push(clRes);
+          errorColumnDef = errorColumnDef.concat(clRes);
         }
 
         if (
@@ -2256,12 +2539,20 @@ const columnSave = (exports.columnDefinationInsert = async (
     }
 
     if (errorColumnDef.length > 0) {
-      errorColumnDef.splice(
-        0,
-        0,
-        `Column definition External Id -${cdExternalId} `
-      );
-      return { errRes: errorColumnDef };
+      // if (isNew) {
+      // errorColumnDef.splice(
+      //   0,
+      //   0,
+      //   `Column definition External Id -${cdExternalId} `
+      // );
+      // }
+      let clErrRes = errorColumnDef.join(" '|' ");
+      let errObj = {
+        ExternalId: cdExternalId,
+        message: clErrRes,
+      };
+      // return { errRes: errorColumnDef };
+      return { errRes: errObj };
     }
 
     let CDBody = [
@@ -2400,7 +2691,8 @@ const saveVlc = (exports.VlcInsert = async (
 
       let vlcRes = helper.validation(vlcArray);
       if (vlcRes.length > 0) {
-        errorVlc.push(vlcRes);
+        // errorVlc.push(vlcRes);
+        errorVlc = errorVlc.concat(vlcRes);
       }
 
       // if (vl.inUse) {
@@ -2424,7 +2716,8 @@ const saveVlc = (exports.VlcInsert = async (
 
           let rVclres = helper.validation(rVlcArr);
           if (rVclres.length > 0) {
-            errorVlc.push(rVclres);
+            // errorVlc.push(rVclres);
+            errorVlc = errorVlc.concat(rVclres);
           }
         }
       }
@@ -2443,12 +2736,19 @@ const saveVlc = (exports.VlcInsert = async (
     }
 
     if (errorVlc.length > 0) {
-      errorVlc.splice(
-        0,
-        0,
-        `VLC Conditional Expression Number -${vl.conditionalExpressionNumber} `
-      );
-      return { errRes: errorVlc };
+      // errorVlc.splice(
+      //   0,
+      //   0,
+      //   `VLC Conditional Expression Number -${vl.conditionalExpressionNumber} `
+      // );
+      let vlcErrRes = errorVlc.join(" '|' ");
+      let errObj = {
+        ExternalId: vl.conditionalExpressionNumber,
+        message: vlcErrRes,
+      };
+
+      // return { errRes: errorVlc };
+      return { errRes: errObj };
     }
 
     let vlcBody = [
@@ -2523,17 +2823,123 @@ exports.dataflowUpdate = async (
   version,
   externalSysName,
   conf_data,
-  userId
+  userId,
+  ConnectionType
 ) => {
   try {
     let ts = new Date().toLocaleString();
     var dataflow = [];
+    let errorDF = [];
     let studyId;
     let vName;
     let vNameDB;
     let ptNum;
     let desc;
     var newDfobj = {};
+    let valData = [];
+
+    if (data.vendorid && externalSysName) {
+      let { rows: existVendor } = await DB.executeQuery(
+        `select vend_id,active from ${schemaName}.vendor where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and vend_id=$1;`,
+        [data.vendorid]
+      );
+      if (existVendor.length) {
+        if (existVendor[0].active !== 1) {
+          errorDF.push(`Vendor is not active in ${externalSysName}`);
+        }
+      } else {
+        errorDF.push(`Vendor does not exist for ${externalSysName}`);
+      }
+    }
+
+    if (data.locationID && externalSysName) {
+      let locationData = await DB.executeQuery(
+        `select src_loc_id,active from ${schemaName}.source_location where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and UPPER(loc_typ)='${ConnectionType.toUpperCase()}' and src_loc_id=$1;`,
+        [data.locationID]
+      );
+
+      if (locationData.rows.length) {
+        if (locationData.rows[0].active !== 1) {
+          errorDF.push(`Location is not active in ${externalSysName}`);
+        }
+      } else {
+        errorDF.push(`Location does not exist for ${externalSysName}`);
+      }
+    }
+
+    if (data.protocolNumberStandard) {
+      const studyRows = await DB.executeQuery(
+        `select prot_id from study where prot_nbr_stnd ='${data.protocolNumberStandard}';`
+      );
+      if (!studyRows.rows.length) {
+        errorDF.push("This protocol number doesn't exist ");
+      }
+    }
+
+    if (data.exptDtOfFirstProdFile) {
+      function validateDOB(date) {
+        var pattern =
+          /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/;
+        if (!pattern.test(date)) {
+          errorDF.push(
+            "exptDtOfFirstProdFile optional and data format should be [YYYY-MM-DD HH:MI:SS]"
+          );
+        }
+      }
+      validateDOB(data.exptDtOfFirstProdFile);
+    }
+
+    if (typeof data.externalSystemName != "undefined") {
+      valData.push({
+        key: "externalSystemName",
+        value: data.externalSystemName,
+        type: "string",
+      });
+    }
+
+    if (typeof data.dataStructure != "undefined") {
+      valData.push({
+        key: "dataStructure ",
+        value: data.dataStructure,
+        type: "string",
+      });
+    }
+
+    if (typeof data.description != "undefined") {
+      valData.push({
+        key: "description ",
+        value: data.description,
+        type: "string",
+        maxLength: 30,
+      });
+    }
+    if (typeof data.testFlag != "undefined") {
+      valData.push({
+        key: "testFlag ",
+        value: data.testFlag,
+        type: "boolean",
+      });
+    }
+    if (typeof data.active != "undefined") {
+      valData.push({
+        key: "active ",
+        value: data.active,
+        type: "boolean",
+      });
+    }
+    if (data.serviceOwners) {
+      if (!Array.isArray(data.serviceOwners))
+        errorDF.push("serviceOwners its optional and it should be array ");
+    }
+
+    const resErr = helper.validation(valData);
+    if (resErr.length) {
+      errorDF = errorDF.concat(resErr);
+    }
+
+    if (errorDF.length > 0) {
+      return { errRes: errorDF };
+    }
 
     const q1 = `select * from ${schemaName}.dataflow where externalsystemname='${externalSysName}' and externalid='${externalID}'`;
     let q3 = `select vend_nm from ${schemaName}.vendor where vend_id=$1;`;
@@ -2730,7 +3136,8 @@ exports.packageUpdate = async (
     var data_packages = [];
     var str1 = /[~]/;
     var str2 = /[.]/;
-    var str3 = /[< >]/;
+    // var str3 = /[< >]/;
+    var str3 = /[\/:*?”<|>]/;
 
     if (helper.isSftp(LocationType)) {
       // if (LocationType == "Hive CDH") {
@@ -2746,7 +3153,8 @@ exports.packageUpdate = async (
       let dpResUpdate = helper.validation(valData);
 
       if (dpResUpdate.length > 0) {
-        errorPackage.push(dpResUpdate);
+        // errorPackage.push(dpResUpdate);
+        errorPackage = errorPackage.concat(dpResUpdate);
       }
 
       if (!helper.stringToBoolean(data.noPackageConfig)) {
@@ -2792,7 +3200,8 @@ exports.packageUpdate = async (
         let TypeSasRes = helper.validation(TypeSas);
 
         if (TypeSasRes.length > 0) {
-          errorPackage.push(TypeSasRes);
+          // errorPackage.push(TypeSasRes);
+          errorPackage = errorPackage.concat(TypeSasRes);
         }
       }
 
@@ -2830,11 +3239,11 @@ exports.packageUpdate = async (
       } else {
         if (data.namingConvention) {
           if (typeof data.namingConvention != "undefined") {
-            if (str3.test(data.namingConvention) === true) {
-              errorPackage.push(
-                "Package naming convention should not have the following special characters < >"
-              );
-            }
+            // if (str3.test(data.namingConvention) === true) {
+            //   errorPackage.push(
+            //     "Package naming convention should not have the following special characters < >"
+            //   );
+            // }
             const last = data.namingConvention.charAt(
               data.namingConvention.length - 1
             );
@@ -2858,6 +3267,15 @@ exports.packageUpdate = async (
 
           if (nameArray.length > 1) {
             const name = nameArray[1].toLowerCase();
+            const nameData = nameArray[0].toLowerCase();
+
+            let nameValidate = this.namingCconventionValidate(nameData);
+            if (nameValidate === false) {
+              errorPackage.push(
+                "Package naming convention should not have the following special characters /:*?”<|>"
+              );
+            }
+
             if (data.type.toLowerCase() === "rar") {
               if (name !== "rar") {
                 errorPackage.push(
@@ -2912,7 +3330,7 @@ exports.packageUpdate = async (
     }
 
     if (errorPackage.length > 0) {
-      errorPackage.splice(0, 0, `Datapackage external id -${externalID} `);
+      // errorPackage.splice(0, 0, `Datapackage external id -${externalID} `);
       // return { sucRes: {}, errRes: errorPackage };
       return { errRes: errorPackage };
     }
@@ -3013,16 +3431,19 @@ exports.datasetUpdate = async (
     const valDataset = [];
     let errorDataset = [];
     var str2 = /[.]/;
-    var str3 = /[< >]/;
+    // var str3 = /[< >]/;
+    var str3 = /[\/:*?”<|>]/;
 
-    if (data.dataKindID) {
+    if (data.dataKindID && externalSysName) {
       let checkDataKind = await DB.executeQuery(
-        `select datakindid,active from ${schemaName}.datakind where datakindid='${data.dataKindID}';`
+        `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${
+          data.dataKindID
+        }';`
       );
 
       // console.log("create", checkDataKind.rows[0]);
       if (checkDataKind.rows.length > 0) {
-        if (checkDataKind.rows[0].active !== 01) {
+        if (checkDataKind.rows[0].active !== 1) {
           errorDataset.push(
             `Clinical Data Type is inactive from ${externalSysName}, Description in TA cannot be integrated.`
           );
@@ -3103,11 +3524,11 @@ exports.datasetUpdate = async (
         );
       } else {
         if (data.fileNamingConvention) {
-          if (str3.test(data.fileNamingConvention) === true) {
-            errorDataset.push(
-              "fileNamingConvention should not have the following special characters < >"
-            );
-          }
+          // if (str3.test(data.fileNamingConvention) === true) {
+          //   errorDataset.push(
+          //     "fileNamingConvention should not have the following special characters < >"
+          //   );
+          // }
           const last = data.fileNamingConvention.charAt(
             data.fileNamingConvention.length - 1
           );
@@ -3128,6 +3549,15 @@ exports.datasetUpdate = async (
 
           if (nameArray.length > 1) {
             const name = nameArray[1].toLowerCase();
+            const nameData = nameArray[0].toLowerCase();
+
+            let nameValidate = this.namingCconventionValidate(nameData);
+            if (nameValidate === false) {
+              errorDataset.push(
+                "File naming convention should not have the following special characters /:*?”<|>"
+              );
+            }
+
             if (data.fileType.toLowerCase() === "sas") {
               if (name !== "sas7bdat") {
                 errorDataset.push(
@@ -3219,7 +3649,8 @@ exports.datasetUpdate = async (
       let dataSetRes = helper.validation(valDataset);
 
       if (dataSetRes.length > 0) {
-        errorDataset.push(dataSetRes);
+        // errorDataset.push(dataSetRes);
+        errorDataset = errorDataset.concat(dataSetRes);
       }
 
       if (data.headerRowNumber) {
@@ -3273,7 +3704,8 @@ exports.datasetUpdate = async (
 
           let dlRes = helper.validation(dlData);
           if (dlRes.length > 0) {
-            errorDataset.push(dlRes);
+            // errorDataset.push(dlRes);
+            errorDataset = errorDataset.concat(dlRes);
           }
         }
       }
@@ -3331,7 +3763,8 @@ exports.datasetUpdate = async (
       let dataSetRes = helper.validation(valDataset);
 
       if (dataSetRes.length > 0) {
-        errorDataset.push(dataSetRes);
+        // errorDataset.push(dataSetRes);
+        errorDataset = errorDataset.concat(dataSetRes);
       }
 
       if (
@@ -3390,7 +3823,7 @@ exports.datasetUpdate = async (
     }
 
     if (errorDataset.length > 0) {
-      errorDataset.splice(0, 0, `DataSet external id -${externalID} `);
+      // errorDataset.splice(0, 0, `DataSet external id -${externalID} `);
       // return { sucRes: {}, errRes: errorDataset };
       return { errRes: errorDataset };
     }
@@ -3744,7 +4177,8 @@ exports.clDefUpdate = async (
       let colDefRes = helper.validation(valColDef);
 
       if (colDefRes.length > 0) {
-        errorcolDef.push(colDefRes);
+        // errorcolDef.push(colDefRes);
+        errorcolDef = errorcolDef.concat(colDefRes);
       }
     } else {
       if (typeof data.columnName != "undefined") {
@@ -3803,7 +4237,8 @@ exports.clDefUpdate = async (
       let colDefRes = helper.validation(valColDef);
 
       if (colDefRes.length > 0) {
-        errorcolDef.push(colDefRes);
+        // errorcolDef.push(colDefRes);
+        errorcolDef = errorcolDef.concat(colDefRes);
       }
 
       //last add
@@ -3880,7 +4315,7 @@ exports.clDefUpdate = async (
     }
 
     if (errorcolDef.length > 0) {
-      errorcolDef.splice(0, 0, `Column Definition Id -${externalId} `);
+      // errorcolDef.splice(0, 0, `Column Definition Id -${externalId} `);
       // return { sucRes: {}, errRes: errorcolDef };
       return { errRes: errorcolDef };
     }
@@ -3995,6 +4430,7 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
     var newObj = {};
     const vlcValidate = [];
     let errorVlc = [];
+    let errorArray = [];
 
     if (typeof vl.runSequence != "undefined") {
       vlcValidate.push({
@@ -4027,7 +4463,8 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
     let vlcRes = helper.validation(vlcValidate);
 
     if (vlcRes.length > 0) {
-      errorVlc.push(vlcRes);
+      // errorVlc.push(vlcRes);
+      errorVlc = errorVlc.concat(vlcRes);
     }
 
     if (vl.inUse) {
@@ -4038,7 +4475,7 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
     }
     if (vl.action) {
       if (!helper.isAction(vl.action)) {
-        errorVlc.push("action's Supported values : Reject or Report ");
+        errorVlc.push("action's Supported values : Reject or Report");
       }
       if (vl.action.toLowerCase() === "report") {
         const rVlcArr = [
@@ -4051,17 +4488,18 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
 
         let rVclres = helper.validation(rVlcArr);
         if (rVclres.length > 0) {
-          errorVlc.push(rVclres);
+          // errorVlc.push(rVclres);
+          errorVlc = errorVlc.concat(rVclres);
         }
       }
     }
 
     if (errorVlc.length > 0) {
-      errorVlc.splice(
-        0,
-        0,
-        `VLC Conditional Expression Number -${vl.conditionalExpressionNumber}`
-      );
+      // errorVlc.splice(
+      //   0,
+      //   0,
+      //   `VLC Conditional Expression Number -${vl.conditionalExpressionNumber}`
+      // );
       // return { sucRes: {}, errRes: errorVlc };
       return { errRes: errorVlc };
     }

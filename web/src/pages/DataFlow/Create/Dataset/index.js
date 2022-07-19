@@ -76,7 +76,7 @@ const styles = {
   },
 };
 const Dataset = (props, ref) => {
-  const { currentStep, updateStep, submitData, headerValue } = props;
+  const { currentStep, updateStep, submitData, myform, headerValue } = props;
   const [value, setValue] = useState(0);
   const [locationType, setLocationType] = useState("jdbc");
   const [columnsActive, setColumnsActive] = useState(false);
@@ -235,6 +235,7 @@ const Dataset = (props, ref) => {
               locationType={locationType}
               headerValue={headerValue}
               moveNext={() => updateStep(5)}
+              myForm={myform}
             />
           )}
           {/* {value === 2 && <VLCTab />} */}

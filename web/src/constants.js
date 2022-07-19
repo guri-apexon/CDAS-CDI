@@ -10,6 +10,13 @@ export const LOGOUT_SUCCESS = "LOGOUT_SUCCESS";
 export const AUTH_SUCCESS = "AUTH_SUCCESS";
 export const AUTH_FAILURE = "AUTH_FAILURE";
 
+export const SHOW_ALERT_TRUE = "SHOW_ALERT_TRUE";
+export const SHOW_ALERT_FALSE = "SHOW_ALERT_FALSE";
+export const FORM_COMPONENT_ACTIVE = "FORM_COMPONENT_ACTIVE";
+export const FORM_COMPONENT_IN_ACTIVE = "FORM_COMPONENT_IN_ACTIVE";
+export const SHOW_APP_SWITCHER = "SHOW_APP_SWITCHER";
+export const HIDE_APP_SWITCHER = "HIDE_APP_SWITCHER";
+
 export const SELECTED_DATAFLOW = "SELECTED_DATAFLOW";
 export const DASHBOARD_DATA = "DASHBOARD_DATA";
 export const DASHBOARD_FETCH_SUCCESS = "DASHBOARD_FETCH_SUCCESS";
@@ -97,6 +104,10 @@ export const FETCH_LOCATION_PASSWORD_SUCCESS =
   "FETCH_LOCATION_PASSWORD_SUCCESS";
 export const FETCH_LOCATION_PASSWORD_FAILURE =
   "FETCH_LOCATION_PASSWORD_FAILURE";
+
+export const GET_PASSWORD_PACKAGE = "GET_PASSWORD_PACKAGE";
+export const FETCH_PACKAGE_PASSWORD_SUCCESS = "FETCH_PACKAGE_PASSWORD_SUCCESS";
+export const FETCH_PACKAGE_PASSWORD_FAILURE = "FETCH_PACKAGE_PASSWORD_FAILURE";
 
 export const GET_DATAFLOW_DETAIL = "GET_DATAFLOW_DETAIL";
 export const RESET_DF_FORMDATA = "RESET_DF_FORMDATA";
@@ -227,7 +238,7 @@ export const TOGGLE_DF_BTN = "TOGGLE_DF_BTN";
 
 export const PACKAGES_SEARCH = "v1/api/data-package/search";
 export const ADD_PACKAGE = "v1/api/data-package/add";
-export const DATAPACKAGEPASSWORD = "v1/api/data-package/get_password";
+export const DATAPACKAGEPASSWORD = "v1/api/data-package/getpassword";
 
 export const DELETE_PACKAGE = "v1/api/data-package/delete";
 export const UPDATE_PACKAGE = "v1/api/data-package/update-status";
@@ -252,6 +263,9 @@ export const SQLCOLUMNSAPI = "v1/api/dataset/getColumns";
 export const PREVIEWSQLAPI = "v1/api/dataset/previewSQL";
 export const SETTINGAPI = "v1/api/system-settings";
 export const INGESTIONREPORTAPI = "v1/api/dataset/ingestion-report";
+export const INGESTION_ISSUE_URL = "v1/api/dataset/ingestion-issues";
+export const INGESTION_ISSUE_COL_URL =
+  "v1/api/dataset/ingestion-issues-columns";
 
 export const baseURL = process.env.REACT_APP_API_URL;
 export const API_URL = `${baseURL}/v1/api`;

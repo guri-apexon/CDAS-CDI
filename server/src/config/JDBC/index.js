@@ -26,9 +26,24 @@ const sqlServerDriver = path.join(
   "mssql-jdbc-9.2.0.jre8.jar"
 );
 const hiveCDHServerDriver = path.join(__dirname, "Drivers", "HiveJDBC41.jar");
-
 if (!jinst.isJvmCreated()) {
   jinst.addOption("-Xrs");
+  jinst.addOption(`-Djava.security.krb5.conf=${__dirname}/krb5.conf`);
+  jinst.addOption(`-Djava.security.auth.login.config=${__dirname}/jass.conf`);
+  jinst.addOption(
+    `-Djava.security.auth.login.config.keyTabFile=${__dirname}/xg9dcdrcds.keytab`
+  );
+  jinst.addOption(
+    `-Djava.security.auth.login.config.principal="hive/uskhdphive.quintiles.net@QUINTILES.NET"`
+  );
+  jinst.addOption(`-Dhadoop.security.authentication="kerberos"`);
+  jinst.addOption(`-Djavax.security.auth.useSubjectCredsOnly=false`);
+  jinst.addOption(
+    `-Djava.security.debug=gssloginconfig,configfile,configparser,logincontext`
+  );
+  jinst.addOption(`-Dsun.security.krb5.debug=true`);
+  jinst.addOption(`-Djavax.security.auth.useSubjectCredsOnly=false`);
+
   jinst.setupClasspath([
     mysqlDriver,
     oracleDriver,

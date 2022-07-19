@@ -25,18 +25,21 @@ import ButtonGroup from "apollo-react/components/ButtonGroup";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import "./DataPackages.scss";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
-import { getUserInfo, toast, validateFields } from "../../utils";
+import { getUserInfo, toast, validateFields, isSftp } from "../../utils";
 import { submitDataPackage } from "../../services/ApiServices";
 import {
   addDataPackage,
   selectDataPackage,
   getPackagesList,
   addPackageBtnAction,
+  updateStatus,
+  getPackagePassword,
 } from "../../store/actions/DataPackageAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 import usePermission, {
   Categories,
   Features,
+  useStudyPermission,
 } from "../../components/Common/usePermission";
 import { packageComprTypes, packageTypes } from "../../utils/constants";
 import Header from "../../components/DataFlow/Header";
@@ -65,7 +68,9 @@ const DataPackages = React.memo(() => {
   const [sftpPath, setSftpPath] = useState("");
   const [notMatchedType, setNotMatchedType] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const [disablePackageLevel, setDisablePackageLevel] = useState(false);
   const packageData = useSelector((state) => state.dataPackage);
+
   const { dataFlowdetail, versionFreezed } = useSelector(
     (state) => state.dataFlow
   );
@@ -75,10 +80,14 @@ const DataPackages = React.memo(() => {
     selectedCard,
     selectedDataFlow: { dataFlowId: dfId },
   } = useSelector((state) => state.dashboard);
+  const { packageSODPassword } = packageData;
+  const [passwordUpdate, setPasswordUpdate] = useState(false);
+  const { prot_id: protId } = selectedCard;
 
-  const { canUpdate: canUpdateDataFlow } = usePermission(
+  const { canUpdate: canUpdateDataFlow } = useStudyPermission(
     Categories.CONFIGURATION,
-    Features.DATA_FLOW_CONFIGURATION
+    Features.DATA_FLOW_CONFIGURATION,
+    protId
   );
 
   const breadcrumpItems = [
@@ -124,6 +133,26 @@ const DataPackages = React.memo(() => {
     }
   }, [packageData.openAddPackage]);
 
+  // const PackagePassswordData = async () => {
+  //   await dispatch(
+  //     getPackagePassword(
+  //       packageData.packagesList[0]?.dataflowid,
+  //       packageData.packagesList[0]?.datapackageid
+  //     )
+  //   );
+  //   setPasswordUpdate(true);
+  // };
+
+  const PackagePassswordData = async () => {
+    await dispatch(
+      getPackagePassword(
+        packageData.selectedPackage?.dataflowid,
+        packageData.selectedPackage?.datapackageid
+      )
+    );
+    setPasswordUpdate(true);
+  };
+
   useEffect(() => {
     if (!packageData.openAddPackage && packageData.selectedPackage) {
       setShowForm(true);
@@ -131,17 +160,40 @@ const DataPackages = React.memo(() => {
       setCompression(packageData.selectedPackage?.type);
       setNamingConvention(packageData.selectedPackage?.name);
       setSodValue(packageData.selectedPackage?.sod_view_type);
-      setPackagePassword(packageData.selectedPackage?.password);
       setSftpPath(packageData.selectedPackage?.path);
+      if (packageData.selectedPackage?.password === "Yes") {
+        PackagePassswordData();
+        if (packageSODPassword === "") {
+          setConfigShow(false);
+        } else if (packageSODPassword !== "" && !passwordUpdate) {
+          setConfigShow(false);
+        } else {
+          setPackagePassword(packageSODPassword);
+          setTimeout(() => {
+            setConfigShow(true);
+          }, 2000);
+        }
+      } else {
+        setConfigShow(true);
+        setPackagePassword("");
+      }
     }
-    if (
-      packageData.selectedPackage &&
-      packageData.selectedPackage?.type === null
-    )
-      setConfigShow(false);
-  }, [packageData.openAddPackage, packageData.selectedPackage]);
+    // if (
+    //   packageData.selectedPackage &&
+    //   packageData.selectedPackage?.type === null
+    // )
+    //   setConfigShow(false);
+  }, [
+    packageData.openAddPackage,
+    packageData.selectedPackage,
+    packageData.packageSODPassword,
+  ]);
 
   useEffect(() => {
+    if (!isSftp(dataFlowdetail.loctyp)) {
+      setConfigShow(false);
+      setDisablePackageLevel(true);
+    }
     return () => {
       console.log("unmounting");
       dispatch(selectDataPackage({}));
@@ -172,19 +224,19 @@ const DataPackages = React.memo(() => {
       package_id: packageData.selectedPackage?.datapackageid,
       sod_view_type: sodValue,
     };
+
     const payload = packageData.selectedPackage ? updateReqBody : reqBody;
     const result = await submitDataPackage(payload);
     if (result.status === 1) {
       showSuccessMessage(result.message);
       dispatch(addDataPackage());
+      resetForm();
+      setShowForm(false);
       if (sodValue !== null)
         history.push(`/dashboard/dataflow-management/${dfId}`);
     } else {
       showErrorMessage(result.message);
     }
-
-    resetForm();
-    setShowForm(false);
   };
 
   const handleClose = () => {
@@ -255,7 +307,8 @@ const DataPackages = React.memo(() => {
                       onChange={showConfig}
                       disabled={
                         packageData.selectedPackage?.sod_view_type ||
-                        !canUpdateDataFlow
+                        !canUpdateDataFlow ||
+                        disablePackageLevel
                       }
                     />
                   </div>
@@ -327,7 +380,7 @@ const DataPackages = React.memo(() => {
                       <PasswordInput
                         size="small"
                         icon={false}
-                        defaultValue={packagePassword}
+                        value={packagePassword}
                         label="Package Password (Optional)"
                         className="mb-20"
                         style={{ width: "70%" }}
