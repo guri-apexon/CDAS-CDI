@@ -260,7 +260,7 @@ export const syncNowDataFlow = async ({ version, dataFlowId }) => {
       dataFlowId,
       action: "SYNC",
     });
-    return res.data?.data || [];
+    return res?.data || [];
   } catch (err) {
     return console.log("Error", err);
   }
