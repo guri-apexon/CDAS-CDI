@@ -376,20 +376,20 @@ exports.changeDatasetsStatus = async (req, res) => {
     } = await DB.executeQuery(
       `SELECT dataflowid from ${schemaName}.datapackage WHERE datapackageid = '${packageId}'`
     );
-
-    const {
-      rows: [dataPackageCount],
-    } = await DB.executeQuery(
-      `SELECT count(1) from ${schemaName}.datapackage WHERE dataflowid = '${dfId.dataflowid}'`
-    );
-
-    if (dataPackageCount.count < 2) {
-      return apiResponse.ErrorResponse(
-        res,
-        "If data flow is active, there must be at least one active Data Set"
+    if (active == 0) {
+      const {
+        rows: [dataPackageCount],
+      } = await DB.executeQuery(
+        `SELECT count(1) from ${schemaName}.datapackage WHERE dataflowid = '${dfId.dataflowid}'`
       );
-    }
 
+      if (dataPackageCount.count < 2) {
+        return apiResponse.ErrorResponse(
+          res,
+          "If data flow is active, there must be at least one active Data Set"
+        );
+      }
+    }
     let val = 0;
     if (active == 0) {
       val = 1;
