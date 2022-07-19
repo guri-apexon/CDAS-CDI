@@ -185,7 +185,7 @@ exports.saveDatasetData = async (req, res) => {
         userId,
         dfId,
         versionFreezed,
-        oldVersion.version
+        oldVersion.version || 0
       );
     }
 
@@ -284,7 +284,7 @@ exports.saveDatasetData = async (req, res) => {
         filePwd: values.filePwd,
         version: historyVersion,
       };
-      if (oldVersion.version === historyVersion) {
+      if (oldVersion?.version === historyVersion) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
@@ -546,7 +546,7 @@ exports.updateDatasetData = async (req, res) => {
       );
     }
     if (!helper.isSftp(values.locationType)) {
-      return updateSQLDataset(res, values, versionFreezed, oldVersion.version);
+      return updateSQLDataset(res, values, versionFreezed, oldVersion?.version);
     }
     // For SFTP Datasets update
     const incremental = values.loadType === "Incremental" ? "Y" : "N";
@@ -647,11 +647,11 @@ exports.updateDatasetData = async (req, res) => {
     var resData = {
       ...updateDS.rows[0],
     };
-    if (oldVersion.version < newVersion) {
+    if (oldVersion?.version < newVersion) {
       resData.version = newVersion;
       resData.versionBumped = true;
     } else {
-      resData.version = oldVersion.version;
+      resData.version = oldVersion?.version || 0;
       resData.versionBumped = false;
     }
 

@@ -18,7 +18,6 @@ import { ReactComponent as PackageIcon } from "../../components/Icons/datapackag
 import {
   selectDataPackage,
   redirectToDataSet,
-  updateStatus,
   updatePanel,
 } from "../../store/actions/DataPackageAction";
 import { updateDSState } from "../../store/actions/DataFlowAction";
@@ -32,6 +31,7 @@ import usePermission, {
 import {
   deletePackage,
   toggleDatasetsStatus,
+  updatePackageStatus,
 } from "../../services/ApiServices";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 
@@ -203,16 +203,22 @@ const PackagesList = ({ data, userInfo }) => {
     const handleRequestClose = () => {
       setOpen(false);
     };
-    const setActive = (status) => {
+    const setActive = async (status) => {
       if (packageId) {
-        dispatch(
-          updateStatus({
-            package_id: packageId,
-            active: status === 1 ? "0" : "1",
-            user_id: userInfo.userId,
-            versionFreezed,
-          })
-        );
+        const result = await updatePackageStatus({
+          package_id: packageId,
+          active: status === 1 ? "0" : "1",
+          user_id: userInfo.userId,
+          versionFreezed,
+        });
+        if (result.error) {
+          setTimeout(() => {
+            showErrorMessage(result.error);
+          }, 1000);
+          return;
+        }
+        showSuccessMessage(result.message || "Deleted succefully");
+        dispatch(updatePanel());
       }
     };
     const toggleDatasetActive = async (status) => {
