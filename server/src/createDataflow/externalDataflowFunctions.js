@@ -827,15 +827,15 @@ exports.insertValidation = async (req) => {
                     const last = el.lov.charAt(el.lov.length - 1);
                     const first = el.lov.charAt(el.lov.charAt(0));
 
-                    if (str1.test(el.lov) === false) {
-                      clErrArray.push("LOV should be seperated by tilde(~)");
-                    } else {
-                      if (last === "~" || first === "~") {
-                        clErrArray.push(
-                          "Tilde(~) can't be used start or end of string"
-                        );
-                      }
+                    // if (str1.test(el.lov) === false) {
+                    //   clErrArray.push("LOV should be seperated by tilde(~)");
+                    // } else {
+                    if (last === "~" || first === "~") {
+                      clErrArray.push(
+                        "Tilde(~) can't be used start or end of string"
+                      );
                     }
+                    // }
                   }
                   if (clErrArray.length > 0) {
                     let clErrRes = clErrArray.join(" '|' ");
@@ -2449,15 +2449,15 @@ const columnSave = (exports.columnDefinationInsert = async (
           const last = el.lov.charAt(el.lov.length - 1);
           const first = el.lov.charAt(el.lov.charAt(0));
 
-          if (str1.test(el.lov) === false) {
-            errorColumnDef.push("LOV should be seperated by tilde(~)");
-          } else {
-            if (last === "~" || first === "~") {
-              errorColumnDef.push(
-                "Tilde(~) can't be used start or end of string"
-              );
-            }
+          // if (str1.test(el.lov) === false) {
+          //   errorColumnDef.push("LOV should be seperated by tilde(~)");
+          // } else {
+          if (last === "~" || first === "~") {
+            errorColumnDef.push(
+              "Tilde(~) can't be used start or end of string"
+            );
           }
+          // }
         }
       } else {
         const clArray = [
@@ -4216,13 +4216,13 @@ exports.clDefUpdate = async (
         const last = data.lov.charAt(data.lov.length - 1);
         const first = data.lov.charAt(data.lov.charAt(0));
 
-        if (str1.test(data.lov) === false) {
-          errorcolDef.push("LOV should be seperated by tilde(~)");
-        } else {
-          if (last === "~" || first === "~") {
-            errorcolDef.push("Tilde(~) can't be used start or end of string");
-          }
+        // if (str1.test(data.lov) === false) {
+        //   errorcolDef.push("LOV should be seperated by tilde(~)");
+        // } else {
+        if (last === "~" || first === "~") {
+          errorcolDef.push("Tilde(~) can't be used start or end of string");
         }
+        // }
       }
 
       let colDefRes = helper.validation(valColDef);
