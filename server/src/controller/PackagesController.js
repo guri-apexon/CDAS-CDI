@@ -162,9 +162,9 @@ exports.addPackage = async function (req, res) {
           naming_convention,
           sftp_path,
           package_password ? "Yes" : "No",
-          "1",
+          "0",
           "N",
-          getCurrentTime()
+          getCurrentTime(),
         ]
       );
       package =
@@ -213,11 +213,27 @@ exports.addPackage = async function (req, res) {
   }
 };
 
-exports.changeStatus = function (req, res) {
+exports.changeStatus = async (req, res) => {
   try {
     const { active, package_id, user_id, versionFreezed } = req.body;
 
     Logger.info({ message: "Package changeStatus" });
+
+    if (active == 1) {
+      const {
+        rows: [dataSetCount],
+      } = await DB.executeQuery(
+        `SELECT count(1) from ${schemaName}.dataset WHERE datapackageid = '${package_id}'`
+      );
+
+      if (dataSetCount.count == 0) {
+        return apiResponse.ErrorResponse(
+          res,
+          "Please add at-least one dataset in order to make active"
+        );
+      }
+    }
+
     const query = `UPDATE ${schemaName}.datapackage
     SET active = ${active}
     WHERE datapackageid = '${package_id}' RETURNING *`;
@@ -267,7 +283,7 @@ exports.changeStatus = function (req, res) {
   }
 };
 
-exports.deletePackage = function (req, res) {
+exports.deletePackage = async (req, res) => {
   try {
     const { active, package_id, user_id, versionFreezed } = req.body;
     const query = `UPDATE ${schemaName}.datapackage
@@ -276,6 +292,25 @@ exports.deletePackage = function (req, res) {
 
     // const versionFreezed = false;
     Logger.info({ message: "deletePackage" });
+
+    const {
+      rows: [dfId],
+    } = await DB.executeQuery(
+      `SELECT dataflowid from ${schemaName}.datapackage WHERE datapackageid = '${package_id}'`
+    );
+
+    const {
+      rows: [dataPackageCount],
+    } = await DB.executeQuery(
+      `SELECT count(1) from ${schemaName}.datapackage WHERE dataflowid = '${dfId.dataflowid}'`
+    );
+
+    if (dataPackageCount.count < 2) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Please inactivate the dataflow in order to delete the package"
+      );
+    }
 
     const dataSetQuery = `UPDATE ${schemaName}.dataset SET del_flg = 'Y' WHERE datapackageid = '${package_id}' RETURNING datasetid`;
     const columnQuery = `UPDATE ${schemaName}.columndefinition SET del_flg = 1 WHERE datasetid = $1`;
@@ -326,6 +361,119 @@ exports.deletePackage = function (req, res) {
       );
     });
   } catch (err) {
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
+exports.changeDatasetsStatus = async (req, res) => {
+  try {
+    const { active, packageId, userId, versionFreezed } = req.body;
+    if (!packageId || !userId || typeof active === "undefined") {
+      return apiResponse.ErrorResponse(res, "Please provide required payload");
+    }
+
+    Logger.info({ message: "change Datasets Status" });
+
+    const {
+      rows: [dfId],
+    } = await DB.executeQuery(
+      `SELECT dataflowid from ${schemaName}.datapackage WHERE datapackageid = '${packageId}'`
+    );
+    if (active == 0) {
+      const {
+        rows: [dataPackageCount],
+      } = await DB.executeQuery(
+        `SELECT count(1) from ${schemaName}.datapackage WHERE dataflowid = '${dfId.dataflowid}'`
+      );
+
+      if (dataPackageCount.count < 2) {
+        return apiResponse.ErrorResponse(
+          res,
+          "If data flow is active, there must be at least one active Data Set"
+        );
+      }
+    }
+    let val = 0;
+    if (active == 0) {
+      val = 1;
+    }
+
+    const { rows: oldData } = await DB.executeQuery(
+      `SELECT datasetid,active from ${schemaName}.dataset WHERE datapackageid = '${packageId}' and active='${val}'`
+    );
+
+    const query = `UPDATE ${schemaName}.dataset
+    SET active = ${active}
+    WHERE datapackageid = '${packageId}' RETURNING *`;
+
+    // const versionFreezed = true;
+    DB.executeQuery(query).then(async (response) => {
+      const datasets = response.rows[0] || [];
+
+      const oldVer = await DB.executeQuery(
+        `SELECT version from ${schemaName}.dataflow_version  WHERE dataflowid = '${dfId.dataflowid}' order by version DESC limit 1`
+      );
+
+      const historyVersion = oldVer.rows[0]?.version || 0;
+      var version = Number(historyVersion);
+      const oldVersion = Number(historyVersion);
+      let newVersion = null;
+      const curDate = helper.getCurrentTime();
+
+      if (!versionFreezed) {
+        version = Number(historyVersion) + 1;
+
+        const {
+          rows: [data],
+        } = await DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5) RETURNING version`,
+          [dfId.dataflowid, version, null, userId, curDate]
+        );
+
+        newVersion = data.version;
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.cdr_ta_queue
+            (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count, datapackageid)
+            VALUES($1, 'CONFIG', $2, 'QUEUE', $5, $5, '', $3, '', 1, '', 0, $4)`,
+          [dfId.dataflowid, userId, version, packageId, curDate]
+        );
+      }
+
+      for (let key of oldData) {
+        await DB.executeQuery(
+          `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid, datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          [
+            dfId.dataflowid,
+            packageId,
+            key.datasetid,
+            version,
+            "active",
+            key.active,
+            active,
+            userId,
+            curDate,
+          ]
+        );
+      }
+
+      let resData = {};
+
+      if (oldVersion < newVersion) {
+        resData.version = newVersion;
+        resData.versionBumped = true;
+      } else {
+        resData.version = oldVersion;
+        resData.versionBumped = false;
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Success! Datasets status updated.",
+        resData
+      );
+    });
+  } catch (err) {
+    Logger.error("catch :change Datasets Status");
     return apiResponse.ErrorResponse(res, err);
   }
 };
