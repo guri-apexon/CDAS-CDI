@@ -260,7 +260,7 @@ exports.changeStatus = async (req, res) => {
 
       if (!historyVersion) throw new Error("History not updated");
 
-      if (oldVersion.version === historyVersion) {
+      if (oldVersion?.version === historyVersion) {
         var resData = {
           version: historyVersion,
           versionBumped: false,

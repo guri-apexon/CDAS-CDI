@@ -27,6 +27,7 @@ import {
   INGESTION_ISSUE_COL_URL,
   DATASETS_STATUS_TOGGLE,
   DELETE_PACKAGE,
+  UPDATE_PACKAGE,
 } from "../constants";
 import store from "../store";
 import { freezeDfVersion } from "../store/actions/DataFlowAction";
@@ -526,6 +527,17 @@ export const toggleDatasetsStatus = async (reqBody) => {
 export const deletePackage = async (reqBody) => {
   try {
     const res = await axios.post(`${baseURL}/${DELETE_PACKAGE}`, reqBody);
+    return res.data || [];
+  } catch (err) {
+    return {
+      data: [],
+      error: err.response?.data?.message || "Something went wrong",
+    };
+  }
+};
+export const updatePackageStatus = async (reqBody) => {
+  try {
+    const res = await axios.post(`${baseURL}/${UPDATE_PACKAGE}`, reqBody);
     return res.data || [];
   } catch (err) {
     return {
