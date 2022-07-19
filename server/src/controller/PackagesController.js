@@ -189,7 +189,7 @@ exports.addPackage = async function (req, res) {
     if (!historyVersion) throw new Error("History not updated");
 
     // console.log("audit_log", audit_log, oldVersion.version, historyVersion);
-    if (oldVersion.version === historyVersion) {
+    if (oldVersion?.version === historyVersion) {
       var resData = {
         version: historyVersion,
         versionBumped: false,
@@ -260,7 +260,7 @@ exports.changeStatus = async (req, res) => {
 
       if (!historyVersion) throw new Error("History not updated");
 
-      if (oldVersion.version === historyVersion) {
+      if (oldVersion?.version === historyVersion) {
         var resData = {
           version: historyVersion,
           versionBumped: false,
@@ -342,7 +342,7 @@ exports.deletePackage = async (req, res) => {
         ]);
       }
 
-      if (oldVersion.version === historyVersion) {
+      if (oldVersion?.version === historyVersion) {
         var resData = {
           version: historyVersion,
           versionBumped: false,
