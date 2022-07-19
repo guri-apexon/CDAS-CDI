@@ -542,7 +542,7 @@ export const CustomHeader = ({
         size="small"
         variant="secondary"
         icon={Filter}
-        disabled={isEditAll}
+        // disabled={isEditAll}
         onClick={toggleFilters}
       >
         Filter

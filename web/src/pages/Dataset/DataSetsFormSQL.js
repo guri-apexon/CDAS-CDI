@@ -12,12 +12,12 @@ import Grid from "apollo-react/components/Grid";
 import Button from "apollo-react/components/Button";
 import Table from "apollo-react/components/Table";
 import {
-  // ReduxFormAutocomplete,
   ReduxFormRadioGroup,
   ReduxFormSwitch,
   ReduxFormSelect,
   ReduxFormTextField,
   ReduxFormAutocompleteV2,
+  ReduxFormAutocomplete,
   // ReduxFormMultiSelect,
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
@@ -83,14 +83,18 @@ const DataSetsFormBase = (props) => {
   const [selectedOffsetColumns, setSelectedOffsetColumns] = useState(null);
   const [sqlColumnsArr, setSqlColumnsArr] = useState([]);
   const [cdtValue, setCdtValue] = useState(null);
+  const [selectedTable, setSelectedTable] = useState(null);
 
   const onChangeOffsetColumn = (obj) => {
     setSelectedOffsetColumns(obj);
     change("offsetColumn", obj.value);
   };
-  const changeTableName = () => {
+  const changeTableName = (value) => {
     change("offsetColumn", null);
     setSelectedOffsetColumns(null);
+    console.log("value", value);
+    change("tableName", value);
+    setSelectedTable(value);
   };
   useEffect(() => {
     if (sqlColumns.length) {
@@ -125,6 +129,14 @@ const DataSetsFormBase = (props) => {
       setShowPreview(false);
     }
   }, [formValues.isCustomSQL]);
+  useEffect(() => {
+    if (initialValues) {
+      const tableObj = initialValues?.tableName;
+      if (tableObj) setSelectedTable([tableObj]);
+      console.log("tableObj", tableObj, initialValues?.tableName);
+    }
+    console.log("tableObjinitialValues");
+  }, [initialValues]);
 
   useEffect(() => {
     // console.log("formValues.tableName::::", formValues, formValues.tableName);
@@ -174,6 +186,7 @@ const DataSetsFormBase = (props) => {
   };
 
   useEffect(() => {
+    console.log("tableObjValue");
     if (values?.clinicalDataType) {
       const selectedDK = datakind?.find(
         (e) => e.value === values.clinicalDataType[0]
@@ -294,21 +307,34 @@ const DataSetsFormBase = (props) => {
           )}
           {formValues.isCustomSQL === "No" && (
             <>
-              <ReduxFormSelect
-                name="tableName"
-                id="tableName"
-                label="Table Name"
-                fullWidth
-                size="small"
-                style={{ width: 300, display: "block" }}
-                canDeselect={false}
-                disabled={prodLock || !canUpdateDataFlow}
-                onChange={changeTableName}
-              >
-                {sqlTables?.map((e) => (
-                  <MenuItem value={e.tableName}>{e.tableName}</MenuItem>
-                ))}
-              </ReduxFormSelect>
+              <div key={selectedTable}>
+                <ReduxFormAutocomplete
+                  name="tableName"
+                  id="tableName"
+                  label="Table Name"
+                  fullWidth
+                  size="small"
+                  style={{ width: 300, display: "block" }}
+                  canDeselect={false}
+                  disabled={prodLock || !canUpdateDataFlow}
+                  // onChange={changeTableName}
+                  input={{
+                    value: selectedTable,
+                    onChange: changeTableName,
+                  }}
+                  source={sqlTables.map((e) => ({
+                    label: e.tableName,
+                    value: e.tableName,
+                  }))}
+                  variant="search"
+                  singleSelect
+                  required
+                  blurOnSelect={false}
+                  clearOnBlur={false}
+                  filterSelectedOptions={false}
+                  enableVirtualization
+                />
+              </div>
               <ReduxFormTextField
                 fullWidth
                 name="filterCondition"

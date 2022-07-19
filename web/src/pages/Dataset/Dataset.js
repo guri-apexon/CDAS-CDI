@@ -325,6 +325,10 @@ const Dataset = () => {
         studyId,
         versionFreezed,
       };
+      if (formValue.tableName && Array.isArray(formValue.tableName)) {
+        // eslint-disable-next-line prefer-destructuring
+        data.tableName = formValue.tableName[0];
+      }
       if (formValue?.sQLQuery?.includes("*")) {
         messageContext.showErrorMessage(
           `Please remove * from query to proceed.`
