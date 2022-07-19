@@ -31,7 +31,7 @@ const AuditLog = () => {
   const dataSetCount = dashboard?.selectedDataFlow?.dataSets;
   const dataflowName = dashboard?.selectedDataFlow?.dataFlowName || "";
   const [sortedColumnValue, setSortedColumnValue] = useState("update_dt");
-  const [sortOrderValue, setSortOrderValue] = useState("asc");
+  const [sortOrderValue, setSortOrderValue] = useState("desc");
   const [inlineFilters, setInlineFilters] = useState([]);
 
   const [tableRows, setTableRows] = useState([...auditData]);
