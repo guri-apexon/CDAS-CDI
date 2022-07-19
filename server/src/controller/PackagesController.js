@@ -368,6 +368,9 @@ exports.deletePackage = async (req, res) => {
 exports.changeDatasetsStatus = async (req, res) => {
   try {
     const { active, packageId, userId, versionFreezed } = req.body;
+    if (!packageId || !userId || typeof active === "undefined") {
+      return apiResponse.ErrorResponse(res, "Please provide required payload");
+    }
 
     Logger.info({ message: "change Datasets Status" });
 
@@ -465,7 +468,7 @@ exports.changeDatasetsStatus = async (req, res) => {
 
       return apiResponse.successResponseWithData(
         res,
-        "Success! Datasets Status updated.",
+        "Success! Datasets status updated.",
         resData
       );
     });

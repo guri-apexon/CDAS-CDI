@@ -2128,7 +2128,7 @@ exports.updateDataflowConfig = async (req, res) => {
       if (!Object.keys(diffObj).length) {
         return apiResponse.ErrorResponse(
           res,
-          "Please change something to update"
+          "Please change some values to update dataflow config"
         );
       }
 

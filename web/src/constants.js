@@ -267,7 +267,7 @@ export const INGESTION_ISSUE_URL = "v1/api/dataset/ingestion-issues";
 export const INGESTION_ISSUE_COL_URL =
   "v1/api/dataset/ingestion-issues-columns";
 export const DATASETS_STATUS_TOGGLE =
-  "vi/api/datapackage/change-datasets-status";
+  "v1/api/data-package/change-datasets-status";
 export const baseURL = process.env.REACT_APP_API_URL;
 export const API_URL = `${baseURL}/v1/api`;
 

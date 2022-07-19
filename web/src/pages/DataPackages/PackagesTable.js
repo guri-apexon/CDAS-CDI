@@ -17,9 +17,9 @@ import { ReactComponent as RoundPlusSvg } from "../../components/Icons/roundplus
 import { ReactComponent as PackageIcon } from "../../components/Icons/datapackage.svg";
 import {
   selectDataPackage,
-  deletePackage,
   redirectToDataSet,
   updateStatus,
+  updatePanel,
 } from "../../store/actions/DataPackageAction";
 import { updateDSState } from "../../store/actions/DataFlowAction";
 import { updateDSStatus } from "../../store/actions/DataSetsAction";
@@ -29,7 +29,10 @@ import usePermission, {
   Features,
   useStudyPermission,
 } from "../../components/Common/usePermission";
-import { toggleDatasetsStatus } from "../../services/ApiServices";
+import {
+  deletePackage,
+  toggleDatasetsStatus,
+} from "../../services/ApiServices";
 import { MessageContext } from "../../components/Providers/MessageProvider";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
@@ -215,32 +218,33 @@ const PackagesList = ({ data, userInfo }) => {
     const toggleDatasetActive = async (status) => {
       const result = await toggleDatasetsStatus({
         packageId,
-        active: status,
+        active: status ? 1 : 0,
+        userId: userInfo.userId,
+        versionFreezed,
       });
+      if (result.error) {
+        showErrorMessage(result.error);
+        return;
+      }
       showSuccessMessage(
-        `All Datasets marked ${status ? "Active" : "Inactive"}`
+        result.message ||
+          `All Datasets marked ${status ? "Active" : "Inactive"}`
       );
-      console.log("toggleDatasetActive::::", packageId, status, result);
-      // if (packageId) {
-      //   dispatch(
-      //     updateStatus({
-      //       package_id: packageId,
-      //       active: status === 1 ? "0" : "1",
-      //       user_id: userInfo.userId,
-      //       versionFreezed,
-      //     })
-      //   );
-      // }
     };
-    const deleteAction = () => {
+    const deleteAction = async () => {
       if (packageId) {
-        dispatch(
-          deletePackage({
-            package_id: packageId,
-            user_id: userInfo.userId,
-            versionFreezed,
-          })
-        );
+        const result = await deletePackage({
+          package_id: packageId,
+          user_id: userInfo.userId,
+          versionFreezed,
+          delete_package: true,
+        });
+        if (result.error) {
+          showErrorMessage(result.error);
+          return;
+        }
+        showSuccessMessage(result.message || "Deleted succefully");
+        dispatch(updatePanel());
       }
     };
     const editAction = () => {
