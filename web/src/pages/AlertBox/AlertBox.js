@@ -1,7 +1,12 @@
 import React from "react";
 import Modal from "apollo-react/components/Modal";
 
-const AlertBox = ({ onClose, submit, title, message }) => {
+const AlertBox = ({
+  onClose,
+  submit,
+  title = "Lose your work?",
+  message = "All unsaved changes will be lost.",
+}) => {
   return (
     <Modal
       open={true}

@@ -16,6 +16,7 @@ import { downloadTemplate } from "../../../utils/downloadData";
 import {
   updateDatasetColumns,
   getDatasetColumns,
+  setDataSetColumnCount,
 } from "../../../store/actions/DataSetsAction";
 import { createColumns, deleteCD } from "../../../services/ApiServices";
 import {
@@ -769,11 +770,16 @@ export default function DSColumnTable({
   useEffect(() => {
     const editedlength = getEditedRows().length;
     setEditedCount(editedlength);
+    dispatch(setDataSetColumnCount(editedlength));
     if (editedlength && rows.some((row) => !validateRow(row))) {
       setDisableSaveAll(true);
     } else {
       setDisableSaveAll(false);
     }
+
+    return () => {
+      dispatch(setDataSetColumnCount(0));
+    };
   }, [rows]);
 
   return (

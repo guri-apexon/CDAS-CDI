@@ -28,6 +28,7 @@ import {
   resetFTP,
   resetJDBC,
   getVLCData,
+  setDataSetColumnCount,
 } from "../../store/actions/DataSetsAction";
 import {
   updatePanel,
@@ -50,6 +51,8 @@ import usePermission, {
   Features,
   useStudyPermission,
 } from "../../components/Common/usePermission";
+import SaveChangesModal from "../../components/DataFlow/SaveChangesModal";
+import { formComponentActive } from "../../store/actions/AlertActions";
 
 const userInfo = getUserInfo();
 
@@ -110,6 +113,10 @@ const Dataset = () => {
   const [columnsActive, setColumnsActive] = useState(false);
   const [openModal, setopenModal] = useState(false);
   const [checkDatasetColumnsExist, setDatasetColumnsExist] = useState(true);
+  const [showSaveChangeModal, setShowSaveChangeModal] = useState(true);
+  const [tempTabValue, setTempTabValue] = useState(0);
+  const [manualTriggerToggle, setManualTriggerToggle] = useState(false);
+
   const dispatch = useDispatch();
   const params = useParams();
   const messageContext = useContext(MessageContext);
@@ -128,6 +135,7 @@ const Dataset = () => {
     selectedCard,
     selectedDataFlow: { dataFlowId: dfId },
   } = useSelector((state) => state.dashboard);
+  const form = useSelector((state) => state.form);
   const { prot_id: studyId } = selectedCard;
 
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
@@ -155,6 +163,7 @@ const Dataset = () => {
     isDatasetFetched,
     VLCData,
     datasetColumns,
+    dataSetRowCount,
   } = dataSets;
 
   const datasetid = params.datasetId;
@@ -178,11 +187,46 @@ const Dataset = () => {
     setIsPanelOpen(true);
   };
 
+  // Set form to active set for alert box configuration
+  useEffect(() => {
+    const isAnyChange = form?.DataSetsForm?.anyTouched || false;
+    if (isAnyChange) {
+      dispatch(formComponentActive());
+    }
+  }, [form]);
+
   const handleChangeTab = (event, v) => {
-    setValue(v);
+    setManualTriggerToggle(true);
+
+    const isAnyChange = form?.DataSetsForm?.anyTouched || false;
+    setTempTabValue(v);
+    if (isAnyChange) {
+      setManualTriggerToggle(true);
+    }
+    if (v === 0 && dataSetRowCount > 0) {
+      setManualTriggerToggle(true);
+    }
+    if ((v !== 0 && !isAnyChange) || (v === 0 && dataSetRowCount === 0)) {
+      setValue(v);
+      if (datasetid !== "new" && datasetid !== null) {
+        dispatch(getDatasetColumns(datasetid));
+      }
+      setManualTriggerToggle(false);
+    }
+  };
+
+  // logic to run after user click discard changes on save modal
+  const handlePostDiscardChange = () => {
+    setValue(tempTabValue);
     if (datasetid !== "new" && datasetid !== null) {
       dispatch(getDatasetColumns(datasetid));
     }
+    setManualTriggerToggle(false);
+  };
+
+  // logic to run after user click continue editing changes on save modal
+  const handlePostContinue = () => {
+    setManualTriggerToggle(false);
   };
 
   const getDataSetType = (type) => {
@@ -357,7 +401,9 @@ const Dataset = () => {
       await dispatch(reset("DataSetsFormSQL"));
       // jdbcRef.current.handleCancel();
     }
+    setShowSaveChangeModal(false);
     history.push("/dashboard");
+    setShowSaveChangeModal(true);
   };
 
   useEffect(() => {
@@ -405,6 +451,16 @@ const Dataset = () => {
         >
           <main className={classes.content}>
             <div className={classes.contentHeader}>
+              {/* Save Changes Modal */}
+              {showSaveChangeModal && (
+                <SaveChangesModal
+                  isManualTrigger={true}
+                  manualTriggerToggle={manualTriggerToggle}
+                  handlePostManualContinue={handlePostContinue}
+                  handlePostManualDiscardChange={handlePostDiscardChange}
+                />
+              )}
+
               <Modal
                 open={openModal}
                 variant="warning"
