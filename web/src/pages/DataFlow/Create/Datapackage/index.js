@@ -209,7 +209,7 @@ const DataPackage = (
                       value={sodValue}
                       size="small"
                       onChange={(e) => {
-                        setSodValue(e.target.value);
+                        setSodValue(e.target.value || sodValue || "Regular");
                       }}
                       className="mb-20 package-type"
                     >
