@@ -220,6 +220,8 @@ export default function DSColumnTable({
     setIsFilePicked(false);
     setSelectedFile(null);
     setImportedData([]);
+    // document.querySelector("#file").value = "";
+    inputFile.current.value = "";
   };
 
   const handleOverWrite = async () => {
