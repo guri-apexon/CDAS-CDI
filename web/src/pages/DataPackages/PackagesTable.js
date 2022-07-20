@@ -194,7 +194,7 @@ const PackagesList = ({ data, userInfo }) => {
     );
   };
   const ActionCell = ({ row }) => {
-    const { packageName, onRowEdit } = row;
+    const { packageName, onRowEdit, type } = row;
     const active = row.active && Number(row.active) === 1 ? 1 : 0;
     const packageId = row.datapackageid || null;
     const [anchorEl, setAnchorEl] = useState(null);
@@ -236,6 +236,7 @@ const PackagesList = ({ data, userInfo }) => {
         result.message ||
           `All Datasets marked ${status ? "Active" : "Inactive"}`
       );
+      dispatch(updatePanel());
     };
     const deleteAction = async () => {
       if (packageId) {
@@ -281,11 +282,13 @@ const PackagesList = ({ data, userInfo }) => {
         text: "Edit data package",
         onClick: editAction,
       });
-      menuItems.push({
-        text: "Delete data package",
-        onClick: deleteAction,
-        disabled: !canUpdateDataFlow,
-      });
+      if (type) {
+        menuItems.push({
+          text: "Delete data package",
+          onClick: deleteAction,
+          disabled: !canUpdateDataFlow,
+        });
+      }
     }
     const openAction = (e) => {
       setAnchorEl(e.currentTarget);

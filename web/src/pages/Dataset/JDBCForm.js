@@ -461,6 +461,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 required
                 onChange={handleDTChange}
                 disabled={prodLock}
+                className="dataset-data-flow-type"
               >
                 <Radio value="Cumulative" label="Cumulative" />
                 <Radio value="Incremental" label="Incremental" />

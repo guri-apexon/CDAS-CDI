@@ -165,3 +165,9 @@ label + div[class^="MuiInput-formControl"] {
     height: 100%;
   }
 }
+.dataset-data-flow-type {
+  display: grid;
+  label {
+    width: fit-content;
+  }
+}
