@@ -459,16 +459,16 @@ exports.getIssueColumns = async (req, res) => {
     } else {
       concatQuery += `${baseQuery} (${errRows});`;
     }
-    console.log("concatQuery", concatQuery);
-    // await jdbc(
-    //   dbUser,
-    //   dbPass,
-    //   connectionUrl,
-    //   driverName,
-    //   concatQuery,
-    //   "Issue retrieved successfully.",
-    //   res
-    // );
+    // console.log("concatQuery", concatQuery);
+    await jdbc(
+      dbUser,
+      dbPass,
+      connectionUrl,
+      driverName,
+      concatQuery,
+      "Issue retrieved successfully.",
+      res
+    );
   } catch (err) {
     const msg = err.message || COMMON_ERR;
     Logger.error("catch :getIssueColumns");

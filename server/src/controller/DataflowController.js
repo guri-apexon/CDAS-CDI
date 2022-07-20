@@ -1689,13 +1689,9 @@ exports.syncDataFlow = async (req, res) => {
     //   [dataFlowId, curDate]
     // );
 
-    return apiResponse.successResponse(
-      res,
-      "Sync pipeline configs successfully written to kafka",
-      {
-        success: true,
-      }
-    );
+    return apiResponse.successResponse(res, "Sync initiated successfully", {
+      success: true,
+    });
   } catch (error) {
     Logger.error("catch :syncDataFlow");
     return apiResponse.ErrorResponse(res, error);

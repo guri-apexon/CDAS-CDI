@@ -268,7 +268,7 @@ export default function CDTList() {
       return false;
     }
 
-    if (cName && cName.search(regexp) === -1) {
+    if (cName && (cName.search(regexp) === -1 || cName.includes("-"))) {
       setNameError(true);
       return false;
     }

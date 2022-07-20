@@ -156,9 +156,10 @@ const DataPackages = React.memo(() => {
   };
 
   useEffect(() => {
+    const updatePackage = !!packageData?.selectedPackage?.type;
     if (!packageData.openAddPackage && packageData.selectedPackage) {
       setShowForm(true);
-      setConfigShow(true);
+      setConfigShow(updatePackage);
       setCompression(packageData.selectedPackage?.type);
       setNamingConvention(packageData.selectedPackage?.name);
       setSodValue(packageData.selectedPackage?.sod_view_type);
@@ -176,7 +177,7 @@ const DataPackages = React.memo(() => {
           }, 2000);
         }
       } else {
-        setConfigShow(true);
+        setConfigShow(updatePackage);
         setPackagePassword("");
       }
     }
