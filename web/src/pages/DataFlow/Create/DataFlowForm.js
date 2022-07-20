@@ -257,6 +257,7 @@ const DataFlowFormBase = (props) => {
                 name="locationName"
                 label="Location Name"
                 source={locations}
+                disabled={!locations?.length}
                 input={{
                   onChange: onChangeLocation,
                 }}
