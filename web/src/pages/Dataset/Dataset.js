@@ -116,6 +116,7 @@ const Dataset = () => {
   const [showSaveChangeModal, setShowSaveChangeModal] = useState(true);
   const [tempTabValue, setTempTabValue] = useState(0);
   const [manualTriggerToggle, setManualTriggerToggle] = useState(false);
+  const [shouldTriggerRedirect, setShouldTriggerRedirect] = useState(true);
 
   const dispatch = useDispatch();
   const params = useParams();
@@ -289,6 +290,7 @@ const Dataset = () => {
   }, [loctyp]);
 
   useEffect(() => {
+    setShouldTriggerRedirect(false);
     if (dsCreatedSuccessfully) {
       setTimeout(() => {
         if (isSftp(loctyp)) {
@@ -300,6 +302,7 @@ const Dataset = () => {
         } else {
           setColumnsActive(false);
         }
+        setShouldTriggerRedirect(true);
       }, 2000);
     }
   }, [dsCreatedSuccessfully, loctyp, isCustomSQL]);
@@ -471,6 +474,7 @@ const Dataset = () => {
                   manualTriggerToggle={manualTriggerToggle}
                   handlePostManualContinue={handlePostContinue}
                   handlePostManualDiscardChange={handlePostDiscardChange}
+                  shouldTriggerOnRedirect={shouldTriggerRedirect}
                 />
               )}
 
