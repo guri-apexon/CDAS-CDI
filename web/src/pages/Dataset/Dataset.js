@@ -197,15 +197,18 @@ const Dataset = () => {
 
   const handleChangeTab = (event, v) => {
     setManualTriggerToggle(true);
-
-    const isAnyChange = form?.DataSetsForm?.anyTouched || false;
     setTempTabValue(v);
+
+    // check if there is any changes within form and set toggle for modal
+    const isAnyChange = form?.DataSetsForm?.anyTouched || false;
     if (isAnyChange) {
       setManualTriggerToggle(true);
     }
+    // set toggle in case of column tab and changes within columns
     if (v === 0 && dataSetRowCount > 0) {
       setManualTriggerToggle(true);
     }
+    // if there is no change in data then proceed forward
     if ((v !== 0 && !isAnyChange) || (v === 0 && dataSetRowCount === 0)) {
       setValue(v);
       if (datasetid !== "new" && datasetid !== null) {

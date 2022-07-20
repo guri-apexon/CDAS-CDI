@@ -1,12 +1,16 @@
+// libraries
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { useSelector } from "react-redux";
+// components
+import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
+import ButtonGroup from "apollo-react/components/ButtonGroup";
+import Modal from "apollo-react/components/Modal/Modal";
 import Tab from "apollo-react/components/Tab";
 import Tabs from "apollo-react/components/Tabs";
 import Typography from "apollo-react/components/Typography";
-import ButtonGroup from "apollo-react/components/ButtonGroup";
-import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
-import Modal from "apollo-react/components/Modal/Modal";
+import SaveChangesModal from "./SaveChangesModal";
+// helpers
 import usePermission, {
   Categories,
   Features,
@@ -51,9 +55,8 @@ const Breadcrumbs = (props) => {
 };
 const Header = (props) => {
   const { headerTitle, saveBtnLabel, saveDisabled } = props;
-  const [openModal, setopenModal] = useState(false);
   const classes = useStyles();
-
+  const [openModal, setOpenModal] = useState(false);
   const dashboard = useSelector((state) => state.dashboard);
   const { prot_id: protId } = dashboard?.selectedCard;
 
@@ -68,7 +71,7 @@ const Header = (props) => {
   );
 
   const onCancel = () => {
-    setopenModal(true);
+    setOpenModal(true);
   };
   return (
     <>
@@ -124,7 +127,7 @@ const Header = (props) => {
       <Modal
         open={openModal}
         variant="warning"
-        onClose={() => setopenModal(false)}
+        onClose={() => setOpenModal(false)}
         title="Exit"
         message="Do you really want to exit and discard dataflow changes"
         buttonProps={[
@@ -132,17 +135,20 @@ const Header = (props) => {
             label: "Discard changes",
             onClick: () => {
               props.close();
-              setopenModal(false);
+              setOpenModal(false);
             },
           },
           {
             label: "Continue editing data flow",
             variant: "primary",
-            onClick: () => setopenModal(false),
+            onClick: () => setOpenModal(false),
           },
         ]}
         id="success"
       />
+
+      {/* Save Modal */}
+      <SaveChangesModal />
     </>
   );
 };

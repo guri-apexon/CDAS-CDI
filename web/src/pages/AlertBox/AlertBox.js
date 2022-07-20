@@ -1,12 +1,7 @@
 import React from "react";
 import Modal from "apollo-react/components/Modal";
 
-const AlertBox = ({
-  onClose,
-  submit,
-  title = "Lose your work?",
-  message = "All unsaved changes will be lost.",
-}) => {
+const AlertBox = ({ onClose, submit, title, message, dataflow }) => {
   return (
     <Modal
       open={true}
@@ -16,18 +11,34 @@ const AlertBox = ({
       variant="warning"
       title={title}
       message={message}
-      buttonProps={[
-        {
-          label: "Cancel",
-          onClick: onClose,
-          // disabled: loading,
-        },
-        {
-          label: "Yes",
-          onClick: submit,
-          // disabled: loading,
-        },
-      ]}
+      buttonProps={
+        dataflow
+          ? [
+              {
+                label: "Keep editing",
+                onClick: onClose,
+                // disabled: loading,
+              },
+              {
+                label: "Discard changes",
+                variant: "primary",
+                onClick: submit,
+                // disabled: loading,
+              },
+            ]
+          : [
+              {
+                label: "Cancel",
+                onClick: onClose,
+                // disabled: loading,
+              },
+              {
+                label: "Yes",
+                onClick: submit,
+                // disabled: loading,
+              },
+            ]
+      }
       id="neutral"
     />
   );

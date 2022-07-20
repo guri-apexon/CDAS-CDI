@@ -15,13 +15,25 @@ import {
   showAppSwitcher,
 } from "../../store/actions/AlertActions";
 
+/**
+ * Renders modal whenever route is changed without saving changes
+ *
+ * @param {string} continueBtnLabel Label for continue btn
+ * @param {string} discardBtnLabel Label for discard btn
+ * @param {boolean} isManualTrigger Flag for checking if modal needs to trigger manually
+ * @param {string} manualTriggerToggle Flag for opening/closing modal
+ * @param {string} message Modal message
+ * @param {string} title Modal title
+ * @param {Function} handlePostManualContinue runs upon clicking continue btn when in manual mode
+ * @param {Function} handlePostManualDiscardChange runs upon clicking discard btn when in manual mode
+ */
 const SaveChangesModal = ({
-  message = "Do you really want to exit and discard dataflow changes",
-  title = "Exit",
+  continueBtnLabel = "Keep editing",
   discardBtnLabel = "Discard changes",
-  continueBtnLabel = "Continue editing data flow",
   isManualTrigger = false,
   manualTriggerToggle = false,
+  message = "Do you really want to exit and discard dataflow changes",
+  title = "Exit",
   handlePostManualContinue = () => {},
   handlePostManualDiscardChange = () => {},
 }) => {
@@ -57,6 +69,9 @@ const SaveChangesModal = ({
     if (isManualTrigger) {
       handleCloseSaveChangesModal();
       handlePostManualDiscardChange();
+      if (targetRoute) {
+        history.push(targetRoute);
+      }
     } else {
       if (targetRoute === "") {
         history.push("/dashboard");
@@ -104,7 +119,7 @@ const SaveChangesModal = ({
     dispatch(formComponentActive());
   }, []);
 
-  // manual open trigger
+  // Manually open trigger
   useEffect(() => {
     if (isManualTrigger) {
       setShowSaveChangesModal(manualTriggerToggle);
@@ -114,7 +129,13 @@ const SaveChangesModal = ({
   return (
     <>
       {isShowAlertBox && (
-        <AlertBox onClose={keepEditingBtn} submit={leavePageBtn} />
+        <AlertBox
+          onClose={keepEditingBtn}
+          submit={leavePageBtn}
+          message="Do you really want to exit and discard dataflow changes"
+          title="Exit"
+          dataflow
+        />
       )}
 
       <Modal
@@ -125,11 +146,14 @@ const SaveChangesModal = ({
         title={title}
         variant="warning"
         buttonProps={[
-          { label: discardBtnLabel, onClick: handleDiscardChanges },
           {
             label: continueBtnLabel,
-            variant: "primary",
             onClick: handleCloseSaveChangesModal,
+          },
+          {
+            label: discardBtnLabel,
+            variant: "primary",
+            onClick: handleDiscardChanges,
           },
         ]}
       />
