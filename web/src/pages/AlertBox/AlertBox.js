@@ -17,13 +17,11 @@ const AlertBox = ({ onClose, submit, title, message, dataflow }) => {
               {
                 label: "Keep editing",
                 onClick: onClose,
-                // disabled: loading,
               },
               {
                 label: "Discard changes",
                 variant: "primary",
                 onClick: submit,
-                // disabled: loading,
               },
             ]
           : [
