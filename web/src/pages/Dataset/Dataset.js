@@ -474,6 +474,7 @@ const Dataset = () => {
                       {
                         label: "Cancel",
                         onClick: () => setopenModal(true),
+                        disabled: !canUpdateDataFlow,
                       },
                       {
                         label: "Save",

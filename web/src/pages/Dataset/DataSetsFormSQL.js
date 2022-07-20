@@ -355,6 +355,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Type of Data"
                 disabled={prodLock || !canUpdateDataFlow}
+                className="dataset-data-flow-type"
               >
                 <Radio value="Cumulative" label="Cumulative" />
                 <Radio value="Incremental" label="Incremental" />
