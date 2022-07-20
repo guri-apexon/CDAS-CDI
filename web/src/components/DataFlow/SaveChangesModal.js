@@ -32,6 +32,7 @@ const SaveChangesModal = ({
   discardBtnLabel = "Discard changes",
   isManualTrigger = false,
   manualTriggerToggle = false,
+  shouldTriggerOnRedirect = true,
   message = "Do you really want to exit and discard dataflow changes",
   title = "Exit",
   handlePostManualContinue = () => {},
@@ -84,14 +85,18 @@ const SaveChangesModal = ({
 
   // Save Changes Modal Effect
   useEffect(() => {
-    routerHandle.current = history.block((tr) => {
-      setTargetRoute(tr?.pathname);
-      setShowSaveChangesModal(true);
-      return false;
-    });
+    if (shouldTriggerOnRedirect) {
+      routerHandle.current = history.block((tr) => {
+        setTargetRoute(tr?.pathname);
+        setShowSaveChangesModal(true);
+        return false;
+      });
+    }
 
     return () => {
-      routerHandle.current();
+      if (shouldTriggerOnRedirect) {
+        routerHandle.current();
+      }
     };
   });
 

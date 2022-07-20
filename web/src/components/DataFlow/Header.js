@@ -55,7 +55,12 @@ const Breadcrumbs = (props) => {
 };
 
 const Header = (props) => {
-  const { headerTitle, saveBtnLabel, saveDisabled } = props;
+  const {
+    headerTitle,
+    saveBtnLabel,
+    saveDisabled,
+    shouldDisplaySaveChangesModal = true,
+  } = props;
   const classes = useStyles();
   const [openModal, setOpenModal] = useState(false);
   const dashboard = useSelector((state) => state.dashboard);
@@ -149,7 +154,7 @@ const Header = (props) => {
       />
 
       {/* Save Modal */}
-      <SaveChangesModal />
+      {shouldDisplaySaveChangesModal && <SaveChangesModal />}
     </>
   );
 };
