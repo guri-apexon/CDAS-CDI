@@ -599,7 +599,7 @@ export const CustomHeader = ({
           size="small"
           variant="secondary"
           icon={Filter}
-          disabled={editedCount}
+          // disabled={editedCount}
           onClick={toggleFilters}
         >
           Filter

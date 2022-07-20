@@ -578,6 +578,10 @@ export default function DSColumnTable({
     } else if (dataOrigin === "fromDB") {
       // setSelectedRows(formatRows);
       setRows([...formattedData]);
+      // Added below three lines for default edit mode
+      const initRows = formattedData.map((e) => e.uniqueId);
+      setEditedRows([...formattedData]);
+      setSelectedRows([...initRows]);
     } else if (dataOrigin === "manually") {
       setSelectedRows([`u0`]);
       setEditedRows([{ uniqueId: `u0`, ...columnObj }]);
