@@ -33,7 +33,7 @@ const ColumnsTab = ({
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
-  const { dsProdLock, dsTestLock, isSync, testflag } = dataFlow;
+  const { dsProdLock, dsTestLock, dataFlowdetail } = dataFlow;
   const { datasetColumns, sqlColumns, haveHeader } = dataSets;
   const { selectedCard } = dashboard;
   const { protocolnumber, prot_id: protId } = selectedCard;
@@ -52,6 +52,7 @@ const ColumnsTab = ({
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
   const [formattedData, setFormattedData] = useState([]);
+  // const [isDFSynced, setIsDFSynced] = useState(false);
 
   const maxSize = 150000;
 
@@ -110,6 +111,7 @@ const ColumnsTab = ({
               isHavingColumnName: true,
               isSaved: true,
               isEditMode: false,
+              // isDBSync:
             };
             return newObj;
           })
@@ -205,6 +207,13 @@ const ColumnsTab = ({
       setShowColumns(true);
     }
   }, [locationType]);
+
+  // useEffect(() => {
+  //   const { isSync, testflag } = dataFlowdetail;
+  //   if (isSync === "Y" && testflag === 0) {
+  //     setIsDFSynced(true);
+  //   }
+  // }, [dataFlowdetail]);
 
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);

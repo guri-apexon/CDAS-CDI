@@ -190,6 +190,8 @@ const DataSetsFormBase = (props) => {
         value: values?.tableName,
       };
       if (tableObj) setSelectedTable(tableObj);
+    } else {
+      setSelectedTable(null);
     }
     if (!values || !values?.clinicalDataType) {
       setCdtValue(null);
