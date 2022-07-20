@@ -268,7 +268,6 @@ const DataFlowFormBase = (props) => {
                   onChange={(v) => changeFormField(v, "dataflowType")}
                   label="Data Flow Type"
                   disabled={testLock || prodLock || !canUpdateDataFlow}
-                  class="dataset-data-flow-type"
                 >
                   <Radio value="test" label="Test" />
                   <Radio value="production" label="Production" />
