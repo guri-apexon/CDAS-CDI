@@ -256,11 +256,11 @@ exports.insertValidation = async (req) => {
           if (!helper.stringToBoolean(each.noPackageConfig)) {
             const dpArrayST = [
               { key: "type", value: each.type, type: "string" },
-              {
-                key: "sasXptMethod ",
-                value: each.sasXptMethod,
-                type: "string",
-              },
+              // {
+              //   key: "sasXptMethod ",
+              //   value: each.sasXptMethod,
+              //   type: "string",
+              // },
               {
                 key: "namingConvention",
                 value: each.namingConvention,
@@ -283,6 +283,23 @@ exports.insertValidation = async (req) => {
             if (dpResST.length > 0) {
               // dpErrArray.push(dpResST);
               dpErrArray = dpErrArray.concat(dpResST);
+            }
+
+            if (each.type) {
+              if (each.type.toLowerCase() === "sas") {
+                const dpArraySAS = [
+                  {
+                    key: "sasXptMethod ",
+                    value: each.sasXptMethod,
+                    type: "string",
+                  },
+                ];
+
+                let dpResSas = helper.validation(dpArraySAS);
+                if (dpResSas.length > 0) {
+                  dpErrArray = dpErrArray.concat(dpResSas);
+                }
+              }
             }
           }
 
@@ -1372,11 +1389,11 @@ exports.packageLevelInsert = async (
         if (!helper.stringToBoolean(noPackageConfig)) {
           const dpArrayST = [
             { key: "type", value: data.type, type: "string" },
-            {
-              key: "sasXptMethod",
-              value: data.sasXptMethod,
-              type: "string",
-            },
+            // {
+            //   key: "sasXptMethod",
+            //   value: data.sasXptMethod,
+            //   type: "string",
+            // },
             {
               key: "namingConvention",
               value: namingConvention,
@@ -1402,6 +1419,23 @@ exports.packageLevelInsert = async (
           if (dpResST.length > 0) {
             // errorPackage.push(dpResST);
             errorPackage = errorPackage.concat(dpResST);
+          }
+
+          if (data.type) {
+            if (data.type.toLowerCase() === "sas") {
+              const dpArraySAS = [
+                {
+                  key: "sasXptMethod ",
+                  value: data.sasXptMethod,
+                  type: "string",
+                },
+              ];
+
+              let dpResSas = helper.validation(dpArraySAS);
+              if (dpResSas.length > 0) {
+                errorPackage = errorPackage.concat(dpResSas);
+              }
+            }
           }
         }
 
@@ -3168,13 +3202,13 @@ exports.packageUpdate = async (
             type: "string",
           });
         }
-        if (typeof data.sasXptMethod != "undefined") {
-          TypeSas.push({
-            key: "sasXptMethod",
-            value: data.sasXptMethod,
-            type: "string",
-          });
-        }
+        // if (typeof data.sasXptMethod != "undefined") {
+        //   TypeSas.push({
+        //     key: "sasXptMethod",
+        //     value: data.sasXptMethod,
+        //     type: "string",
+        //   });
+        // }
         if (typeof data.namingConvention != "undefined") {
           TypeSas.push({
             key: "namingConvention",
@@ -3202,6 +3236,23 @@ exports.packageUpdate = async (
         if (TypeSasRes.length > 0) {
           // errorPackage.push(TypeSasRes);
           errorPackage = errorPackage.concat(TypeSasRes);
+        }
+      }
+
+      if (data.type) {
+        if (data.type.toLowerCase() === "sas") {
+          const dpArraySAS = [
+            {
+              key: "sasXptMethod ",
+              value: data.sasXptMethod,
+              type: "string",
+            },
+          ];
+
+          let dpResSas = helper.validation(dpArraySAS);
+          if (dpResSas.length > 0) {
+            errorPackage = errorPackage.concat(dpResSas);
+          }
         }
       }
 

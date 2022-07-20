@@ -482,6 +482,19 @@ export default function DSColumnTable({
     setEditedBackup([]);
   };
 
+  const moreColumnsWithoutSort = (cols) => {
+    return cols.map((e) => {
+      return {
+        header: e.header,
+        hidden: e?.hidden || false,
+        accessor: e.accessor,
+        customCell: e.customCell,
+        filterFunction: e.filterFunction,
+        filterComponent: e.filterComponent,
+      };
+    });
+  };
+
   const onEditAll = () => {
     if (rows.length > 0) {
       // const allRows = rows.map((e) => e.uniqueId);
@@ -680,7 +693,13 @@ export default function DSColumnTable({
       //   ["asc"]
       // );
 
-      setRows([...removeExistingRowData, editedRowData]);
+      removeExistingRowData.splice(
+        editedRowData.uniqueId - 1,
+        0,
+        editedRowData
+      );
+
+      setRows([...removeExistingRowData]);
       // setEditedRows([...removeEdited]);
       // setSelectedRows([...removeRow]);
     }
@@ -711,6 +730,7 @@ export default function DSColumnTable({
   };
 
   const onRowEdit = (row) => {
+    console.log({ row });
     setEditedBackup([{ ...row }]);
     setRows((prevRows) =>
       prevRows.map((e) => {
@@ -794,7 +814,11 @@ export default function DSColumnTable({
               ? `${rows.length} dataset columns`
               : `${rows.length} dataset column`
           }`}
-          columns={moreColumns}
+          columns={
+            editedBackup.length
+              ? moreColumnsWithoutSort(moreColumns)
+              : moreColumns
+          }
           initialSortedColumn="uniqueId"
           initialSortOrder="asc"
           rowId="uniqueId"
