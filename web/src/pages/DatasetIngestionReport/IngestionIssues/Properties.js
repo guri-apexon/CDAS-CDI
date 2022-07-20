@@ -64,6 +64,9 @@ const IssuesProperties = ({ datasetProperties }) => {
         console.log("clipboard err", err);
       });
   };
+  const getFileType = (type) => {
+    return type?.toLowerCase() === "full" ? "Cumulative" : "Increamental";
+  };
   useEffect(() => {
     if (datasetProperties?.dataflowid) {
       setLoading(false);
@@ -131,7 +134,7 @@ const IssuesProperties = ({ datasetProperties }) => {
 
                 <Grid item xs={6}>
                   <div className="label">File Transfer Type</div>
-                  <div className="text">{loadType}</div>
+                  <div className="text">{getFileType(loadType)}</div>
                 </Grid>
                 <Grid item xs={12}>
                   <div className="label">File Naming Convention</div>

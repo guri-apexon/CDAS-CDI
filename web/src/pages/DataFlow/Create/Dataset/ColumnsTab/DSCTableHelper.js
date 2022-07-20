@@ -452,7 +452,7 @@ export const CustomHeader = ({
       {isEditAll && (
         <>
           <Button size="small" style={{ marginRight: 8 }} onClick={onCancelAll}>
-            Cancel all
+            Cancel
           </Button>
           <Button
             size="small"
@@ -460,7 +460,7 @@ export const CustomHeader = ({
             onClick={onSaveAll}
             disabled={disableSaveAll}
           >
-            Save all
+            Save All
           </Button>
         </>
       )}

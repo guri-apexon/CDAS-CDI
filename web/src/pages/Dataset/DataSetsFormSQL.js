@@ -182,7 +182,7 @@ const DataSetsFormBase = (props) => {
       const selectedDK = datakind?.find(
         (e) => e.value === values.clinicalDataType[0]
       );
-      setCdtValue(selectedDK);
+      if (selectedDK) setCdtValue(selectedDK);
     }
     if (values?.tableName) {
       const tableObj = {
@@ -190,6 +190,8 @@ const DataSetsFormBase = (props) => {
         value: values?.tableName,
       };
       if (tableObj) setSelectedTable(tableObj);
+    } else {
+      setSelectedTable(null);
     }
     if (!values || !values?.clinicalDataType) {
       setCdtValue(null);
@@ -432,7 +434,7 @@ const DataSetsFormSQL = connect((state) => {
       "offsetColumn",
       "clinicalDataType"
     ),
-    datakind: state.dataSets.datakind?.records,
+    datakind: state.dataSets.datakind?.records || [],
     sqlTables,
     sqlColumns,
     previewSQL: state.dataSets.previewSQL,
