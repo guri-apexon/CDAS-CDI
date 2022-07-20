@@ -275,16 +275,16 @@ const PackagesList = ({ data, userInfo }) => {
         onClick: () => toggleDatasetActive(),
         disabled: !canUpdateDataFlow,
       },
-      {
-        text: "Delete data package",
-        onClick: deleteAction,
-        disabled: !canUpdateDataFlow,
-      },
     ];
     if (isSftp(locationType)) {
       menuItems.unshift({
         text: "Edit data package",
         onClick: editAction,
+      });
+      menuItems.push({
+        text: "Delete data package",
+        onClick: deleteAction,
+        disabled: !canUpdateDataFlow,
       });
     }
     const openAction = (e) => {
