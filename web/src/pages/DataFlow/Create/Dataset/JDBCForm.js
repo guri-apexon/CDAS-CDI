@@ -477,6 +477,7 @@ const JDBCForm = forwardRef((props, ref) => {
           <Select
             name="isCustomSQL"
             id="isCustomSQL"
+            canDeselect={false}
             value={isCustomSQL}
             size="small"
             onChange={(e) => handleSelection(e)}

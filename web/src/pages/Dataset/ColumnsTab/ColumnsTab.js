@@ -33,7 +33,7 @@ const ColumnsTab = ({
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
-  const { dsProdLock, dsTestLock } = dataFlow;
+  const { dsProdLock, dsTestLock, isSync, testflag } = dataFlow;
   const { datasetColumns, sqlColumns, haveHeader } = dataSets;
   const { selectedCard } = dashboard;
   const { protocolnumber, prot_id: protId } = selectedCard;
@@ -156,7 +156,6 @@ const ColumnsTab = ({
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
         const newData = formatDataNew(importedData, protocolnumber);
-        console.log("newData", newData);
         if (newData?.headerNotMatching) {
           messageContext.showErrorMessage(
             `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
