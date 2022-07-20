@@ -1588,7 +1588,7 @@ exports.activateDataFlow = async (req, res) => {
 
       // console.log(oldVersion.version, updatedLogs);
       var resData = { ...dataflowObj, version: updatedLogs };
-      if (oldVersion.version === updatedLogs) {
+      if (oldVersion?.version === updatedLogs) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
@@ -1651,7 +1651,7 @@ exports.inActivateDataFlow = async (req, res) => {
     });
 
     var resData = { ...dataflowObj, version: updatedLogs };
-    if (oldVersion.version === updatedLogs) {
+    if (oldVersion?.version === updatedLogs) {
       resData.versionBumped = false;
     } else {
       resData.versionBumped = true;
@@ -1983,6 +1983,43 @@ exports.updateDataflowConfig = async (req, res) => {
     } = req.body;
 
     const {
+      rows: [dataFlowCount],
+    } = await DB.executeQuery(
+      `SELECT count(1) from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}' and active=1`
+    );
+
+    let dataSet_count = 0;
+    const dataPackage = await DB.executeQuery(
+      `SELECT datapackageid from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}'`
+    );
+    const DPID = dataPackage.rows;
+
+    if (DPID) {
+      for (let id of DPID) {
+        const {
+          rows: [datasetCount],
+        } = await DB.executeQuery(
+          `SELECT count(1) from ${schemaName}.dataset where datapackageid='${id.datapackageid}' and active=1`
+        );
+
+        dataSet_count += parseInt(datasetCount.count);
+      }
+    }
+
+    if (dataFlowCount.count == 0) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Please make dataFlow active in order to save the configuration"
+      );
+    }
+    if (dataSet_count == 0) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Please add or active at-least one dataset in order to save the configuration"
+      );
+    }
+
+    const {
       rows: [oldVersion],
     } = await DB.executeQuery(
       `SELECT version from ${schemaName}.dataflow_version
@@ -2088,7 +2125,7 @@ exports.updateDataflowConfig = async (req, res) => {
       if (!Object.keys(diffObj).length) {
         return apiResponse.ErrorResponse(
           res,
-          "Please change something to update"
+          "Please change some values to update dataflow config"
         );
       }
 
@@ -2104,7 +2141,7 @@ exports.updateDataflowConfig = async (req, res) => {
 
       var resData = { ...dataflowObj, version: updatedLogs };
 
-      if (oldVersion.version === updatedLogs) {
+      if (oldVersion?.version === updatedLogs) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
