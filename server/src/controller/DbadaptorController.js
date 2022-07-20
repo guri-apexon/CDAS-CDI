@@ -16,7 +16,7 @@ exports.listTables = async (req, res) => {
     let q = ``;
     switch (locationType?.toLowerCase()) {
       case "oracle":
-        q = `SELECT table_name as "tableName" FROM user_tables`;
+        q = `SELECT table_name as "tableName" FROM user_tables UNION select view_name FROM user_views`;
         break;
       case "sqlserver":
       case "sql server":
