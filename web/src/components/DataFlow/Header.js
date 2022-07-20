@@ -91,6 +91,7 @@ const Header = (props) => {
           buttonProps={[
             {
               label: "Cancel",
+              disabled: !canUpdateDataFlow,
               onClick: onCancel,
             },
             {
