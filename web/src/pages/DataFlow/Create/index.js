@@ -296,9 +296,9 @@ const DataFlow = ({
     if (typeof datasetObj.headerRowNumber !== "undefined") {
       setHeaderValue(datasetObj.headerRowNumber);
     }
-    if (datasetObj.tableName?.length) {
+    if (datasetObj.tableName?.value) {
       // eslint-disable-next-line prefer-destructuring
-      datasetObj.tableName = datasetObj.tableName[0];
+      datasetObj.tableName = datasetObj.tableName.value;
     }
     if (datasetObj.offsetColumn?.value) {
       datasetObj.offsetColumn = datasetObj.offsetColumn?.value;
