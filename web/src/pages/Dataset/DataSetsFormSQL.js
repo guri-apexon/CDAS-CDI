@@ -7,6 +7,7 @@ import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
 import Radio from "apollo-react/components/Radio";
 import Typography from "apollo-react/components/Typography";
+import SearchIcon from "apollo-react-icons/Search";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
 import Button from "apollo-react/components/Button";
@@ -89,12 +90,11 @@ const DataSetsFormBase = (props) => {
     setSelectedOffsetColumns(obj);
     change("offsetColumn", obj.value);
   };
-  const changeTableName = (value) => {
-    change("offsetColumn", null);
+  const changeTableName = (obj) => {
+    setSelectedTable(obj);
     setSelectedOffsetColumns(null);
-    console.log("value", value);
-    change("tableName", value);
-    setSelectedTable(value);
+    change("offsetColumn", null);
+    change("tableName", obj.value);
   };
   useEffect(() => {
     if (sqlColumns.length) {
@@ -129,14 +129,6 @@ const DataSetsFormBase = (props) => {
       setShowPreview(false);
     }
   }, [formValues.isCustomSQL]);
-  useEffect(() => {
-    if (initialValues) {
-      const tableObj = initialValues?.tableName;
-      if (tableObj) setSelectedTable([tableObj]);
-      console.log("tableObj", tableObj, initialValues?.tableName);
-    }
-    console.log("tableObjinitialValues");
-  }, [initialValues]);
 
   useEffect(() => {
     // console.log("formValues.tableName::::", formValues, formValues.tableName);
@@ -186,12 +178,18 @@ const DataSetsFormBase = (props) => {
   };
 
   useEffect(() => {
-    console.log("tableObjValue");
     if (values?.clinicalDataType) {
       const selectedDK = datakind?.find(
         (e) => e.value === values.clinicalDataType[0]
       );
       setCdtValue(selectedDK);
+    }
+    if (values?.tableName) {
+      const tableObj = {
+        label: values?.tableName,
+        value: values?.tableName,
+      };
+      if (tableObj) setSelectedTable(tableObj);
     }
     if (!values || !values?.clinicalDataType) {
       setCdtValue(null);
@@ -237,7 +235,7 @@ const DataSetsFormBase = (props) => {
               <ReduxFormTextField
                 fullWidth
                 maxLength="30"
-                style={{ width: 275 }}
+                style={{ width: 275, marginTop: 0 }}
                 name="datasetName"
                 inputProps={{ maxLength: 30 }}
                 label="Dataset Name (Mnemonic)"
@@ -246,15 +244,13 @@ const DataSetsFormBase = (props) => {
                 disabled={prodLock || testLock || !canUpdateDataFlow}
               />
             </Grid>
-            <Grid item md={6}>
+            <Grid item md={3}>
               {datakind && renderClinicalDataType && (
                 <ReduxFormAutocompleteV2
                   name="clinicalDataType"
                   id="clinicalDataType"
                   label="Clinical Data Type"
                   source={datakind}
-                  className="smallSize_autocomplete"
-                  variant="search"
                   input={{
                     value: cdtValue,
                     onChange: onChangeCDT,
@@ -262,6 +258,8 @@ const DataSetsFormBase = (props) => {
                   enableVirtualization
                   singleSelect
                   size="small"
+                  forcePopupIcon
+                  popupIcon={<SearchIcon fontSize="extraSmall" />}
                   fullWidth
                   required
                   disabled={prodLock || !canUpdateDataFlow}
@@ -308,16 +306,14 @@ const DataSetsFormBase = (props) => {
           {formValues.isCustomSQL === "No" && (
             <>
               <div key={selectedTable}>
-                <ReduxFormAutocomplete
+                <ReduxFormAutocompleteV2
                   name="tableName"
                   id="tableName"
                   label="Table Name"
                   fullWidth
-                  size="small"
                   style={{ width: 300, display: "block" }}
                   canDeselect={false}
                   disabled={prodLock || !canUpdateDataFlow}
-                  // onChange={changeTableName}
                   input={{
                     value: selectedTable,
                     onChange: changeTableName,
@@ -327,6 +323,9 @@ const DataSetsFormBase = (props) => {
                     value: e.tableName,
                   }))}
                   variant="search"
+                  size="small"
+                  forcePopupIcon
+                  popupIcon={<SearchIcon fontSize="extraSmall" />}
                   singleSelect
                   required
                   blurOnSelect={false}

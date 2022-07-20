@@ -15,6 +15,7 @@ import Status from "apollo-react/components/Status";
 import Radio from "apollo-react/components/Radio";
 import RadioError from "apollo-react-icons/RadioError";
 import Typography from "apollo-react/components/Typography";
+import SearchIcon from "apollo-react-icons/Search";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
 import Button from "apollo-react/components/Button";
@@ -191,7 +192,7 @@ const JDBCForm = forwardRef((props, ref) => {
 
   const submitJDBCForm = (ready = false) => {
     if (isCustomSQL === "No") {
-      if (!tableName?.length) {
+      if (!tableName?.value) {
         messageContext.showErrorMessage(`Please select table name to proceed.`);
         return false;
       }
@@ -218,7 +219,7 @@ const JDBCForm = forwardRef((props, ref) => {
       clinicalDataType,
       customQuery: isCustomSQL,
       customSql: sQLQuery,
-      tableName: tableName?.length ? tableName : "",
+      tableName: tableName?.value ? tableName : "",
       offsetColumn: offsetColumn || "",
       dfTestFlag,
       conditionalExpression: filterCondition || "",
@@ -302,12 +303,12 @@ const JDBCForm = forwardRef((props, ref) => {
     resetDfStep();
   };
 
-  const handleTableSelect = (e) => {
-    setTableName(e);
-    if (!e[0]) return false;
+  const handleTableSelect = (e, obj) => {
+    setTableName(obj);
+    if (!obj?.value) return false;
     const colPayload = {
       ...locationDetail,
-      tableName: e[0],
+      tableName: obj.value,
     };
     dispatch(getSQLColumns(colPayload));
     setOffsetColumn(null);
@@ -445,7 +446,7 @@ const JDBCForm = forwardRef((props, ref) => {
               <TextField
                 fullWidth
                 maxLength="30"
-                style={{ width: 275 }}
+                style={{ width: 275, marginTop: 0 }}
                 name="datasetName"
                 value={datasetName}
                 onChange={handleChange}
@@ -454,18 +455,19 @@ const JDBCForm = forwardRef((props, ref) => {
                 size="small"
               />
             </Grid>
-            <Grid item md={6}>
+            <Grid item md={3}>
               <AutocompleteV2
                 key={dataKindReady}
                 name="clinicalDataType"
                 value={clinicalDataType}
                 label="Clinical Data Type"
                 source={datakind.records}
-                className="smallSize_autocomplete"
                 onChange={handleCDT}
-                forcePopupIcon={true}
                 singleSelect
                 enableVirtualization
+                size="small"
+                forcePopupIcon
+                popupIcon={<SearchIcon fontSize="extraSmall" />}
                 variant="search"
                 fullWidth
                 required
@@ -511,28 +513,50 @@ const JDBCForm = forwardRef((props, ref) => {
             <ApolloProgress className="center-loader" />
           ) : (
             <>
-              <Autocomplete
-                name="tableName"
-                key={tableName}
-                id="tableName"
-                size="small"
-                label="Table Name"
-                value={tableName}
-                source={sqlTables.map((e) => ({
-                  label: e.tableName,
-                  value: e.tableName,
-                }))}
-                className="smallSize_autocomplete"
-                onChange={handleTableSelect}
-                variant="search"
-                singleSelect
-                required
-                fullWidth
-                blurOnSelect={false}
-                clearOnBlur={false}
-                filterSelectedOptions={false}
-                enableVirtualization
-              />
+              <Grid item md={3}>
+                <AutocompleteV2
+                  name="tableName"
+                  key={tableName}
+                  id="tableName"
+                  label="Table Name"
+                  value={tableName}
+                  source={sqlTables.map((e) => ({
+                    label: e.tableName,
+                    value: e.tableName,
+                  }))}
+                  onChange={handleTableSelect}
+                  singleSelect
+                  enableVirtualization
+                  size="small"
+                  forcePopupIcon
+                  popupIcon={<SearchIcon fontSize="extraSmall" />}
+                  variant="search"
+                  fullWidth
+                  required
+                />
+                {/* <Autocomplete
+                  name="tableName"
+                  key={tableName}
+                  id="tableName"
+                  size="small"
+                  label="Table Name"
+                  value={tableName}
+                  source={sqlTables.map((e) => ({
+                    label: e.tableName,
+                    value: e.tableName,
+                  }))}
+                  className="smallSize_autocomplete"
+                  onChange={handleTableSelect}
+                  variant="search"
+                  singleSelect
+                  required
+                  fullWidth
+                  blurOnSelect={false}
+                  clearOnBlur={false}
+                  filterSelectedOptions={false}
+                  enableVirtualization
+                /> */}
+              </Grid>
               <TextField
                 fullWidth
                 name="filterCondition"
