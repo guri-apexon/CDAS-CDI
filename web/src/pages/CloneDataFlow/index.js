@@ -302,7 +302,6 @@ const CloneDataFlow = () => {
       setShowAlertBox(false);
       const res = await getDataFlowDetails(selectedStudy?.dataflow?.dataflowid);
       if (!res) {
-        setShowAlertBox(true);
         messageContext.showErrorMessage(`Something went wrong`);
         return false;
       }
@@ -346,10 +345,8 @@ const CloneDataFlow = () => {
       } else {
         messageContext.showErrorMessage(`Something wrong with clone`);
       }
-      setShowAlertBox(true);
       return true;
     } catch (error) {
-      setShowAlertBox(true);
       console.log(error);
       setLoading(false);
       messageContext.showErrorMessage(`Something went wrong`);

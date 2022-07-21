@@ -44,6 +44,7 @@ import usePermission, {
 } from "../../components/Common/usePermission";
 import { packageComprTypes, packageTypes } from "../../utils/constants";
 import Header from "../../components/DataFlow/Header";
+import SaveChangesModal from "../../components/DataFlow/SaveChangesModal";
 
 const useStyles = makeStyles(() => ({
   rightPanel: {
@@ -72,6 +73,7 @@ const DataPackages = React.memo(() => {
   const [disablePackageLevel, setDisablePackageLevel] = useState(false);
   const packageData = useSelector((state) => state.dataPackage);
   const [addedPackage, setAddedPackage] = useState(false);
+  const [shouldTriggerRedirect, setShouldTriggerRedirect] = useState(true);
 
   const { dataFlowdetail, versionFreezed } = useSelector(
     (state) => state.dataFlow
@@ -92,12 +94,18 @@ const DataPackages = React.memo(() => {
     protId
   );
 
+  const goToDataflow = () => {
+    if (dfId) {
+      history.push(`/dashboard/dataflow-management/${dfId}`);
+    }
+  };
+
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
       href: "javascript:void(0)",
       title: dataFlowdetail?.name || "Data Flow Settings",
-      onClick: () => history.push("/dashboard/dataflow-management"),
+      onClick: goToDataflow,
     },
     {
       href: "javascript:void(0)",
@@ -213,6 +221,7 @@ const DataPackages = React.memo(() => {
   };
   // eslint-disable-next-line consistent-return
   const submitPackage = async () => {
+    setShouldTriggerRedirect(false);
     const validated = validateFields(namingConvention, compression);
     setNotMatchedType(!validated);
     if (!validated) return false;
@@ -267,6 +276,7 @@ const DataPackages = React.memo(() => {
     moment(packageData.selectedPackage?.updt_tm).format("DD-MMM-YYYY hh:mm A");
   return (
     <div className="data-packages-wrapper">
+      <SaveChangesModal shouldTriggerOnRedirect={shouldTriggerRedirect} />
       <Panel
         onClose={handleClose}
         onOpen={handleOpen}
@@ -313,6 +323,7 @@ const DataPackages = React.memo(() => {
                     : "Save"
                 }
                 saveDisabled={!canUpdateDataFlow}
+                shouldDisplaySaveChangesModal={false}
               />
             </Box>
           </Paper>

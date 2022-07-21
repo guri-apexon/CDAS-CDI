@@ -454,9 +454,10 @@ exports.updateDatasetData = async (req, res) => {
       versionFreezed,
       clinicalDataType,
       loadType,
+      active,
     } = req.body;
 
-    if (values.active) {
+    if (!helper.stringToBoolean(active)) {
       let dataSet_count = 0;
       const dataPackage = await DB.executeQuery(
         `SELECT datapackageid from ${schemaName}.datapackage WHERE dataflowid='${dfId}'`
