@@ -40,7 +40,7 @@ import {
   getDataFlowDetail,
   updateDSState,
 } from "../../store/actions/DataFlowAction";
-import { getUserInfo, isSftp } from "../../utils";
+import { checkFormChanges, getUserInfo, isSftp } from "../../utils";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
@@ -201,7 +201,7 @@ const Dataset = () => {
     setTempTabValue(v);
 
     // check if there is any changes within form and set toggle for modal
-    const isAnyChange = form?.DataSetsForm?.anyTouched || false;
+    const isAnyChange = checkFormChanges(form) || false;
     if (isAnyChange) {
       setManualTriggerToggle(true);
     }
@@ -290,8 +290,8 @@ const Dataset = () => {
   }, [loctyp]);
 
   useEffect(() => {
-    setShouldTriggerRedirect(false);
     if (dsCreatedSuccessfully) {
+      setShouldTriggerRedirect(false);
       setTimeout(() => {
         if (isSftp(loctyp)) {
           setValue(1);
@@ -305,6 +305,9 @@ const Dataset = () => {
         setShouldTriggerRedirect(true);
       }, 2000);
     }
+    return () => {
+      setShouldTriggerRedirect(true);
+    };
   }, [dsCreatedSuccessfully, loctyp, isCustomSQL]);
 
   useEffect(() => {
@@ -363,6 +366,7 @@ const Dataset = () => {
   };
 
   const onSubmit = (formValue) => {
+    setShouldTriggerRedirect(false);
     // eslint-disable-next-line consistent-return
     setTimeout(() => {
       const data = {

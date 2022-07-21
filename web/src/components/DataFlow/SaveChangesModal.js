@@ -1,12 +1,13 @@
 /* eslint-disable no-lonely-if */
 // libraries
 import React, { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
 // components
 import Modal from "apollo-react/components/Modal";
 import AlertBox from "../../pages/AlertBox/AlertBox";
 // helpers
+import { checkFormChanges } from "../../utils";
 import {
   formComponentActive,
   formComponentInActive,
@@ -22,6 +23,8 @@ import {
  * @param {string} discardBtnLabel Label for discard btn
  * @param {boolean} isManualTrigger Flag for checking if modal needs to trigger manually
  * @param {string} manualTriggerToggle Flag for opening/closing modal
+ * @param {string} shouldTriggerOnRedirect Flag for controlling opening/closing modal while route changes
+ * @param {string} shouldCheckForChanges Flag for checking changes
  * @param {string} message Modal message
  * @param {string} title Modal title
  * @param {Function} handlePostManualContinue runs upon clicking continue btn when in manual mode
@@ -32,7 +35,10 @@ const SaveChangesModal = ({
   discardBtnLabel = "Discard changes",
   isManualTrigger = false,
   manualTriggerToggle = false,
+  manualIsAnyChangeCheck = false,
+  manualIsAnyChangeFlag = false,
   shouldTriggerOnRedirect = true,
+  shouldCheckForChanges = true,
   message = "Do you really want to exit and discard dataflow changes",
   title = "Exit",
   handlePostManualContinue = () => {},
@@ -42,6 +48,7 @@ const SaveChangesModal = ({
   const history = useHistory();
 
   const alertStore = useSelector((state) => state.alert);
+  const form = useSelector((state) => state.form) || null;
 
   // Save Changes Modal Variables
   const routerHandle = useRef();
@@ -54,7 +61,7 @@ const SaveChangesModal = ({
     dispatch(hideAlert());
     dispatch(hideAppSwitcher());
     if (routerHandle) {
-      routerHandle.current();
+      routerHandle?.current?.();
     }
   };
 
@@ -85,17 +92,37 @@ const SaveChangesModal = ({
 
   // Save Changes Modal Effect
   useEffect(() => {
-    if (shouldTriggerOnRedirect) {
-      routerHandle.current = history.block((tr) => {
-        setTargetRoute(tr?.pathname);
-        setShowSaveChangesModal(true);
-        return false;
-      });
+    if (shouldCheckForChanges) {
+      let isAnyChange = false;
+
+      if (!manualIsAnyChangeCheck) {
+        // go through form data and check if there is any change
+        isAnyChange = checkFormChanges(form) || false;
+      }
+      if (manualIsAnyChangeCheck) {
+        isAnyChange = manualIsAnyChangeFlag || false;
+      }
+
+      if (isAnyChange && shouldTriggerOnRedirect) {
+        routerHandle.current = history.block((tr) => {
+          setTargetRoute(tr?.pathname);
+          setShowSaveChangesModal(true);
+          return false;
+        });
+      }
+    } else {
+      if (shouldTriggerOnRedirect) {
+        routerHandle.current = history.block((tr) => {
+          setTargetRoute(tr?.pathname);
+          setShowSaveChangesModal(true);
+          return false;
+        });
+      }
     }
 
     return () => {
       if (shouldTriggerOnRedirect) {
-        routerHandle.current();
+        routerHandle?.current?.();
       }
     };
   });
