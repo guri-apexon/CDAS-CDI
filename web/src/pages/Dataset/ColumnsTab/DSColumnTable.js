@@ -16,6 +16,7 @@ import { downloadTemplate } from "../../../utils/downloadData";
 import {
   updateDatasetColumns,
   getDatasetColumns,
+  setDataSetColumnCount,
 } from "../../../store/actions/DataSetsAction";
 import { createColumns, deleteCD } from "../../../services/ApiServices";
 import {
@@ -33,6 +34,10 @@ import usePermission, {
   Features,
   useStudyPermission,
 } from "../../../components/Common/usePermission";
+import {
+  formComponentActive,
+  formComponentInActive,
+} from "../../../store/actions/AlertActions";
 
 const maxSize = 150000;
 
@@ -800,11 +805,25 @@ export default function DSColumnTable({
   useEffect(() => {
     const editedlength = getEditedRows().length;
     setEditedCount(editedlength);
+
+    // Set edit row count in store for monitoring changes and update form status
+    dispatch(setDataSetColumnCount(editedlength));
+    if (editedlength !== 0) {
+      dispatch(formComponentActive());
+    } else {
+      dispatch(formComponentInActive());
+    }
+
     if (editedlength && rows.some((row) => !validateRow(row))) {
       setDisableSaveAll(true);
     } else {
       setDisableSaveAll(false);
     }
+
+    return () => {
+      // reset count for rows whenever component is unmounted
+      dispatch(setDataSetColumnCount(0));
+    };
   }, [rows]);
 
   return (

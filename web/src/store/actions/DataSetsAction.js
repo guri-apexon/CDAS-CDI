@@ -17,6 +17,7 @@ import {
   GET_LOCATION_DETAIL,
   STORE_DATASET_COLUMNS_SUCCESS,
   STORE_DATASET_COLUMNS_FAILURE,
+  SAVE_DATASET_COLUMNS_COUNT,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -134,6 +135,7 @@ export const getLocationDetails = (id) => {
     id,
   };
 };
+
 export const columnsCreated = (resp) => {
   return {
     type: STORE_DATASET_COLUMNS_SUCCESS,
@@ -141,6 +143,11 @@ export const columnsCreated = (resp) => {
     nQuery: resp.nQuery,
   };
 };
+
 export const columnsCreatedFailure = (errText) => {
   return { type: STORE_DATASET_COLUMNS_FAILURE, message: errText };
+};
+
+export const setDataSetColumnCount = (rowCount) => {
+  return { type: SAVE_DATASET_COLUMNS_COUNT, rowCount };
 };

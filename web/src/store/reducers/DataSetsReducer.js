@@ -43,6 +43,7 @@ import {
   GET_LOCATION_DETAIL,
   FETCH_LOCATION_DETAIL_FAILURE,
   FETCH_LOCATION_DETAIL_SUCCESS,
+  SAVE_DATASET_COLUMNS_COUNT,
 } from "../../constants";
 
 import { dateTypeForJDBC, parseBool } from "../../utils/index";
@@ -102,6 +103,7 @@ export const initialState = {
   isDatasetFetched: false,
   haveHeader: false,
   CDVersionBump: true,
+  dataSetRowCount: 0,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -123,7 +125,9 @@ const DataFlowReducer = (state = initialState, action) =>
       case SAVE_DATASET_DATA:
         newState.loading = true;
         break;
-
+      case SAVE_DATASET_COLUMNS_COUNT:
+        newState.dataSetRowCount = action.rowCount;
+        break;
       case RESET_FTP_FORM:
         newState.formData = {
           ...defaultData,
