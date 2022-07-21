@@ -190,7 +190,10 @@ const Dataset = () => {
 
   // Set form to active set for alert box configuration
   useEffect(() => {
-    const isAnyChange = form?.DataSetsForm?.anyTouched || false;
+    const isAnyChange =
+      form?.DataSetsForm?.anyTouched ||
+      form?.DataSetsFormSQL?.anyTouched ||
+      false;
     if (isAnyChange) {
       dispatch(formComponentActive());
     }
@@ -201,7 +204,10 @@ const Dataset = () => {
     setTempTabValue(v);
 
     // check if there is any changes within form and set toggle for modal
-    const isAnyChange = form?.DataSetsForm?.anyTouched || false;
+    const isAnyChange =
+      form?.DataSetsForm?.anyTouched ||
+      form?.DataSetsFormSQL?.anyTouched ||
+      false;
     if (isAnyChange) {
       setManualTriggerToggle(true);
     }
@@ -290,7 +296,6 @@ const Dataset = () => {
   }, [loctyp]);
 
   useEffect(() => {
-    setShouldTriggerRedirect(false);
     if (dsCreatedSuccessfully) {
       setTimeout(() => {
         if (isSftp(loctyp)) {
@@ -365,6 +370,7 @@ const Dataset = () => {
   const onSubmit = (formValue) => {
     // eslint-disable-next-line consistent-return
     setTimeout(() => {
+      setShouldTriggerRedirect(false);
       const data = {
         ...formValue,
         dpId,
