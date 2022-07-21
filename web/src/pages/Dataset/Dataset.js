@@ -197,26 +197,27 @@ const Dataset = () => {
   }, [form]);
 
   const handleChangeTab = (event, v) => {
-    setManualTriggerToggle(true);
-    setTempTabValue(v);
+    // setManualTriggerToggle(true);
+    // setTempTabValue(v);
 
-    // check if there is any changes within form and set toggle for modal
-    const isAnyChange = form?.DataSetsForm?.anyTouched || false;
-    if (isAnyChange) {
-      setManualTriggerToggle(true);
+    // // check if there is any changes within form and set toggle for modal
+    // const isAnyChange = form?.DataSetsForm?.anyTouched || false;
+    // if (isAnyChange) {
+    //   setManualTriggerToggle(true);
+    // }
+    // // set toggle in case of column tab and changes within columns
+    // if (v === 0 && dataSetRowCount > 0) {
+    //   setManualTriggerToggle(true);
+    // }
+    // // if there is no change in data then proceed forward
+    // if ((v !== 0 && !isAnyChange) || (v === 0 && dataSetRowCount === 0))
+    // {
+    setValue(v);
+    if (datasetid !== "new" && datasetid !== null) {
+      dispatch(getDatasetColumns(datasetid));
     }
-    // set toggle in case of column tab and changes within columns
-    if (v === 0 && dataSetRowCount > 0) {
-      setManualTriggerToggle(true);
-    }
-    // if there is no change in data then proceed forward
-    if ((v !== 0 && !isAnyChange) || (v === 0 && dataSetRowCount === 0)) {
-      setValue(v);
-      if (datasetid !== "new" && datasetid !== null) {
-        dispatch(getDatasetColumns(datasetid));
-      }
-      setManualTriggerToggle(false);
-    }
+    //   setManualTriggerToggle(false);
+    // }
   };
 
   // logic to run after user click discard changes on save modal
@@ -467,7 +468,7 @@ const Dataset = () => {
         >
           <main className={classes.content}>
             <div className={classes.contentHeader}>
-              {/* Save Changes Modal */}
+              {/* Save Changes Modal
               {showSaveChangeModal && (
                 <SaveChangesModal
                   isManualTrigger={true}
@@ -476,8 +477,7 @@ const Dataset = () => {
                   handlePostManualDiscardChange={handlePostDiscardChange}
                   shouldTriggerOnRedirect={shouldTriggerRedirect}
                 />
-              )}
-
+              )} */}
               <Modal
                 open={openModal}
                 variant="warning"
