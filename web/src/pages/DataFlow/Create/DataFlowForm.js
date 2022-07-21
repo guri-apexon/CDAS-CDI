@@ -141,6 +141,7 @@ const DataFlowFormBase = (props) => {
               input={{
                 onChange: onChangeVendor,
               }}
+              disabled={!vendors?.length}
               forcePopupIcon={true}
               singleSelect
               enableVirtualization
@@ -256,6 +257,7 @@ const DataFlowFormBase = (props) => {
                 name="locationName"
                 label="Location Name"
                 source={locations}
+                disabled={!locations?.length}
                 input={{
                   onChange: onChangeLocation,
                 }}

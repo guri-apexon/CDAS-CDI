@@ -103,7 +103,6 @@ const DataPackage = (
   }));
 
   useEffect(() => {
-    setDisabled(locType && !isSftp(locType));
     if (tabularSod) {
       setConfigShow(true);
       setDisabled(true);
@@ -114,6 +113,7 @@ const DataPackage = (
       setDisabled(false);
       setCompression("");
     }
+    setDisabled(locType && !isSftp(locType));
   }, [locType, tabularSod]);
   return (
     <div className="data-packages">
@@ -209,7 +209,7 @@ const DataPackage = (
                       value={sodValue}
                       size="small"
                       onChange={(e) => {
-                        setSodValue(e.target.value);
+                        setSodValue(e.target.value || sodValue || "Regular");
                       }}
                       className="mb-20 package-type"
                     >

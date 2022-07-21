@@ -7,17 +7,18 @@ import { withStyles } from "@material-ui/core/styles";
 import Paper from "apollo-react/components/Paper";
 import Radio from "apollo-react/components/Radio";
 import Typography from "apollo-react/components/Typography";
+import SearchIcon from "apollo-react-icons/Search";
 import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
 import Button from "apollo-react/components/Button";
 import Table from "apollo-react/components/Table";
 import {
-  // ReduxFormAutocomplete,
   ReduxFormRadioGroup,
   ReduxFormSwitch,
   ReduxFormSelect,
   ReduxFormTextField,
   ReduxFormAutocompleteV2,
+  ReduxFormAutocomplete,
   // ReduxFormMultiSelect,
 } from "../../components/FormComponents/FormComponents";
 import dataSetsValidation from "../../components/FormComponents/DataSetsValidation";
@@ -83,14 +84,17 @@ const DataSetsFormBase = (props) => {
   const [selectedOffsetColumns, setSelectedOffsetColumns] = useState(null);
   const [sqlColumnsArr, setSqlColumnsArr] = useState([]);
   const [cdtValue, setCdtValue] = useState(null);
+  const [selectedTable, setSelectedTable] = useState(null);
 
   const onChangeOffsetColumn = (obj) => {
     setSelectedOffsetColumns(obj);
     change("offsetColumn", obj.value);
   };
-  const changeTableName = () => {
-    change("offsetColumn", null);
+  const changeTableName = (obj) => {
+    setSelectedTable(obj);
     setSelectedOffsetColumns(null);
+    change("offsetColumn", null);
+    change("tableName", obj.value);
   };
   useEffect(() => {
     if (sqlColumns.length) {
@@ -178,7 +182,16 @@ const DataSetsFormBase = (props) => {
       const selectedDK = datakind?.find(
         (e) => e.value === values.clinicalDataType[0]
       );
-      setCdtValue(selectedDK);
+      if (selectedDK) setCdtValue(selectedDK);
+    }
+    if (values?.tableName) {
+      const tableObj = {
+        label: values?.tableName,
+        value: values?.tableName,
+      };
+      if (tableObj) setSelectedTable(tableObj);
+    } else {
+      setSelectedTable(null);
     }
     if (!values || !values?.clinicalDataType) {
       setCdtValue(null);
@@ -224,7 +237,7 @@ const DataSetsFormBase = (props) => {
               <ReduxFormTextField
                 fullWidth
                 maxLength="30"
-                style={{ width: 275 }}
+                style={{ width: 275, marginTop: 0 }}
                 name="datasetName"
                 inputProps={{ maxLength: 30 }}
                 label="Dataset Name (Mnemonic)"
@@ -233,15 +246,13 @@ const DataSetsFormBase = (props) => {
                 disabled={prodLock || testLock || !canUpdateDataFlow}
               />
             </Grid>
-            <Grid item md={6}>
+            <Grid item md={3}>
               {datakind && renderClinicalDataType && (
                 <ReduxFormAutocompleteV2
                   name="clinicalDataType"
                   id="clinicalDataType"
                   label="Clinical Data Type"
                   source={datakind}
-                  className="smallSize_autocomplete"
-                  variant="search"
                   input={{
                     value: cdtValue,
                     onChange: onChangeCDT,
@@ -249,6 +260,8 @@ const DataSetsFormBase = (props) => {
                   enableVirtualization
                   singleSelect
                   size="small"
+                  forcePopupIcon
+                  popupIcon={<SearchIcon fontSize="extraSmall" />}
                   fullWidth
                   required
                   disabled={prodLock || !canUpdateDataFlow}
@@ -294,21 +307,35 @@ const DataSetsFormBase = (props) => {
           )}
           {formValues.isCustomSQL === "No" && (
             <>
-              <ReduxFormSelect
-                name="tableName"
-                id="tableName"
-                label="Table Name"
-                fullWidth
-                size="small"
-                style={{ width: 300, display: "block" }}
-                canDeselect={false}
-                disabled={prodLock || !canUpdateDataFlow}
-                onChange={changeTableName}
-              >
-                {sqlTables?.map((e) => (
-                  <MenuItem value={e.tableName}>{e.tableName}</MenuItem>
-                ))}
-              </ReduxFormSelect>
+              <div key={selectedTable}>
+                <ReduxFormAutocompleteV2
+                  name="tableName"
+                  id="tableName"
+                  label="Table Name"
+                  fullWidth
+                  style={{ width: 300, display: "block" }}
+                  canDeselect={false}
+                  disabled={prodLock || !canUpdateDataFlow}
+                  input={{
+                    value: selectedTable,
+                    onChange: changeTableName,
+                  }}
+                  source={sqlTables.map((e) => ({
+                    label: e.tableName,
+                    value: e.tableName,
+                  }))}
+                  variant="search"
+                  size="small"
+                  forcePopupIcon
+                  popupIcon={<SearchIcon fontSize="extraSmall" />}
+                  singleSelect
+                  required
+                  blurOnSelect={false}
+                  clearOnBlur={false}
+                  filterSelectedOptions={false}
+                  enableVirtualization
+                />
+              </div>
               <ReduxFormTextField
                 fullWidth
                 name="filterCondition"
@@ -328,6 +355,7 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="Type of Data"
                 disabled={prodLock || !canUpdateDataFlow}
+                className="dataset-data-flow-type"
               >
                 <Radio value="Cumulative" label="Cumulative" />
                 <Radio value="Incremental" label="Incremental" />
@@ -407,7 +435,7 @@ const DataSetsFormSQL = connect((state) => {
       "offsetColumn",
       "clinicalDataType"
     ),
-    datakind: state.dataSets.datakind?.records,
+    datakind: state.dataSets.datakind?.records || [],
     sqlTables,
     sqlColumns,
     previewSQL: state.dataSets.previewSQL,

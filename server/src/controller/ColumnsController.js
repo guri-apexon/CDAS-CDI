@@ -10,7 +10,7 @@ exports.getColumnsSet = async (req, res) => {
   try {
     const { datasetid } = req.body;
     Logger.info({ message: "getColumnsSet" });
-    const searchQuery = `SELECT "columnid", "variable", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "format", "lov", "unique", insrt_tm from ${schemaName}.columndefinition WHERE coalesce (del_flg,0) != 1 AND datasetid = $1 ORDER BY insrt_tm`;
+    const searchQuery = `SELECT "columnid", "variable", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "format", "lov", "unique", columnid from ${schemaName}.columndefinition WHERE coalesce (del_flg,0) != 1 AND datasetid = $1 ORDER BY columnid`;
     DB.executeQuery(searchQuery, [datasetid]).then((response) => {
       const datasetColumns = response.rows || null;
       return apiResponse.successResponseWithData(
@@ -136,7 +136,7 @@ exports.saveDatasetColumns = async (req, res) => {
       if (!historyVersion) throw new Error("History not updated");
 
       var resData = { ...datasetColumns, version: historyVersion };
-      if (oldVersion.version === historyVersion) {
+      if (oldVersion?.version === historyVersion) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
@@ -171,7 +171,7 @@ exports.updateColumns = async (req, res) => {
     const curDate = helper.getCurrentTime();
 
     Logger.info({ message: "update set columns" });
-    // const versionFreezed = true;
+    // const versionFreezed = false;
 
     const {
       rows: [oldVersion],
@@ -237,7 +237,7 @@ exports.updateColumns = async (req, res) => {
       }
       await updateSqlQuery(dsId);
       // let versionBumped = false;
-      let newVersion = "";
+      let newVersion = null;
       if (Object.keys(diffValuesObj).length) {
         const historyVersion = await CommonController.addColumnHistory(
           dsId,
@@ -256,11 +256,13 @@ exports.updateColumns = async (req, res) => {
       }
 
       const datasetColumns = values;
-      var resData = { columns: datasetColumns, version: newVersion };
-      if (oldVersion.version === newVersion) {
-        resData.versionBumped = false;
-      } else {
+      var resData = { columns: datasetColumns };
+      if (oldVersion?.version < newVersion) {
+        resData.version = newVersion;
         resData.versionBumped = true;
+      } else {
+        resData.version = oldVersion?.version || 0;
+        resData.versionBumped = false;
       }
 
       return apiResponse.successResponseWithData(
@@ -323,7 +325,7 @@ exports.deleteColumns = async (req, res) => {
       if (!historyVersion) throw new Error("History not updated");
 
       var resData = { version: historyVersion };
-      if (oldVersion.version === historyVersion) {
+      if (oldVersion?.version === historyVersion) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;

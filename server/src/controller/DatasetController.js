@@ -185,7 +185,7 @@ exports.saveDatasetData = async (req, res) => {
         userId,
         dfId,
         versionFreezed,
-        oldVersion.version
+        oldVersion.version || 0
       );
     }
 
@@ -284,7 +284,7 @@ exports.saveDatasetData = async (req, res) => {
         filePwd: values.filePwd,
         version: historyVersion,
       };
-      if (oldVersion.version === historyVersion) {
+      if (oldVersion?.version === historyVersion) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
@@ -394,7 +394,7 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
     };
 
     const updateConfg = Object.assign(idObj, diffObj);
-    let newVersion = "";
+    let newVersion = null;
     if (Object.keys(diffObj).length != 0) {
       const historyVersion = await CommonController.addDatasetHistory(
         dfId,
@@ -413,12 +413,13 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
 
     var resData = {
       ...updateDS.rows[0],
-      version: newVersion,
     };
-    if (existingVersion === newVersion) {
-      resData.versionBumped = false;
-    } else {
+    if (existingVersion < newVersion) {
+      resData.version = newVersion;
       resData.versionBumped = true;
+    } else {
+      resData.version = existingVersion;
+      resData.versionBumped = false;
     }
 
     return apiResponse.successResponseWithData(
@@ -453,9 +454,37 @@ exports.updateDatasetData = async (req, res) => {
       versionFreezed,
       clinicalDataType,
       loadType,
+      active,
     } = req.body;
 
-    // const versionFreezed = true;
+    if (!helper.stringToBoolean(active)) {
+      let dataSet_count = 0;
+      const dataPackage = await DB.executeQuery(
+        `SELECT datapackageid from ${schemaName}.datapackage WHERE dataflowid='${dfId}'`
+      );
+      const DPID = dataPackage.rows;
+
+      if (DPID) {
+        for (let id of DPID) {
+          const {
+            rows: [datasetCount],
+          } = await DB.executeQuery(
+            `SELECT count(1) from ${schemaName}.dataset where datapackageid='${id.datapackageid}' and active=1`
+          );
+
+          dataSet_count += parseInt(datasetCount.count);
+        }
+      }
+
+      if (dataSet_count < 2) {
+        return apiResponse.ErrorResponse(
+          res,
+          "Please inactivate the dataflow in order to inactive datasets"
+        );
+      }
+    }
+
+    // const versionFreezed = false;
     const dataflow = await dataflowHelper.findById(dfId);
     const dataset = await datasetHelper.findById(datasetid);
     const searchQuery = `SELECT "columnid", "variable", "name", "datatype", "primarykey", "required", "charactermin", "charactermax", "position", "format", "lov", "unique", insrt_tm from ${schemaName}.columndefinition WHERE coalesce (del_flg,0) != 1 AND datasetid = $1 ORDER BY insrt_tm`;
@@ -476,7 +505,8 @@ exports.updateDatasetData = async (req, res) => {
     }
 
     if (
-      dataflow.data_in_cdr === "Y" && dataset.incremental === "Y" &&
+      dataflow.data_in_cdr === "Y" &&
+      dataset.incremental === "Y" &&
       testFlag === 0 &&
       loadType === "Cumulative"
     ) {
@@ -517,7 +547,7 @@ exports.updateDatasetData = async (req, res) => {
       );
     }
     if (!helper.isSftp(values.locationType)) {
-      return updateSQLDataset(res, values, versionFreezed, oldVersion.version);
+      return updateSQLDataset(res, values, versionFreezed, oldVersion?.version);
     }
     // For SFTP Datasets update
     const incremental = values.loadType === "Incremental" ? "Y" : "N";
@@ -598,7 +628,7 @@ exports.updateDatasetData = async (req, res) => {
 
     const updateConfg = Object.assign(idObj, diffObj);
 
-    let newVersion = "";
+    let newVersion = null;
     if (Object.keys(diffObj).length != 0) {
       const historyVersion = await CommonController.addDatasetHistory(
         dfId,
@@ -617,12 +647,13 @@ exports.updateDatasetData = async (req, res) => {
 
     var resData = {
       ...updateDS.rows[0],
-      version: newVersion,
     };
-    if (oldVersion.version === newVersion) {
-      resData.versionBumped = false;
-    } else {
+    if (oldVersion?.version < newVersion) {
+      resData.version = newVersion;
       resData.versionBumped = true;
+    } else {
+      resData.version = oldVersion?.version || 0;
+      resData.versionBumped = false;
     }
 
     return apiResponse.successResponseWithData(

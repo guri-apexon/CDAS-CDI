@@ -13,15 +13,23 @@
         margin-bottom: 25px;
       }
     }
+    .panel-body {
+      .MuiGrid-container {
+        width: 60%;
+      }
+    }
     .label {
       font-size: 14px;
       color: #595959;
-      margin-bottom: 10px;
+      // margin-bottom: 5px;
+      margin-top: 12px;
+      line-height: 24px;
     }
     .text {
       font-size: 14px;
       color: #000;
       font-weight: 600;
+      line-height: 24px;
     }
     .properties-icon {
       width: 15px;

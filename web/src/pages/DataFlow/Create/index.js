@@ -296,9 +296,9 @@ const DataFlow = ({
     if (typeof datasetObj.headerRowNumber !== "undefined") {
       setHeaderValue(datasetObj.headerRowNumber);
     }
-    if (datasetObj.tableName?.length) {
+    if (datasetObj.tableName?.value) {
       // eslint-disable-next-line prefer-destructuring
-      datasetObj.tableName = datasetObj.tableName[0];
+      datasetObj.tableName = datasetObj.tableName.value;
     }
     if (datasetObj.offsetColumn?.value) {
       datasetObj.offsetColumn = datasetObj.offsetColumn?.value;
@@ -338,7 +338,7 @@ const DataFlow = ({
       return false;
     }
 
-    const reqprimary = myformprimary.columnDefinition.some(
+    const reqprimary = myformprimary.columnDefinition?.some(
       (c) => c.primaryKey === "Yes"
     );
     if (
@@ -528,7 +528,13 @@ const DataFlow = ({
     );
     return formEl;
   };
-
+  const disableSaveDFBtn = () => {
+    return (
+      isSftp(locType) &&
+      currentStep >= 5 &&
+      !(messageContext?.dataflowObj?.columnDefinition || []).length
+    );
+  };
   useEffect(() => {
     console.log("myform:", modalLocType, myform);
   }, [myform]);
@@ -588,12 +594,7 @@ const DataFlow = ({
                   currentStep={currentStep}
                   breadcrumbItems={breadcrumbItems}
                   icon={<DataPackageIcon className={classes.contentIcon} />}
-                  submitting={
-                    submitting ||
-                    (currentStep >= 5 &&
-                      !(messageContext?.dataflowObj?.columnDefinition || [])
-                        .length)
-                  }
+                  submitting={submitting || disableSaveDFBtn()}
                   tabularSod={tabularSod}
                 />
               </div>

@@ -30,7 +30,7 @@ const IssuesProperties = ({ datasetProperties }) => {
   const params = useParams();
   const dispatch = useDispatch();
   const [copyText, setCopyText] = useState("Copy");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { datasetId } = params;
   const connectionTypeCheck = ["sftp", "ftps"];
   const {
@@ -48,6 +48,11 @@ const IssuesProperties = ({ datasetProperties }) => {
     ExpectedTransferFrequency,
     loadType,
     FileName,
+    DownloadStart,
+    DownloadTransactions,
+    ProcessDate,
+    ProcessTransactions,
+    LastCompleted,
   } = datasetProperties;
   const copyVendor = async () => {
     await navigator.clipboard
@@ -59,11 +64,14 @@ const IssuesProperties = ({ datasetProperties }) => {
         console.log("clipboard err", err);
       });
   };
-  // useEffect(() => {
-  //   if (datasetProperties?.dataflowid) {
-  //     setLoading(false);
-  //   }
-  // }, [datasetProperties]);
+  const getFileType = (type) => {
+    return type?.toLowerCase() === "full" ? "Cumulative" : "Increamental";
+  };
+  useEffect(() => {
+    if (datasetProperties?.dataflowid) {
+      setLoading(false);
+    }
+  }, [datasetProperties]);
   return (
     <section className="properties-wrapper">
       <Paper id="properties-box">
@@ -80,7 +88,7 @@ const IssuesProperties = ({ datasetProperties }) => {
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <div className="label">Vendor Name</div>
-                  <div className="text">{Vendor || "------"}</div>
+                  <div className="text">{Vendor || "----"}</div>
                 </Grid>
                 <Grid item xs={12}>
                   <div className="label">Vendor Contact Information</div>
@@ -98,39 +106,35 @@ const IssuesProperties = ({ datasetProperties }) => {
                     )}
                   </div>
                 </Grid>
-                <Grid item xs={6}>
-                  <div className="label">Date Last Checked</div>
-                  <div className="text">{formatDate(DateLastChecked)}</div>
+                <Grid item xs={4}>
+                  <div className="label">Download Start</div>
+                  <div className="text">{formatDate(DownloadStart)}</div>
                 </Grid>
-                <Grid item xs={6}>
-                  <div className="label">Date of Last Succesful Process</div>
-                  <div className="text">
-                    {formatDate(DateofLastSuccessfulProcess)}
-                  </div>
+                <Grid item xs={4}>
+                  <div className="label">Download End</div>
+                  <div className="text">{formatDate(DownloadStart)}</div>
                 </Grid>
-                {connectionTypeCheck.indexOf(SourceOrigin?.toLowerCase()) !==
-                  -1 && (
-                  <>
-                    <Grid item xs={6}>
-                      <div className="label">
-                        Expected Date of Next Transfer
-                      </div>
-                      <div className="text">
-                        {formatDate(ExpectedDateofNextTransfer)}
-                      </div>
-                    </Grid>
+                <Grid item xs={4}>
+                  <div className="label">Download Transactions</div>
+                  <div className="text">{DownloadTransactions || "----"}</div>
+                </Grid>
 
-                    <Grid item xs={6}>
-                      <div className="label">Expected Transfer Frequency</div>
-                      <div className="text">
-                        {ExpectedTransferFrequency || "------"}
-                      </div>
-                    </Grid>
-                  </>
-                )}
+                <Grid item xs={4}>
+                  <div className="label">File Transfer Start</div>
+                  <div className="text">{formatDate(ProcessDate)}</div>
+                </Grid>
+                <Grid item xs={4}>
+                  <div className="label">File Transfer End</div>
+                  <div className="text">{formatDate(LastCompleted)}</div>
+                </Grid>
+                <Grid item xs={4}>
+                  <div className="label">Transfer Transactions</div>
+                  <div className="text">{ProcessTransactions || "----"}</div>
+                </Grid>
+
                 <Grid item xs={6}>
-                  <div className="label">Load Type</div>
-                  <div className="text">{loadType}</div>
+                  <div className="label">File Transfer Type</div>
+                  <div className="text">{getFileType(loadType)}</div>
                 </Grid>
                 <Grid item xs={12}>
                   <div className="label">File Naming Convention</div>
