@@ -52,3 +52,9 @@
     cursor: pointer;
   }
 }
+.dataset-data-flow-type {
+  display: grid;
+  label {
+    width: fit-content;
+  }
+}

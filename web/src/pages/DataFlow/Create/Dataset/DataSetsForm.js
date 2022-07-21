@@ -4,6 +4,7 @@ import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch } from "react-redux";
 import { reduxForm, getFormValues, formValueSelector } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
+import SearchIcon from "apollo-react-icons/Search";
 import Paper from "apollo-react/components/Paper";
 import FixedBar from "apollo-react/components/FixedBar";
 import Radio from "apollo-react/components/Radio";
@@ -281,23 +282,27 @@ const DataSetsFormBase = (props) => {
               </div>
             </Grid>
             <Grid item md={6}>
-              <ReduxFormAutocompleteV2
-                name="clinicalDataType"
-                autoSelect
-                id="clinicalDataType"
-                label="Clinical Data Type"
-                source={datakind}
-                input={{
-                  value: cdtValue,
-                  onChange: onChangeCDT,
-                }}
-                enableVirtualization
-                className="smallSize_autocomplete"
-                variant="search"
-                singleSelect
-                fullWidth
-                // required
-              />
+              <Grid item md={6}>
+                <ReduxFormAutocompleteV2
+                  name="clinicalDataType"
+                  autoSelect
+                  id="clinicalDataType"
+                  label="Clinical Data Type"
+                  source={datakind}
+                  input={{
+                    value: cdtValue,
+                    onChange: onChangeCDT,
+                  }}
+                  enableVirtualization
+                  size="small"
+                  forcePopupIcon
+                  popupIcon={<SearchIcon fontSize="extraSmall" />}
+                  variant="search"
+                  singleSelect
+                  fullWidth
+                  // required
+                />
+              </Grid>
               {formValues === "Excel" && (
                 <ReduxFormPassword
                   name="filePwd"

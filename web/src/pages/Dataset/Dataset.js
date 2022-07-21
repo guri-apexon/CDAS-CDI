@@ -190,7 +190,10 @@ const Dataset = () => {
 
   // Set form to active set for alert box configuration
   useEffect(() => {
-    const isAnyChange = form?.DataSetsForm?.anyTouched || false;
+    const isAnyChange =
+      form?.DataSetsForm?.anyTouched ||
+      form?.DataSetsFormSQL?.anyTouched ||
+      false;
     if (isAnyChange) {
       dispatch(formComponentActive());
     }
@@ -201,7 +204,10 @@ const Dataset = () => {
     setTempTabValue(v);
 
     // check if there is any changes within form and set toggle for modal
-    const isAnyChange = checkFormChanges(form) || false;
+    const isAnyChange =
+      form?.DataSetsForm?.anyTouched ||
+      form?.DataSetsFormSQL?.anyTouched ||
+      false;
     if (isAnyChange) {
       setManualTriggerToggle(true);
     }
@@ -369,6 +375,7 @@ const Dataset = () => {
     setShouldTriggerRedirect(false);
     // eslint-disable-next-line consistent-return
     setTimeout(() => {
+      setShouldTriggerRedirect(false);
       const data = {
         ...formValue,
         dpId,
@@ -526,10 +533,10 @@ const Dataset = () => {
                     {dataSettabs.map((tab) => (
                       <Tab
                         label={tab}
-                        disabled={
-                          (!columnsActive && tab === "Dataset Columns") ||
-                          (!columnsActive && tab === "VLC")
-                        }
+                        // disabled={
+                        //   (!columnsActive && tab === "Dataset Columns") ||
+                        //   (!columnsActive && tab === "VLC")
+                        // }
                       />
                     ))}
                   </Tabs>
@@ -541,6 +548,7 @@ const Dataset = () => {
                       {
                         label: "Cancel",
                         onClick: () => setopenModal(true),
+                        disabled: !canUpdateDataFlow,
                       },
                       {
                         label: "Save",

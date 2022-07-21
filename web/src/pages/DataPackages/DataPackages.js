@@ -97,12 +97,18 @@ const DataPackages = React.memo(() => {
     protId
   );
 
+  const goToDataflow = () => {
+    if (dfId) {
+      history.push(`/dashboard/dataflow-management/${dfId}`);
+    }
+  };
+
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
       href: "javascript:void(0)",
       title: dataFlowdetail?.name || "Data Flow Settings",
-      onClick: () => history.push("/dashboard/dataflow-management"),
+      onClick: goToDataflow,
     },
     {
       href: "javascript:void(0)",
