@@ -98,6 +98,11 @@ const PackagesList = ({ data, userInfo }) => {
     protId
   );
 
+  useEffect(() => {
+    console.log("dispatch(updateDSStatus(false));");
+    dispatch(updateDSStatus(false));
+  }, []);
+
   const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
     dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
     dispatch(updateDSState(true));
