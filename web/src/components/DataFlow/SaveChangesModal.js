@@ -22,7 +22,11 @@ import {
  * @param {string} continueBtnLabel Label for continue btn
  * @param {string} discardBtnLabel Label for discard btn
  * @param {boolean} isManualTrigger Flag for checking if modal needs to trigger manually
- * @param {string} manualTriggerToggle Flag for opening/closing modal
+ * @param {boolean} manualTriggerToggle Flag for opening/closing modal
+ * @param {boolean} manualIsAnyChangeCheck Flag for checking any changes in form
+ * @param {boolean} manualIsAnyChangeFlag Flag for triggering manual changes
+ * @param {boolean} manualCheckerFlag Flag for custom manual changes check
+ * @param {Function} handleManualChecker Function to run custom manual changes check
  * @param {string} shouldTriggerOnRedirect Flag for controlling opening/closing modal while route changes
  * @param {string} shouldCheckForChanges Flag for checking changes
  * @param {string} message Modal message
@@ -37,6 +41,8 @@ const SaveChangesModal = ({
   manualTriggerToggle = false,
   manualIsAnyChangeCheck = false,
   manualIsAnyChangeFlag = false,
+  manualCheckerFlag = false,
+  handleManualChecker = () => {},
   shouldTriggerOnRedirect = true,
   shouldCheckForChanges = true,
   message = "Do you really want to exit and discard dataflow changes",
@@ -67,6 +73,7 @@ const SaveChangesModal = ({
 
   const handleCloseSaveChangesModal = () => {
     if (isManualTrigger) {
+      setTargetRoute("");
       handlePostManualContinue();
     }
     setShowSaveChangesModal(false);
@@ -95,12 +102,17 @@ const SaveChangesModal = ({
     if (shouldCheckForChanges) {
       let isAnyChange = false;
 
+      // go through redux form data and check if there is any change
       if (!manualIsAnyChangeCheck) {
-        // go through form data and check if there is any change
         isAnyChange = checkFormChanges(form) || false;
       }
       if (manualIsAnyChangeCheck) {
         isAnyChange = manualIsAnyChangeFlag || false;
+      }
+
+      // check for custom field changes
+      if (manualCheckerFlag) {
+        isAnyChange = handleManualChecker(isAnyChange) || false;
       }
 
       if (isAnyChange && shouldTriggerOnRedirect) {

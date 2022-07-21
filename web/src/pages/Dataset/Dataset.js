@@ -239,6 +239,13 @@ const Dataset = () => {
     setManualTriggerToggle(false);
   };
 
+  const handleManualChecker = (isAnyChange) => {
+    if (value === 1 && dataSetRowCount > 0) {
+      return true;
+    }
+    return isAnyChange;
+  };
+
   const getDataSetType = (type) => {
     if (type === "SFTP" || type === "FTPS") {
       return "sftp";
@@ -482,6 +489,8 @@ const Dataset = () => {
               {showSaveChangeModal && (
                 <SaveChangesModal
                   isManualTrigger={true}
+                  manualCheckerFlag={true}
+                  handleManualChecker={handleManualChecker}
                   manualTriggerToggle={manualTriggerToggle}
                   handlePostManualContinue={handlePostContinue}
                   handlePostManualDiscardChange={handlePostDiscardChange}
