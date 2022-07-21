@@ -362,6 +362,8 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
         DFTestname = DFTestname + "-1";
       }
     }
+    const firstDate =
+      (exptDtOfFirstProdFile && moment(exptDtOfFirstProdFile).utc()) || null;
 
     DFBody = [
       DFTestname,
@@ -371,7 +373,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       locationID || null,
       helper.stringToBoolean(active) ? 1 : 0,
       configured || 0,
-      exptDtOfFirstProdFile || null,
+      firstDate,
       helper.stringToBoolean(testFlag) ? 1 : 0,
       data_in_cdr || "N",
       connectionType || locationType || null,
@@ -992,7 +994,7 @@ exports.updateDataFlow = async (req, res) => {
                             `Cannot switch to Cumulative if the dataflow has been synced once.`
                           );
                         }
-                        
+
                         dsResObj.ExternalId = datasetExternalId;
                         dsResObj.ID = DSId;
 
@@ -2045,6 +2047,11 @@ exports.updateDataflowConfig = async (req, res) => {
         serviceOwners && Array.isArray(serviceOwners)
           ? serviceOwners.join()
           : "";
+
+      const firstDate =
+        (moment(firstFileDate).isValid() && moment(firstFileDate).utc()) ||
+        null;
+
       const dFBody = [
         dataflowId,
         vendorID,
@@ -2056,7 +2063,7 @@ exports.updateDataflowConfig = async (req, res) => {
         externalSystemName,
         dFTimestamp,
         serviceOwners,
-        moment(firstFileDate).isValid() ? firstFileDate : null,
+        firstDate,
       ];
       let fieldsStr = `vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, externalsystemname=$8, updt_tm=$9, serv_ownr=$10, expt_fst_prd_dt=$11`;
       if (dfUpdatedName) {
