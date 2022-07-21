@@ -477,6 +477,7 @@ const JDBCForm = forwardRef((props, ref) => {
           <Select
             name="isCustomSQL"
             id="isCustomSQL"
+            canDeselect={false}
             value={isCustomSQL}
             size="small"
             onChange={(e) => handleSelection(e)}
@@ -581,6 +582,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 value={dataType}
                 required
                 onChange={handleDTChange}
+                className="dataset-data-flow-type"
               >
                 <Radio value="Cumulative" label="Cumulative" />
                 <Radio value="Incremental" label="Incremental" />

@@ -104,6 +104,8 @@ export default function DSColumnTable({
   const [selectedCN, setSelectedCN] = useState([]);
   const userInfo = getUserInfo();
   const initColumnObj = getInitColumnObj();
+  const [isDFSynced, setIsDFSynced] = useState(false);
+  const [isSftpDf, setIsSftpDf] = useState(false);
 
   const setInitRow = () => {
     setRows([{ uniqueId: 1, ...initColumnObj }]);
@@ -148,6 +150,12 @@ export default function DSColumnTable({
     );
   }, [rows]);
 
+  useEffect(() => {
+    const { isSync, testflag } = dataFlowdetail;
+    if (isSync === "Y" && testflag === 0) {
+      setIsDFSynced(true);
+    }
+  }, [dataFlowdetail]);
   // useEffect(() => {
   //   if (rows.length === datasetColumns) {
   //     const updatingId = rows.map((e) => {
@@ -225,6 +233,8 @@ export default function DSColumnTable({
     setIsFilePicked(false);
     setSelectedFile(null);
     setImportedData([]);
+    // document.querySelector("#file").value = "";
+    inputFile.current.value = "";
   };
 
   const handleOverWrite = async () => {
@@ -460,6 +470,7 @@ export default function DSColumnTable({
     } else {
       setMoreColumns(allColumns);
     }
+    setIsSftpDf(isSftp(locationType));
   }, []);
   const toggleEditMode = (cancel) => {
     setRows((prevRows) => {
@@ -857,10 +868,12 @@ export default function DSColumnTable({
             dsProdLock,
             locationType,
             pkDisabled,
+            isDFSynced,
             haveHeader,
             editedCount,
             canUpdateDataFlow,
             errorPrimary,
+            isSftpDf,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}
