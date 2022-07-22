@@ -362,11 +362,6 @@ const Dataset = () => {
     if (isSftp(locationType)) {
       dispatch(submit("DataSetsForm"));
     } else {
-      if (createMode && isCustomSQL?.toLowerCase() === "yes" && !previewedSql) {
-        dispatch(hideErrorMessage());
-        messageContext.showErrorMessage("Please hit previewSql to proceed");
-        return;
-      }
       dispatch(submit("DataSetsFormSQL"));
       // jdbcRef.current.handleSubmit();
     }
@@ -394,6 +389,15 @@ const Dataset = () => {
         messageContext.showErrorMessage(
           `Please remove * from query to proceed.`
         );
+        return false;
+      }
+      if (
+        createMode &&
+        formValue?.isCustomSQL?.toLowerCase() === "yes" &&
+        !previewedSql
+      ) {
+        dispatch(hideErrorMessage());
+        messageContext.showErrorMessage("Please hit previewSql to proceed");
         return false;
       }
       if (data.datasetid) {
