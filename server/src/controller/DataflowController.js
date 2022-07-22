@@ -265,7 +265,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
       for (let i = 0; i < dataPackage.length; i++) {
         if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
-          for (let j = 0; j < dataPackage[0].dataSet.length; j++) {
+          for (let j = 0; j < dataPackage[i].dataSet.length; j++) {
             if (
               studyId &&
               vendorid &&
@@ -1723,6 +1723,11 @@ exports.getDataflowDetail = async (req, res) => {
     Logger.info({ message: "dataflowDetail" });
     DB.executeQuery(searchQuery, [dataFlowId]).then((response) => {
       const dataflowDetail = response.rows[0] || null;
+      if (dataflowDetail && dataflowDetail.exptfstprddt)
+        dataflowDetail.exptfstprddt = moment(
+          dataflowDetail.exptfstprddt
+        ).format("DD-MMM-yyyy");
+
       return apiResponse.successResponseWithData(
         res,
         "Operation success",
