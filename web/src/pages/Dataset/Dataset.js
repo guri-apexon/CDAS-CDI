@@ -118,6 +118,12 @@ const Dataset = () => {
   const [manualTriggerToggle, setManualTriggerToggle] = useState(false);
   const [shouldTriggerRedirect, setShouldTriggerRedirect] = useState(true);
 
+  // Save Change Master Flag
+  const SAVE_CHANGE_MODAL_FLAG =
+    process.env.REACT_APP_SAVE_CHANGE_MODAL_FLAG === "true"
+      ? true
+      : false || false;
+
   const dispatch = useDispatch();
   const params = useParams();
   const messageContext = useContext(MessageContext);
@@ -190,38 +196,47 @@ const Dataset = () => {
 
   // Set form to active set for alert box configuration
   useEffect(() => {
-    const isAnyChange =
-      form?.DataSetsForm?.anyTouched ||
-      form?.DataSetsFormSQL?.anyTouched ||
-      false;
-    if (isAnyChange) {
-      dispatch(formComponentActive());
+    if (SAVE_CHANGE_MODAL_FLAG) {
+      const isAnyChange =
+        form?.DataSetsForm?.anyTouched ||
+        form?.DataSetsFormSQL?.anyTouched ||
+        false;
+      if (isAnyChange) {
+        dispatch(formComponentActive());
+      }
     }
   }, [form]);
 
   const handleChangeTab = (event, v) => {
-    setManualTriggerToggle(true);
-    setTempTabValue(v);
+    if (SAVE_CHANGE_MODAL_FLAG) {
+      setManualTriggerToggle(true);
+      setTempTabValue(v);
 
-    // check if there is any changes within form and set toggle for modal
-    const isAnyChange =
-      form?.DataSetsForm?.anyTouched ||
-      form?.DataSetsFormSQL?.anyTouched ||
-      false;
-    if (isAnyChange) {
-      setManualTriggerToggle(true);
-    }
-    // set toggle in case of column tab and changes within columns
-    if (v === 0 && dataSetRowCount > 0) {
-      setManualTriggerToggle(true);
-    }
-    // if there is no change in data then proceed forward
-    if ((v !== 0 && !isAnyChange) || (v === 0 && dataSetRowCount === 0)) {
+      // check if there is any changes within form and set toggle for modal
+      const isAnyChange =
+        form?.DataSetsForm?.anyTouched ||
+        form?.DataSetsFormSQL?.anyTouched ||
+        false;
+      if (isAnyChange) {
+        setManualTriggerToggle(true);
+      }
+      // set toggle in case of column tab and changes within columns
+      if (v === 0 && dataSetRowCount > 0) {
+        setManualTriggerToggle(true);
+      }
+      // if there is no change in data then proceed forward
+      if ((v !== 0 && !isAnyChange) || (v === 0 && dataSetRowCount === 0)) {
+        setValue(v);
+        if (datasetid !== "new" && datasetid !== null) {
+          dispatch(getDatasetColumns(datasetid));
+        }
+        setManualTriggerToggle(false);
+      }
+    } else {
       setValue(v);
       if (datasetid !== "new" && datasetid !== null) {
         dispatch(getDatasetColumns(datasetid));
       }
-      setManualTriggerToggle(false);
     }
   };
 

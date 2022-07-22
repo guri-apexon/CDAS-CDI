@@ -41,6 +41,12 @@ const SaveChangesModal = ({
   const dispatch = useDispatch();
   const history = useHistory();
 
+  // Save Change Master Flag
+  const SAVE_CHANGE_MODAL_FLAG =
+    process.env.REACT_APP_SAVE_CHANGE_MODAL_FLAG === "true"
+      ? true
+      : false || false;
+
   const alertStore = useSelector((state) => state.alert);
 
   // Save Changes Modal Variables
@@ -85,16 +91,18 @@ const SaveChangesModal = ({
 
   // Save Changes Modal Effect
   useEffect(() => {
-    if (shouldTriggerOnRedirect) {
-      routerHandle.current = history.block((tr) => {
-        setTargetRoute(tr?.pathname);
-        setShowSaveChangesModal(true);
-        return false;
-      });
+    if (SAVE_CHANGE_MODAL_FLAG) {
+      if (shouldTriggerOnRedirect) {
+        routerHandle.current = history.block((tr) => {
+          setTargetRoute(tr?.pathname);
+          setShowSaveChangesModal(true);
+          return false;
+        });
+      }
     }
 
     return () => {
-      if (shouldTriggerOnRedirect) {
+      if (SAVE_CHANGE_MODAL_FLAG && shouldTriggerOnRedirect) {
         routerHandle.current();
       }
     };
@@ -121,19 +129,21 @@ const SaveChangesModal = ({
 
   // Set form to active set for alert box configuration
   useEffect(() => {
-    dispatch(formComponentActive());
+    if (SAVE_CHANGE_MODAL_FLAG) {
+      dispatch(formComponentActive());
+    }
   }, []);
 
   // Manually open trigger
   useEffect(() => {
-    if (isManualTrigger) {
+    if (SAVE_CHANGE_MODAL_FLAG && isManualTrigger) {
       setShowSaveChangesModal(manualTriggerToggle);
     }
   }, [isManualTrigger, manualTriggerToggle]);
 
   return (
     <>
-      {isShowAlertBox && (
+      {isShowAlertBox && SAVE_CHANGE_MODAL_FLAG && (
         <AlertBox
           onClose={keepEditingBtn}
           submit={leavePageBtn}
