@@ -49,6 +49,13 @@ const styles = {
   },
 };
 
+// const validatePreviewed = (previewedSql) => (value) => {
+//   if (!previewedSql) {
+//     // messageContext.showErrorMessage("Please hit previewSql to proceed");
+//     return "Please hit previewSql to proceed";
+//   }
+//   return false;
+// };
 const DataSetsFormBase = (props) => {
   const {
     handleSubmit,
@@ -328,6 +335,7 @@ const DataSetsFormBase = (props) => {
                 sizeAdjustable
                 disabled={prodLock || !canUpdateDataFlow}
                 label="SQL Query"
+                // validate={[validatePreviewed(previewedSql)]}
               />
               <Button
                 variant="secondary"
