@@ -375,7 +375,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       locationID || null,
       helper.stringToBoolean(active) ? 1 : 0,
       configured || 0,
-      exptDtOfFirstProdFile,
+      exptDtOfFirstProdFile || null,
       helper.stringToBoolean(testFlag) ? 1 : 0,
       data_in_cdr || "N",
       connectionType || locationType || null,
@@ -2103,7 +2103,7 @@ exports.updateDataflowConfig = async (req, res) => {
         externalSystemName,
         dFTimestamp,
         serviceOwners,
-        firstFileDate,
+        moment(firstFileDate).isValid() ? firstFileDate : null,
       ];
       let fieldsStr = `vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, externalsystemname=$8, updt_tm=$9, serv_ownr=$10, expt_fst_prd_dt=$11`;
       if (dfUpdatedName) {
