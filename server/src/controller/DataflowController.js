@@ -262,19 +262,29 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
       for (let i = 0; i < dataPackage.length; i++) {
         if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
-          for (let j = 0; j < dataPackage[0].dataSet.length; j++) {
-            const comp = await datasetHelper.findByMnemonic(
-              studyId,
-              testFlag,
-              vendorid,
-              dataPackage[i].dataSet[j].dataKindID,
-              dataPackage[i].dataSet[j].datasetName
-            );
-            if (comp) {
-              return apiResponse.validationErrorWithData(
-                res,
-                `Mnemonic ${dataPackage[i].dataSet[j].datasetName} is not unique.`
+          for (let j = 0; j < dataPackage[i].dataSet.length; j++) {
+            if (
+              studyId &&
+              vendorid &&
+              (testFlag != null || testFlag != undefined) &&
+              dataPackage[i].dataSet[j]?.dataKindID &&
+              dataPackage[i].dataSet[j]?.datasetName
+            ) {
+              const comp = await datasetHelper.findByMnemonic(
+                studyId,
+                testFlag,
+                vendorid,
+                dataPackage[i].dataSet[j].dataKindID,
+                dataPackage[i].dataSet[j].datasetName
               );
+
+              if (comp) {
+                return apiResponse.validationErrorWithData(
+                  res,
+
+                  `Mnemonic ${dataPackage[i].dataSet[j].datasetName} is not unique.`
+                );
+              }
             }
           }
         }
@@ -286,24 +296,33 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       let saveflagyes = false;
       if (dataPackage && Array.isArray(dataPackage)) {
         for (let i = 0; i < dataPackage.length; i++) {
-          /// Below value check is for incremental instead of loadtype
-          if (dataPackage[i].dataSet[i].incremental === true) {
-            for (
-              let j = 0;
-              j < dataPackage[0].dataSet[0].columnDefinition.length;
-              j++
-            ) {
-              if (
-                dataPackage[0].dataSet[0].columnDefinition[j].primaryKey ===
-                "Yes"
-              )
-                saveflagyes = true;
+          if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
+            for (let k = 0; k < dataPackage[i].dataSet.length; k++) {
+              /// Below value check is for incremental instead of loadtype
+              if (dataPackage[i].dataSet[k].incremental === true) {
+                if (
+                  dataPackage[i].dataSet[k].columnDefinition &&
+                  Array.isArray(dataPackage[i].dataSet[k].columnDefinition)
+                ) {
+                  for (
+                    let j = 0;
+                    j < dataPackage[i].dataSet[k].columnDefinition.length;
+                    j++
+                  ) {
+                    if (
+                      dataPackage[i].dataSet[k].columnDefinition[j]
+                        .primaryKey === "Yes"
+                    )
+                      saveflagyes = true;
+                  }
+                }
+                if (!saveflagyes)
+                  return apiResponse.ErrorResponse(
+                    res,
+                    `At least one primaryKey column must be identified when incremental is true.`
+                  );
+              }
             }
-            if (!saveflagyes)
-              return apiResponse.ErrorResponse(
-                res,
-                `At least one primaryKey column must be identified when incremental is true.`
-              );
           }
         }
       }
@@ -1345,6 +1364,10 @@ exports.updateDataFlow = async (req, res) => {
         const deleteQuery = `delete from ${schemaName}.dataflow_version where dataflowid='${DFId}' and
         version ='${DFVer}'`;
         await DB.executeQuery(deleteQuery);
+
+        const deleteCdr = `delete from ${schemaName}.cdr_ta_queue where dataflowid='${DFId}' and
+        "VERSION" ='${DFVer}'`;
+        await DB.executeQuery(deleteCdr);
 
         Object.keys(ResponseBody).forEach((key) => {
           ResponseBody.version = DFVer - 1;

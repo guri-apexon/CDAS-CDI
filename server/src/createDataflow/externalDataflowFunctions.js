@@ -9,6 +9,7 @@ const constants = require("../config/constants");
 const apiResponse = require("../helpers/apiResponse");
 
 const { Console } = require("winston/lib/winston/transports");
+const { trim } = require("lodash");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const dataTyperForamtValidate = (exports.dataTyperForamtValidate = (
@@ -1557,6 +1558,20 @@ exports.packageLevelInsert = async (
       }
     }
 
+    if (data.noPackageConfig === 0) {
+      if (
+        !data.type ||
+        (!data.name && !data.namingConvention) ||
+        trim(data.type).length === 0 ||
+        (trim(data.name).length === 0 &&
+          trim(data.namingConvention).length === 0)
+      ) {
+        errorPackage.push(
+          "If Package is opted, Package name and type are mandatory and can not be blank"
+        );
+      }
+    }
+
     if (errorPackage.length > 0) {
       //errorPackage.splice(0, 0, `Datapackage external id -${ExternalId} `);
       let dpErrRes = errorPackage.join(" '|' ");
@@ -2861,7 +2876,7 @@ exports.dataflowUpdate = async (
   ConnectionType
 ) => {
   try {
-    let ts = new Date().toLocaleString();
+    let ts = helper.getCurrentTime();
     var dataflow = [];
     let errorDF = [];
     let studyId;
@@ -3107,7 +3122,7 @@ exports.dataflowUpdate = async (
       version,
       JSON.stringify(conf_data),
       userId,
-      new Date(),
+      ts,
     ];
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
 
@@ -3119,20 +3134,16 @@ exports.dataflowUpdate = async (
         `INSERT INTO ${schemaName}.dataflow_audit_log
                         ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
                         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-        [
-          DFId,
-          null,
-          null,
-          null,
-          version,
-          key,
-          oldData,
-          newData,
-          userId,
-          helper.getCurrentTime(),
-        ]
+        [DFId, null, null, null, version, key, oldData, newData, userId, ts]
       );
     }
+
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.cdr_ta_queue
+    (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+    VALUES($1, 'CONFIG', $2, 'QUEUE', $3, $3, '', $4, '', 1, '', 0)`,
+      [DFId, userId, ts, version]
+    );
 
     if (Object.keys(diffObj).length === 0) {
       // return { sucRes: dataflow };

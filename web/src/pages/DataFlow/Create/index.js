@@ -320,7 +320,7 @@ const DataFlow = ({
 
   const AddColumnDefinitions = (rows) => {
     const newForm = { ...myform };
-    if (newForm.dataPackage[0].dataSet[0]) {
+    if (newForm.dataPackage && newForm.dataPackage[0]?.dataSet[0]) {
       newForm.dataPackage[0].dataSet[0].columncount = rows.length;
       newForm.dataPackage[0].dataSet[0].columnDefinition = rows;
       setForm(newForm);
@@ -461,9 +461,9 @@ const DataFlow = ({
   useEffect(() => {
     const columnDefinition =
       messageContext?.dataflowObj?.columnDefinition || [];
-    if (columnDefinition.length) {
-      AddColumnDefinitions(columnDefinition);
-    }
+    // if (columnDefinition.length) {
+    AddColumnDefinitions(columnDefinition);
+    // }
   }, [messageContext?.dataflowObj?.columnDefinition]);
 
   useEffect(() => {

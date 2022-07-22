@@ -165,9 +165,11 @@ const Dataset = () => {
     VLCData,
     datasetColumns,
     dataSetRowCount,
+    previewedSql,
   } = dataSets;
 
   const datasetid = params.datasetId;
+  const createMode = datasetid === "new";
   const { datasetid: dsId } = selectedDataset;
   const { isCustomSQL, tableName } = formDataSQL;
 
@@ -190,33 +192,37 @@ const Dataset = () => {
 
   // Set form to active set for alert box configuration
   useEffect(() => {
-    const isAnyChange = form?.DataSetsForm?.anyTouched || false;
+    const isAnyChange =
+      form?.DataSetsForm?.anyTouched ||
+      form?.DataSetsFormSQL?.anyTouched ||
+      false;
     if (isAnyChange) {
       dispatch(formComponentActive());
     }
   }, [form]);
 
   const handleChangeTab = (event, v) => {
-    setManualTriggerToggle(true);
-    setTempTabValue(v);
+    // setManualTriggerToggle(true);
+    // setTempTabValue(v);
 
-    // check if there is any changes within form and set toggle for modal
-    const isAnyChange = form?.DataSetsForm?.anyTouched || false;
-    if (isAnyChange) {
-      setManualTriggerToggle(true);
+    // // check if there is any changes within form and set toggle for modal
+    // const isAnyChange = form?.DataSetsForm?.anyTouched || false;
+    // if (isAnyChange) {
+    //   setManualTriggerToggle(true);
+    // }
+    // // set toggle in case of column tab and changes within columns
+    // if (v === 0 && dataSetRowCount > 0) {
+    //   setManualTriggerToggle(true);
+    // }
+    // // if there is no change in data then proceed forward
+    // if ((v !== 0 && !isAnyChange) || (v === 0 && dataSetRowCount === 0))
+    // {
+    setValue(v);
+    if (datasetid !== "new" && datasetid !== null) {
+      dispatch(getDatasetColumns(datasetid));
     }
-    // set toggle in case of column tab and changes within columns
-    if (v === 0 && dataSetRowCount > 0) {
-      setManualTriggerToggle(true);
-    }
-    // if there is no change in data then proceed forward
-    if ((v !== 0 && !isAnyChange) || (v === 0 && dataSetRowCount === 0)) {
-      setValue(v);
-      if (datasetid !== "new" && datasetid !== null) {
-        dispatch(getDatasetColumns(datasetid));
-      }
-      setManualTriggerToggle(false);
-    }
+    //   setManualTriggerToggle(false);
+    // }
   };
 
   // logic to run after user click discard changes on save modal
@@ -290,7 +296,6 @@ const Dataset = () => {
   }, [loctyp]);
 
   useEffect(() => {
-    setShouldTriggerRedirect(false);
     if (dsCreatedSuccessfully) {
       setTimeout(() => {
         if (isSftp(loctyp)) {
@@ -365,6 +370,7 @@ const Dataset = () => {
   const onSubmit = (formValue) => {
     // eslint-disable-next-line consistent-return
     setTimeout(() => {
+      setShouldTriggerRedirect(false);
       const data = {
         ...formValue,
         dpId,
@@ -383,6 +389,15 @@ const Dataset = () => {
         messageContext.showErrorMessage(
           `Please remove * from query to proceed.`
         );
+        return false;
+      }
+      if (
+        createMode &&
+        formValue?.isCustomSQL?.toLowerCase() === "yes" &&
+        !previewedSql
+      ) {
+        dispatch(hideErrorMessage());
+        messageContext.showErrorMessage("Please hit previewSql to proceed");
         return false;
       }
       if (data.datasetid) {
@@ -467,7 +482,7 @@ const Dataset = () => {
         >
           <main className={classes.content}>
             <div className={classes.contentHeader}>
-              {/* Save Changes Modal */}
+              {/* Save Changes Modal
               {showSaveChangeModal && (
                 <SaveChangesModal
                   isManualTrigger={true}
@@ -476,8 +491,7 @@ const Dataset = () => {
                   handlePostManualDiscardChange={handlePostDiscardChange}
                   shouldTriggerOnRedirect={shouldTriggerRedirect}
                 />
-              )}
-
+              )} */}
               <Modal
                 open={openModal}
                 variant="warning"

@@ -302,7 +302,6 @@ const CloneDataFlow = () => {
       setShowAlertBox(false);
       const res = await getDataFlowDetails(selectedStudy?.dataflow?.dataflowid);
       if (!res) {
-        setShowAlertBox(true);
         messageContext.showErrorMessage(`Something went wrong`);
         return false;
       }
@@ -327,7 +326,15 @@ const CloneDataFlow = () => {
         protocolNumberStandard,
         serviceOwners,
         externalSystemName: "CDI",
-        dataPackage,
+        dataPackage: dataPackage.map((d) => ({
+          ...d,
+          dataSet: d.dataSet.map((item) => ({
+            ...item,
+            dataKindID: item.dataKind,
+            datasetName: item.mnemonic,
+            incremental: item.incremental?.toLowerCase() === "y" ? true : false,
+          })),
+        })),
         active: false,
         vendorName,
       };
@@ -346,10 +353,8 @@ const CloneDataFlow = () => {
       } else {
         messageContext.showErrorMessage(`Something wrong with clone`);
       }
-      setShowAlertBox(true);
       return true;
     } catch (error) {
-      setShowAlertBox(true);
       console.log(error);
       setLoading(false);
       messageContext.showErrorMessage(`Something went wrong`);

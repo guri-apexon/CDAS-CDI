@@ -65,7 +65,7 @@ const IssuesProperties = ({ datasetProperties }) => {
       });
   };
   const getFileType = (type) => {
-    return type?.toLowerCase() === "full" ? "Cumulative" : "Increamental";
+    return type?.toLowerCase() === "full" ? "Cumulative" : "Incremental";
   };
   useEffect(() => {
     if (datasetProperties?.dataflowid) {

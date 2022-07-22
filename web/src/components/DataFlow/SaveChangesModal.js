@@ -83,22 +83,22 @@ const SaveChangesModal = ({
     }
   };
 
-  // Save Changes Modal Effect
-  useEffect(() => {
-    if (shouldTriggerOnRedirect) {
-      routerHandle.current = history.block((tr) => {
-        setTargetRoute(tr?.pathname);
-        setShowSaveChangesModal(true);
-        return false;
-      });
-    }
+  // // // Save Changes Modal Effect
+  // // useEffect(() => {
+  // //   if (shouldTriggerOnRedirect) {
+  // //     routerHandle.current = history.block((tr) => {
+  // //       setTargetRoute(tr?.pathname);
+  // //       setShowSaveChangesModal(true);
+  // //       return false;
+  // //     });
+  // //   }
 
-    return () => {
-      if (shouldTriggerOnRedirect) {
-        routerHandle.current();
-      }
-    };
-  });
+  //   return () => {
+  //     if (shouldTriggerOnRedirect) {
+  //       routerHandle.current();
+  //     }
+  //   };
+  // });
 
   // Alert Box On App Switcher
   const keepEditingBtn = () => {
