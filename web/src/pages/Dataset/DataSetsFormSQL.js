@@ -25,6 +25,7 @@ import dataSetsValidation from "../../components/FormComponents/DataSetsValidati
 import {
   getSQLTables,
   getSQLColumns,
+  togglePreviewedSql,
   getPreviewSQL,
 } from "../../store/actions/DataSetsAction";
 import { MessageContext } from "../../components/Providers/MessageProvider";
@@ -36,6 +37,8 @@ import usePermission, {
   Features,
   useStudyPermission,
 } from "../../components/Common/usePermission";
+import { hideErrorMessage } from "../../store/actions/DataFlowAction";
+// import { getPreviewSQL } from "../../services/ApiServices";
 
 const styles = {
   paper: {
@@ -46,6 +49,13 @@ const styles = {
   },
 };
 
+// const validatePreviewed = (previewedSql) => (value) => {
+//   if (!previewedSql) {
+//     // messageContext.showErrorMessage("Please hit previewSql to proceed");
+//     return "Please hit previewSql to proceed";
+//   }
+//   return false;
+// };
 const DataSetsFormBase = (props) => {
   const {
     handleSubmit,
@@ -80,7 +90,7 @@ const DataSetsFormBase = (props) => {
 
   const [renderClinicalDataType, setRenderClinicalDataType] = useState(true);
   // const [offsetColsRender, setOffsetColsRender] = useState(0);
-  const { locationDetail } = dataSets;
+  const { locationDetail, error, previewedSql } = dataSets;
   const [selectedOffsetColumns, setSelectedOffsetColumns] = useState(null);
   const [sqlColumnsArr, setSqlColumnsArr] = useState([]);
   const [cdtValue, setCdtValue] = useState(null);
@@ -145,8 +155,20 @@ const DataSetsFormBase = (props) => {
     }
   }, [formValues.tableName]);
 
+  useEffect(() => {
+    if (previewSQL?.length && formValues.isCustomSQL?.toLowerCase() === "yes") {
+      dispatch(togglePreviewedSql(true));
+      messageContext.showSuccessMessage(
+        `Your query looks good. Please proceed to save dataflow.`
+      );
+    }
+  }, [previewSQL]);
+
   // eslint-disable-next-line consistent-return
-  const handlePreview = () => {
+  const handlePreview = async () => {
+    if (previewedSql) {
+      dispatch(togglePreviewedSql(false));
+    }
     if (!formValues?.sQLQuery || formValues?.sQLQuery === "") {
       messageContext.showErrorMessage(`Please add your query to proceed.`);
       return false;
@@ -156,6 +178,21 @@ const DataSetsFormBase = (props) => {
       return false;
     }
     setShowPreview(true);
+    // const { data } = await getPreviewSQL({
+    //   ...locationDetail,
+    //   tableName: null,
+    //   columnDefinition: null,
+    //   columnCount: null,
+    //   customSql: formValues.sQLQuery,
+    //   customQuery: formValues.isCustomSQL,
+    // });
+    // console.log("result", data);
+    // if (data?.length) {
+    //   // dispatch(togglePreviewedSql(true));
+    //   messageContext.showSuccessMessage(
+    //     `Your query looks good. Please proceed to save dataflow.`
+    //   );
+    // }
     dispatch(
       getPreviewSQL({
         ...locationDetail,
@@ -167,6 +204,10 @@ const DataSetsFormBase = (props) => {
       })
     );
   };
+
+  useEffect(() => {
+    console.log("formValues", formValues);
+  }, [formValues]);
 
   useEffect(() => {
     setRenderClinicalDataType(false);
@@ -294,6 +335,7 @@ const DataSetsFormBase = (props) => {
                 sizeAdjustable
                 disabled={prodLock || !canUpdateDataFlow}
                 label="SQL Query"
+                // validate={[validatePreviewed(previewedSql)]}
               />
               <Button
                 variant="secondary"

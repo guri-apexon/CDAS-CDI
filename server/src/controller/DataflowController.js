@@ -1356,6 +1356,10 @@ exports.updateDataFlow = async (req, res) => {
         version ='${DFVer}'`;
         await DB.executeQuery(deleteQuery);
 
+        const deleteCdr = `delete from ${schemaName}.cdr_ta_queue where dataflowid='${DFId}' and
+        "VERSION" ='${DFVer}'`;
+        await DB.executeQuery(deleteCdr);
+
         Object.keys(ResponseBody).forEach((key) => {
           ResponseBody.version = DFVer - 1;
           // (ResponseBody.ResponseCode = "00001");
