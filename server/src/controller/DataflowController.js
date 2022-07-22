@@ -300,16 +300,21 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
             for (let k = 0; k < dataPackage[i].dataSet.length; k++) {
               /// Below value check is for incremental instead of loadtype
               if (dataPackage[i].dataSet[k].incremental === true) {
-                for (
-                  let j = 0;
-                  j < dataPackage[i].dataSet[k].columnDefinition.length;
-                  j++
+                if (
+                  dataPackage[i].dataSet[k].columnDefinition &&
+                  Array.isArray(dataPackage[i].dataSet[k].columnDefinition)
                 ) {
-                  if (
-                    dataPackage[i].dataSet[k].columnDefinition[j].primaryKey ===
-                    "Yes"
-                  )
-                    saveflagyes = true;
+                  for (
+                    let j = 0;
+                    j < dataPackage[i].dataSet[k].columnDefinition.length;
+                    j++
+                  ) {
+                    if (
+                      dataPackage[i].dataSet[k].columnDefinition[j]
+                        .primaryKey === "Yes"
+                    )
+                      saveflagyes = true;
+                  }
                 }
                 if (!saveflagyes)
                   return apiResponse.ErrorResponse(
