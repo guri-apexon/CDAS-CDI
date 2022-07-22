@@ -9,6 +9,7 @@ const constants = require("../config/constants");
 const apiResponse = require("../helpers/apiResponse");
 
 const { Console } = require("winston/lib/winston/transports");
+const { trim } = require("lodash");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const dataTyperForamtValidate = (exports.dataTyperForamtValidate = (
@@ -1554,6 +1555,20 @@ exports.packageLevelInsert = async (
             "In jdbc type, sasXptMethod, path, namingConvention should be blank"
           );
         }
+      }
+    }
+
+    if (data.noPackageConfig === 0) {
+      if (
+        !data.type ||
+        (!data.name && !data.namingConvention) ||
+        trim(data.type).length === 0 ||
+        (trim(data.name).length === 0 &&
+          trim(data.namingConvention).length === 0)
+      ) {
+        errorPackage.push(
+          "If Package is opted, Package name and type are mandatory and can not be blank"
+        );
       }
     }
 
