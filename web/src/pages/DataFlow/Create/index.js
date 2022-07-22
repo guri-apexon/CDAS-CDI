@@ -9,6 +9,7 @@ import React, {
   useReducer,
   useRef,
 } from "react";
+import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -205,7 +206,9 @@ const DataFlow = ({
         dataStructure: FormValues.dataStructure,
         testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
-        exptDtOfFirstProdFile: FormValues.firstFileDate,
+        exptDtOfFirstProdFile: moment(FormValues.firstFileDate).isValid()
+          ? moment(FormValues.firstFileDate).format("DD-MMM-yyyy")
+          : null,
         connectionType: FormValues.locationType,
         protocolNumberStandard: selectedCard.protocolnumberstandard,
         // protocolNumber: selectedCard.prot_id,
