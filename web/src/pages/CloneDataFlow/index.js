@@ -326,7 +326,15 @@ const CloneDataFlow = () => {
         protocolNumberStandard,
         serviceOwners,
         externalSystemName: "CDI",
-        dataPackage,
+        dataPackage: dataPackage.map((d) => ({
+          ...d,
+          dataSet: d.dataSet.map((item) => ({
+            ...item,
+            dataKindID: item.dataKind,
+            datasetName: item.mnemonic,
+            incremental: item.incremental?.toLowerCase() === "y" ? true : false,
+          })),
+        })),
         active: false,
         vendorName,
       };

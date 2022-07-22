@@ -262,19 +262,29 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
       for (let i = 0; i < dataPackage.length; i++) {
         if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
-          for (let j = 0; j < dataPackage[0].dataSet.length; j++) {
-            const comp = await datasetHelper.findByMnemonic(
-              studyId,
-              testFlag,
-              vendorid,
-              dataPackage[i].dataSet[j].dataKindID,
-              dataPackage[i].dataSet[j].datasetName
-            );
-            if (comp) {
-              return apiResponse.validationErrorWithData(
-                res,
-                `Mnemonic ${dataPackage[i].dataSet[j].datasetName} is not unique.`
+          for (let j = 0; j < dataPackage[i].dataSet.length; j++) {
+            if (
+              studyId &&
+              vendorid &&
+              (testFlag != null || testFlag != undefined) &&
+              dataPackage[i].dataSet[j]?.dataKindID &&
+              dataPackage[i].dataSet[j]?.datasetName
+            ) {
+              const comp = await datasetHelper.findByMnemonic(
+                studyId,
+                testFlag,
+                vendorid,
+                dataPackage[i].dataSet[j].dataKindID,
+                dataPackage[i].dataSet[j].datasetName
               );
+
+              if (comp) {
+                return apiResponse.validationErrorWithData(
+                  res,
+
+                  `Mnemonic ${dataPackage[i].dataSet[j].datasetName} is not unique.`
+                );
+              }
             }
           }
         }
@@ -286,24 +296,33 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       let saveflagyes = false;
       if (dataPackage && Array.isArray(dataPackage)) {
         for (let i = 0; i < dataPackage.length; i++) {
-          /// Below value check is for incremental instead of loadtype
-          if (dataPackage[i].dataSet[i].incremental === true) {
-            for (
-              let j = 0;
-              j < dataPackage[0].dataSet[0].columnDefinition.length;
-              j++
-            ) {
-              if (
-                dataPackage[0].dataSet[0].columnDefinition[j].primaryKey ===
-                "Yes"
-              )
-                saveflagyes = true;
+          if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
+            for (let k = 0; k < dataPackage[i].dataSet.length; k++) {
+              /// Below value check is for incremental instead of loadtype
+              if (dataPackage[i].dataSet[k].incremental === true) {
+                if (
+                  dataPackage[i].dataSet[k].columnDefinition &&
+                  Array.isArray(dataPackage[i].dataSet[k].columnDefinition)
+                ) {
+                  for (
+                    let j = 0;
+                    j < dataPackage[i].dataSet[k].columnDefinition.length;
+                    j++
+                  ) {
+                    if (
+                      dataPackage[i].dataSet[k].columnDefinition[j]
+                        .primaryKey === "Yes"
+                    )
+                      saveflagyes = true;
+                  }
+                }
+                if (!saveflagyes)
+                  return apiResponse.ErrorResponse(
+                    res,
+                    `At least one primaryKey column must be identified when incremental is true.`
+                  );
+              }
             }
-            if (!saveflagyes)
-              return apiResponse.ErrorResponse(
-                res,
-                `At least one primaryKey column must be identified when incremental is true.`
-              );
           }
         }
       }
@@ -1829,7 +1848,7 @@ exports.fetchdataflowDetails = async (req, res) => {
               customQuery: el.customsql_yn,
               customSql: el.customsql,
               tableName: el.tbl_nm,
-              incremental: el.incremental?.toLowerCase() === "y" ? true : false,
+              incremental: el.incremental,
               offsetColumn: el.offsetcolumn,
               type: el.type,
               dataTransferFrequency: el.data_freq,
@@ -1843,7 +1862,7 @@ exports.fetchdataflowDetails = async (req, res) => {
               footerRowNumber: el.footerrownumber,
               escapeCode: el.escapecode,
               delimiter: el.delimiter,
-              dataKindID: el.datakindid,
+              dataKind: el.datakindid,
               naming_convention: el.naming_convention,
               columnDefinition: [],
               active: el.active,
