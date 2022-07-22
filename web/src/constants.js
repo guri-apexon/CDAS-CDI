@@ -144,6 +144,9 @@ export const STORE_DATASET_COLUMNS_FAILURE = "STORE_DATASET_COLUMNS_FAILURE";
 export const UPDATE_DATASET_SUCCESS = "UPDATE_DATASET_SUCCESS";
 export const UPDATE_DATASET_FAILURE = "UPDATE_DATASET_FAILURE";
 
+export const SAVE_DATASET_COLUMNS_COUNT = "SAVE_DATASET_COLUMNS_COUNT";
+export const TOGGLE_DATASET_PREVIWED_SQL = "TOGGLE_DATASET_PREVIWED_SQL";
+
 export const UPDATE_COLUMNS_DATA = "UPDATE_COLUMNS_DATA";
 export const UPDATE_COLUMNS_SUCCESS = "UPDATE_COLUMNS_SUCCESS";
 export const UPDATE_COLUMNS_FAILURE = "UPDATE_COLUMNS_FAILURE";
@@ -266,7 +269,8 @@ export const INGESTIONREPORTAPI = "v1/api/dataset/ingestion-report";
 export const INGESTION_ISSUE_URL = "v1/api/dataset/ingestion-issues";
 export const INGESTION_ISSUE_COL_URL =
   "v1/api/dataset/ingestion-issues-columns";
-
+export const DATASETS_STATUS_TOGGLE =
+  "v1/api/data-package/change-datasets-status";
 export const baseURL = process.env.REACT_APP_API_URL;
 export const API_URL = `${baseURL}/v1/api`;
 

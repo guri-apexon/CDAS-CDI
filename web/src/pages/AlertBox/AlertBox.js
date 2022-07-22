@@ -1,7 +1,7 @@
 import React from "react";
 import Modal from "apollo-react/components/Modal";
 
-const AlertBox = ({ onClose, submit, title, message }) => {
+const AlertBox = ({ onClose, submit, title, message, dataflow }) => {
   return (
     <Modal
       open={true}
@@ -11,18 +11,32 @@ const AlertBox = ({ onClose, submit, title, message }) => {
       variant="warning"
       title={title}
       message={message}
-      buttonProps={[
-        {
-          label: "Cancel",
-          onClick: onClose,
-          // disabled: loading,
-        },
-        {
-          label: "Yes",
-          onClick: submit,
-          // disabled: loading,
-        },
-      ]}
+      buttonProps={
+        dataflow
+          ? [
+              {
+                label: "Keep editing",
+                onClick: onClose,
+              },
+              {
+                label: "Discard changes",
+                variant: "primary",
+                onClick: submit,
+              },
+            ]
+          : [
+              {
+                label: "Cancel",
+                onClick: onClose,
+                // disabled: loading,
+              },
+              {
+                label: "Yes",
+                onClick: submit,
+                // disabled: loading,
+              },
+            ]
+      }
       id="neutral"
     />
   );

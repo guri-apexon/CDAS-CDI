@@ -87,6 +87,7 @@ export const editablePrimarySelectCell =
     return row.isEditMode ? (
       <Select
         size="small"
+        disabled={row.isDFSynced}
         fullWidth
         canDeselect={false}
         value={row[key]}
@@ -142,7 +143,8 @@ export const editableSelectCell =
         value={row[key]}
         onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
         {...fieldStyles}
-        disabled={row.pkDisabled}
+        // disabled={row.pkDisabled}
+        disabled={!row.isSftpDf && row.isDFSynced}
       >
         {options.map((option) => (
           <MenuItem key={option} value={option}>
@@ -599,7 +601,7 @@ export const CustomHeader = ({
           size="small"
           variant="secondary"
           icon={Filter}
-          disabled={editedCount}
+          // disabled={editedCount}
           onClick={toggleFilters}
         >
           Filter

@@ -185,7 +185,7 @@ exports.saveDatasetData = async (req, res) => {
         userId,
         dfId,
         versionFreezed,
-        oldVersion.version
+        oldVersion.version || 0
       );
     }
 
@@ -284,7 +284,7 @@ exports.saveDatasetData = async (req, res) => {
         filePwd: values.filePwd,
         version: historyVersion,
       };
-      if (oldVersion.version === historyVersion) {
+      if (oldVersion?.version === historyVersion) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
@@ -454,7 +454,35 @@ exports.updateDatasetData = async (req, res) => {
       versionFreezed,
       clinicalDataType,
       loadType,
+      active,
     } = req.body;
+
+    if (!helper.stringToBoolean(active)) {
+      let dataSet_count = 0;
+      const dataPackage = await DB.executeQuery(
+        `SELECT datapackageid from ${schemaName}.datapackage WHERE dataflowid='${dfId}'`
+      );
+      const DPID = dataPackage.rows;
+
+      if (DPID) {
+        for (let id of DPID) {
+          const {
+            rows: [datasetCount],
+          } = await DB.executeQuery(
+            `SELECT count(1) from ${schemaName}.dataset where datapackageid='${id.datapackageid}' and active=1`
+          );
+
+          dataSet_count += parseInt(datasetCount.count);
+        }
+      }
+
+      if (dataSet_count < 2) {
+        return apiResponse.ErrorResponse(
+          res,
+          "Please inactivate the dataflow in order to inactive datasets"
+        );
+      }
+    }
 
     // const versionFreezed = false;
     const dataflow = await dataflowHelper.findById(dfId);
@@ -519,7 +547,7 @@ exports.updateDatasetData = async (req, res) => {
       );
     }
     if (!helper.isSftp(values.locationType)) {
-      return updateSQLDataset(res, values, versionFreezed, oldVersion.version);
+      return updateSQLDataset(res, values, versionFreezed, oldVersion?.version);
     }
     // For SFTP Datasets update
     const incremental = values.loadType === "Incremental" ? "Y" : "N";
@@ -620,11 +648,11 @@ exports.updateDatasetData = async (req, res) => {
     var resData = {
       ...updateDS.rows[0],
     };
-    if (oldVersion.version < newVersion) {
+    if (oldVersion?.version < newVersion) {
       resData.version = newVersion;
       resData.versionBumped = true;
     } else {
-      resData.version = oldVersion.version;
+      resData.version = oldVersion?.version || 0;
       resData.versionBumped = false;
     }
 

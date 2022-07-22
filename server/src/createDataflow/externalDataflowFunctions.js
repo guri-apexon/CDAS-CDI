@@ -9,6 +9,7 @@ const constants = require("../config/constants");
 const apiResponse = require("../helpers/apiResponse");
 
 const { Console } = require("winston/lib/winston/transports");
+const { trim } = require("lodash");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const dataTyperForamtValidate = (exports.dataTyperForamtValidate = (
@@ -256,11 +257,11 @@ exports.insertValidation = async (req) => {
           if (!helper.stringToBoolean(each.noPackageConfig)) {
             const dpArrayST = [
               { key: "type", value: each.type, type: "string" },
-              {
-                key: "sasXptMethod ",
-                value: each.sasXptMethod,
-                type: "string",
-              },
+              // {
+              //   key: "sasXptMethod ",
+              //   value: each.sasXptMethod,
+              //   type: "string",
+              // },
               {
                 key: "namingConvention",
                 value: each.namingConvention,
@@ -283,6 +284,23 @@ exports.insertValidation = async (req) => {
             if (dpResST.length > 0) {
               // dpErrArray.push(dpResST);
               dpErrArray = dpErrArray.concat(dpResST);
+            }
+
+            if (each.type) {
+              if (each.type.toLowerCase() === "sas") {
+                const dpArraySAS = [
+                  {
+                    key: "sasXptMethod ",
+                    value: each.sasXptMethod,
+                    type: "string",
+                  },
+                ];
+
+                let dpResSas = helper.validation(dpArraySAS);
+                if (dpResSas.length > 0) {
+                  dpErrArray = dpErrArray.concat(dpResSas);
+                }
+              }
             }
           }
 
@@ -810,15 +828,15 @@ exports.insertValidation = async (req) => {
                     const last = el.lov.charAt(el.lov.length - 1);
                     const first = el.lov.charAt(el.lov.charAt(0));
 
-                    if (str1.test(el.lov) === false) {
-                      clErrArray.push("LOV should be seperated by tilde(~)");
-                    } else {
-                      if (last === "~" || first === "~") {
-                        clErrArray.push(
-                          "Tilde(~) can't be used start or end of string"
-                        );
-                      }
+                    // if (str1.test(el.lov) === false) {
+                    //   clErrArray.push("LOV should be seperated by tilde(~)");
+                    // } else {
+                    if (last === "~" || first === "~") {
+                      clErrArray.push(
+                        "Tilde(~) can't be used start or end of string"
+                      );
                     }
+                    // }
                   }
                   if (clErrArray.length > 0) {
                     let clErrRes = clErrArray.join(" '|' ");
@@ -1372,11 +1390,11 @@ exports.packageLevelInsert = async (
         if (!helper.stringToBoolean(noPackageConfig)) {
           const dpArrayST = [
             { key: "type", value: data.type, type: "string" },
-            {
-              key: "sasXptMethod",
-              value: data.sasXptMethod,
-              type: "string",
-            },
+            // {
+            //   key: "sasXptMethod",
+            //   value: data.sasXptMethod,
+            //   type: "string",
+            // },
             {
               key: "namingConvention",
               value: namingConvention,
@@ -1402,6 +1420,23 @@ exports.packageLevelInsert = async (
           if (dpResST.length > 0) {
             // errorPackage.push(dpResST);
             errorPackage = errorPackage.concat(dpResST);
+          }
+
+          if (data.type) {
+            if (data.type.toLowerCase() === "sas") {
+              const dpArraySAS = [
+                {
+                  key: "sasXptMethod ",
+                  value: data.sasXptMethod,
+                  type: "string",
+                },
+              ];
+
+              let dpResSas = helper.validation(dpArraySAS);
+              if (dpResSas.length > 0) {
+                errorPackage = errorPackage.concat(dpResSas);
+              }
+            }
           }
         }
 
@@ -1520,6 +1555,20 @@ exports.packageLevelInsert = async (
             "In jdbc type, sasXptMethod, path, namingConvention should be blank"
           );
         }
+      }
+    }
+
+    if (data.noPackageConfig === 0) {
+      if (
+        !data.type ||
+        (!data.name && !data.namingConvention) ||
+        trim(data.type).length === 0 ||
+        (trim(data.name).length === 0 &&
+          trim(data.namingConvention).length === 0)
+      ) {
+        errorPackage.push(
+          "If Package is opted, Package name and type are mandatory and can not be blank"
+        );
       }
     }
 
@@ -2415,15 +2464,15 @@ const columnSave = (exports.columnDefinationInsert = async (
           const last = el.lov.charAt(el.lov.length - 1);
           const first = el.lov.charAt(el.lov.charAt(0));
 
-          if (str1.test(el.lov) === false) {
-            errorColumnDef.push("LOV should be seperated by tilde(~)");
-          } else {
-            if (last === "~" || first === "~") {
-              errorColumnDef.push(
-                "Tilde(~) can't be used start or end of string"
-              );
-            }
+          // if (str1.test(el.lov) === false) {
+          //   errorColumnDef.push("LOV should be seperated by tilde(~)");
+          // } else {
+          if (last === "~" || first === "~") {
+            errorColumnDef.push(
+              "Tilde(~) can't be used start or end of string"
+            );
           }
+          // }
         }
       } else {
         const clArray = [
@@ -2827,7 +2876,7 @@ exports.dataflowUpdate = async (
   ConnectionType
 ) => {
   try {
-    let ts = new Date().toLocaleString();
+    let ts = helper.getCurrentTime();
     var dataflow = [];
     let errorDF = [];
     let studyId;
@@ -3073,7 +3122,7 @@ exports.dataflowUpdate = async (
       version,
       JSON.stringify(conf_data),
       userId,
-      new Date(),
+      ts,
     ];
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
 
@@ -3085,20 +3134,16 @@ exports.dataflowUpdate = async (
         `INSERT INTO ${schemaName}.dataflow_audit_log
                         ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
                         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-        [
-          DFId,
-          null,
-          null,
-          null,
-          version,
-          key,
-          oldData,
-          newData,
-          userId,
-          helper.getCurrentTime(),
-        ]
+        [DFId, null, null, null, version, key, oldData, newData, userId, ts]
       );
     }
+
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.cdr_ta_queue
+    (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+    VALUES($1, 'CONFIG', $2, 'QUEUE', $3, $3, '', $4, '', 1, '', 0)`,
+      [DFId, userId, ts, version]
+    );
 
     if (Object.keys(diffObj).length === 0) {
       // return { sucRes: dataflow };
@@ -3168,13 +3213,13 @@ exports.packageUpdate = async (
             type: "string",
           });
         }
-        if (typeof data.sasXptMethod != "undefined") {
-          TypeSas.push({
-            key: "sasXptMethod",
-            value: data.sasXptMethod,
-            type: "string",
-          });
-        }
+        // if (typeof data.sasXptMethod != "undefined") {
+        //   TypeSas.push({
+        //     key: "sasXptMethod",
+        //     value: data.sasXptMethod,
+        //     type: "string",
+        //   });
+        // }
         if (typeof data.namingConvention != "undefined") {
           TypeSas.push({
             key: "namingConvention",
@@ -3202,6 +3247,23 @@ exports.packageUpdate = async (
         if (TypeSasRes.length > 0) {
           // errorPackage.push(TypeSasRes);
           errorPackage = errorPackage.concat(TypeSasRes);
+        }
+      }
+
+      if (data.type) {
+        if (data.type.toLowerCase() === "sas") {
+          const dpArraySAS = [
+            {
+              key: "sasXptMethod ",
+              value: data.sasXptMethod,
+              type: "string",
+            },
+          ];
+
+          let dpResSas = helper.validation(dpArraySAS);
+          if (dpResSas.length > 0) {
+            errorPackage = errorPackage.concat(dpResSas);
+          }
         }
       }
 
@@ -4165,13 +4227,13 @@ exports.clDefUpdate = async (
         const last = data.lov.charAt(data.lov.length - 1);
         const first = data.lov.charAt(data.lov.charAt(0));
 
-        if (str1.test(data.lov) === false) {
-          errorcolDef.push("LOV should be seperated by tilde(~)");
-        } else {
-          if (last === "~" || first === "~") {
-            errorcolDef.push("Tilde(~) can't be used start or end of string");
-          }
+        // if (str1.test(data.lov) === false) {
+        //   errorcolDef.push("LOV should be seperated by tilde(~)");
+        // } else {
+        if (last === "~" || first === "~") {
+          errorcolDef.push("Tilde(~) can't be used start or end of string");
         }
+        // }
       }
 
       let colDefRes = helper.validation(valColDef);

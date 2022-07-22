@@ -19,13 +19,14 @@ import Panel from "apollo-react/components/Panel";
 import { makeStyles } from "@material-ui/core/styles";
 import InfoIcon from "apollo-react-icons/Info";
 import Tooltip from "apollo-react/components/Tooltip";
+import Modal from "apollo-react/components/Modal/Modal";
 // import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
 import { ReactComponent as DataPackageIcon } from "../../components/Icons/datapackage.svg";
 import "./DataPackages.scss";
 import LeftPanel from "../../components/Dataset/LeftPanel/LeftPanel";
-import { getUserInfo, toast, validateFields } from "../../utils";
+import { getUserInfo, toast, validateFields, isSftp } from "../../utils";
 import { submitDataPackage } from "../../services/ApiServices";
 import {
   addDataPackage,
@@ -43,6 +44,7 @@ import usePermission, {
 } from "../../components/Common/usePermission";
 import { packageComprTypes, packageTypes } from "../../utils/constants";
 import Header from "../../components/DataFlow/Header";
+import SaveChangesModal from "../../components/DataFlow/SaveChangesModal";
 
 const useStyles = makeStyles(() => ({
   rightPanel: {
@@ -68,7 +70,10 @@ const DataPackages = React.memo(() => {
   const [sftpPath, setSftpPath] = useState("");
   const [notMatchedType, setNotMatchedType] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const [disablePackageLevel, setDisablePackageLevel] = useState(false);
   const packageData = useSelector((state) => state.dataPackage);
+  const [addedPackage, setAddedPackage] = useState(false);
+  const [shouldTriggerRedirect, setShouldTriggerRedirect] = useState(true);
 
   const { dataFlowdetail, versionFreezed } = useSelector(
     (state) => state.dataFlow
@@ -89,16 +94,22 @@ const DataPackages = React.memo(() => {
     protId
   );
 
+  const goToDataflow = () => {
+    if (dfId) {
+      history.push(`/dashboard/dataflow-management/${dfId}`);
+    }
+  };
+
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
       href: "javascript:void(0)",
-      title: "Data Flow Settings",
-      onClick: () => history.push("/dashboard/dataflow-management"),
+      title: dataFlowdetail?.name || "Data Flow Settings",
+      onClick: goToDataflow,
     },
     {
       href: "javascript:void(0)",
-      title: "Data Package Settings",
+      title: packageData?.selectedPackage?.name || "Data Package Settings",
       onClick: () => history.push("/dashboard/data-packages"),
     },
   ];
@@ -153,9 +164,10 @@ const DataPackages = React.memo(() => {
   };
 
   useEffect(() => {
+    const updatePackage = !!packageData?.selectedPackage?.type;
     if (!packageData.openAddPackage && packageData.selectedPackage) {
       setShowForm(true);
-      setConfigShow(true);
+      setConfigShow(updatePackage);
       setCompression(packageData.selectedPackage?.type);
       setNamingConvention(packageData.selectedPackage?.name);
       setSodValue(packageData.selectedPackage?.sod_view_type);
@@ -173,7 +185,7 @@ const DataPackages = React.memo(() => {
           }, 2000);
         }
       } else {
-        setConfigShow(true);
+        setConfigShow(updatePackage);
         setPackagePassword("");
       }
     }
@@ -189,14 +201,27 @@ const DataPackages = React.memo(() => {
   ]);
 
   useEffect(() => {
+    if (!isSftp(dataFlowdetail.loctyp)) {
+      setConfigShow(false);
+      setDisablePackageLevel(true);
+    }
     return () => {
       console.log("unmounting");
       dispatch(selectDataPackage({}));
     };
   }, []);
 
+  const handleAddedSuccess = (message) => {
+    if (message) showSuccessMessage(message);
+    dispatch(addDataPackage());
+    resetForm();
+    setAddedPackage(false);
+    setShowForm(false);
+    history.push(`/dashboard/dataflow-management/${dfId}`);
+  };
   // eslint-disable-next-line consistent-return
   const submitPackage = async () => {
+    setShouldTriggerRedirect(false);
     const validated = validateFields(namingConvention, compression);
     setNotMatchedType(!validated);
     if (!validated) return false;
@@ -204,7 +229,7 @@ const DataPackages = React.memo(() => {
       toast("Please fill all fields to proceed", "error");
       return false;
     }
-    const reqBody = {
+    let reqBody = {
       compression_type: compression,
       naming_convention: namingConvention,
       package_password: packagePassword,
@@ -214,21 +239,22 @@ const DataPackages = React.memo(() => {
       user_id: userInfo.userId,
       versionFreezed,
     };
-    const updateReqBody = {
-      ...reqBody,
-      package_id: packageData.selectedPackage?.datapackageid,
-      sod_view_type: sodValue,
-    };
+    const updatedReq = !!packageData.selectedPackage?.datapackageid;
+    if (updatedReq) {
+      reqBody = {
+        ...reqBody,
+        package_id: packageData.selectedPackage?.datapackageid,
+        sod_view_type: sodValue,
+      };
+    }
 
-    const payload = packageData.selectedPackage ? updateReqBody : reqBody;
-    const result = await submitDataPackage(payload);
+    const result = await submitDataPackage(reqBody);
     if (result.status === 1) {
-      showSuccessMessage(result.message);
-      dispatch(addDataPackage());
-      resetForm();
-      setShowForm(false);
-      if (sodValue !== null)
-        history.push(`/dashboard/dataflow-management/${dfId}`);
+      if (updatedReq) {
+        handleAddedSuccess(result.message);
+      } else {
+        setAddedPackage(true);
+      }
     } else {
       showErrorMessage(result.message);
     }
@@ -250,6 +276,7 @@ const DataPackages = React.memo(() => {
     moment(packageData.selectedPackage?.updt_tm).format("DD-MMM-YYYY hh:mm A");
   return (
     <div className="data-packages-wrapper">
+      <SaveChangesModal shouldTriggerOnRedirect={shouldTriggerRedirect} />
       <Panel
         onClose={handleClose}
         onOpen={handleOpen}
@@ -266,6 +293,20 @@ const DataPackages = React.memo(() => {
         hideButton
       >
         <main className="right-content">
+          <Modal
+            open={addedPackage}
+            // disableBackdropClick="true"
+            onClose={() => handleAddedSuccess()}
+            message="Data Package has been created as Inactive. Please add an active
+        Data Set, then activate the data package."
+            buttonProps={[
+              {
+                label: "OK",
+                variant: "primary",
+                onClick: () => handleAddedSuccess(),
+              },
+            ]}
+          />
           <Paper className="no-shadow">
             <Box className="top-content">
               <Header
@@ -282,6 +323,7 @@ const DataPackages = React.memo(() => {
                     : "Save"
                 }
                 saveDisabled={!canUpdateDataFlow}
+                shouldDisplaySaveChangesModal={false}
               />
             </Box>
           </Paper>
@@ -302,7 +344,8 @@ const DataPackages = React.memo(() => {
                       onChange={showConfig}
                       disabled={
                         packageData.selectedPackage?.sod_view_type ||
-                        !canUpdateDataFlow
+                        !canUpdateDataFlow ||
+                        disablePackageLevel
                       }
                     />
                   </div>
@@ -398,7 +441,9 @@ const DataPackages = React.memo(() => {
                             value={sodValue}
                             size="small"
                             onChange={(e) => {
-                              setSodValue(e.target.value);
+                              setSodValue(
+                                e.target.value || sodValue || "Regular"
+                              );
                             }}
                             disabled={!canUpdateDataFlow}
                             className="mb-20 package-type"

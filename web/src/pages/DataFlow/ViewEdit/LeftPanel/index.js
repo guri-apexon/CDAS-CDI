@@ -115,7 +115,7 @@ const LeftPanel = () => {
     status,
     locationType,
   } = dashboard?.selectedDataFlow;
-  const { loading, packagesList } = packageData;
+  const { loading, packagesList, refreshData } = packageData;
   const userInfo = getUserInfo();
   const location = useLocation();
   const viewAuditLog = () => {
@@ -128,6 +128,11 @@ const LeftPanel = () => {
       // history.push("dashboard");
     }
   };
+  useEffect(() => {
+    if (refreshData) {
+      getPackages(dataFlowId);
+    }
+  }, [refreshData]);
   useEffect(() => {
     getPackages(dataFlowId);
   }, [dataFlowId]);
@@ -178,7 +183,7 @@ const LeftPanel = () => {
       }
     } else {
       const data = await activateDF(dataFlowId);
-      if (parseInt(data?.active, 10) === 1) {
+      if (parseInt(data?.data?.active, 10) === 1) {
         dispatch(updateDFStatus(dataFlowId, "Active"));
       }
     }

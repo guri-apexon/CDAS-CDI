@@ -461,6 +461,13 @@ export const formatDataNew = (incomingData, protNo) => {
   return { headerNotMatching: !isAllDataMatch, data: [] };
 };
 
+export const capitaliseString = (str) => {
+  if (str.length > 1) {
+    return str ? str[0].toUpperCase() + str.toLowerCase().substring(1) : "";
+  }
+  return str.toUpperCase();
+};
+
 export const formatData = (incomingData, protNo) => {
   const data = incomingData.slice(1); // removing header
   let isAllDataMatch = false;
@@ -482,7 +489,7 @@ export const formatData = (incomingData, protNo) => {
               columnName: e[2] || "",
               position: "",
               format: e[3] || "",
-              dataType: e[4] || "",
+              dataType: capitaliseString(e[4]),
               primaryKey: setYN(e[5]),
               unique: setYN(e[6]),
               required: setYN(e[7]),

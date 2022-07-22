@@ -104,6 +104,7 @@ const IngestionIssues = () => {
         ? { ...x, header: x.header.props?.children[1] || "" }
         : x;
     });
+    console.log("filteredColumns", filteredColumns, tableRows);
     downloadRows({
       name: `Dataset-(${datasetId})-Ingestion-issue`,
       ext: "xlsx",
