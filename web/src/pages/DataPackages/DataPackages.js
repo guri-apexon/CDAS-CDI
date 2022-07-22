@@ -294,11 +294,12 @@ const DataPackages = React.memo(() => {
       >
         <main className="right-content">
           <Modal
+            className="inactivePopup"
             open={addedPackage}
             // disableBackdropClick="true"
             onClose={() => handleAddedSuccess()}
-            message="Data Package has been created as Inactive. Please add an active
-        Data Set, then activate the data package."
+            title="Data Package created as inactive"
+            message="Please add an active dataset, then activate the data package."
             buttonProps={[
               {
                 label: "OK",
