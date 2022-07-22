@@ -296,24 +296,28 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       let saveflagyes = false;
       if (dataPackage && Array.isArray(dataPackage)) {
         for (let i = 0; i < dataPackage.length; i++) {
-          /// Below value check is for incremental instead of loadtype
-          if (dataPackage[i].dataSet[i].incremental === true) {
-            for (
-              let j = 0;
-              j < dataPackage[0].dataSet[0].columnDefinition.length;
-              j++
-            ) {
-              if (
-                dataPackage[0].dataSet[0].columnDefinition[j].primaryKey ===
-                "Yes"
-              )
-                saveflagyes = true;
+          if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
+            for (let k = 0; k < dataPackage[i].dataSet.length; k++) {
+              /// Below value check is for incremental instead of loadtype
+              if (dataPackage[i].dataSet[k].incremental === true) {
+                for (
+                  let j = 0;
+                  j < dataPackage[i].dataSet[k].columnDefinition.length;
+                  j++
+                ) {
+                  if (
+                    dataPackage[i].dataSet[k].columnDefinition[j].primaryKey ===
+                    "Yes"
+                  )
+                    saveflagyes = true;
+                }
+                if (!saveflagyes)
+                  return apiResponse.ErrorResponse(
+                    res,
+                    `At least one primaryKey column must be identified when incremental is true.`
+                  );
+              }
             }
-            if (!saveflagyes)
-              return apiResponse.ErrorResponse(
-                res,
-                `At least one primaryKey column must be identified when incremental is true.`
-              );
           }
         }
       }
