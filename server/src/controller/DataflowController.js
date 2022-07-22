@@ -266,18 +266,26 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       for (let i = 0; i < dataPackage.length; i++) {
         if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
           for (let j = 0; j < dataPackage[0].dataSet.length; j++) {
-            const comp = await datasetHelper.findByMnemonic(
-              studyId,
-              testFlag,
-              vendorid,
-              dataPackage[i].dataSet[j].dataKindID,
-              dataPackage[i].dataSet[j].datasetName
-            );
-            if (comp) {
-              return apiResponse.validationErrorWithData(
-                res,
-                `Mnemonic ${dataPackage[i].dataSet[j].datasetName} is not unique.`
+            if (
+              studyId &&
+              vendorid &&
+              (testFlag != null || testFlag != undefined) &&
+              dataPackage[i].dataSet[j]?.dataKindID &&
+              dataPackage[i].dataSet[j]?.datasetName
+            ) {
+              const comp = await datasetHelper.findByMnemonic(
+                studyId,
+                testFlag,
+                vendorid,
+                dataPackage[i].dataSet[j].dataKindID,
+                dataPackage[i].dataSet[j].datasetName
               );
+              if (comp) {
+                return apiResponse.validationErrorWithData(
+                  res,
+                  `Mnemonic ${dataPackage[i].dataSet[j].datasetName} is not unique.`
+                );
+              }
             }
           }
         }
@@ -362,9 +370,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
         DFTestname = DFTestname + "-1";
       }
     }
-    const firstDate =
-      (exptDtOfFirstProdFile && moment(exptDtOfFirstProdFile).utc()) || null;
-
     DFBody = [
       DFTestname,
       vendorid,
@@ -373,7 +378,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       locationID || null,
       helper.stringToBoolean(active) ? 1 : 0,
       configured || 0,
-      firstDate,
+      exptDtOfFirstProdFile,
       helper.stringToBoolean(testFlag) ? 1 : 0,
       data_in_cdr || "N",
       connectionType || locationType || null,
@@ -2048,10 +2053,6 @@ exports.updateDataflowConfig = async (req, res) => {
           ? serviceOwners.join()
           : "";
 
-      const firstDate =
-        (moment(firstFileDate).isValid() && moment(firstFileDate).utc()) ||
-        null;
-
       const dFBody = [
         dataflowId,
         vendorID,
@@ -2063,7 +2064,7 @@ exports.updateDataflowConfig = async (req, res) => {
         externalSystemName,
         dFTimestamp,
         serviceOwners,
-        firstDate,
+        firstFileDate,
       ];
       let fieldsStr = `vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, externalsystemname=$8, updt_tm=$9, serv_ownr=$10, expt_fst_prd_dt=$11`;
       if (dfUpdatedName) {
