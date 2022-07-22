@@ -529,9 +529,13 @@ const DataFlow = ({
     return formEl;
   };
   const disableSaveDFBtn = () => {
+    const isCustomSql =
+      myform.dataPackage &&
+      myform.dataPackage[0]?.dataSet &&
+      myform.dataPackage[0]?.dataSet[0]?.customQuery?.toLowerCase() === "yes";
     return (
-      isSftp(locType) &&
       currentStep >= 5 &&
+      !isCustomSql &&
       !(messageContext?.dataflowObj?.columnDefinition || []).length
     );
   };
