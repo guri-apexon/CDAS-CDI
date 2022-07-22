@@ -1346,6 +1346,10 @@ exports.updateDataFlow = async (req, res) => {
         version ='${DFVer}'`;
         await DB.executeQuery(deleteQuery);
 
+        const deleteCdr = `delete from ${schemaName}.cdr_ta_queue where dataflowid='${DFId}' and
+        "VERSION" ='${DFVer}'`;
+        await DB.executeQuery(deleteCdr);
+
         Object.keys(ResponseBody).forEach((key) => {
           ResponseBody.version = DFVer - 1;
           // (ResponseBody.ResponseCode = "00001");
@@ -1825,7 +1829,7 @@ exports.fetchdataflowDetails = async (req, res) => {
               customQuery: el.customsql_yn,
               customSql: el.customsql,
               tableName: el.tbl_nm,
-              incremental: el.incremental,
+              incremental: el.incremental?.toLowerCase() === "y" ? true : false,
               offsetColumn: el.offsetcolumn,
               type: el.type,
               dataTransferFrequency: el.data_freq,
@@ -1839,7 +1843,7 @@ exports.fetchdataflowDetails = async (req, res) => {
               footerRowNumber: el.footerrownumber,
               escapeCode: el.escapecode,
               delimiter: el.delimiter,
-              dataKind: el.datakindid,
+              dataKindID: el.datakindid,
               naming_convention: el.naming_convention,
               columnDefinition: [],
               active: el.active,

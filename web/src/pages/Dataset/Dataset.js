@@ -165,9 +165,11 @@ const Dataset = () => {
     VLCData,
     datasetColumns,
     dataSetRowCount,
+    previewedSql,
   } = dataSets;
 
   const datasetid = params.datasetId;
+  const createMode = datasetid === "new";
   const { datasetid: dsId } = selectedDataset;
   const { isCustomSQL, tableName } = formDataSQL;
 
@@ -360,6 +362,11 @@ const Dataset = () => {
     if (isSftp(locationType)) {
       dispatch(submit("DataSetsForm"));
     } else {
+      if (createMode && isCustomSQL?.toLowerCase() === "yes" && !previewedSql) {
+        dispatch(hideErrorMessage());
+        messageContext.showErrorMessage("Please hit previewSql to proceed");
+        return;
+      }
       dispatch(submit("DataSetsFormSQL"));
       // jdbcRef.current.handleSubmit();
     }

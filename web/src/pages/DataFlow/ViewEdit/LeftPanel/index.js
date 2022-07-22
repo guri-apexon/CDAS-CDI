@@ -183,7 +183,7 @@ const LeftPanel = () => {
       }
     } else {
       const data = await activateDF(dataFlowId);
-      if (parseInt(data?.active, 10) === 1) {
+      if (parseInt(data?.data?.active, 10) === 1) {
         dispatch(updateDFStatus(dataFlowId, "Active"));
       }
     }

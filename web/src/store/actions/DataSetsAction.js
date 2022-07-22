@@ -18,6 +18,7 @@ import {
   STORE_DATASET_COLUMNS_SUCCESS,
   STORE_DATASET_COLUMNS_FAILURE,
   SAVE_DATASET_COLUMNS_COUNT,
+  TOGGLE_DATASET_PREVIWED_SQL,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -93,6 +94,13 @@ export const getSQLTables = (payload) => {
   return {
     type: GET_SQL_TABLES,
     payload,
+  };
+};
+
+export const togglePreviewedSql = (flag = false) => {
+  return {
+    type: TOGGLE_DATASET_PREVIWED_SQL,
+    flag,
   };
 };
 
