@@ -106,6 +106,7 @@ export const initialState = {
   CDVersionBump: true,
   dataSetRowCount: 0,
   previewedSql: false,
+  datasetUpdated: false,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -298,6 +299,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.haveHeader = true;
         }
         newState.sucessMsg = "Dataset was updated succesfully";
+        newState.datasetUpdated = true;
         break;
       case UPDATE_DATASET_FAILURE:
         newState.loading = false;
@@ -371,6 +373,7 @@ const DataFlowReducer = (state = initialState, action) =>
           e.unique = parseBool(e.unique || "false");
           return e;
         });
+        console.log("action.sqlColumns", action.sqlColumns);
         newState.sqlColumns = action.sqlColumns;
         break;
       case GET_DATASET_DETAIL:
@@ -378,6 +381,7 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case UPDATE_DATASET_DATA:
         newState.loading = true;
+        newState.datasetUpdated = false;
         break;
       case UPDATE_COLUMNS_DATA:
         newState.loading = true;

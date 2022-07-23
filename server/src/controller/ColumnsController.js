@@ -23,9 +23,9 @@ exports.getColumnsSet = async (req, res) => {
     //throw error in json response with status 500.
     console.log(err);
     Logger.error("catch :getColumnsSet");
-    Logger.error(err);
+    Logger.error(err.message);
 
-    return apiResponse.ErrorResponse(res, err);
+    return apiResponse.ErrorResponse(res, err.message);
   }
 };
 
@@ -151,9 +151,10 @@ exports.saveDatasetColumns = async (req, res) => {
 
     return apiResponse.ErrorResponse(res, "Something went wrong");
   } catch (err) {
-    console.log("err", err);
+    const msg = err.message || "Something went wrong";
+    console.log("err", msg);
     Logger.error("catch :storeDatasetColumns");
-    Logger.error(err);
+    Logger.error(msg);
     if (err.code === "23505") {
       return apiResponse.validationErrorWithData(
         res,
@@ -161,7 +162,7 @@ exports.saveDatasetColumns = async (req, res) => {
         "Operation failed"
       );
     }
-    return apiResponse.ErrorResponse(res, err);
+    return apiResponse.ErrorResponse(res, msg);
   }
 };
 
@@ -278,7 +279,7 @@ exports.updateColumns = async (req, res) => {
     return apiResponse.ErrorResponse(res, "Something went wrong");
   } catch (err) {
     Logger.error("catch :update set columns");
-    Logger.error(err);
+    Logger.error(err.message);
     if (err.code === "23505") {
       return apiResponse.validationErrorWithData(
         res,
@@ -287,7 +288,7 @@ exports.updateColumns = async (req, res) => {
       );
     }
     console.log(err);
-    return apiResponse.ErrorResponse(res, err);
+    return apiResponse.ErrorResponse(res, err.message);
   }
 };
 
@@ -339,7 +340,7 @@ exports.deleteColumns = async (req, res) => {
     });
   } catch (err) {
     Logger.error("catch: deleteColumns");
-    Logger.error(err);
-    return apiResponse.ErrorResponse(res, err);
+    Logger.error(err.message);
+    return apiResponse.ErrorResponse(res, err.message);
   }
 };

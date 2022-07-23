@@ -11,6 +11,7 @@ const { DB_SCHEMA_NAME: schemaName } = constants;
 const externalFunction = require("../createDataflow/externalDataflowFunctions");
 const datasetHelper = require("../helpers/datasetHelper");
 const { checkPermissionStudy } = require("../helpers/userHelper");
+const { Console } = require("winston/lib/winston/transports");
 
 exports.getStudyDataflows = async (req, res) => {
   try {
@@ -281,7 +282,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
               if (comp) {
                 return apiResponse.validationErrorWithData(
                   res,
-
                   `Mnemonic ${dataPackage[i].dataSet[j].datasetName} is not unique.`
                 );
               }
@@ -378,7 +378,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
         DFTestname = DFTestname + "-1";
       }
     }
-
     DFBody = [
       DFTestname,
       vendorid,
@@ -1732,6 +1731,11 @@ exports.getDataflowDetail = async (req, res) => {
     Logger.info({ message: "dataflowDetail" });
     DB.executeQuery(searchQuery, [dataFlowId]).then((response) => {
       const dataflowDetail = response.rows[0] || null;
+      if (dataflowDetail && dataflowDetail.exptfstprddt)
+        dataflowDetail.exptfstprddt = moment(
+          dataflowDetail.exptfstprddt
+        ).format("DD-MMM-yyyy");
+
       return apiResponse.successResponseWithData(
         res,
         "Operation success",
@@ -1774,7 +1778,7 @@ exports.searchDataflow = async (req, res) => {
 exports.fetchdataflowSource = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
-    let q = `select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."name" as datasetname from ${schemaName}.dataflow d
+    let q = `select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."mnemonic" as datasetname from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
@@ -1801,8 +1805,8 @@ exports.fetchdataflowSource = async (req, res) => {
 exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
-    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
-    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, S.prot_nbr_stnd
+    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename,
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, d3.datasetid, S.prot_nbr_stnd
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner Join ${schemaName}.study S on (d.prot_id = S.prot_id)
@@ -1816,107 +1820,109 @@ exports.fetchdataflowDetails = async (req, res) => {
       message: "fetchdataflowDetails",
       dataflow_id,
     });
-    let { rows } = await DB.executeQuery(q);
-    if (!rows.length || rows.length === 0) {
+    const { rows: response } = await DB.executeQuery(q);
+    if (!response.length) {
       return apiResponse.ErrorResponse(
         res,
         "There is no dataflow exist with this id"
       );
     }
-    let response = rows;
-    let tempDP = _.uniqBy(response, "datapackageid");
-    let tempDS = _.uniqBy(response, "datasetid");
-    let newArr = [];
+    // console.log("el.datasetid", response);
+    // return;
+    const tempDP = _.uniqBy(response, "datapackageid");
+    const tempDS = _.uniqBy(response, "datasetid");
+    const dataflowObj = response[0];
+    const packageArr = [];
     for (const each of tempDP) {
+      const datapackageObj = {
+        externalID: each.ExternalId,
+        type: each.type,
+        sasXptMethod: each.sasxptmethod,
+        path: each.path,
+        password: each.password,
+        noPackageConfig: each.nopackageconfig,
+        name: each.datapackagename,
+        dataSet: [],
+        active: each.active,
+      };
       for (const el of tempDS) {
         if (el.datapackageid === each.datapackageid) {
-          let datapackageObj = {
-            externalID: each.ExternalId,
-            type: each.type,
-            sasXptMethod: each.sasxptmethod,
-            path: each.path,
-            password: each.password,
-            noPackageConfig: each.nopackageconfig,
-            name: each.datapackagename,
-            dataSet: [],
-            active: each.active,
+          // if (el.datasetid === each.datasetid) {
+          let datasetObj = {
+            columncount: el.columncount,
+            externalID: el.ExternalId,
+            customQuery: el.customsql_yn,
+            customSql: el.customsql,
+            tableName: el.tbl_nm,
+            incremental: el.incremental,
+            offsetColumn: el.offsetcolumn,
+            type: el.type,
+            dataTransferFrequency: el.data_freq,
+            OverrideStaleAlert: el.ovrd_stale_alert,
+            rowDecreaseAllowed: el.rowdecreaseallowed,
+            quote: el.quote,
+            path: el.path,
+            name: el.datasetname,
+            mnemonic: el.mnemonic,
+            headerRowNumber: el.headerrownumber,
+            footerRowNumber: el.footerrownumber,
+            escapeCode: el.escapecode,
+            delimiter: el.delimiter,
+            dataKind: el.datakindid,
+            naming_convention: el.naming_convention,
+            columnDefinition: [],
+            active: el.active,
           };
-          if (el.datasetid === each.datasetid) {
-            let datasetObj = {
-              columncount: el.columncount,
-              externalID: el.ExternalId,
-              customQuery: el.customsql_yn,
-              customSql: el.customsql,
-              tableName: el.tbl_nm,
-              incremental: el.incremental,
-              offsetColumn: el.offsetcolumn,
-              type: el.type,
-              dataTransferFrequency: el.data_freq,
-              OverrideStaleAlert: el.ovrd_stale_alert,
-              rowDecreaseAllowed: el.rowdecreaseallowed,
-              quote: el.quote,
-              path: el.path,
-              name: el.datasetname,
-              mnemonic: el.mnemonic,
-              headerRowNumber: el.headerrownumber,
-              footerRowNumber: el.footerrownumber,
-              escapeCode: el.escapecode,
-              delimiter: el.delimiter,
-              dataKind: el.datakindid,
-              naming_convention: el.naming_convention,
-              columnDefinition: [],
-              active: el.active,
-            };
-            for (let obj of rows) {
-              if (obj.datasetid === el.datasetid) {
-                let columnObj = {
-                  name: obj.name,
-                  dataType: obj.datatype,
-                  primaryKey: obj.primarykey,
-                  required: obj.required,
-                  characterMin: obj.charactermin,
-                  characterMax: obj.charactermax,
-                  position: obj.position,
-                  format: obj.format,
-                  lov: obj.lov,
-                  requiredfield: obj.requiredfield?.requiredfield || null,
-                  unique: obj.unique,
-                  variable: obj.variable?.variable || null,
-                };
-                datasetObj.columnDefinition.push(columnObj);
-              }
+          for (let obj of response) {
+            if (obj.datasetid === el.datasetid) {
+              let columnObj = {
+                name: obj.name,
+                dataType: obj.datatype,
+                primaryKey: obj.primarykey,
+                required: obj.required,
+                characterMin: obj.charactermin,
+                characterMax: obj.charactermax,
+                position: obj.position,
+                format: obj.format,
+                lov: obj.lov,
+                requiredfield: obj.requiredfield?.requiredfield || null,
+                unique: obj.unique,
+                variable: obj.variable?.variable || null,
+              };
+              datasetObj.columnDefinition.push(columnObj);
             }
-            datapackageObj.dataSet.push(datasetObj);
           }
-          newArr.push(datapackageObj);
+          datapackageObj.dataSet.push(datasetObj);
+          // }
         }
       }
+      packageArr.push(datapackageObj);
     }
     let myobj = {
-      vendorName: rows[0].vend_nm,
-      protocolNumberStandard: rows[0].prot_nbr_stnd,
-      type: rows[0].type,
-      name: rows[0].dataflowname,
-      externalID: rows[0].externalid,
-      externalSystemName: rows[0].externalsystemname,
-      connectionType: rows[0].connectiontype,
-      location: rows[0].src_loc_id,
-      locationName: rows[0].locationName,
-      exptDtOfFirstProdFile: rows[0].expt_fst_prd_dt,
-      testFlag: rows[0].test_flag,
-      prodFlag: rows[0].test_flag === 1 ? 1 : 0,
-      description: rows[0].description,
-      // connectiondriver: rows[0].connectiondriver,
-      fsrstatus: rows[0].fsrstatus,
-      vend_id: rows[0].vend_id,
-      src_loc_id: rows[0].src_loc_id,
-      data_in_cdr: rows[0].data_in_cdr,
-      configured: rows[0].configured,
-      active: rows[0].active,
-      dataPackage: newArr,
-      dataStructure: rows[0].datastructure,
-      protocolNumberStandard: rows[0].prot_nbr_stnd,
-      serviceOwners: rows[0]?.serv_ownr?.split(","),
+      vendorName: dataflowObj.vend_nm,
+      protocolNumberStandard: dataflowObj.prot_nbr_stnd,
+      type: dataflowObj.type,
+      name: dataflowObj.dataflowname,
+      externalID: dataflowObj.externalid,
+      externalSystemName: dataflowObj.externalsystemname,
+      connectionType: dataflowObj.connectiontype,
+      location: dataflowObj.src_loc_id,
+      locationName: dataflowObj.locationName,
+      exptDtOfFirstProdFile: dataflowObj.expt_fst_prd_dt,
+      testFlag: dataflowObj.test_flag,
+      prodFlag: dataflowObj.test_flag === 1 ? 1 : 0,
+      description: dataflowObj.description,
+      // connectiondriver: dataflowObj.connectiondriver,
+      fsrstatus: dataflowObj.fsrstatus,
+      vend_id: dataflowObj.vend_id,
+      src_loc_id: dataflowObj.src_loc_id,
+      data_in_cdr: dataflowObj.data_in_cdr,
+      configured: dataflowObj.configured,
+      active: dataflowObj.active,
+      dataPackage: packageArr,
+      dataStructure: dataflowObj.datastructure,
+      protocolNumberStandard: dataflowObj.prot_nbr_stnd,
+      serviceOwners: dataflowObj?.serv_ownr?.split(","),
     };
     return apiResponse.successResponseWithData(
       res,
@@ -2098,6 +2104,7 @@ exports.updateDataflowConfig = async (req, res) => {
         serviceOwners && Array.isArray(serviceOwners)
           ? serviceOwners.join()
           : "";
+
       const dFBody = [
         dataflowId,
         vendorID,
