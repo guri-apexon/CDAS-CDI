@@ -121,7 +121,7 @@ async function saveSQLDataset(
     // console.log(" Catch::::", err);
     //throw error in json response with status 500.
     Logger.error("catch: create SQL Dataset");
-    Logger.error(err);
+    Logger.error(err.message);
     return apiResponse.ErrorResponse(
       res,
       err.message || "Something went wrong"
@@ -350,13 +350,6 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
     );
     const oldData = tempData[0];
 
-    if (oldData.tbl_nm != tableName) {
-      const columnDelete = await DB.executeQuery(
-        `UPDATE ${schemaName}.columndefinition set del_flg=1 where datasetid = ${datasetid}`,
-        body
-      );
-    }
-
     const body = [
       datasetName,
       helper.stringToBoolean(active) ? 1 : 0,
@@ -392,6 +385,11 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
       return apiResponse.ErrorResponse(res, "Something went wrong on update");
     }
 
+    if (oldData.tbl_nm != tableName) {
+      await DB.executeQuery(
+        `DELETE from ${schemaName}.columndefinition where datasetid = '${datasetid}';`
+      );
+    }
     const diffObj = helper.getdiffKeys(requestData, oldData);
 
     var idObj = {
@@ -437,7 +435,7 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
     );
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error(err);
+    Logger.error(err.message);
     return apiResponse.ErrorResponse(
       res,
       err?.message || "Something went wrong"
@@ -670,7 +668,7 @@ exports.updateDatasetData = async (req, res) => {
       resData
     );
   } catch (err) {
-    Logger.error(err);
+    Logger.error(err.message);
     return apiResponse.ErrorResponse(
       res,
       err.message || "Something went wrong"
