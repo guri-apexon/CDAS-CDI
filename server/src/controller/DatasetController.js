@@ -350,6 +350,13 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
     );
     const oldData = tempData[0];
 
+    if (oldData.tbl_nm != tableName) {
+      const columnDelete = await DB.executeQuery(
+        `UPDATE ${schemaName}.columndefinition set del_flg=1 where datasetid = ${datasetid}`,
+        body
+      );
+    }
+
     const body = [
       datasetName,
       helper.stringToBoolean(active) ? 1 : 0,
@@ -441,6 +448,7 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
 exports.updateDatasetData = async (req, res) => {
   try {
     const values = req.body;
+    console.log("values", values);
     const curDate = helper.getCurrentTime();
     Logger.info({ message: "update Dataset" });
     const {
