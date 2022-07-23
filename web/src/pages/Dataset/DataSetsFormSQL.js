@@ -159,7 +159,7 @@ const DataSetsFormBase = (props) => {
     if (previewSQL?.length && formValues.isCustomSQL?.toLowerCase() === "yes") {
       dispatch(togglePreviewedSql(true));
       messageContext.showSuccessMessage(
-        `Your query looks good. Please proceed to save dataflow.`
+        `Your query looks good. Please proceed to save dataset.`
       );
     }
   }, [previewSQL]);
@@ -204,10 +204,6 @@ const DataSetsFormBase = (props) => {
       })
     );
   };
-
-  useEffect(() => {
-    console.log("formValues", formValues);
-  }, [formValues]);
 
   useEffect(() => {
     setRenderClinicalDataType(false);
