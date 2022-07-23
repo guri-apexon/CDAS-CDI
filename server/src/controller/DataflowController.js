@@ -282,7 +282,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
               if (comp) {
                 return apiResponse.validationErrorWithData(
                   res,
-
                   `Mnemonic ${dataPackage[i].dataSet[j].datasetName} is not unique.`
                 );
               }
@@ -379,7 +378,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
         DFTestname = DFTestname + "-1";
       }
     }
-
     DFBody = [
       DFTestname,
       vendorid,
@@ -1733,6 +1731,11 @@ exports.getDataflowDetail = async (req, res) => {
     Logger.info({ message: "dataflowDetail" });
     DB.executeQuery(searchQuery, [dataFlowId]).then((response) => {
       const dataflowDetail = response.rows[0] || null;
+      if (dataflowDetail && dataflowDetail.exptfstprddt)
+        dataflowDetail.exptfstprddt = moment(
+          dataflowDetail.exptfstprddt
+        ).format("DD-MMM-yyyy");
+
       return apiResponse.successResponseWithData(
         res,
         "Operation success",
@@ -2101,6 +2104,7 @@ exports.updateDataflowConfig = async (req, res) => {
         serviceOwners && Array.isArray(serviceOwners)
           ? serviceOwners.join()
           : "";
+
       const dFBody = [
         dataflowId,
         vendorID,
