@@ -29,9 +29,11 @@ const hiveCDHServerDriver = path.join(__dirname, "Drivers", "HiveJDBC41.jar");
 if (!jinst.isJvmCreated()) {
   jinst.addOption("-Xrs");
   jinst.addOption(`-Djava.security.krb5.conf=${__dirname}/krb5.conf`);
-  jinst.addOption(`-Djava.security.auth.login.config=${__dirname}/jass.conf`);
   jinst.addOption(
-    `-Djava.security.auth.login.config.keyTabFile=${__dirname}/xg9dcdrcds.keytab`
+    `-Djava.security.auth.login.config=${__dirname}/HiveConfig/jass.conf`
+  );
+  jinst.addOption(
+    `-Djava.security.auth.login.config.keyTabFile=${__dirname}/HiveConfig/iqvia-cdas.keytab`
   );
   jinst.addOption(
     `-Djava.security.auth.login.config.principal="hive/uskhdphive.quintiles.net@QUINTILES.NET"`
