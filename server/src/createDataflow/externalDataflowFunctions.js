@@ -1558,6 +1558,27 @@ exports.packageLevelInsert = async (
       }
     }
 
+    if (helper.isSftp(LocationType) && isNew) {
+      if (noPackageConfig === 0) {
+        const errorMessages = helper.validateNoPackagesChecked(data);
+        const messageCount = errorMessages.length;
+        if (messageCount > 0) {
+          messageCount === 1
+            ? errorPackage.push(errorMessages[0])
+            : errorPackage.push(errorMessages.join(" '|' "));
+        }
+      }
+      if (noPackageConfig === 1) {
+        const errorMessages = helper.validateNoPackagesUnChecked(data);
+        const messageCount = errorMessages.length;
+        if (messageCount > 0) {
+          messageCount === 1
+            ? errorPackage.push(errorMessages[0])
+            : errorPackage.push(errorMessages.join(" '|' "));
+        }
+      }
+    }
+
     if (data.noPackageConfig === 0) {
       if (
         !data.type ||
