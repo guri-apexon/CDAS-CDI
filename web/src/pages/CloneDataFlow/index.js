@@ -338,8 +338,9 @@ const CloneDataFlow = () => {
         active: false,
         vendorName,
       };
-      const { dataflowDetails } = await dataflowSave(payload);
+      const { dataflowDetails, success, data } = await dataflowSave(payload);
       setLoading(false);
+      console.log("dataflowDetails", dataflowDetails, success, data);
       if (dataflowDetails) {
         dispatch(SelectedDataflow(dataflowDetails));
         messageContext.showSuccessMessage(
@@ -350,6 +351,10 @@ const CloneDataFlow = () => {
           `/dashboard/dataflow-management/${dataflowDetails?.dataFlowId}`
         );
         return true;
+      } else if (!success) {
+        messageContext.showErrorMessage(
+          data.message || `Something wrong with clone`
+        );
       } else {
         messageContext.showErrorMessage(`Something wrong with clone`);
       }
