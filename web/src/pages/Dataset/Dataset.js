@@ -296,13 +296,13 @@ const Dataset = () => {
     }
   }, [loctyp]);
 
-  useEffect(() => {
-    if (datasetUpdated && isCustomSQL?.toLowerCase() === "no") {
-      setColumnsActive(true);
-      setValue(1);
-      console.log("datasetUpdated", datasetUpdated);
-    }
-  }, [datasetUpdated]);
+  // useEffect(() => {
+  //   if (datasetUpdated && isCustomSQL?.toLowerCase() === "no") {
+  //     setColumnsActive(true);
+  //     setValue(1);
+  //     console.log("datasetUpdated", datasetUpdated);
+  //   }
+  // }, [datasetUpdated]);
 
   useEffect(() => {
     if (dsCreatedSuccessfully) {
