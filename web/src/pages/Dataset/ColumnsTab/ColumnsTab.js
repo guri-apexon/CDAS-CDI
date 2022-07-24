@@ -190,16 +190,18 @@ const ColumnsTab = ({
   }, [haveHeader]);
 
   useEffect(() => {
-    if (sqlColumns.length > 0) {
+    if (!isSftp(locationType) && sqlColumns.length > 0) {
+      console.log("JDBC", locationType);
       setShowColumns(true);
       formatJDBCColumns(sqlColumns);
       setSelectedMethod("fromAPICall");
-    } else if (datasetColumns.length > 0) {
+    } else if (isSftp(locationType) && datasetColumns.length > 0) {
+      console.log("SFTP", locationType);
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
     }
-    console.log({ datasetColumns, sqlColumns });
+    console.log({ datasetColumns, sqlColumns }, locationType);
   }, [datasetColumns, sqlColumns]);
 
   useEffect(() => {
@@ -235,7 +237,7 @@ const ColumnsTab = ({
         />
       </>
     );
-  }, [showColumns, loading]);
+  }, [showColumns, loading, formattedData]);
 
   return (
     <>

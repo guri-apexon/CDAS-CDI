@@ -378,6 +378,7 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case GET_DATASET_DETAIL:
         newState.loading = true;
+        newState.datasetUpdated = false;
         break;
       case UPDATE_DATASET_DATA:
         newState.loading = true;

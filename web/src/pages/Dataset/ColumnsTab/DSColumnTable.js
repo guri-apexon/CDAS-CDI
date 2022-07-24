@@ -125,7 +125,7 @@ export default function DSColumnTable({
       // setSelectedRows(forImport);
       // setEditedRows(formattedData);
     }
-  }, []);
+  }, [formattedData, dataOrigin]);
 
   useEffect(() => {
     if (!isSftp(locationType)) {
