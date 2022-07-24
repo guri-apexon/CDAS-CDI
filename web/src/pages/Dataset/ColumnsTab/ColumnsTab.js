@@ -190,14 +190,14 @@ const ColumnsTab = ({
   }, [haveHeader]);
 
   useEffect(() => {
-    if (sqlColumns.length > 0) {
-      setShowColumns(true);
-      formatJDBCColumns(sqlColumns);
-      setSelectedMethod("fromAPICall");
-    } else if (datasetColumns.length > 0) {
+    if (datasetColumns.length > 0) {
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
+    } else if (sqlColumns.length > 0) {
+      setShowColumns(true);
+      formatJDBCColumns(sqlColumns);
+      setSelectedMethod("fromAPICall");
     }
     console.log({ datasetColumns, sqlColumns });
   }, [datasetColumns, sqlColumns]);
