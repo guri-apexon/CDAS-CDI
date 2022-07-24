@@ -1579,6 +1579,20 @@ exports.packageLevelInsert = async (
       }
     }
 
+    if (data.noPackageConfig === 0) {
+      if (
+        !data.type ||
+        (!data.name && !data.namingConvention) ||
+        trim(data.type).length === 0 ||
+        (trim(data.name).length === 0 &&
+          trim(data.namingConvention).length === 0)
+      ) {
+        errorPackage.push(
+          "If Package is opted, Package name and type are mandatory and can not be blank"
+        );
+      }
+    }
+
     if (errorPackage.length > 0) {
       //errorPackage.splice(0, 0, `Datapackage external id -${ExternalId} `);
       let dpErrRes = errorPackage.join(" '|' ");
