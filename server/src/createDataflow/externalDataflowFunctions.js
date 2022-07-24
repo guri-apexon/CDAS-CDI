@@ -1558,17 +1558,24 @@ exports.packageLevelInsert = async (
       }
     }
 
-    if (data.noPackageConfig === 0) {
-      if (
-        !data.type ||
-        (!data.name && !data.namingConvention) ||
-        trim(data.type).length === 0 ||
-        (trim(data.name).length === 0 &&
-          trim(data.namingConvention).length === 0)
-      ) {
-        errorPackage.push(
-          "If Package is opted, Package name and type are mandatory and can not be blank"
-        );
+    if (helper.isSftp(LocationType) && isNew) {
+      if (noPackageConfig === 0) {
+        const errorMessages = helper.validateNoPackagesChecked(data);
+        const messageCount = errorMessages.length;
+        if (messageCount > 0) {
+          messageCount === 1
+            ? errorPackage.push(errorMessages[0])
+            : errorPackage.push(errorMessages.join(" '|' "));
+        }
+      }
+      if (noPackageConfig === 1) {
+        const errorMessages = helper.validateNoPackagesUnChecked(data);
+        const messageCount = errorMessages.length;
+        if (messageCount > 0) {
+          messageCount === 1
+            ? errorPackage.push(errorMessages[0])
+            : errorPackage.push(errorMessages.join(" '|' "));
+        }
       }
     }
 
