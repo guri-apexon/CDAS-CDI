@@ -142,7 +142,6 @@ const SaveChangesModal = ({
 
     return () => {
       if (SAVE_CHANGE_MODAL_FLAG && shouldTriggerOnRedirect) {
-        routerHandle.current();
         routerHandle?.current?.();
       }
     };
