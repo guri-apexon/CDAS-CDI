@@ -1558,7 +1558,7 @@ exports.packageLevelInsert = async (
       }
     }
 
-    if (helper.isSftp(LocationType) && isNew) {
+    if (isNew) {
       if (noPackageConfig === 0) {
         const errorMessages = helper.validateNoPackagesChecked(data);
         const messageCount = errorMessages.length;
