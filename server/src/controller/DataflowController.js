@@ -5,6 +5,7 @@ const moment = require("moment");
 const _ = require("lodash");
 const { createUniqueID } = require("../helpers/customFunctions");
 const helper = require("../helpers/customFunctions");
+const { trim } = require("lodash");
 const constants = require("../config/constants");
 const { addDataflowHistory } = require("./CommonController");
 const { DB_SCHEMA_NAME: schemaName } = constants;
@@ -257,6 +258,48 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       return apiResponse.ErrorResponse(res, "Study not found");
     }
     studyId = studyRows[0].prot_id;
+
+    if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
+      console.log("inside our code==============>");
+      const errorPackage = [];
+      for (let each of dataPackage) {
+        if (each.noPackageConfig === 0) {
+          const errorMessages = helper.validateNoPackagesChecked(each);
+          const messageCount = errorMessages.length;
+          if (messageCount > 0) {
+            messageCount === 1
+              ? errorPackage.push(errorMessages[0])
+              : errorPackage.push(errorMessages.join(" '|' "));
+          }
+        }
+        if (each && each.noPackageConfig === 1) {
+          const errorMessages = helper.validateNoPackagesUnChecked(each);
+          const messageCount = errorMessages.length;
+          if (messageCount > 0) {
+            messageCount === 1
+              ? errorPackage.push(errorMessages[0])
+              : errorPackage.push(errorMessages.join(" '|' "));
+          }
+        }
+
+        if (each && each.noPackageConfig === 0) {
+          if (
+            !each.type ||
+            (!each.name && !each.namingConvention) ||
+            trim(each.type).length === 0 ||
+            (trim(each.name).length === 0 &&
+              trim(each.namingConvention).length === 0)
+          ) {
+            errorPackage.push(
+              "If Package is opted, Package name and type are mandatory and can not be blank"
+            );
+          }
+        }
+      }
+      if (errorPackage.length > 0) {
+        return apiResponse.validationErrorWithData(res, errorPackage);
+      }
+    }
 
     // check for duplicate mnemonics
     if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
