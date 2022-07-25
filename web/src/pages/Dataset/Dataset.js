@@ -40,7 +40,7 @@ import {
   getDataFlowDetail,
   updateDSState,
 } from "../../store/actions/DataFlowAction";
-import { getUserInfo, isSftp } from "../../utils";
+import { checkFormChanges, getUserInfo, isSftp } from "../../utils";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
@@ -256,6 +256,13 @@ const Dataset = () => {
     setManualTriggerToggle(false);
   };
 
+  const handleManualChecker = (isAnyChange) => {
+    if (value === 1 && dataSetRowCount > 0) {
+      return true;
+    }
+    return isAnyChange;
+  };
+
   const getDataSetType = (type) => {
     if (type === "SFTP" || type === "FTPS") {
       return "sftp";
@@ -314,6 +321,7 @@ const Dataset = () => {
 
   useEffect(() => {
     if (dsCreatedSuccessfully) {
+      setShouldTriggerRedirect(false);
       setTimeout(() => {
         if (isSftp(loctyp)) {
           setValue(1);
@@ -327,6 +335,9 @@ const Dataset = () => {
         setShouldTriggerRedirect(true);
       }, 2000);
     }
+    return () => {
+      setShouldTriggerRedirect(true);
+    };
   }, [dsCreatedSuccessfully, loctyp, isCustomSQL]);
 
   useEffect(() => {
@@ -385,6 +396,7 @@ const Dataset = () => {
   };
 
   const onSubmit = (formValue) => {
+    setShouldTriggerRedirect(false);
     // eslint-disable-next-line consistent-return
     setTimeout(() => {
       setShouldTriggerRedirect(false);
@@ -503,6 +515,8 @@ const Dataset = () => {
               {showSaveChangeModal && (
                 <SaveChangesModal
                   isManualTrigger={true}
+                  manualCheckerFlag={true}
+                  handleManualChecker={handleManualChecker}
                   manualTriggerToggle={manualTriggerToggle}
                   handlePostManualContinue={handlePostContinue}
                   handlePostManualDiscardChange={handlePostDiscardChange}

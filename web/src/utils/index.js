@@ -2,6 +2,7 @@
 /* eslint-disable eqeqeq */
 import moment from "moment";
 import React from "react";
+import { isEmpty, isEqual } from "lodash";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import { TextField } from "apollo-react/components/TextField/TextField";
@@ -783,4 +784,18 @@ export const getAppUrl = (app) => {
 export const goToApp = (path) => {
   console.log(path);
   window.location.href = path;
+};
+
+export const checkFormChanges = (form) => {
+  let isAnyChange = false;
+  if (!isEmpty(form)) {
+    Object.entries(form).forEach(([key, item]) => {
+      if (key && item?.initial && item?.values) {
+        if (!isEqual(item?.initial, item?.values)) {
+          isAnyChange = true;
+        }
+      }
+    });
+  }
+  return isAnyChange;
 };
