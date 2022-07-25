@@ -9,6 +9,7 @@ import React, {
   useReducer,
   useRef,
 } from "react";
+import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -205,7 +206,9 @@ const DataFlow = ({
         dataStructure: FormValues.dataStructure,
         testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
-        exptDtOfFirstProdFile: FormValues.firstFileDate,
+        exptDtOfFirstProdFile: moment(FormValues.firstFileDate).isValid()
+          ? moment(FormValues.firstFileDate).format("DD-MMM-yyyy")
+          : null,
         connectionType: FormValues.locationType,
         protocolNumberStandard: selectedCard.protocolnumberstandard,
         // protocolNumber: selectedCard.prot_id,
@@ -320,7 +323,7 @@ const DataFlow = ({
 
   const AddColumnDefinitions = (rows) => {
     const newForm = { ...myform };
-    if (newForm.dataPackage[0].dataSet[0]) {
+    if (newForm.dataPackage && newForm.dataPackage[0]?.dataSet[0]) {
       newForm.dataPackage[0].dataSet[0].columncount = rows.length;
       newForm.dataPackage[0].dataSet[0].columnDefinition = rows;
       setForm(newForm);
@@ -461,9 +464,9 @@ const DataFlow = ({
   useEffect(() => {
     const columnDefinition =
       messageContext?.dataflowObj?.columnDefinition || [];
-    if (columnDefinition.length) {
-      AddColumnDefinitions(columnDefinition);
-    }
+    // if (columnDefinition.length) {
+    AddColumnDefinitions(columnDefinition);
+    // }
   }, [messageContext?.dataflowObj?.columnDefinition]);
 
   useEffect(() => {
@@ -529,9 +532,13 @@ const DataFlow = ({
     return formEl;
   };
   const disableSaveDFBtn = () => {
+    const isCustomSql =
+      myform.dataPackage &&
+      myform.dataPackage[0]?.dataSet &&
+      myform.dataPackage[0]?.dataSet[0]?.customQuery?.toLowerCase() === "yes";
     return (
-      isSftp(locType) &&
       currentStep >= 5 &&
+      !isCustomSql &&
       !(messageContext?.dataflowObj?.columnDefinition || []).length
     );
   };

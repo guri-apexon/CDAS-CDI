@@ -44,6 +44,7 @@ import {
   FETCH_LOCATION_DETAIL_FAILURE,
   FETCH_LOCATION_DETAIL_SUCCESS,
   SAVE_DATASET_COLUMNS_COUNT,
+  TOGGLE_DATASET_PREVIWED_SQL,
 } from "../../constants";
 
 import { dateTypeForJDBC, parseBool } from "../../utils/index";
@@ -104,6 +105,8 @@ export const initialState = {
   haveHeader: false,
   CDVersionBump: true,
   dataSetRowCount: 0,
+  previewedSql: false,
+  datasetUpdated: false,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -139,6 +142,7 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.formDataSQL = {
           ...defaultDataSQL,
         };
+        newState.previewedSql = false;
         newState.datasetColumns = [];
         break;
 
@@ -239,6 +243,9 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.isColumnsConfigured = false;
         newState.error = action.message;
         break;
+      case TOGGLE_DATASET_PREVIWED_SQL:
+        newState.previewedSql = action.flag;
+        break;
       case UPDATE_DATASET_SUCCESS:
         newState.loading = false;
         newState.error = null;
@@ -292,6 +299,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.haveHeader = true;
         }
         newState.sucessMsg = "Dataset was updated succesfully";
+        newState.datasetUpdated = true;
         break;
       case UPDATE_DATASET_FAILURE:
         newState.loading = false;
@@ -365,6 +373,7 @@ const DataFlowReducer = (state = initialState, action) =>
           e.unique = parseBool(e.unique || "false");
           return e;
         });
+        console.log("action.sqlColumns", action.sqlColumns);
         newState.sqlColumns = action.sqlColumns;
         break;
       case GET_DATASET_DETAIL:
@@ -372,6 +381,7 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case UPDATE_DATASET_DATA:
         newState.loading = true;
+        newState.datasetUpdated = false;
         break;
       case UPDATE_COLUMNS_DATA:
         newState.loading = true;

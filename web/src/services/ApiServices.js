@@ -28,6 +28,7 @@ import {
   DATASETS_STATUS_TOGGLE,
   DELETE_PACKAGE,
   UPDATE_PACKAGE,
+  PREVIEWSQLAPI,
 } from "../constants";
 import store from "../store";
 import { freezeDfVersion } from "../store/actions/DataFlowAction";
@@ -546,5 +547,17 @@ export const updatePackageStatus = async (reqBody) => {
     };
   }
 };
+
+// export const getPreviewSQL = async (reqBody) => {
+//   try {
+//     const res = await axios.post(`${baseURL}/${PREVIEWSQLAPI}`, reqBody);
+//     return res.data || [];
+//   } catch (err) {
+//     return {
+//       data: [],
+//       error: err.response?.data?.message || "Something went wrong",
+//     };
+//   }
+// };
 
 export default searchStudy;
