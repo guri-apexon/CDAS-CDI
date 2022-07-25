@@ -78,6 +78,12 @@ const DataPackages = React.memo(() => {
   const [shouldTriggerRedirect, setShouldTriggerRedirect] = useState(true);
   const [isAnyChange, setIsAnyChange] = useState(false);
 
+  // Save Change Master Flag
+  const SAVE_CHANGE_MODAL_FLAG =
+    process.env.REACT_APP_SAVE_CHANGE_MODAL_FLAG === "true"
+      ? true
+      : false || false;
+
   const { dataFlowdetail, versionFreezed } = useSelector(
     (state) => state.dataFlow
   );
@@ -353,7 +359,6 @@ const DataPackages = React.memo(() => {
     moment(packageData.selectedPackage?.updt_tm).format("DD-MMM-YYYY hh:mm A");
   return (
     <div className="data-packages-wrapper">
-      <SaveChangesModal shouldTriggerOnRedirect={shouldTriggerRedirect} />
       <Panel
         onClose={handleClose}
         onOpen={handleOpen}
@@ -388,10 +393,13 @@ const DataPackages = React.memo(() => {
           <Paper className="no-shadow">
             <Box className="top-content">
               {/* Save Changes Modal */}
-              <SaveChangesModal
-                manualIsAnyChangeCheck={true}
-                manualIsAnyChangeFlag={isAnyChange}
-              />
+              {SAVE_CHANGE_MODAL_FLAG && (
+                <SaveChangesModal
+                  manualIsAnyChangeCheck={true}
+                  manualIsAnyChangeFlag={isAnyChange}
+                  shouldTriggerOnRedirect={shouldTriggerRedirect}
+                />
+              )}
               <Header
                 close={() => history.push("/dashboard")}
                 submit={submitPackage}

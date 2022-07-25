@@ -67,6 +67,7 @@ const SaveChangesModal = ({
   const [targetRoute, setTargetRoute] = useState("");
   const [isShowAlertBox, setShowAlertBox] = useState(false);
   const [showSaveChangesModal, setShowSaveChangesModal] = useState(false);
+  const [anyChanges, setAnyChanges] = useState(false);
 
   const unblockRouter = () => {
     dispatch(formComponentInActive());
@@ -122,6 +123,8 @@ const SaveChangesModal = ({
           isAnyChange = handleManualChecker(isAnyChange) || false;
         }
 
+        setAnyChanges(isAnyChange);
+
         if (isAnyChange && shouldTriggerOnRedirect) {
           routerHandle.current = history.block((tr) => {
             setTargetRoute(tr?.pathname);
@@ -161,8 +164,16 @@ const SaveChangesModal = ({
 
   // Detect whenever showAlertBox changes
   useEffect(() => {
-    if (alertStore?.showAlertBox) {
-      setShowAlertBox(true);
+    if (anyChanges) {
+      if (alertStore?.showAlertBox && !isShowAlertBox) {
+        setShowAlertBox(true);
+      } else {
+        setShowAlertBox(false);
+      }
+    } else {
+      if (alertStore?.showAlertBox) {
+        dispatch(showAppSwitcher());
+      }
     }
   }, [alertStore]);
 
