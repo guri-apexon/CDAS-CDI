@@ -171,9 +171,11 @@ const Dataset = () => {
     VLCData,
     datasetColumns,
     dataSetRowCount,
+    previewedSql,
   } = dataSets;
 
   const datasetid = params.datasetId;
+  const createMode = datasetid === "new";
   const { datasetid: dsId } = selectedDataset;
   const { isCustomSQL, tableName } = formDataSQL;
 
@@ -406,6 +408,15 @@ const Dataset = () => {
         );
         return false;
       }
+      if (
+        createMode &&
+        formValue?.isCustomSQL?.toLowerCase() === "yes" &&
+        !previewedSql
+      ) {
+        dispatch(hideErrorMessage());
+        messageContext.showErrorMessage("Please hit previewSql to proceed");
+        return false;
+      }
       if (data.datasetid) {
         if (
           datasetColumns.every((x) => x.primarykey !== 1) &&
@@ -498,7 +509,6 @@ const Dataset = () => {
                   shouldTriggerOnRedirect={shouldTriggerRedirect}
                 />
               )}
-
               <Modal
                 open={openModal}
                 variant="warning"

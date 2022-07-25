@@ -154,8 +154,8 @@ const Header = (props) => {
         id="success"
       />
 
-      {/* Save Modal */}
-      {shouldDisplaySaveChangesModal && <SaveChangesModal />}
+      {/* Save Modal
+      {shouldDisplaySaveChangesModal && <SaveChangesModal />} */}
     </>
   );
 };
