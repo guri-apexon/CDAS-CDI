@@ -73,7 +73,7 @@
   }
   .studies {
     overflow: auto;
-    max-height: calc(100vh - 258px);
+    // max-height: calc(100vh - 258px);
   }
 }
 .topContainer {
@@ -98,12 +98,12 @@
     height: 36px;
     width: 36px;
   }
-  
+
   .newMonitor-icon {
     width: 28px;
     height: 28px;
   }
-  
+
   .dashInfoLabel {
     display: flex;
     align-items: center;
@@ -178,5 +178,10 @@ svg.card-icon path {
   }
   table tfoot {
     display: none;
+  }
+}
+.dashboard-wrapper {
+  #tabsContainer {
+    display: block;
   }
 }
