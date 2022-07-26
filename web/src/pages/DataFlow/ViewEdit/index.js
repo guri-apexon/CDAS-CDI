@@ -187,9 +187,10 @@ const DataFlow = ({ FormValues, dashboard }) => {
       dataflowId
     ) {
       let firstFileDate = ffDate || FormValues.firstFileDate;
-      firstFileDate = moment(firstFileDate).isValid()
-        ? moment(firstFileDate).format("DD-MMM-yyyy")
-        : null;
+      firstFileDate =
+        firstFileDate && moment(firstFileDate).isValid()
+          ? moment(firstFileDate).format("DD-MMM-yyyy")
+          : null;
 
       const payload = {
         vendorID: FormValues.vendors[0],

@@ -5,6 +5,7 @@ const moment = require("moment");
 const _ = require("lodash");
 const { createUniqueID } = require("../helpers/customFunctions");
 const helper = require("../helpers/customFunctions");
+const { trim } = require("lodash");
 const constants = require("../config/constants");
 const { addDataflowHistory } = require("./CommonController");
 const { DB_SCHEMA_NAME: schemaName } = constants;
@@ -259,6 +260,47 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     }
     studyId = studyRows[0].prot_id;
 
+    if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
+      const errorPackage = [];
+      for (let each of dataPackage) {
+        if (each.noPackageConfig === 0) {
+          const errorMessages = helper.validateNoPackagesChecked(each);
+          const messageCount = errorMessages.length;
+          if (messageCount > 0) {
+            messageCount === 1
+              ? errorPackage.push(errorMessages[0])
+              : errorPackage.push(errorMessages.join(" '|' "));
+          }
+        }
+        if (each && each.noPackageConfig === 1) {
+          const errorMessages = helper.validateNoPackagesUnChecked(each);
+          const messageCount = errorMessages.length;
+          if (messageCount > 0) {
+            messageCount === 1
+              ? errorPackage.push(errorMessages[0])
+              : errorPackage.push(errorMessages.join(" '|' "));
+          }
+        }
+
+        if (each && each.noPackageConfig === 0) {
+          if (
+            !each.type ||
+            (!each.name && !each.namingConvention) ||
+            trim(each.type).length === 0 ||
+            (trim(each.name).length === 0 &&
+              trim(each.namingConvention).length === 0)
+          ) {
+            errorPackage.push(
+              "If Package is opted, Package name and type are mandatory and can not be blank"
+            );
+          }
+        }
+      }
+      if (errorPackage.length > 0) {
+        return apiResponse.validationErrorWithData(res, errorPackage);
+      }
+    }
+
     // check for duplicate mnemonics
     if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
       for (let i = 0; i < dataPackage.length; i++) {
@@ -326,9 +368,8 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
           }
         }
       }
-
-      testFlag = helper.stringToBoolean(testFlag);
     }
+    testFlag = helper.stringToBoolean(testFlag);
 
     if (locationID) {
       const {
@@ -1805,7 +1846,7 @@ exports.fetchdataflowSource = async (req, res) => {
 exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
-    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename,
+    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, d2."path" as datapackagepath,
     d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, d3.datasetid, S.prot_nbr_stnd
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
@@ -1838,7 +1879,7 @@ exports.fetchdataflowDetails = async (req, res) => {
         externalID: each.ExternalId,
         type: each.type,
         sasXptMethod: each.sasxptmethod,
-        path: each.path,
+        path: each.datapackagepath,
         password: each.password,
         noPackageConfig: each.nopackageconfig,
         name: each.datapackagename,
@@ -2037,7 +2078,7 @@ exports.updateDataflowConfig = async (req, res) => {
         "Please make dataFlow active in order to save the configuration"
       );
     }
-    if (dataSet_count == 0) {
+    if (dataStructure !== "TabularRaveSOD" && dataSet_count == 0) {
       return apiResponse.ErrorResponse(
         res,
         "Please add or active at-least one dataset in order to save the configuration"
