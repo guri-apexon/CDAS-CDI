@@ -89,6 +89,12 @@ exports.addPackage = async function (req, res) {
       return apiResponse.ErrorResponse(res, "Study not found");
     }
 
+    const errorMessages = helper.addPackagesValidations(req.body);
+
+    if (errorMessages.length > 0) {
+      return apiResponse.ErrorResponse(res, errorMessages);
+    }
+
     const {
       rows: [oldVersion],
     } = await DB.executeQuery(

@@ -471,11 +471,6 @@ exports.insertValidation = async (req) => {
                 },
 
                 {
-                  key: "Data Set Level, Path",
-                  value: obj.path,
-                  type: "string",
-                },
-                {
                   key: "rowDecreaseAllowed",
                   value: obj.rowDecreaseAllowed,
                   type: "number",
@@ -503,6 +498,14 @@ exports.insertValidation = async (req) => {
                 },
               ];
 
+              // console.log("data set level validation inserted========>");
+              if (each.noPackageConfig === 1) {
+                dsArray.push({
+                  key: "Data Set Level, Path",
+                  value: obj.path,
+                  type: "string",
+                });
+              }
               //point - 28 story - 72771
               if (obj.columncount === 0) {
                 dsErrArray.push(
@@ -1558,41 +1561,6 @@ exports.packageLevelInsert = async (
       }
     }
 
-    if (isNew) {
-      if (noPackageConfig === 0) {
-        const errorMessages = helper.validateNoPackagesChecked(data);
-        const messageCount = errorMessages.length;
-        if (messageCount > 0) {
-          messageCount === 1
-            ? errorPackage.push(errorMessages[0])
-            : errorPackage.push(errorMessages.join(" '|' "));
-        }
-      }
-      if (noPackageConfig === 1) {
-        const errorMessages = helper.validateNoPackagesUnChecked(data);
-        const messageCount = errorMessages.length;
-        if (messageCount > 0) {
-          messageCount === 1
-            ? errorPackage.push(errorMessages[0])
-            : errorPackage.push(errorMessages.join(" '|' "));
-        }
-      }
-    }
-
-    if (data.noPackageConfig === 0) {
-      if (
-        !data.type ||
-        (!data.name && !data.namingConvention) ||
-        trim(data.type).length === 0 ||
-        (trim(data.name).length === 0 &&
-          trim(data.namingConvention).length === 0)
-      ) {
-        errorPackage.push(
-          "If Package is opted, Package name and type are mandatory and can not be blank"
-        );
-      }
-    }
-
     if (errorPackage.length > 0) {
       //errorPackage.splice(0, 0, `Datapackage external id -${ExternalId} `);
       let dpErrRes = errorPackage.join(" '|' ");
@@ -1682,6 +1650,7 @@ exports.packageLevelInsert = async (
       dpErrObj.dataSets = [];
       for (let obj of data.dataSet) {
         const dataSetExternalId = obj.ExternalId;
+        const noPackageConfig = data.noPackageConfig;
         await saveDataset(
           obj,
           dataSetExternalId,
@@ -1692,7 +1661,8 @@ exports.packageLevelInsert = async (
           externalSysName,
           testFlag,
           userId,
-          isNew
+          isNew,
+          noPackageConfig
         ).then((res) => {
           if (res && Object.keys(res.errRes)?.length) {
             dpErrObj.dataSets.push(res.errRes);
@@ -1730,7 +1700,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
   externalSysName,
   testFlag,
   userId,
-  isNew
+  isNew,
+  noPackageConfig
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -1776,11 +1747,6 @@ const saveDataset = (exports.datasetLevelInsert = async (
           },
 
           {
-            key: "Data Set Level, path",
-            value: obj.path,
-            type: "string",
-          },
-          {
             key: "rowDecreaseAllowed",
             value: obj.rowDecreaseAllowed,
             type: "number",
@@ -1808,6 +1774,13 @@ const saveDataset = (exports.datasetLevelInsert = async (
           },
         ];
 
+        if (noPackageConfig === 1) {
+          dsArray.push({
+            key: "Data Set Level, path",
+            value: obj.path,
+            type: "string",
+          });
+        }
         // point - 28 story - 7277
         if (obj.columncount === 0) {
           errorDataset.push(
@@ -3504,7 +3477,8 @@ exports.datasetUpdate = async (
   custSql,
   externalSysName,
   testFlag,
-  userId
+  userId,
+  noPackageConfig
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -3677,11 +3651,13 @@ exports.datasetUpdate = async (
       }
 
       if (typeof data.path != "undefined") {
-        valDataset.push({
-          key: "path ",
-          value: data.path,
-          type: "string",
-        });
+        if (noPackageConfig === 1) {
+          valDataset.push({
+            key: "path ",
+            value: data.path,
+            type: "string",
+          });
+        }
       }
       if (typeof data.rowDecreaseAllowed != "undefined") {
         valDataset.push({

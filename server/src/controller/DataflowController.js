@@ -938,6 +938,7 @@ exports.updateDataFlow = async (req, res) => {
 
             if (currentDp) {
               const DPId = currentDp.datapackageid;
+              const noPackageConfig = currentDp.nopackageconfig;
               dpResObj.ExternalId = packageExternalId;
               dpResObj.ID = DPId;
 
@@ -1090,7 +1091,8 @@ exports.updateDataFlow = async (req, res) => {
                                 custSql,
                                 externalSysName,
                                 testFlag,
-                                userId
+                                userId,
+                                noPackageConfig
                               )
                               .then((res) => {
                                 // if (res.sucRes?.length) {
@@ -1326,7 +1328,7 @@ exports.updateDataFlow = async (req, res) => {
                         dpErrObj.dataSets.push(dsErrObj);
                       } else {
                         // Function call for insert dataSet level data
-
+                        const noPackageConfig = each.noPackageConfig;
                         var DatasetInsert = await externalFunction
                           .datasetLevelInsert(
                             obj,
@@ -1338,7 +1340,8 @@ exports.updateDataFlow = async (req, res) => {
                             externalSysName,
                             testFlag,
                             userId,
-                            null
+                            null,
+                            noPackageConfig
                           )
                           .then((res) => {
                             // if (res.sucRes?.length) {
