@@ -1847,7 +1847,7 @@ exports.fetchdataflowSource = async (req, res) => {
 exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
-    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename,
+    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, d2."path" as datapackagepath,
     d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, d3.datasetid, S.prot_nbr_stnd
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
@@ -1880,7 +1880,7 @@ exports.fetchdataflowDetails = async (req, res) => {
         externalID: each.ExternalId,
         type: each.type,
         sasXptMethod: each.sasxptmethod,
-        path: each.path,
+        path: each.datapackagepath,
         password: each.password,
         noPackageConfig: each.nopackageconfig,
         name: each.datapackagename,
