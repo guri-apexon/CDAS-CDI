@@ -303,7 +303,9 @@ exports.validateNoPackagesChecked = (data) => {
   }
   if (
     (!data.name && !data.namingConvention) ||
-    (trim(data.name.length) === 0 && trim(data.namingConvention).length === 0)
+    (data.name &&
+      trim(data.name.length) === 0 &&
+      trim(data.namingConvention).length === 0)
   ) {
     errorMessages.push(
       "Package namingConvention should be present for package configuration"
@@ -326,7 +328,9 @@ exports.validateNoPackagesUnChecked = (data) => {
   }
   if (
     (data.name && data.namingConvention) ||
-    (trim(data.name).length > 0 && trim(data.namingConvention).length > 0)
+    (data.name &&
+      trim(data.name).length > 0 &&
+      trim(data.namingConvention).length > 0)
   ) {
     errorMessages.push(
       "Package namingConvention should not be present for No package configuration"

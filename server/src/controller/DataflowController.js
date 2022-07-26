@@ -261,7 +261,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     studyId = studyRows[0].prot_id;
 
     if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
-      console.log("inside our code==============>");
       const errorPackage = [];
       for (let each of dataPackage) {
         if (each.noPackageConfig === 0) {
@@ -369,9 +368,8 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
           }
         }
       }
-
-      testFlag = helper.stringToBoolean(testFlag);
     }
+    testFlag = helper.stringToBoolean(testFlag);
 
     if (locationID) {
       const {
@@ -2080,7 +2078,7 @@ exports.updateDataflowConfig = async (req, res) => {
         "Please make dataFlow active in order to save the configuration"
       );
     }
-    if (dataSet_count == 0) {
+    if (dataStructure !== "TabularRaveSOD" && dataSet_count == 0) {
       return apiResponse.ErrorResponse(
         res,
         "Please add or active at-least one dataset in order to save the configuration"

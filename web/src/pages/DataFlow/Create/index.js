@@ -200,15 +200,19 @@ const DataFlow = ({
         );
         return false;
       }
+
+      const exptDtOfFirstProdFile =
+        FormValues.firstFileDate && moment(FormValues.firstFileDate).isValid()
+          ? moment(FormValues.firstFileDate).format("DD-MMM-yyyy")
+          : null;
+
       const payload = {
         vendorid: FormValues.vendor.vend_id,
         locationID: FormValues.locationName.src_loc_id,
         dataStructure: FormValues.dataStructure,
         testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
-        exptDtOfFirstProdFile: moment(FormValues.firstFileDate).isValid()
-          ? moment(FormValues.firstFileDate).format("DD-MMM-yyyy")
-          : null,
+        exptDtOfFirstProdFile,
         connectionType: FormValues.locationType,
         protocolNumberStandard: selectedCard.protocolnumberstandard,
         // protocolNumber: selectedCard.prot_id,

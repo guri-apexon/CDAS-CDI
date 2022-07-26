@@ -45,7 +45,7 @@ import usePermission, {
 import DatasetTable from "./DatasetTable";
 import { queryParams } from "./helper";
 
-export default function MonitorTab({ fetchLatestData, protId }) {
+export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
   const [open, setOpen] = useState(false);
   const [curRow, setCurRow] = useState({});
   const [control, setSegmentControl] = useState("0");
@@ -80,6 +80,7 @@ export default function MonitorTab({ fetchLatestData, protId }) {
     setTotalCount(dashboard.ingestionData?.totalSize || 0);
     setSummary({ ...summaryData });
     setRowData([...rowData]);
+    updateHeight();
   }, [dashboard.ingestionData]);
 
   useEffect(() => {
