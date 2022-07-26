@@ -75,7 +75,7 @@ const styles = {
   },
 };
 
-const LeftPanel = () => {
+const LeftPanel = ({ stydyHeight }) => {
   const useStyles = makeStyles(styles);
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -167,15 +167,12 @@ const LeftPanel = () => {
       dispatch(updateSelectedStudy(clicked));
     }
   }, [selectedStudy]);
+  useEffect(() => {
+    console.log("stydyHeight", stydyHeight);
+  }, [stydyHeight]);
 
   return (
-    <div
-      style={{
-        maxHeight: "calc( 100vh - 120px)",
-        overflow: "hidden",
-      }}
-      className="leftPanel"
-    >
+    <div className="leftPanel">
       <div className="searchBox">
         <Typography
           variant="title1"
@@ -201,7 +198,10 @@ const LeftPanel = () => {
       {loading ? (
         <Progress />
       ) : (
-        <div className="customScrollbar studies">
+        <div
+          className="customScrollbar studies"
+          style={{ height: stydyHeight }}
+        >
           {pinnedStudies.length > 0 && (
             <>
               <Typography className={classes.pinTitle} variant="caption">
