@@ -24,6 +24,10 @@ import validate from "../../../components/FormComponents/validation";
 import LocationModal from "../../../components/Common/LocationModal";
 
 import { locationTypes, dataStruct, SodLocationTypes } from "../../../utils";
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
 
 const styles = {
   paper: {
@@ -99,6 +103,10 @@ const DataFlowFormBase = (props) => {
     connLink,
     initialValues,
   } = props;
+
+  const { canUpdate: canUpdateLocation, canCreate: canCreateLocation } =
+    usePermission(Categories.CONFIGURATION, Features.LOCATION_SETUP);
+
   const onChangeServiceOwner = (values) => {
     change("serviceOwner", values);
   };
@@ -267,6 +275,7 @@ const DataFlowFormBase = (props) => {
                 required
               />
               <Link
+                disabled={!canCreateLocation}
                 onClick={() => openLocationModal()}
                 style={{ fontWeight: 600 }}
               >
@@ -277,6 +286,9 @@ const DataFlowFormBase = (props) => {
                 locationModalOpen={locationOpen}
                 modalLocationType={props.modalLocationType}
                 handleModalClose={() => setLocationOpen(false)}
+                canUpdate={canUpdateLocation}
+                canCreate={canCreateLocation}
+                isNew={true}
               />
             </Grid>
             <Grid item md={7}>
