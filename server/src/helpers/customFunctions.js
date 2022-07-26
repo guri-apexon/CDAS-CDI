@@ -1,6 +1,7 @@
 const uuid = require("uuid");
 const crypto = require("crypto");
 const moment = require("moment");
+const { trim } = require("lodash");
 // const { forEach } = require("lodash");
 const _ = require("lodash");
 const logger = require("../config/logger");
@@ -291,4 +292,61 @@ exports.getJWTokenFromHeader = (req) => {
     authToken = req.headers.authorization.split(" ")[1];
   }
   return authToken;
+};
+
+exports.validateNoPackagesChecked = (data) => {
+  const errorMessages = [];
+  if (!data.path || trim(data.type).length === 0) {
+    errorMessages.push(
+      "Package path should be present for package configuration"
+    );
+  }
+  if (
+    (!data.name && !data.namingConvention) ||
+    (data.name &&
+      trim(data.name.length) === 0 &&
+      trim(data.namingConvention).length === 0)
+  ) {
+    errorMessages.push(
+      "Package namingConvention should be present for package configuration"
+    );
+  }
+  if (!data.type || trim(data.type).length === 0) {
+    errorMessages.push(
+      "Package type should be present for package configuration"
+    );
+  }
+  return errorMessages;
+};
+
+exports.validateNoPackagesUnChecked = (data) => {
+  const errorMessages = [];
+  if (data.path || trim(data.path).length > 0) {
+    errorMessages.push(
+      "Package path should not be present for No package configuration"
+    );
+  }
+  if (
+    (data.name && data.namingConvention) ||
+    (data.name &&
+      trim(data.name).length > 0 &&
+      trim(data.namingConvention).length > 0)
+  ) {
+    errorMessages.push(
+      "Package namingConvention should not be present for No package configuration"
+    );
+  }
+  if (data.type || trim(data.type).length > 0) {
+    errorMessages.push(
+      "Package type should not be present for No package configuration"
+    );
+  }
+  if (data.dataSet) {
+    if (!data.dataSet[0]?.path || trim(data.dataSet[0]?.path).length === 0) {
+      errorMessages.push(
+        "Dataset path should be present for No package configuration"
+      );
+    }
+  }
+  return errorMessages;
 };

@@ -172,6 +172,7 @@ const Dataset = () => {
     datasetColumns,
     dataSetRowCount,
     previewedSql,
+    datasetUpdated,
   } = dataSets;
 
   const datasetid = params.datasetId;
@@ -318,6 +319,14 @@ const Dataset = () => {
       setLocationType(getDataSetType(loctyp));
     }
   }, [loctyp]);
+
+  // useEffect(() => {
+  //   if (datasetUpdated && isCustomSQL?.toLowerCase() === "no") {
+  //     setColumnsActive(true);
+  //     setValue(1);
+  //     console.log("datasetUpdated", datasetUpdated);
+  //   }
+  // }, [datasetUpdated]);
 
   useEffect(() => {
     if (dsCreatedSuccessfully) {
