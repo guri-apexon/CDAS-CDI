@@ -260,7 +260,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     studyId = studyRows[0].prot_id;
 
     if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
-      console.log("inside our code==============>");
       const errorPackage = [];
       for (let each of dataPackage) {
         if (each.noPackageConfig === 0) {
