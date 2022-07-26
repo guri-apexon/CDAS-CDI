@@ -144,6 +144,7 @@ const DataFlowReducer = (state = initialState, action) =>
         };
         newState.previewedSql = false;
         newState.datasetColumns = [];
+        newState.sqlColumns = [];
         break;
 
       case UPDATE_DS_STATUS:

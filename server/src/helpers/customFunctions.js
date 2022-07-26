@@ -341,12 +341,12 @@ exports.validateNoPackagesUnChecked = (data) => {
       "Package type should not be present for No package configuration"
     );
   }
-  if (data.dataSet) {
-    if (!data.dataSet[0]?.path || trim(data.dataSet[0]?.path).length === 0) {
-      errorMessages.push(
-        "Dataset path should be present for No package configuration"
-      );
-    }
-  }
+  // if (data.dataSet) {
+  //   if (!data.dataSet[0]?.path || trim(data.dataSet[0]?.path).length === 0) {
+  //     errorMessages.push(
+  //       "Dataset path should be present for No package configuration"
+  //     );
+  //   }
+  // }
   return errorMessages;
 };

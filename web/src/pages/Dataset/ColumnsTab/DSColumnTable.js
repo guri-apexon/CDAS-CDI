@@ -601,6 +601,10 @@ export default function DSColumnTable({
           }
         });
         setRows([...prevRows]);
+      } else {
+        messageContext.showErrorMessage(
+          created.message || "Something went wrong"
+        );
       }
     }
 

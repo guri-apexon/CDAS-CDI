@@ -14,7 +14,12 @@ import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
 import Progress from "../../../components/Common/Progress/Progress";
 import { downloadTemplate } from "../../../utils/downloadData";
-import { checkHeaders, formatDataNew, isSftp } from "../../../utils/index";
+import {
+  checkHeaders,
+  formatDataNew,
+  isSftp,
+  stringToBoolean,
+} from "../../../utils/index";
 
 import usePermission, {
   Categories,
@@ -126,13 +131,13 @@ const ColumnsTab = ({
             const newObj = {
               dbColumnId: column.columnid || "",
               uniqueId: i + 1,
-              variableLabel: column.varable || "",
-              columnName: column.columnName || "",
+              variableLabel: column.varable || column.variable || "",
+              columnName: column.columnName || column.name || "",
               format: column.format || "",
-              dataType: column.dataType || "",
-              primaryKey: column.primarykey === "true" ? "Yes" : "No",
-              unique: column.unique === "true" ? "Yes" : "No",
-              required: column.required === "true" ? "Yes" : "No",
+              dataType: column.dataType || column.datatype || "",
+              primaryKey: stringToBoolean(column.primarykey) ? "Yes" : "No",
+              unique: stringToBoolean(column.unique) ? "Yes" : "No",
+              required: stringToBoolean(column.required) ? "Yes" : "No",
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
               values: column.lov || "",
@@ -190,12 +195,15 @@ const ColumnsTab = ({
   }, [haveHeader]);
 
   useEffect(() => {
-    if (!isSftp(locationType) && sqlColumns.length > 0) {
-      console.log("JDBC", locationType);
-      setShowColumns(true);
-      formatJDBCColumns(sqlColumns);
-      setSelectedMethod("fromAPICall");
-    } else if (isSftp(locationType) && datasetColumns.length > 0) {
+    if (!isSftp(locationType)) {
+      if (sqlColumns.length || datasetColumns.length) {
+        const columns = sqlColumns.length ? sqlColumns : datasetColumns;
+        console.log("JDBC", locationType);
+        setShowColumns(true);
+        formatJDBCColumns(columns);
+        setSelectedMethod("fromAPICall");
+      }
+    } else if (isSftp(locationType) && datasetColumns.length) {
       console.log("SFTP", locationType);
       setShowColumns(true);
       formatDBColumns(datasetColumns);
