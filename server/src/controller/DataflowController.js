@@ -824,7 +824,7 @@ exports.updateDataFlow = async (req, res) => {
     }
 
     // data package configuration validatiaon for both internal and external system
-    if (dataPackage && Array.isArray(dataPackage)) {
+    if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
       const errorPackage = [];
 
       for (let each of dataPackage) {
@@ -984,7 +984,6 @@ exports.updateDataFlow = async (req, res) => {
 
             if (currentDp) {
               const DPId = currentDp.datapackageid;
-              const noPackageConfig = currentDp.nopackageconfig;
               dpResObj.ExternalId = packageExternalId;
               dpResObj.ID = DPId;
 
@@ -1036,6 +1035,11 @@ exports.updateDataFlow = async (req, res) => {
                     });
 
                   if (each.dataSet?.length) {
+                    let dpRowsUpdated = await DB.executeQuery(
+                      `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
+                    );
+                    const noPackageConfig =
+                      dpRowsUpdated?.rows[0].nopackageconfig;
                     // if datasets exists
                     dpResObj.dataSets = [];
                     dpErrObj.dataSets = [];
