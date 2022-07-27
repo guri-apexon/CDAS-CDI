@@ -33,6 +33,8 @@ const ColumnsTab = ({
   dpId,
   setDatasetColumnsExist,
   selectedDataset,
+  createMode,
+  columnsEditMode,
 }) => {
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -143,7 +145,7 @@ const ColumnsTab = ({
               values: column.lov || "",
               isInitLoad: true,
               isHavingColumnName: true,
-              isEditMode: true,
+              isEditMode: !!columnsEditMode,
             };
             return newObj;
           })

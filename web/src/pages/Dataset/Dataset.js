@@ -117,6 +117,7 @@ const Dataset = () => {
   const [tempTabValue, setTempTabValue] = useState(0);
   const [manualTriggerToggle, setManualTriggerToggle] = useState(false);
   const [shouldTriggerRedirect, setShouldTriggerRedirect] = useState(true);
+  const [columnsEditMode, setColumnsEditMode] = useState(false);
 
   const dispatch = useDispatch();
   const params = useParams();
@@ -296,13 +297,13 @@ const Dataset = () => {
     }
   }, [loctyp]);
 
-  // useEffect(() => {
-  //   if (datasetUpdated && isCustomSQL?.toLowerCase() === "no") {
-  //     setColumnsActive(true);
-  //     setValue(1);
-  //     console.log("datasetUpdated", datasetUpdated);
-  //   }
-  // }, [datasetUpdated]);
+  useEffect(() => {
+    if (datasetUpdated && isCustomSQL?.toLowerCase() === "no") {
+      setColumnsActive(true);
+      setValue(1);
+      console.log("datasetUpdated", datasetUpdated);
+    }
+  }, [datasetUpdated]);
 
   useEffect(() => {
     if (dsCreatedSuccessfully) {
@@ -419,12 +420,12 @@ const Dataset = () => {
           );
           return false;
         }
-      }
-      if (data.datasetid) {
         dispatch(updateDatasetData(data));
       } else {
         dispatch(saveDatasetData(data));
       }
+      if (!isSftp(locationType))
+        setColumnsEditMode(createMode || formValue.tableName !== tableName);
     }, 400);
   };
 
@@ -612,6 +613,8 @@ const Dataset = () => {
                   locationType={locationType}
                   dfId={dfId}
                   dpId={dpId}
+                  createMode={createMode}
+                  columnsEditMode={columnsEditMode}
                   setDatasetColumnsExist={(disableSave) =>
                     setDatasetColumnsExist(disableSave)
                   }

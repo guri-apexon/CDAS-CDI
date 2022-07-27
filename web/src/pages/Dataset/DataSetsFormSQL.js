@@ -101,17 +101,19 @@ const DataSetsFormBase = (props) => {
     change("offsetColumn", obj.value);
   };
   const changeTableName = (obj) => {
+    const tableName = obj?.value || null;
+    if (!tableName) return;
     setSelectedTable(obj);
     setSelectedOffsetColumns(null);
     change("offsetColumn", null);
-    change("tableName", obj.value);
-    console.log("formValues.tableName::::", formValues, formValues.tableName);
-    if (formValues?.isCustomSQL === "No" && formValues?.tableName) {
+    change("tableName", tableName);
+    // console.log("TableName::::", tableName);
+    if (formValues?.isCustomSQL === "No") {
       setSqlColumnsArr([]);
       dispatch(
         getSQLColumns({
           ...locationDetail,
-          tableName: formValues.tableName,
+          tableName,
         })
       );
     } else {
