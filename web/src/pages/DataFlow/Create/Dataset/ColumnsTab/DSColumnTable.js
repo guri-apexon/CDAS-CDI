@@ -472,7 +472,8 @@ export default function DSColumnTable({
 
   const onRowEdit = (uniqueId) => {
     setSelectedRows([...selectedRows, uniqueId]);
-    setEditedRows(rows);
+    setEditedRows([...rows]);
+    setEditedRows([...editedRows]);
   };
 
   const onRowDelete = async (uniqueId) => {
