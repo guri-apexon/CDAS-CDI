@@ -2185,7 +2185,7 @@ exports.updateDataflowConfig = async (req, res) => {
           vendorID,
           protocolNumberStandard,
           description,
-          testFlag
+          helper.stringToBoolean(testFlag)
         );
       }
       const dFTimestamp = helper.getCurrentTime();
