@@ -260,46 +260,49 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     }
     studyId = studyRows[0].prot_id;
 
-    if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
-      const errorPackage = [];
-      for (let each of dataPackage) {
-        if (each.noPackageConfig === 0) {
-          const errorMessages = helper.validateNoPackagesChecked(each);
-          const messageCount = errorMessages.length;
-          if (messageCount > 0) {
-            messageCount === 1
-              ? errorPackage.push(errorMessages[0])
-              : errorPackage.push(errorMessages.join(" '|' "));
-          }
-        }
-        if (each && each.noPackageConfig === 1) {
-          const errorMessages = helper.validateNoPackagesUnChecked(each);
-          const messageCount = errorMessages.length;
-          if (messageCount > 0) {
-            messageCount === 1
-              ? errorPackage.push(errorMessages[0])
-              : errorPackage.push(errorMessages.join(" '|' "));
-          }
-        }
+    // if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
+    //   const errorPackage = [];
+    //   for (let each of dataPackage) {
+    //     if (each.noPackageConfig === 0) {
+    //       const errorMessages =
+    //         each.noPackageConfig === 0
+    //           ? helper.validateNoPackagesChecked(each)
+    //           : helper.validateNoPackagesUnChecked(each);
+    //       const messageCount = errorMessages.length;
+    //       if (messageCount > 0) {
+    //         messageCount === 1
+    //           ? errorPackage.push(errorMessages[0])
+    //           : errorPackage.push(errorMessages.join(" '|' "));
+    //       }
+    //     }
+    //     if (each && each.noPackageConfig === 1) {
+    //       const errorMessages = helper.validateNoPackagesUnChecked(each);
+    //       const messageCount = errorMessages.length;
+    //       if (messageCount > 0) {
+    //         messageCount === 1
+    //           ? errorPackage.push(errorMessages[0])
+    //           : errorPackage.push(errorMessages.join(" '|' "));
+    //       }
+    //     }
 
-        if (each && each.noPackageConfig === 0) {
-          if (
-            !each.type ||
-            (!each.name && !each.namingConvention) ||
-            trim(each.type).length === 0 ||
-            (trim(each.name).length === 0 &&
-              trim(each.namingConvention).length === 0)
-          ) {
-            errorPackage.push(
-              "If Package is opted, Package name and type are mandatory and can not be blank"
-            );
-          }
-        }
-      }
-      if (errorPackage.length > 0) {
-        return apiResponse.validationErrorWithData(res, errorPackage);
-      }
-    }
+    //     if (each && each.noPackageConfig === 0) {
+    //       if (
+    //         !each.type ||
+    //         (!each.name && !each.namingConvention) ||
+    //         trim(each.type).length === 0 ||
+    //         (trim(each.name).length === 0 &&
+    //           trim(each.namingConvention).length === 0)
+    //       ) {
+    //         errorPackage.push(
+    //           "If Package is opted, Package name and type are mandatory and can not be blank"
+    //         );
+    //       }
+    //     }
+    //   }
+    //   if (errorPackage.length > 0) {
+    //     return apiResponse.validationErrorWithData(res, errorPackage);
+    //   }
+    // }
 
     // check for duplicate mnemonics
     if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
@@ -820,6 +823,49 @@ exports.updateDataFlow = async (req, res) => {
       }
     }
 
+    // data package configuration validatiaon for both internal and external system
+    if (dataPackage && Array.isArray(dataPackage)) {
+      const errorPackage = [];
+
+      for (let each of dataPackage) {
+        if (each.noPackageConfig === 0) {
+          const errorMessages = helper.validateNoPackagesChecked(each);
+
+          const messageCount = errorMessages.length;
+          if (messageCount > 0) {
+            messageCount === 1
+              ? errorPackage.push(errorMessages[0])
+              : errorPackage.push(errorMessages.join(" '|' "));
+          }
+        }
+        if (each && each.noPackageConfig === 1) {
+          const errorMessages = helper.validateNoPackagesUnChecked(each);
+          const messageCount = errorMessages.length;
+          if (messageCount > 0) {
+            messageCount === 1
+              ? errorPackage.push(errorMessages[0])
+              : errorPackage.push(errorMessages.join(" '|' "));
+          }
+        }
+
+        if (each && each.noPackageConfig === 0) {
+          if (
+            !each.type ||
+            (!each.name && !each.namingConvention) ||
+            trim(each.type).length === 0 ||
+            (trim(each.name).length === 0 &&
+              trim(each.namingConvention).length === 0)
+          ) {
+            errorPackage.push(
+              "If Package is opted, Package name and type are mandatory and can not be blank"
+            );
+          }
+        }
+      }
+      if (errorPackage.length > 0) {
+        return apiResponse.validationErrorWithData(res, errorPackage);
+      }
+    }
     // // return;
 
     // // const resErr = helper.validation(valData);
