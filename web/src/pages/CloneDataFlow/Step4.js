@@ -90,6 +90,7 @@ const Step4 = ({
           value={dataflowType}
           required
           onChange={handleChange}
+          className="dataset-data-flow-type"
         >
           <Radio value="test" label="Test" />
           <Radio value="production" label="Production" />
