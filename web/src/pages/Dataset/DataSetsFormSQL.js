@@ -101,11 +101,27 @@ const DataSetsFormBase = (props) => {
     change("offsetColumn", obj.value);
   };
   const changeTableName = (obj) => {
+    const tableName = obj?.value || null;
+    if (!tableName) return;
     setSelectedTable(obj);
     setSelectedOffsetColumns(null);
     change("offsetColumn", null);
-    change("tableName", obj.value);
+    change("tableName", tableName);
+    // console.log("TableName::::", tableName);
+    if (formValues?.isCustomSQL === "No") {
+      setSqlColumnsArr([]);
+      dispatch(
+        getSQLColumns({
+          ...locationDetail,
+          tableName,
+        })
+      );
+    } else {
+      setSqlColumnsArr([]);
+    }
   };
+  useEffect(() => {}, [formValues.tableName]);
+
   useEffect(() => {
     if (sqlColumns.length) {
       const filtered = sqlColumns
@@ -139,21 +155,6 @@ const DataSetsFormBase = (props) => {
       setShowPreview(false);
     }
   }, [formValues.isCustomSQL]);
-
-  useEffect(() => {
-    // console.log("formValues.tableName::::", formValues, formValues.tableName);
-    if (formValues?.isCustomSQL === "No" && formValues?.tableName) {
-      setSqlColumnsArr([]);
-      dispatch(
-        getSQLColumns({
-          ...locationDetail,
-          tableName: formValues.tableName,
-        })
-      );
-    } else {
-      setSqlColumnsArr([]);
-    }
-  }, [formValues.tableName]);
 
   useEffect(() => {
     if (previewSQL?.length && formValues.isCustomSQL?.toLowerCase() === "yes") {

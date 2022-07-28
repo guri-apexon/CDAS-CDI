@@ -227,11 +227,6 @@ const packageLevelInsert = async (
                 },
 
                 {
-                  key: "Data Set Level, Path",
-                  value: obj.path,
-                  type: "string",
-                },
-                {
                   key: "Row Decrease Allowed",
                   value: obj.rowDecreaseAllowed,
                   type: "number",
@@ -248,6 +243,14 @@ const packageLevelInsert = async (
                   type: "boolean",
                 },
               ];
+
+              if (data.noPackageConfig === 1) {
+                dsArray.push({
+                  key: "Data Set Level, Path",
+                  value: obj.path,
+                  type: "string",
+                });
+              }
 
               if (obj.type.toLowerCase() === "delimited") {
                 const dsArrayDt = [
@@ -912,11 +915,6 @@ const datasetLevelInsert = async (
         },
 
         {
-          key: "Data Set Level, Path",
-          value: obj.path,
-          type: "string",
-        },
-        {
           key: "Row Decrease Allowed",
           value: obj.rowDecreaseAllowed,
           type: "number",
@@ -933,7 +931,13 @@ const datasetLevelInsert = async (
           type: "boolean",
         },
       ];
-
+      if (obj.noPackageConfig === 1) {
+        dsArray.push({
+          key: "Data Set Level, Path",
+          value: obj.path,
+          type: "string",
+        });
+      }
       if (obj.type.toLowerCase() === "delimited") {
         const dsArrayDt = [
           {

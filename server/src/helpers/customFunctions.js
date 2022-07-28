@@ -1,6 +1,7 @@
 const uuid = require("uuid");
 const crypto = require("crypto");
 const moment = require("moment");
+const helper = require("../helpers/customFunctions");
 const { trim } = require("lodash");
 // const { forEach } = require("lodash");
 const _ = require("lodash");
@@ -346,6 +347,75 @@ exports.validateNoPackagesUnChecked = (data) => {
       errorMessages.push(
         "Dataset path should be present for No package configuration"
       );
+    }
+  }
+  return errorMessages;
+};
+
+exports.addPackagesValidations = (data) => {
+  const errorMessages = [];
+  const type = data.compression_type;
+  const namingConvention = data.naming_convention;
+  const path = data.sftp_path;
+
+  if (!type || trim(type).length === 0) {
+    errorMessages.push(
+      "Package type should be present for package configuration"
+    );
+  }
+
+  if (!namingConvention || trim(namingConvention).length === 0) {
+    errorMessages.push(
+      "Package namingConvention should be present for package configuration"
+    );
+  }
+
+  if (!path || trim(path).length === 0) {
+    errorMessages.push(
+      "Package path should be present for package configuration"
+    );
+  }
+
+  if (
+    type &&
+    trim(type).length > 0 &&
+    namingConvention &&
+    trim(namingConvention).length > 0
+  ) {
+    if (!helper.isPackageType(type)) {
+      errorMessages.push("Package type Supported values : 7Z, ZIP, RAR, SAS");
+    }
+
+    if (type.toLowerCase() === "rar") {
+      if (!namingConvention.toLowerCase().endsWith(".rar")) {
+        errorMessages.push(
+          "If Package type is RAR then package naming convention should be end with (.rar)"
+        );
+      }
+    }
+
+    if (type.toLowerCase() === "7z") {
+      if (!namingConvention.toLowerCase().endsWith(".7z")) {
+        errorMessages.push(
+          "If Package type is 7z then package naming convention should be end with (.7z)"
+        );
+      }
+    }
+
+    if (type.toLowerCase() === "zip") {
+      if (!namingConvention.toLowerCase().endsWith(".zip")) {
+        errorMessages.push(
+          "If Package type is Zip then package naming convention should be end with (.zip)"
+        );
+      }
+    }
+
+    if (type.toLowerCase() === "sas") {
+      if (!namingConvention.toLowerCase().endsWith(".xpt")) {
+        errorMessages.push(
+          "If Package type is SAS XPT then package naming convention should be end with (.xpt)"
+        );
+      }
     }
   }
   return errorMessages;

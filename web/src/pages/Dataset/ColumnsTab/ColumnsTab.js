@@ -14,7 +14,12 @@ import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
 import Progress from "../../../components/Common/Progress/Progress";
 import { downloadTemplate } from "../../../utils/downloadData";
-import { checkHeaders, formatDataNew, isSftp } from "../../../utils/index";
+import {
+  checkHeaders,
+  formatDataNew,
+  isSftp,
+  stringToBoolean,
+} from "../../../utils/index";
 
 import usePermission, {
   Categories,
@@ -28,6 +33,8 @@ const ColumnsTab = ({
   dpId,
   setDatasetColumnsExist,
   selectedDataset,
+  createMode,
+  columnsEditMode,
 }) => {
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
@@ -119,26 +126,26 @@ const ColumnsTab = ({
     setFormattedData([...newData]);
   };
 
-  const formatJDBCColumns = (arr) => {
+  const formatJDBCColumns = (arr, editMode = false) => {
     const newData =
       arr.length > 0
         ? arr.map((column, i) => {
             const newObj = {
               dbColumnId: column.columnid || "",
               uniqueId: i + 1,
-              variableLabel: column.varable || "",
-              columnName: column.columnName || "",
+              variableLabel: column.varable || column.variable || "",
+              columnName: column.columnName || column.name || "",
               format: column.format || "",
-              dataType: column.dataType || "",
-              primaryKey: column.primarykey === "true" ? "Yes" : "No",
-              unique: column.unique === "true" ? "Yes" : "No",
-              required: column.required === "true" ? "Yes" : "No",
+              dataType: column.dataType || column.datatype || "",
+              primaryKey: stringToBoolean(column.primarykey) ? "Yes" : "No",
+              unique: stringToBoolean(column.unique) ? "Yes" : "No",
+              required: stringToBoolean(column.required) ? "Yes" : "No",
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
               values: column.lov || "",
               isInitLoad: true,
               isHavingColumnName: true,
-              isEditMode: true,
+              isEditMode: editMode,
             };
             return newObj;
           })
@@ -190,16 +197,22 @@ const ColumnsTab = ({
   }, [haveHeader]);
 
   useEffect(() => {
-    if (datasetColumns.length > 0) {
+    if (!isSftp(locationType)) {
+      console.log("JDBC", locationType);
+      setShowColumns(true);
+      setSelectedMethod("fromAPICall");
+      if (datasetColumns.length) {
+        formatJDBCColumns(datasetColumns);
+      } else if (sqlColumns.length) {
+        formatJDBCColumns(sqlColumns, !!columnsEditMode);
+      }
+    } else if (isSftp(locationType) && datasetColumns.length) {
+      console.log("SFTP", locationType);
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
-    } else if (sqlColumns.length > 0) {
-      setShowColumns(true);
-      formatJDBCColumns(sqlColumns);
-      setSelectedMethod("fromAPICall");
     }
-    console.log({ datasetColumns, sqlColumns });
+    console.log({ datasetColumns, sqlColumns }, locationType);
   }, [datasetColumns, sqlColumns]);
 
   useEffect(() => {
@@ -235,7 +248,7 @@ const ColumnsTab = ({
         />
       </>
     );
-  }, [showColumns, loading]);
+  }, [showColumns, loading, formattedData]);
 
   return (
     <>

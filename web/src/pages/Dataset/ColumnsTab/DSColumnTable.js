@@ -125,7 +125,7 @@ export default function DSColumnTable({
       // setSelectedRows(forImport);
       // setEditedRows(formattedData);
     }
-  }, []);
+  }, [formattedData, dataOrigin]);
 
   useEffect(() => {
     if (!isSftp(locationType)) {
@@ -601,6 +601,10 @@ export default function DSColumnTable({
           }
         });
         setRows([...prevRows]);
+      } else {
+        messageContext.showErrorMessage(
+          created.message || "Something went wrong"
+        );
       }
     }
 

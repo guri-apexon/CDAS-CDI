@@ -362,3 +362,10 @@ export const validateRow = (row) => {
   }
   return true;
 };
+
+export const checkFolderPath = (value, path) => {
+  if ((path === "" || !path) && !value?.trim()?.length) {
+    return "Folder Path is required when Data Package Configuration is not selected";
+  }
+  return false;
+};
