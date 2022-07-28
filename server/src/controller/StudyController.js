@@ -443,10 +443,12 @@ exports.getDatasetIngestionDashboardDetail = async function (req, res) {
     const prot_id = req.params.protocolNumber;
     let where = "";
     let datasetwhere = "";
+    let queryCondition = " and df.testflag in (1, 0)";
     const testFlag = req.query.testFlag || null;
     const active = req.query.active || null;
     if (testFlag == 1 || testFlag == 0) {
       where += ` and sms.testdataflow in (${testFlag}) `;
+      queryCondition = ` and df.testflag in (${testFlag})`;
     }
     if (active == 1 || active == 0) {
       datasetwhere += ` and sms.activedataset in (${active}) `;
@@ -723,7 +725,7 @@ from(
      LEFT JOIN ctetrnx ON ctetrnx.dataflowid::text = df.dataflowid::text AND ctetrnx.datapackageid::text = dp.datapackageid::text AND ctetrnx.datasetid::text = ds.datasetid::text
      LEFT JOIN checksum dc ON ctetrnx.executionid::text = dc.executionid::text AND ctetrnx.dataflowid::text = dc.dataflowid::text AND ctetrnx.datapackageid::text = dc.datapackageid::text
      LEFT JOIN cps ON ctetrnx.externalid = cps.externalid
-  WHERE ctetrnx.processtype::text = 'SYNC'::text OR ds.active = 1
+     WHERE (ctetrnx.processtype::text = 'SYNC'::text OR ds.active = 1) ${queryCondition}
   ) A group by prot_id;`;
     const summaryCount = await DB.executeQuery(countQuery, [prot_id]);
 
