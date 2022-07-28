@@ -74,6 +74,7 @@ const DataPackages = React.memo(() => {
   const packageData = useSelector((state) => state.dataPackage);
   const [addedPackage, setAddedPackage] = useState(false);
   const [shouldTriggerRedirect, setShouldTriggerRedirect] = useState(true);
+  const [folderPathValidation, setFolderPathValidation] = useState(false);
 
   const { dataFlowdetail, versionFreezed } = useSelector(
     (state) => state.dataFlow
@@ -121,6 +122,7 @@ const DataPackages = React.memo(() => {
     setSftpPath("");
     setCompression("");
     setNotMatchedType(false);
+    setFolderPathValidation(false);
   };
   const showConfig = (e, checked) => {
     if (!checked) {
@@ -224,7 +226,12 @@ const DataPackages = React.memo(() => {
     setShouldTriggerRedirect(false);
     const validated = validateFields(namingConvention, compression);
     setNotMatchedType(!validated);
-    if (!validated) return false;
+    // check folder path field
+    if (!sftpPath?.trim()) {
+      setFolderPathValidation(true);
+    }
+    if (!validated || !sftpPath?.trim()) return false;
+
     if (namingConvention === "" && compression) {
       toast("Please fill all fields to proceed", "error");
       return false;
@@ -427,12 +434,21 @@ const DataPackages = React.memo(() => {
                       />
                       <TextField
                         className="mb-20"
-                        label="sFTP Folder Path (Optional)"
+                        label="sFTP Folder Path"
                         placeholder=""
+                        error={folderPathValidation}
+                        helperText={
+                          folderPathValidation
+                            ? "Folder Path is required when Package Level Configuration is entered"
+                            : ""
+                        }
                         defaultValue={sftpPath}
                         size="small"
                         fullWidth
-                        onChange={(e) => setSftpPath(e.target.value)}
+                        onChange={(e) => {
+                          setSftpPath(e.target.value);
+                          setFolderPathValidation(false);
+                        }}
                         disabled={!canUpdateDataFlow}
                       />
                       {packageData.selectedPackage?.sod_view_type && (

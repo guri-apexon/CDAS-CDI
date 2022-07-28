@@ -215,6 +215,7 @@ const Dataset = (props, ref) => {
               <CreateDataSetsForm
                 initialValues={sftpInitialValues}
                 loading={loading}
+                dataPackage={myform?.dataPackage?.[0] || null}
                 onSubmit={onSubmit}
               />
             ) : (

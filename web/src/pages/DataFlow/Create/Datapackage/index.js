@@ -38,6 +38,8 @@ const DataPackage = (
   const [sftpPath, setSftpPath] = useState("");
   const [disabled, setDisabled] = useState(false);
   const [notMatchedType, setNotMatchedType] = useState(false);
+  const [folderPathValidation, setFolderPathValidation] = useState(false);
+
   const userInfo = getUserInfo();
 
   const resetForm = () => {
@@ -47,6 +49,7 @@ const DataPackage = (
     setCompression("");
     setConfigShow(false);
     setNotMatchedType(false);
+    setFolderPathValidation(false);
   };
   const showConfig = (e, checked) => {
     setConfigShow(checked);
@@ -71,7 +74,11 @@ const DataPackage = (
       if (namingConvention !== "" || compression) {
         const validated = validateFields(namingConvention, compression);
         setNotMatchedType(!validated);
-        if (!validated) return false;
+        // check folder path field
+        if (!sftpPath?.trim()) {
+          setFolderPathValidation(true);
+        }
+        if (!validated || !sftpPath?.trim()) return false;
         if (namingConvention === "" || compression === "") {
           toast.showErrorMessage("Please fill all fields to proceed", "error");
           return false;
@@ -196,11 +203,20 @@ const DataPackage = (
                 />
                 <TextField
                   className="mb-20"
-                  label="sFTP Folder Path (Optional)"
+                  label="sFTP Folder Path"
+                  error={folderPathValidation}
+                  helperText={
+                    folderPathValidation
+                      ? "Folder Path is required when Package Level Configuration is entered"
+                      : ""
+                  }
                   placeholder=""
                   size="small"
                   fullWidth
-                  onChange={(e) => setSftpPath(e.target.value)}
+                  onChange={(e) => {
+                    setSftpPath(e.target.value);
+                    setFolderPathValidation(false);
+                  }}
                 />
                 {tabularSod && (
                   <div>
