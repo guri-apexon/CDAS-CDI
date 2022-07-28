@@ -94,6 +94,7 @@ const DataSetsFormBase = (props) => {
     defaultFooterRowNumber,
     defaultLoadType,
     initialValues,
+    dataPackage,
   } = props;
   // const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
 
@@ -275,6 +276,14 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="sFTP Folder Path"
               />
+
+              {/* Hidden Fields For Path Validation */}
+              <ReduxFormTextField
+                name="sftpPathValue"
+                id="sftpPathValue"
+                type="hidden"
+                value={dataPackage?.path}
+              />
             </Grid>
             <Grid item md={1}>
               <div className="vertical-line">
@@ -390,6 +399,7 @@ const CreateDataSetsForm = connect((state, ownProps) => {
     datasetName:
       ownProps.initialValues.datasetName || formDataStore.datasetName || "",
     path: ownProps.initialValues.path || formDataStore.path || "",
+    sftpPathValue: ownProps?.dataPackage?.path || "",
   };
   // console.log("state.dataSets", initialValues, ownProps.initialValues);
   return {
