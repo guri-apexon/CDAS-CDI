@@ -126,7 +126,7 @@ const ColumnsTab = ({
     setFormattedData([...newData]);
   };
 
-  const formatJDBCColumns = (arr) => {
+  const formatJDBCColumns = (arr, editMode = false) => {
     const newData =
       arr.length > 0
         ? arr.map((column, i) => {
@@ -145,7 +145,7 @@ const ColumnsTab = ({
               values: column.lov || "",
               isInitLoad: true,
               isHavingColumnName: true,
-              isEditMode: !!columnsEditMode,
+              isEditMode: editMode,
             };
             return newObj;
           })
@@ -198,12 +198,13 @@ const ColumnsTab = ({
 
   useEffect(() => {
     if (!isSftp(locationType)) {
-      if (sqlColumns.length || datasetColumns.length) {
-        const columns = sqlColumns.length ? sqlColumns : datasetColumns;
-        console.log("JDBC", locationType);
-        setShowColumns(true);
-        formatJDBCColumns(columns);
-        setSelectedMethod("fromAPICall");
+      console.log("JDBC", locationType);
+      setShowColumns(true);
+      setSelectedMethod("fromAPICall");
+      if (datasetColumns.length) {
+        formatJDBCColumns(datasetColumns);
+      } else if (sqlColumns.length) {
+        formatJDBCColumns(sqlColumns, !!columnsEditMode);
       }
     } else if (isSftp(locationType) && datasetColumns.length) {
       console.log("SFTP", locationType);
