@@ -1,3 +1,4 @@
+/* eslint-disable no-lonely-if */
 /* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/no-array-index-key */
@@ -5,6 +6,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import moment from "moment";
+import { isEmpty, isEqual } from "lodash";
 import Paper from "apollo-react/components/Paper";
 import Typography from "apollo-react/components/Typography";
 import Box from "apollo-react/components/Box";
@@ -74,7 +76,14 @@ const DataPackages = React.memo(() => {
   const packageData = useSelector((state) => state.dataPackage);
   const [addedPackage, setAddedPackage] = useState(false);
   const [shouldTriggerRedirect, setShouldTriggerRedirect] = useState(true);
+  const [isAnyChange, setIsAnyChange] = useState(false);
   const [folderPathValidation, setFolderPathValidation] = useState(false);
+
+  // Save Change Master Flag
+  const SAVE_CHANGE_MODAL_FLAG =
+    process.env.REACT_APP_SAVE_CHANGE_MODAL_FLAG === "true"
+      ? true
+      : false || false;
 
   const { dataFlowdetail, versionFreezed } = useSelector(
     (state) => state.dataFlow
@@ -213,6 +222,80 @@ const DataPackages = React.memo(() => {
     };
   }, []);
 
+  useEffect(() => {
+    const currentDataPackageData = {
+      compression_type: compression,
+      dataflow_id: dfId,
+      naming_convention: namingConvention,
+      package_password: packagePassword,
+      sftp_path: sftpPath,
+      study_id: selectedCard.prot_id,
+      user_id: userInfo.userId,
+      versionFreezed,
+    };
+    const storeDataPackageData = {
+      compression_type: packageData?.selectedPackage?.type,
+      dataflow_id: packageData?.selectedPackage?.dataflowid,
+      naming_convention: packageData?.selectedPackage?.name,
+      package_password: packageSODPassword,
+      sftp_path: packageData?.selectedPackage?.path,
+      study_id: selectedCard.prot_id,
+      user_id: userInfo.userId,
+      versionFreezed,
+    };
+    const initialValueUndefined = {
+      compression_type: undefined,
+      dataflow_id: dfId,
+      naming_convention: undefined,
+      package_password: "",
+      sftp_path: undefined,
+      study_id: selectedCard.prot_id,
+      user_id: userInfo.userId,
+      versionFreezed,
+    };
+    const initialValueBlank = {
+      compression_type: "",
+      dataflow_id: dfId,
+      naming_convention: "",
+      package_password: "",
+      sftp_path: "",
+      study_id: selectedCard.prot_id,
+      user_id: userInfo.userId,
+      versionFreezed,
+    };
+    setIsAnyChange(false);
+
+    if (!isEmpty(packageData?.selectedPackage)) {
+      if (isEqual(currentDataPackageData, storeDataPackageData)) {
+        setIsAnyChange(false);
+      } else {
+        setIsAnyChange(true);
+      }
+    } else {
+      if (
+        isEqual(currentDataPackageData, initialValueUndefined) ||
+        isEqual(currentDataPackageData, initialValueBlank)
+      ) {
+        setIsAnyChange(false);
+      } else {
+        setIsAnyChange(true);
+      }
+    }
+
+    return () => {
+      setIsAnyChange(false);
+    };
+  }, [
+    compression,
+    namingConvention,
+    packagePassword,
+    sftpPath,
+    selectedCard.prot_id,
+    dfId,
+    userInfo.userId,
+    versionFreezed,
+  ]);
+
   const handleAddedSuccess = (message) => {
     if (message) showSuccessMessage(message);
     dispatch(addDataPackage());
@@ -283,7 +366,6 @@ const DataPackages = React.memo(() => {
     moment(packageData.selectedPackage?.updt_tm).format("DD-MMM-YYYY hh:mm A");
   return (
     <div className="data-packages-wrapper">
-      <SaveChangesModal shouldTriggerOnRedirect={shouldTriggerRedirect} />
       <Panel
         onClose={handleClose}
         onOpen={handleOpen}
@@ -317,6 +399,14 @@ const DataPackages = React.memo(() => {
           />
           <Paper className="no-shadow">
             <Box className="top-content">
+              {/* Save Changes Modal */}
+              {SAVE_CHANGE_MODAL_FLAG && (
+                <SaveChangesModal
+                  manualIsAnyChangeCheck={true}
+                  manualIsAnyChangeFlag={isAnyChange}
+                  shouldTriggerOnRedirect={shouldTriggerRedirect}
+                />
+              )}
               <Header
                 close={() => history.push("/dashboard")}
                 submit={submitPackage}

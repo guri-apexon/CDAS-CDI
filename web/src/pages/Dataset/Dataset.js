@@ -40,7 +40,7 @@ import {
   getDataFlowDetail,
   updateDSState,
 } from "../../store/actions/DataFlowAction";
-import { getUserInfo, isSftp } from "../../utils";
+import { checkFormChanges, getUserInfo, isSftp } from "../../utils";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
@@ -118,6 +118,12 @@ const Dataset = () => {
   const [manualTriggerToggle, setManualTriggerToggle] = useState(false);
   const [shouldTriggerRedirect, setShouldTriggerRedirect] = useState(true);
 
+  // Save Change Master Flag
+  const SAVE_CHANGE_MODAL_FLAG =
+    process.env.REACT_APP_SAVE_CHANGE_MODAL_FLAG === "true"
+      ? true
+      : false || false;
+
   const dispatch = useDispatch();
   const params = useParams();
   const messageContext = useContext(MessageContext);
@@ -193,37 +199,48 @@ const Dataset = () => {
 
   // Set form to active set for alert box configuration
   useEffect(() => {
-    const isAnyChange =
-      form?.DataSetsForm?.anyTouched ||
-      form?.DataSetsFormSQL?.anyTouched ||
-      false;
-    if (isAnyChange) {
-      dispatch(formComponentActive());
+    if (SAVE_CHANGE_MODAL_FLAG) {
+      const isAnyChange =
+        form?.DataSetsForm?.anyTouched ||
+        form?.DataSetsFormSQL?.anyTouched ||
+        false;
+      if (isAnyChange) {
+        dispatch(formComponentActive());
+      }
     }
   }, [form]);
 
   const handleChangeTab = (event, v) => {
-    // setManualTriggerToggle(true);
-    // setTempTabValue(v);
+    if (SAVE_CHANGE_MODAL_FLAG) {
+      setManualTriggerToggle(true);
+      setTempTabValue(v);
 
-    // // check if there is any changes within form and set toggle for modal
-    // const isAnyChange = form?.DataSetsForm?.anyTouched || false;
-    // if (isAnyChange) {
-    //   setManualTriggerToggle(true);
-    // }
-    // // set toggle in case of column tab and changes within columns
-    // if (v === 0 && dataSetRowCount > 0) {
-    //   setManualTriggerToggle(true);
-    // }
-    // // if there is no change in data then proceed forward
-    // if ((v !== 0 && !isAnyChange) || (v === 0 && dataSetRowCount === 0))
-    // {
-    setValue(v);
-    if (datasetid !== "new" && datasetid !== null) {
-      dispatch(getDatasetColumns(datasetid));
+      // check if there is any changes within form and set toggle for modal
+      const isAnyChange =
+        form?.DataSetsForm?.anyTouched ||
+        form?.DataSetsFormSQL?.anyTouched ||
+        false;
+      if (isAnyChange) {
+        setManualTriggerToggle(true);
+      }
+      // set toggle in case of column tab and changes within columns
+      if (v === 0 && dataSetRowCount > 0) {
+        setManualTriggerToggle(true);
+      }
+      // if there is no change in data then proceed forward
+      if ((v !== 0 && !isAnyChange) || (v === 0 && dataSetRowCount === 0)) {
+        setValue(v);
+        if (datasetid !== "new" && datasetid !== null) {
+          dispatch(getDatasetColumns(datasetid));
+        }
+        setManualTriggerToggle(false);
+      }
+    } else {
+      setValue(v);
+      if (datasetid !== "new" && datasetid !== null) {
+        dispatch(getDatasetColumns(datasetid));
+      }
     }
-    //   setManualTriggerToggle(false);
-    // }
   };
 
   // logic to run after user click discard changes on save modal
@@ -238,6 +255,13 @@ const Dataset = () => {
   // logic to run after user click continue editing changes on save modal
   const handlePostContinue = () => {
     setManualTriggerToggle(false);
+  };
+
+  const handleManualChecker = (isAnyChange) => {
+    if (value === 1 && dataSetRowCount > 0) {
+      return true;
+    }
+    return isAnyChange;
   };
 
   const getDataSetType = (type) => {
@@ -306,6 +330,7 @@ const Dataset = () => {
 
   useEffect(() => {
     if (dsCreatedSuccessfully) {
+      setShouldTriggerRedirect(false);
       setTimeout(() => {
         if (isSftp(loctyp)) {
           setValue(1);
@@ -319,6 +344,9 @@ const Dataset = () => {
         setShouldTriggerRedirect(true);
       }, 2000);
     }
+    return () => {
+      setShouldTriggerRedirect(true);
+    };
   }, [dsCreatedSuccessfully, loctyp, isCustomSQL]);
 
   useEffect(() => {
@@ -377,6 +405,7 @@ const Dataset = () => {
   };
 
   const onSubmit = (formValue) => {
+    setShouldTriggerRedirect(false);
     // eslint-disable-next-line consistent-return
     setTimeout(() => {
       setShouldTriggerRedirect(false);
@@ -491,16 +520,18 @@ const Dataset = () => {
         >
           <main className={classes.content}>
             <div className={classes.contentHeader}>
-              {/* Save Changes Modal
+              {/* Save Changes Modal */}
               {showSaveChangeModal && (
                 <SaveChangesModal
                   isManualTrigger={true}
+                  manualCheckerFlag={true}
+                  handleManualChecker={handleManualChecker}
                   manualTriggerToggle={manualTriggerToggle}
                   handlePostManualContinue={handlePostContinue}
                   handlePostManualDiscardChange={handlePostDiscardChange}
                   shouldTriggerOnRedirect={shouldTriggerRedirect}
                 />
-              )} */}
+              )}
               <Modal
                 open={openModal}
                 variant="warning"
