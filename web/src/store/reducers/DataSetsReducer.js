@@ -362,6 +362,7 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case GET_SQL_COLUMNS:
         newState.loading = true;
+        newState.datasetColumns = [];
         break;
       case FETCH_SQL_COLUMNS_FAILURE:
         newState.loading = false;
