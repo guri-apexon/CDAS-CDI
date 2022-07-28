@@ -260,47 +260,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     }
     studyId = studyRows[0].prot_id;
 
-    if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
-      const errorPackage = [];
-      for (let each of dataPackage) {
-        if (each.noPackageConfig === 0) {
-          const errorMessages = helper.validateNoPackagesChecked(each);
-          const messageCount = errorMessages.length;
-          if (messageCount > 0) {
-            messageCount === 1
-              ? errorPackage.push(errorMessages[0])
-              : errorPackage.push(errorMessages.join(" '|' "));
-          }
-        }
-        if (each && each.noPackageConfig === 1) {
-          const errorMessages = helper.validateNoPackagesUnChecked(each);
-          const messageCount = errorMessages.length;
-          if (messageCount > 0) {
-            messageCount === 1
-              ? errorPackage.push(errorMessages[0])
-              : errorPackage.push(errorMessages.join(" '|' "));
-          }
-        }
-
-        if (each && each.noPackageConfig === 0) {
-          if (
-            !each.type ||
-            (!each.name && !each.namingConvention) ||
-            trim(each.type).length === 0 ||
-            (trim(each.name).length === 0 &&
-              trim(each.namingConvention).length === 0)
-          ) {
-            errorPackage.push(
-              "If Package is opted, Package name and type are mandatory and can not be blank"
-            );
-          }
-        }
-      }
-      if (errorPackage.length > 0) {
-        return apiResponse.validationErrorWithData(res, errorPackage);
-      }
-    }
-
     // check for duplicate mnemonics
     if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
       for (let i = 0; i < dataPackage.length; i++) {
@@ -820,6 +779,54 @@ exports.updateDataFlow = async (req, res) => {
       }
     }
 
+    // data package configuration validatiaon for both internal and external system
+    if (
+      !ExternalId &&
+      dataPackage &&
+      Array.isArray(dataPackage) &&
+      helper.isSftp(locationType)
+    ) {
+      const errorPackage = [];
+
+      for (let each of dataPackage) {
+        if (each.noPackageConfig === 0) {
+          const errorMessages = helper.validateNoPackagesChecked(each);
+
+          const messageCount = errorMessages.length;
+          if (messageCount > 0) {
+            messageCount === 1
+              ? errorPackage.push(errorMessages[0])
+              : errorPackage.push(errorMessages.join(" '|' "));
+          }
+        }
+        if (each && each.noPackageConfig === 1) {
+          const errorMessages = helper.validateNoPackagesUnChecked(each);
+          const messageCount = errorMessages.length;
+          if (messageCount > 0) {
+            messageCount === 1
+              ? errorPackage.push(errorMessages[0])
+              : errorPackage.push(errorMessages.join(" '|' "));
+          }
+        }
+
+        if (each && each.noPackageConfig === 0) {
+          if (
+            !each.type ||
+            (!each.name && !each.namingConvention) ||
+            trim(each.type).length === 0 ||
+            (trim(each.name).length === 0 &&
+              trim(each.namingConvention).length === 0)
+          ) {
+            errorPackage.push(
+              "If Package is opted, Package name and type are mandatory and can not be blank"
+            );
+          }
+        }
+      }
+      if (errorPackage.length > 0) {
+        return apiResponse.validationErrorWithData(res, errorPackage);
+      }
+    }
     // // return;
 
     // // const resErr = helper.validation(valData);
@@ -989,6 +996,11 @@ exports.updateDataFlow = async (req, res) => {
                     });
 
                   if (each.dataSet?.length) {
+                    let dpRowsUpdated = await DB.executeQuery(
+                      `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
+                    );
+                    const noPackageConfig =
+                      dpRowsUpdated?.rows[0].nopackageconfig;
                     // if datasets exists
                     dpResObj.dataSets = [];
                     dpErrObj.dataSets = [];
@@ -1090,7 +1102,8 @@ exports.updateDataFlow = async (req, res) => {
                                 custSql,
                                 externalSysName,
                                 testFlag,
-                                userId
+                                userId,
+                                noPackageConfig
                               )
                               .then((res) => {
                                 // if (res.sucRes?.length) {
@@ -1326,7 +1339,7 @@ exports.updateDataFlow = async (req, res) => {
                         dpErrObj.dataSets.push(dsErrObj);
                       } else {
                         // Function call for insert dataSet level data
-
+                        const noPackageConfig = each.noPackageConfig;
                         var DatasetInsert = await externalFunction
                           .datasetLevelInsert(
                             obj,
@@ -1338,7 +1351,8 @@ exports.updateDataFlow = async (req, res) => {
                             externalSysName,
                             testFlag,
                             userId,
-                            null
+                            null,
+                            noPackageConfig
                           )
                           .then((res) => {
                             // if (res.sucRes?.length) {
@@ -1846,7 +1860,7 @@ exports.fetchdataflowSource = async (req, res) => {
 exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
-    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename,
+    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, d2."path" as datapackagepath,
     d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, d3.datasetid, S.prot_nbr_stnd
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
@@ -1879,7 +1893,7 @@ exports.fetchdataflowDetails = async (req, res) => {
         externalID: each.ExternalId,
         type: each.type,
         sasXptMethod: each.sasxptmethod,
-        path: each.path,
+        path: each.datapackagepath,
         password: each.password,
         noPackageConfig: each.nopackageconfig,
         name: each.datapackagename,
@@ -2136,7 +2150,7 @@ exports.updateDataflowConfig = async (req, res) => {
           vendorID,
           protocolNumberStandard,
           description,
-          testFlag
+          helper.stringToBoolean(testFlag)
         );
       }
       const dFTimestamp = helper.getCurrentTime();

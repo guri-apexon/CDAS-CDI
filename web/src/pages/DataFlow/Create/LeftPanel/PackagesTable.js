@@ -72,8 +72,18 @@ const PackagesList = ({ data, userInfo }) => {
   const [expandedRows, setExpandedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
 
-  const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
-    dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
+  const addDataSet = (
+    dfId,
+    dfName,
+    dpId,
+    dpName,
+    dsId = null,
+    dsName = "",
+    path = null
+  ) => {
+    dispatch(
+      redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName, null, path)
+    );
     dispatch(updateDSState(true));
     history.push("/dashboard/dataset/new");
   };
@@ -89,7 +99,15 @@ const PackagesList = ({ data, userInfo }) => {
           <RoundPlusSvg
             className="add-dataset-btn"
             onClick={() =>
-              addDataSet(row.dataflowid, "", row.datapackageid, row.name)
+              addDataSet(
+                row.dataflowid,
+                "",
+                row.datapackageid,
+                row.name,
+                "",
+                "",
+                row.path
+              )
             }
           />
         </span>
@@ -97,8 +115,18 @@ const PackagesList = ({ data, userInfo }) => {
     );
   };
 
-  const goToDataSet = (dfId, dfName, dpId, dpName, dsId, dsName) => {
-    dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
+  const goToDataSet = (
+    dfId,
+    dfName,
+    dpId,
+    dpName,
+    dsId,
+    dsName,
+    path = null
+  ) => {
+    dispatch(
+      redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName, null, path)
+    );
     dispatch(updateDSState(false));
     history.push(`/dashboard/dataset/${dsId}`);
   };
@@ -121,7 +149,8 @@ const PackagesList = ({ data, userInfo }) => {
                   row.datapackageid,
                   row.name,
                   dataset.datasetid,
-                  dataset.mnemonic
+                  dataset.mnemonic,
+                  row.path
                 )
               }
             >
