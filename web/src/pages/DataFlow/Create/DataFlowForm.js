@@ -192,6 +192,7 @@ const DataFlowFormBase = (props) => {
               onChange={(v) => changeFormField(v, "dataflowType")}
               label="Data Flow Type"
               required
+              className="dataset-data-flow-type"
             >
               <Radio value="test" label="Test" />
               <Radio value="production" label="Production" />
