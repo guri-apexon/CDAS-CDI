@@ -1,14 +1,14 @@
-const dotenv = require("dotenv");
-dotenv.config();
 const compression = require("compression");
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
+const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const app = express();
+dotenv.config();
 const apiSecurity = require("./helpers/apiSecurity");
 const PORT = process.env.PORT;
 let dir = "./public/exports";
