@@ -10,6 +10,7 @@ import {
   checkfilterCondition,
   checkExecptSpace,
   checkMinLength,
+  checkFolderPath,
 } from "./validators";
 
 const dataSetsValidation = ({
@@ -28,6 +29,9 @@ const dataSetsValidation = ({
   filterCondition,
   tableName,
   offsetColumn,
+  sftpPathValue,
+  path,
+  folderPath,
 }) =>
   removeUndefined({
     datasetName:
@@ -53,6 +57,8 @@ const dataSetsValidation = ({
     filterCondition: checkfilterCondition(filterCondition),
     tableName: checkRequired(tableName),
     offsetColumn: checkRequired(offsetColumn),
+    path: checkFolderPath(path, sftpPathValue),
+    folderPath: checkFolderPath(folderPath, sftpPathValue),
   });
 
 export default dataSetsValidation;

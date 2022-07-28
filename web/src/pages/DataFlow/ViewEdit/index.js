@@ -178,6 +178,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
   };
   const submitForm = async () => {
     const protId = dashboard.selectedCard.prot_id;
+    const protocolnumberStandard =
+      dashboard.selectedCard.protocolnumberstandard;
     // console.log("FormValues", FormValues);
     if (
       FormValues?.vendors &&
@@ -206,7 +208,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
         serviceOwners: FormValues.serviceOwner?.length
           ? FormValues.serviceOwner
           : null,
-        protocolNumberStandard: protId,
+        protocolNumberStandard: protocolnumberStandard,
         externalSystemName: "CDI",
         dataflowId,
         userId: userInfo.userId,
