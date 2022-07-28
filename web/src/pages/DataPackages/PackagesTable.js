@@ -103,8 +103,18 @@ const PackagesList = ({ data, userInfo }) => {
     dispatch(updateDSStatus(false));
   }, []);
 
-  const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
-    dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
+  const addDataSet = (
+    dfId,
+    dfName,
+    dpId,
+    dpName,
+    dsId = null,
+    dsName = "",
+    path = null
+  ) => {
+    dispatch(
+      redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName, null, path)
+    );
     dispatch(updateDSState(true));
     dispatch(updateDSStatus(false));
     history.push("/dashboard/dataset/new");
@@ -126,7 +136,15 @@ const PackagesList = ({ data, userInfo }) => {
                 className="add-dataset-btn"
                 onClick={() =>
                   canUpdateDataFlow &&
-                  addDataSet(row.dataflowid, "", row.datapackageid, row.name)
+                  addDataSet(
+                    row.dataflowid,
+                    "",
+                    row.datapackageid,
+                    row.name,
+                    "",
+                    "",
+                    row.path
+                  )
                 }
               />
             </Tooltip>
@@ -136,8 +154,18 @@ const PackagesList = ({ data, userInfo }) => {
     );
   };
 
-  const goToDataSet = (dfId, dfName, dpId, dpName, dsId, dsName) => {
-    dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
+  const goToDataSet = (
+    dfId,
+    dfName,
+    dpId,
+    dpName,
+    dsId,
+    dsName,
+    path = null
+  ) => {
+    dispatch(
+      redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName, null, path)
+    );
     dispatch(updateDSState(false));
     history.push(`/dashboard/dataset/${dsId}`);
   };
@@ -162,7 +190,8 @@ const PackagesList = ({ data, userInfo }) => {
                     row.datapackageid,
                     row.name,
                     dataset.datasetid,
-                    dataset.mnemonic
+                    dataset.mnemonic,
+                    row.path
                   ))
               }
             >
