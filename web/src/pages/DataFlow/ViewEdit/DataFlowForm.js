@@ -418,6 +418,7 @@ const ReduxForm = compose(
   reduxForm({
     form: "DataFlowForm",
     validate,
+    enableReinitialize: true,
   }),
   connect((state) => ({ values: getFormValues("DataFlowForm")(state) }))
 )(DataFlowFormBase);

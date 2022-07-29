@@ -166,7 +166,7 @@ const DataFlowReducer = (state = initialState, action) =>
 
         // eslint-disable-next-line no-case-declarations
         const {
-          description,
+          description = "",
           exptfstprddt,
           loctyp,
           name,

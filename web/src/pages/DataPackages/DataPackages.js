@@ -309,6 +309,8 @@ const DataPackages = React.memo(() => {
     setShouldTriggerRedirect(false);
     const validated = validateFields(namingConvention, compression);
     setNotMatchedType(!validated);
+
+    setShouldTriggerRedirect(true);
     // check folder path field
     if (!sftpPath?.trim()) {
       setFolderPathValidation(true);
@@ -344,6 +346,7 @@ const DataPackages = React.memo(() => {
         handleAddedSuccess(result.message);
       } else {
         setAddedPackage(true);
+        setShouldTriggerRedirect(false);
       }
     } else {
       showErrorMessage(result.message);

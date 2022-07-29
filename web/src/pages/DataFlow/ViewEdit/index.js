@@ -216,6 +216,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
       };
       const result = await updateDataflow(payload);
       if (result?.status === 1) {
+        // fetch data flow details to update redux store
+        dispatch(getDataFlowDetail(dataflowId));
         messageContext.showSuccessMessage(result.message);
       } else {
         messageContext.showErrorMessage(
