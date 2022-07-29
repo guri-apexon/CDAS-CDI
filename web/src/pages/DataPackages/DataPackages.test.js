@@ -17,7 +17,7 @@ const initialState = {
   connLink: "",
   description: "",
   DataPackagesType: "test",
-  dataStructure: "tabular",
+  dataStructure: "Tabular",
   locationType: "SFTP",
   selectedVendor: {},
 };

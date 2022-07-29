@@ -40,7 +40,7 @@ export const initialState = {
   error: null,
   success: null,
   locForm: {
-    dataStructure: "tabular",
+    dataStructure: "Tabular",
     locationType: "SFTP",
     active: true,
   },

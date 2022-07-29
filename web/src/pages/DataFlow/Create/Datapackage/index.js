@@ -113,7 +113,7 @@ const DataPackage = (
     if (tabularSod) {
       setConfigShow(true);
       setDisabled(true);
-      setCompression("zip");
+      setCompression("ZIP");
       setSodValue("Regular");
     } else {
       setConfigShow(false);
@@ -183,7 +183,7 @@ const DataPackage = (
                   helperText={
                     tabularSod
                       ? "File extension must match package compression type e.g. zip"
-                      : "File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
+                      : "File extension must match package compression type e.g. 7z, zip, rar, or xpt"
                   }
                   onChange={(e) => {
                     setNotMatchedType(

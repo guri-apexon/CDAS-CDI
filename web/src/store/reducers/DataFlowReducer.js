@@ -38,7 +38,7 @@ export const initialState = {
   connLink: "",
   description: "",
   dataflowType: "test",
-  dataStructure: "tabular",
+  dataStructure: "Tabular",
   selectedVendor: {},
   dataFlowdetail: {},
   testProdLock: false,
