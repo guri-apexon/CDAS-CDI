@@ -294,15 +294,17 @@ const Dataset = () => {
   useEffect(() => {
     setValue(0);
     //   setColumnsActive(false);
+    if (createMode) {
+      dispatch(resetJDBC());
+    }
   }, [params]);
 
   useEffect(() => {
     if (datasetid === null || datasetid === "new") {
       dispatch(resetFTP());
-      dispatch(resetJDBC());
     } else {
       dispatch(getDataSetDetail(datasetid, dfId, dpId));
-      dispatch(getDatasetColumns(datasetid));
+      if (isSftp(locationType)) dispatch(getDatasetColumns(datasetid));
       dispatch(getVLCData(datasetid));
     }
   }, [datasetid, dsCreatedSuccessfully]);
