@@ -243,7 +243,10 @@ const LeftPanel = () => {
               icon={<PlusIcon />}
               size="small"
               onClick={redirectDataPackage}
-              disabled={!isSftp(locationType) || !canUpdateDataFlow}
+              disabled={
+                !isSftp(locationType) ||
+                (isSftp(locationType) && !canUpdateDataFlow)
+              }
             >
               Add data package
             </Button>

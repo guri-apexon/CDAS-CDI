@@ -17,7 +17,7 @@ import IconMenuButton from "apollo-react/components/IconMenuButton";
 import Tooltip from "apollo-react/components/Tooltip";
 import { ReactComponent as DataFlowIcon } from "../../Icons/dataflow.svg";
 import PackagesList from "../../../pages/DataPackages/PackagesTable";
-import { getUserInfo, debounceFunction } from "../../../utils";
+import { getUserInfo, debounceFunction, isSftp } from "../../../utils";
 import {
   getPackagesList,
   addPackageBtnAction,
@@ -89,6 +89,7 @@ const LeftPanel = () => {
 
   const dashboard = useSelector((state) => state.dashboard);
   const { prot_id: protId } = dashboard?.selectedCard;
+  const { locationType } = dashboard?.selectedDataFlow;
 
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
     useStudyPermission(
@@ -213,7 +214,10 @@ const LeftPanel = () => {
               icon={<PlusIcon />}
               size="small"
               onClick={redirectDataPackage}
-              disabled={!canUpdateDataFlow}
+              disabled={
+                !isSftp(locationType) ||
+                (isSftp(locationType) && !canUpdateDataFlow)
+              }
             >
               Add data package
             </Button>

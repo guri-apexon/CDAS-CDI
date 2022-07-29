@@ -385,11 +385,11 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
       return apiResponse.ErrorResponse(res, "Something went wrong on update");
     }
 
-    // if (oldData.tbl_nm != tableName) {
-    //   await DB.executeQuery(
-    //     `DELETE from ${schemaName}.columndefinition where datasetid = '${datasetid}';`
-    //   );
-    // }
+    if (oldData.tbl_nm != tableName) {
+      await DB.executeQuery(
+        `DELETE from ${schemaName}.columndefinition where datasetid = '${datasetid}';`
+      );
+    }
     const diffObj = helper.getdiffKeys(requestData, oldData);
 
     var idObj = {

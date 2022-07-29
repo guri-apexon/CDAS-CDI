@@ -1,7 +1,7 @@
 /* eslint-disable react/button-has-type */
 import React, { useEffect, useRef, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { useLocation } from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
 import Panel from "apollo-react/components/Panel";
 import Typography from "apollo-react/components/Typography";
 import Tab from "apollo-react/components/Tab";
@@ -21,6 +21,7 @@ import "./Dashboard.scss";
 import DataflowTab from "./DataflowTab/DataflowTab";
 import MonitorTab from "./MonitorTab/MonitorTab";
 import { freezeDfVersion } from "../../store/actions/DataFlowAction";
+import { resetFTP, resetJDBC } from "../../store/actions/DataSetsAction";
 
 const queryString = require("query-string");
 
@@ -56,6 +57,7 @@ const styles = {
 };
 
 const Dashboard = () => {
+  const history = useHistory();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(1);
   const mainContentRef = useRef(null);
@@ -125,6 +127,14 @@ const Dashboard = () => {
   //   setHeight();
   //   // }
   // }, [value]);
+  useEffect(() => {
+    history.listen((loc, action) => {
+      if (loc.pathname === "/dashboard") {
+        dispatch(resetJDBC());
+        dispatch(resetFTP());
+      }
+    });
+  }, [history]);
 
   useEffect(() => {
     dispatch(freezeDfVersion(false));
