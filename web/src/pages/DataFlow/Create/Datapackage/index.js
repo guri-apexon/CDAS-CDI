@@ -112,7 +112,6 @@ const DataPackage = (
   useEffect(() => {
     if (tabularSod) {
       setConfigShow(true);
-      setDisabled(true);
       setCompression("ZIP");
       setSodValue("Regular");
     } else {
@@ -120,7 +119,7 @@ const DataPackage = (
       setDisabled(false);
       setCompression("");
     }
-    setDisabled(locType && !isSftp(locType));
+    setDisabled(tabularSod || (locType && !isSftp(locType)));
   }, [locType, tabularSod]);
   return (
     <div className="data-packages">
