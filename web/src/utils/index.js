@@ -537,7 +537,7 @@ export const createSourceFromKey = (tableRows, key) => {
 
 export const dataStruct = [
   {
-    value: "tabular",
+    value: "Tabular",
     label: "Tabular",
   },
   {
@@ -685,8 +685,8 @@ export const isSftp = (str = "") => {
 export const validateFields = (name, ext) => {
   if (!name || !ext) return false;
   const fileExt = name.split(".").pop();
-  if (ext === "sas") ext = "xpt";
-  if (ext === fileExt.toLowerCase()) {
+  if (ext?.toLowerCase() === "sas") ext = "xpt";
+  if (ext?.toLowerCase() === fileExt.toLowerCase()) {
     return true;
   }
   return false;
