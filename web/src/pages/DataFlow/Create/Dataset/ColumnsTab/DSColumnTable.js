@@ -57,7 +57,7 @@ export default function DSColumnTable({
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
   const [editedRows, setEditedRows] = useState([
-    { uniqueId: getUniqueId(), ...columnObj },
+    { index: 0, uniqueId: getUniqueId(), ...columnObj },
   ]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState("");
@@ -202,7 +202,7 @@ export default function DSColumnTable({
 
     const newRowData = _.orderBy(
       [...removeExistingRowData, ...newData],
-      ["uniqueId"],
+      ["index"],
       ["asc"]
     );
     setRows([...newRowData]);
@@ -238,11 +238,17 @@ export default function DSColumnTable({
     setFilteredRows([...filteredRowsTemp]);
   };
 
+  const getMaxIndex = () => {
+    if (!rows.length) return 0;
+    return Math.max(...rows.map((e) => e.index));
+  };
+
   const addSingleRow = () => {
     if (rows.length < 500) {
       const uniqueId = getUniqueId();
       const singleRow = [
         {
+          index: getMaxIndex() + 1,
           uniqueId,
           ...columnObj,
         },
@@ -267,6 +273,7 @@ export default function DSColumnTable({
     setIsMultiAdd(false);
     if (newRows > 0) {
       const multiRows = Array.from({ length: newRows }, (i, index) => ({
+        index: getMaxIndex() + index + 1,
         uniqueId: getUniqueId(),
         ...columnObj,
       }));
@@ -316,7 +323,7 @@ export default function DSColumnTable({
   const columnsToAdd = [
     {
       header: "",
-      accessor: "uniqueId",
+      accessor: "index",
       customCell: LinkCell,
     },
   ];
@@ -389,7 +396,7 @@ export default function DSColumnTable({
       return false;
     }
 
-    const newData = _.orderBy([...removeSpaces], ["uniqueId"], ["asc"]);
+    const newData = _.orderBy([...removeSpaces], ["index"], ["asc"]);
     setSelectedRows([]);
     setRows([...newData]);
     setEditedRows([...newData]);
@@ -467,7 +474,7 @@ export default function DSColumnTable({
 
     const newData = _.orderBy(
       [...removeExistingRowData, editedRowData],
-      ["uniqueId"],
+      ["index"],
       ["asc"]
     );
     setRows([...newData]);
@@ -590,7 +597,7 @@ export default function DSColumnTable({
       setSelectedRows([...initRows]);
     } else if (dataOrigin === "manually") {
       setSelectedRows([initUniqueId]);
-      setEditedRows([{ uniqueId: initUniqueId, ...columnObj }]);
+      setEditedRows([{ index: 0, uniqueId: initUniqueId, ...columnObj }]);
     }
     if (previewSQL?.length) {
       addMulti(previewSQL);
@@ -615,9 +622,9 @@ export default function DSColumnTable({
               : `${rows.length} dataset column`
           }`}
           columns={moreColumns}
-          initialSortedColumn="uniqueId"
+          initialSortedColumn="index"
           initialSortOrder="asc"
-          rowId="uniqueId"
+          rowId="index"
           hasScroll={true}
           rows={(editMode ? editedRows : filteredRows).map((row, i) => ({
             ...row,

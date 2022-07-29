@@ -312,7 +312,7 @@ export const columns = [
     customCell: Cell,
   },
   {
-    accessor: "uniqueId",
+    accessor: "index",
     hidden: true,
     sortFunction: compareNumbers,
   },
