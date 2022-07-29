@@ -495,7 +495,11 @@ export default function DSColumnTable({
     setFilteredRows([...newData]);
     setRows([...newData]);
     setEditedRows(newData);
-    const unsavedRows = newData
+    const rowsUniqueIds = rows.map((e) => e.uniqueId);
+    const unsavedRows = [
+      ...rows,
+      ...newData.filter((e) => !rowsUniqueIds.includes(e.uniqueId)),
+    ]
       .filter((e) => (e?.isSaved ? false : true))
       .map((e, i) => e.uniqueId);
     setSelectedRows([...unsavedRows]);
