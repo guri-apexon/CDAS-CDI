@@ -168,7 +168,7 @@ const DataFlowFormBase = (props) => {
   }, [initialValues, vendors, locations]);
 
   useEffect(() => {
-    setLocationDetail(selectedLocation || null);
+    if (selectedLocation.value) setLocationDetail(selectedLocation || null);
   }, [selectedLocation]);
 
   useEffect(() => {
@@ -328,6 +328,7 @@ const DataFlowFormBase = (props) => {
                       className="autocomplete_field"
                       variant="search"
                       singleSelect
+                      canDeselect={false}
                       fullWidth
                     />
                   )}

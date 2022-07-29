@@ -100,15 +100,19 @@ const DataFlow = ({ FormValues, dashboard }) => {
     },
   ];
 
-  const changeLocationData = (value) => {
-    // console.log("location", value);
-    if (selectedLocation && value?.value === selectedLocation.value) return;
+  const changeLocationData = (obj) => {
+    if (
+      selectedLocation &&
+      obj?.value &&
+      obj?.value === selectedLocation?.value
+    )
+      return;
     // const locationsRec = dataFlowData.locations?.records ?? [];
     // const location = locationsRec?.find(
     //   // eslint-disable-next-line eqeqeq
     //   (loc) => value == loc.src_loc_id
     // );
-    dispatch(updateSelectedLocation(value));
+    dispatch(updateSelectedLocation(obj || {}));
   };
 
   const pullVendorandLocation = () => {
@@ -292,6 +296,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
                 password={selectedLocation?.pswd}
                 connLink={selectedLocation?.cnn_url}
                 firstFileDate={ffDate}
+                selectedLocation={selectedLocation}
                 changeFirstFlDt={changeFirstFlDt}
               />
             </div>
