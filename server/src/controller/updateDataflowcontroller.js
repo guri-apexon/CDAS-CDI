@@ -63,7 +63,7 @@ const packageLevelInsert = async (
             },
           ];
           if (
-            data.type === "7Z" ||
+            data.type == "7Z" ||
             data.type == "ZIP" ||
             data.type == "RAR" ||
             data.type == "SAS"
@@ -1846,7 +1846,7 @@ const packageUpdate = async (
             typeof data[key] === "string"
           ) {
             if (
-              data[key] === "7Z" ||
+              data[key] == "7Z" ||
               data[key] == "ZIP" ||
               data[key] == "RAR" ||
               data[key] == "SAS"
@@ -1878,7 +1878,7 @@ const packageUpdate = async (
           ) {
           } else {
             if (
-              data[key] === "7Z" ||
+              data[key] == "7Z" ||
               data[key] == "ZIP" ||
               data[key] == "RAR" ||
               data[key] == "SAS"

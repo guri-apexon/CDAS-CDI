@@ -348,7 +348,7 @@ const LocationModal = (props) => {
   };
   if (!props.locationEditMode && !props.locationViewMode) {
     dispatch(change("AddLocationForm", "active", true));
-    dispatch(change("AddLocationForm", "dataStructure", "tabular"));
+    dispatch(change("AddLocationForm", "dataStructure", "Tabular"));
     // dispatch(change("AddLocationForm", "locationType", "SFTP"));
   }
   const generateUrl = (locType, selectedHost, selectedPort, selectedDB) => {
