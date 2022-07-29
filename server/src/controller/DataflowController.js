@@ -784,7 +784,7 @@ exports.updateDataFlow = async (req, res) => {
       !ExternalId &&
       dataPackage &&
       Array.isArray(dataPackage) &&
-      helper.isSftp(locationType)
+      (helper.isSftp(connectionType) || helper.isSftp(locationType))
     ) {
       const errorPackage = [];
 
@@ -1933,7 +1933,7 @@ exports.fetchdataflowDetails = async (req, res) => {
           for (let obj of response) {
             if (obj.datasetid === el.datasetid) {
               let columnObj = {
-                name: obj.name,
+                columnName: obj.name,
                 dataType: obj.datatype,
                 primaryKey: obj.primarykey,
                 required: obj.required,

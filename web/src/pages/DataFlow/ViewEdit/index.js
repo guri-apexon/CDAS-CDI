@@ -102,9 +102,10 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   const changeLocationData = (obj) => {
     if (
-      selectedLocation &&
-      obj?.value &&
-      obj?.value === selectedLocation?.value
+      (selectedLocation &&
+        obj?.value &&
+        obj?.value === selectedLocation?.value) ||
+      !obj?.value
     )
       return;
     // const locationsRec = dataFlowData.locations?.records ?? [];
@@ -220,6 +221,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
       };
       const result = await updateDataflow(payload);
       if (result?.status === 1) {
+        // fetch data flow details to update redux store
+        dispatch(getDataFlowDetail(dataflowId));
         messageContext.showSuccessMessage(result.message);
       } else {
         messageContext.showErrorMessage(

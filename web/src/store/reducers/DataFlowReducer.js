@@ -38,7 +38,7 @@ export const initialState = {
   connLink: "",
   description: "",
   dataflowType: "test",
-  dataStructure: "tabular",
+  dataStructure: "Tabular",
   selectedVendor: {},
   dataFlowdetail: {},
   testProdLock: false,
@@ -166,7 +166,7 @@ const DataFlowReducer = (state = initialState, action) =>
 
         // eslint-disable-next-line no-case-declarations
         const {
-          description,
+          description = "",
           exptfstprddt,
           loctyp,
           name,
