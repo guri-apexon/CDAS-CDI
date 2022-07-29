@@ -441,17 +441,13 @@ exports.searchStudyList = function (req, res) {
 exports.getDatasetIngestionDashboardDetail = async function (req, res) {
   try {
     const prot_id = req.params.protocolNumber;
-    let where = "";
-    let datasetwhere = "";
+    let searchCondition = " and df.testflag in (1, 0)";
     let queryCondition = " and df.testflag in (1, 0)";
     const testFlag = req.query.testFlag || null;
     const active = req.query.active || null;
     if (testFlag == 1 || testFlag == 0) {
-      where += ` and sms.testdataflow in (${testFlag}) `;
+      searchCondition = ` and df.testflag in (${testFlag}) `;
       queryCondition = ` and df.testflag in (${testFlag})`;
-    }
-    if (active == 1 || active == 0) {
-      datasetwhere += ` and sms.activedataset in (${active}) `;
     }
     Logger.info({
       message: "getDatasetIngestionDashboardDetail",
@@ -729,7 +725,225 @@ from(
   ) A group by prot_id;`;
     const summaryCount = await DB.executeQuery(countQuery, [prot_id]);
 
-    const searchQuery = `select quarantinedfiles as quarantined_files, lastattempted, datarefreshalerts as data_refresh_alerts, datalatencywarnings as data_latency_warnings, exceeds_pct_cng, sms.prot_id,df.name as dataflow_name,downloadstatus,downloadendtime,processstatus,processendtime,datasetid,datasetname,vendorsource,jobstatus,filename,datasetstatus,exceeds_pct_cng,lastfiletransferred,packagename,mnemonicfile,clinicaldatatypename,loadtype,downloadtrnx,processtrnx,offset_val,errmsg, s.prot_nbr as prot_nbr  from ${schemaName}.study_monitor_summary sms left join ${schemaName}.study s on sms.prot_id = s.prot_id left join ${schemaName}.dataflow df on sms.dataflowid = df.dataflowid where sms.prot_id = $1 ${where} ${datasetwhere}`;
+    const searchQuery = `select quarantinedfiles as quarantined_files, lastattempted, datarefreshalerts as data_refresh_alerts, 
+    datalatencywarnings as data_latency_warnings, exceeds_pct_cng, prot_id,dfname as dataflow_name,downloadstatus,
+    downloadendtime,processstatus,processendtime,datasetid,datasetname,vendorsource,jobstatus,filename,datasetstatus,
+    exceeds_pct_cng,lastfiletransferred,packagename,mnemonicfile,
+    clinicaldatatypename,loadtype,downloadtrnx,processtrnx,offset_val,errmsg, prot_nbr from (
+    WITH activedf AS (
+             SELECT dataflow.prot_id,
+                dataflow.dataflowid,dataflow."name" as dfname
+               FROM dataflow
+              WHERE COALESCE(dataflow.active, 0) = 1 AND COALESCE(dataflow.del_flg, 0) = 0 and dataflow.prot_id =$1
+            ), ctetrnx AS (
+             SELECT x.prot_id,
+                x.dataflowid,
+                x.datapackageid,
+                x.datasetid,
+                x.executionid,
+                x.externalid,
+                x.downloadtrnx,
+                x.previous_downloadtrnx,
+                    CASE
+                        WHEN x.previous_downloadtrnx = 0 THEN 0::numeric
+                        ELSE round((x.downloadtrnx - x.previous_downloadtrnx)::numeric / x.previous_downloadtrnx::numeric * 100::numeric, 2)
+                    END AS pct_cng,
+                x.latest
+               FROM ( SELECT ts1_latest.prot_id,
+                        ts1_latest.dataflowid,
+                        ts1_latest.datapackageid,
+                        ts1_latest.datasetid,
+                        ts1_latest.executionid,
+                        ts1_latest.externalid,
+                        ts1_latest.downloadtrnx,
+                        ts1_latest.latest,
+                        lead(ts1_latest.downloadtrnx, 1, 0) OVER (PARTITION BY ts1_latest.dataflowid, ts1_latest.datapackageid, ts1_latest.datasetid ORDER BY ts1_latest.latest) AS previous_downloadtrnx
+                       FROM ( SELECT prot.prot_id,
+                                prot.dataflowid,
+                                ts_1.datapackageid,
+                                ts_1.datasetid,
+                                ts_1.executionid,
+                                ts_1.externalid,
+                                COALESCE(ts_1.downloadtrnx, 0) AS downloadtrnx,
+                                row_number() OVER (PARTITION BY ts_1.dataflowid, ts_1.datapackageid, ts_1.datasetid ORDER BY ts_1.externalid DESC) AS latest
+                               FROM activedf prot
+                                 LEFT JOIN transaction_summary ts_1 ON prot.dataflowid::text = ts_1.dataflowid::text) ts1_latest
+                      WHERE ts1_latest.latest <= 2) x
+              WHERE x.latest = 1
+            ), checksum AS (
+             SELECT src.dataflowid,
+                src.datapackageid,
+                src.executionid,
+                src.lastmodifiedtime,
+                src.latest,
+                src.no_of_staledays,
+                src.lastmodifiedtime AS file_timestamp
+               FROM ( SELECT dc2.dataflowid,
+                        dc2.datapackageid,
+                        dc2.executionid,
+                        dc2.lastmodifiedtime,
+                        row_number() OVER (PARTITION BY dc2.dataflowid, dc2.datapackageid, dc2.executionid ORDER BY dc2.lastmodifiedtime DESC) AS latest,
+                            CASE
+                                WHEN CURRENT_TIMESTAMP > to_timestamp((dc2.lastmodifiedtime::numeric / 1000::numeric)::double precision) THEN date_part('day'::text, CURRENT_TIMESTAMP - to_timestamp((dc2.lastmodifiedtime::numeric / 1000::numeric)::double precision))
+                                ELSE '-1'::integer::double precision
+                            END AS no_of_staledays
+                       FROM datapackage_checksum dc2
+                         JOIN ctetrnx ctetrnx_1 ON ctetrnx_1.dataflowid::text = dc2.dataflowid::text AND ctetrnx_1.datapackageid::text = dc2.datapackageid::text AND ctetrnx_1.executionid::text = dc2.executionid::text
+                      ORDER BY dc2.lastmodifiedtime DESC) src
+              WHERE src.latest = 1
+            ), columndef AS (
+             SELECT count(c.columnid) AS columncount,
+                c.datasetid
+               FROM columndefinition c
+                 JOIN ctetrnx ctetrnx_1 ON ctetrnx_1.datasetid::text = c.datasetid::text
+              GROUP BY c.datasetid
+            )
+     SELECT DISTINCT ctetrnx.externalid,
+        ctetrnx.executionid,
+        df.prot_id,
+        df.dataflowid,
+        df."name" as dfname,
+        s.prot_nbr ,
+        dp.datapackageid,
+        ds.datasetid,
+        ctetrnx.downloadtrnx,
+        ctetrnx.previous_downloadtrnx,
+        COALESCE(ts.datasettype, ds.type) AS dataset_type,
+        ds.mnemonic AS datasetname,
+        df.type AS datastructure,
+        dp.type AS pacakagetype,
+        dp.path AS packagepath,
+        ts.datapackagename AS packagenamingconvention,
+        ds.datakindid AS clinicaldatatypeid,
+        dk.name AS clinicaldatatypename,
+        df.vend_id AS vendorsourceid,
+        vn1.vend_nm AS vendorsource,
+        ds.type AS filetype,
+        ds.path AS filepath,
+        ts.datasetname AS filenamingconvention,
+        ds.rowdecreaseallowed,
+        df.testflag AS testdataflow,
+        ds.staledays AS overridestalealert,
+        ts.mnemonicfile,
+        ts.processtype,
+            CASE
+                WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'FAILED'::text AND (ts.failurecat::text = 'QC FAILURE'::text OR ts.failurecat::text = 'QUARANTINED'::text) THEN 'QUARANTINED'::character varying
+                WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text THEN ts.downloadstatus
+                ELSE 'FAILED'::character varying
+            END AS downloadstatus,
+        ts.downloadstarttime,
+        ts.downloadendtime,
+            CASE
+                WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'FAILED'::text AND (ts.failurecat::text = 'QC FAILURE'::text OR ts.failurecat::text = 'QUARANTINED'::text) THEN NULL::character varying
+                WHEN ts.downloadstatus::text = 'FAILED'::text THEN NULL::character varying
+                WHEN ts.processstatus::text = ANY (ARRAY['SUCCESSFUL'::character varying, 'IN PROGRESS'::character varying, 'PROCESSED WITH ERRORS'::character varying]::text[]) THEN ts.processstatus
+                ELSE 'FAILED'::character varying
+            END AS processstatus,
+        ts.processstarttime,
+        ts.processendtime,
+        ts.processtrnx,
+        ts.lastsucceeded,
+        ts.lastattempted,
+        ts.failurecat,
+        ts.refreshtimestamp,
+        ds.offsetcolumn,
+        ds.offset_val,
+        COALESCE(ds.active, 0) AS activedataset,
+        cps.status AS childstatus,
+        cps.errmsg,
+            CASE
+                WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'SUCCESSFUL'::text THEN 'SUCCESSFUL'::text
+                WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'PROCESSED WITH ERRORS'::text THEN 'PROCESSED WITH ERRORS'::text
+                WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'IN PROGRESS'::text THEN 'IN PROGRESS'::text
+                WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'FAILED'::text AND (ts.failurecat::text = 'QC FAILURE'::text OR ts.failurecat::text = 'QUARANTINED'::text) THEN 'QUARANTINED'::text
+                WHEN ts.downloadstatus::text = 'FAILED'::text AND ts.processstatus::text = ''::text THEN 'FAILED'::text
+                ELSE 'FAILED'::text
+            END AS datasetstatus,
+            CASE
+                WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'PROCESSED WITH ERRORS'::text THEN ds.datasetid::text
+                ELSE NULL::text
+            END AS fileswithingestionissues,
+            CASE
+                WHEN dc.no_of_staledays > ds.staledays::double precision THEN 'STALE'::text
+                WHEN ds.active = 0 THEN 'INACTIVE'::text
+                WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'SUCCESSFUL'::text THEN 'UP-TO-DATE'::text
+                WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'PROCESSED WITH ERRORS'::text THEN 'UP-TO-DATE'::text
+                WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'IN PROGRESS'::text THEN 'PROCESSING'::text
+                WHEN ts.downloadstatus::text = 'IN PROGRESS'::text AND ts.processstatus::text = ''::text THEN 'PROCESSING'::text
+                WHEN ts.downloadstatus::text = 'QUEUED'::text AND ts.processstatus::text = ''::text THEN 'QUEUED'::text
+                WHEN ts.downloadstatus::text = 'QUEUED'::text AND ts.processstatus::text = 'SUCCESSFUL'::text THEN 'UP-TO-DATE'::text
+                WHEN ts.downloadstatus::text = 'IN PROGRESS'::text OR ts.processstatus::text = 'IN PROGRESS'::text THEN 'PROCESSING'::text
+                WHEN ts.downloadstatus::text = 'SKIPPED'::text OR ts.processstatus::text = 'SKIPPED'::text THEN 'SKIPPED'::text
+                WHEN ts.downloadstatus::text = 'FAILED'::text OR ts.processstatus::text = 'FAILED'::text THEN 'FAILED'::text
+                ELSE NULL::text
+            END AS jobstatus,
+        ctetrnx.pct_cng,
+            CASE
+                WHEN ctetrnx.pct_cng < 0::numeric AND ctetrnx.pct_cng < (- ds.rowdecreaseallowed::numeric) THEN ctetrnx.pct_cng
+                ELSE NULL::integer::numeric
+            END AS exceeds_pct_cng,
+            CASE
+                WHEN dc.no_of_staledays > ds.staledays::double precision THEN 1
+                ELSE NULL::integer
+            END AS is_stale,
+            CASE
+                WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'FAILED'::text AND (ts.failurecat::text = 'QC FAILURE'::text OR ts.failurecat::text = 'QUARANTINED'::text) THEN 1
+                ELSE 0
+            END AS quarantinedfiles,
+            CASE
+                WHEN ts.downloadstatus::text = 'FAILED'::text OR ts.processstatus::text = 'FAILED'::text THEN 'FAILED'::text
+                ELSE NULL::text
+            END AS failedloads,
+        dc.file_timestamp,
+        dc.no_of_staledays,
+        ts.lastsucceeded AS lastfiletransferred,
+        ts.datapackagename AS packagename,
+            CASE
+                WHEN sl.loc_typ::text <> ALL (ARRAY['SFTP'::character varying::text, 'FTPS'::character varying::text]) THEN ds.name
+                ELSE ts.datasetname
+            END AS filename,
+            CASE
+                WHEN ds.incremental = 'true'::bpchar OR ds.incremental = 'Y'::bpchar OR columndef.columncount > 0 THEN 'Incremental'::text
+                ELSE 'Full'::text
+            END AS loadtype,
+            CASE
+                WHEN ts.downloadstatus::text = 'QUEUED'::text AND (ts.processstatus::text = ''::text OR ts.processstatus IS NULL) THEN 1
+                ELSE 0
+            END AS inqueue,
+            CASE
+                WHEN ts.downloadstatus::text = 'FAILED'::text OR ts.processstatus::text = 'FAILED'::text THEN 1
+                ELSE 0
+            END AS datarefreshalerts,
+            CASE
+                WHEN (date_part('epoch'::text, ts.processendtime - ts.processstarttime) / 3600::double precision) > 3::double precision THEN 1
+                ELSE 0
+            END AS datalatencywarnings
+       FROM activedf p
+       join cdascfg.study s on (p.prot_id=s.prot_id and S.prot_id =$1)
+         JOIN dataflow df ON df.dataflowid::text = p.dataflowid::text
+         JOIN datapackage dp ON df.dataflowid::text = dp.dataflowid::text
+         JOIN dataset ds ON dp.datapackageid::text = ds.datapackageid::text
+         LEFT JOIN datakind dk ON dk.datakindid::text = ds.datakindid::text
+         LEFT JOIN vendor vn1 ON vn1.vend_id::text = df.vend_id::text
+         LEFT JOIN ctetrnx ON ctetrnx.dataflowid::text = df.dataflowid::text AND ctetrnx.datapackageid::text = dp.datapackageid::text AND ctetrnx.datasetid::text = ds.datasetid::text
+         LEFT JOIN transaction_summary ts ON ctetrnx.executionid::text = ts.executionid::text AND ctetrnx.externalid = ts.externalid AND ctetrnx.dataflowid::text = ts.dataflowid::text AND ctetrnx.datapackageid::text = ts.datapackageid::text AND ctetrnx.datasetid::text = ts.datasetid::text
+         LEFT JOIN checksum dc ON ctetrnx.executionid::text = dc.executionid::text AND ctetrnx.dataflowid::text = dc.dataflowid::text AND ctetrnx.datapackageid::text = dc.datapackageid::text
+         LEFT JOIN source_location sl ON df.dataflowid::text = sl.src_loc_id::text
+         LEFT JOIN columndef ON ctetrnx.datasetid::text = columndef.datasetid::text
+         LEFT JOIN ( SELECT c.externalid,
+                c.name,
+                c.status,
+                c.refreshtimestamp,
+                c.errmsg
+               FROM ( SELECT child_processes_summary.externalid,
+                        child_processes_summary.name,
+                        child_processes_summary.status,
+                        child_processes_summary.refreshtimestamp,
+                        child_processes_summary.errmsg,
+                        row_number() OVER (PARTITION BY child_processes_summary.externalid ORDER BY (COALESCE(child_processes_summary.errmsg, ''::character varying)) DESC, child_processes_summary.refreshtimestamp DESC) AS rnk
+                       FROM child_processes_summary) c
+              WHERE c.rnk = 1) cps ON ctetrnx.externalid = cps.externalid
+      WHERE (ts.processtype::text = 'SYNC'::text OR ds.active = 1) ${searchCondition}) s`;
     DB.executeQuery(searchQuery, [prot_id]).then((response) => {
       const datasets = response.rows || [];
       const summary = summaryCount.rows ? summaryCount.rows[0] : {};
