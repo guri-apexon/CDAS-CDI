@@ -924,7 +924,9 @@ exports.updateDataFlow = async (req, res) => {
             }
 
             if (res && res.sucRes) {
-              isSomthingUpdate = true;
+              // console.log("res.sucRes", res.sucRes);
+              (ResponseBody.dataFlowName = res.sucRes.name),
+                (isSomthingUpdate = true);
             }
           });
 

@@ -1079,19 +1079,19 @@ exports.insertValidation = async (req) => {
               if (obj.customsql_yn) {
                 if (obj.customsql_yn.toLowerCase() == "yes") {
                   if (!obj.customsql) {
-                    dsErrArray.push("customsql is required ");
+                    dsErrArray.push("customsql is required");
                   } else {
                     if (obj.customsql.length >= 131072) {
-                      dsErrArray.push("customsql max of 131072 characters  ");
+                      dsErrArray.push("customsql max of 131072 characters");
                     }
                   }
                 }
                 if (obj.customsql_yn.toLowerCase() == "no") {
                   if (!obj.tbl_nm) {
-                    dsErrArray.push("tbl_nm is required ");
+                    dsErrArray.push("tbl_nm is required");
                   } else {
                     if (obj.tbl_nm.length >= 255) {
-                      dsErrArray.push("tbl_nm max of 255 characters  ");
+                      dsErrArray.push("tbl_nm max of 255 characters");
                     }
                   }
                   if (helper.stringToBoolean(obj.incremental)) {
@@ -3034,9 +3034,16 @@ exports.dataflowUpdate = async (
     }
 
     var DFTestname = `${vName}-${ptNum}-${desc}`;
-    var testFlag = helper.stringToBoolean(data.testFlag);
+    var testFlag = dataflowData.rows[0].testflag;
 
-    if (testFlag === true) {
+    if (data.testFlag) {
+      testFlag = helper.stringToBoolean(data.testFlag);
+    }
+    if (data.testFlag === 0) {
+      testFlag = helper.stringToBoolean(data.testFlag);
+    }
+
+    if (helper.stringToBoolean(testFlag)) {
       DFTestname = "TST-" + DFTestname;
     }
 
@@ -3083,7 +3090,13 @@ exports.dataflowUpdate = async (
     if (data.locationID) {
       updateQueryDF += ` ,src_loc_id= '${data.locationID}'`;
     }
-    if (data.protocolNumberStandard || data.description || data.vendorid) {
+    if (
+      data.protocolNumberStandard ||
+      data.description ||
+      data.vendorid ||
+      helper.stringToBoolean(data.testFlag) ||
+      !helper.stringToBoolean(data.testFlag)
+    ) {
       updateQueryDF += `,name='${DFTestname}'`;
     }
     if (data.serviceOwners) {
@@ -3145,6 +3158,7 @@ exports.dataflowUpdate = async (
     } else {
       newDfobj.ExternalId = externalID;
       newDfobj.ID = DFId;
+      newDfobj.name = dataflowObj.name;
       // newDfobj.action = "Dataflow update successfully.";
       // newDfobj.timestamp = ts;
       // dataflow.push(newDfobj);
