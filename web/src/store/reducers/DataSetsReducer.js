@@ -79,6 +79,7 @@ export const initialState = {
   isDatasetCreated: false,
   isColumnsConfigured: false,
   datasetColumns: [],
+  datasetColumnsTemp: [],
   formDataSQL: {
     ...defaultDataSQL,
   },

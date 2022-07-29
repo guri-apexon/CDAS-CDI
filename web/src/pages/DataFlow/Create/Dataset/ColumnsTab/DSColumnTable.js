@@ -21,6 +21,7 @@ import {
 } from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
 import { validateRow } from "../../../../../components/FormComponents/validators";
+import { columnsCreatedTemp } from "../../../../../store/actions/DataSetsAction";
 
 const maxSize = 150000;
 
@@ -31,6 +32,7 @@ export default function DSColumnTable({
   headerValue,
   myForm,
 }) {
+  const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
@@ -47,10 +49,15 @@ export default function DSColumnTable({
     tbl_nm: tableName,
   } = selectedDataset;
 
+  const getUniqueId = () => {
+    return Math.random().toString(36).slice(2);
+  };
+  const initUniqueId = getUniqueId();
+
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
   const [editedRows, setEditedRows] = useState([
-    { uniqueId: `u0`, ...columnObj },
+    { uniqueId: getUniqueId(), ...columnObj },
   ]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState("");
@@ -233,13 +240,14 @@ export default function DSColumnTable({
 
   const addSingleRow = () => {
     if (rows.length < 500) {
+      const uniqueId = getUniqueId();
       const singleRow = [
         {
-          uniqueId: `u${rows.length}`,
+          uniqueId,
           ...columnObj,
         },
       ];
-      setSelectedRows([...selectedRows, `u${rows.length}`]);
+      setSelectedRows([...selectedRows, uniqueId]);
       setEditedRows([...rows, ...singleRow]);
     } else {
       messageContext.showErrorMessage(`Not allowed more than 500 columns`);
@@ -259,7 +267,7 @@ export default function DSColumnTable({
     setIsMultiAdd(false);
     if (newRows > 0) {
       const multiRows = Array.from({ length: newRows }, (i, index) => ({
-        uniqueId: `u${rows.length + index}`,
+        uniqueId: getUniqueId(),
         ...columnObj,
       }));
       const moreRows = multiRows.map((e) => e.uniqueId);
@@ -434,7 +442,6 @@ export default function DSColumnTable({
         return e;
       })
       .find((e) => e.uniqueId === uniqueId);
-
     if (
       rows.some(
         (r) =>
@@ -448,7 +455,6 @@ export default function DSColumnTable({
       );
       return false;
     }
-
     if (editedRowData && editedRowData.dataType === "") {
       messageContext.showErrorMessage(
         `Please select data type for this record to save.`
@@ -464,7 +470,6 @@ export default function DSColumnTable({
       ["uniqueId"],
       ["asc"]
     );
-
     setRows([...newData]);
     // setEditedRows([...removeEdited]);
     setSelectedRows([...removeRow]);
@@ -472,23 +477,21 @@ export default function DSColumnTable({
 
   const onRowEdit = (uniqueId) => {
     setSelectedRows([...selectedRows, uniqueId]);
-    setEditedRows([...rows]);
+    // setEditedRows([...rows]);
     setEditedRows([...editedRows]);
   };
 
   const onRowDelete = async (uniqueId) => {
-    const newData = rows
-      .filter((row) => row.uniqueId !== uniqueId)
-      .map((e, i) => {
-        const d = {
-          ...e,
-          uniqueId: `u${i}`,
-        };
-        return d;
-      });
-
+    const newData = (editMode ? editedRows : filteredRows).filter(
+      (row) => row.uniqueId !== uniqueId
+    );
+    setFilteredRows([...newData]);
     setRows([...newData]);
-    setEditedRows([...newData]);
+    setEditedRows(newData);
+    const unsavedRows = newData
+      .filter((e) => (e?.isSaved ? false : true))
+      .map((e, i) => e.uniqueId);
+    setSelectedRows([...unsavedRows]);
   };
 
   const haveHeader = parseInt(headerValue, 10) > 0;
@@ -586,8 +589,8 @@ export default function DSColumnTable({
       setEditedRows([...formattedData]);
       setSelectedRows([...initRows]);
     } else if (dataOrigin === "manually") {
-      setSelectedRows([`u0`]);
-      setEditedRows([{ uniqueId: `u0`, ...columnObj }]);
+      setSelectedRows([initUniqueId]);
+      setEditedRows([{ uniqueId: initUniqueId, ...columnObj }]);
     }
     if (previewSQL?.length) {
       addMulti(previewSQL);
