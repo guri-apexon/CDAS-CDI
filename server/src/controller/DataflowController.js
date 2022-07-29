@@ -784,7 +784,7 @@ exports.updateDataFlow = async (req, res) => {
       !ExternalId &&
       dataPackage &&
       Array.isArray(dataPackage) &&
-      helper.isSftp(locationType)
+      (helper.isSftp(connectionType) || helper.isSftp(locationType))
     ) {
       const errorPackage = [];
 
