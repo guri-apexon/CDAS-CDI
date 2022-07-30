@@ -16,7 +16,6 @@ import {
   UPDATE_DS_STATUS,
   GET_LOCATION_DETAIL,
   STORE_DATASET_COLUMNS_SUCCESS,
-  STORE_DATASET_COLUMNS_SUCCESS_TEMP,
   STORE_DATASET_COLUMNS_FAILURE,
   SAVE_DATASET_COLUMNS_COUNT,
   TOGGLE_DATASET_PREVIWED_SQL,
@@ -150,13 +149,6 @@ export const columnsCreated = (resp) => {
     type: STORE_DATASET_COLUMNS_SUCCESS,
     datasetColumns: resp.data,
     nQuery: resp.nQuery,
-  };
-};
-
-export const columnsCreatedTemp = (columns) => {
-  return {
-    type: STORE_DATASET_COLUMNS_SUCCESS_TEMP,
-    datasetColumnsTemp: columns,
   };
 };
 
