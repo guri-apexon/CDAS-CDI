@@ -112,15 +112,14 @@ const DataPackage = (
   useEffect(() => {
     if (tabularSod) {
       setConfigShow(true);
-      setDisabled(true);
-      setCompression("zip");
+      setCompression("ZIP");
       setSodValue("Regular");
     } else {
       setConfigShow(false);
       setDisabled(false);
       setCompression("");
     }
-    setDisabled(locType && !isSftp(locType));
+    setDisabled(tabularSod || (locType && !isSftp(locType)));
   }, [locType, tabularSod]);
   return (
     <div className="data-packages">
@@ -183,7 +182,7 @@ const DataPackage = (
                   helperText={
                     tabularSod
                       ? "File extension must match package compression type e.g. zip"
-                      : "File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
+                      : "File extension must match package compression type e.g. 7z, zip, rar, or xpt"
                   }
                   onChange={(e) => {
                     setNotMatchedType(

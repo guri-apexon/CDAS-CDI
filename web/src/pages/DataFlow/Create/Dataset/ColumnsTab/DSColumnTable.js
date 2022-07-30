@@ -31,6 +31,7 @@ export default function DSColumnTable({
   locationType,
   headerValue,
   myForm,
+  existRows,
 }) {
   const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
@@ -589,6 +590,7 @@ export default function DSColumnTable({
       setMoreColumns(allColumns);
     }
     const formatRows = formattedData.map((e) => e.uniqueId);
+    console.log("formatRows", formatRows);
     if (dataOrigin === "fileUpload") {
       setSelectedRows(formatRows);
       setEditedRows(formattedData);
@@ -596,9 +598,14 @@ export default function DSColumnTable({
       // setSelectedRows(formatRows);
       setRows([...formattedData]);
       // Added below three lines for default edit mode
-      const initRows = formattedData.map((e) => e.uniqueId);
       setEditedRows([...formattedData]);
-      setSelectedRows([...initRows]);
+      if (!existRows?.length) {
+        const initRows = formattedData.map((e) => e.uniqueId);
+        setSelectedRows([...initRows]);
+      }
+    } else if (dataOrigin === "fromDB2") {
+      setRows([...formattedData]);
+      setEditedRows([...formattedData]);
     } else if (dataOrigin === "manually") {
       setSelectedRows([initUniqueId]);
       setEditedRows([{ index: 0, uniqueId: initUniqueId, ...columnObj }]);
