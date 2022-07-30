@@ -387,7 +387,7 @@ export default function DSColumnTable({
       );
       return false;
     }
-    const columnNames = removeSpaces.map((e) => e.columnName.toLowerCase());
+    const columnNames = removeSpaces.map((e) => e.columnName?.toLowerCase());
 
     if (removeSpaces.length !== _.uniq(columnNames).length) {
       messageContext.showErrorMessage(
@@ -452,9 +452,9 @@ export default function DSColumnTable({
     if (
       rows.some(
         (r) =>
-          r.columnName.toLowerCase() ===
-            editedRowData.columnName.toLowerCase() &&
-          r.uniqueId !== editedRowData.uniqueId
+          r?.columnName?.toLowerCase() ===
+            editedRowData?.columnName?.toLowerCase() &&
+          r?.uniqueId !== editedRowData.uniqueId
       )
     ) {
       messageContext.showErrorMessage(
@@ -470,8 +470,7 @@ export default function DSColumnTable({
     }
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
     // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
-    const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
-
+    const removeExistingRowData = rows.filter((e) => e?.uniqueId !== uniqueId);
     const newData = _.orderBy(
       [...removeExistingRowData, editedRowData],
       ["index"],
@@ -502,6 +501,7 @@ export default function DSColumnTable({
     ]
       .filter((e) => (e?.isSaved ? false : true))
       .map((e, i) => e.uniqueId);
+    // setRows([...unsavedRows]);
     setSelectedRows([...unsavedRows]);
   };
 
@@ -636,7 +636,7 @@ export default function DSColumnTable({
             editRow,
             onRowSave,
             columnNo: parseInt(i, 10) + parseInt(1, 10),
-            editMode: selectedRows?.includes(row.uniqueId),
+            editMode: selectedRows?.includes(row?.uniqueId),
             fileType,
             isEditAll,
             onRowCancel,
