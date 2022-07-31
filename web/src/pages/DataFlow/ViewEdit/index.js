@@ -102,9 +102,10 @@ const DataFlow = ({ FormValues, dashboard }) => {
 
   const changeLocationData = (obj) => {
     if (
-      selectedLocation &&
-      obj?.value &&
-      obj?.value === selectedLocation?.value
+      (selectedLocation &&
+        obj?.value &&
+        obj?.value === selectedLocation?.value) ||
+      !obj?.value
     )
       return;
     // const locationsRec = dataFlowData.locations?.records ?? [];

@@ -924,7 +924,9 @@ exports.updateDataFlow = async (req, res) => {
             }
 
             if (res && res.sucRes) {
-              isSomthingUpdate = true;
+              // console.log("res.sucRes", res.sucRes);
+              (ResponseBody.dataFlowName = res.sucRes.name),
+                (isSomthingUpdate = true);
             }
           });
 
@@ -1931,7 +1933,7 @@ exports.fetchdataflowDetails = async (req, res) => {
           for (let obj of response) {
             if (obj.datasetid === el.datasetid) {
               let columnObj = {
-                name: obj.name,
+                columnName: obj.name,
                 dataType: obj.datatype,
                 primaryKey: obj.primarykey,
                 required: obj.required,
