@@ -80,7 +80,7 @@ const useStyles = makeStyles(() => ({
 const onSubmit = () => {
   setTimeout(() => {
     // eslint-disable-next-line no-console
-    console.log(JSON.stringify(values, null, 2));
+    // console.log(JSON.stringify(values, null, 2));
   }, 400);
 };
 
@@ -183,7 +183,7 @@ const DataFlow = ({
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
-    console.log("FormValues", FormValues, selectedCard);
+    // console.log("FormValues", FormValues, selectedCard);
     if (
       FormValues &&
       FormValues?.dataflowType &&
@@ -243,7 +243,7 @@ const DataFlow = ({
   };
 
   const getDataSetValue = (val) => {
-    console.log(val);
+    // console.log(val);
     // return val;
   };
 
@@ -422,7 +422,7 @@ const DataFlow = ({
     );
   };
   const nextStep = async () => {
-    console.log("datasetFormValues?", datasetFormValues, currentStep);
+    // console.log("datasetFormValues?", datasetFormValues, currentStep);
     if (tabularSod) {
       switch (currentStep) {
         case 1:
@@ -547,7 +547,7 @@ const DataFlow = ({
     );
   };
   useEffect(() => {
-    console.log("myform:", modalLocType, myform);
+    // console.log("myform:", modalLocType, myform);
   }, [myform]);
   useEffect(() => {
     if (modalLocType === locType) {
