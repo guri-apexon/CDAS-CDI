@@ -9,6 +9,7 @@ const constants = require("../config/constants");
 const apiResponse = require("../helpers/apiResponse");
 
 const { Console } = require("winston/lib/winston/transports");
+const { trim } = require("lodash");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const dataTyperForamtValidate = (exports.dataTyperForamtValidate = (
@@ -199,7 +200,7 @@ exports.insertValidation = async (req) => {
   if (description) {
     if (description.length <= 30) {
     } else {
-      dfArray.push("Description length, max of 30 characters");
+      dfArray.push("description should be less than 30 characters");
     }
   }
 
@@ -256,11 +257,11 @@ exports.insertValidation = async (req) => {
           if (!helper.stringToBoolean(each.noPackageConfig)) {
             const dpArrayST = [
               { key: "type", value: each.type, type: "string" },
-              {
-                key: "sasXptMethod ",
-                value: each.sasXptMethod,
-                type: "string",
-              },
+              // {
+              //   key: "sasXptMethod ",
+              //   value: each.sasXptMethod,
+              //   type: "string",
+              // },
               {
                 key: "namingConvention",
                 value: each.namingConvention,
@@ -283,6 +284,23 @@ exports.insertValidation = async (req) => {
             if (dpResST.length > 0) {
               // dpErrArray.push(dpResST);
               dpErrArray = dpErrArray.concat(dpResST);
+            }
+
+            if (each.type) {
+              if (each.type.toLowerCase() === "sas") {
+                const dpArraySAS = [
+                  {
+                    key: "sasXptMethod ",
+                    value: each.sasXptMethod,
+                    type: "string",
+                  },
+                ];
+
+                let dpResSas = helper.validation(dpArraySAS);
+                if (dpResSas.length > 0) {
+                  dpErrArray = dpErrArray.concat(dpResSas);
+                }
+              }
             }
           }
 
@@ -453,11 +471,6 @@ exports.insertValidation = async (req) => {
                 },
 
                 {
-                  key: "Data Set Level, Path",
-                  value: obj.path,
-                  type: "string",
-                },
-                {
                   key: "rowDecreaseAllowed",
                   value: obj.rowDecreaseAllowed,
                   type: "number",
@@ -485,6 +498,14 @@ exports.insertValidation = async (req) => {
                 },
               ];
 
+              // console.log("data set level validation inserted========>");
+              if (each.noPackageConfig === 1) {
+                dsArray.push({
+                  key: "Data Set Level, Path",
+                  value: obj.path,
+                  type: "string",
+                });
+              }
               //point - 28 story - 72771
               if (obj.columncount === 0) {
                 dsErrArray.push(
@@ -810,15 +831,15 @@ exports.insertValidation = async (req) => {
                     const last = el.lov.charAt(el.lov.length - 1);
                     const first = el.lov.charAt(el.lov.charAt(0));
 
-                    if (str1.test(el.lov) === false) {
-                      clErrArray.push("LOV should be seperated by tilde(~)");
-                    } else {
-                      if (last === "~" || first === "~") {
-                        clErrArray.push(
-                          "Tilde(~) can't be used start or end of string"
-                        );
-                      }
+                    // if (str1.test(el.lov) === false) {
+                    //   clErrArray.push("LOV should be seperated by tilde(~)");
+                    // } else {
+                    if (last === "~" || first === "~") {
+                      clErrArray.push(
+                        "Tilde(~) can't be used start or end of string"
+                      );
                     }
+                    // }
                   }
                   if (clErrArray.length > 0) {
                     let clErrRes = clErrArray.join(" '|' ");
@@ -1058,19 +1079,19 @@ exports.insertValidation = async (req) => {
               if (obj.customsql_yn) {
                 if (obj.customsql_yn.toLowerCase() == "yes") {
                   if (!obj.customsql) {
-                    dsErrArray.push("customsql is required ");
+                    dsErrArray.push("customsql is required");
                   } else {
                     if (obj.customsql.length >= 131072) {
-                      dsErrArray.push("customsql max of 131072 characters  ");
+                      dsErrArray.push("customsql max of 131072 characters");
                     }
                   }
                 }
                 if (obj.customsql_yn.toLowerCase() == "no") {
                   if (!obj.tbl_nm) {
-                    dsErrArray.push("tbl_nm is required ");
+                    dsErrArray.push("tbl_nm is required");
                   } else {
                     if (obj.tbl_nm.length >= 255) {
-                      dsErrArray.push("tbl_nm max of 255 characters  ");
+                      dsErrArray.push("tbl_nm max of 255 characters");
                     }
                   }
                   if (helper.stringToBoolean(obj.incremental)) {
@@ -1372,11 +1393,11 @@ exports.packageLevelInsert = async (
         if (!helper.stringToBoolean(noPackageConfig)) {
           const dpArrayST = [
             { key: "type", value: data.type, type: "string" },
-            {
-              key: "sasXptMethod",
-              value: data.sasXptMethod,
-              type: "string",
-            },
+            // {
+            //   key: "sasXptMethod",
+            //   value: data.sasXptMethod,
+            //   type: "string",
+            // },
             {
               key: "namingConvention",
               value: namingConvention,
@@ -1402,6 +1423,23 @@ exports.packageLevelInsert = async (
           if (dpResST.length > 0) {
             // errorPackage.push(dpResST);
             errorPackage = errorPackage.concat(dpResST);
+          }
+
+          if (data.type) {
+            if (data.type.toLowerCase() === "sas") {
+              const dpArraySAS = [
+                {
+                  key: "sasXptMethod ",
+                  value: data.sasXptMethod,
+                  type: "string",
+                },
+              ];
+
+              let dpResSas = helper.validation(dpArraySAS);
+              if (dpResSas.length > 0) {
+                errorPackage = errorPackage.concat(dpResSas);
+              }
+            }
           }
         }
 
@@ -1612,6 +1650,7 @@ exports.packageLevelInsert = async (
       dpErrObj.dataSets = [];
       for (let obj of data.dataSet) {
         const dataSetExternalId = obj.ExternalId;
+        const noPackageConfig = data.noPackageConfig;
         await saveDataset(
           obj,
           dataSetExternalId,
@@ -1622,7 +1661,8 @@ exports.packageLevelInsert = async (
           externalSysName,
           testFlag,
           userId,
-          isNew
+          isNew,
+          noPackageConfig
         ).then((res) => {
           if (res && Object.keys(res.errRes)?.length) {
             dpErrObj.dataSets.push(res.errRes);
@@ -1660,7 +1700,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
   externalSysName,
   testFlag,
   userId,
-  isNew
+  isNew,
+  noPackageConfig
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -1706,11 +1747,6 @@ const saveDataset = (exports.datasetLevelInsert = async (
           },
 
           {
-            key: "Data Set Level, path",
-            value: obj.path,
-            type: "string",
-          },
-          {
             key: "rowDecreaseAllowed",
             value: obj.rowDecreaseAllowed,
             type: "number",
@@ -1738,6 +1774,13 @@ const saveDataset = (exports.datasetLevelInsert = async (
           },
         ];
 
+        if (noPackageConfig === 1) {
+          dsArray.push({
+            key: "Data Set Level, path",
+            value: obj.path,
+            type: "string",
+          });
+        }
         // point - 28 story - 7277
         if (obj.columncount === 0) {
           errorDataset.push(
@@ -2004,6 +2047,17 @@ const saveDataset = (exports.datasetLevelInsert = async (
     // console.log("insert data set");
 
     if (!isCDI) {
+      const {
+        rows: [protId],
+      } = await DB.executeQuery(
+        `select prot_id,vend_id from ${schemaName}.dataflow where dataflowid='${DFId}';`
+      );
+
+      const study = protId?.prot_id;
+      const vendor = protId?.vend_id;
+
+      // console.log("vendor", vendor);
+
       if (obj.dataKindID && externalSysName) {
         let checkDataKind = await DB.executeQuery(
           `select datakindid, active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${
@@ -2032,10 +2086,16 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
       if (obj.datasetName) {
         const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
-        let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
-                left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
-                left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
-                where ds.mnemonic ='${obj.datasetName}' and df.testflag ='${tFlg}'`;
+        // let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
+        //         left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+        //         left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+        //         where ds.mnemonic ='${obj.datasetName}' and df.testflag ='${tFlg}'`;
+
+        let selectMnemonic = `select ds.mnemonic from cdascfg.dataset ds
+          inner join cdascfg.datapackage dp on (dp.datapackageid =ds.datapackageid)
+          inner join cdascfg.dataflow df on (df.dataflowid =dp.dataflowid)
+          where df.prot_id = '${study}' and df.vend_id = '${vendor}' and 
+          ds.mnemonic ='${obj.datasetName}' and df.testflag = '${tFlg}'`;
 
         let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -2080,9 +2140,9 @@ const saveDataset = (exports.datasetLevelInsert = async (
             obj.conditionalExpression ? obj.conditionalExpression : "where 1=1"
           }`;
         }
+      } else {
+        sqlQuery = obj.customSql || obj.customsql;
       }
-    } else {
-      sqlQuery = obj.customSql || obj.customsql;
     }
 
     let DSBody = [
@@ -2415,15 +2475,15 @@ const columnSave = (exports.columnDefinationInsert = async (
           const last = el.lov.charAt(el.lov.length - 1);
           const first = el.lov.charAt(el.lov.charAt(0));
 
-          if (str1.test(el.lov) === false) {
-            errorColumnDef.push("LOV should be seperated by tilde(~)");
-          } else {
-            if (last === "~" || first === "~") {
-              errorColumnDef.push(
-                "Tilde(~) can't be used start or end of string"
-              );
-            }
+          // if (str1.test(el.lov) === false) {
+          //   errorColumnDef.push("LOV should be seperated by tilde(~)");
+          // } else {
+          if (last === "~" || first === "~") {
+            errorColumnDef.push(
+              "Tilde(~) can't be used start or end of string"
+            );
           }
+          // }
         }
       } else {
         const clArray = [
@@ -2827,7 +2887,7 @@ exports.dataflowUpdate = async (
   ConnectionType
 ) => {
   try {
-    let ts = new Date().toLocaleString();
+    let ts = helper.getCurrentTime();
     var dataflow = [];
     let errorDF = [];
     let studyId;
@@ -2991,9 +3051,16 @@ exports.dataflowUpdate = async (
     }
 
     var DFTestname = `${vName}-${ptNum}-${desc}`;
-    var testFlag = helper.stringToBoolean(data.testFlag);
+    var testFlag = dataflowData.rows[0].testflag;
 
-    if (testFlag === true) {
+    if (data.testFlag) {
+      testFlag = helper.stringToBoolean(data.testFlag);
+    }
+    if (data.testFlag === 0) {
+      testFlag = helper.stringToBoolean(data.testFlag);
+    }
+
+    if (helper.stringToBoolean(testFlag)) {
       DFTestname = "TST-" + DFTestname;
     }
 
@@ -3040,7 +3107,13 @@ exports.dataflowUpdate = async (
     if (data.locationID) {
       updateQueryDF += ` ,src_loc_id= '${data.locationID}'`;
     }
-    if (data.protocolNumberStandard || data.description || data.vendorid) {
+    if (
+      data.protocolNumberStandard ||
+      data.description ||
+      data.vendorid ||
+      helper.stringToBoolean(data.testFlag) ||
+      !helper.stringToBoolean(data.testFlag)
+    ) {
       updateQueryDF += `,name='${DFTestname}'`;
     }
     if (data.serviceOwners) {
@@ -3073,7 +3146,7 @@ exports.dataflowUpdate = async (
       version,
       JSON.stringify(conf_data),
       userId,
-      new Date(),
+      ts,
     ];
     await DB.executeQuery(dataflow_version_query, aduit_version_body);
 
@@ -3085,20 +3158,16 @@ exports.dataflowUpdate = async (
         `INSERT INTO ${schemaName}.dataflow_audit_log
                         ( dataflowid, datapackageid, datasetid, columnid, audit_vers, "attribute", old_val, new_val, audit_updt_by, audit_updt_dt)
                         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`,
-        [
-          DFId,
-          null,
-          null,
-          null,
-          version,
-          key,
-          oldData,
-          newData,
-          userId,
-          helper.getCurrentTime(),
-        ]
+        [DFId, null, null, null, version, key, oldData, newData, userId, ts]
       );
     }
+
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.cdr_ta_queue
+    (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
+    VALUES($1, 'CONFIG', $2, 'QUEUE', $3, $3, '', $4, '', 1, '', 0)`,
+      [DFId, userId, ts, version]
+    );
 
     if (Object.keys(diffObj).length === 0) {
       // return { sucRes: dataflow };
@@ -3106,6 +3175,7 @@ exports.dataflowUpdate = async (
     } else {
       newDfobj.ExternalId = externalID;
       newDfobj.ID = DFId;
+      newDfobj.name = dataflowObj.name;
       // newDfobj.action = "Dataflow update successfully.";
       // newDfobj.timestamp = ts;
       // dataflow.push(newDfobj);
@@ -3168,13 +3238,13 @@ exports.packageUpdate = async (
             type: "string",
           });
         }
-        if (typeof data.sasXptMethod != "undefined") {
-          TypeSas.push({
-            key: "sasXptMethod",
-            value: data.sasXptMethod,
-            type: "string",
-          });
-        }
+        // if (typeof data.sasXptMethod != "undefined") {
+        //   TypeSas.push({
+        //     key: "sasXptMethod",
+        //     value: data.sasXptMethod,
+        //     type: "string",
+        //   });
+        // }
         if (typeof data.namingConvention != "undefined") {
           TypeSas.push({
             key: "namingConvention",
@@ -3205,6 +3275,23 @@ exports.packageUpdate = async (
         }
       }
 
+      if (data.type) {
+        if (data.type.toLowerCase() === "sas") {
+          const dpArraySAS = [
+            {
+              key: "sasXptMethod ",
+              value: data.sasXptMethod,
+              type: "string",
+            },
+          ];
+
+          let dpResSas = helper.validation(dpArraySAS);
+          if (dpResSas.length > 0) {
+            errorPackage = errorPackage.concat(dpResSas);
+          }
+        }
+      }
+
       if (helper.stringToBoolean(data.noPackageConfig)) {
         if (
           data.type ||
@@ -3231,7 +3318,7 @@ exports.packageUpdate = async (
       //091
       if (
         (data.type && !data.namingConvention) ||
-        (!data.type && data.namingConvention)
+        (!data.type && data.namingConvention && data.noPackageConfig === 0)
       ) {
         errorPackage.push(
           "Package type and namingConvention both are required"
@@ -3421,7 +3508,8 @@ exports.datasetUpdate = async (
   custSql,
   externalSysName,
   testFlag,
-  userId
+  userId,
+  noPackageConfig
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -3433,6 +3521,16 @@ exports.datasetUpdate = async (
     var str2 = /[.]/;
     // var str3 = /[< >]/;
     var str3 = /[\/:*?”<|>]/;
+
+    const {
+      rows: [protId],
+    } = await DB.executeQuery(
+      `select prot_id,vend_id from ${schemaName}.dataflow where dataflowid='${DFId}';`
+    );
+
+    const study = protId?.prot_id;
+    const vendor = protId?.vend_id;
+    // console.log("Update vendor", vendor);
 
     if (data.dataKindID && externalSysName) {
       let checkDataKind = await DB.executeQuery(
@@ -3457,12 +3555,18 @@ exports.datasetUpdate = async (
 
     if (data.datasetName) {
       const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
+      // let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
+      //           left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+      //           left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+      //           where ds.mnemonic ='${data.datasetName}'
+      //           and ds.datasetid !=$1
+      //           and df.testflag ='${tFlg}'`;
+
       let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
-                left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
-                left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
-                where ds.mnemonic ='${data.datasetName}' 
-                and ds.datasetid !=$1
-                and df.testflag ='${tFlg}'`;
+          inner join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+          inner join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+          where df.prot_id = '${study}' and df.vend_id = '${vendor}' and ds.mnemonic ='${data.datasetName}'
+          and ds.datasetid !=$1 and df.testflag = '${tFlg}'`;
 
       let queryMnemonic = await DB.executeQuery(selectMnemonic, [DSId]);
 
@@ -3594,11 +3698,13 @@ exports.datasetUpdate = async (
       }
 
       if (typeof data.path != "undefined") {
-        valDataset.push({
-          key: "path ",
-          value: data.path,
-          type: "string",
-        });
+        if (noPackageConfig === 1) {
+          valDataset.push({
+            key: "path ",
+            value: data.path,
+            type: "string",
+          });
+        }
       }
       if (typeof data.rowDecreaseAllowed != "undefined") {
         valDataset.push({
@@ -4165,13 +4271,13 @@ exports.clDefUpdate = async (
         const last = data.lov.charAt(data.lov.length - 1);
         const first = data.lov.charAt(data.lov.charAt(0));
 
-        if (str1.test(data.lov) === false) {
-          errorcolDef.push("LOV should be seperated by tilde(~)");
-        } else {
-          if (last === "~" || first === "~") {
-            errorcolDef.push("Tilde(~) can't be used start or end of string");
-          }
+        // if (str1.test(data.lov) === false) {
+        //   errorcolDef.push("LOV should be seperated by tilde(~)");
+        // } else {
+        if (last === "~" || first === "~") {
+          errorcolDef.push("Tilde(~) can't be used start or end of string");
         }
+        // }
       }
 
       let colDefRes = helper.validation(valColDef);

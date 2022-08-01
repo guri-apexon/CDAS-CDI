@@ -16,7 +16,7 @@ exports.listTables = async (req, res) => {
     let q = ``;
     switch (locationType?.toLowerCase()) {
       case "oracle":
-        q = `SELECT table_name as "tableName" FROM user_tables`;
+        q = `SELECT table_name as "tableName" FROM user_tables UNION select view_name FROM user_views`;
         break;
       case "sqlserver":
       case "sql server":
@@ -95,17 +95,19 @@ exports.tablecolumns = async (req, res) => {
         break;
 
       case "oracle":
-        q = `SELECT a.COLUMN_NAME AS "columnName",a.DATA_TYPE AS "datatype",
-      CASE WHEN c.CONSTRAINT_TYPE ='P' THEN 'true'
-      ELSE 'false' END AS "primaryKey",
-      CASE WHEN c.CONSTRAINT_TYPE IN ('U','P') THEN 'true'
-      ELSE 'false' END AS "unique",
-      CASE WHEN a.NULLABLE ='N' THEN 'true'
-      ELSE 'false' END AS  "required"
-      FROM ALL_TAB_COLUMNS a
-      LEFT JOIN ALL_CONS_COLUMNS b ON (a.TABLE_NAME=b.table_name AND a.COLUMN_NAME=b.COLUMN_NAME)
-      LEFT JOIN ALL_CONSTRAINTS c ON (b.CONSTRAINT_NAME=c.CONSTRAINT_NAME)
-      WHERE a.table_name='${tableName}'`;
+        q = `select "columnName", "datatype", "primaryKey", "unique", "required" from (
+          SELECT a.COLUMN_NAME AS "columnName",a.DATA_TYPE AS "datatype",
+                CASE WHEN c.CONSTRAINT_TYPE ='P' THEN 'true'
+                ELSE 'false' END AS "primaryKey",
+                CASE WHEN c.CONSTRAINT_TYPE IN ('U','P') THEN 'true'
+                ELSE 'false' END AS "unique",
+                CASE WHEN a.NULLABLE ='N' THEN 'true'
+                ELSE 'false' END AS  "required",
+                row_Number() over (partition by a.COLUMN_NAME,a.DATA_TYPE order by c.constraint_type desc) as rnk
+                FROM ALL_TAB_COLUMNS a
+                LEFT JOIN ALL_CONS_COLUMNS b ON (a.TABLE_NAME=b.table_name AND a.COLUMN_NAME=b.COLUMN_NAME)
+                LEFT JOIN ALL_CONSTRAINTS c ON (b.CONSTRAINT_NAME=c.CONSTRAINT_NAME)
+                WHERE a.table_name='${tableName}' ) r where rnk=1`;
         break;
 
       case "sqlserver":

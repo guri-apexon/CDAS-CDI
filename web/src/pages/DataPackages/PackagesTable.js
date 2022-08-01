@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Typography from "apollo-react/components/Typography";
 import Tooltip from "apollo-react/components/Tooltip";
 import IconButton from "apollo-react/components/IconButton";
@@ -17,9 +17,8 @@ import { ReactComponent as RoundPlusSvg } from "../../components/Icons/roundplus
 import { ReactComponent as PackageIcon } from "../../components/Icons/datapackage.svg";
 import {
   selectDataPackage,
-  deletePackage,
   redirectToDataSet,
-  updateStatus,
+  updatePanel,
 } from "../../store/actions/DataPackageAction";
 import { updateDSState } from "../../store/actions/DataFlowAction";
 import { updateDSStatus } from "../../store/actions/DataSetsAction";
@@ -29,6 +28,12 @@ import usePermission, {
   Features,
   useStudyPermission,
 } from "../../components/Common/usePermission";
+import {
+  deletePackage,
+  toggleDatasetsStatus,
+  updatePackageStatus,
+} from "../../services/ApiServices";
+import { MessageContext } from "../../components/Providers/MessageProvider";
 
 const ExpandCell = ({ row: { handleToggleRow, expanded, datapackageid } }) => {
   return (
@@ -79,6 +84,7 @@ const PackagesList = ({ data, userInfo }) => {
   const history = useHistory();
   const [expandedRows, setExpandedRows] = useState([]);
   const [tableData, setTableData] = useState([]);
+  const { showSuccessMessage, showErrorMessage } = useContext(MessageContext);
   const {
     selectedDataFlow: { locationType },
     selectedCard,
@@ -92,8 +98,23 @@ const PackagesList = ({ data, userInfo }) => {
     protId
   );
 
-  const addDataSet = (dfId, dfName, dpId, dpName, dsId = null, dsName = "") => {
-    dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
+  useEffect(() => {
+    console.log("dispatch(updateDSStatus(false));");
+    dispatch(updateDSStatus(false));
+  }, []);
+
+  const addDataSet = (
+    dfId,
+    dfName,
+    dpId,
+    dpName,
+    dsId = null,
+    dsName = "",
+    path = null
+  ) => {
+    dispatch(
+      redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName, null, path)
+    );
     dispatch(updateDSState(true));
     dispatch(updateDSStatus(false));
     history.push("/dashboard/dataset/new");
@@ -115,7 +136,15 @@ const PackagesList = ({ data, userInfo }) => {
                 className="add-dataset-btn"
                 onClick={() =>
                   canUpdateDataFlow &&
-                  addDataSet(row.dataflowid, "", row.datapackageid, row.name)
+                  addDataSet(
+                    row.dataflowid,
+                    "",
+                    row.datapackageid,
+                    row.name,
+                    "",
+                    "",
+                    row.path
+                  )
                 }
               />
             </Tooltip>
@@ -125,8 +154,18 @@ const PackagesList = ({ data, userInfo }) => {
     );
   };
 
-  const goToDataSet = (dfId, dfName, dpId, dpName, dsId, dsName) => {
-    dispatch(redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName));
+  const goToDataSet = (
+    dfId,
+    dfName,
+    dpId,
+    dpName,
+    dsId,
+    dsName,
+    path = null
+  ) => {
+    dispatch(
+      redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName, null, path)
+    );
     dispatch(updateDSState(false));
     history.push(`/dashboard/dataset/${dsId}`);
   };
@@ -151,7 +190,8 @@ const PackagesList = ({ data, userInfo }) => {
                     row.datapackageid,
                     row.name,
                     dataset.datasetid,
-                    dataset.mnemonic
+                    dataset.mnemonic,
+                    row.path
                   ))
               }
             >
@@ -188,7 +228,7 @@ const PackagesList = ({ data, userInfo }) => {
     );
   };
   const ActionCell = ({ row }) => {
-    const { packageName, onRowEdit } = row;
+    const { packageName, onRowEdit, type } = row;
     const active = row.active && Number(row.active) === 1 ? 1 : 0;
     const packageId = row.datapackageid || null;
     const [anchorEl, setAnchorEl] = useState(null);
@@ -197,27 +237,55 @@ const PackagesList = ({ data, userInfo }) => {
     const handleRequestClose = () => {
       setOpen(false);
     };
-    const setActive = (status) => {
+    const setActive = async (status) => {
       if (packageId) {
-        dispatch(
-          updateStatus({
-            package_id: packageId,
-            active: status === 1 ? "0" : "1",
-            user_id: userInfo.userId,
-            versionFreezed,
-          })
-        );
+        const result = await updatePackageStatus({
+          package_id: packageId,
+          active: status === 1 ? "0" : "1",
+          user_id: userInfo.userId,
+          versionFreezed,
+        });
+        if (result.error) {
+          setTimeout(() => {
+            showErrorMessage(result.error);
+          }, 1000);
+          return;
+        }
+        showSuccessMessage(result.message || "Deleted succefully");
+        dispatch(updatePanel());
       }
     };
-    const deleteAction = () => {
+    const toggleDatasetActive = async (status) => {
+      const result = await toggleDatasetsStatus({
+        packageId,
+        active: status ? 1 : 0,
+        userId: userInfo.userId,
+        versionFreezed,
+      });
+      if (result.error) {
+        showErrorMessage(result.error);
+        return;
+      }
+      showSuccessMessage(
+        result.message ||
+          `All Datasets marked ${status ? "Active" : "Inactive"}`
+      );
+      dispatch(updatePanel());
+    };
+    const deleteAction = async () => {
       if (packageId) {
-        dispatch(
-          deletePackage({
-            package_id: packageId,
-            user_id: userInfo.userId,
-            versionFreezed,
-          })
-        );
+        const result = await deletePackage({
+          package_id: packageId,
+          user_id: userInfo.userId,
+          versionFreezed,
+          delete_package: true,
+        });
+        if (result.error) {
+          showErrorMessage(result.error);
+          return;
+        }
+        showSuccessMessage(result.message || "Deleted succefully");
+        dispatch(updatePanel());
       }
     };
     const editAction = () => {
@@ -234,17 +302,12 @@ const PackagesList = ({ data, userInfo }) => {
       },
       {
         text: "Set all dataset to active",
-        // onClick: () => onRowEdit(packageName),
+        onClick: () => toggleDatasetActive(true),
         disabled: !canUpdateDataFlow,
       },
       {
         text: "Set all datasets to inactive",
-        // onClick: () => onRowEdit(packageName),
-        disabled: !canUpdateDataFlow,
-      },
-      {
-        text: "Delete data package",
-        onClick: deleteAction,
+        onClick: () => toggleDatasetActive(),
         disabled: !canUpdateDataFlow,
       },
     ];
@@ -253,6 +316,13 @@ const PackagesList = ({ data, userInfo }) => {
         text: "Edit data package",
         onClick: editAction,
       });
+      if (type) {
+        menuItems.push({
+          text: "Delete data package",
+          onClick: deleteAction,
+          disabled: !canUpdateDataFlow,
+        });
+      }
     }
     const openAction = (e) => {
       setAnchorEl(e.currentTarget);

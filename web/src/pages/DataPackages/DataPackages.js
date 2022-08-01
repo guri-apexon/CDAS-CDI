@@ -1,3 +1,4 @@
+/* eslint-disable no-lonely-if */
 /* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/no-array-index-key */
@@ -5,6 +6,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import moment from "moment";
+import { isEmpty, isEqual } from "lodash";
 import Paper from "apollo-react/components/Paper";
 import Typography from "apollo-react/components/Typography";
 import Box from "apollo-react/components/Box";
@@ -19,6 +21,7 @@ import Panel from "apollo-react/components/Panel";
 import { makeStyles } from "@material-ui/core/styles";
 import InfoIcon from "apollo-react-icons/Info";
 import Tooltip from "apollo-react/components/Tooltip";
+import Modal from "apollo-react/components/Modal/Modal";
 // import CssBaseline from "@material-ui/core/CssBaseline";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import ButtonGroup from "apollo-react/components/ButtonGroup";
@@ -43,6 +46,7 @@ import usePermission, {
 } from "../../components/Common/usePermission";
 import { packageComprTypes, packageTypes } from "../../utils/constants";
 import Header from "../../components/DataFlow/Header";
+import SaveChangesModal from "../../components/DataFlow/SaveChangesModal";
 
 const useStyles = makeStyles(() => ({
   rightPanel: {
@@ -70,6 +74,16 @@ const DataPackages = React.memo(() => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [disablePackageLevel, setDisablePackageLevel] = useState(false);
   const packageData = useSelector((state) => state.dataPackage);
+  const [addedPackage, setAddedPackage] = useState(false);
+  const [shouldTriggerRedirect, setShouldTriggerRedirect] = useState(true);
+  const [isAnyChange, setIsAnyChange] = useState(false);
+  const [folderPathValidation, setFolderPathValidation] = useState(false);
+
+  // Save Change Master Flag
+  const SAVE_CHANGE_MODAL_FLAG =
+    process.env.REACT_APP_SAVE_CHANGE_MODAL_FLAG === "true"
+      ? true
+      : false || false;
 
   const { dataFlowdetail, versionFreezed } = useSelector(
     (state) => state.dataFlow
@@ -90,16 +104,22 @@ const DataPackages = React.memo(() => {
     protId
   );
 
+  const goToDataflow = () => {
+    if (dfId) {
+      history.push(`/dashboard/dataflow-management/${dfId}`);
+    }
+  };
+
   const breadcrumpItems = [
     { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
     {
       href: "javascript:void(0)",
-      title: "Data Flow Settings",
-      onClick: () => history.push("/dashboard/dataflow-management"),
+      title: dataFlowdetail?.name || "Data Flow Settings",
+      onClick: goToDataflow,
     },
     {
       href: "javascript:void(0)",
-      title: "Data Package Settings",
+      title: packageData?.selectedPackage?.name || "Data Package Settings",
       onClick: () => history.push("/dashboard/data-packages"),
     },
   ];
@@ -111,6 +131,7 @@ const DataPackages = React.memo(() => {
     setSftpPath("");
     setCompression("");
     setNotMatchedType(false);
+    setFolderPathValidation(false);
   };
   const showConfig = (e, checked) => {
     if (!checked) {
@@ -154,9 +175,10 @@ const DataPackages = React.memo(() => {
   };
 
   useEffect(() => {
+    const updatePackage = !!packageData?.selectedPackage?.type;
     if (!packageData.openAddPackage && packageData.selectedPackage) {
       setShowForm(true);
-      setConfigShow(true);
+      setConfigShow(updatePackage);
       setCompression(packageData.selectedPackage?.type);
       setNamingConvention(packageData.selectedPackage?.name);
       setSodValue(packageData.selectedPackage?.sod_view_type);
@@ -174,7 +196,7 @@ const DataPackages = React.memo(() => {
           }, 2000);
         }
       } else {
-        setConfigShow(true);
+        setConfigShow(updatePackage);
         setPackagePassword("");
       }
     }
@@ -200,16 +222,106 @@ const DataPackages = React.memo(() => {
     };
   }, []);
 
+  useEffect(() => {
+    const currentDataPackageData = {
+      compression_type: compression,
+      dataflow_id: dfId,
+      naming_convention: namingConvention,
+      package_password: packagePassword,
+      sftp_path: sftpPath,
+      study_id: selectedCard.prot_id,
+      user_id: userInfo.userId,
+      versionFreezed,
+    };
+    const storeDataPackageData = {
+      compression_type: packageData?.selectedPackage?.type,
+      dataflow_id: packageData?.selectedPackage?.dataflowid,
+      naming_convention: packageData?.selectedPackage?.name,
+      package_password: packageSODPassword,
+      sftp_path: packageData?.selectedPackage?.path,
+      study_id: selectedCard.prot_id,
+      user_id: userInfo.userId,
+      versionFreezed,
+    };
+    const initialValueUndefined = {
+      compression_type: undefined,
+      dataflow_id: dfId,
+      naming_convention: undefined,
+      package_password: "",
+      sftp_path: undefined,
+      study_id: selectedCard.prot_id,
+      user_id: userInfo.userId,
+      versionFreezed,
+    };
+    const initialValueBlank = {
+      compression_type: "",
+      dataflow_id: dfId,
+      naming_convention: "",
+      package_password: "",
+      sftp_path: "",
+      study_id: selectedCard.prot_id,
+      user_id: userInfo.userId,
+      versionFreezed,
+    };
+    setIsAnyChange(false);
+
+    if (!isEmpty(packageData?.selectedPackage)) {
+      if (isEqual(currentDataPackageData, storeDataPackageData)) {
+        setIsAnyChange(false);
+      } else {
+        setIsAnyChange(true);
+      }
+    } else {
+      if (
+        isEqual(currentDataPackageData, initialValueUndefined) ||
+        isEqual(currentDataPackageData, initialValueBlank)
+      ) {
+        setIsAnyChange(false);
+      } else {
+        setIsAnyChange(true);
+      }
+    }
+
+    return () => {
+      setIsAnyChange(false);
+    };
+  }, [
+    compression,
+    namingConvention,
+    packagePassword,
+    sftpPath,
+    selectedCard.prot_id,
+    dfId,
+    userInfo.userId,
+    versionFreezed,
+  ]);
+
+  const handleAddedSuccess = (message) => {
+    if (message) showSuccessMessage(message);
+    dispatch(addDataPackage());
+    resetForm();
+    setAddedPackage(false);
+    setShowForm(false);
+    history.push(`/dashboard/dataflow-management/${dfId}`);
+  };
   // eslint-disable-next-line consistent-return
   const submitPackage = async () => {
+    setShouldTriggerRedirect(false);
     const validated = validateFields(namingConvention, compression);
     setNotMatchedType(!validated);
-    if (!validated) return false;
+
+    setShouldTriggerRedirect(true);
+    // check folder path field
+    if (!sftpPath?.trim()) {
+      setFolderPathValidation(true);
+    }
+    if (!validated || !sftpPath?.trim()) return false;
+
     if (namingConvention === "" && compression) {
       toast("Please fill all fields to proceed", "error");
       return false;
     }
-    const reqBody = {
+    let reqBody = {
       compression_type: compression,
       naming_convention: namingConvention,
       package_password: packagePassword,
@@ -219,21 +331,23 @@ const DataPackages = React.memo(() => {
       user_id: userInfo.userId,
       versionFreezed,
     };
-    const updateReqBody = {
-      ...reqBody,
-      package_id: packageData.selectedPackage?.datapackageid,
-      sod_view_type: sodValue,
-    };
+    const updatedReq = !!packageData.selectedPackage?.datapackageid;
+    if (updatedReq) {
+      reqBody = {
+        ...reqBody,
+        package_id: packageData.selectedPackage?.datapackageid,
+        sod_view_type: sodValue,
+      };
+    }
 
-    const payload = packageData.selectedPackage ? updateReqBody : reqBody;
-    const result = await submitDataPackage(payload);
+    const result = await submitDataPackage(reqBody);
     if (result.status === 1) {
-      showSuccessMessage(result.message);
-      dispatch(addDataPackage());
-      resetForm();
-      setShowForm(false);
-      if (sodValue !== null)
-        history.push(`/dashboard/dataflow-management/${dfId}`);
+      if (updatedReq) {
+        handleAddedSuccess(result.message);
+      } else {
+        setAddedPackage(true);
+        setShouldTriggerRedirect(false);
+      }
     } else {
       showErrorMessage(result.message);
     }
@@ -271,8 +385,31 @@ const DataPackages = React.memo(() => {
         hideButton
       >
         <main className="right-content">
+          <Modal
+            className="inactivePopup"
+            open={addedPackage}
+            // disableBackdropClick="true"
+            onClose={() => handleAddedSuccess()}
+            title="Data Package created as inactive"
+            message="Please add an active dataset, then activate the data package."
+            buttonProps={[
+              {
+                label: "OK",
+                variant: "primary",
+                onClick: () => handleAddedSuccess(),
+              },
+            ]}
+          />
           <Paper className="no-shadow">
             <Box className="top-content">
+              {/* Save Changes Modal */}
+              {SAVE_CHANGE_MODAL_FLAG && (
+                <SaveChangesModal
+                  manualIsAnyChangeCheck={true}
+                  manualIsAnyChangeFlag={isAnyChange}
+                  shouldTriggerOnRedirect={shouldTriggerRedirect}
+                />
+              )}
               <Header
                 close={() => history.push("/dashboard")}
                 submit={submitPackage}
@@ -287,6 +424,7 @@ const DataPackages = React.memo(() => {
                     : "Save"
                 }
                 saveDisabled={!canUpdateDataFlow}
+                shouldDisplaySaveChangesModal={false}
               />
             </Box>
           </Paper>
@@ -366,7 +504,7 @@ const DataPackages = React.memo(() => {
                         value={namingConvention}
                         helperText={
                           packageData.selectedPackage?.sod_view_type === null
-                            ? "File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
+                            ? "File extension must match package compression type e.g. 7z, zip, rar, or xpt"
                             : "File extension must match package compression type e.g.zip"
                         }
                         onChange={(e) => {
@@ -389,12 +527,21 @@ const DataPackages = React.memo(() => {
                       />
                       <TextField
                         className="mb-20"
-                        label="sFTP Folder Path (Optional)"
+                        label="sFTP Folder Path"
                         placeholder=""
+                        error={folderPathValidation}
+                        helperText={
+                          folderPathValidation
+                            ? "Folder Path is required when Package Level Configuration is entered"
+                            : ""
+                        }
                         defaultValue={sftpPath}
                         size="small"
                         fullWidth
-                        onChange={(e) => setSftpPath(e.target.value)}
+                        onChange={(e) => {
+                          setSftpPath(e.target.value);
+                          setFolderPathValidation(false);
+                        }}
                         disabled={!canUpdateDataFlow}
                       />
                       {packageData.selectedPackage?.sod_view_type && (
@@ -404,7 +551,9 @@ const DataPackages = React.memo(() => {
                             value={sodValue}
                             size="small"
                             onChange={(e) => {
-                              setSodValue(e.target.value);
+                              setSodValue(
+                                e.target.value || sodValue || "Regular"
+                              );
                             }}
                             disabled={!canUpdateDataFlow}
                             className="mb-20 package-type"

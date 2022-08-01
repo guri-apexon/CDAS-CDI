@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/prefer-default-export
 export const packageComprTypes = [
   { text: "Not Compressed", value: "" },
-  { text: "Zip", value: "zip" },
-  { text: "7Z", value: "7z" },
-  { text: "SAS XPT", value: "sas" },
-  { text: "RAR", value: "rar" },
+  { text: "Zip", value: "ZIP" },
+  { text: "7Z", value: "7Z" },
+  { text: "SAS XPT", value: "SAS" },
+  { text: "RAR", value: "RAR" },
 ];
 export const packageTypes = [
   { text: "Regular", value: "Regular" },

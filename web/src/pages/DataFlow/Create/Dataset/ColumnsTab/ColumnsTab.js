@@ -182,6 +182,15 @@ const ColumnsTab = ({
       );
       setDisableUpload(true);
     }
+    if (isSftp(locationType)) {
+      const cdRows = messageContext?.dataflowObj?.columnDefinition;
+      if (cdRows?.length) {
+        setFormattedData([...cdRows]);
+        setSelectedMethod("fromDB2");
+        setShowColumns(true);
+        moveNext();
+      }
+    }
   }, []);
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
@@ -257,6 +266,7 @@ const ColumnsTab = ({
           locationType={locationType}
           headerValue={headerValue}
           myForm={myForm}
+          existRows={messageContext?.dataflowObj?.columnDefinition}
         />
       )}
     </>

@@ -24,6 +24,10 @@ import validate from "../../../components/FormComponents/validation";
 import LocationModal from "../../../components/Common/LocationModal";
 
 import { locationTypes, dataStruct, SodLocationTypes } from "../../../utils";
+import usePermission, {
+  Categories,
+  Features,
+} from "../../../components/Common/usePermission";
 
 const styles = {
   paper: {
@@ -99,6 +103,10 @@ const DataFlowFormBase = (props) => {
     connLink,
     initialValues,
   } = props;
+
+  const { canUpdate: canUpdateLocation, canCreate: canCreateLocation } =
+    usePermission(Categories.CONFIGURATION, Features.LOCATION_SETUP);
+
   const onChangeServiceOwner = (values) => {
     change("serviceOwner", values);
   };
@@ -141,6 +149,7 @@ const DataFlowFormBase = (props) => {
               input={{
                 onChange: onChangeVendor,
               }}
+              disabled={!vendors?.length}
               forcePopupIcon={true}
               singleSelect
               enableVirtualization
@@ -184,6 +193,7 @@ const DataFlowFormBase = (props) => {
               onChange={(v) => changeFormField(v, "dataflowType")}
               label="Data Flow Type"
               required
+              className="dataset-data-flow-type"
             >
               <Radio value="test" label="Test" />
               <Radio value="production" label="Production" />
@@ -257,6 +267,7 @@ const DataFlowFormBase = (props) => {
                 name="locationName"
                 label="Location Name"
                 source={locations}
+                disabled={!locations?.length}
                 input={{
                   onChange: onChangeLocation,
                 }}
@@ -266,6 +277,7 @@ const DataFlowFormBase = (props) => {
                 required
               />
               <Link
+                disabled={!canCreateLocation}
                 onClick={() => openLocationModal()}
                 style={{ fontWeight: 600 }}
               >
@@ -276,6 +288,9 @@ const DataFlowFormBase = (props) => {
                 locationModalOpen={locationOpen}
                 modalLocationType={props.modalLocationType}
                 handleModalClose={() => setLocationOpen(false)}
+                canUpdate={canUpdateLocation}
+                canCreate={canCreateLocation}
+                isNew={true}
               />
             </Grid>
             <Grid item md={7}>

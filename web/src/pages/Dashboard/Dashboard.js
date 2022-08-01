@@ -1,7 +1,7 @@
 /* eslint-disable react/button-has-type */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { useLocation } from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
 import Panel from "apollo-react/components/Panel";
 import Typography from "apollo-react/components/Typography";
 import Tab from "apollo-react/components/Tab";
@@ -21,6 +21,7 @@ import "./Dashboard.scss";
 import DataflowTab from "./DataflowTab/DataflowTab";
 import MonitorTab from "./MonitorTab/MonitorTab";
 import { freezeDfVersion } from "../../store/actions/DataFlowAction";
+import { resetFTP, resetJDBC } from "../../store/actions/DataSetsAction";
 
 const queryString = require("query-string");
 
@@ -56,8 +57,11 @@ const styles = {
 };
 
 const Dashboard = () => {
+  const history = useHistory();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [value, setValue] = useState(1);
+  const mainContentRef = useRef(null);
+  const [sidebarHeight, setSidebarHeight] = useState(400);
 
   const useStyles = makeStyles(styles);
   const classes = useStyles();
@@ -103,6 +107,35 @@ const Dashboard = () => {
     }
   }, [dashboard.selectedCard]);
 
+  const setHeight = (offsetHeight) => {
+    setTimeout(() => {
+      const height = offsetHeight
+        ? offsetHeight
+        : mainContentRef?.current?.offsetHeight;
+      if (height !== sidebarHeight) {
+        setSidebarHeight(height);
+      }
+    }, 400);
+  };
+
+  useEffect(() => {
+    setHeight(mainContentRef?.current?.clientHeight);
+  }, [mainContentRef?.current?.clientHeight]);
+
+  // useEffect(() => {
+  //   // if (value === 1) {
+  //   setHeight();
+  //   // }
+  // }, [value]);
+  useEffect(() => {
+    history.listen((loc, action) => {
+      if (loc.pathname === "/dashboard") {
+        dispatch(resetJDBC());
+        dispatch(resetFTP());
+      }
+    });
+  }, [history]);
+
   useEffect(() => {
     dispatch(freezeDfVersion(false));
     if (Object.keys(parsedQuery)?.includes("monitor")) {
@@ -112,14 +145,14 @@ const Dashboard = () => {
 
   return (
     <>
-      <div className="pageRoot">
+      <div className="pageRoot dashboard-wrapper">
         <Panel
           onClose={handleClose}
           onOpen={handleOpen}
           open={isPanelOpen}
           width={407}
         >
-          <LeftPanel />
+          <LeftPanel stydyHeight={sidebarHeight - 40} />
         </Panel>
         <Panel
           className={
@@ -145,14 +178,21 @@ const Dashboard = () => {
               </Tabs>
             </div>
 
-            <div style={{ padding: 20 }}>
+            <div
+              id="tabsContainer"
+              ref={mainContentRef}
+              style={{ padding: 20 }}
+            >
               {value === 0 && (
                 <MonitorTab
                   fetchLatestData={fetchLatestData}
+                  updateHeight={setHeight}
                   protId={dashboard?.selectedCard?.prot_id}
                 />
               )}
-              {value === 1 && <DataflowTab updateData={updateData} />}
+              {value === 1 && (
+                <DataflowTab updateHeight={setHeight} updateData={updateData} />
+              )}
             </div>
           </main>
         </Panel>

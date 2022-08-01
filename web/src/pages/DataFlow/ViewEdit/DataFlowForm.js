@@ -168,7 +168,7 @@ const DataFlowFormBase = (props) => {
   }, [initialValues, vendors, locations]);
 
   useEffect(() => {
-    setLocationDetail(selectedLocation || null);
+    if (selectedLocation.value) setLocationDetail(selectedLocation || null);
   }, [selectedLocation]);
 
   useEffect(() => {
@@ -268,6 +268,7 @@ const DataFlowFormBase = (props) => {
                   onChange={(v) => changeFormField(v, "dataflowType")}
                   label="Data Flow Type"
                   disabled={testLock || prodLock || !canUpdateDataFlow}
+                  className="dataset-data-flow-type"
                 >
                   <Radio value="test" label="Test" />
                   <Radio value="production" label="Production" />
@@ -327,6 +328,7 @@ const DataFlowFormBase = (props) => {
                       className="autocomplete_field"
                       variant="search"
                       singleSelect
+                      canDeselect={false}
                       fullWidth
                     />
                   )}
@@ -417,6 +419,7 @@ const ReduxForm = compose(
   reduxForm({
     form: "DataFlowForm",
     validate,
+    enableReinitialize: true,
   }),
   connect((state) => ({ values: getFormValues("DataFlowForm")(state) }))
 )(DataFlowFormBase);

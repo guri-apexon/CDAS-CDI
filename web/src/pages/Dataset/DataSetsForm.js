@@ -273,6 +273,13 @@ const DataSetsFormBase = (props) => {
                 label="sFTP Folder Path"
                 disabled={!canUpdateDataFlow}
               />
+
+              {/* Hidden Fields For Path Validation */}
+              <ReduxFormTextField
+                name="sftpPathValue"
+                id="sftpPathValue"
+                type="hidden"
+              />
             </Grid>
             <Grid item md={1}>
               <div className="vertical-line">
@@ -371,7 +378,10 @@ const ReduxForm = compose(
 
 const selector = formValueSelector("DataSetsForm");
 const DataSetsForm = connect((state) => ({
-  initialValues: state.dataSets.formData, // pull initial values from account reducer
+  initialValues: {
+    ...state.dataSets.formData,
+    sftpPathValue: state.dataPackage.selectedDSDetails.path || null,
+  }, // pull initial values from account reducer
   enableReinitialize: true,
   formValues: selector(
     state,

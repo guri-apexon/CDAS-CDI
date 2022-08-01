@@ -2,6 +2,7 @@
 /* eslint-disable eqeqeq */
 import moment from "moment";
 import React from "react";
+import { isEmpty, isEqual } from "lodash";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import { TextField } from "apollo-react/components/TextField/TextField";
@@ -461,6 +462,13 @@ export const formatDataNew = (incomingData, protNo) => {
   return { headerNotMatching: !isAllDataMatch, data: [] };
 };
 
+export const capitaliseString = (str = "") => {
+  if (str.length > 1) {
+    return str ? str[0].toUpperCase() + str.toLowerCase().substring(1) : "";
+  }
+  return str.toUpperCase();
+};
+
 export const convertFileData = (sourceData, protNo) => {
   const data = sourceData?.slice(1); // removing header
   const protNbr = protNo?.toString();
@@ -475,7 +483,7 @@ export const convertFileData = (sourceData, protNo) => {
           columnName: e[2] || "",
           position: "",
           format: e[3] || "",
-          dataType: e[4] || "",
+          dataType: capitaliseString(e[4]),
           primaryKey: setYN(e[5]),
           unique: setYN(e[6]),
           required: setYN(e[7]),
@@ -489,6 +497,45 @@ export const convertFileData = (sourceData, protNo) => {
         return newObj;
       })
     : [];
+};
+
+export const formatData = (incomingData, protNo) => {
+  const data = incomingData.slice(1); // removing header
+  let isAllDataMatch = false;
+  if (data.length === 1) {
+    isAllDataMatch = data[0][0].toString() === protNo.toString();
+  } else {
+    isAllDataMatch = data
+      .map((e) => e[0])
+      .every((ele) => ele.toString() === protNo.toString()); // checking for protocol match
+  }
+
+  if (isAllDataMatch) {
+    const newData =
+      data.length > 0
+        ? data.map((e, i) => {
+            const newObj = {
+              uniqueId: `u${i}`,
+              variableLabel: e[1] || "",
+              columnName: e[2] || "",
+              position: "",
+              format: e[3] || "",
+              dataType: capitaliseString(e[4]),
+              primaryKey: setYN(e[5]),
+              unique: setYN(e[6]),
+              required: setYN(e[7]),
+              minLength: e[8] || "",
+              maxLength: e[9] || "",
+              values: e[10] || "",
+              isInitLoad: true,
+              isHavingColumnName: true,
+            };
+            return newObj;
+          })
+        : [];
+    return newData;
+  }
+  return [];
 };
 
 export const Capitalize = (str) => {
@@ -520,7 +567,7 @@ export const createSourceFromKey = (tableRows, key) => {
 
 export const dataStruct = [
   {
-    value: "tabular",
+    value: "Tabular",
     label: "Tabular",
   },
   {
@@ -668,8 +715,8 @@ export const isSftp = (str = "") => {
 export const validateFields = (name, ext) => {
   if (!name || !ext) return false;
   const fileExt = name.split(".").pop();
-  if (ext === "sas") ext = "xpt";
-  if (ext === fileExt.toLowerCase()) {
+  if (ext?.toLowerCase() === "sas") ext = "xpt";
+  if (ext?.toLowerCase() === fileExt.toLowerCase()) {
     return true;
   }
   return false;
@@ -767,4 +814,34 @@ export const getAppUrl = (app) => {
 export const goToApp = (path) => {
   console.log(path);
   window.location.href = path;
+};
+
+export const checkFormChanges = (form) => {
+  let isAnyChange = false;
+  if (!isEmpty(form)) {
+    Object.entries(form).forEach(([key, item]) => {
+      if (key && item?.initial && item?.values) {
+        if (!isEqual(item?.initial, item?.values)) {
+          isAnyChange = true;
+        }
+      }
+    });
+  }
+  return isAnyChange;
+};
+
+export const stringToBoolean = (string) => {
+  switch (string?.toString().toLowerCase().trim()) {
+    case "true":
+    case "yes":
+    case "1":
+      return true;
+    case "false":
+    case "no":
+    case "0":
+    case null:
+      return false;
+    default:
+      return false;
+  }
 };

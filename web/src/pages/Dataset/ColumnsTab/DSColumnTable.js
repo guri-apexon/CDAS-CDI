@@ -16,6 +16,7 @@ import { downloadTemplate } from "../../../utils/downloadData";
 import {
   updateDatasetColumns,
   getDatasetColumns,
+  setDataSetColumnCount,
 } from "../../../store/actions/DataSetsAction";
 import { createColumns, deleteCD } from "../../../services/ApiServices";
 import {
@@ -33,6 +34,10 @@ import usePermission, {
   Features,
   useStudyPermission,
 } from "../../../components/Common/usePermission";
+import {
+  formComponentActive,
+  formComponentInActive,
+} from "../../../store/actions/AlertActions";
 
 const maxSize = 150000;
 
@@ -99,6 +104,8 @@ export default function DSColumnTable({
   const [selectedCN, setSelectedCN] = useState([]);
   const userInfo = getUserInfo();
   const initColumnObj = getInitColumnObj();
+  const [isDFSynced, setIsDFSynced] = useState(false);
+  const [isSftpDf, setIsSftpDf] = useState(false);
 
   const setInitRow = () => {
     setRows([{ uniqueId: 1, ...initColumnObj }]);
@@ -118,7 +125,7 @@ export default function DSColumnTable({
       // setSelectedRows(forImport);
       // setEditedRows(formattedData);
     }
-  }, []);
+  }, [formattedData, dataOrigin]);
 
   useEffect(() => {
     if (!isSftp(locationType)) {
@@ -143,6 +150,12 @@ export default function DSColumnTable({
     );
   }, [rows]);
 
+  useEffect(() => {
+    const { isSync, testflag } = dataFlowdetail;
+    if (isSync === "Y" && selectedDataset.isSync === "Y" && testflag === 0) {
+      setIsDFSynced(true);
+    }
+  }, [dataFlowdetail]);
   // useEffect(() => {
   //   if (rows.length === datasetColumns) {
   //     const updatingId = rows.map((e) => {
@@ -220,6 +233,8 @@ export default function DSColumnTable({
     setIsFilePicked(false);
     setSelectedFile(null);
     setImportedData([]);
+    // document.querySelector("#file").value = "";
+    inputFile.current.value = "";
   };
 
   const handleOverWrite = async () => {
@@ -455,6 +470,7 @@ export default function DSColumnTable({
     } else {
       setMoreColumns(allColumns);
     }
+    setIsSftpDf(isSftp(locationType));
   }, []);
   const toggleEditMode = (cancel) => {
     setRows((prevRows) => {
@@ -480,6 +496,19 @@ export default function DSColumnTable({
       }));
     });
     setEditedBackup([]);
+  };
+
+  const moreColumnsWithoutSort = (cols) => {
+    return cols.map((e) => {
+      return {
+        header: e.header,
+        hidden: e?.hidden || false,
+        accessor: e.accessor,
+        customCell: e.customCell,
+        filterFunction: e.filterFunction,
+        filterComponent: e.filterComponent,
+      };
+    });
   };
 
   const onEditAll = () => {
@@ -572,6 +601,10 @@ export default function DSColumnTable({
           }
         });
         setRows([...prevRows]);
+      } else {
+        messageContext.showErrorMessage(
+          created.message || "Something went wrong"
+        );
       }
     }
 
@@ -680,7 +713,13 @@ export default function DSColumnTable({
       //   ["asc"]
       // );
 
-      setRows([...removeExistingRowData, editedRowData]);
+      removeExistingRowData.splice(
+        editedRowData.uniqueId - 1,
+        0,
+        editedRowData
+      );
+
+      setRows([...removeExistingRowData]);
       // setEditedRows([...removeEdited]);
       // setSelectedRows([...removeRow]);
     }
@@ -711,6 +750,7 @@ export default function DSColumnTable({
   };
 
   const onRowEdit = (row) => {
+    console.log({ row });
     setEditedBackup([{ ...row }]);
     setRows((prevRows) =>
       prevRows.map((e) => {
@@ -769,11 +809,25 @@ export default function DSColumnTable({
   useEffect(() => {
     const editedlength = getEditedRows().length;
     setEditedCount(editedlength);
+
+    // Set edit row count in store for monitoring changes and update form status
+    dispatch(setDataSetColumnCount(editedlength));
+    if (editedlength !== 0) {
+      dispatch(formComponentActive());
+    } else {
+      dispatch(formComponentInActive());
+    }
+
     if (editedlength && rows.some((row) => !validateRow(row))) {
       setDisableSaveAll(true);
     } else {
       setDisableSaveAll(false);
     }
+
+    return () => {
+      // reset count for rows whenever component is unmounted
+      dispatch(setDataSetColumnCount(0));
+    };
   }, [rows]);
 
   return (
@@ -794,7 +848,11 @@ export default function DSColumnTable({
               ? `${rows.length} dataset columns`
               : `${rows.length} dataset column`
           }`}
-          columns={moreColumns}
+          columns={
+            editedBackup.length
+              ? moreColumnsWithoutSort(moreColumns)
+              : moreColumns
+          }
           initialSortedColumn="uniqueId"
           initialSortOrder="asc"
           rowId="uniqueId"
@@ -814,10 +872,12 @@ export default function DSColumnTable({
             dsProdLock,
             locationType,
             pkDisabled,
+            isDFSynced,
             haveHeader,
             editedCount,
             canUpdateDataFlow,
             errorPrimary,
+            isSftpDf,
           }))}
           rowsPerPageOptions={[10, 50, 100, "All"]}
           rowProps={{ hover: false }}

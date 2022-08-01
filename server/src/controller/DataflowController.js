@@ -5,18 +5,20 @@ const moment = require("moment");
 const _ = require("lodash");
 const { createUniqueID } = require("../helpers/customFunctions");
 const helper = require("../helpers/customFunctions");
+const { trim } = require("lodash");
 const constants = require("../config/constants");
 const { addDataflowHistory } = require("./CommonController");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 const externalFunction = require("../createDataflow/externalDataflowFunctions");
 const datasetHelper = require("../helpers/datasetHelper");
 const { checkPermissionStudy } = require("../helpers/userHelper");
+const { Console } = require("winston/lib/winston/transports");
 
 exports.getStudyDataflows = async (req, res) => {
   try {
     const { protocolId } = req.body;
     if (protocolId) {
-      const query = `select distinct
+      const query = `select 
       "studyId",
       "dataFlowId",
       count(distinct datasetid) as "dsCount",
@@ -39,39 +41,36 @@ exports.getStudyDataflows = async (req, res) => {
       (
       select
       s.prot_id as "studyId",
-      d.dataflowid as "dataFlowId",
-      d3.datapackageid ,
-      d4.datasetid ,
+      df.dataflowid as "dataFlowId",
+      dp.datapackageid ,
+      ds.datasetid ,
       s.prot_nbr as "studyName",
       dh."version",
-      d.name as "dataFlowName",
-      d.fsrstatus as "fsrStatus",
-      d.testflag as "type",
-      d.insrt_tm as "dateCreated",
-      vend_nm as "vendorSource",
-      d.description,
-      d.type as "adapter",
-      d.active as "status",
-      d.externalsystemname as "externalSourceSystem",
-      loc_typ as "locationType",
-      d.updt_tm as "lastModified",
-      d.refreshtimestamp as "lastSyncDate"
-      from
-      ${schemaName}.dataflow d
-      left join ${schemaName}.vendor v on d.vend_id = v.vend_id
-      left join ${schemaName}.source_location sl on d.src_loc_id = sl.src_loc_id
-      left join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
-      left join ${schemaName}.study s on d.prot_id = s.prot_id
-      left join ${schemaName}.datapackage d3 on (d.dataflowid=d3.dataflowid)
-      left join ${schemaName}.dataset d4 on (d3.datapackageid=d4.datapackageid)
-      left join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid = d.dataflowid
+      df.name as "dataFlowName",
+      df.fsrstatus as "fsrStatus",
+      df.testflag as "type",
+      df.insrt_tm as "dateCreated",
+      v.vend_nm as "vendorSource",
+      df.description,
+      df.type as "adapter",
+      df.active as "status",
+      df.externalsystemname as "externalSourceSystem",
+      sl.loc_typ as "locationType",
+      df.updt_tm as "lastModified",
+      df.refreshtimestamp as "lastSyncDate"
+      from ${schemaName}.study s 
+      Inner JOIN ${schemaName}.dataflow df on s.prot_id = df.prot_id
+      inner join ${schemaName}.vendor v on df.vend_id = v.vend_id
+      inner join ${schemaName}.source_location sl on sl.src_loc_id = df.src_loc_id
+      inner join ${schemaName}.datapackage dp on dp.dataflowid = df.dataflowid
+      left join ${schemaName}.dataset ds on (ds.datapackageid= dp.datapackageid)
+      left join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid = df.dataflowid
       where s.prot_id = $1
-      and coalesce (d.del_flg,0) != 1
+      and coalesce (df.del_flg,0) != 1
       ) as df
       group by "studyId","dataFlowId","studyName","version","dataFlowName","type","dateCreated","vendorSource",description,adapter,status,"externalSourceSystem",
-      "fsrStatus","locationType","lastModified","lastSyncDate"`;
+      "fsrStatus","locationType","lastModified","lastSyncDate";`;
 
-      // Logger.info({ message: "getStudyDataflows" });
       const $q1 = await DB.executeQuery(query, [protocolId]);
 
       const formatDateValues = await $q1.rows.map((e) => {
@@ -265,19 +264,28 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     if (!ExternalId && dataPackage && Array.isArray(dataPackage)) {
       for (let i = 0; i < dataPackage.length; i++) {
         if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
-          for (let j = 0; j < dataPackage[0].dataSet.length; j++) {
-            const comp = await datasetHelper.findByMnemonic(
-              studyId,
-              testFlag,
-              vendorid,
-              dataPackage[i].dataSet[j].dataKindID,
-              dataPackage[i].dataSet[j].datasetName
-            );
-            if (comp) {
-              return apiResponse.validationErrorWithData(
-                res,
-                `Mnemonic ${dataPackage[i].dataSet[j].datasetName} is not unique.`
+          for (let j = 0; j < dataPackage[i].dataSet.length; j++) {
+            if (
+              studyId &&
+              vendorid &&
+              (testFlag != null || testFlag != undefined) &&
+              dataPackage[i].dataSet[j]?.dataKindID &&
+              dataPackage[i].dataSet[j]?.datasetName
+            ) {
+              const comp = await datasetHelper.findByMnemonic(
+                studyId,
+                testFlag,
+                vendorid,
+                dataPackage[i].dataSet[j].dataKindID,
+                dataPackage[i].dataSet[j].datasetName
               );
+
+              if (comp) {
+                return apiResponse.validationErrorWithData(
+                  res,
+                  `Mnemonic ${dataPackage[i].dataSet[j].datasetName} is not unique.`
+                );
+              }
             }
           }
         }
@@ -289,30 +297,38 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       let saveflagyes = false;
       if (dataPackage && Array.isArray(dataPackage)) {
         for (let i = 0; i < dataPackage.length; i++) {
-          /// Below value check is for incremental instead of loadtype
-          if (dataPackage[i].dataSet[i].incremental === true) {
-            for (
-              let j = 0;
-              j < dataPackage[0].dataSet[0].columnDefinition.length;
-              j++
-            ) {
-              if (
-                dataPackage[0].dataSet[0].columnDefinition[j].primaryKey ===
-                "Yes"
-              )
-                saveflagyes = true;
+          if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
+            for (let k = 0; k < dataPackage[i].dataSet.length; k++) {
+              /// Below value check is for incremental instead of loadtype
+              if (dataPackage[i].dataSet[k].incremental === true) {
+                if (
+                  dataPackage[i].dataSet[k].columnDefinition &&
+                  Array.isArray(dataPackage[i].dataSet[k].columnDefinition)
+                ) {
+                  for (
+                    let j = 0;
+                    j < dataPackage[i].dataSet[k].columnDefinition.length;
+                    j++
+                  ) {
+                    if (
+                      dataPackage[i].dataSet[k].columnDefinition[j]
+                        .primaryKey === "Yes"
+                    )
+                      saveflagyes = true;
+                  }
+                }
+                if (!saveflagyes)
+                  return apiResponse.ErrorResponse(
+                    res,
+                    `At least one primaryKey column must be identified when incremental is true.`
+                  );
+              }
             }
-            if (!saveflagyes)
-              return apiResponse.ErrorResponse(
-                res,
-                `At least one primaryKey column must be identified when incremental is true.`
-              );
           }
         }
       }
-
-      testFlag = helper.stringToBoolean(testFlag);
     }
+    testFlag = helper.stringToBoolean(testFlag);
 
     if (locationID) {
       const {
@@ -362,7 +378,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
         DFTestname = DFTestname + "-1";
       }
     }
-
     DFBody = [
       DFTestname,
       vendorid,
@@ -764,6 +779,54 @@ exports.updateDataFlow = async (req, res) => {
       }
     }
 
+    // data package configuration validatiaon for both internal and external system
+    if (
+      !ExternalId &&
+      dataPackage &&
+      Array.isArray(dataPackage) &&
+      (helper.isSftp(connectionType) || helper.isSftp(locationType))
+    ) {
+      const errorPackage = [];
+
+      for (let each of dataPackage) {
+        if (each.noPackageConfig === 0) {
+          const errorMessages = helper.validateNoPackagesChecked(each);
+
+          const messageCount = errorMessages.length;
+          if (messageCount > 0) {
+            messageCount === 1
+              ? errorPackage.push(errorMessages[0])
+              : errorPackage.push(errorMessages.join(" '|' "));
+          }
+        }
+        if (each && each.noPackageConfig === 1) {
+          const errorMessages = helper.validateNoPackagesUnChecked(each);
+          const messageCount = errorMessages.length;
+          if (messageCount > 0) {
+            messageCount === 1
+              ? errorPackage.push(errorMessages[0])
+              : errorPackage.push(errorMessages.join(" '|' "));
+          }
+        }
+
+        if (each && each.noPackageConfig === 0) {
+          if (
+            !each.type ||
+            (!each.name && !each.namingConvention) ||
+            trim(each.type).length === 0 ||
+            (trim(each.name).length === 0 &&
+              trim(each.namingConvention).length === 0)
+          ) {
+            errorPackage.push(
+              "If Package is opted, Package name and type are mandatory and can not be blank"
+            );
+          }
+        }
+      }
+      if (errorPackage.length > 0) {
+        return apiResponse.validationErrorWithData(res, errorPackage);
+      }
+    }
     // // return;
 
     // // const resErr = helper.validation(valData);
@@ -861,7 +924,9 @@ exports.updateDataFlow = async (req, res) => {
             }
 
             if (res && res.sucRes) {
-              isSomthingUpdate = true;
+              // console.log("res.sucRes", res.sucRes);
+              (ResponseBody.dataFlowName = res.sucRes.name),
+                (isSomthingUpdate = true);
             }
           });
 
@@ -933,6 +998,11 @@ exports.updateDataFlow = async (req, res) => {
                     });
 
                   if (each.dataSet?.length) {
+                    let dpRowsUpdated = await DB.executeQuery(
+                      `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
+                    );
+                    const noPackageConfig =
+                      dpRowsUpdated?.rows[0].nopackageconfig;
                     // if datasets exists
                     dpResObj.dataSets = [];
                     dpErrObj.dataSets = [];
@@ -992,7 +1062,7 @@ exports.updateDataFlow = async (req, res) => {
                             `Cannot switch to Cumulative if the dataflow has been synced once.`
                           );
                         }
-                        
+
                         dsResObj.ExternalId = datasetExternalId;
                         dsResObj.ID = DSId;
 
@@ -1034,7 +1104,8 @@ exports.updateDataFlow = async (req, res) => {
                                 custSql,
                                 externalSysName,
                                 testFlag,
-                                userId
+                                userId,
+                                noPackageConfig
                               )
                               .then((res) => {
                                 // if (res.sucRes?.length) {
@@ -1270,7 +1341,7 @@ exports.updateDataFlow = async (req, res) => {
                         dpErrObj.dataSets.push(dsErrObj);
                       } else {
                         // Function call for insert dataSet level data
-
+                        const noPackageConfig = each.noPackageConfig;
                         var DatasetInsert = await externalFunction
                           .datasetLevelInsert(
                             obj,
@@ -1282,7 +1353,8 @@ exports.updateDataFlow = async (req, res) => {
                             externalSysName,
                             testFlag,
                             userId,
-                            null
+                            null,
+                            noPackageConfig
                           )
                           .then((res) => {
                             // if (res.sucRes?.length) {
@@ -1348,6 +1420,10 @@ exports.updateDataFlow = async (req, res) => {
         const deleteQuery = `delete from ${schemaName}.dataflow_version where dataflowid='${DFId}' and
         version ='${DFVer}'`;
         await DB.executeQuery(deleteQuery);
+
+        const deleteCdr = `delete from ${schemaName}.cdr_ta_queue where dataflowid='${DFId}' and
+        "VERSION" ='${DFVer}'`;
+        await DB.executeQuery(deleteCdr);
 
         Object.keys(ResponseBody).forEach((key) => {
           ResponseBody.version = DFVer - 1;
@@ -1591,7 +1667,7 @@ exports.activateDataFlow = async (req, res) => {
 
       // console.log(oldVersion.version, updatedLogs);
       var resData = { ...dataflowObj, version: updatedLogs };
-      if (oldVersion.version === updatedLogs) {
+      if (oldVersion?.version === updatedLogs) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
@@ -1654,7 +1730,7 @@ exports.inActivateDataFlow = async (req, res) => {
     });
 
     var resData = { ...dataflowObj, version: updatedLogs };
-    if (oldVersion.version === updatedLogs) {
+    if (oldVersion?.version === updatedLogs) {
       resData.versionBumped = false;
     } else {
       resData.versionBumped = true;
@@ -1692,13 +1768,9 @@ exports.syncDataFlow = async (req, res) => {
     //   [dataFlowId, curDate]
     // );
 
-    return apiResponse.successResponse(
-      res,
-      "Sync pipeline configs successfully written to kafka",
-      {
-        success: true,
-      }
-    );
+    return apiResponse.successResponse(res, "Sync initiated successfully", {
+      success: true,
+    });
   } catch (error) {
     Logger.error("catch :syncDataFlow");
     return apiResponse.ErrorResponse(res, error);
@@ -1716,6 +1788,11 @@ exports.getDataflowDetail = async (req, res) => {
     Logger.info({ message: "dataflowDetail" });
     DB.executeQuery(searchQuery, [dataFlowId]).then((response) => {
       const dataflowDetail = response.rows[0] || null;
+      if (dataflowDetail && dataflowDetail.exptfstprddt)
+        dataflowDetail.exptfstprddt = moment(
+          dataflowDetail.exptfstprddt
+        ).format("DD-MMM-yyyy");
+
       return apiResponse.successResponseWithData(
         res,
         "Operation success",
@@ -1758,7 +1835,7 @@ exports.searchDataflow = async (req, res) => {
 exports.fetchdataflowSource = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
-    let q = `select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."name" as datasetname from ${schemaName}.dataflow d
+    let q = `select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."mnemonic" as datasetname from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
@@ -1785,8 +1862,8 @@ exports.fetchdataflowSource = async (req, res) => {
 exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
-    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, 
-    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, S.prot_nbr_stnd
+    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, d2."path" as datapackagepath,
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, d3.datasetid, S.prot_nbr_stnd
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner Join ${schemaName}.study S on (d.prot_id = S.prot_id)
@@ -1800,107 +1877,109 @@ exports.fetchdataflowDetails = async (req, res) => {
       message: "fetchdataflowDetails",
       dataflow_id,
     });
-    let { rows } = await DB.executeQuery(q);
-    if (!rows.length || rows.length === 0) {
+    const { rows: response } = await DB.executeQuery(q);
+    if (!response.length) {
       return apiResponse.ErrorResponse(
         res,
         "There is no dataflow exist with this id"
       );
     }
-    let response = rows;
-    let tempDP = _.uniqBy(response, "datapackageid");
-    let tempDS = _.uniqBy(response, "datasetid");
-    let newArr = [];
+    // console.log("el.datasetid", response);
+    // return;
+    const tempDP = _.uniqBy(response, "datapackageid");
+    const tempDS = _.uniqBy(response, "datasetid");
+    const dataflowObj = response[0];
+    const packageArr = [];
     for (const each of tempDP) {
+      const datapackageObj = {
+        externalID: each.ExternalId,
+        type: each.type,
+        sasXptMethod: each.sasxptmethod,
+        path: each.datapackagepath,
+        password: each.password,
+        noPackageConfig: each.nopackageconfig,
+        name: each.datapackagename,
+        dataSet: [],
+        active: each.active,
+      };
       for (const el of tempDS) {
         if (el.datapackageid === each.datapackageid) {
-          let datapackageObj = {
-            externalID: each.ExternalId,
-            type: each.type,
-            sasXptMethod: each.sasxptmethod,
-            path: each.path,
-            password: each.password,
-            noPackageConfig: each.nopackageconfig,
-            name: each.datapackagename,
-            dataSet: [],
-            active: each.active,
+          // if (el.datasetid === each.datasetid) {
+          let datasetObj = {
+            columncount: el.columncount,
+            externalID: el.ExternalId,
+            customQuery: el.customsql_yn,
+            customSql: el.customsql,
+            tableName: el.tbl_nm,
+            incremental: el.incremental,
+            offsetColumn: el.offsetcolumn,
+            type: el.type,
+            dataTransferFrequency: el.data_freq,
+            OverrideStaleAlert: el.ovrd_stale_alert,
+            rowDecreaseAllowed: el.rowdecreaseallowed,
+            quote: el.quote,
+            path: el.path,
+            name: el.datasetname,
+            mnemonic: el.mnemonic,
+            headerRowNumber: el.headerrownumber,
+            footerRowNumber: el.footerrownumber,
+            escapeCode: el.escapecode,
+            delimiter: el.delimiter,
+            dataKind: el.datakindid,
+            naming_convention: el.naming_convention,
+            columnDefinition: [],
+            active: el.active,
           };
-          if (el.datasetid === each.datasetid) {
-            let datasetObj = {
-              columncount: el.columncount,
-              externalID: el.ExternalId,
-              customQuery: el.customsql_yn,
-              customSql: el.customsql,
-              tableName: el.tbl_nm,
-              incremental: el.incremental,
-              offsetColumn: el.offsetcolumn,
-              type: el.type,
-              dataTransferFrequency: el.data_freq,
-              OverrideStaleAlert: el.ovrd_stale_alert,
-              rowDecreaseAllowed: el.rowdecreaseallowed,
-              quote: el.quote,
-              path: el.path,
-              name: el.datasetname,
-              mnemonic: el.mnemonic,
-              headerRowNumber: el.headerrownumber,
-              footerRowNumber: el.footerrownumber,
-              escapeCode: el.escapecode,
-              delimiter: el.delimiter,
-              dataKind: el.datakindid,
-              naming_convention: el.naming_convention,
-              columnDefinition: [],
-              active: el.active,
-            };
-            for (let obj of rows) {
-              if (obj.datasetid === el.datasetid) {
-                let columnObj = {
-                  name: obj.name,
-                  dataType: obj.datatype,
-                  primaryKey: obj.primarykey,
-                  required: obj.required,
-                  characterMin: obj.charactermin,
-                  characterMax: obj.charactermax,
-                  position: obj.position,
-                  format: obj.format,
-                  lov: obj.lov,
-                  requiredfield: obj.requiredfield?.requiredfield || null,
-                  unique: obj.unique,
-                  variable: obj.variable?.variable || null,
-                };
-                datasetObj.columnDefinition.push(columnObj);
-              }
+          for (let obj of response) {
+            if (obj.datasetid === el.datasetid) {
+              let columnObj = {
+                columnName: obj.name,
+                dataType: obj.datatype,
+                primaryKey: obj.primarykey,
+                required: obj.required,
+                characterMin: obj.charactermin,
+                characterMax: obj.charactermax,
+                position: obj.position,
+                format: obj.format,
+                lov: obj.lov,
+                requiredfield: obj.requiredfield?.requiredfield || null,
+                unique: obj.unique,
+                variable: obj.variable?.variable || null,
+              };
+              datasetObj.columnDefinition.push(columnObj);
             }
-            datapackageObj.dataSet.push(datasetObj);
           }
-          newArr.push(datapackageObj);
+          datapackageObj.dataSet.push(datasetObj);
+          // }
         }
       }
+      packageArr.push(datapackageObj);
     }
     let myobj = {
-      vendorName: rows[0].vend_nm,
-      protocolNumberStandard: rows[0].prot_nbr_stnd,
-      type: rows[0].type,
-      name: rows[0].dataflowname,
-      externalID: rows[0].externalid,
-      externalSystemName: rows[0].externalsystemname,
-      connectionType: rows[0].connectiontype,
-      location: rows[0].src_loc_id,
-      locationName: rows[0].locationName,
-      exptDtOfFirstProdFile: rows[0].expt_fst_prd_dt,
-      testFlag: rows[0].test_flag,
-      prodFlag: rows[0].test_flag === 1 ? 1 : 0,
-      description: rows[0].description,
-      // connectiondriver: rows[0].connectiondriver,
-      fsrstatus: rows[0].fsrstatus,
-      vend_id: rows[0].vend_id,
-      src_loc_id: rows[0].src_loc_id,
-      data_in_cdr: rows[0].data_in_cdr,
-      configured: rows[0].configured,
-      active: rows[0].active,
-      dataPackage: newArr,
-      dataStructure: rows[0].datastructure,
-      protocolNumberStandard: rows[0].prot_nbr_stnd,
-      serviceOwners: rows[0]?.serv_ownr?.split(","),
+      vendorName: dataflowObj.vend_nm,
+      protocolNumberStandard: dataflowObj.prot_nbr_stnd,
+      type: dataflowObj.type,
+      name: dataflowObj.dataflowname,
+      externalID: dataflowObj.externalid,
+      externalSystemName: dataflowObj.externalsystemname,
+      connectionType: dataflowObj.connectiontype,
+      location: dataflowObj.src_loc_id,
+      locationName: dataflowObj.locationName,
+      exptDtOfFirstProdFile: dataflowObj.expt_fst_prd_dt,
+      testFlag: dataflowObj.test_flag,
+      prodFlag: dataflowObj.test_flag === 1 ? 1 : 0,
+      description: dataflowObj.description,
+      // connectiondriver: dataflowObj.connectiondriver,
+      fsrstatus: dataflowObj.fsrstatus,
+      vend_id: dataflowObj.vend_id,
+      src_loc_id: dataflowObj.src_loc_id,
+      data_in_cdr: dataflowObj.data_in_cdr,
+      configured: dataflowObj.configured,
+      active: dataflowObj.active,
+      dataPackage: packageArr,
+      dataStructure: dataflowObj.datastructure,
+      protocolNumberStandard: dataflowObj.prot_nbr_stnd,
+      serviceOwners: dataflowObj?.serv_ownr?.split(","),
     };
     return apiResponse.successResponseWithData(
       res,
@@ -1986,6 +2065,43 @@ exports.updateDataflowConfig = async (req, res) => {
     } = req.body;
 
     const {
+      rows: [dataFlowCount],
+    } = await DB.executeQuery(
+      `SELECT count(1) from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}' and active=1`
+    );
+
+    let dataSet_count = 0;
+    const dataPackage = await DB.executeQuery(
+      `SELECT datapackageid from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}'`
+    );
+    const DPID = dataPackage.rows;
+
+    if (DPID) {
+      for (let id of DPID) {
+        const {
+          rows: [datasetCount],
+        } = await DB.executeQuery(
+          `SELECT count(1) from ${schemaName}.dataset where datapackageid='${id.datapackageid}' and active=1`
+        );
+
+        dataSet_count += parseInt(datasetCount.count);
+      }
+    }
+
+    if (dataFlowCount.count == 0) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Please make dataFlow active in order to save the configuration"
+      );
+    }
+    if (dataStructure !== "TabularRaveSOD" && dataSet_count == 0) {
+      return apiResponse.ErrorResponse(
+        res,
+        "Please add or active at-least one dataset in order to save the configuration"
+      );
+    }
+
+    const {
       rows: [oldVersion],
     } = await DB.executeQuery(
       `SELECT version from ${schemaName}.dataflow_version
@@ -2036,7 +2152,7 @@ exports.updateDataflowConfig = async (req, res) => {
           vendorID,
           protocolNumberStandard,
           description,
-          testFlag
+          helper.stringToBoolean(testFlag)
         );
       }
       const dFTimestamp = helper.getCurrentTime();
@@ -2045,6 +2161,7 @@ exports.updateDataflowConfig = async (req, res) => {
         serviceOwners && Array.isArray(serviceOwners)
           ? serviceOwners.join()
           : "";
+
       const dFBody = [
         dataflowId,
         vendorID,
@@ -2091,7 +2208,7 @@ exports.updateDataflowConfig = async (req, res) => {
       if (!Object.keys(diffObj).length) {
         return apiResponse.ErrorResponse(
           res,
-          "Please change something to update"
+          "Please change some values to update dataflow config"
         );
       }
 
@@ -2107,7 +2224,7 @@ exports.updateDataflowConfig = async (req, res) => {
 
       var resData = { ...dataflowObj, version: updatedLogs };
 
-      if (oldVersion.version === updatedLogs) {
+      if (oldVersion?.version === updatedLogs) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;

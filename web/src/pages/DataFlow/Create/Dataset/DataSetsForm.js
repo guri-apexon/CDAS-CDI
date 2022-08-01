@@ -4,6 +4,7 @@ import compose from "@hypnosphi/recompose/compose";
 import { connect, useDispatch } from "react-redux";
 import { reduxForm, getFormValues, formValueSelector } from "redux-form";
 import { withStyles } from "@material-ui/core/styles";
+import SearchIcon from "apollo-react-icons/Search";
 import Paper from "apollo-react/components/Paper";
 import FixedBar from "apollo-react/components/FixedBar";
 import Radio from "apollo-react/components/Radio";
@@ -93,6 +94,7 @@ const DataSetsFormBase = (props) => {
     defaultFooterRowNumber,
     defaultLoadType,
     initialValues,
+    dataPackage,
   } = props;
   // const [selectedClinicalData, SetSelectedClinicalData] = useState([]);
 
@@ -274,6 +276,14 @@ const DataSetsFormBase = (props) => {
                 size="small"
                 label="sFTP Folder Path"
               />
+
+              {/* Hidden Fields For Path Validation */}
+              <ReduxFormTextField
+                name="sftpPathValue"
+                id="sftpPathValue"
+                type="hidden"
+                value={dataPackage?.path}
+              />
             </Grid>
             <Grid item md={1}>
               <div className="vertical-line">
@@ -281,24 +291,27 @@ const DataSetsFormBase = (props) => {
               </div>
             </Grid>
             <Grid item md={6}>
-              <ReduxFormAutocompleteV2
-                name="clinicalDataType"
-                autoSelect
-                id="clinicalDataType"
-                label="Clinical Data Type"
-                source={datakind}
-                input={{
-                  value: cdtValue,
-                  onChange: onChangeCDT,
-                }}
-                enableVirtualization
-                className="smallSize_autocomplete"
-                variant="search"
-                singleSelect
-                fullWidth
-                size="small"
-                // required
-              />
+              <Grid item md={6}>
+                <ReduxFormAutocompleteV2
+                  name="clinicalDataType"
+                  autoSelect
+                  id="clinicalDataType"
+                  label="Clinical Data Type"
+                  source={datakind}
+                  input={{
+                    value: cdtValue,
+                    onChange: onChangeCDT,
+                  }}
+                  enableVirtualization
+                  size="small"
+                  forcePopupIcon
+                  popupIcon={<SearchIcon fontSize="extraSmall" />}
+                  variant="search"
+                  singleSelect
+                  fullWidth
+                  // required
+                />
+              </Grid>
               {formValues === "Excel" && (
                 <ReduxFormPassword
                   name="filePwd"
@@ -386,6 +399,7 @@ const CreateDataSetsForm = connect((state, ownProps) => {
     datasetName:
       ownProps.initialValues.datasetName || formDataStore.datasetName || "",
     path: ownProps.initialValues.path || formDataStore.path || "",
+    sftpPathValue: ownProps?.dataPackage?.path || "",
   };
   // console.log("state.dataSets", initialValues, ownProps.initialValues);
   return {

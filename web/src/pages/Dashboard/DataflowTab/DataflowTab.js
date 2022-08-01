@@ -148,7 +148,7 @@ const ExpandCell = ({ row: { dataFlowId, expanded } }, handleTR) => {
 const statusList = ["Active", "Inactive"];
 // const typeList = ["Production", "Test"];
 
-export default function DataflowTab({ updateData }) {
+export default function DataflowTab({ updateData, updateHeight }) {
   const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const messageContext = useContext(MessageContext);
@@ -266,6 +266,7 @@ export default function DataflowTab({ updateData }) {
   const handleSync = async () => {
     const { dataFlowId, version } = selectedFlow;
     const syncStatus = await syncNowDataFlow({ version, dataFlowId });
+    messageContext.showSuccessMessage(syncStatus.message);
     if (syncStatus.success) {
       await updateData();
     }
@@ -739,6 +740,7 @@ export default function DataflowTab({ updateData }) {
     setTableColumns([...moreColumns]);
     setTableRows([...rowData]);
     setTotalRows(rowData.length);
+    updateHeight();
   }, [rowData]);
 
   const EmptyTableComponent = () => (

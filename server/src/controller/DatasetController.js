@@ -121,7 +121,7 @@ async function saveSQLDataset(
     // console.log(" Catch::::", err);
     //throw error in json response with status 500.
     Logger.error("catch: create SQL Dataset");
-    Logger.error(err);
+    Logger.error(err.message);
     return apiResponse.ErrorResponse(
       res,
       err.message || "Something went wrong"
@@ -185,7 +185,7 @@ exports.saveDatasetData = async (req, res) => {
         userId,
         dfId,
         versionFreezed,
-        oldVersion.version
+        oldVersion.version || 0
       );
     }
 
@@ -284,7 +284,7 @@ exports.saveDatasetData = async (req, res) => {
         filePwd: values.filePwd,
         version: historyVersion,
       };
-      if (oldVersion.version === historyVersion) {
+      if (oldVersion?.version === historyVersion) {
         resData.versionBumped = false;
       } else {
         resData.versionBumped = true;
@@ -385,6 +385,11 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
       return apiResponse.ErrorResponse(res, "Something went wrong on update");
     }
 
+    if (oldData.tbl_nm != tableName) {
+      await DB.executeQuery(
+        `DELETE from ${schemaName}.columndefinition where datasetid = '${datasetid}';`
+      );
+    }
     const diffObj = helper.getdiffKeys(requestData, oldData);
 
     var idObj = {
@@ -430,7 +435,7 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
     );
   } catch (err) {
     //throw error in json response with status 500.
-    Logger.error(err);
+    Logger.error(err.message);
     return apiResponse.ErrorResponse(
       res,
       err?.message || "Something went wrong"
@@ -441,6 +446,7 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
 exports.updateDatasetData = async (req, res) => {
   try {
     const values = req.body;
+    console.log("values", values);
     const curDate = helper.getCurrentTime();
     Logger.info({ message: "update Dataset" });
     const {
@@ -454,7 +460,35 @@ exports.updateDatasetData = async (req, res) => {
       versionFreezed,
       clinicalDataType,
       loadType,
+      active,
     } = req.body;
+
+    if (!helper.stringToBoolean(active)) {
+      let dataSet_count = 0;
+      const dataPackage = await DB.executeQuery(
+        `SELECT datapackageid from ${schemaName}.datapackage WHERE dataflowid='${dfId}'`
+      );
+      const DPID = dataPackage.rows;
+
+      if (DPID) {
+        for (let id of DPID) {
+          const {
+            rows: [datasetCount],
+          } = await DB.executeQuery(
+            `SELECT count(1) from ${schemaName}.dataset where datapackageid='${id.datapackageid}' and active=1`
+          );
+
+          dataSet_count += parseInt(datasetCount.count);
+        }
+      }
+
+      if (dataSet_count < 2) {
+        return apiResponse.ErrorResponse(
+          res,
+          "Please inactivate the dataflow in order to inactive datasets"
+        );
+      }
+    }
 
     // const versionFreezed = false;
     const dataflow = await dataflowHelper.findById(dfId);
@@ -519,7 +553,7 @@ exports.updateDatasetData = async (req, res) => {
       );
     }
     if (!helper.isSftp(values.locationType)) {
-      return updateSQLDataset(res, values, versionFreezed, oldVersion.version);
+      return updateSQLDataset(res, values, versionFreezed, oldVersion?.version);
     }
     // For SFTP Datasets update
     const incremental = values.loadType === "Incremental" ? "Y" : "N";
@@ -620,11 +654,11 @@ exports.updateDatasetData = async (req, res) => {
     var resData = {
       ...updateDS.rows[0],
     };
-    if (oldVersion.version < newVersion) {
+    if (oldVersion?.version < newVersion) {
       resData.version = newVersion;
       resData.versionBumped = true;
     } else {
-      resData.version = oldVersion.version;
+      resData.version = oldVersion?.version || 0;
       resData.versionBumped = false;
     }
 
@@ -634,7 +668,7 @@ exports.updateDatasetData = async (req, res) => {
       resData
     );
   } catch (err) {
-    Logger.error(err);
+    Logger.error(err.message);
     return apiResponse.ErrorResponse(
       res,
       err.message || "Something went wrong"
@@ -668,7 +702,7 @@ exports.getVLCData = async (req, res) => {
 exports.getDatasetDetail = async (req, res) => {
   try {
     const { dfId, dpId, dsId } = req.body;
-    const query = `SELECT * from ${schemaName}.dataset WHERE datasetid = $1`;
+    const query = `SELECT *, data_in_cdr as "isSync" from ${schemaName}.dataset WHERE datasetid = $1`;
     Logger.info({ message: "getDatasetDetail" });
     let filePwd;
     try {

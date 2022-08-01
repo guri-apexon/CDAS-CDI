@@ -13,6 +13,7 @@ import {
   UPDATE_PACKAGE,
   UPDATE_DATA_PACKAGE_SUCCESS,
   DELETE_PACKAGE,
+  UPDATE_DATA_PACKAGE_FAILURE,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -70,6 +71,9 @@ export function* updateDataPackage(params) {
       response: fetchData.data,
     });
   } catch (e) {
-    yield put({ type: PACKAGES_LIST_FAILURE, message: e.message });
+    yield put({
+      type: UPDATE_DATA_PACKAGE_FAILURE,
+      message: e.response?.data?.message || "Something went wrong",
+    });
   }
 }

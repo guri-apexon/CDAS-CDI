@@ -25,6 +25,10 @@ import {
   API_URL,
   INGESTION_ISSUE_URL,
   INGESTION_ISSUE_COL_URL,
+  DATASETS_STATUS_TOGGLE,
+  DELETE_PACKAGE,
+  UPDATE_PACKAGE,
+  PREVIEWSQLAPI,
 } from "../constants";
 import store from "../store";
 import { freezeDfVersion } from "../store/actions/DataFlowAction";
@@ -260,7 +264,7 @@ export const syncNowDataFlow = async ({ version, dataFlowId }) => {
       dataFlowId,
       action: "SYNC",
     });
-    return res.data?.data || [];
+    return res?.data || [];
   } catch (err) {
     return console.log("Error", err);
   }
@@ -272,7 +276,7 @@ export const activateDF = async (dataFlowId) => {
       dataFlowId,
       userId,
     });
-    return res.data?.data || [];
+    return res?.data || [];
   } catch (err) {
     return console.log("Error", err);
   }
@@ -505,5 +509,55 @@ export const getIngestionIssueCols = async (reqBody) => {
     };
   }
 };
+
+export const toggleDatasetsStatus = async (reqBody) => {
+  try {
+    const res = await axios.post(
+      `${baseURL}/${DATASETS_STATUS_TOGGLE}`,
+      reqBody
+    );
+    return res.data || [];
+  } catch (err) {
+    return {
+      data: [],
+      error: err.response?.data?.message || "Something went wrong",
+    };
+  }
+};
+
+export const deletePackage = async (reqBody) => {
+  try {
+    const res = await axios.post(`${baseURL}/${DELETE_PACKAGE}`, reqBody);
+    return res.data || [];
+  } catch (err) {
+    return {
+      data: [],
+      error: err.response?.data?.message || "Something went wrong",
+    };
+  }
+};
+export const updatePackageStatus = async (reqBody) => {
+  try {
+    const res = await axios.post(`${baseURL}/${UPDATE_PACKAGE}`, reqBody);
+    return res.data || [];
+  } catch (err) {
+    return {
+      data: [],
+      error: err.response?.data?.message || "Something went wrong",
+    };
+  }
+};
+
+// export const getPreviewSQL = async (reqBody) => {
+//   try {
+//     const res = await axios.post(`${baseURL}/${PREVIEWSQLAPI}`, reqBody);
+//     return res.data || [];
+//   } catch (err) {
+//     return {
+//       data: [],
+//       error: err.response?.data?.message || "Something went wrong",
+//     };
+//   }
+// };
 
 export default searchStudy;

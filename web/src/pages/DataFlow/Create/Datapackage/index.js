@@ -38,6 +38,8 @@ const DataPackage = (
   const [sftpPath, setSftpPath] = useState("");
   const [disabled, setDisabled] = useState(false);
   const [notMatchedType, setNotMatchedType] = useState(false);
+  const [folderPathValidation, setFolderPathValidation] = useState(false);
+
   const userInfo = getUserInfo();
 
   const resetForm = () => {
@@ -47,6 +49,7 @@ const DataPackage = (
     setCompression("");
     setConfigShow(false);
     setNotMatchedType(false);
+    setFolderPathValidation(false);
   };
   const showConfig = (e, checked) => {
     setConfigShow(checked);
@@ -71,7 +74,11 @@ const DataPackage = (
       if (namingConvention !== "" || compression) {
         const validated = validateFields(namingConvention, compression);
         setNotMatchedType(!validated);
-        if (!validated) return false;
+        // check folder path field
+        if (!sftpPath?.trim()) {
+          setFolderPathValidation(true);
+        }
+        if (!validated || !sftpPath?.trim()) return false;
         if (namingConvention === "" || compression === "") {
           toast.showErrorMessage("Please fill all fields to proceed", "error");
           return false;
@@ -105,15 +112,14 @@ const DataPackage = (
   useEffect(() => {
     if (tabularSod) {
       setConfigShow(true);
-      setDisabled(true);
-      setCompression("zip");
+      setCompression("ZIP");
       setSodValue("Regular");
     } else {
       setConfigShow(false);
       setDisabled(false);
       setCompression("");
     }
-    setDisabled(locType && !isSftp(locType));
+    setDisabled(tabularSod || (locType && !isSftp(locType)));
   }, [locType, tabularSod]);
   return (
     <div className="data-packages">
@@ -176,7 +182,7 @@ const DataPackage = (
                   helperText={
                     tabularSod
                       ? "File extension must match package compression type e.g. zip"
-                      : "File extension must match package compression type e.g. 7z, zip, rar, or sasxpt"
+                      : "File extension must match package compression type e.g. 7z, zip, rar, or xpt"
                   }
                   onChange={(e) => {
                     setNotMatchedType(
@@ -196,11 +202,20 @@ const DataPackage = (
                 />
                 <TextField
                   className="mb-20"
-                  label="sFTP Folder Path (Optional)"
+                  label="sFTP Folder Path"
+                  error={folderPathValidation}
+                  helperText={
+                    folderPathValidation
+                      ? "Folder Path is required when Package Level Configuration is entered"
+                      : ""
+                  }
                   placeholder=""
                   size="small"
                   fullWidth
-                  onChange={(e) => setSftpPath(e.target.value)}
+                  onChange={(e) => {
+                    setSftpPath(e.target.value);
+                    setFolderPathValidation(false);
+                  }}
                 />
                 {tabularSod && (
                   <div>
@@ -209,7 +224,7 @@ const DataPackage = (
                       value={sodValue}
                       size="small"
                       onChange={(e) => {
-                        setSodValue(e.target.value);
+                        setSodValue(e.target.value || sodValue || "Regular");
                       }}
                       className="mb-20 package-type"
                     >

@@ -28,6 +28,7 @@ import {
   resetFTP,
   resetJDBC,
   getVLCData,
+  setDataSetColumnCount,
 } from "../../store/actions/DataSetsAction";
 import {
   updatePanel,
@@ -39,7 +40,7 @@ import {
   getDataFlowDetail,
   updateDSState,
 } from "../../store/actions/DataFlowAction";
-import { getUserInfo, isSftp } from "../../utils";
+import { checkFormChanges, getUserInfo, isSftp } from "../../utils";
 import DataSetsForm from "./DataSetsForm";
 import DataSetsFormSQL from "./DataSetsFormSQL";
 // import JDBCForm from "./JDBCForm";
@@ -50,6 +51,8 @@ import usePermission, {
   Features,
   useStudyPermission,
 } from "../../components/Common/usePermission";
+import SaveChangesModal from "../../components/DataFlow/SaveChangesModal";
+import { formComponentActive } from "../../store/actions/AlertActions";
 
 const userInfo = getUserInfo();
 
@@ -110,6 +113,18 @@ const Dataset = () => {
   const [columnsActive, setColumnsActive] = useState(false);
   const [openModal, setopenModal] = useState(false);
   const [checkDatasetColumnsExist, setDatasetColumnsExist] = useState(true);
+  const [showSaveChangeModal, setShowSaveChangeModal] = useState(true);
+  const [tempTabValue, setTempTabValue] = useState(0);
+  const [manualTriggerToggle, setManualTriggerToggle] = useState(false);
+  const [shouldTriggerRedirect, setShouldTriggerRedirect] = useState(true);
+  const [columnsEditMode, setColumnsEditMode] = useState(false);
+
+  // Save Change Master Flag
+  const SAVE_CHANGE_MODAL_FLAG =
+    process.env.REACT_APP_SAVE_CHANGE_MODAL_FLAG === "true"
+      ? true
+      : false || false;
+
   const dispatch = useDispatch();
   const params = useParams();
   const messageContext = useContext(MessageContext);
@@ -128,6 +143,7 @@ const Dataset = () => {
     selectedCard,
     selectedDataFlow: { dataFlowId: dfId },
   } = useSelector((state) => state.dashboard);
+  const form = useSelector((state) => state.form);
   const { prot_id: studyId } = selectedCard;
 
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
@@ -155,9 +171,13 @@ const Dataset = () => {
     isDatasetFetched,
     VLCData,
     datasetColumns,
+    dataSetRowCount,
+    previewedSql,
+    datasetUpdated,
   } = dataSets;
 
   const datasetid = params.datasetId;
+  const createMode = datasetid === "new";
   const { datasetid: dsId } = selectedDataset;
   const { isCustomSQL, tableName } = formDataSQL;
 
@@ -178,11 +198,71 @@ const Dataset = () => {
     setIsPanelOpen(true);
   };
 
+  // Set form to active set for alert box configuration
+  useEffect(() => {
+    if (SAVE_CHANGE_MODAL_FLAG) {
+      const isAnyChange =
+        form?.DataSetsForm?.anyTouched ||
+        form?.DataSetsFormSQL?.anyTouched ||
+        false;
+      if (isAnyChange) {
+        dispatch(formComponentActive());
+      }
+    }
+  }, [form]);
+
   const handleChangeTab = (event, v) => {
-    setValue(v);
+    if (SAVE_CHANGE_MODAL_FLAG) {
+      setManualTriggerToggle(true);
+      setTempTabValue(v);
+
+      // check if there is any changes within form and set toggle for modal
+      const isAnyChange =
+        form?.DataSetsForm?.anyTouched ||
+        form?.DataSetsFormSQL?.anyTouched ||
+        false;
+      if (isAnyChange) {
+        setManualTriggerToggle(true);
+      }
+      // set toggle in case of column tab and changes within columns
+      if (v === 0 && dataSetRowCount > 0) {
+        setManualTriggerToggle(true);
+      }
+      // if there is no change in data then proceed forward
+      if ((v !== 0 && !isAnyChange) || (v === 0 && dataSetRowCount === 0)) {
+        setValue(v);
+        if (datasetid !== "new" && datasetid !== null) {
+          dispatch(getDatasetColumns(datasetid));
+        }
+        setManualTriggerToggle(false);
+      }
+    } else {
+      setValue(v);
+      if (datasetid !== "new" && datasetid !== null) {
+        dispatch(getDatasetColumns(datasetid));
+      }
+    }
+  };
+
+  // logic to run after user click discard changes on save modal
+  const handlePostDiscardChange = () => {
+    setValue(tempTabValue);
     if (datasetid !== "new" && datasetid !== null) {
       dispatch(getDatasetColumns(datasetid));
     }
+    setManualTriggerToggle(false);
+  };
+
+  // logic to run after user click continue editing changes on save modal
+  const handlePostContinue = () => {
+    setManualTriggerToggle(false);
+  };
+
+  const handleManualChecker = (isAnyChange) => {
+    if (value === 1 && dataSetRowCount > 0) {
+      return true;
+    }
+    return isAnyChange;
   };
 
   const getDataSetType = (type) => {
@@ -214,15 +294,17 @@ const Dataset = () => {
   useEffect(() => {
     setValue(0);
     //   setColumnsActive(false);
+    if (createMode) {
+      dispatch(resetJDBC());
+    }
   }, [params]);
 
   useEffect(() => {
     if (datasetid === null || datasetid === "new") {
       dispatch(resetFTP());
-      dispatch(resetJDBC());
     } else {
       dispatch(getDataSetDetail(datasetid, dfId, dpId));
-      dispatch(getDatasetColumns(datasetid));
+      if (isSftp(locationType)) dispatch(getDatasetColumns(datasetid));
       dispatch(getVLCData(datasetid));
     }
   }, [datasetid, dsCreatedSuccessfully]);
@@ -242,7 +324,16 @@ const Dataset = () => {
   }, [loctyp]);
 
   useEffect(() => {
+    if (datasetUpdated && isCustomSQL?.toLowerCase() === "no") {
+      setColumnsActive(true);
+      setValue(1);
+      console.log("datasetUpdated", datasetUpdated);
+    }
+  }, [datasetUpdated]);
+
+  useEffect(() => {
     if (dsCreatedSuccessfully) {
+      setShouldTriggerRedirect(false);
       setTimeout(() => {
         if (isSftp(loctyp)) {
           setValue(1);
@@ -253,8 +344,12 @@ const Dataset = () => {
         } else {
           setColumnsActive(false);
         }
+        setShouldTriggerRedirect(true);
       }, 2000);
     }
+    return () => {
+      setShouldTriggerRedirect(true);
+    };
   }, [dsCreatedSuccessfully, loctyp, isCustomSQL]);
 
   useEffect(() => {
@@ -313,8 +408,10 @@ const Dataset = () => {
   };
 
   const onSubmit = (formValue) => {
+    setShouldTriggerRedirect(false);
     // eslint-disable-next-line consistent-return
     setTimeout(() => {
+      setShouldTriggerRedirect(false);
       const data = {
         ...formValue,
         dpId,
@@ -325,10 +422,23 @@ const Dataset = () => {
         studyId,
         versionFreezed,
       };
+      // if (formValue.tableName && Array.isArray(formValue.tableName)) {
+      //   // eslint-disable-next-line prefer-destructuring
+      //   data.tableName = formValue.tableName[0];
+      // }
       if (formValue?.sQLQuery?.includes("*")) {
         messageContext.showErrorMessage(
           `Please remove * from query to proceed.`
         );
+        return false;
+      }
+      if (
+        createMode &&
+        formValue?.isCustomSQL?.toLowerCase() === "yes" &&
+        !previewedSql
+      ) {
+        dispatch(hideErrorMessage());
+        messageContext.showErrorMessage("Please hit previewSql to proceed");
         return false;
       }
       if (data.datasetid) {
@@ -341,12 +451,12 @@ const Dataset = () => {
           );
           return false;
         }
-      }
-      if (data.datasetid) {
         dispatch(updateDatasetData(data));
       } else {
         dispatch(saveDatasetData(data));
       }
+      if (!isSftp(locationType))
+        setColumnsEditMode(createMode || formValue.tableName !== tableName);
     }, 400);
   };
 
@@ -357,7 +467,9 @@ const Dataset = () => {
       await dispatch(reset("DataSetsFormSQL"));
       // jdbcRef.current.handleCancel();
     }
+    setShowSaveChangeModal(false);
     history.push("/dashboard");
+    setShowSaveChangeModal(true);
   };
 
   useEffect(() => {
@@ -365,6 +477,12 @@ const Dataset = () => {
       dispatch(hideErrorMessage());
     }, 7500);
   }, [error, sucessMsg]);
+
+  useEffect(() => {
+    if (sucessMsg && !error && selectedDataset) {
+      dispatch(updatePanel());
+    }
+  }, [sucessMsg, error, selectedDataset]);
 
   const getLeftPanel = React.useMemo(
     () => (
@@ -405,6 +523,18 @@ const Dataset = () => {
         >
           <main className={classes.content}>
             <div className={classes.contentHeader}>
+              {/* Save Changes Modal */}
+              {showSaveChangeModal && (
+                <SaveChangesModal
+                  isManualTrigger={true}
+                  manualCheckerFlag={true}
+                  handleManualChecker={handleManualChecker}
+                  manualTriggerToggle={manualTriggerToggle}
+                  handlePostManualContinue={handlePostContinue}
+                  handlePostManualDiscardChange={handlePostDiscardChange}
+                  shouldTriggerOnRedirect={shouldTriggerRedirect}
+                />
+              )}
               <Modal
                 open={openModal}
                 variant="warning"
@@ -449,10 +579,10 @@ const Dataset = () => {
                     {dataSettabs.map((tab) => (
                       <Tab
                         label={tab}
-                        disabled={
-                          (!columnsActive && tab === "Dataset Columns") ||
-                          (!columnsActive && tab === "VLC")
-                        }
+                        // disabled={
+                        //   (!columnsActive && tab === "Dataset Columns") ||
+                        //   (!columnsActive && tab === "VLC")
+                        // }
                       />
                     ))}
                   </Tabs>
@@ -464,6 +594,7 @@ const Dataset = () => {
                       {
                         label: "Cancel",
                         onClick: () => setopenModal(true),
+                        disabled: !canUpdateDataFlow,
                       },
                       {
                         label: "Save",
@@ -515,6 +646,8 @@ const Dataset = () => {
                   locationType={locationType}
                   dfId={dfId}
                   dpId={dpId}
+                  createMode={createMode}
+                  columnsEditMode={columnsEditMode}
                   setDatasetColumnsExist={(disableSave) =>
                     setDatasetColumnsExist(disableSave)
                   }

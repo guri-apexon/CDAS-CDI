@@ -9,6 +9,7 @@ import React, {
   useReducer,
   useRef,
 } from "react";
+import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
 import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -79,7 +80,7 @@ const useStyles = makeStyles(() => ({
 const onSubmit = () => {
   setTimeout(() => {
     // eslint-disable-next-line no-console
-    console.log(JSON.stringify(values, null, 2));
+    // console.log(JSON.stringify(values, null, 2));
   }, 400);
 };
 
@@ -182,7 +183,7 @@ const DataFlow = ({
   // }, [dashboard?.selectedCard]);
 
   const AddDataflowData = () => {
-    console.log("FormValues", FormValues, selectedCard);
+    // console.log("FormValues", FormValues, selectedCard);
     if (
       FormValues &&
       FormValues?.dataflowType &&
@@ -199,13 +200,19 @@ const DataFlow = ({
         );
         return false;
       }
+
+      const exptDtOfFirstProdFile =
+        FormValues.firstFileDate && moment(FormValues.firstFileDate).isValid()
+          ? moment(FormValues.firstFileDate).format("DD-MMM-yyyy")
+          : null;
+
       const payload = {
         vendorid: FormValues.vendor.vend_id,
         locationID: FormValues.locationName.src_loc_id,
         dataStructure: FormValues.dataStructure,
         testFlag: FormValues.dataflowType === "test" ? 1 : 0,
         description: FormValues.description,
-        exptDtOfFirstProdFile: FormValues.firstFileDate,
+        exptDtOfFirstProdFile,
         connectionType: FormValues.locationType,
         protocolNumberStandard: selectedCard.protocolnumberstandard,
         // protocolNumber: selectedCard.prot_id,
@@ -236,7 +243,7 @@ const DataFlow = ({
   };
 
   const getDataSetValue = (val) => {
-    console.log(val);
+    // console.log(val);
     // return val;
   };
 
@@ -296,9 +303,9 @@ const DataFlow = ({
     if (typeof datasetObj.headerRowNumber !== "undefined") {
       setHeaderValue(datasetObj.headerRowNumber);
     }
-    if (datasetObj.tableName?.length) {
+    if (datasetObj.tableName?.value) {
       // eslint-disable-next-line prefer-destructuring
-      datasetObj.tableName = datasetObj.tableName[0];
+      datasetObj.tableName = datasetObj.tableName.value;
     }
     if (datasetObj.offsetColumn?.value) {
       datasetObj.offsetColumn = datasetObj.offsetColumn?.value;
@@ -320,7 +327,7 @@ const DataFlow = ({
 
   const AddColumnDefinitions = (rows) => {
     const newForm = { ...myform };
-    if (newForm.dataPackage[0].dataSet[0]) {
+    if (newForm.dataPackage && newForm.dataPackage[0]?.dataSet[0]) {
       newForm.dataPackage[0].dataSet[0].columncount = rows.length;
       newForm.dataPackage[0].dataSet[0].columnDefinition = rows;
       setForm(newForm);
@@ -338,7 +345,7 @@ const DataFlow = ({
       return false;
     }
 
-    const reqprimary = myformprimary.columnDefinition.some(
+    const reqprimary = myformprimary.columnDefinition?.some(
       (c) => c.primaryKey === "Yes"
     );
     if (
@@ -415,7 +422,7 @@ const DataFlow = ({
     );
   };
   const nextStep = async () => {
-    console.log("datasetFormValues?", datasetFormValues, currentStep);
+    // console.log("datasetFormValues?", datasetFormValues, currentStep);
     if (tabularSod) {
       switch (currentStep) {
         case 1:
@@ -461,9 +468,9 @@ const DataFlow = ({
   useEffect(() => {
     const columnDefinition =
       messageContext?.dataflowObj?.columnDefinition || [];
-    if (columnDefinition.length) {
-      AddColumnDefinitions(columnDefinition);
-    }
+    // if (columnDefinition.length) {
+    AddColumnDefinitions(columnDefinition);
+    // }
   }, [messageContext?.dataflowObj?.columnDefinition]);
 
   useEffect(() => {
@@ -528,9 +535,19 @@ const DataFlow = ({
     );
     return formEl;
   };
-
+  const disableSaveDFBtn = () => {
+    const isCustomSql =
+      myform.dataPackage &&
+      myform.dataPackage[0]?.dataSet &&
+      myform.dataPackage[0]?.dataSet[0]?.customQuery?.toLowerCase() === "yes";
+    return (
+      currentStep >= 5 &&
+      !isCustomSql &&
+      !(messageContext?.dataflowObj?.columnDefinition || []).length
+    );
+  };
   useEffect(() => {
-    console.log("myform:", modalLocType, myform);
+    // console.log("myform:", modalLocType, myform);
   }, [myform]);
   useEffect(() => {
     if (modalLocType === locType) {
@@ -588,12 +605,7 @@ const DataFlow = ({
                   currentStep={currentStep}
                   breadcrumbItems={breadcrumbItems}
                   icon={<DataPackageIcon className={classes.contentIcon} />}
-                  submitting={
-                    submitting ||
-                    (currentStep >= 5 &&
-                      !(messageContext?.dataflowObj?.columnDefinition || [])
-                        .length)
-                  }
+                  submitting={submitting || disableSaveDFBtn()}
                   tabularSod={tabularSod}
                 />
               </div>

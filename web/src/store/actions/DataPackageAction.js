@@ -69,7 +69,8 @@ export const redirectToDataSet = (
   dpName,
   dsId,
   dsName,
-  fromWhere = null
+  fromWhere = null,
+  path = null
 ) => {
   return {
     type: REDIRECT_TO_DATASET,
@@ -80,6 +81,7 @@ export const redirectToDataSet = (
     dsId,
     dsName,
     fromWhere,
+    path,
   };
 };
 

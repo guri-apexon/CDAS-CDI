@@ -14,7 +14,12 @@ import { allowedTypes } from "../../../constants";
 import DSColumnTable from "./DSColumnTable";
 import Progress from "../../../components/Common/Progress/Progress";
 import { downloadTemplate } from "../../../utils/downloadData";
-import { checkHeaders, formatDataNew, isSftp } from "../../../utils/index";
+import {
+  checkHeaders,
+  formatDataNew,
+  isSftp,
+  stringToBoolean,
+} from "../../../utils/index";
 
 import usePermission, {
   Categories,
@@ -28,12 +33,14 @@ const ColumnsTab = ({
   dpId,
   setDatasetColumnsExist,
   selectedDataset,
+  createMode,
+  columnsEditMode,
 }) => {
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
   const dataFlow = useSelector((state) => state.dataFlow);
-  const { dsProdLock, dsTestLock } = dataFlow;
+  const { dsProdLock, dsTestLock, dataFlowdetail } = dataFlow;
   const { datasetColumns, sqlColumns, haveHeader } = dataSets;
   const { selectedCard } = dashboard;
   const { protocolnumber, prot_id: protId } = selectedCard;
@@ -52,6 +59,7 @@ const ColumnsTab = ({
   const [isImportReady, setIsImportReady] = useState(false);
   const [importedData, setImportedData] = useState([]);
   const [formattedData, setFormattedData] = useState([]);
+  // const [isDFSynced, setIsDFSynced] = useState(false);
 
   const maxSize = 150000;
 
@@ -110,6 +118,7 @@ const ColumnsTab = ({
               isHavingColumnName: true,
               isSaved: true,
               isEditMode: false,
+              // isDBSync:
             };
             return newObj;
           })
@@ -117,26 +126,26 @@ const ColumnsTab = ({
     setFormattedData([...newData]);
   };
 
-  const formatJDBCColumns = (arr) => {
+  const formatJDBCColumns = (arr, editMode = false) => {
     const newData =
       arr.length > 0
         ? arr.map((column, i) => {
             const newObj = {
               dbColumnId: column.columnid || "",
               uniqueId: i + 1,
-              variableLabel: column.varable || "",
-              columnName: column.columnName || "",
+              variableLabel: column.varable || column.variable || "",
+              columnName: column.columnName || column.name || "",
               format: column.format || "",
-              dataType: column.dataType || "",
-              primaryKey: column.primarykey === "true" ? "Yes" : "No",
-              unique: column.unique === "true" ? "Yes" : "No",
-              required: column.required === "true" ? "Yes" : "No",
+              dataType: column.dataType || column.datatype || "",
+              primaryKey: stringToBoolean(column.primarykey) ? "Yes" : "No",
+              unique: stringToBoolean(column.unique) ? "Yes" : "No",
+              required: stringToBoolean(column.required) ? "Yes" : "No",
               minLength: column.charactermin || "",
               maxLength: column.charactermax || "",
               values: column.lov || "",
               isInitLoad: true,
               isHavingColumnName: true,
-              isEditMode: true,
+              isEditMode: editMode,
             };
             return newObj;
           })
@@ -156,7 +165,6 @@ const ColumnsTab = ({
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
         const newData = formatDataNew(importedData, protocolnumber);
-        console.log("newData", newData);
         if (newData?.headerNotMatching) {
           messageContext.showErrorMessage(
             `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
@@ -189,16 +197,22 @@ const ColumnsTab = ({
   }, [haveHeader]);
 
   useEffect(() => {
-    if (datasetColumns.length > 0) {
+    if (!isSftp(locationType)) {
+      // console.log("JDBC", locationType);
+      setShowColumns(true);
+      setSelectedMethod("fromAPICall");
+      if (datasetColumns.length) {
+        formatJDBCColumns(datasetColumns);
+      } else if (sqlColumns.length) {
+        formatJDBCColumns(sqlColumns, !!columnsEditMode);
+      }
+    } else if (isSftp(locationType) && datasetColumns.length) {
+      // console.log("SFTP", locationType);
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
-    } else if (sqlColumns.length > 0) {
-      setShowColumns(true);
-      formatJDBCColumns(sqlColumns);
-      setSelectedMethod("fromAPICall");
     }
-    console.log({ datasetColumns, sqlColumns });
+    console.log({ datasetColumns, sqlColumns }, locationType);
   }, [datasetColumns, sqlColumns]);
 
   useEffect(() => {
@@ -206,6 +220,13 @@ const ColumnsTab = ({
       setShowColumns(true);
     }
   }, [locationType]);
+
+  // useEffect(() => {
+  //   const { isSync, testflag } = dataFlowdetail;
+  //   if (isSync === "Y" && testflag === 0) {
+  //     setIsDFSynced(true);
+  //   }
+  // }, [dataFlowdetail]);
 
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
@@ -227,7 +248,7 @@ const ColumnsTab = ({
         />
       </>
     );
-  }, [showColumns, loading]);
+  }, [showColumns, loading, formattedData]);
 
   return (
     <>

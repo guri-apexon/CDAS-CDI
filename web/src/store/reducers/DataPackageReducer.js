@@ -127,6 +127,7 @@ const DataPackageReducer = (state = initialState, action) =>
           datasetid: action.dsId,
           datasetName: action.dsName,
           fromWhere: action.fromWhere,
+          path: action.path,
         };
         break;
       default:

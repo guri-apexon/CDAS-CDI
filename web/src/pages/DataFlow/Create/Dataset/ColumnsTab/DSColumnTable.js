@@ -31,7 +31,9 @@ export default function DSColumnTable({
   locationType,
   headerValue,
   myForm,
+  existRows,
 }) {
+  const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
@@ -48,11 +50,16 @@ export default function DSColumnTable({
     tbl_nm: tableName,
   } = selectedDataset;
 
+  const getUniqueId = () => {
+    return Math.random().toString(36).slice(2);
+  };
+  const initUniqueId = getUniqueId();
+
   const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
   const [editedBackup, setEditedBackup] = useState([]);
   const [editedRows, setEditedRows] = useState([
-    { uniqueId: `u0`, ...columnObj },
+    { index: 0, uniqueId: getUniqueId(), ...columnObj },
   ]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchValue, setSearchValue] = useState("");
@@ -130,6 +137,8 @@ export default function DSColumnTable({
     setIsFilePicked(false);
     setSelectedFile(null);
     setImportedData([]);
+    // document.querySelector("#file").value = "";
+    inputFile.current.value = "";
   };
 
   const handleOverWrite = () => {
@@ -203,7 +212,7 @@ export default function DSColumnTable({
 
     const newRowData = _.orderBy(
       [...removeExistingRowData, ...newData],
-      ["uniqueId"],
+      ["index"],
       ["asc"]
     );
     setRows([...newRowData]);
@@ -313,7 +322,7 @@ export default function DSColumnTable({
   const columnsToAdd = [
     {
       header: "",
-      accessor: "uniqueId",
+      accessor: "index",
       customCell: LinkCell,
     },
   ];
@@ -402,7 +411,7 @@ export default function DSColumnTable({
       );
       return false;
     }
-    const columnNames = removeSpaces.map((e) => e.columnName.toLowerCase());
+    const columnNames = removeSpaces.map((e) => e.columnName?.toLowerCase());
 
     if (removeSpaces.length !== _.uniq(columnNames).length) {
       messageContext.showErrorMessage(
@@ -465,13 +474,12 @@ export default function DSColumnTable({
         return e;
       })
       .find((e) => e.uniqueId === uniqueId);
-
     if (
       rows.some(
         (r) =>
-          r.columnName.toLowerCase() ===
-            editedRowData.columnName.toLowerCase() &&
-          r.uniqueId !== editedRowData.uniqueId
+          r?.columnName?.toLowerCase() ===
+            editedRowData?.columnName?.toLowerCase() &&
+          r?.uniqueId !== editedRowData.uniqueId
       )
     ) {
       messageContext.showErrorMessage(
@@ -565,10 +573,20 @@ export default function DSColumnTable({
       setMoreColumns(allColumns);
     }
     const formatRows = formattedData.map((e) => e.uniqueId);
+    console.log("formatRows", formatRows);
     if (dataOrigin === "fileUpload") {
       setRows([...formattedData]);
     } else if (dataOrigin === "fromDB") {
       setRows([...formattedData]);
+      // Added below three lines for default edit mode
+      setEditedRows([...formattedData]);
+      if (!existRows?.length) {
+        const initRows = formattedData.map((e) => e.uniqueId);
+        setSelectedRows([...initRows]);
+      }
+    } else if (dataOrigin === "fromDB2") {
+      setRows([...formattedData]);
+      setEditedRows([...formattedData]);
     } else if (dataOrigin === "manually") {
       setInitRow();
     }
@@ -595,9 +613,9 @@ export default function DSColumnTable({
               : `${rows.length} dataset column`
           }`}
           columns={moreColumns}
-          initialSortedColumn="uniqueId"
+          initialSortedColumn="index"
           initialSortOrder="asc"
-          rowId="uniqueId"
+          rowId="index"
           hasScroll={true}
           rows={rows.map((row, i) => ({
             ...row,
@@ -605,7 +623,7 @@ export default function DSColumnTable({
             editRow,
             onRowSave,
             columnNo: parseInt(i, 10) + parseInt(1, 10),
-            editMode: selectedRows?.includes(row.uniqueId),
+            editMode: selectedRows?.includes(row?.uniqueId),
             fileType,
             isEditAll,
             onRowCancel,
