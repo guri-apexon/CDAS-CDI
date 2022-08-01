@@ -2050,12 +2050,13 @@ const saveDataset = (exports.datasetLevelInsert = async (
       const {
         rows: [protId],
       } = await DB.executeQuery(
-        `select prot_id from ${schemaName}.dataflow where dataflowid='${DFId}';`
+        `select prot_id,vend_id from ${schemaName}.dataflow where dataflowid='${DFId}';`
       );
 
       const study = protId?.prot_id;
+      const vendor = protId?.vend_id;
 
-      // console.log("study", study);
+      // console.log("vendor", vendor);
 
       if (obj.dataKindID && externalSysName) {
         let checkDataKind = await DB.executeQuery(
@@ -2093,7 +2094,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
         let selectMnemonic = `select ds.mnemonic from cdascfg.dataset ds
           inner join cdascfg.datapackage dp on (dp.datapackageid =ds.datapackageid)
           inner join cdascfg.dataflow df on (df.dataflowid =dp.dataflowid)
-          where df.prot_id = '${study}' and ds.mnemonic ='${obj.datasetName}' and df.testflag = '${tFlg}'`;
+          where df.prot_id = '${study}' and df.vend_id = '${vendor}' and 
+          ds.mnemonic ='${obj.datasetName}' and df.testflag = '${tFlg}'`;
 
         let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -3523,12 +3525,12 @@ exports.datasetUpdate = async (
     const {
       rows: [protId],
     } = await DB.executeQuery(
-      `select prot_id from ${schemaName}.dataflow where dataflowid='${DFId}';`
+      `select prot_id,vend_id from ${schemaName}.dataflow where dataflowid='${DFId}';`
     );
 
     const study = protId?.prot_id;
-
-    // console.log("Update study", study);
+    const vendor = protId?.vend_id;
+    // console.log("Update vendor", vendor);
 
     if (data.dataKindID && externalSysName) {
       let checkDataKind = await DB.executeQuery(
@@ -3563,7 +3565,7 @@ exports.datasetUpdate = async (
       let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
           inner join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
           inner join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
-          where df.prot_id = '${study}' and ds.mnemonic ='${data.datasetName}'
+          where df.prot_id = '${study}' and df.vend_id = '${vendor}' and ds.mnemonic ='${data.datasetName}'
           and ds.datasetid !=$1 and df.testflag = '${tFlg}'`;
 
       let queryMnemonic = await DB.executeQuery(selectMnemonic, [DSId]);
