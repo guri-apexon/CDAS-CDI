@@ -702,7 +702,7 @@ exports.getVLCData = async (req, res) => {
 exports.getDatasetDetail = async (req, res) => {
   try {
     const { dfId, dpId, dsId } = req.body;
-    const query = `SELECT * from ${schemaName}.dataset WHERE datasetid = $1`;
+    const query = `SELECT *, data_in_cdr as "isSync" from ${schemaName}.dataset WHERE datasetid = $1`;
     Logger.info({ message: "getDatasetDetail" });
     let filePwd;
     try {
