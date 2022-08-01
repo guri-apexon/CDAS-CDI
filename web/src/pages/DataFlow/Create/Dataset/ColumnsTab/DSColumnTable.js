@@ -32,7 +32,6 @@ export default function DSColumnTable({
   myForm,
   existRows,
 }) {
-  const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);
@@ -409,10 +408,16 @@ export default function DSColumnTable({
 
   const onRowCancel = (uniqueId) => {
     const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    const editedData = editedRows.find((e) => e.uniqueId === uniqueId);
+    const editedData = rows.find((e) => e.uniqueId === uniqueId);
     if (!editedData?.isSaved) {
       const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
       setEditedRows(removeEdited);
+    } else {
+      const prevData = rows.find((e) => e.uniqueId === uniqueId);
+      const updatedIndex = editedRows.findIndex((e) => e.uniqueId === uniqueId);
+      const prevEditedRows = [...editedRows];
+      prevEditedRows[updatedIndex] = prevData;
+      setEditedRows([...prevEditedRows]);
     }
     setSelectedRows([...removeRow]);
   };
