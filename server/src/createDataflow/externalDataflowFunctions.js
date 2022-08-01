@@ -107,7 +107,7 @@ exports.insertValidation = async (req) => {
       value: req.testFlag,
       type: "boolean",
     },
-    // { key: "description", value: req.description, type: "string", length: 30 },
+    { key: "description", value: req.description, type: "string", length: 30 },
     {
       key: "active",
       value: req.active,
@@ -200,7 +200,7 @@ exports.insertValidation = async (req) => {
   if (description) {
     if (description.length <= 30) {
     } else {
-      dfArray.push("Description length, max of 30 characters");
+      dfArray.push("description should be less than 30 characters");
     }
   }
 
