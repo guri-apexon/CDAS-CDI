@@ -10,153 +10,156 @@ exports.getUserStudyList = function (req, res) {
   try {
     const userId = req.params.userId;
 
-    const newQuery = `select
-    studycard2.prot_id,
-    studycard2.protocolnumber,
-    studycard2.protocolnumberstandard,
-    studycard2.sponsorname,
-    studycard2.phase,
-    studycard2.protocolstatus,
-    studycard2.projectcode,
-    sum(
-          case
-              when studycard2.overallstatus = 'SUCCESSFUL'::text then 1::bigint
-              else null::bigint
-          end) as "ingestionCount",
-    sum(
-          case
-              when studycard2.overallstatus = 'FAILED'::text then 1::bigint
-              else null::bigint
-          end) as "priorityCount",
-    sum(
-          case
-              when studycard2.no_of_staledays > studycard2.staledays::double precision then 1::bigint
-              else 0::bigint
-          end) as "staleFilesCount",
-    count(distinct studycard2.dataflowid) as "dfCount",
-    count(distinct studycard2.vendid) as "vCount",
-    count(distinct studycard2.datapackageid) as "dpCount",
-    count(distinct studycard2.datasetid) as "dsCount",
-    count(distinct
-          case studycard2.dfactive
-              when 1::bigint then studycard2.dataflowid
-              else null::character varying
-          end) as "ActiveDfCount",
-    count(distinct
-          case studycard2.dfactive
-              when 0::bigint then studycard2.dataflowid
-              else null::character varying
-          end) as "InActiveDfCount",
-    coalesce(sum(studycard2.dsactive), 0::bigint) as "ActiveDsCount",
-    coalesce(sum(
-          case
-              when studycard2.dsactive = 0::bigint then 1::bigint
-              else null::bigint
-          end), 0::bigint::numeric) as "InActiveDsCount"
-  from
-    (
-    select
-      studycard.prot_id,
-      studycard.protocolnumber,
-      studycard.protocolnumberstandard,
-      studycard.protocolstatus,
-      studycard.sponsorname,
-      studycard.phase,
-      studycard.projectcode,
-      studycard.vendid,
-      studycard.dataflowid,
-      studycard.dfactive,
-      studycard.datapackageid,
-      studycard.dpactive,
-      studycard.datasetid,
-      studycard.dsactive,
-      case
-        when studycard.dsactive = 1
-        and studycard.downloadstatus::text = 'SUCCESSFUL'::text
-        and (studycard.processstatus::text = any (array['SUCCESSFUL'::character varying,
-        'PROCESSED WITH ERRORS'::character varying]::text[])) then 'SUCCESSFUL'::text
-        when studycard.dsactive = 1
-        and (studycard.downloadstatus::text = 'FAILED'::text
-        or studycard.processstatus::text = 'FAILED'::text) then 'FAILED'::text
-        else null::text
-      end as overallstatus,
-      case
-        when studycard.dsactive = 1
-        and CURRENT_TIMESTAMP > to_timestamp((studycard.lastmodifiedtime::numeric / 1000::numeric)::double precision) then date_part('day'::text, CURRENT_TIMESTAMP - to_timestamp((studycard.lastmodifiedtime::numeric / 1000::numeric)::double precision))
-        else '-1'::integer::double precision
-      end as no_of_staledays,
-      studycard.staledays
-    from
-      (
-      select
-        s.prot_id,
-        s.prot_nbr as protocolnumber,
-        s.prot_nbr_stnd as protocolnumberstandard,
-        s.prot_stat as protocolstatus,
-        s2.spnsr_nm as sponsorname,
-        s.phase,
-        s.proj_cd as projectcode,
-        df.vend_id as vendid,
-        df.dataflowid,
-        df.name as dfname,
-        df.active as dfactive,
-        dp.datapackageid,
-        dp.name as dpname,
-        dp.active as dpactive,
-        ds.datasetid,
-        ds.mnemonic,
-        ds.active as dsactive,
-        ds.staledays,
-        ts.externalid,
-        ts.downloadstatus,
-        ts.processstatus,
-        dc.lastmodifiedtime,
-        row_number() over (partition by s.prot_id,
-        df.dataflowid,
-        dp.datapackageid,
-        ds.datasetid
-      order by
-        ts.externalid desc) as latest
+    const newQuery = `select prot_id,protocolnumber,protocolnumberstandard,sponsorname,phase,protocolstatus,projectcode,
+    "ingestionCount","priorityCount","staleFilesCount","dfCount","vCount","dpCount","dsCount","ActiveDfCount", "InActiveDfCount",
+    "ActiveDsCount", "InActiveDsCount"
+    from (select
+        studycard2.prot_id,
+        studycard2.protocolnumber,
+        studycard2.protocolnumberstandard,
+        studycard2.sponsorname,
+        studycard2.phase,
+        studycard2.protocolstatus,
+        studycard2.projectcode,
+        sum(
+              case
+                  when studycard2.overallstatus = 'SUCCESSFUL'::text then 1::bigint
+                  else null::bigint
+              end) as "ingestionCount",
+        sum(
+              case
+                  when studycard2.overallstatus = 'FAILED'::text then 1::bigint
+                  else null::bigint
+              end) as "priorityCount",
+        sum(
+              case
+                  when studycard2.no_of_staledays > studycard2.staledays::double precision then 1::bigint
+                  else 0::bigint
+              end) as "staleFilesCount",
+        count(distinct studycard2.dataflowid) as "dfCount",
+        count(distinct studycard2.vendid) as "vCount",
+        count(distinct studycard2.datapackageid) as "dpCount",
+        count(distinct studycard2.datasetid) as "dsCount",
+        count(distinct
+              case studycard2.dfactive
+                  when 1::bigint then studycard2.dataflowid
+                  else null::character varying
+              end) as "ActiveDfCount",
+        count(distinct
+              case studycard2.dfactive
+                  when 0::bigint then studycard2.dataflowid
+                  else null::character varying
+              end) as "InActiveDfCount",
+        coalesce(sum(studycard2.dsactive), 0::bigint) as "ActiveDsCount",
+        coalesce(sum(
+              case
+                  when studycard2.dsactive = 0::bigint then 1::bigint
+                  else null::bigint
+              end), 0::bigint::numeric) as "InActiveDsCount"
       from
-        study_user su
-      join study s on
-        su.prot_id::text = s.prot_id::text
-        and su.act_flg = 1
-        and s.active::text = '1'::text
-        and su.usr_id = $1
-      join study_sponsor ss on
-        s.prot_id::text = ss.prot_id::text
-      join sponsor s2 on
-        s2.spnsr_id::text = ss.spnsr_id::text
-      left join dataflow df on
-        df.prot_id::text = s.prot_id::text
-        and coalesce(df.del_flg, 0) <> 1
-      left join datapackage dp on
-        df.dataflowid::text = dp.dataflowid::text
-      left join dataset ds on
-        dp.datapackageid::text = ds.datapackageid::text
-      left join transaction_summary ts on
-        ts.datasetid::text = ds.datasetid::text
-      left join datapackage_checksum dc on
-        ts.dataflowid::text = dc.dataflowid::text
-        and dp.datapackageid::text = dc.datapackageid::text
-        and ts.executionid::text = dc.executionid::text) studycard
-    where
-      studycard.latest = 1) studycard2
-  group by
-    studycard2.prot_id,
-    studycard2.protocolnumber,
-    studycard2.protocolnumberstandard,
-    studycard2.protocolstatus,
-    studycard2.sponsorname,
-    studycard2.phase,
-    studycard2.projectcode
-  order by
-    "priorityCount" desc,
-    "ingestionCount" desc,
-    "staleFilesCount" desc,
-    sponsorname asc,
-    protocolnumber asc
+        (
+        select
+          studycard.prot_id,
+          studycard.protocolnumber,
+          studycard.protocolnumberstandard,
+          studycard.protocolstatus,
+          studycard.sponsorname,
+          studycard.phase,
+          studycard.projectcode,
+          studycard.vendid,
+          studycard.dataflowid,
+          studycard.dfactive,
+          studycard.datapackageid,
+          studycard.dpactive,
+          studycard.datasetid,
+          studycard.dsactive,
+          case
+            when studycard.dsactive = 1
+            and studycard.downloadstatus::text = 'SUCCESSFUL'::text
+            and (studycard.processstatus::text = any (array['SUCCESSFUL'::character varying,
+            'PROCESSED WITH ERRORS'::character varying]::text[])) then 'SUCCESSFUL'::text
+            when studycard.dsactive = 1
+            and (studycard.downloadstatus::text = 'FAILED'::text
+            or studycard.processstatus::text = 'FAILED'::text) then 'FAILED'::text
+            else null::text
+          end as overallstatus,
+          case
+            when studycard.dsactive = 1
+            and CURRENT_TIMESTAMP > to_timestamp((studycard.lastmodifiedtime::numeric / 1000::numeric)::double precision) then date_part('day'::text, CURRENT_TIMESTAMP - to_timestamp((studycard.lastmodifiedtime::numeric / 1000::numeric)::double precision))
+            else '-1'::integer::double precision
+          end as no_of_staledays,
+          studycard.staledays
+        from
+          (
+          select
+            s.prot_id,
+            s.prot_nbr as protocolnumber,
+            s.prot_nbr_stnd as protocolnumberstandard,
+            s.prot_stat as protocolstatus,
+            s2.spnsr_nm as sponsorname,
+            s.phase,
+            s.proj_cd as projectcode,
+            df.vend_id as vendid,
+            df.dataflowid,
+            df.name as dfname,
+            df.active as dfactive,
+            dp.datapackageid,
+            dp.name as dpname,
+            dp.active as dpactive,
+            ds.datasetid,
+            ds.mnemonic,
+            ds.active as dsactive,
+            ds.staledays,
+            ts.externalid,
+            ts.downloadstatus,
+            ts.processstatus,
+            dc.lastmodifiedtime,
+            row_number() over (partition by s.prot_id,
+            df.dataflowid,
+            dp.datapackageid,
+            ds.datasetid
+          order by
+            ts.externalid desc) as latest
+          from
+            study_user su
+          join study s on
+            su.prot_id::text = s.prot_id::text
+            and su.act_flg = 1
+            and s.active::text = '1'::text
+            and su.usr_id = $1
+          join study_sponsor ss on
+            s.prot_id::text = ss.prot_id::text
+          join sponsor s2 on
+            s2.spnsr_id::text = ss.spnsr_id::text
+          left join dataflow df on
+            df.prot_id::text = s.prot_id::text
+            and coalesce(df.del_flg, 0) <> 1
+          left join datapackage dp on
+            df.dataflowid::text = dp.dataflowid::text
+          left join dataset ds on
+            dp.datapackageid::text = ds.datapackageid::text
+          left join transaction_summary ts on
+            ts.datasetid::text = ds.datasetid::text
+          left join datapackage_checksum dc on
+            ts.dataflowid::text = dc.dataflowid::text
+            and dp.datapackageid::text = dc.datapackageid::text
+            and ts.executionid::text = dc.executionid::text) studycard
+        where
+          studycard.latest = 1) studycard2
+      group by
+        studycard2.prot_id,
+        studycard2.protocolnumber,
+        studycard2.protocolnumberstandard,
+        studycard2.protocolstatus,
+        studycard2.sponsorname,
+        studycard2.phase,
+        studycard2.projectcode) s
+      order by
+        coalesce("priorityCount",0) desc,
+        coalesce("ingestionCount",0) desc,
+        coalesce("staleFilesCount",0) desc,
+        sponsorname asc,
+        protocolnumber asc    
   `;
 
     Logger.info({ message: `getUserStudyList` });
