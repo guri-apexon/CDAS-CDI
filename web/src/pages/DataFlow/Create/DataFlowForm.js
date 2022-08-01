@@ -156,7 +156,6 @@ const DataFlowFormBase = (props) => {
               variant="search"
               fullWidth
               required
-              disabled={!vendors?.length}
             />
             {/* <ReduxFormAutocomplete
               name="vendor1"
