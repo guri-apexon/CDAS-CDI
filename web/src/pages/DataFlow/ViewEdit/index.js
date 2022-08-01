@@ -203,7 +203,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
         vendorID: FormValues.vendors[0],
         vendorName: "",
         dataflowName: "",
-        locationName: selectedLocation.value,
+        locationName: selectedLocation.value || selectedLocation,
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.locationType,
         testFlag: FormValues.dataflowType === "test" ? "true" : "false",

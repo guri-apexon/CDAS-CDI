@@ -152,7 +152,7 @@ export default function DSColumnTable({
 
   useEffect(() => {
     const { isSync, testflag } = dataFlowdetail;
-    if (isSync === "Y" && testflag === 0) {
+    if (isSync === "Y" && selectedDataset.isSync === "Y" && testflag === 0) {
       setIsDFSynced(true);
     }
   }, [dataFlowdetail]);
