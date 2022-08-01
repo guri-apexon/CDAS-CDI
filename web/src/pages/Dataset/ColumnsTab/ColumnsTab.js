@@ -198,7 +198,7 @@ const ColumnsTab = ({
 
   useEffect(() => {
     if (!isSftp(locationType)) {
-      console.log("JDBC", locationType);
+      // console.log("JDBC", locationType);
       setShowColumns(true);
       setSelectedMethod("fromAPICall");
       if (datasetColumns.length) {
@@ -207,7 +207,7 @@ const ColumnsTab = ({
         formatJDBCColumns(sqlColumns, !!columnsEditMode);
       }
     } else if (isSftp(locationType) && datasetColumns.length) {
-      console.log("SFTP", locationType);
+      // console.log("SFTP", locationType);
       setShowColumns(true);
       formatDBColumns(datasetColumns);
       setSelectedMethod("fromDB");
