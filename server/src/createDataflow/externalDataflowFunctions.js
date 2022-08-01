@@ -2140,9 +2140,9 @@ const saveDataset = (exports.datasetLevelInsert = async (
             obj.conditionalExpression ? obj.conditionalExpression : "where 1=1"
           }`;
         }
+      } else {
+        sqlQuery = obj.customSql || obj.customsql;
       }
-    } else {
-      sqlQuery = obj.customSql || obj.customsql;
     }
 
     let DSBody = [
