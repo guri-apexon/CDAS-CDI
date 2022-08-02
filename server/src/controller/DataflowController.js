@@ -1018,6 +1018,8 @@ exports.updateDataFlow = async (req, res) => {
 
                       if (currentDs) {
                         const DSId = currentDs.datasetid;
+                        const dk_id = currentDs.datakindid;
+
                         const custSql = currentDs.customsql;
                         const DSheaderRow = currentDs.headerrow;
                         const dataflow = await dataflowHelper.findById(DFId);
@@ -1105,7 +1107,8 @@ exports.updateDataFlow = async (req, res) => {
                                 externalSysName,
                                 testFlag,
                                 userId,
-                                noPackageConfig
+                                noPackageConfig,
+                                dk_id
                               )
                               .then((res) => {
                                 // if (res.sucRes?.length) {
