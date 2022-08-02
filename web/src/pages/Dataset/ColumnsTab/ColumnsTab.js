@@ -96,13 +96,18 @@ const ColumnsTab = ({
     }, 1000);
   };
 
+  const getUniqueId = () => {
+    return Math.random().toString(36).slice(2);
+  };
+
   const formatDBColumns = (datacolumns) => {
     const newData =
       datacolumns.length > 0
         ? datacolumns.map((column, i) => {
             const newObj = {
               dbColumnId: column.columnid,
-              uniqueId: i + 1,
+              uniqueId: getUniqueId(),
+              index: i,
               variableLabel: column.variable || "",
               columnName: column.name || "",
               position: column.position || "",
@@ -132,7 +137,8 @@ const ColumnsTab = ({
         ? arr.map((column, i) => {
             const newObj = {
               dbColumnId: column.columnid || "",
-              uniqueId: i + 1,
+              uniqueId: getUniqueId(),
+              index: i,
               variableLabel: column.varable || column.variable || "",
               columnName: column.columnName || column.name || "",
               format: column.format || "",

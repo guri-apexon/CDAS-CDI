@@ -423,6 +423,10 @@ export const checkHeaders = (data) => {
 
 const setYN = (d) => (d === "Y" ? "Yes" : "No");
 
+const getUniqueId = () => {
+  return Math.random().toString(36).slice(2);
+};
+
 export const formatDataNew = (incomingData, protNo) => {
   const data = incomingData.slice(1); // removing header
   let isAllDataMatch = false;
@@ -438,7 +442,8 @@ export const formatDataNew = (incomingData, protNo) => {
       data.length > 0
         ? data.map((e, i) => {
             const newObj = {
-              uniqueId: i + 1,
+              uniqueId: getUniqueId(),
+              index: i,
               variableLabel: e[1] || "",
               columnName: e[2] || "",
               position: "",
@@ -485,7 +490,8 @@ export const formatData = (incomingData, protNo) => {
       data.length > 0
         ? data.map((e, i) => {
             const newObj = {
-              uniqueId: `u${i}`,
+              uniqueId: getUniqueId(),
+              index: i,
               variableLabel: e[1] || "",
               columnName: e[2] || "",
               position: "",
