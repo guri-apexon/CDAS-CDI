@@ -1161,11 +1161,6 @@ exports.insertValidation = async (req) => {
 
                   const clArray = [
                     {
-                      key: "includeFlag",
-                      value: el.includeFlag,
-                      type: "boolean",
-                    },
-                    {
                       key: "columnName",
                       value: el.columnName,
                       type: "string",
@@ -2506,11 +2501,6 @@ const columnSave = (exports.columnDefinationInsert = async (
           {
             key: "unique",
             value: el.unique,
-            type: "boolean",
-          },
-          {
-            key: "includeFlag",
-            value: el.includeFlag,
             type: "boolean",
           },
           {
@@ -4328,14 +4318,6 @@ exports.clDefUpdate = async (
         valColDef.push({
           key: "unique ",
           value: data.unique,
-          type: "boolean",
-        });
-      }
-
-      if (typeof data.includeFlag != "undefined") {
-        valColDef.push({
-          key: "includeFlag ",
-          value: data.includeFlag,
           type: "boolean",
         });
       }
