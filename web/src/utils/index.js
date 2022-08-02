@@ -485,7 +485,7 @@ export const formatData = (incomingData, protNo) => {
       data.length > 0
         ? data.map((e, i) => {
             const newObj = {
-              uniqueId: i + 1,
+              uniqueId: `u${i}`,
               variableLabel: e[1] || "",
               columnName: e[2] || "",
               position: "",
