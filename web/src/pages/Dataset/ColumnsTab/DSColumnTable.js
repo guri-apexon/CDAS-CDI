@@ -806,8 +806,13 @@ export default function DSColumnTable({
       })
     );
   };
+  const positionValidation = (position) => {
+    if (haveHeader) return true;
+    return position;
+  };
   useEffect(() => {
-    const editedlength = getEditedRows().length;
+    const editedData = getEditedRows();
+    const editedlength = editedData.length;
     setEditedCount(editedlength);
 
     // Set edit row count in store for monitoring changes and update form status
@@ -817,8 +822,12 @@ export default function DSColumnTable({
     } else {
       dispatch(formComponentInActive());
     }
-
-    if (editedlength && rows.some((row) => !validateRow(row))) {
+    if (
+      editedlength &&
+      editedData.some(
+        (row) => !validateRow(row, positionValidation(row.position))
+      )
+    ) {
       setDisableSaveAll(true);
     } else {
       setDisableSaveAll(false);
