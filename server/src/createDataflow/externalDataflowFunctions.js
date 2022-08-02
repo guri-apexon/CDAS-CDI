@@ -2091,11 +2091,12 @@ const saveDataset = (exports.datasetLevelInsert = async (
         //         left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
         //         where ds.mnemonic ='${obj.datasetName}' and df.testflag ='${tFlg}'`;
 
-        let selectMnemonic = `select ds.mnemonic from cdascfg.dataset ds
-          inner join cdascfg.datapackage dp on (dp.datapackageid =ds.datapackageid)
-          inner join cdascfg.dataflow df on (df.dataflowid =dp.dataflowid)
-          where df.prot_id = '${study}' and df.vend_id = '${vendor}' and 
-          ds.mnemonic ='${obj.datasetName}' and df.testflag = '${tFlg}'`;
+        let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
+          inner join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+          inner join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+          where df.prot_id = '${study}' and df.vend_id = '${vendor}' 
+          and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
+          and ds.datakindid = '${obj.dataKindID}'and df.testflag = '${tFlg}'`;
 
         let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -3363,35 +3364,37 @@ exports.packageUpdate = async (
               );
             }
 
-            if (data.type.toLowerCase() === "rar") {
-              if (name !== "rar") {
-                errorPackage.push(
-                  "If Package type is RAR then package naming convention should be end with (.rar)"
-                );
+            if (data.type) {
+              if (data.type.toLowerCase() === "rar") {
+                if (name !== "rar") {
+                  errorPackage.push(
+                    "If Package type is RAR then package naming convention should be end with (.rar)"
+                  );
+                }
               }
-            }
 
-            if (data.type.toLowerCase() === "7z") {
-              if (name !== "7z") {
-                errorPackage.push(
-                  "If Package type is 7z then package naming convention should be end with (.7z)"
-                );
+              if (data.type.toLowerCase() === "7z") {
+                if (name !== "7z") {
+                  errorPackage.push(
+                    "If Package type is 7z then package naming convention should be end with (.7z)"
+                  );
+                }
               }
-            }
 
-            if (data.type.toLowerCase() === "zip") {
-              if (name !== "zip") {
-                errorPackage.push(
-                  "If Package type is Zip then package naming convention should be end with (.zip)"
-                );
+              if (data.type.toLowerCase() === "zip") {
+                if (name !== "zip") {
+                  errorPackage.push(
+                    "If Package type is Zip then package naming convention should be end with (.zip)"
+                  );
+                }
               }
-            }
 
-            if (data.type.toLowerCase() === "sas") {
-              if (name !== "xpt") {
-                errorPackage.push(
-                  "If Package type is SAS then package naming convention should be end with (.xpt)"
-                );
+              if (data.type.toLowerCase() === "sas") {
+                if (name !== "xpt") {
+                  errorPackage.push(
+                    "If Package type is SAS then package naming convention should be end with (.xpt)"
+                  );
+                }
               }
             }
           }
@@ -3509,7 +3512,8 @@ exports.datasetUpdate = async (
   externalSysName,
   testFlag,
   userId,
-  noPackageConfig
+  noPackageConfig,
+  dk_id
 ) => {
   try {
     var LocationType = ConnectionType;
@@ -3554,6 +3558,12 @@ exports.datasetUpdate = async (
     }
 
     if (data.datasetName) {
+      let dkId = dk_id;
+
+      if (data.dataKindID) {
+        dkId = data.dataKindID;
+      }
+
       const tFlg = helper.stringToBoolean(testFlag) ? 1 : 0;
       // let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
       //           left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
@@ -3565,7 +3575,9 @@ exports.datasetUpdate = async (
       let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
           inner join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
           inner join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
-          where df.prot_id = '${study}' and df.vend_id = '${vendor}' and ds.mnemonic ='${data.datasetName}'
+          where df.prot_id = '${study}' and df.vend_id = '${vendor}' 
+          and UPPER(ds.mnemonic) ='${data.datasetName.toUpperCase()}'
+          and ds.datakindid = '${dkId}' 
           and ds.datasetid !=$1 and df.testflag = '${tFlg}'`;
 
       let queryMnemonic = await DB.executeQuery(selectMnemonic, [DSId]);
@@ -3662,35 +3674,37 @@ exports.datasetUpdate = async (
               );
             }
 
-            if (data.fileType.toLowerCase() === "sas") {
-              if (name !== "sas7bdat") {
-                errorDataset.push(
-                  "If fileType SAS then fileNamingConvention should be end with (.sas7bdat)"
-                );
+            if (data.fileType) {
+              if (data.fileType.toLowerCase() === "sas") {
+                if (name !== "sas7bdat") {
+                  errorDataset.push(
+                    "If fileType SAS then fileNamingConvention should be end with (.sas7bdat)"
+                  );
+                }
               }
-            }
 
-            if (data.fileType.toLowerCase() === "fixed width") {
-              if (name !== "txt") {
-                errorDataset.push(
-                  "If fileType FIXED WIDTH then fileNamingConvention should be end with (.txt)"
-                );
+              if (data.fileType.toLowerCase() === "fixed width") {
+                if (name !== "txt") {
+                  errorDataset.push(
+                    "If fileType FIXED WIDTH then fileNamingConvention should be end with (.txt)"
+                  );
+                }
               }
-            }
 
-            if (data.fileType.toLowerCase() === "excel") {
-              if (name !== "xls" && name !== "xlsx") {
-                errorDataset.push(
-                  "If fileType EXCEL then fileNamingConvention should be end with (.xls or .xlsx)"
-                );
+              if (data.fileType.toLowerCase() === "excel") {
+                if (name !== "xls" && name !== "xlsx") {
+                  errorDataset.push(
+                    "If fileType EXCEL then fileNamingConvention should be end with (.xls or .xlsx)"
+                  );
+                }
               }
-            }
 
-            if (data.fileType.toLowerCase() === "delimited") {
-              if (name !== "csv" && name !== "txt") {
-                errorDataset.push(
-                  "If fileType Delimited then fileNamingConvention should be end with (.csv or .txt)"
-                );
+              if (data.fileType.toLowerCase() === "delimited") {
+                if (name !== "csv" && name !== "txt") {
+                  errorDataset.push(
+                    "If fileType Delimited then fileNamingConvention should be end with (.csv or .txt)"
+                  );
+                }
               }
             }
           }
