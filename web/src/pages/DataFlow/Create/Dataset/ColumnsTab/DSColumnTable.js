@@ -550,6 +550,7 @@ export default function DSColumnTable({
   };
 
   useEffect(() => {
+    console.log("haveHeader", haveHeader);
     if (editedRows.map((row) => validateRow(row)).every((e) => e === true)) {
       setDisableSaveAll(false);
     } else {
