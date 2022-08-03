@@ -121,7 +121,7 @@ const LocationForm = (props) => {
               fullWidth
             >
               {ensList?.map((type) => (
-                <MenuItem key={type.value} value={type.value}>
+                <MenuItem key={type.value} value={type.label}>
                   {type.label}
                 </MenuItem>
               ))}
