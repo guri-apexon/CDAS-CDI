@@ -135,6 +135,11 @@ const LeftPanel = () => {
   }, [refreshData]);
   useEffect(() => {
     getPackages(dataFlowId);
+    if (status === 1) {
+      dispatch(updateDFStatus(dataFlowId, "Active"));
+    } else if (status === 0) {
+      dispatch(updateDFStatus(dataFlowId, "Inactive"));
+    }
   }, [dataFlowId]);
   const searchTrigger = (e) => {
     const newValue = e.target.value;
