@@ -343,8 +343,20 @@ export const removeUndefined = (arr) =>
       return res;
     }, {});
 
+export const positionValidation = (haveHeader, position) => {
+  if (haveHeader) return true;
+  return !!position;
+};
 export const validateRow = (row, extraValidation = true) => {
-  const { minLength, maxLength, dataType, columnName, format } = row;
+  const {
+    minLength,
+    maxLength,
+    dataType,
+    columnName,
+    format,
+    haveHeader,
+    position,
+  } = row;
 
   const min = Number.parseInt(minLength, 10);
   const max = Number.parseInt(maxLength, 10);
@@ -352,6 +364,7 @@ export const validateRow = (row, extraValidation = true) => {
     !dataType ||
     !columnName ||
     !extraValidation ||
+    (haveHeader === false && !position) ||
     // (columnName && hasSpecialCHar(columnName)) ||
     (dataType && format && checkFormat(format, "format", dataType)) ||
     ((minLength || maxLength) &&
