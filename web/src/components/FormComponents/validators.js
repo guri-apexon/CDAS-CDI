@@ -343,7 +343,7 @@ export const removeUndefined = (arr) =>
       return res;
     }, {});
 
-export const validateRow = (row) => {
+export const validateRow = (row, extraValidation = true) => {
   const { minLength, maxLength, dataType, columnName, format } = row;
 
   const min = Number.parseInt(minLength, 10);
@@ -351,6 +351,7 @@ export const validateRow = (row) => {
   if (
     !dataType ||
     !columnName ||
+    !extraValidation ||
     // (columnName && hasSpecialCHar(columnName)) ||
     (dataType && format && checkFormat(format, "format", dataType)) ||
     ((minLength || maxLength) &&

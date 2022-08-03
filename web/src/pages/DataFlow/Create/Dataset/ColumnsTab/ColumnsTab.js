@@ -42,6 +42,10 @@ const ColumnsTab = ({
 
   const maxSize = 150000;
 
+  const getUniqueId = () => {
+    return Math.random().toString(36).slice(2);
+  };
+
   const handleUpload = (selected) => {
     setTimeout(() => {
       // custom validations
@@ -88,7 +92,8 @@ const ColumnsTab = ({
         ? datacolumns.map((column, i) => {
             const newObj = {
               dbColumnId: column.columnid,
-              uniqueId: `u${i}`,
+              uniqueId: getUniqueId(),
+              index: i,
               variableLabel: column.variable || "",
               columnName: column.name || "",
               position: column.position || "",
@@ -116,7 +121,8 @@ const ColumnsTab = ({
         ? arr.map((column, i) => {
             const newObj = {
               dbColumnId: column.columnid || "",
-              uniqueId: `u${i}`,
+              uniqueId: getUniqueId(),
+              index: i,
               variableLabel: column.varable || "",
               columnName: column.columnName || "",
               format: column.format || "",
@@ -209,6 +215,15 @@ const ColumnsTab = ({
       );
       setDisableUpload(true);
     }
+    if (isSftp(locationType)) {
+      const cdRows = messageContext?.dataflowObj?.columnDefinition;
+      if (cdRows?.length) {
+        setFormattedData([...cdRows]);
+        setSelectedMethod("fromDB2");
+        setShowColumns(true);
+        moveNext();
+      }
+    }
   }, []);
   const handleChange = (e) => {
     setSelectedMethod(e.target.value);
@@ -284,6 +299,7 @@ const ColumnsTab = ({
           locationType={locationType}
           headerValue={headerValue}
           myForm={myForm}
+          existRows={messageContext?.dataflowObj?.columnDefinition}
         />
       )}
     </>

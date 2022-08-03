@@ -784,7 +784,7 @@ exports.updateDataFlow = async (req, res) => {
       !ExternalId &&
       dataPackage &&
       Array.isArray(dataPackage) &&
-      helper.isSftp(locationType)
+      (helper.isSftp(connectionType) || helper.isSftp(locationType))
     ) {
       const errorPackage = [];
 
@@ -1865,7 +1865,7 @@ exports.fetchdataflowSource = async (req, res) => {
 exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
-    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, d2."path" as datapackagepath,
+    let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, d2."type" as datapackagetype, d2."path" as datapackagepath,
     d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, d3.datasetid, S.prot_nbr_stnd
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
@@ -1896,7 +1896,7 @@ exports.fetchdataflowDetails = async (req, res) => {
     for (const each of tempDP) {
       const datapackageObj = {
         externalID: each.ExternalId,
-        type: each.type,
+        type: each.datapackagetype,
         sasXptMethod: each.sasxptmethod,
         path: each.datapackagepath,
         password: each.password,
@@ -1936,7 +1936,7 @@ exports.fetchdataflowDetails = async (req, res) => {
           for (let obj of response) {
             if (obj.datasetid === el.datasetid) {
               let columnObj = {
-                name: obj.name,
+                columnName: obj.name,
                 dataType: obj.datatype,
                 primaryKey: obj.primarykey,
                 required: obj.required,

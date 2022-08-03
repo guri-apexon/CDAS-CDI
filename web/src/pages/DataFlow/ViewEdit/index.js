@@ -100,15 +100,20 @@ const DataFlow = ({ FormValues, dashboard }) => {
     },
   ];
 
-  const changeLocationData = (value) => {
-    // console.log("location", value);
-    if (selectedLocation && value?.value === selectedLocation.value) return;
+  const changeLocationData = (obj) => {
+    if (
+      (selectedLocation &&
+        obj?.value &&
+        obj?.value === selectedLocation?.value) ||
+      !obj?.value
+    )
+      return;
     // const locationsRec = dataFlowData.locations?.records ?? [];
     // const location = locationsRec?.find(
     //   // eslint-disable-next-line eqeqeq
     //   (loc) => value == loc.src_loc_id
     // );
-    dispatch(updateSelectedLocation(value));
+    dispatch(updateSelectedLocation(obj || {}));
   };
 
   const pullVendorandLocation = () => {
@@ -198,7 +203,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
         vendorID: FormValues.vendors[0],
         vendorName: "",
         dataflowName: "",
-        locationName: selectedLocation.value,
+        locationName: selectedLocation.value || selectedLocation,
         dataStructure: FormValues.dataStructure,
         connectionType: FormValues.locationType,
         testFlag: FormValues.dataflowType === "test" ? "true" : "false",
@@ -216,6 +221,8 @@ const DataFlow = ({ FormValues, dashboard }) => {
       };
       const result = await updateDataflow(payload);
       if (result?.status === 1) {
+        // fetch data flow details to update redux store
+        dispatch(getDataFlowDetail(dataflowId));
         messageContext.showSuccessMessage(result.message);
       } else {
         messageContext.showErrorMessage(
@@ -292,6 +299,7 @@ const DataFlow = ({ FormValues, dashboard }) => {
                 password={selectedLocation?.pswd}
                 connLink={selectedLocation?.cnn_url}
                 firstFileDate={ffDate}
+                selectedLocation={selectedLocation}
                 changeFirstFlDt={changeFirstFlDt}
               />
             </div>
