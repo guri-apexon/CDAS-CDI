@@ -20,7 +20,10 @@ import {
   columnObj,
 } from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
-import { validateRow } from "../../../../../components/FormComponents/validators";
+import {
+  positionValidation,
+  validateRow,
+} from "../../../../../components/FormComponents/validators";
 
 const maxSize = 150000;
 
@@ -555,11 +558,14 @@ export default function DSColumnTable({
   };
 
   useEffect(() => {
-    console.log("haveHeader", haveHeader);
-    if (editedRows.map((row) => validateRow(row)).every((e) => e === true)) {
-      setDisableSaveAll(false);
-    } else {
+    if (
+      editedRows.some(
+        (row) => !validateRow(row, positionValidation(haveHeader, row.position))
+      )
+    ) {
       setDisableSaveAll(true);
+    } else {
+      setDisableSaveAll(false);
     }
   }, [editedRows]);
 
