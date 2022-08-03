@@ -61,6 +61,7 @@ const SaveChangesModal = ({
 
   const alertStore = useSelector((state) => state.alert);
   const form = useSelector((state) => state.form) || null;
+  const dataFlowStore = useSelector((state) => state.dataFlow) || null;
 
   // Save Changes Modal Variables
   const routerHandle = useRef();
@@ -112,7 +113,7 @@ const SaveChangesModal = ({
 
         // go through redux form data and check if there is any change
         if (!manualIsAnyChangeCheck) {
-          isAnyChange = checkFormChanges(form) || false;
+          isAnyChange = checkFormChanges(form, dataFlowStore) || false;
         }
         if (manualIsAnyChangeCheck) {
           isAnyChange = manualIsAnyChangeFlag || false;
