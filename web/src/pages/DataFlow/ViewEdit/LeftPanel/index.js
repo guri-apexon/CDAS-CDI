@@ -202,7 +202,7 @@ const LeftPanel = () => {
           <Switch
             label="Active"
             className="inline-checkbox"
-            checked={status === "Active"}
+            checked={status === "Active" || status === 1}
             onChange={handleStatusUpdate}
             disabled={!canUpdateDataFlow}
             size="small"
