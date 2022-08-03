@@ -21,7 +21,6 @@ import Tag from "apollo-react/components/Tag";
 import {
   locationTypes,
   dataStruct,
-  extSysName,
   generateConnectionURL,
   generatedBName,
   extractHostname,
@@ -41,6 +40,7 @@ import {
 import {
   checkLocationExistsInDataFlow,
   testConnectionFSR,
+  getENSList,
 } from "../../services/ApiServices";
 import { locationExistInDFMsg } from "../../constants";
 import "./LocationModal.scss";
@@ -71,6 +71,18 @@ const LocationForm = (props) => {
     formState,
     loading,
   } = props;
+
+  const [ensList, setENSList] = useState([]);
+  const getENSlists = async () => {
+    if (ensList.length <= 0) {
+      const list = await getENSList();
+      console.log({ list });
+      setENSList([...list]);
+    }
+  };
+  useEffect(() => {
+    getENSlists();
+  }, []);
 
   return (
     <form id="location-modal" onSubmit={props.handleSubmit}>
@@ -108,8 +120,8 @@ const LocationForm = (props) => {
               size="small"
               fullWidth
             >
-              {extSysName?.map((type) => (
-                <MenuItem key={type.value} value={type.value}>
+              {ensList?.map((type) => (
+                <MenuItem key={type.value} value={type.label}>
                   {type.label}
                 </MenuItem>
               ))}
