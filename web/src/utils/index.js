@@ -787,13 +787,28 @@ export const goToApp = (path) => {
   window.location.href = path;
 };
 
-export const checkFormChanges = (form) => {
+export const checkFormChanges = (form, dataFlowStore) => {
   let isAnyChange = false;
   if (!isEmpty(form)) {
     Object.entries(form).forEach(([key, item]) => {
-      if (key && item?.initial && item?.values) {
+      if (key && item?.initial && item?.values && !isAnyChange) {
         if (!isEqual(item?.initial, item?.values)) {
           isAnyChange = true;
+        }
+
+        // check for location drop down changes
+        if (key === "DataFlowForm" && !isAnyChange) {
+          const reduxFormLocationValue =
+            item?.values?.locations?.[0]?.value || null;
+          const dataFlowStoreLocationValue =
+            dataFlowStore?.selectedLocation?.src_loc_id || null;
+          if (
+            reduxFormLocationValue &&
+            dataFlowStoreLocationValue &&
+            reduxFormLocationValue !== dataFlowStoreLocationValue
+          ) {
+            isAnyChange = true;
+          }
         }
       }
     });
