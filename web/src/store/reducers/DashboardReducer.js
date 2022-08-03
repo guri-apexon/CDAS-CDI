@@ -49,6 +49,7 @@ export const initialState = {
   },
   dfId: "",
   userStudies: [],
+  userStudiesLoading: false,
   selectedDataFlow: "",
   userPinnedStudies: [],
 };
@@ -74,15 +75,18 @@ const DashboardReducer = (state = initialState, action) =>
         break;
 
       case GET_STUDIES_LIST:
+        newState.userStudiesLoading = true;
         newState.loading = true;
         break;
 
       case GET_STUDIES_LIST_SUCCESS:
+        newState.userStudiesLoading = false;
         newState.loading = false;
         newState.userStudies = action.userStudies;
         break;
 
       case GET_STUDIES_LIST_FAILURE:
+        newState.userStudiesLoading = false;
         newState.loading = false;
         break;
 
