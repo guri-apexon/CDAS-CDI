@@ -90,7 +90,12 @@ const LeftPanel = ({ stydyHeight }) => {
   const [unPinnedStudies, setUnPinnedStudies] = useState([]);
   const [pinnedStudies, setPinnedStudies] = useState([]);
   const [pinned, setPinned] = useState([]);
-  const { loading: isLoading, userStudies, userPinnedStudies } = dashboard;
+  const {
+    loading: isLoading,
+    userStudiesLoading,
+    userStudies,
+    userPinnedStudies,
+  } = dashboard;
   const userInfo = getUserInfo();
 
   const updateList = async () => {
@@ -102,15 +107,15 @@ const LeftPanel = ({ stydyHeight }) => {
     // if (newStudies !== undefined && newStudies.length) {
     //   setPinned([...newPinned]);
     // }
-    setLoading(true);
+    // setLoading(true);
     dispatch(getStudiesData(userInfo.userId));
     dispatch(getPinnedData(userInfo.userId));
-    setLoading(false);
+    // setLoading(false);
   };
 
-  // useEffect(() => {
-  //   setLoading(isLoading);
-  // }, [isLoading]);
+  useEffect(() => {
+    setLoading(!isLoading && !userStudiesLoading ? false : true);
+  }, [isLoading, userStudiesLoading]);
 
   useEffect(() => {
     setStudyList([...userStudies]);
