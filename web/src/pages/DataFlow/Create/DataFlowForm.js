@@ -22,8 +22,8 @@ import {
 } from "../../../components/FormComponents/FormComponents";
 import validate from "../../../components/FormComponents/validation";
 import LocationModal from "../../../components/Common/LocationModal";
-
-import { locationTypes, dataStruct, SodLocationTypes } from "../../../utils";
+import { dataStruct, SodLocationTypes } from "../../../utils";
+import { getListTypes } from "../../../services/ApiServices";
 import usePermission, {
   Categories,
   Features,
@@ -134,6 +134,19 @@ const DataFlowFormBase = (props) => {
     //   );
     // }
   }, [initialValues]);
+
+  const [locationTypes, setLocationTypes] = useState([]);
+  const getLocTypes = async () => {
+    if (locationTypes.length <= 0) {
+      const list = await getListTypes();
+      setLocationTypes([...list.data.map((e) => e.type)]);
+    }
+  };
+
+  useEffect(() => {
+    getLocTypes();
+  }, []);
+
   return (
     <form onSubmit={handleSubmit}>
       <Paper className={classes.paper}>
