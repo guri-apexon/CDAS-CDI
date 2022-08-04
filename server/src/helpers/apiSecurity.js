@@ -95,7 +95,7 @@ exports.secureApi = async (req, res, next) => {
             return apiResponse.unauthorizedResponse(res, "Internal Error");
 
           const { api_key: vault_api_key, iv } = vaultData?.data;
-          if (decrypt(api_key, iv) !== vault_api_key)
+          if (decrypt(api_key, encryption_key, iv) !== vault_api_key)
             return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
 
           const user_id = decrypt(access_token, encryption_key, iv);
