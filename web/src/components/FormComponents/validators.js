@@ -36,10 +36,16 @@ export const checkNumbers = (value) => {
   return false;
 };
 
-export const checkNumeric = (value) => {
+export const checkNumeric = (value, preventZero = false) => {
   const regexp = /^[\d]+$/;
   if (value !== "" && !regexp.test(value)) {
     return "Only numeric values are allowed";
+  }
+  if (preventZero && !value) {
+    return "Please input some values";
+  }
+  if (preventZero && value === "0") {
+    return "Please input greater than zero";
   }
   return false;
 };
@@ -345,7 +351,7 @@ export const removeUndefined = (arr) =>
 
 export const positionValidation = (haveHeader, position) => {
   if (haveHeader) return true;
-  return !!position;
+  return !checkNumeric(position, true);
 };
 export const validateRow = (row, extraValidation = true) => {
   const {
@@ -364,7 +370,7 @@ export const validateRow = (row, extraValidation = true) => {
     !dataType ||
     !columnName ||
     !extraValidation ||
-    (haveHeader === false && !position) ||
+    (haveHeader === false && checkNumeric(position, true)) ||
     // (columnName && hasSpecialCHar(columnName)) ||
     (dataType && format && checkFormat(format, "format", dataType)) ||
     ((minLength || maxLength) &&
