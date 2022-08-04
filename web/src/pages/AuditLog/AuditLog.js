@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/no-array-index-key */
@@ -87,7 +88,29 @@ const AuditLog = () => {
   };
 
   const exportDataRows = () => {
-    const toBeExportRows = [...auditData];
+    // filter audit data to change boolean values of old and new values to string for active attribute
+    const toBeExportRows = auditData?.map((data) => {
+      if (data.attribute === "active") {
+        return {
+          ...data,
+          new_val:
+            data.new_val === "0"
+              ? "false"
+              : data.new_val === "1"
+              ? "true"
+              : data.new_val,
+          old_val:
+            data.old_val === "0"
+              ? "false"
+              : data.old_val === "1"
+              ? "true"
+              : data.old_val,
+        };
+      }
+      return {
+        ...data,
+      };
+    }) || [...auditData];
     const sortedFilteredData = applyFilter(
       tableColumns,
       toBeExportRows,

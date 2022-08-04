@@ -30,11 +30,17 @@ const DateCell = ({ row, column: { accessor } }) => {
 
 const displayTextFn = ({ row, column: { accessor } }) => {
   const rowValue = row[accessor];
+  const rowAttribute = row.attribute;
   let displayText;
-  if (rowValue === "1") {
-    displayText = "true";
-  } else if (rowValue === "0") {
-    displayText = "false";
+  // for active attribute, change value from boolean to string
+  if (rowAttribute === "active") {
+    if (rowValue === "1") {
+      displayText = "true";
+    } else if (rowValue === "0") {
+      displayText = "false";
+    } else {
+      displayText = rowValue;
+    }
   } else {
     displayText = rowValue;
   }
