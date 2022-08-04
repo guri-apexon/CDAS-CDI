@@ -601,6 +601,7 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
           setMenuOpen(false);
           setCustomValue(null);
           setSelectedMenuText(selectedMenuText);
+          setErrorInput(false);
         }}
         title="Choose Custom Days"
         message={
