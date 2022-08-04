@@ -95,6 +95,7 @@ const DataSetsFormBase = (props) => {
   const [sqlColumnsArr, setSqlColumnsArr] = useState([]);
   const [cdtValue, setCdtValue] = useState(null);
   const [selectedTable, setSelectedTable] = useState(null);
+  const [isColumnAPICalled, setIsColumnAPICalled] = useState(false);
 
   const onChangeOffsetColumn = (obj) => {
     setSelectedOffsetColumns(obj);
@@ -155,6 +156,24 @@ const DataSetsFormBase = (props) => {
       setShowPreview(false);
     }
   }, [formValues.isCustomSQL]);
+
+  // fetch table columns on page load
+  useEffect(() => {
+    if (
+      formValues?.isCustomSQL === "No" &&
+      formValues?.tableName &&
+      !isColumnAPICalled
+    ) {
+      setSqlColumnsArr([]);
+      dispatch(
+        getSQLColumns({
+          ...locationDetail,
+          tableName: formValues.tableName,
+        })
+      );
+      setIsColumnAPICalled(true);
+    }
+  }, [formValues.tableName]);
 
   useEffect(() => {
     if (previewSQL?.length && formValues.isCustomSQL?.toLowerCase() === "yes") {
