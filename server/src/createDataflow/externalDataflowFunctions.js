@@ -1297,21 +1297,17 @@ exports.insertValidation = async (req) => {
                     clErrArray = clErrArray.concat(clRes);
                   }
 
-                  // min max validations changed from here
-                  const minMaxErrors = helper.minMaxLengthValidations(
-                    el,
-                    clErrArray
-                  );
-
                   if (
-                    // el.minLength ||
-                    // el.maxLength ||
-                    // el.minLength === 0 ||
-                    // el.maxLength === 0 ||
+                    el.minLength ||
+                    el.maxLength ||
+                    el.minLength === 0 ||
+                    el.maxLength === 0 ||
                     el.lov ||
                     el.position
                   ) {
-                    clErrArray.push("In JDBC position, lov should be blank");
+                    clErrArray.push(
+                      "In jdbc minLength, maxLength, position, lov should be blank"
+                    );
                   }
 
                   // Duplicate column name check in payload
@@ -2659,19 +2655,18 @@ const columnSave = (exports.columnDefinationInsert = async (
           errorColumnDef = errorColumnDef.concat(clRes);
         }
 
-        // min max validations changed from here
-        const minMaxErrors = helper.minMaxLengthValidations(el, errorColumnDef);
-
         if (
-          // el.minLength ||
-          // el.minLength === 0 ||
-          // el.maxLength ||
-          // el.maxLength === 0 ||
+          el.minLength ||
+          el.minLength === 0 ||
+          el.maxLength ||
+          el.maxLength === 0 ||
           el.lov ||
           el.position
         ) {
           // console.log(val.key, val.value);
-          errorColumnDef.push("For JBDC lov, position fields should be Blank");
+          errorColumnDef.push(
+            "For JBDC minLength, maxLength, lov, position fields should be Blank"
+          );
         }
       }
     }
@@ -4494,20 +4489,18 @@ exports.clDefUpdate = async (
         }
       }
 
-      // min max validations changed from here
-      const minMaxErrors = helper.minMaxLengthValidations(data, errorcolDef);
-
       if (
-        // data.minLength ||
-        // data.minLength === 0 ||
-        // data.maxLength ||
-        // data.maxLength === 0 ||
+        data.minLength ||
+        data.minLength === 0 ||
+        data.maxLength ||
+        data.maxLength === 0 ||
         data.lov ||
         data.position
       ) {
-        errorcolDef.push("For JBDC lov, position fields should be Blank");
+        errorcolDef.push(
+          "For JBDC minLength, maxLength, lov, position fields should be Blank"
+        );
       }
-      //to start from here
     }
 
     if (data.columnName) {
