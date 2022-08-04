@@ -313,7 +313,7 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.loading = false;
         newState.error = null;
         if (action.versionBumped) newState.CDVersionBump = false;
-        newState.sucessMsg = "Column defination was updated succesfully";
+        newState.sucessMsg = "Column definition was updated successfully";
         break;
       case UPDATE_COLUMNS_FAILURE:
         newState.loading = false;
