@@ -263,6 +263,7 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
           setMenuOpen(false);
           setCustomValue(null);
           setSelectedMenuText(selectedMenuText);
+          setErrorInput(false);
         }}
         title="Choose Custom Days"
         message={
