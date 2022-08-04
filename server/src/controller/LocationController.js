@@ -554,8 +554,9 @@ exports.saveLocationData = async function (req, res) {
 
 exports.getLocationTypes = async (req, res) => {
   try {
+    // `SELECT loc_typ as type from ${schemaName}.location_details WHERE loc_typ not in ('Snowflake', 'SQL Server Dynamic Port');`
     const { rows: locationTypes } = await DB.executeQuery(
-      `SELECT loc_typ as type from ${schemaName}.location_details WHERE loc_typ not in ('Snowflake', 'SQL Server Dynamic Port');`
+      `SELECT loc_typ as type from ${schemaName}.location_details;`
     );
     return apiResponse.successResponseWithData(
       res,

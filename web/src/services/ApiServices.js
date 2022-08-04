@@ -29,6 +29,7 @@ import {
   DELETE_PACKAGE,
   UPDATE_PACKAGE,
   PREVIEWSQLAPI,
+  LISTTYPES,
 } from "../constants";
 import store from "../store";
 import { freezeDfVersion } from "../store/actions/DataFlowAction";
@@ -539,6 +540,18 @@ export const deletePackage = async (reqBody) => {
 export const updatePackageStatus = async (reqBody) => {
   try {
     const res = await axios.post(`${baseURL}/${UPDATE_PACKAGE}`, reqBody);
+    return res.data || [];
+  } catch (err) {
+    return {
+      data: [],
+      error: err.response?.data?.message || "Something went wrong",
+    };
+  }
+};
+
+export const getListTypes = async (reqBody) => {
+  try {
+    const res = await axios.get(`${baseURL}/${LISTTYPES}`, reqBody);
     return res.data || [];
   } catch (err) {
     return {

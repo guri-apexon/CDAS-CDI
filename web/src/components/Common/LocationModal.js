@@ -19,7 +19,6 @@ import Button from "apollo-react/components/Button";
 import Banner from "apollo-react/components/Banner";
 import Tag from "apollo-react/components/Tag";
 import {
-  locationTypes,
   dataStruct,
   generateConnectionURL,
   generatedBName,
@@ -41,6 +40,7 @@ import {
   checkLocationExistsInDataFlow,
   testConnectionFSR,
   getENSList,
+  getListTypes,
 } from "../../services/ApiServices";
 import { locationExistInDFMsg } from "../../constants";
 import "./LocationModal.scss";
@@ -73,15 +73,24 @@ const LocationForm = (props) => {
   } = props;
 
   const [ensList, setENSList] = useState([]);
+  const [locationTypes, setLocationTypes] = useState([]);
   const getENSlists = async () => {
     if (ensList.length <= 0) {
       const list = await getENSList();
-      console.log({ list });
       setENSList([...list]);
     }
   };
+
+  const getLocTypes = async () => {
+    if (locationTypes.length <= 0) {
+      const list = await getListTypes();
+      setLocationTypes([...list.data.map((e) => e.type)]);
+    }
+  };
+
   useEffect(() => {
     getENSlists();
+    getLocTypes();
   }, []);
 
   return (
