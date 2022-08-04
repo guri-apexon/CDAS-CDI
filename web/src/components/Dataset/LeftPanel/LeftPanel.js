@@ -30,6 +30,8 @@ import usePermission, {
 } from "../../Common/usePermission";
 
 import "./LeftPanel.scss";
+import { activateDF, inActivateDF } from "../../../services/ApiServices";
+import { updateDFStatus } from "../../../store/actions/DashboardAction";
 
 const useStyles = makeStyles(() => ({
   drawerHeader: {
@@ -89,7 +91,7 @@ const LeftPanel = () => {
 
   const dashboard = useSelector((state) => state.dashboard);
   const { prot_id: protId } = dashboard?.selectedCard;
-  const { locationType } = dashboard?.selectedDataFlow;
+  const { locationType, status, dataFlowId } = dashboard?.selectedDataFlow;
 
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
     useStudyPermission(
@@ -146,6 +148,19 @@ const LeftPanel = () => {
         type.trim().toLowerCase() === "test" ? !canDeleteTest : !canDeleteProd,
     },
   ];
+  const handleStatusUpdate = async () => {
+    if (status === "Active") {
+      const data = await inActivateDF(dataflowid);
+      if (data?.active === 0) {
+        dispatch(updateDFStatus(dataflowid, "Inactive"));
+      }
+    } else {
+      const data = await activateDF(dataflowid);
+      if (parseInt(data?.data?.active, 10) === 1) {
+        dispatch(updateDFStatus(dataflowid, "Active"));
+      }
+    }
+  };
   useEffect(() => {
     getPackages();
   }, [dataflowid, refreshData]);
@@ -173,8 +188,8 @@ const LeftPanel = () => {
           <Switch
             label="Active"
             className="inline-checkbox"
-            checked={!(active === 0)}
-            // onChange={handleActive}
+            checked={status === "Active" || status === 1}
+            onChange={handleStatusUpdate}
             disabled={!canUpdateDataFlow}
             size="small"
           />
