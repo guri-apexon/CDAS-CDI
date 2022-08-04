@@ -9,7 +9,7 @@ const constants = require("../config/constants");
 const apiResponse = require("../helpers/apiResponse");
 
 const { Console } = require("winston/lib/winston/transports");
-const { trim } = require("lodash");
+const { trim, filter } = require("lodash");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const dataTyperForamtValidate = (exports.dataTyperForamtValidate = (
@@ -219,6 +219,8 @@ exports.insertValidation = async (req) => {
 
   if (req.dataPackage && req.dataPackage.length > 0) {
     // console.log("data package data", req.body.dataPackage.length);
+    let mnenomicArray = [];
+
     dfObj.dataPackages = [];
 
     let dpErrArray = [];
@@ -415,7 +417,11 @@ exports.insertValidation = async (req) => {
           if (each.dataSet && each.dataSet.length > 0) {
             dpNewObj.dataSets = [];
             let dsErrArray = [];
+            // console.log("obj", each.dataSet);
+
             for (let obj of each.dataSet) {
+              let clNameArray = [];
+
               dsErrArray = [];
               let dsNewObj = {
                 ExternalId: obj.ExternalId,
@@ -593,6 +599,39 @@ exports.insertValidation = async (req) => {
                 //     "fileNamingConvention should not have the following special characters < >"
                 //   );
                 // }
+              }
+
+              // Duplicate mnemonic check in payload
+              const duplicate = mnenomicArray.includes(obj.datasetName);
+              if (duplicate) {
+                dsErrArray.push(
+                  "In this payload duplicate datasetName(mnemonic) name found"
+                );
+              }
+              mnenomicArray.push(obj.datasetName);
+              // console.log("array", mnenomicArray, duplicate);
+
+              // Duplicate mnemonic check in DB
+              if (obj.datasetName) {
+                const tFlg = helper.stringToBoolean(req.testFlag) ? 1 : 0;
+                let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
+                    inner join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+                    inner join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+                    inner join cdascfg.study s on (df.prot_id = s.prot_id)
+                    where s.prot_nbr_stnd = '${req.protocolNumberStandard}' and 
+                    df.vend_id = '${req.vendorid}' 
+                    and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
+                    and ds.datakindid = '${
+                      obj.dataKindID
+                    }'and df.testflag = '${tFlg}'`;
+
+                let queryMnemonic = await DB.executeQuery(selectMnemonic);
+
+                if (queryMnemonic.rows.length > 0) {
+                  dsErrArray.push(
+                    "In this environment this datasetName(mnemonic) name already Exist!"
+                  );
+                }
               }
 
               if (obj.dataTransferFrequency === 0) {
@@ -841,6 +880,17 @@ exports.insertValidation = async (req) => {
                     }
                     // }
                   }
+
+                  // Duplicate column name check in payload
+                  const duplicate = clNameArray.includes(el.columnName);
+                  if (duplicate) {
+                    clErrArray.push(
+                      "Column Names (Headers) must be unique in a data set file structure. Please amend."
+                    );
+                  }
+                  clNameArray.push(el.columnName);
+                  // console.log("array", clNameArray, duplicate);
+
                   if (clErrArray.length > 0) {
                     let clErrRes = clErrArray.join(" '|' ");
                     clNewObj.message = clErrRes;
@@ -975,6 +1025,7 @@ exports.insertValidation = async (req) => {
             dpNewObj.dataSets = [];
             let dsErrArray = [];
             for (let obj of each.dataSet) {
+              let clNameArray = [];
               dsErrArray = [];
               let dsNewObj = {
                 ExternalId: obj.ExternalId,
@@ -1069,11 +1120,44 @@ exports.insertValidation = async (req) => {
                 },
               ];
 
-              // point - 28 story - 7277
+              // point - 28 story -: 7277
               if (obj.columncount === 0) {
                 dsErrArray.push(
                   "Data set column count should be minimum 1 or greater than 1. Please amend."
                 );
+              }
+
+              // duplicate mnenomic check in payload
+              const duplicate = mnenomicArray.includes(obj.datasetName);
+              if (duplicate) {
+                dsErrArray.push(
+                  "In this payload duplicate datasetName(mnemonic) name found"
+                );
+              }
+              mnenomicArray.push(obj.datasetName);
+              // console.log("array", mnenomicArray, duplicate);
+
+              // Duplicate mnemonic check in DB
+              if (obj.datasetName) {
+                const tFlg = helper.stringToBoolean(req.testFlag) ? 1 : 0;
+                let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
+                    inner join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+                    inner join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+                    inner join cdascfg.study s on (df.prot_id = s.prot_id)
+                    where s.prot_nbr_stnd = '${req.protocolNumberStandard}' and 
+                    df.vend_id = '${req.vendorid}' 
+                    and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
+                    and ds.datakindid = '${
+                      obj.dataKindID
+                    }'and df.testflag = '${tFlg}'`;
+
+                let queryMnemonic = await DB.executeQuery(selectMnemonic);
+
+                if (queryMnemonic.rows.length > 0) {
+                  dsErrArray.push(
+                    "In this environment this datasetName(mnemonic) name already Exist!"
+                  );
+                }
               }
 
               if (obj.customsql_yn) {
@@ -1225,6 +1309,16 @@ exports.insertValidation = async (req) => {
                       "In jdbc minLength, maxLength, position, lov should be blank"
                     );
                   }
+
+                  // Duplicate column name check in payload
+                  const duplicate = clNameArray.includes(el.columnName);
+                  if (duplicate) {
+                    clErrArray.push(
+                      "Column Names (Headers) must be unique in a data set file structure. Please amend."
+                    );
+                  }
+                  clNameArray.push(el.columnName);
+                  // console.log("array", clNameArray, duplicate);
 
                   if (clErrArray.length > 0) {
                     let clErrRes = clErrArray.join(" '|' ");
@@ -1667,6 +1761,10 @@ exports.packageLevelInsert = async (
             DpObj.dataSets.push(res.sucRes);
           }
         });
+
+        // if (isNew && isError) {
+        //   return { sucRes: DpObj, errRes: dpErrObj };
+        // }
       }
     }
     // console.log("package insert ", DpObj);
@@ -2297,7 +2395,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
     return { sucRes: dsObj, errRes: {} };
     // return { sucRes: dsObj, errRes: errorDataset };
   } catch (err) {
-    console.log("dataset catch", err);
+    console.log("dataset catch 1", err);
     //throw error in json response with status 500.
     Logger.error("catch :Dataset level insert");
     Logger.error(err);
