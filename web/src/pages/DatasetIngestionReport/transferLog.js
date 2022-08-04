@@ -460,7 +460,6 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
       return false;
     }
     setCustomValue(val);
-    setSelectedMenuText(`Within past ${val} days`);
     setErrorInput(false);
     return null;
   };
@@ -598,7 +597,11 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
       />
       <Modal
         open={menuOpen}
-        onClose={() => setMenuOpen(false)}
+        onClose={() => {
+          setMenuOpen(false);
+          setCustomValue(null);
+          setSelectedMenuText(selectedMenuText);
+        }}
         title="Choose Custom Days"
         message={
           <TextField
@@ -615,7 +618,10 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
           {
             label: "Ok",
             disabled: errorInput || !customValue,
-            onClick: () => getFileHistoryData(customValue),
+            onClick: () => {
+              getFileHistoryData(customValue);
+              setSelectedMenuText(`Within past ${customValue} days`);
+            },
           },
         ]}
       />
