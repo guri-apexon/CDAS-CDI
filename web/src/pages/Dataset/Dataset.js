@@ -539,20 +539,20 @@ const Dataset = () => {
                 open={openModal}
                 variant="warning"
                 onClose={() => setopenModal(false)}
-                title="Exit"
-                message="Do you really want to exit and discard dataflow changes"
+                title="Lose your work?"
+                message="All unsaved changes will be lost."
                 buttonProps={[
                   {
-                    label: "Discard changes",
+                    label: "Keep editing",
+                    onClick: () => setopenModal(false),
+                  },
+                  {
+                    variant: "primary",
+                    label: "Leave without saving",
                     onClick: () => {
                       setopenModal(false);
                       closeForm();
                     },
-                  },
-                  {
-                    label: "Continue editing data flow",
-                    variant: "primary",
-                    onClick: () => setopenModal(false),
                   },
                 ]}
                 id="success"
