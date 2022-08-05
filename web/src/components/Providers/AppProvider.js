@@ -1,5 +1,6 @@
+/* eslint-disable consistent-return */
 import React, { createContext, useState, useEffect } from "react";
-import { getRolesPermissions } from "../../services/ApiServices";
+import { getRolesPermissions, userLogOut } from "../../services/ApiServices";
 
 export const AppContext = createContext();
 
@@ -35,6 +36,13 @@ const AppProvider = ({ children }) => {
 
       let uniquePermissions = [];
       const data = await getRolesPermissions(studyId);
+      if (data.status === 401) {
+        const isLogout = await userLogOut();
+        if (isLogout) {
+          window.location.reload();
+        }
+        return false;
+      }
       console.log(`>>> study (${studyId}) permissions`, data);
       if (data.message === "Something went wrong") {
         console.log(

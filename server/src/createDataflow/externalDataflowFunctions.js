@@ -855,16 +855,25 @@ exports.insertValidation = async (req) => {
                       }
                     }
                   }
-                  if (el.minLength) {
-                    if (
-                      typeof el.minLength != "undefined" &&
-                      typeof el.maxLength != "undefined"
-                    ) {
-                      if (el.minLength <= el.maxLength) {
-                      } else {
-                        clErrArray.push("minLength always less than maxLength");
-                      }
-                    }
+                  // This message validated/changed in minMaxLengthValidations function
+                  // if (el.minLength) {
+                  //   if (
+                  //     typeof el.minLength != "undefined" &&
+                  //     typeof el.maxLength != "undefined"
+                  //   ) {
+                  //     if (el.minLength <= el.maxLength) {
+                  //     } else {
+                  //       clErrArray.push(
+                  //         "minLength always less than maxLength1"
+                  //       );
+                  //     }
+                  //   }
+                  // }
+
+                  // min max validations changes
+                  const minMaxErrors = helper.minMaxLengthValidations(el);
+                  if (minMaxErrors && minMaxErrors.length > 0) {
+                    clErrArray.push(...minMaxErrors);
                   }
                   if (el.lov) {
                     const last = el.lov.charAt(el.lov.length - 1);
@@ -1297,17 +1306,20 @@ exports.insertValidation = async (req) => {
                     clErrArray = clErrArray.concat(clRes);
                   }
 
+                  // min max validations changed from here
+                  const minMaxErrors = helper.minMaxLengthValidations(el);
+                  if (minMaxErrors && minMaxErrors.length > 0) {
+                    clErrArray.push(...minMaxErrors);
+                  }
                   if (
-                    el.minLength ||
-                    el.maxLength ||
-                    el.minLength === 0 ||
-                    el.maxLength === 0 ||
+                    // el.minLength ||
+                    // el.maxLength ||
+                    // el.minLength === 0 ||
+                    // el.maxLength === 0 ||
                     el.lov ||
                     el.position
                   ) {
-                    clErrArray.push(
-                      "In jdbc minLength, maxLength, position, lov should be blank"
-                    );
+                    clErrArray.push("In JDBC position, lov should be blank");
                   }
 
                   // Duplicate column name check in payload
@@ -2554,15 +2566,22 @@ const columnSave = (exports.columnDefinationInsert = async (
           }
         }
 
-        if (el.minLength) {
-          if (
-            typeof el.minLength != "undefined" &&
-            typeof el.maxLength != "undefined"
-          ) {
-            if (el.minLength >= el.maxLength) {
-              errorColumnDef.push("minLength always less than maxLength ");
-            }
-          }
+        // This message validated/changed in minMaxLengthValidations function
+        // if (el.minLength) {
+        //   if (
+        //     typeof el.minLength != "undefined" &&
+        //     typeof el.maxLength != "undefined"
+        //   ) {
+        //     if (el.minLength >= el.maxLength) {
+        //       errorColumnDef.push("minLength always less than maxLength 2");
+        //     }
+        //   }
+        // }
+
+        // min max validations changes
+        const minMaxErrors = helper.minMaxLengthValidations(el);
+        if (minMaxErrors && minMaxErrors.length > 0) {
+          errorColumnDef.push(...minMaxErrors);
         }
 
         if (el.lov) {
@@ -2655,18 +2674,22 @@ const columnSave = (exports.columnDefinationInsert = async (
           errorColumnDef = errorColumnDef.concat(clRes);
         }
 
+        // min max validations changed from here
+        const minMaxErrors = helper.minMaxLengthValidations(el);
+        if (minMaxErrors && minMaxErrors.length > 0) {
+          errorColumnDef.push(...minMaxErrors);
+        }
+
         if (
-          el.minLength ||
-          el.minLength === 0 ||
-          el.maxLength ||
-          el.maxLength === 0 ||
+          // el.minLength ||
+          // el.minLength === 0 ||
+          // el.maxLength ||
+          // el.maxLength === 0 ||
           el.lov ||
           el.position
         ) {
           // console.log(val.key, val.value);
-          errorColumnDef.push(
-            "For JBDC minLength, maxLength, lov, position fields should be Blank"
-          );
+          errorColumnDef.push("For JBDC lov, position fields should be Blank");
         }
       }
     }
@@ -4333,16 +4356,22 @@ exports.clDefUpdate = async (
       }
 
       //dadadda
+      // This message validated/changed in minMaxLengthValidations function
+      // if (data.minLength) {
+      //   if (
+      //     typeof data.minLength != "undefined" &&
+      //     typeof data.maxLength != "undefined"
+      //   ) {
+      //     if (data.minLength >= data.maxLength) {
+      //       errorcolDef.push("minLength always less than maxLength3");
+      //     }
+      //   }
+      // }
 
-      if (data.minLength) {
-        if (
-          typeof data.minLength != "undefined" &&
-          typeof data.maxLength != "undefined"
-        ) {
-          if (data.minLength >= data.maxLength) {
-            errorcolDef.push("minLength always less than maxLength");
-          }
-        }
+      // min max validations changes
+      const minMaxErrors = helper.minMaxLengthValidations(data);
+      if (minMaxErrors && minMaxErrors.length > 0) {
+        errorcolDef.push(...minMaxErrors);
       }
 
       if (typeof data.primaryKey != "undefined") {
@@ -4489,17 +4518,21 @@ exports.clDefUpdate = async (
         }
       }
 
+      // min max validations changed from here
+      const minMaxErrors = helper.minMaxLengthValidations(data);
+      if (minMaxErrors && minMaxErrors.length > 0) {
+        errorcolDef.push(...minMaxErrors);
+      }
+
       if (
-        data.minLength ||
-        data.minLength === 0 ||
-        data.maxLength ||
-        data.maxLength === 0 ||
+        // data.minLength ||
+        // data.minLength === 0 ||
+        // data.maxLength ||
+        // data.maxLength === 0 ||
         data.lov ||
         data.position
       ) {
-        errorcolDef.push(
-          "For JBDC minLength, maxLength, lov, position fields should be Blank"
-        );
+        errorcolDef.push("For JBDC lov, position fields should be Blank");
       }
     }
 
