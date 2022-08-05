@@ -422,8 +422,8 @@ exports.saveLocationData = async function (req, res) {
     if (isExist > 0) {
       return apiResponse.validationErrorWithData(
         res,
-        "Operation failed",
-        `No duplicate locations are allowed`
+        "No duplicate locations are allowed",
+        []
       );
     }
 
