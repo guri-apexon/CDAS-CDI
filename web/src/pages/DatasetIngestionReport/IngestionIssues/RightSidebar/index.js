@@ -116,12 +116,13 @@ const IssueRightPanel = ({
           <ListHeader menu={["Column name", "Issues"]} />
           {columns &&
             Object.keys(columns).map((col, i) => {
+              const columnIssues = getColumnsIssue(col);
               return (
                 <Accordion defaultExpanded={i === 0}>
                   <AccordionSummary className="issue-header">
                     <Typography>
                       {col}
-                      <span>2</span>
+                      <span>{columnIssues.length}</span>
                     </Typography>
                   </AccordionSummary>
                   <AccordionDetails>
@@ -130,7 +131,7 @@ const IssueRightPanel = ({
                         <span>Value:&nbsp;</span>
                         <span>{columns[col]}</span>
                       </li>
-                      {getColumnsIssue(col).map((err) => {
+                      {columnIssues.map((err) => {
                         return (
                           <li key={err}>
                             <span>{err}</span>
