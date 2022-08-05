@@ -36,7 +36,7 @@ import {
  */
 const SaveChangesModal = ({
   continueBtnLabel = "Keep editing",
-  discardBtnLabel = "Discard changes",
+  discardBtnLabel = "Leave without saving",
   isManualTrigger = false,
   manualTriggerToggle = false,
   manualIsAnyChangeCheck = false,
@@ -45,8 +45,8 @@ const SaveChangesModal = ({
   handleManualChecker = () => {},
   shouldTriggerOnRedirect = true,
   shouldCheckForChanges = true,
-  message = "Do you really want to exit and discard dataflow changes",
-  title = "Exit",
+  message = "All unsaved changes will be lost.",
+  title = "Lose your work?",
   handlePostManualContinue = () => {},
   handlePostManualDiscardChange = () => {},
 }) => {
@@ -198,8 +198,8 @@ const SaveChangesModal = ({
         <AlertBox
           onClose={keepEditingBtn}
           submit={leavePageBtn}
-          message="Do you really want to exit and discard dataflow changes"
-          title="Exit"
+          message="All unsaved changes will be lost."
+          title="Lose your work?"
           dataflow
         />
       )}
@@ -217,8 +217,8 @@ const SaveChangesModal = ({
             onClick: handleCloseSaveChangesModal,
           },
           {
-            label: discardBtnLabel,
             variant: "primary",
+            label: discardBtnLabel,
             onClick: handleDiscardChanges,
           },
         ]}
