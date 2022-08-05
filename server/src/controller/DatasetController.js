@@ -483,10 +483,15 @@ exports.updateDatasetData = async (req, res) => {
       }
 
       if (dataSet_count < 2) {
-        return apiResponse.ErrorResponse(
-          res,
-          "Please inactivate the dataflow in order to inactive datasets"
+        const dataFlowDetails = await DB.executeQuery(
+          `SELECT active from ${schemaName}.dataflow WHERE dataflowid='${dfId}'`
         );
+        if (dataFlowDetails?.rowCount && dataFlowDetails?.rows[0]?.active) {
+          return apiResponse.ErrorResponse(
+            res,
+            "Please inactivate the dataflow in order to inactive datasets"
+          );
+        }
       }
     }
 
