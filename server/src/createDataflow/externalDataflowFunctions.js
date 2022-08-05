@@ -855,16 +855,25 @@ exports.insertValidation = async (req) => {
                       }
                     }
                   }
-                  if (el.minLength) {
-                    if (
-                      typeof el.minLength != "undefined" &&
-                      typeof el.maxLength != "undefined"
-                    ) {
-                      if (el.minLength <= el.maxLength) {
-                      } else {
-                        clErrArray.push("minLength always less than maxLength");
-                      }
-                    }
+                  // This message validated/changed in minMaxLengthValidations function
+                  // if (el.minLength) {
+                  //   if (
+                  //     typeof el.minLength != "undefined" &&
+                  //     typeof el.maxLength != "undefined"
+                  //   ) {
+                  //     if (el.minLength <= el.maxLength) {
+                  //     } else {
+                  //       clErrArray.push(
+                  //         "minLength always less than maxLength1"
+                  //       );
+                  //     }
+                  //   }
+                  // }
+
+                  // min max validations changes
+                  const minMaxErrors = helper.minMaxLengthValidations(el);
+                  if (minMaxErrors && minMaxErrors.length > 0) {
+                    clErrArray.push(...minMaxErrors);
                   }
                   if (el.lov) {
                     const last = el.lov.charAt(el.lov.length - 1);
@@ -1298,11 +1307,10 @@ exports.insertValidation = async (req) => {
                   }
 
                   // min max validations changed from here
-                  const minMaxErrors = helper.minMaxLengthValidations(
-                    el,
-                    clErrArray
-                  );
-
+                  const minMaxErrors = helper.minMaxLengthValidations(el);
+                  if (minMaxErrors && minMaxErrors.length > 0) {
+                    clErrArray.push(...minMaxErrors);
+                  }
                   if (
                     // el.minLength ||
                     // el.maxLength ||
@@ -2558,15 +2566,22 @@ const columnSave = (exports.columnDefinationInsert = async (
           }
         }
 
-        if (el.minLength) {
-          if (
-            typeof el.minLength != "undefined" &&
-            typeof el.maxLength != "undefined"
-          ) {
-            if (el.minLength >= el.maxLength) {
-              errorColumnDef.push("minLength always less than maxLength ");
-            }
-          }
+        // This message validated/changed in minMaxLengthValidations function
+        // if (el.minLength) {
+        //   if (
+        //     typeof el.minLength != "undefined" &&
+        //     typeof el.maxLength != "undefined"
+        //   ) {
+        //     if (el.minLength >= el.maxLength) {
+        //       errorColumnDef.push("minLength always less than maxLength 2");
+        //     }
+        //   }
+        // }
+
+        // min max validations changes
+        const minMaxErrors = helper.minMaxLengthValidations(el);
+        if (minMaxErrors && minMaxErrors.length > 0) {
+          errorColumnDef.push(...minMaxErrors);
         }
 
         if (el.lov) {
@@ -2660,7 +2675,10 @@ const columnSave = (exports.columnDefinationInsert = async (
         }
 
         // min max validations changed from here
-        const minMaxErrors = helper.minMaxLengthValidations(el, errorColumnDef);
+        const minMaxErrors = helper.minMaxLengthValidations(el);
+        if (minMaxErrors && minMaxErrors.length > 0) {
+          errorColumnDef.push(...minMaxErrors);
+        }
 
         if (
           // el.minLength ||
@@ -4338,16 +4356,22 @@ exports.clDefUpdate = async (
       }
 
       //dadadda
+      // This message validated/changed in minMaxLengthValidations function
+      // if (data.minLength) {
+      //   if (
+      //     typeof data.minLength != "undefined" &&
+      //     typeof data.maxLength != "undefined"
+      //   ) {
+      //     if (data.minLength >= data.maxLength) {
+      //       errorcolDef.push("minLength always less than maxLength3");
+      //     }
+      //   }
+      // }
 
-      if (data.minLength) {
-        if (
-          typeof data.minLength != "undefined" &&
-          typeof data.maxLength != "undefined"
-        ) {
-          if (data.minLength >= data.maxLength) {
-            errorcolDef.push("minLength always less than maxLength");
-          }
-        }
+      // min max validations changes
+      const minMaxErrors = helper.minMaxLengthValidations(data);
+      if (minMaxErrors && minMaxErrors.length > 0) {
+        errorcolDef.push(...minMaxErrors);
       }
 
       if (typeof data.primaryKey != "undefined") {
@@ -4495,7 +4519,10 @@ exports.clDefUpdate = async (
       }
 
       // min max validations changed from here
-      const minMaxErrors = helper.minMaxLengthValidations(data, errorcolDef);
+      const minMaxErrors = helper.minMaxLengthValidations(data);
+      if (minMaxErrors && minMaxErrors.length > 0) {
+        errorcolDef.push(...minMaxErrors);
+      }
 
       if (
         // data.minLength ||
