@@ -117,7 +117,6 @@ const IssueRightPanel = ({
           {columns &&
             Object.keys(columns).map((col, i) => {
               const columnIssues = getColumnsIssue(col);
-              console.log("columnIssues", columnIssues);
               return (
                 <Accordion defaultExpanded={i === 0}>
                   <AccordionSummary className="issue-header">
