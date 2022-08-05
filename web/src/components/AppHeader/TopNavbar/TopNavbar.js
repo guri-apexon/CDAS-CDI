@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-use-before-define */
 import { useState, useContext, useEffect, useRef, memo } from "react";
 import { withRouter } from "react-router";
@@ -152,6 +153,10 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
     if (permissions.length === 0) {
       let uniquePermissions = [];
       const data = await getRolesPermissions();
+      if (data.status === 401) {
+        LogOut();
+        return false;
+      }
       console.log(">>> all permissions", data);
       if (data.message === "Something went wrong") {
         messageContext.showErrorMessage(

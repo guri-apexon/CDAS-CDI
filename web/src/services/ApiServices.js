@@ -472,8 +472,8 @@ export const getRolesPermissions = (studyId) => {
           resolve(res.data?.data || res.data);
         })
         .catch((err) => {
-          if (err.response?.data) {
-            resolve(err.response?.data);
+          if (err.response) {
+            resolve(err.response);
           } else {
             resolve({ message: "Something went wrong" });
           }

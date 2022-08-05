@@ -48,6 +48,7 @@ exports.secureApi = async (req, res, next) => {
         (s.methods.includes("all") ||
           s.methods.includes(method.trim().toLowerCase()))
     );
+    console.log("route", route);
 
     if (!route) return next();
 
@@ -103,14 +104,20 @@ exports.secureApi = async (req, res, next) => {
           const user = await userHelper.findByUserId(user_id);
           if (!user || !user.isActive)
             return apiResponse.unauthorizedResponse(res, "User ID not found");
+          if (!route.skipPermission) {
+            const permission = route.checkModificationPermission
+              ? await userHelper.checkPermission(user_id, route.feature)
+              : await userHelper.checkPermissionReadOnly(
+                  user_id,
+                  route.feature
+                );
 
-          const permission = route.checkModificationPermission
-            ? await userHelper.checkPermission(user_id, route.feature)
-            : await userHelper.checkPermissionReadOnly(user_id, route.feature);
-
-          if (!permission)
-            return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
-
+            if (!permission)
+              return apiResponse.unauthorizedResponse(
+                res,
+                "Unauthorized Access"
+              );
+          }
           return next();
 
         case "SAML":
