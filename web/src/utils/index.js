@@ -663,7 +663,7 @@ export const generatedBName = (locType) => {
 export const matchAppUrl = () => {
   let appUrl = getCookie("user.app_url");
   if (appUrl) appUrl = decodeURIComponent(appUrl);
-  return process.env?.REACT_APP_CORE_URL === appUrl;
+  return process.env?.REACT_APP_CORE_URL?.replace(/\/$/, "") === appUrl;
 };
 
 export const dateFilterCustom = (accessor) => (row, filters) => {
