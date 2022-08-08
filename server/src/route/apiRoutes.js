@@ -12,6 +12,7 @@ const columnSetRoute = require("./columnSet");
 const datasetRoute = require("./dataset");
 const systemSettingsRoute = require("./settings");
 const CommonController = require("../controller/CommonController");
+const roleRoute = require("./role");
 
 const router = express.Router();
 
@@ -32,6 +33,7 @@ router.use("/columnset/", columnSetRoute);
 router.use("/datakind/", dataKindRoute);
 router.use("/dataset/", datasetRoute);
 router.use("/system-settings/", systemSettingsRoute);
+router.use("/role/", roleRoute);
 
 //fsr-connect API
 router.post("/fsr-connect", CommonController.fsrConnect);
