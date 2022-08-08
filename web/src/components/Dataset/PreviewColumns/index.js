@@ -7,10 +7,12 @@ const PreviewColumns = ({ previewSQL }) => {
   const [modalOpen, setModalOpen] = useState(true);
   const [tableRows, setTableRows] = useState([]);
   useEffect(() => {
-    setTimeout(() => {
-      setModalOpen(true);
-      setTableRows(previewSQL);
-    }, 500);
+    if (previewSQL.length) {
+      setTimeout(() => {
+        setModalOpen(true);
+        setTableRows(previewSQL.splice(0, 10));
+      }, 500);
+    }
   }, [previewSQL]);
 
   if (!tableRows.length) {
