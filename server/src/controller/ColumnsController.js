@@ -70,6 +70,8 @@ exports.saveDatasetColumns = async (req, res) => {
 
     // const versionFreezed = false;
 
+    const cdUid = [];
+
     const {
       rows: [oldVersion],
     } = await DB.executeQuery(
@@ -115,12 +117,14 @@ exports.saveDatasetColumns = async (req, res) => {
           frontendUniqueRef: value.uniqueId,
         });
 
+        cdUid.push(columnObj.columnid);
         configJsonArr.push({
           datasetid: dsId,
           columnid: columnObj.columnid,
           ...value,
         });
       }
+
       await updateSqlQuery(dsId);
       const historyVersion = await CommonController.addColumnHistory(
         dsId,
@@ -130,7 +134,8 @@ exports.saveDatasetColumns = async (req, res) => {
         JSON.stringify(configJsonArr),
         null,
         null,
-        versionFreezed
+        versionFreezed,
+        cdUid
         // CDVersionBump
       );
       if (!historyVersion) throw new Error("History not updated");

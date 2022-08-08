@@ -447,7 +447,8 @@ module.exports = {
     config_json,
     oldData,
     diffObj,
-    CDVersionBump
+    CDVersionBump,
+    cdUid
   ) {
     return new Promise((resolve, reject) => {
       if (!dfId) resolve(false);
@@ -516,23 +517,25 @@ module.exports = {
             });
           });
         } else {
-          anditLogsQueries.push(
-            DB.executeQuery(
-              `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid,datasetid,columnid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-              [
-                dfId,
-                dpId,
-                datasetid,
-                null,
-                version,
-                "New Column Definition",
-                null,
-                null,
-                userId,
-                curDate,
-              ]
-            )
-          );
+          for (let id of cdUid) {
+            anditLogsQueries.push(
+              DB.executeQuery(
+                `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid,datasetid,columnid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                [
+                  dfId,
+                  dpId,
+                  datasetid,
+                  id,
+                  version,
+                  "New Column Definition",
+                  null,
+                  null,
+                  userId,
+                  curDate,
+                ]
+              )
+            );
+          }
         }
         Promise.all(anditLogsQueries).then((values) => {
           resolve(version);
