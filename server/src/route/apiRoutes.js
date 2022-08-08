@@ -25,7 +25,7 @@ router.use(
 router.use("/location/", locationRoute);
 router.use("/data-package/", dataPackageRoute);
 router.use("/study/", studyRoute);
-router.use("/monitor/", studyMonitorRoute);
+router.use("/cdihome/", studyMonitorRoute);
 router.use("/vendor/", vendorRoute);
 router.use("/audit-logs/", AuditLogRoute);
 router.use("/dataflow/", dataFlowRoute);
