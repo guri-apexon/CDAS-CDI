@@ -35,6 +35,7 @@ import {
   redirectToDataSet,
   selectDataPackage,
 } from "../../store/actions/DataPackageAction";
+import { SelectedDataflow } from "../../store/actions/DashboardAction";
 
 import {
   getDataFlowDetail,
@@ -131,6 +132,8 @@ const Dataset = () => {
   const history = useHistory();
   const dataSets = useSelector((state) => state.dataSets);
   const packageData = useSelector((state) => state.dataPackage);
+  const dashboardData = useSelector((state) => state.dashboard);
+
   const {
     dataFlowdetail: { name, loctyp, testflag, srclocid },
     dsProdLock,
@@ -454,7 +457,13 @@ const Dataset = () => {
         dispatch(updateDatasetData(data));
       } else {
         dispatch(saveDatasetData(data));
+        const selectedDataFlow = {
+          ...dashboardData.selectedDataFlow,
+          dataSets: (dashboardData.selectedDataFlow?.dataSets || 0) + 1,
+        };
+        dispatch(SelectedDataflow(selectedDataFlow));
       }
+
       if (!isSftp(locationType))
         setColumnsEditMode(createMode || formValue.tableName !== tableName);
     }, 400);
@@ -539,20 +548,20 @@ const Dataset = () => {
                 open={openModal}
                 variant="warning"
                 onClose={() => setopenModal(false)}
-                title="Exit"
-                message="Do you really want to exit and discard dataflow changes"
+                title="Lose your work?"
+                message="All unsaved changes will be lost."
                 buttonProps={[
                   {
-                    label: "Discard changes",
+                    label: "Keep editing",
+                    onClick: () => setopenModal(false),
+                  },
+                  {
+                    variant: "primary",
+                    label: "Leave without saving",
                     onClick: () => {
                       setopenModal(false);
                       closeForm();
                     },
-                  },
-                  {
-                    label: "Continue editing data flow",
-                    variant: "primary",
-                    onClick: () => setopenModal(false),
                   },
                 ]}
                 id="success"

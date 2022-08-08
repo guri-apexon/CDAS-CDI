@@ -254,6 +254,7 @@ export const AUDIT_LOGS_FETCH = "v1/api/audit-logs/get";
 
 export const LOCATIONAPI = "v1/api/location";
 export const LOCATIONPASSWORDAPI = "v1/api/location/get_password";
+export const LISTTYPES = "v1/api/location/list-types";
 
 export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";

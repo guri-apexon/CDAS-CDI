@@ -188,6 +188,10 @@ const IngestionIssues = () => {
       setColumns(columnsArr);
     }
   };
+  const setDefaultColumns = () => {
+    const columnsArr = [...fixedColumns];
+    setColumns(columnsArr);
+  };
   const refreshData = async (data) => {
     setRowDetails(null);
     setSelectedIssues(data);
@@ -207,6 +211,11 @@ const IngestionIssues = () => {
         setTableRows(refreshedData);
         setTableloading(false);
       }
+    } else {
+      setDefaultColumns();
+      setTableRows([]);
+      setTableloading(false);
+      setViewAllCol(false);
     }
   };
   const getProperties = () => {
