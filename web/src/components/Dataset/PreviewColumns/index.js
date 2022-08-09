@@ -10,7 +10,7 @@ const PreviewColumns = ({ previewSQL }) => {
     if (previewSQL.length) {
       setTimeout(() => {
         setModalOpen(true);
-        setTableRows(previewSQL.splice(0, 10));
+        setTableRows([...previewSQL].splice(0, 10));
       }, 500);
     }
   }, [previewSQL]);

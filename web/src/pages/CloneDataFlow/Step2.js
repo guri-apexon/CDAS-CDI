@@ -45,6 +45,7 @@ const Step2 = ({
         if (el === "dataflow") {
           debounceFunction(async () => {
             setLoading(true);
+            console.log("selectedStudy", selectedStudy);
             const newDataflows = await searchDataflows(
               newValue,
               selectedStudy?.prot_id
