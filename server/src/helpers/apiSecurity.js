@@ -48,7 +48,6 @@ exports.secureApi = async (req, res, next) => {
         (s.methods.includes("all") ||
           s.methods.includes(method.trim().toLowerCase()))
     );
-    console.log("route", route);
 
     if (!route) return next();
 
