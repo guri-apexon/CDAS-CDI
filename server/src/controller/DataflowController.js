@@ -456,6 +456,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
           userId,
           true
         );
+
         if (PackageInsert.sucRes) {
           // console.log("dataflow", PackageInsert.sucRes);
           ResponseBody.dataPackages.push(PackageInsert.sucRes);
@@ -1242,7 +1243,9 @@ exports.updateDataFlow = async (req, res) => {
                                           res.errRes
                                         );
 
-                                        isAnyError = true;
+                                        if (res.errRes.message) {
+                                          isAnyError = true;
+                                        }
                                       }
                                     });
                                 }
@@ -1327,7 +1330,9 @@ exports.updateDataFlow = async (req, res) => {
                                           res &&
                                           Object.keys(res.errRes)?.length
                                         ) {
-                                          isAnyError = true;
+                                          if (res.errRes.message) {
+                                            isAnyError = true;
+                                          }
 
                                           dsErrObj.vlc.push(res.errRes);
                                         }
@@ -1363,6 +1368,7 @@ exports.updateDataFlow = async (req, res) => {
                             // if (res.sucRes?.length) {
                             //   ResponseBody.success.push(res.sucRes);
                             // }
+
                             if (res && res.sucRes) {
                               dsResObj = res.sucRes;
 
@@ -1370,9 +1376,10 @@ exports.updateDataFlow = async (req, res) => {
                               dpResObj.dataSets.push(dsResObj);
                             }
                             if (res && Object.keys(res.errRes)?.length) {
-                              isAnyError = true;
-
                               dpErrObj.dataSets.push(res.errRes);
+                            }
+                            if (res && res.errStatus) {
+                              isAnyError = true;
                             }
                           });
                         // dpResObj.dataSet.push(dsResObj);
@@ -1400,15 +1407,18 @@ exports.updateDataFlow = async (req, res) => {
                   // if (res.sucRes?.length) {
                   //   ResponseBody.success.push(res.sucRes);
                   // }
+
                   if (res && res.sucRes) {
                     dpResObj = res.sucRes;
                     isSomthingUpdate = true;
                     ResponseBody.dataPackages.push(dpResObj);
                   }
                   if (res && Object.keys(res.errRes)?.length) {
-                    isAnyError = true;
                     // ResponseBody.errors.push(res.errRes);
                     errRes.dataPackages.push(res.errRes);
+                  }
+                  if (res && res.errStatus) {
+                    isAnyError = true;
                   }
                 });
             }

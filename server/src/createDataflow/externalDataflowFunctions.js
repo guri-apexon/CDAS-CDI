@@ -1467,6 +1467,7 @@ exports.packageLevelInsert = async (
     var str2 = /[.]/;
     // var str3 = /[< >]/;
     var str3 = /[\/:*?”<|>]/;
+    let errStatus = false;
 
     if (!isNew) {
       if (helper.isSftp(LocationType)) {
@@ -1671,6 +1672,9 @@ exports.packageLevelInsert = async (
       };
 
       // return { errRes: errorPackage };
+      if (!isNew) {
+        return { errRes: errObj, errStatus: true };
+      }
       return { errRes: errObj };
     }
 
@@ -1772,6 +1776,9 @@ exports.packageLevelInsert = async (
           if (res && res.sucRes) {
             DpObj.dataSets.push(res.sucRes);
           }
+          if (res && res.errStatus) {
+            errStatus = true;
+          }
         });
 
         // if (isNew && isError) {
@@ -1780,6 +1787,9 @@ exports.packageLevelInsert = async (
       }
     }
     // console.log("package insert ", DpObj);
+    if (!isNew) {
+      return { sucRes: DpObj, errRes: dpErrObj, errStatus: errStatus };
+    }
     if (isError) {
       return { sucRes: DpObj, errRes: dpErrObj };
     }
@@ -1817,6 +1827,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
     var str2 = /[.]/;
     // var str3 = /[< >]/;
     var str3 = /[\/:*?”<|>]/;
+    let errStatus = false;
 
     const isCDI = externalSysName === "CDI" ? true : false;
 
@@ -2226,6 +2237,9 @@ const saveDataset = (exports.datasetLevelInsert = async (
       };
 
       //  return { errRes: errorDataset };
+      if (!isNew) {
+        return { errRes: errObj, errStatus: true };
+      }
       return { errRes: errObj };
     }
 
@@ -2354,11 +2368,15 @@ const saveDataset = (exports.datasetLevelInsert = async (
             DPId,
             dsUid,
             version,
-            userId
+            userId,
+            isNew
           ).then((res) => {
             if (res && Object.keys(res.errRes)?.length) {
               dsErrObj.vlc.push(res.errRes);
-              isError = true;
+              if (res.errRes.message) {
+                isError = true;
+                errStatus = true;
+              }
               // errorDataset.push(dsErrObj);
             }
             if (res && res.sucRes) {
@@ -2391,7 +2409,11 @@ const saveDataset = (exports.datasetLevelInsert = async (
         ).then((res) => {
           if (res && Object.keys(res.errRes)?.length) {
             dsErrObj.columnDefinition.push(res.errRes);
-            isError = true;
+
+            if (res.errRes.message) {
+              isError = true;
+              errStatus = true;
+            }
           }
 
           if (res && res.sucRes) {
@@ -2401,6 +2423,9 @@ const saveDataset = (exports.datasetLevelInsert = async (
       }
     }
 
+    if (!isNew) {
+      return { sucRes: dsObj, errRes: dsErrObj, errStatus: errStatus };
+    }
     if (isError) {
       return { sucRes: dsObj, errRes: dsErrObj };
     }
@@ -2806,6 +2831,9 @@ const columnSave = (exports.columnDefinationInsert = async (
       ]
     );
 
+    if (!isNew) {
+      return { sucRes: cdObj, errRes: cdObj };
+    }
     // console.log("column insert", cdObj);
     return { sucRes: cdObj, errRes: errorColumnDef };
   } catch (e) {
@@ -2822,7 +2850,8 @@ const saveVlc = (exports.VlcInsert = async (
   DPId,
   dsUid,
   version,
-  userId
+  userId,
+  isNew
 ) => {
   try {
     //vl holds all Conditional Expressions data
@@ -2979,6 +3008,9 @@ const saveVlc = (exports.VlcInsert = async (
     );
 
     // console.log("vlc insert ", vlcObj);
+    if (!isNew) {
+      return { sucRes: vlcObj, errRes: vlcObj };
+    }
     return { sucRes: vlcObj, errRes: errorVlc };
   } catch (err) {
     console.log("vlc", err);
