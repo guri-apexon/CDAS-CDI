@@ -134,13 +134,14 @@ const DataPackages = React.memo(() => {
     setFolderPathValidation(false);
   };
   const showConfig = (e, checked) => {
-    if (!checked) {
-      // resetForm();
-      // setShowForm(true);
-      setConfigShow(checked);
-    } else {
-      setConfigShow(checked);
-    }
+    setConfigShow(checked);
+    // if (!checked) {
+    //   // resetForm();
+    //   // setShowForm(true);
+    //   setConfigShow(checked);
+    // } else {
+    //   setConfigShow(checked);
+    // }
   };
   // const getPackages = (query = "") => {
   //   dispatch(getPackagesList(query));
@@ -178,7 +179,7 @@ const DataPackages = React.memo(() => {
     const updatePackage = !!packageData?.selectedPackage?.type;
     if (!packageData.openAddPackage && packageData.selectedPackage) {
       setShowForm(true);
-      setConfigShow(updatePackage);
+      setConfigShow(!packageData?.selectedPackage?.nopackageconfig);
       setCompression(packageData.selectedPackage?.type);
       setNamingConvention(packageData.selectedPackage?.name);
       setSodValue(packageData.selectedPackage?.sod_view_type);
@@ -196,7 +197,7 @@ const DataPackages = React.memo(() => {
           }, 2000);
         }
       } else {
-        setConfigShow(updatePackage);
+        setConfigShow(!packageData?.selectedPackage?.nopackageconfig);
         setPackagePassword("");
       }
     }
@@ -294,6 +295,7 @@ const DataPackages = React.memo(() => {
     dfId,
     userInfo.userId,
     versionFreezed,
+    configShow,
   ]);
 
   const handleAddedSuccess = (message) => {
@@ -330,6 +332,7 @@ const DataPackages = React.memo(() => {
       dataflow_id: dfId,
       user_id: userInfo.userId,
       versionFreezed,
+      nopackageconfig: configShow,
     };
     const updatedReq = !!packageData.selectedPackage?.datapackageid;
     if (updatedReq) {
