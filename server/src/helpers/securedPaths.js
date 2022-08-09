@@ -53,12 +53,12 @@ const securedPaths = [
     feature: "Location Setup",
     checkModificationPermission: false,
   },
-  // {
-  //   url: "/role/getuserrolespermissions",
-  //   methods: ["post"],
-  //   feature: "Get Permissions",
-  //   checkModificationPermission: false,
-  //   skipPermission: true,
-  // },
+  {
+    url: "/role/getuserrolespermissions",
+    methods: ["post"],
+    feature: "Get Permissions",
+    checkModificationPermission: false,
+    skipPermission: true,
+  },
 ];
 exports.securedPaths = securedPaths;
