@@ -4,6 +4,7 @@ import {
   SELECTED_DATAFLOW,
   GET_DATA_FLOW_LIST,
   GET_DATASET_INGESTION_SUMMARY,
+  GET_ALL_INGESTION_SUMMARY,
   GET_STUDIES_LIST,
   GET_PINNED_LIST,
   UPDATE_HEADER_COUNT,
@@ -53,6 +54,15 @@ export const getDatasetIngestionOfStudy = (
   return {
     type: GET_DATASET_INGESTION_SUMMARY,
     protocolId,
+    testFlag,
+    active,
+  };
+};
+
+export const getAllIngestionOfStudy = (UserID, testFlag = "", active = "") => {
+  return {
+    type: GET_ALL_INGESTION_SUMMARY,
+    UserID,
     testFlag,
     active,
   };

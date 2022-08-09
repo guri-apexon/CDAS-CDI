@@ -261,7 +261,7 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
             </Button>
             <Typography
               className={classes.navLogo}
-              onClick={() => history.push("dashboard")}
+              onClick={() => history.push("/cdihome")}
             >
               IQVIA™
               <span style={{ paddingLeft: 5 }} className={classes.bold}>

@@ -13,6 +13,9 @@ import { userLogOut } from "./services/ApiServices";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const Monitor = lazy(() => import("./pages/Dashboard/MonitorTab/ViewAll"));
+const CDIhome = lazy(() =>
+  import("./pages/Dashboard/AllMonitorTab/AllMonitor")
+);
 const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
 const DataFlowCreate = lazy(() => import("./pages/DataFlow/Create"));
 const DataFlowClone = lazy(() => import("./pages/CloneDataFlow/index"));
@@ -98,6 +101,7 @@ const WithOutPageHeader = () => {
           exact
           render={() => <ColumnsTab />}
         /> */}
+        <Route path="/cdihome" exact render={() => <CDIhome />} />
       </Switch>
       <AppFooter width="100%" />
     </>
@@ -158,6 +162,7 @@ const CDIWrapper = () => {
           <TopNavbar setLoggedIn={setLoggedIn} />
           <Switch>
             <Route path="/dashboard" render={() => <WithPageHeader />} />
+            <Route path="/cdihome" render={() => <WithOutPageHeader />} />
             <Route path="/admin" render={() => <WithOutPageHeader />} />
             <Route path="*" render={() => <WithPageHeader />} />
           </Switch>

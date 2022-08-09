@@ -16,7 +16,7 @@ exports.getDatasetIngestionMonitorDetail = async function (req, res) {
     return apiResponse.successResponseWithData(res, "Operation success", {
       summary: summary,
       datasets: [],
-      totalSize: 11, //response.rowCount,
+      totalSize: res.rowCount,
     });
   } catch (err) {
     //throw error in json response with status 500.
