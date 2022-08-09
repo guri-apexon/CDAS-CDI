@@ -55,7 +55,7 @@ const Step2 = ({
         }
       }
     },
-    [searchTxt]
+    [searchTxt, selectedStudy]
   );
 
   const setStudyDetails = async (study) => {
