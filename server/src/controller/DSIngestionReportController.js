@@ -770,9 +770,9 @@ exports.getIssues = async (req, res) => {
     // from cdascfg.fn_get_file_ingestion_issues('${datasetId}');`;
 
     const { rows: issues } = await DB.executeQuery(query);
-    const filteredData = issues.map((x) => {
-      return x.errorcolumnnames;
-    });
+    // const filteredData = issues.map((x) => {
+    //   return x.errorcolumnnames;
+    // });
     return apiResponse.successResponseWithData(
       res,
       "Issues retieved successfully",
