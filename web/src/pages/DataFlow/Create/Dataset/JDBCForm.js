@@ -44,6 +44,7 @@ import {
   YesNo,
 } from "../../../../utils";
 import { checkfilterCondition } from "../../../../components/FormComponents/validators";
+import PreviewColumns from "../../../../components/Dataset/PreviewColumns";
 
 const styles = {
   paper: {
@@ -613,18 +614,7 @@ const JDBCForm = forwardRef((props, ref) => {
               )}
             </>
           )}
-          {/* {isPreviewReady && previewSQL?.length && (
-            <div className="preview-table">
-              <Table
-                columns={Object.keys(previewSQL[0]).map((e) => ({
-                  header: e,
-                  accessor: e,
-                }))}
-                rows={previewSQL}
-                hidePagination
-              />
-            </div>
-          )} */}
+          {isPreviewReady && <PreviewColumns previewSQL={previewSQL} />}
         </div>
       </Paper>
     </form>
