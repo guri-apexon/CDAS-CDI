@@ -19,7 +19,7 @@ const AlertBox = ({ onClose, submit, title, message, dataflow }) => {
                 onClick: onClose,
               },
               {
-                label: "Discard changes",
+                label: "Leave without saving",
                 variant: "primary",
                 onClick: submit,
               },

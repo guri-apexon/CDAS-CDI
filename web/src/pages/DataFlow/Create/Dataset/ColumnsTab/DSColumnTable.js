@@ -21,7 +21,10 @@ import {
   getInitColumnObj,
 } from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
-import { validateRow } from "../../../../../components/FormComponents/validators";
+import {
+  positionValidation,
+  validateRow,
+} from "../../../../../components/FormComponents/validators";
 
 const maxSize = 150000;
 
@@ -33,7 +36,6 @@ export default function DSColumnTable({
   myForm,
   existRows,
 }) {
-  const dispatch = useDispatch();
   const messageContext = useContext(MessageContext);
   const dataSets = useSelector((state) => state.dataSets);
   const dashboard = useSelector((state) => state.dashboard);

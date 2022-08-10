@@ -46,6 +46,10 @@ const ColumnsTab = ({
 
   const maxSize = 150000;
 
+  const getUniqueId = () => {
+    return Math.random().toString(36).slice(2);
+  };
+
   const handleUpload = (selected) => {
     setTimeout(() => {
       // custom validations

@@ -420,3 +420,27 @@ exports.addPackagesValidations = (data) => {
   }
   return errorMessages;
 };
+
+exports.minMaxLengthValidations = (data) => {
+  const errorMessages = [];
+  const minLength = data.minLength;
+  const maxLength = data.maxLength;
+  if (minLength < 0 || maxLength < 0) {
+    errorMessages.push("maxLength and minLength should be positive numbers.");
+  } else if (
+    minLength &&
+    minLength > 0 &&
+    (!maxLength || trim(maxLength).length === 0)
+  ) {
+    errorMessages.push(
+      "maxLength should be provided and should be greater than or equals to minLength."
+    );
+  } else if (minLength && maxLength) {
+    if (parseInt(minLength) >= parseInt(maxLength)) {
+      errorMessages.push(
+        "maxLength should be greater than or equals to minLength."
+      );
+    }
+  }
+  return errorMessages;
+};

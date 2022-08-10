@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-use-before-define */
 import { useState, useContext, useEffect, useRef, memo } from "react";
 import { withRouter } from "react-router";
@@ -19,7 +20,7 @@ import NavigationPanel from "../NavigationPanel/NavigationPanel";
 import { MessageContext } from "../../Providers/MessageProvider";
 import { AppContext } from "../../Providers/AppProvider";
 // eslint-disable-next-line import/named
-import { getUserInfo } from "../../../utils/index";
+import { getUserInfo, matchAppUrl } from "../../../utils/index";
 // eslint-disable-next-line import/named
 import { userLogOut, getRolesPermissions } from "../../../services/ApiServices";
 import {
@@ -149,9 +150,17 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
     );
   });
   const getPermisions = async () => {
+    if (!matchAppUrl()) {
+      LogOut();
+      return false;
+    }
     if (permissions.length === 0) {
       let uniquePermissions = [];
       const data = await getRolesPermissions();
+      if (data.status === 401) {
+        LogOut();
+        return false;
+      }
       console.log(">>> all permissions", data);
       if (data.message === "Something went wrong") {
         messageContext.showErrorMessage(
@@ -252,7 +261,7 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
             </Button>
             <Typography
               className={classes.navLogo}
-              onClick={() => history.push("dashboard")}
+              onClick={() => history.replace("/dashboard")}
             >
               IQVIA™
               <span style={{ paddingLeft: 5 }} className={classes.bold}>

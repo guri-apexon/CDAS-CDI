@@ -371,8 +371,14 @@ const DataFlow = ({
         setSubmitting(false);
         return;
       }
-
-      if (result?.dataflowDetails) setCreatedDataflow(result.dataflowDetails);
+      const dataSetsCount = result.dataPackages.reduce(
+        (a, b) => a.datasets.length + b.datasets.length
+      );
+      const newDataflowDetails = {
+        ...result.dataflowDetails,
+        dataSets: dataSetsCount?.dataSets?.length || 0,
+      };
+      if (result?.dataflowDetails) setCreatedDataflow(newDataflowDetails);
       if (result) {
         setSaveSuccess(true);
       }
@@ -404,7 +410,6 @@ const DataFlow = ({
       setSubmitting(false);
       return;
     }
-
     if (result?.dataflowDetails) setCreatedDataflow(result.dataflowDetails);
     if (result) {
       setSaveSuccess(true);
