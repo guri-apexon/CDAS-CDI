@@ -1642,12 +1642,22 @@ exports.activateDataFlow = async (req, res) => {
       WHERE dataflowid = '${dataFlowId}' order by version DESC limit 1`
     );
 
-    const q0 = `select d3.active from ${schemaName}.dataflow d
-    inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid  
-    inner join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1 and d2.active=1`;
-    const $q0 = await DB.executeQuery(q0, [dataFlowId]);
+    const {
+      rows: [dataflow],
+    } = await DB.executeQuery(
+      `SELECT * FROM ${schemaName}.dataflow where dataflowid = $1`,
+      [dataFlowId]
+    );
+    let flag = false;
+    if (dataflow?.type.toLowerCase() === "tabular") {
+      const q0 = `select d3.active from ${schemaName}.dataflow d
+      inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid  
+      inner join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1 and d2.active=1`;
+      const $q0 = await DB.executeQuery(q0, [dataFlowId]);
+      if ($q0.rows.map((e) => e.active).includes(1)) flag = true;
+    } else if (dataflow?.active === 0) flag = true;
 
-    if ($q0.rows.map((e) => e.active).includes(1)) {
+    if (flag) {
       const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1 returning *`;
       const updatedDF = await DB.executeQuery(q2, [dataFlowId]);
 
