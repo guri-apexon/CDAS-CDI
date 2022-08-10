@@ -884,8 +884,8 @@ exports.updateDataFlow = async (req, res) => {
       };
 
       if (existDf.del_flg === 1) {
-        errRes.message = "This dataFlow already removed";
-        isAnyError = true;
+        // errRes.message = "This dataFlow already removed";
+        // isAnyError = true;
       }
 
       if (delFlag === 1) {
@@ -953,8 +953,8 @@ exports.updateDataFlow = async (req, res) => {
               dpErrObj.ID = DPId;
 
               if (currentDp.del_flg == 1) {
-                (dpErrObj.message = `This Data package already removed`),
-                  (isAnyError = true);
+                // (dpErrObj.message = `This Data package already removed`),
+                //   (isAnyError = true);
               } else {
                 if (each.delFlag === 1) {
                   await externalFunction
@@ -1072,8 +1072,8 @@ exports.updateDataFlow = async (req, res) => {
                         dsErrObj.ID = DSId;
 
                         if (currentDs.del_flg == 1) {
-                          (dsErrObj.message = `This Data set already removed`),
-                            (isAnyError = true);
+                          // (dsErrObj.message = `This Data set already removed`),
+                          //   (isAnyError = true);
                         } else {
                           if (obj.delFlag === 1) {
                             await externalFunction
@@ -1154,8 +1154,8 @@ exports.updateDataFlow = async (req, res) => {
                                   errObj.ID = cdId;
 
                                   if (currentCd.del_flg === 1) {
-                                    (errObj.message = `This column definition already removed`),
-                                      (isAnyError = true);
+                                    // (errObj.message = `This column definition already removed`),
+                                    //   (isAnyError = true);
                                   } else {
                                     if (el.delFlag === 1) {
                                       await externalFunction
@@ -1276,8 +1276,8 @@ exports.updateDataFlow = async (req, res) => {
                                     errObj.ID = currentVlc.dsqcruleid;
 
                                     if (currentVlc.active_yn === "N") {
-                                      (errObj.message = `This - Qc Rules already removed`),
-                                        (isAnyError = true);
+                                      // (errObj.message = `This - Qc Rules already removed`),
+                                      //   (isAnyError = true);
                                     } else {
                                       var VlcDataUpdate = await externalFunction
                                         .vlcUpdate(
@@ -1830,7 +1830,11 @@ exports.searchDataflow = async (req, res) => {
       message: "searchDataflow",
       searchParam,
     });
-    const searchQuery = `SELECT d.dataflowid, d."name" as "dataFlowName", d.description, d.externalsystemname as "externalSourceSystem" , v.vend_nm as "vendorSource" FROM ${schemaName}.dataflow d inner join ${schemaName}.vendor v on d.vend_id  = v.vend_id where d.prot_id = '${studyId}' and (LOWER(v.vend_nm)) LIKE '${searchParam}%' or (LOWER(d.name)) LIKE '${searchParam}%' or (LOWER(d.description)) LIKE '${searchParam}%' or (LOWER(d.externalsystemname)) LIKE '${searchParam}%' LIMIT 10`;
+    const searchQuery = `SELECT d.dataflowid, d."name" as "dataFlowName", d.description, d.externalsystemname as "externalSourceSystem" , v.vend_nm as "vendorSource" 
+    FROM ${schemaName}.dataflow d 
+    inner join ${schemaName}.vendor v on d.vend_id  = v.vend_id 
+    where d.prot_id = '${studyId}' and 
+    ((LOWER(v.vend_nm)) LIKE '${searchParam}%' or (LOWER(d.name)) LIKE '${searchParam}%' or (LOWER(d.description)) LIKE '${searchParam}%' or (LOWER(d.externalsystemname)) LIKE '${searchParam}%') LIMIT 10`;
     // console.log(searchQuery);
     let { rows } = await DB.executeQuery(searchQuery);
     return apiResponse.successResponseWithData(res, "Operation success", {
