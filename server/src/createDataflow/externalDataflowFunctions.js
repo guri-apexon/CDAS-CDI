@@ -57,7 +57,13 @@ exports.namingCconventionValidate = (name) => {
             e === "<mmyyyydd>" ||
             e === "<ddyyyymm>" ||
             e === "<yyyymmdd>" ||
-            e === "<yyyyddmm>"
+            e === "<yyyyddmm>" ||
+            e === "<dd-mm-yyyy>" ||
+            e === "<mm-dd-yyyy>" ||
+            e === "<mm-yyyy-dd>" ||
+            e === "<dd-yyyy-mm>" ||
+            e === "<yyyy-mm-dd>" ||
+            e === "<yyyy-dd-mm>"
           ) {
             return true;
           } else {
