@@ -456,6 +456,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
           userId,
           true
         );
+
         if (PackageInsert.sucRes) {
           // console.log("dataflow", PackageInsert.sucRes);
           ResponseBody.dataPackages.push(PackageInsert.sucRes);
@@ -884,8 +885,8 @@ exports.updateDataFlow = async (req, res) => {
       };
 
       if (existDf.del_flg === 1) {
-        errRes.message = "This dataFlow already removed";
-        isAnyError = true;
+        // errRes.message = "This dataFlow already removed";
+        // isAnyError = true;
       }
 
       if (delFlag === 1) {
@@ -953,8 +954,8 @@ exports.updateDataFlow = async (req, res) => {
               dpErrObj.ID = DPId;
 
               if (currentDp.del_flg == 1) {
-                (dpErrObj.message = `This Data package already removed`),
-                  (isAnyError = true);
+                // (dpErrObj.message = `This Data package already removed`),
+                //   (isAnyError = true);
               } else {
                 if (each.delFlag === 1) {
                   await externalFunction
@@ -1026,43 +1027,51 @@ exports.updateDataFlow = async (req, res) => {
                         const dataset = await datasetHelper.findById(DSId);
 
                         // check for primaryKey for Prod
-                        let saveyesflag = false;
+                        let saveFlagYes = false;
                         if (testFlag === 0) {
                           for (let i = 0; i < dataPackage.length; i++) {
-                            if (
-                              dataPackage[i].dataSet[i].incremental === true
+                            for (
+                              let k = 0;
+                              k < dataPackage[i]?.dataSet.length;
+                              k++
                             ) {
-                              for (
-                                let j = 0;
-                                j <
-                                dataPackage[0].dataSet[0].columnDefinition
-                                  .length;
-                                j++
+                              saveFlagYes = false;
+                              if (
+                                dataPackage[i].dataSet[k].incremental === true
                               ) {
-                                if (
-                                  dataPackage[0].dataSet[0].columnDefinition[j]
-                                    .primaryKey === "Yes"
-                                )
-                                  saveyesflag = true;
+                                for (
+                                  let j = 0;
+                                  j <
+                                  dataPackage[i].dataSet[k].columnDefinition
+                                    .length;
+                                  j++
+                                ) {
+                                  if (
+                                    dataPackage[i].dataSet[k].columnDefinition[
+                                      j
+                                    ].primaryKey === "Yes"
+                                  )
+                                  saveFlagYes = true;
+                                }
+                                if (!saveFlagYes)
+                                  return apiResponse.ErrorResponse(
+                                    res,
+                                    `Cannot switch to Incremental if a primaryKey has not been defined as primaryKey is mandatory for incremental.`
+                                  );
                               }
-                              if (!saveyesflag)
+                              if (
+                                dataflow.data_in_cdr === "Y" &&
+                                dataset.incremental === "Y" &&
+                                testFlag === 0 &&
+                                dataPackage[i].dataSet[k].incremental === false
+                              ) {
                                 return apiResponse.ErrorResponse(
                                   res,
-                                  `Cannot switch to Incremental if a primaryKey has not been defined as primaryKey is mandatory for incremental.`
+                                  `Cannot switch to Cumulative if the dataflow has been synced once.`
                                 );
+                              }
                             }
                           }
-                        }
-                        if (
-                          dataflow.data_in_cdr === "Y" &&
-                          dataset.incremental === "Y" &&
-                          testFlag === 0 &&
-                          dataPackage[0].dataSet[0].incremental === false
-                        ) {
-                          return apiResponse.ErrorResponse(
-                            res,
-                            `Cannot switch to Cumulative if the dataflow has been synced once.`
-                          );
                         }
 
                         dsResObj.ExternalId = datasetExternalId;
@@ -1072,8 +1081,8 @@ exports.updateDataFlow = async (req, res) => {
                         dsErrObj.ID = DSId;
 
                         if (currentDs.del_flg == 1) {
-                          (dsErrObj.message = `This Data set already removed`),
-                            (isAnyError = true);
+                          // (dsErrObj.message = `This Data set already removed`),
+                          //   (isAnyError = true);
                         } else {
                           if (obj.delFlag === 1) {
                             await externalFunction
@@ -1154,8 +1163,8 @@ exports.updateDataFlow = async (req, res) => {
                                   errObj.ID = cdId;
 
                                   if (currentCd.del_flg === 1) {
-                                    (errObj.message = `This column definition already removed`),
-                                      (isAnyError = true);
+                                    // (errObj.message = `This column definition already removed`),
+                                    //   (isAnyError = true);
                                   } else {
                                     if (el.delFlag === 1) {
                                       await externalFunction
@@ -1242,7 +1251,9 @@ exports.updateDataFlow = async (req, res) => {
                                           res.errRes
                                         );
 
-                                        isAnyError = true;
+                                        if (res.errRes.message) {
+                                          isAnyError = true;
+                                        }
                                       }
                                     });
                                 }
@@ -1276,8 +1287,8 @@ exports.updateDataFlow = async (req, res) => {
                                     errObj.ID = currentVlc.dsqcruleid;
 
                                     if (currentVlc.active_yn === "N") {
-                                      (errObj.message = `This - Qc Rules already removed`),
-                                        (isAnyError = true);
+                                      // (errObj.message = `This - Qc Rules already removed`),
+                                      //   (isAnyError = true);
                                     } else {
                                       var VlcDataUpdate = await externalFunction
                                         .vlcUpdate(
@@ -1327,7 +1338,9 @@ exports.updateDataFlow = async (req, res) => {
                                           res &&
                                           Object.keys(res.errRes)?.length
                                         ) {
-                                          isAnyError = true;
+                                          if (res.errRes.message) {
+                                            isAnyError = true;
+                                          }
 
                                           dsErrObj.vlc.push(res.errRes);
                                         }
@@ -1363,6 +1376,7 @@ exports.updateDataFlow = async (req, res) => {
                             // if (res.sucRes?.length) {
                             //   ResponseBody.success.push(res.sucRes);
                             // }
+
                             if (res && res.sucRes) {
                               dsResObj = res.sucRes;
 
@@ -1370,9 +1384,10 @@ exports.updateDataFlow = async (req, res) => {
                               dpResObj.dataSets.push(dsResObj);
                             }
                             if (res && Object.keys(res.errRes)?.length) {
-                              isAnyError = true;
-
                               dpErrObj.dataSets.push(res.errRes);
+                            }
+                            if (res && res.errStatus) {
+                              isAnyError = true;
                             }
                           });
                         // dpResObj.dataSet.push(dsResObj);
@@ -1400,15 +1415,18 @@ exports.updateDataFlow = async (req, res) => {
                   // if (res.sucRes?.length) {
                   //   ResponseBody.success.push(res.sucRes);
                   // }
+
                   if (res && res.sucRes) {
                     dpResObj = res.sucRes;
                     isSomthingUpdate = true;
                     ResponseBody.dataPackages.push(dpResObj);
                   }
                   if (res && Object.keys(res.errRes)?.length) {
-                    isAnyError = true;
                     // ResponseBody.errors.push(res.errRes);
                     errRes.dataPackages.push(res.errRes);
+                  }
+                  if (res && res.errStatus) {
+                    isAnyError = true;
                   }
                 });
             }
@@ -1642,12 +1660,22 @@ exports.activateDataFlow = async (req, res) => {
       WHERE dataflowid = '${dataFlowId}' order by version DESC limit 1`
     );
 
-    const q0 = `select d3.active from ${schemaName}.dataflow d
-    inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid  
-    inner join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1 and d2.active=1`;
-    const $q0 = await DB.executeQuery(q0, [dataFlowId]);
+    const {
+      rows: [dataflow],
+    } = await DB.executeQuery(
+      `SELECT * FROM ${schemaName}.dataflow where dataflowid = $1`,
+      [dataFlowId]
+    );
+    let flag = false;
+    if (dataflow?.type.toLowerCase() === "tabular") {
+      const q0 = `select d3.active from ${schemaName}.dataflow d
+      inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid  
+      inner join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1 and d2.active=1`;
+      const $q0 = await DB.executeQuery(q0, [dataFlowId]);
+      if ($q0.rows.map((e) => e.active).includes(1)) flag = true;
+    } else if (dataflow?.active === 0) flag = true;
 
-    if ($q0.rows.map((e) => e.active).includes(1)) {
+    if (flag) {
       const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1 returning *`;
       const updatedDF = await DB.executeQuery(q2, [dataFlowId]);
 
@@ -1820,7 +1848,11 @@ exports.searchDataflow = async (req, res) => {
       message: "searchDataflow",
       searchParam,
     });
-    const searchQuery = `SELECT d.dataflowid, d."name" as "dataFlowName", d.description, d.externalsystemname as "externalSourceSystem" , v.vend_nm as "vendorSource" FROM ${schemaName}.dataflow d inner join ${schemaName}.vendor v on d.vend_id  = v.vend_id where d.prot_id = '${studyId}' and (LOWER(v.vend_nm)) LIKE '${searchParam}%' or (LOWER(d.name)) LIKE '${searchParam}%' or (LOWER(d.description)) LIKE '${searchParam}%' or (LOWER(d.externalsystemname)) LIKE '${searchParam}%' LIMIT 10`;
+    const searchQuery = `SELECT d.dataflowid, d."name" as "dataFlowName", d.description, d.externalsystemname as "externalSourceSystem" , v.vend_nm as "vendorSource" 
+    FROM ${schemaName}.dataflow d 
+    inner join ${schemaName}.vendor v on d.vend_id  = v.vend_id 
+    where d.prot_id = '${studyId}' and 
+    ((LOWER(v.vend_nm)) LIKE '${searchParam}%' or (LOWER(d.name)) LIKE '${searchParam}%' or (LOWER(d.description)) LIKE '${searchParam}%' or (LOWER(d.externalsystemname)) LIKE '${searchParam}%') LIMIT 10`;
     // console.log(searchQuery);
     let { rows } = await DB.executeQuery(searchQuery);
     return apiResponse.successResponseWithData(res, "Operation success", {

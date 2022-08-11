@@ -95,123 +95,10 @@ exports.getDatasetIngestionReportTransferLog = (req, res) => {
     fromDate = fromDate.subtract(dayFilter - 1, "days");
     fromDate = fromDate.format("YYYY-MM-DD");
 
-    const searchQuery = `WITH trns_sum AS (
-      SELECT trns.datasetid,
-      trns.externalid,
-      trns.executionid,
-      trns.dataflowid,
-      trns.datapackageid,
-      trns.downloadtrnx,
-      trns.processtrnx,
-      trns.new_records,
-      trns.modified_records,
-      trns.downloadstatus,
-      trns.processstatus,
-      trns.downloadstarttime,
-      trns.downloadendtime,
-      trns.processstarttime,
-      trns.processendtime,
-      trns.lastsucceeded,
-      trns.lastattempted,
-      trns.datapackagename,
-      trns.datasetname,
-      trns.fst_prd_file_recvd,
-      trns.failurecat,
-      trns."name",
-      trns.status,
-      trns.refreshtimestamp,
-      trns.errmsg
-        FROM ( SELECT 
-          ts_1.externalid,
-          ts_1.datasetid,
-          ts_1.executionid,
-          ts_1.dataflowid,
-          ts_1.datapackageid,
-          ts_1.downloadtrnx,
-          ts_1.processtrnx,
-          ts_1.new_records,
-          ts_1.modified_records,
-          ts_1.downloadstatus,
-          ts_1.processstatus,
-          ts_1.downloadstarttime,
-          ts_1.downloadendtime,
-          ts_1.processstarttime,
-          ts_1.processendtime,
-          ts_1.lastsucceeded,
-          ts_1.lastattempted,
-          ts_1.datapackagename,
-          ts_1.datasetname,
-          ts_1.fst_prd_file_recvd,
-          ts_1.failurecat,
-                 cps."name",
-                 cps.status,
-                 cps.refreshtimestamp,
-                 cps.errmsg,
-                 --row_number() OVER (PARTITION BY ts_1.dataflowid, ts_1.datapackageid, ts_1.datasetid ORDER BY ts_1.externalid DESC) AS rnk
-       row_number() OVER (PARTITION BY cps.externalid ORDER BY (COALESCE(cps.errmsg, ''::character varying)) DESC, cps.refreshtimestamp DESC) AS rnk
-                FROM ${schemaName}.transaction_summary ts_1 left join ${schemaName}.child_processes_summary cps
-       on cps.externalid= ts_1.externalid
-       where ts_1.datasetid = $1
-       and  to_char(ts_1.lastsucceeded,'yyyy-mm-dd')::date between date '${fromDate}' and date '${currentDate}'
-       ) trns where trns.rnk = 1
-     )
-SELECT DISTINCT d.mnemonic AS "DatasetName",
- v.vend_nm AS "Vendor",
- ts.lastsucceeded AS "TransferDate",
-     CASE
-         WHEN sl.loc_typ::text <> ALL (ARRAY['SFTP'::text, 'FTPS'::text]) THEN d.name
-         ELSE ts.datasetname
-     END AS "FileName",
- ts.datasetname,
-     CASE
-         WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'SUCCESSFUL'::text THEN 'SUCCESSFUL'::text
-         WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'PROCESSED WITH ERRORS'::text THEN 'PROCESSED WITH ERRORS'::text
-         WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'IN PROGRESS'::text THEN 'IN PROGRESS'::text
-         WHEN ts.downloadstatus::text = 'SUCCESSFUL'::text AND ts.processstatus::text = 'FAILED'::text AND (ts.failurecat::text = 'QC FAILURE'::text OR ts.failurecat::text = 'QUARANTINED'::text) THEN 'QUARANTINED'::text
-         WHEN ts.downloadstatus::text = 'FAILED'::text AND ts.processstatus::text = ''::text THEN 'FAILED'::text
-         ELSE 'FAILED'::text
-     END AS "FileTransferStatus",
- date_part('epoch'::text, ts.downloadendtime - ts.downloadstarttime) AS "DownloadTime",
- date_part('epoch'::text, ts.processendtime - ts.processstarttime) AS "ProcessTime",
- ts.downloadtrnx AS "DownloadTransactions",
- ts.processtrnx AS "ProcessTransactions",
- ts.new_records AS "NewRecords",
- ts.modified_records AS "ModifiedRecords",
- ts.downloadendtime AS "DownloadDate",
- ts.processendtime AS "ProcessDate",
- ts.lastsucceeded AS "LastCompleted",
- ts.lastattempted AS "LastAttempted",
- ts.lastsucceeded AS "LastLoadedDate",
- ts.datapackagename AS "PackageName",
- d3.name AS "ClinicalDataType",
- d.mnemonic AS "DataSetMnemonic",
-     CASE
-         WHEN d.incremental = 'Y'::bpchar THEN 'Incremental'::text
-         ELSE 'Full'::text
-     END AS "LoadType",
- d.offset_val AS "DownloadEndingOffsetValue",
- ts.downloadstarttime AS "DownloadStart",
- ts.processstarttime AS "ProcessStart",
- sl.loc_typ AS "SourceOrigin",
- d2.name AS "DataflowName",
- ts.fst_prd_file_recvd,
- d.datasetid,
- v.vend_id,
- d2.dataflowid,
- d3.datakindid,
- ts.datapackageid,
- ts.errmsg
-    FROM trns_sum ts
-      JOIN ${schemaName}.dataset d ON ts.datasetid::text = d.datasetid::text
-      LEFT JOIN ${schemaName}.datakind d3 ON d.datakindid::text = d3.datakindid::text
-      JOIN ${schemaName}.dataflow d2 ON ts.dataflowid::text = d2.dataflowid::text AND d2.active = 1 AND COALESCE(d2.del_flg, 0) = 0
-      LEFT JOIN ${schemaName}.source_location sl ON d2.src_loc_id::text = sl.src_loc_id::text
-      LEFT JOIN ${schemaName}.vendor v ON d2.vend_id::text = v.vend_id::text
-    ORDER BY ts.lastsucceeded DESC`;
-
+    const searchQuery = `select * from fn_get_dataset_transfer_log('${id}', '${fromDate}', '${currentDate}')`;
     Logger.info({ message: "getDatasetIngestionReportTransferLog" });
 
-    DB.executeQuery(searchQuery, [id])
+    DB.executeQuery(searchQuery)
       .then((response) => {
         const records = response.rows || [];
         return apiResponse.successResponseWithData(res, "Operation success", {
@@ -680,92 +567,99 @@ exports.getFileTransferHistory = (req, res) => {
 
 exports.getIssues = async (req, res) => {
   try {
-    const { datasetid } = req.params;
-    const {
-      rows: [dfObj],
-    } = await DB.executeQuery(`SELECT DF.prot_id from ${schemaName}.dataset DS
-    left join ${schemaName}.datapackage DP on (DS.datapackageid = DP.datapackageid)
-    left join ${schemaName}.dataflow DF on (DF.dataflowid = DP.dataflowid)
-    where datasetid='${datasetid}';`);
-    if (!dfObj) {
-      return apiResponse.ErrorResponse(res, "Study now found for this dataset");
-    }
+    const { datasetid: datasetId } = req.params;
+    // const {
+    //   rows: [dfObj],
+    // } = await DB.executeQuery(`SELECT DF.prot_id from ${schemaName}.dataset DS
+    // left join ${schemaName}.datapackage DP on (DS.datapackageid = DP.datapackageid)
+    // left join ${schemaName}.dataflow DF on (DF.dataflowid = DP.dataflowid)
+    // where datasetid='${datasetId}';`);
+    // if (!dfObj) {
+    //   return apiResponse.ErrorResponse(res, "Study now found for this dataset");
+    // }
 
-    const query = `with LATEST_TRANS as (
-      select prot_id,datasetid,externalid,
-      case when tenant_mnemonic_nm is not null then 
-      dbname_prefix||tenant_mnemonic_nm||'_'||prot_mnemonic_nm
-      else dbname_prefix||prot_mnemonic_nm end as databasename,
-      tablename_prefix,
-      datakindmnemonic,datastructure,vendormnemonic,datasetmnemonic,
-      allcolumns,"name" ,primarykey from (
-      select ts.datasetid ,ts.externalid ,
-      case when d.testflag =1 then (select value from config c where component ='hive' and "name" ='test_table_prefix') 
-      else null end as tablename_prefix,
-      (select value from config c where component ='hive' and "name" ='db_prefix') as dbname_prefix,
-      dk."name" as datakindmnemonic,
-      d.type as datastructure,
-      v.vend_nm_stnd as vendormnemonic,
-      ds.mnemonic as datasetmnemonic,
-      case when s.prot_mnemonic_nm is not null then lower(s.prot_mnemonic_nm)
-      else lower(regexp_replace(s.prot_mnemonic_nm, '[^0-9A-Za-z]', '','g'))
-      end as prot_mnemonic_nm,t.tenant_mnemonic_nm ,
-      dcs."columns" as allcolumns,s.prot_id,c."name" ,c.primarykey,
-      row_number() over(partition by ts.datasetid order by ts.executionid,TS.EXTERNALID desc) as rnk 
-      from transaction_summary ts
-      inner join dataflow d on (ts.dataflowid=d.dataflowid)
-      inner join study s on (d.prot_id=s.prot_id and s.prot_id='${dfObj.prot_id}'
-      )
-      inner join study_sponsor sp on (s.prot_id=sp.prot_id)
-      inner join sponsor s1 on (sp.spnsr_id=s1.spnsr_id)
-      inner join tenant t on (s1.tenant_id=t.tenant_id)
-      inner join datapackage dp on (ts.datapackageid=dp.datapackageid)
-      inner join dataset ds on (ts.datasetid=ds.datasetid and ts.datasetid in ('${datasetid}') 
-      )
-      inner join datakind dk on (ds.datakindid=dk.datakindid)
-      inner join vendor v on (d.vend_id=v.vend_id)
-      left join columndefinition c on (ds.datasetid=c.datasetid and primarykey=1 )
-      inner join dataset_current_schema dcs on (dcs.dataflowid=ts.dataflowid and ts.executionid=dcs.executionid
-      and dcs.mnemonic=ds.mnemonic)
-      where upper(processstatus) !='SKIPPED' 
-      ) R where RNK=1 
-      )
-      select distinct datasetid,databasename as databasename,
-      case when tablename_prefix is null then
-        datakindmnemonic||'_'||datastructure||'_'||vendormnemonic||'_'||datasetmnemonic||'_current' 
-        else tablename_prefix||datakindmnemonic||'_'||datastructure||'_'||vendormnemonic||'_'||datasetmnemonic||'_current' 
-        end as tablename,originalAttributeName,
-      Issue_Type,
-      count(distinct rownumbers) as NoOfErrors,
-         STRING_AGG (distinct pkColumns, ',') as pkColumns,
-         array_agg (distinct rownumbers::INTEGER) as errorrownumbers,
-         array_agg (distinct Columnname) as errorcolumnnames,
-      allcolumns
-      from 
-      (
-      select distinct lt.*,
-      lt."name"  as pkColumns,ta.attributename as originalAttributeName,
-      case when ta.attributename='pkvRow' then 'Primary Key Violation'
-         when ta.attributename='dupRecRow' then 'Duplicate Row'
-         when ta.attributename ='typeMismatchRow' then 'Data Type Mismatch'
-         when ta.attributename ='fldLenOutOfRngRow' then 'Field Length Out of Range'
-         when ta.attributename ='formatMismatchedRow' then 'Format Mismatch'
-         when ta.attributename ='LOVFailedRow' then 'LOV Fail'
-         when ta.attributename ='reqFldEmptyRow' then 'Required Field Null'
-         when ta.attributename ='decColCnt' then 'Column Count Mismatch'
-         when ta.attributename ='uniqueConstViolation' then 'Unique Constraint Violation' 
-         when ta.attributename ='excelFormViolation' then 'Excel Formula Violation'
-         else ta.attributename end as Issue_Type ,
-        case when ta.rowcol not like '%:%' then ta.rowcol
-        else replace("substring"(ta.rowcol::text, 1, "position"(ta.rowcol::text, ':'::text)),':','') end as rownumbers,
-      case WHEN "position"(ta.rowcol::text, ':'::text) > 0 
-        THEN "substring"(ta.rowcol::text,  "position"(ta.rowcol::text, ':'::text) + 1)
-        ELSE NULL::text END as Columnname 
-        from latest_trans lt
-        join transaction_alerts ta on (lt.externalid=ta.externalid)	 
-      ) a --where Issue_Type in ('Format Mismatch')
-      group by datasetid,databasename,tablename,originalAttributeName,Issue_Type,allcolumns,prot_id;`;
+    // const query = `with LATEST_TRANS as (
+    //   select prot_id,datasetid,externalid,
+    //   case when tenant_mnemonic_nm is not null then
+    //   dbname_prefix||tenant_mnemonic_nm||'_'||prot_mnemonic_nm
+    //   else dbname_prefix||prot_mnemonic_nm end as databasename,
+    //   tablename_prefix,
+    //   datakindmnemonic,datastructure,vendormnemonic,datasetmnemonic,
+    //   allcolumns,"name" ,primarykey from (
+    //   select ts.datasetid ,ts.externalid ,
+    //   case when d.testflag =1 then (select value from config c where component ='hive' and "name" ='test_table_prefix')
+    //   else null end as tablename_prefix,
+    //   (select value from config c where component ='hive' and "name" ='db_prefix') as dbname_prefix,
+    //   dk."name" as datakindmnemonic,
+    //   d.type as datastructure,
+    //   v.vend_nm_stnd as vendormnemonic,
+    //   ds.mnemonic as datasetmnemonic,
+    //   case when s.prot_mnemonic_nm is not null then lower(s.prot_mnemonic_nm)
+    //   else lower(regexp_replace(s.prot_mnemonic_nm, '[^0-9A-Za-z]', '','g'))
+    //   end as prot_mnemonic_nm,t.tenant_mnemonic_nm ,
+    //   dcs."columns" as allcolumns,s.prot_id,c."name" ,c.primarykey,
+    //   row_number() over(partition by ts.datasetid order by ts.executionid,TS.EXTERNALID desc) as rnk
+    //   from transaction_summary ts
+    //   inner join dataflow d on (ts.dataflowid=d.dataflowid)
+    //   inner join study s on (d.prot_id=s.prot_id and s.prot_id='${dfObj.prot_id}'
+    //   )
+    //   inner join study_sponsor sp on (s.prot_id=sp.prot_id)
+    //   inner join sponsor s1 on (sp.spnsr_id=s1.spnsr_id)
+    //   inner join tenant t on (s1.tenant_id=t.tenant_id)
+    //   inner join datapackage dp on (ts.datapackageid=dp.datapackageid)
+    //   inner join dataset ds on (ts.datasetid=ds.datasetid and ts.datasetid in ('${datasetId}')
+    //   )
+    //   inner join datakind dk on (ds.datakindid=dk.datakindid)
+    //   inner join vendor v on (d.vend_id=v.vend_id)
+    //   left join columndefinition c on (ds.datasetid=c.datasetid and primarykey=1 )
+    //   inner join dataset_current_schema dcs on (dcs.dataflowid=ts.dataflowid and ts.executionid=dcs.executionid
+    //   and dcs.mnemonic=ds.mnemonic)
+    //   where upper(processstatus) !='SKIPPED'
+    //   ) R where RNK=1
+    //   )
+    //   select distinct datasetid,databasename as databasename,
+    //   case when tablename_prefix is null then
+    //     datakindmnemonic||'_'||datastructure||'_'||vendormnemonic||'_'||datasetmnemonic||'_current'
+    //     else tablename_prefix||datakindmnemonic||'_'||datastructure||'_'||vendormnemonic||'_'||datasetmnemonic||'_current'
+    //     end as tablename,originalAttributeName,
+    //   Issue_Type,
+    //   count(distinct rownumbers) as NoOfErrors,
+    //      STRING_AGG (distinct pkColumns, ',') as pkColumns,
+    //      array_agg (distinct rownumbers::INTEGER) as errorrownumbers,
+    //      array_agg (distinct Columnname) as errorcolumnnames,
+    //   allcolumns
+    //   from
+    //   (
+    //   select distinct lt.*,
+    //   lt."name"  as pkColumns,ta.attributename as originalAttributeName,
+    //   case when ta.attributename='pkvRow' then 'Primary Key Violation'
+    //      when ta.attributename='dupRecRow' then 'Duplicate Row'
+    //      when ta.attributename ='typeMismatchRow' then 'Data Type Mismatch'
+    //      when ta.attributename ='fldLenOutOfRngRow' then 'Field Length Out of Range'
+    //      when ta.attributename ='formatMismatchedRow' then 'Format Mismatch'
+    //      when ta.attributename ='LOVFailedRow' then 'LOV Fail'
+    //      when ta.attributename ='reqFldEmptyRow' then 'Required Field Null'
+    //      when ta.attributename ='decColCnt' then 'Column Count Mismatch'
+    //      when ta.attributename ='uniqueConstViolation' then 'Unique Constraint Violation'
+    //      when ta.attributename ='excelFormViolation' then 'Excel Formula Violation'
+    //      else ta.attributename end as Issue_Type ,
+    //     case when ta.rowcol not like '%:%' then ta.rowcol
+    //     else replace("substring"(ta.rowcol::text, 1, "position"(ta.rowcol::text, ':'::text)),':','') end as rownumbers,
+    //   case WHEN "position"(ta.rowcol::text, ':'::text) > 0
+    //     THEN "substring"(ta.rowcol::text,  "position"(ta.rowcol::text, ':'::text) + 1)
+    //     ELSE NULL::text END as Columnname
+    //     from latest_trans lt
+    //     join transaction_alerts ta on (lt.externalid=ta.externalid)
+    //   ) a --where Issue_Type in ('Format Mismatch')
+    //   group by datasetid,databasename,tablename,originalAttributeName,Issue_Type,allcolumns,prot_id;`;
+
+    const query = `select datasetid,databasename,tablename,originalattributename,issue_type,nooferrors,pkcolumns, errorrownumbers, errorcolumnnames::json, allcolumns
+    from cdascfg.fn_get_file_ingestion_issues('${datasetId}');`;
+
     const { rows: issues } = await DB.executeQuery(query);
+    // const filteredData = issues.map((x) => {
+    //   return x.errorcolumnnames;
+    // });
     return apiResponse.successResponseWithData(
       res,
       "Issues retieved successfully",
