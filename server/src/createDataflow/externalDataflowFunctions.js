@@ -4949,10 +4949,10 @@ exports.removeDataPackage = async (externalID, DPID, DFId, version, userId) => {
     for (let key of DSID) {
       const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where datasetid='${key.datasetid}';`;
       const removeCd = await DB.executeQuery(deleteQueryCD);
-    }
 
-    const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
-    const qcDelete = await DB.executeQuery(deleteQc);
+      const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where datasetid ='${key.datasetid}'`;
+      const qcDelete = await DB.executeQuery(deleteQc);
+    }
 
     newDfobj.ExternalId = externalID;
     newDfobj.ID = DPID;
@@ -5005,7 +5005,7 @@ exports.removeDataSet = async (
     const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where datasetid='${DSID}';`;
     const removeCd = await DB.executeQuery(deleteQueryCD);
 
-    const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
+    const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where datasetid ='${DSID}'`;
     const qcDelete = await DB.executeQuery(deleteQc);
 
     newDfobj.ExternalId = externalID;
