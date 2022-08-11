@@ -2294,7 +2294,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
       obj.filePwd ? "Yes" : "No",
       helper.getCurrentTime(),
       obj.delimiter || "",
-      helper.convertEscapeChar(obj.escapeCharacter) || "",
+      helper.convertEscapeChar(obj.escapeCharacter) || null,
       obj.quote || "",
       obj.rowDecreaseAllowed || 0,
       obj.dataTransferFrequency || "",
@@ -2303,6 +2303,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
       obj.conditionalExpression || null,
       0,
     ];
+
     const {
       rows: [createdDS],
     } = await DB.executeQuery(
@@ -4145,11 +4146,15 @@ exports.datasetUpdate = async (
       updateQueryDS += `,ovrd_stale_alert='${data.OverrideStaleAlert}'`;
     }
     if (data.headerRowNumber || data.headerRowNumber === 0) {
-      updateQueryDS += `,headerrow='${data.headerRowNumber}'`;
+      updateQueryDS += `,headerrow='${
+        data.headerRowNumber && data.headerRowNumber != "" ? 1 : 0
+      }'`;
       updateQueryDS += `,headerrownumber='${data.headerRowNumber}'`;
     }
     if (data.footerRowNumber) {
-      updateQueryDS += `,footerrow='${data.footerRowNumber}'`;
+      updateQueryDS += `,footerrow='${
+        data.footerRowNumber && data.footerRowNumber != "" ? 1 : 0
+      }'`;
       updateQueryDS += `,footerrownumber='${data.footerRowNumber}'`;
     }
     if (data.customsql) {
@@ -4171,12 +4176,10 @@ exports.datasetUpdate = async (
       )}'`;
     }
     if (data.encoding) {
-      updateQueryDS += `,charset='${helper.convertEscapeChar(data.encoding)}'`;
+      updateQueryDS += `,charset='${data.encoding}'`;
     }
     if (data.offset_val) {
-      updateQueryDS += `,offset_val='${helper.convertEscapeChar(
-        data.offset_val
-      )}'`;
+      updateQueryDS += `,offset_val='${data.offset_val}'`;
     }
     if (data.quote) {
       updateQueryDS += `,quote='${data.quote}'`;
