@@ -6,7 +6,7 @@ import BarChart from "apollo-react/components/BarChart";
 import Typography from "apollo-react/components/Typography";
 import Link from "apollo-react/components/Link";
 import Divider from "apollo-react/components/Divider";
-import { useHistory } from "react-router";
+import { useHistory, useParams } from "react-router";
 
 const CummulativeSummary = ({
   datasetProperties,
@@ -14,6 +14,7 @@ const CummulativeSummary = ({
   handleChangeTab,
 }) => {
   const history = useHistory();
+  const { datasetId } = useParams();
   const data = [
     {
       type: "New Records",
@@ -106,9 +107,7 @@ const CummulativeSummary = ({
           </Typography>
           <Link
             onClick={() =>
-              history.push(
-                `/dashboard/ingestion-issues/${datasetProperties?.datasetid}`
-              )
+              history.push(`/dashboard/ingestion-issues/${datasetId}`)
             }
             style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
           >
