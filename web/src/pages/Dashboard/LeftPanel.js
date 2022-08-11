@@ -132,6 +132,7 @@ const LeftPanel = ({ stydyHeight }) => {
   }, []);
 
   const searchTrigger = (e) => {
+    if (userStudiesLoading) return;
     const newValue = e.target.value;
     setSearchTxt(newValue);
     debounceFunction(async () => {
@@ -195,6 +196,7 @@ const LeftPanel = ({ stydyHeight }) => {
           className={classes.searchBar}
           placeholder="Search for protocol, project code or sponsor"
           value={searchTxt}
+          disabled={userStudiesLoading}
           onChange={searchTrigger}
         />
         <Divider />
