@@ -102,6 +102,11 @@ const WithOutPageHeader = () => {
           render={() => <ColumnsTab />}
         /> */}
         <Route path="/cdihome" exact render={() => <CDIhome />} />
+        <Route
+          path={`${match.path}/monitor`}
+          exact
+          render={() => <Monitor />}
+        />
       </Switch>
       <AppFooter width="100%" />
     </>

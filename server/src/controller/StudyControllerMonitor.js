@@ -8,7 +8,7 @@ exports.getDatasetIngestionMonitorDetail = async function (req, res) {
     const testFlag = req.query.testFlag || 9; // default value 9
     const processStatus = req.query.processStatus || null;
     const limit = req.query.limit || 10; // default valu is 10
-    const noOfDays = req.query.limit || 3; // deafult value is 3
+    const noOfDays = req.query.noOfDays || 10; // deafult value is 10
     const summaryQuery = `select * from fn_get_all_study_summary('${userId}', ${testFlag})`;
     const summaryCount = await DB.executeQuery(summaryQuery);
     Logger.info({
@@ -27,7 +27,7 @@ exports.getDatasetIngestionMonitorDetail = async function (req, res) {
       return apiResponse.successResponseWithData(res, "Operation success", {
         summary: summary,
         datasets: dataSets,
-        totalSize: response.rowCount,
+        totalSize: summary.total_datasets,
       });
     });
   } catch (err) {
@@ -44,7 +44,7 @@ exports.getIngestionMonitorDataSets = async function (req, res) {
   const testFlag = req.query.testFlag || 9; // default value 9
   const processStatus = req.query.processStatus || "Failed"; // default value "Failed"
   const limit = req.query.limit || 500; // pass 0 if all records required
-  const noOfDays = req.query.limit || 3; // default value is 3
+  const noOfDays = req.query.noOfDays || 3; // default value is 3
   try {
     let dataSetQuery;
     if (processStatus) {

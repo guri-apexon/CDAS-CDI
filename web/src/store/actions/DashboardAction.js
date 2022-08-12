@@ -59,12 +59,22 @@ export const getDatasetIngestionOfStudy = (
   };
 };
 
-export const getAllIngestionOfStudy = (UserID, testFlag = "", active = "") => {
+export const getAllIngestionOfStudy = (
+  UserID,
+  testFlag = "",
+  active = "",
+  processStatus = "",
+  limit = "",
+  noOfDays = ""
+) => {
   return {
     type: GET_ALL_INGESTION_SUMMARY,
     UserID,
     testFlag,
     active,
+    processStatus,
+    limit,
+    noOfDays,
   };
 };
 

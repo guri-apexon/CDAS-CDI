@@ -68,7 +68,7 @@ export function* fetchDatasetIngestionSummaryData(payload) {
 }
 
 export function* fetchAllIngestionSummaryData(payload) {
-  // console.log("before", payload.protocolId);
+  console.log("before", payload);
   try {
     let active = 0;
     let testFlag = "";
@@ -80,11 +80,11 @@ export function* fetchAllIngestionSummaryData(payload) {
     }
     const fetchDBData = yield call(
       axios.get,
-      `${baseURL}/${CDIHOMEAPI}/datasetIngestionDetail/${payload.UserID}?testFlag=${testFlag}&active=${active}`,
+      `${baseURL}/${CDIHOMEAPI}/datasetIngestionDetail/${payload.UserID}?testFlag=${testFlag}&active=${active}&processStatus=${payload.processStatus}&limit=${payload.limit}&noOfDays=${payload.noOfDays}`,
       {}
     );
 
-    // console.log("study", fetchDBData);
+    console.log("study", fetchDBData);
     yield put({
       type: GET_ALL_INGESTION_SUMMARY_SUCCESS,
       ingestnData: fetchDBData.data.data,

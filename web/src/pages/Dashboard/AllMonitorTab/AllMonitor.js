@@ -2,7 +2,7 @@
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useEffect } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { neutral8, orange } from "apollo-react/colors";
 import Hero from "apollo-react/components/Hero";
@@ -25,7 +25,10 @@ import InfoCard from "../MonitorTab/InfoCard";
 import { getUserInfo, getUserId } from "../../../utils/index";
 import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg";
 import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
-import { getAllIngestionOfStudy } from "../../../store/actions/DashboardAction";
+import {
+  getAllIngestionOfStudy,
+  getDatasetIngestionOfStudy,
+} from "../../../store/actions/DashboardAction";
 import "../Dashboard.scss";
 
 import usePermission, {
@@ -36,8 +39,11 @@ import usePermission, {
 import DatasetTable from "../MonitorTab/DatasetTable";
 import { queryParams } from "../MonitorTab/helper";
 
+const queryString = require("query-string");
+
 export default function MonitorTab({ userID }) {
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const [open, setOpen] = useState(false);
   const [curRow, setCurRow] = useState({});
@@ -48,6 +54,7 @@ export default function MonitorTab({ userID }) {
   const [columnsState, setColumns] = useState(moreColumnsWithFrozen);
   const [hasUpdated, setHasUpdated] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const parsedQuery = queryString.parse(location.search);
   const { firstName } = getUserInfo();
 
   const [summary, setSummary] = useState({
@@ -67,10 +74,25 @@ export default function MonitorTab({ userID }) {
     userID
   );
 
-  const fetchLatestData = (c = "", active = 1) => {
+  const fetchLatestData = (
+    testflag = "",
+    active = 1,
+    processStatus = "",
+    limit = "",
+    noOfDays = ""
+  ) => {
     const userId = getUserId();
     if (userId) {
-      dispatch(getAllIngestionOfStudy(userId, c, active));
+      dispatch(
+        getAllIngestionOfStudy(
+          userId,
+          testflag,
+          active,
+          processStatus,
+          limit,
+          noOfDays
+        )
+      );
     }
   };
 
@@ -85,15 +107,56 @@ export default function MonitorTab({ userID }) {
     setRowData([...rowData]);
   }, [dashboard.ingestnData]);
 
-  //   useEffect(() => {
-  //     fetchLatestData(control, activeOnly);
-  //     const intervalId = setInterval(() => {
-  //       fetchLatestData(control, activeOnly);
-  //     }, 60000);
-  //     return () => {
-  //       clearInterval(intervalId);
-  //     };
-  //   }, [activeOnly, control, protId]);
+  // // /* start only to show grid data */
+  // // const fetchLatestDataTest = (c = "", active = 1) => {
+  // //   if (dashboard?.selectedCard?.prot_id) {
+  // //     dispatch(
+  // //       getDatasetIngestionOfStudy(dashboard.selectedCard.prot_id, c, active)
+  // //     );
+  // //   }
+  // // };
+
+  // useEffect(() => {
+  //   const rowData = dashboard.ingestionData?.datasets || [];
+  //   const params = Object.keys(parsedQuery);
+  //   const availableValues = Object.values(queryParams);
+  //   const validParams = params.filter((q) => availableValues.includes(q));
+  //   if (validParams.length) {
+  //     const filteredRowData = rowData.filter((r) => {
+  //       if (params.includes(queryParams.JOB_STATUS_IN_QUEUE)) {
+  //         return r.jobstatus?.toLowerCase().trim() === "queued";
+  //       }
+  //       if (params.includes(queryParams.JOB_STATUS_FAILED)) {
+  //         return r.jobstatus?.toLowerCase().trim() === "failed";
+  //       }
+  //       if (params.includes(queryParams.LATENCY_WARNING)) {
+  //         return !!r.data_latency_warnings;
+  //       }
+  //       if (params.includes(queryParams.REFRESH_ALERTS)) {
+  //         return !!r.data_refresh_alerts;
+  //       }
+  //       if (params.includes(queryParams.EXCEEDS_PER_CHANGE)) {
+  //         return !!r.exceeds_pct_cng;
+  //       }
+  //       if (params.includes(queryParams.STALE)) {
+  //         return r.jobstatus?.toLowerCase().trim() === "stale";
+  //       }
+  //       if (params.includes(queryParams.QUARANTINE)) {
+  //         return !!r.quarantined_files;
+  //       }
+  //       return true;
+  //     });
+  //     setRowData([...filteredRowData]);
+  //   } else {
+  //     setRowData([...rowData]);
+  //   }
+  // }, [dashboard.ingestionData]);
+
+  // useEffect(() => {
+  //   fetchLatestDataTest(control, activeOnly);
+  // }, [activeOnly, control]);
+
+  // /* end only to show grid data */
 
   useEffect(() => {
     if (dashboard?.summaryLoading === false && !hasLoadedOnce && userID) {
@@ -120,9 +183,11 @@ export default function MonitorTab({ userID }) {
       q += `${queryParams.CONTROL}=${control}`;
     }
     if (q.length) {
-      history.push(`/dashboard/monitor?${q}`);
+      history.push(`/cdihome/monitor?${q}`, {
+        from: "dashboard",
+      });
     } else {
-      history.push("/dashboard/monitor");
+      history.push("/cdihome/monitor");
     }
   };
 

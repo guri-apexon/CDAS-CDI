@@ -1,4 +1,5 @@
 /* eslint-disable no-script-url */
+/* eslint-disable react/jsx-wrap-multilines */
 import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -12,6 +13,10 @@ import Switch from "apollo-react/components/Switch";
 import FilterIcon from "apollo-react-icons/Filter";
 import DownloadIcon from "apollo-react-icons/Download";
 import ChevronLeft from "apollo-react-icons/ChevronLeft";
+import SelectButton from "apollo-react/components/SelectButton";
+import MenuItem from "apollo-react/components/MenuItem";
+import Modal from "apollo-react/components/Modal";
+import TextField from "apollo-react/components/TextField";
 
 import DatasetTable from "./DatasetTable";
 import { getDatasetIngestionOfStudy } from "../../../store/actions/DashboardAction";
@@ -52,10 +57,27 @@ const ViewAll = () => {
   const [activeOnly, setActiveOnly] = useState(true);
 
   const parsedQuery = queryString.parse(location.search);
+  const [selectedMenuText, setSelectedMenuText] =
+    useState("Within past 3 days");
 
   const [control, setSegmentControl] = useState(
     parsedQuery[queryParams.CONTROL] || "all"
   );
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [viewAll, setIsViewAll] = useState(false);
+  const [customValue, setCustomValue] = useState(null);
+  const [errorInput, setErrorInput] = useState(false);
+
+  const changeCustomDays = (val) => {
+    if (val < 1 || val > 120) {
+      setErrorInput(true);
+      return false;
+    }
+    setCustomValue(val);
+    setErrorInput(false);
+    return null;
+  };
 
   const fetchLatestData = (c = "", active = 1) => {
     if (dashboard?.selectedCard?.prot_id) {
@@ -64,6 +86,13 @@ const ViewAll = () => {
       );
     }
   };
+
+  useEffect(() => {
+    console.log(history, "history");
+    if (history.location?.state?.from === "dashboard") {
+      setIsViewAll(true);
+    }
+  }, [history]);
 
   useEffect(() => {
     const rowData = dashboard.ingestionData?.datasets || [];
@@ -109,6 +138,10 @@ const ViewAll = () => {
     history.push("/dashboard?monitor");
   };
 
+  const goToCDIHome = () => {
+    history.push("/cdihome");
+  };
+
   const breadcrumbItems = [
     { href: "javascript:void(0)", onClick: goToDashboard },
     {
@@ -117,38 +150,84 @@ const ViewAll = () => {
     },
   ];
 
+  // const getFileHistoryData = (days = "") => {
+  //   const date = moment().utc().format("YYYY-MM-DD");
+  //   dispatch(getDatasetIngestionTransferLog(datasetId, days, date));
+  //   setMenuOpen(false);
+
+  const getFileHistoryData = (days = "") => {
+    // const date = moment().utc().format("YYYY-MM-DD");
+    // dispatch(getDatasetIngestionTransferLog(datasetId, days, date));
+    setMenuOpen(false);
+  };
+
+  const selectChangeView = (val) => {
+    if (val === "custom") {
+      setMenuOpen(true);
+    } else {
+      setMenuOpen(false);
+      // getFileHistoryData(val);
+      setSelectedMenuText(`Within past ${val} days`);
+    }
+  };
+
   const handleChange = (e, checked) => {
     setActiveOnly(checked);
   };
 
   const CustomHeader = ({ toggleFilters }) => (
-    <div>
-      <Switch
-        label="Show active datasets"
-        size="small"
-        checked={activeOnly}
-        labelPlacement="start"
-        className="MuiSwitch"
-        onChange={handleChange}
-        style={{ marginRight: 21 }}
-      />
-      <Button
-        id="downloadBtn"
-        icon={<DownloadIcon />}
-        size="small"
-        style={{ marginRight: 16 }}
-      >
-        Download
-      </Button>
-      <Button
-        size="small"
-        id="filterBtn"
-        variant="secondary"
-        icon={FilterIcon}
-        onClick={toggleFilters}
-      >
-        Filter
-      </Button>
+    <div style={{ display: "flex", alignItems: "center" }}>
+      {viewAll && (
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <Typography variant="body2" style={{ fontSize: 14, marginRight: 10 }}>
+            Change View:
+          </Typography>
+          <SelectButton
+            size="small"
+            placeholder="Within past 10 days"
+            style={{ marginRight: 10 }}
+            onChange={selectChangeView}
+            displayText={selectedMenuText}
+            noDeselect
+          >
+            <MenuItem value="3">Within past 3 days</MenuItem>
+            <MenuItem value="7">Within past 7 days</MenuItem>
+            <MenuItem value="10">Within past 10 days</MenuItem>
+            <MenuItem value="30">Within past 30 days</MenuItem>
+            <MenuItem value="custom">Custom date range</MenuItem>
+          </SelectButton>
+        </div>
+      )}
+      <div>
+        <Switch
+          label="Show active datasets"
+          size="small"
+          checked={activeOnly}
+          labelPlacement="start"
+          className="MuiSwitch"
+          onChange={handleChange}
+          style={{ marginRight: 21 }}
+        />
+        {!viewAll && (
+          <Button
+            id="downloadBtn"
+            icon={<DownloadIcon />}
+            size="small"
+            style={{ marginRight: 16 }}
+          >
+            Download
+          </Button>
+        )}
+        <Button
+          size="small"
+          id="filterBtn"
+          variant="secondary"
+          icon={FilterIcon}
+          onClick={toggleFilters}
+        >
+          Filter
+        </Button>
+      </div>
     </div>
   );
 
@@ -167,14 +246,56 @@ const ViewAll = () => {
         >
           All Dataset Pipeline Summary
         </Typography>
-        <Button
-          onClick={goToDashboard}
-          className="back-btn"
-          icon={<ChevronLeft />}
-          size="small"
-        >
-          Back to Production Monitor
-        </Button>
+        {!viewAll ? (
+          <Button
+            onClick={goToDashboard}
+            className="back-btn"
+            icon={<ChevronLeft />}
+            size="small"
+          >
+            Back to Production Monitor
+          </Button>
+        ) : (
+          <Button
+            onClick={goToCDIHome}
+            className="back-btn"
+            icon={<ChevronLeft />}
+            size="small"
+          >
+            Back to CDIhome
+          </Button>
+        )}
+        <Modal
+          open={menuOpen}
+          onClose={() => {
+            setMenuOpen(false);
+            setCustomValue(null);
+            setSelectedMenuText(selectedMenuText);
+            setErrorInput(false);
+          }}
+          title="Choose Custom Days"
+          message={
+            <TextField
+              type="number"
+              label="Choose upto past 120 days"
+              value={customValue}
+              inputProps={{ min: 1, max: 120, pattern: "[0-9]" }}
+              onChange={(e) => changeCustomDays(e.target.value)}
+              helperText={errorInput ? "Select valid input" : null}
+              error={errorInput}
+            />
+          }
+          buttonProps={[
+            {
+              label: "Ok",
+              disabled: errorInput || !customValue,
+              onClick: () => {
+                getFileHistoryData(customValue);
+                setSelectedMenuText(`Within past ${customValue} days`);
+              },
+            },
+          ]}
+        />
       </div>
       <div style={{ padding: 20, position: "relative" }}>
         {dashboard.summaryLoading && <Loader />}
@@ -183,5 +304,4 @@ const ViewAll = () => {
     </div>
   );
 };
-
 export default ViewAll;
