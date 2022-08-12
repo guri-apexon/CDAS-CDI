@@ -7,4 +7,9 @@ router.get(
   StudyControllerMonitor.getDatasetIngestionMonitorDetail
 );
 
+router.get(
+  "/ingestionMonitorDataSets/:userId(*)",
+  StudyControllerMonitor.getIngestionMonitorDataSets
+);
+
 module.exports = router;
