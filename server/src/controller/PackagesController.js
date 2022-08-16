@@ -12,7 +12,7 @@ exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
     const { dataflowId } = req.params;
-    let searchQuery = `SELECT nopackageconfig, datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 'Y') ORDER BY insrt_tm DESC;`;
+    let searchQuery = `SELECT nopackageconfig, datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from '1') ORDER BY insrt_tm DESC;`;
     if (searchParam) {
       searchQuery = `SELECT nopackageconfig, datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage 
       WHERE LOWER(name) LIKE '%${searchParam}%' and dataflowid='${dataflowId}' ORDER BY insrt_tm DESC;`;
@@ -182,7 +182,7 @@ exports.addPackage = async function (req, res) {
           sftp_path,
           package_password ? "Yes" : "No",
           "0",
-          "N",
+          0,
           getCurrentTime(),
         ]
       );
@@ -306,7 +306,7 @@ exports.deletePackage = async (req, res) => {
   try {
     const { active, package_id, user_id, versionFreezed } = req.body;
     const query = `UPDATE ${schemaName}.datapackage
-    SET del_flg = 'Y'
+    SET del_flg = 1
     WHERE datapackageid = '${package_id}' RETURNING *`;
 
     // const versionFreezed = false;
@@ -331,7 +331,7 @@ exports.deletePackage = async (req, res) => {
       );
     }
 
-    const dataSetQuery = `UPDATE ${schemaName}.dataset SET del_flg = 'Y' WHERE datapackageid = '${package_id}' RETURNING datasetid`;
+    const dataSetQuery = `UPDATE ${schemaName}.dataset SET del_flg = 1 WHERE datapackageid = '${package_id}' RETURNING datasetid`;
     const columnQuery = `UPDATE ${schemaName}.columndefinition SET del_flg = 1 WHERE datasetid = $1`;
 
     DB.executeQuery(query).then(async (response) => {
@@ -347,7 +347,7 @@ exports.deletePackage = async (req, res) => {
       const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
-        [{ attribute: "del_flg", old_val: "N", new_val: "Y" }],
+        [{ attribute: "del_flg", old_val: "0", new_val: "1" }],
         versionFreezed
       );
       if (!historyVersion) throw new Error("History not updated");

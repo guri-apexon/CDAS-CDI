@@ -59,12 +59,13 @@ async function saveSQLDataset(
       values.filterCondition || null,
       curDate,
       dpId,
+      0,
     ];
 
     const {
       rows: [datasetObj],
     } = await DB.executeQuery(
-      `INSERT into ${schemaName}.dataset (mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10, $11) returning *`,
+      `INSERT into ${schemaName}.dataset (mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid,del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10, $11,$12) returning *`,
       body
     );
 
@@ -217,10 +218,11 @@ exports.saveDatasetData = async (req, res) => {
       curDate,
       dpId,
       values.loadType == "Incremental" ? "Y" : "N",
+      0,
     ];
 
     DB.executeQuery(
-      `INSERT into ${schemaName}.dataset (mnemonic, type, charset, delimiter, escapecode, quote, headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) returning *`,
+      `INSERT into ${schemaName}.dataset (mnemonic, type, charset, delimiter, escapecode, quote, headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, datapackageid, incremental,del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21,$22) returning *`,
       body
     ).then(async (response) => {
       const { rows: datasetObj } = response;
