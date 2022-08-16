@@ -13,6 +13,9 @@ import { userLogOut } from "./services/ApiServices";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const Monitor = lazy(() => import("./pages/Dashboard/MonitorTab/ViewAll"));
+const AllViewMonitorPage = lazy(() =>
+  import("./pages/Dashboard/AllMonitorTab/AllMonitorViewAll")
+);
 const CDIhome = lazy(() =>
   import("./pages/Dashboard/AllMonitorTab/AllMonitor")
 );
@@ -95,17 +98,21 @@ const WithOutPageHeader = () => {
     <>
       <Switch>
         <Route path={`${match.path}/cdi`} exact render={() => <CDIAdmin />} />
-        {/* <Route path={`${match.path}/jdbc`} exact render={() => <JDBCForm />} />  */}
-        {/* <Route
-          path={`${match.path}/columns`}
-          exact
-          render={() => <ColumnsTab />}
-        /> */}
         <Route path="/cdihome" exact render={() => <CDIhome />} />
+        <Route
+          path="/cdihome/ingestion-report/:datasetId"
+          exact
+          render={() => <DatasetIngestionReport />}
+        />
+        <Route
+          path="/cdihome/ingestion-issues/:datasetId"
+          exact
+          render={() => <IngestionIssues />}
+        />
         <Route
           path={`${match.path}/monitor`}
           exact
-          render={() => <Monitor />}
+          render={() => <AllViewMonitorPage />}
         />
       </Switch>
       <AppFooter width="100%" />

@@ -13,6 +13,9 @@ import {
   GET_ALL_INGESTION_SUMMARY,
   GET_ALL_INGESTION_SUMMARY_SUCCESS,
   GET_ALL_INGESTION_SUMMARY_FAILURE,
+  GET_SPECIFIC_INGESTION_DATASETS,
+  GET_SPECIFIC_INGESTION_DATASETS_SUCCESS,
+  GET_SPECIFIC_INGESTION_DATASETS_FAILURE,
   GET_STUDIES_LIST,
   GET_STUDIES_LIST_SUCCESS,
   GET_STUDIES_LIST_FAILURE,
@@ -147,6 +150,19 @@ const DashboardReducer = (state = initialState, action) =>
         break;
 
       case GET_ALL_INGESTION_SUMMARY_FAILURE:
+        newState.summaryLoading = false;
+        break;
+
+      case GET_SPECIFIC_INGESTION_DATASETS:
+        newState.summaryLoading = true;
+        break;
+
+      case GET_SPECIFIC_INGESTION_DATASETS_SUCCESS:
+        newState.summaryLoading = false;
+        newState.ingestionData = action.ingestionData;
+        break;
+
+      case GET_SPECIFIC_INGESTION_DATASETS_FAILURE:
         newState.summaryLoading = false;
         break;
 

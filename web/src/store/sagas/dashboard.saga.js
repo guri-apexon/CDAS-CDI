@@ -18,6 +18,8 @@ import {
   PINNEDSTUDY,
   GET_PINNED_LIST_SUCCESS,
   GET_PINNED_LIST_FAILURE,
+  GET_SPECIFIC_INGESTION_DATASETS_SUCCESS,
+  GET_SPECIFIC_INGESTION_DATASETS_FAILURE,
 } from "../../constants";
 
 export function* fetchFlowData(payload) {
@@ -84,7 +86,6 @@ export function* fetchAllIngestionSummaryData(payload) {
       {}
     );
 
-    console.log("study", fetchDBData);
     yield put({
       type: GET_ALL_INGESTION_SUMMARY_SUCCESS,
       ingestnData: fetchDBData.data.data,
@@ -92,6 +93,34 @@ export function* fetchAllIngestionSummaryData(payload) {
   } catch (e) {
     yield put({
       type: GET_ALL_INGESTION_SUMMARY_FAILURE,
+      message: e.message,
+    });
+  }
+}
+
+export function* fetchSpecificIngestionDataSets(payload) {
+  try {
+    let active = 0;
+    let testFlag = "";
+    if (payload.active) {
+      active = 1;
+    }
+    if (payload.testFlag === "1" || payload.testFlag === "0") {
+      testFlag = payload.testFlag;
+    }
+    const fetchDBData = yield call(
+      axios.get,
+      `${baseURL}/${CDIHOMEAPI}/ingestionMonitorDataSets/${payload.UserID}?testFlag=${testFlag}&active=${active}&processStatus=${payload.processStatus}&limit=${payload.limit}&noOfDays=${payload.noOfDays}`,
+      {}
+    );
+
+    yield put({
+      type: GET_SPECIFIC_INGESTION_DATASETS_SUCCESS,
+      ingestionData: fetchDBData.data.data,
+    });
+  } catch (e) {
+    yield put({
+      type: GET_SPECIFIC_INGESTION_DATASETS_FAILURE,
       message: e.message,
     });
   }

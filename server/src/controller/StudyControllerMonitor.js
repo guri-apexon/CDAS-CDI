@@ -42,7 +42,7 @@ exports.getDatasetIngestionMonitorDetail = async function (req, res) {
 exports.getIngestionMonitorDataSets = async function (req, res) {
   const userId = req.params.userId;
   const testFlag = req.query.testFlag || 9; // default value 9
-  const processStatus = req.query.processStatus || "Failed"; // default value "Failed"
+  const processStatus = req.query.processStatus || null; // default value null
   const limit = req.query.limit || 500; // pass 0 if all records required
   const noOfDays = req.query.noOfDays || 3; // default value is 3
   try {

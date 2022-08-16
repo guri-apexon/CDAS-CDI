@@ -1,43 +1,40 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable jsx-a11y/anchor-is-valid */
+// libraries
 import React, { useState, useEffect } from "react";
-import { useHistory, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { useHistory, useLocation } from "react-router-dom";
+// components
 import { neutral8, orange } from "apollo-react/colors";
-import Hero from "apollo-react/components/Hero";
 import Grid from "apollo-react/components/Grid";
+import Hero from "apollo-react/components/Hero";
 import Loader from "apollo-react/components/Loader";
-
-import Typography from "apollo-react/components/Typography";
+import Peek from "apollo-react/components/Peek";
+import QuarantineIcon from "apollo-react-icons/EyeHidden";
 import SegmentedControl from "apollo-react/components/SegmentedControl";
 import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup";
-import SwapVertIcon from "@material-ui/icons/SwapVert";
-import Peek from "apollo-react/components/Peek";
 import StatusCheckIcon from "apollo-react-icons/StatusCheck";
 import StatusDotOutlineIcon from "apollo-react-icons/StatusDotOutline";
 import StatusExclamationIcon from "apollo-react-icons/StatusExclamation";
-import QuarantineIcon from "apollo-react-icons/EyeHidden";
-
-import { moreColumnsWithFrozen } from "../MonitorTab/columns.data";
+import SwapVertIcon from "@material-ui/icons/SwapVert";
+import Typography from "apollo-react/components/Typography";
 import InfoCard from "../MonitorTab/InfoCard";
-
+import DatasetTable from "../MonitorTab/DatasetTable";
+// helpers
+import { getAllIngestionOfStudy } from "../../../store/actions/DashboardAction";
 import { getUserInfo, getUserId } from "../../../utils/index";
-import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg";
+import { moreColumnsWithFrozen } from "../MonitorTab/columns.data";
 import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
+import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg";
+import { queryParamsFull } from "../MonitorTab/helper";
 import {
-  getAllIngestionOfStudy,
-  getDatasetIngestionOfStudy,
-} from "../../../store/actions/DashboardAction";
-import "../Dashboard.scss";
-
-import usePermission, {
   Categories,
   Features,
   useStudyPermission,
 } from "../../../components/Common/usePermission";
-import DatasetTable from "../MonitorTab/DatasetTable";
-import { queryParams } from "../MonitorTab/helper";
+// styles
+import "../Dashboard.scss";
 
 const queryString = require("query-string");
 
@@ -98,7 +95,18 @@ export default function MonitorTab({ userID }) {
 
   useEffect(() => {
     fetchLatestData(control, activeOnly);
+
+    // trigger refresh data every 5 minutes
+    const intervalId = setInterval(() => {
+      fetchLatestData(control, activeOnly);
+    }, 300000);
+
+    // clear interval on unmount
+    return () => {
+      clearInterval(intervalId);
+    };
   }, [activeOnly, control]);
+
   useEffect(() => {
     const summaryData = dashboard.ingestnData?.summary || {};
     const rowData = dashboard.ingestnData?.datasets || [];
@@ -106,57 +114,6 @@ export default function MonitorTab({ userID }) {
     setSummary({ ...summaryData });
     setRowData([...rowData]);
   }, [dashboard.ingestnData]);
-
-  // // /* start only to show grid data */
-  // // const fetchLatestDataTest = (c = "", active = 1) => {
-  // //   if (dashboard?.selectedCard?.prot_id) {
-  // //     dispatch(
-  // //       getDatasetIngestionOfStudy(dashboard.selectedCard.prot_id, c, active)
-  // //     );
-  // //   }
-  // // };
-
-  // useEffect(() => {
-  //   const rowData = dashboard.ingestionData?.datasets || [];
-  //   const params = Object.keys(parsedQuery);
-  //   const availableValues = Object.values(queryParams);
-  //   const validParams = params.filter((q) => availableValues.includes(q));
-  //   if (validParams.length) {
-  //     const filteredRowData = rowData.filter((r) => {
-  //       if (params.includes(queryParams.JOB_STATUS_IN_QUEUE)) {
-  //         return r.jobstatus?.toLowerCase().trim() === "queued";
-  //       }
-  //       if (params.includes(queryParams.JOB_STATUS_FAILED)) {
-  //         return r.jobstatus?.toLowerCase().trim() === "failed";
-  //       }
-  //       if (params.includes(queryParams.LATENCY_WARNING)) {
-  //         return !!r.data_latency_warnings;
-  //       }
-  //       if (params.includes(queryParams.REFRESH_ALERTS)) {
-  //         return !!r.data_refresh_alerts;
-  //       }
-  //       if (params.includes(queryParams.EXCEEDS_PER_CHANGE)) {
-  //         return !!r.exceeds_pct_cng;
-  //       }
-  //       if (params.includes(queryParams.STALE)) {
-  //         return r.jobstatus?.toLowerCase().trim() === "stale";
-  //       }
-  //       if (params.includes(queryParams.QUARANTINE)) {
-  //         return !!r.quarantined_files;
-  //       }
-  //       return true;
-  //     });
-  //     setRowData([...filteredRowData]);
-  //   } else {
-  //     setRowData([...rowData]);
-  //   }
-  // }, [dashboard.ingestionData]);
-
-  // useEffect(() => {
-  //   fetchLatestDataTest(control, activeOnly);
-  // }, [activeOnly, control]);
-
-  // /* end only to show grid data */
 
   useEffect(() => {
     if (dashboard?.summaryLoading === false && !hasLoadedOnce && userID) {
@@ -172,15 +129,17 @@ export default function MonitorTab({ userID }) {
     setOpen(true);
     setCurRow({ name, description });
   };
+
   const onSegmentChange = (value) => {
     setSegmentControl(value);
   };
+
   const handleViewButton = (query = "") => {
     let q = query;
     if (q.length && control !== "all") {
-      q += `&${queryParams.CONTROL}=${control}`;
+      q += `&${queryParamsFull.CONTROL}=${control}`;
     } else if (control !== "all") {
-      q += `${queryParams.CONTROL}=${control}`;
+      q += `${queryParamsFull.CONTROL}=${control}`;
     }
     if (q.length) {
       history.push(`/cdihome/monitor?${q}`, {
@@ -195,7 +154,6 @@ export default function MonitorTab({ userID }) {
 
   return (
     <div>
-      {/* {dashboard.summaryLoading && !hasLoadedOnce && <Loader />} */}
       {dashboard.summaryLoading && <Loader />}
       <Hero>
         <div className="topContainer" style={{ position: "relative" }}>
@@ -259,7 +217,7 @@ export default function MonitorTab({ userID }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.JOB_STATUS_IN_QUEUE);
+              handleViewButton(queryParamsFull.JOB_STATUS_IN_QUEUE);
             }}
           />
           <InfoCard
@@ -272,7 +230,7 @@ export default function MonitorTab({ userID }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.REFRESH_ALERTS);
+              handleViewButton(queryParamsFull.JOB_STATUS_FAILED);
             }}
           />
           <InfoCard
@@ -291,7 +249,7 @@ export default function MonitorTab({ userID }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.LATENCY_WARNING);
+              handleViewButton(queryParamsFull.LATENCY_WARNING);
             }}
           />
           <InfoCard
@@ -310,7 +268,7 @@ export default function MonitorTab({ userID }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.EXCEEDS_PER_CHANGE);
+              handleViewButton(queryParamsFull.EXCEEDS_PER_CHANGE);
             }}
           />
           <InfoCard
@@ -324,7 +282,7 @@ export default function MonitorTab({ userID }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.STALE);
+              handleViewButton(queryParamsFull.STALE);
             }}
           />
           <InfoCard
@@ -345,7 +303,7 @@ export default function MonitorTab({ userID }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.QUARANTINE);
+              handleViewButton(queryParamsFull.QUARANTINE);
             }}
           />
           <Peek
@@ -376,7 +334,13 @@ export default function MonitorTab({ userID }) {
       >
         <Grid item sm={12}>
           <div className="hide-pagination">
-            <DatasetTable rows={rows} CustomHeader={CustomHeader} />
+            <DatasetTable
+              rows={rows}
+              CustomHeader={CustomHeader}
+              sortColumn="downloadendtime"
+              sortOrder="desc"
+              fromAllMonitor={true}
+            />
           </div>
         </Grid>
       </Grid>

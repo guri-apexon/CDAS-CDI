@@ -23,6 +23,7 @@ import {
   GET_VLC_RULES,
   GET_DATASET_INGESTION_SUMMARY,
   GET_ALL_INGESTION_SUMMARY,
+  GET_SPECIFIC_INGESTION_DATASETS,
   GET_LOCATIONS_ADMIN,
   GET_CDT_LIST,
   UPDATE_LOCATION_DATA,
@@ -52,6 +53,7 @@ import {
   fetchFlowData,
   fetchDatasetIngestionSummaryData,
   fetchAllIngestionSummaryData,
+  fetchSpecificIngestionDataSets,
   fetchUserStudiesData,
   fetchPinnedStudies,
 } from "./dashboard.saga";
@@ -106,6 +108,10 @@ function* cdasCoreSaga() {
     fetchDatasetIngestionSummaryData
   );
   yield takeLatest(GET_ALL_INGESTION_SUMMARY, fetchAllIngestionSummaryData);
+  yield takeLatest(
+    GET_SPECIFIC_INGESTION_DATASETS,
+    fetchSpecificIngestionDataSets
+  );
   yield takeLatest(ADD_DATAFLOW, addDataFlow);
   yield takeLatest(PACKAGES_LIST, fetchPackagesData);
   yield takeLatest(UPDATE_DATA_PACKAGE, updateDataPackage);

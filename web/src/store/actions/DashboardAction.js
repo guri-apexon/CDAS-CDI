@@ -5,6 +5,7 @@ import {
   GET_DATA_FLOW_LIST,
   GET_DATASET_INGESTION_SUMMARY,
   GET_ALL_INGESTION_SUMMARY,
+  GET_SPECIFIC_INGESTION_DATASETS,
   GET_STUDIES_LIST,
   GET_PINNED_LIST,
   UPDATE_HEADER_COUNT,
@@ -69,6 +70,25 @@ export const getAllIngestionOfStudy = (
 ) => {
   return {
     type: GET_ALL_INGESTION_SUMMARY,
+    UserID,
+    testFlag,
+    active,
+    processStatus,
+    limit,
+    noOfDays,
+  };
+};
+
+export const getSpecificIngestionDataSets = (
+  UserID,
+  processStatus = "",
+  active = "",
+  testFlag = "",
+  noOfDays = "",
+  limit = ""
+) => {
+  return {
+    type: GET_SPECIFIC_INGESTION_DATASETS,
     UserID,
     testFlag,
     active,
