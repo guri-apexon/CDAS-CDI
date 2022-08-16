@@ -1027,43 +1027,51 @@ exports.updateDataFlow = async (req, res) => {
                         const dataset = await datasetHelper.findById(DSId);
 
                         // check for primaryKey for Prod
-                        let saveyesflag = false;
+                        let saveFlagYes = false;
                         if (testFlag === 0) {
                           for (let i = 0; i < dataPackage.length; i++) {
-                            if (
-                              dataPackage[i].dataSet[i].incremental === true
+                            for (
+                              let k = 0;
+                              k < dataPackage[i]?.dataSet.length;
+                              k++
                             ) {
-                              for (
-                                let j = 0;
-                                j <
-                                dataPackage[0].dataSet[0].columnDefinition
-                                  .length;
-                                j++
+                              saveFlagYes = false;
+                              if (
+                                dataPackage[i].dataSet[k].incremental === true
                               ) {
-                                if (
-                                  dataPackage[0].dataSet[0].columnDefinition[j]
-                                    .primaryKey === "Yes"
-                                )
-                                  saveyesflag = true;
+                                for (
+                                  let j = 0;
+                                  j <
+                                  dataPackage[i].dataSet[k].columnDefinition
+                                    .length;
+                                  j++
+                                ) {
+                                  if (
+                                    dataPackage[i].dataSet[k].columnDefinition[
+                                      j
+                                    ].primaryKey === "Yes"
+                                  )
+                                  saveFlagYes = true;
+                                }
+                                if (!saveFlagYes)
+                                  return apiResponse.ErrorResponse(
+                                    res,
+                                    `Cannot switch to Incremental if a primaryKey has not been defined as primaryKey is mandatory for incremental.`
+                                  );
                               }
-                              if (!saveyesflag)
+                              if (
+                                dataflow.data_in_cdr === "Y" &&
+                                dataset.incremental === "Y" &&
+                                testFlag === 0 &&
+                                dataPackage[i].dataSet[k].incremental === false
+                              ) {
                                 return apiResponse.ErrorResponse(
                                   res,
-                                  `Cannot switch to Incremental if a primaryKey has not been defined as primaryKey is mandatory for incremental.`
+                                  `Cannot switch to Cumulative if the dataflow has been synced once.`
                                 );
+                              }
                             }
                           }
-                        }
-                        if (
-                          dataflow.data_in_cdr === "Y" &&
-                          dataset.incremental === "Y" &&
-                          testFlag === 0 &&
-                          dataPackage[0].dataSet[0].incremental === false
-                        ) {
-                          return apiResponse.ErrorResponse(
-                            res,
-                            `Cannot switch to Cumulative if the dataflow has been synced once.`
-                          );
                         }
 
                         dsResObj.ExternalId = datasetExternalId;

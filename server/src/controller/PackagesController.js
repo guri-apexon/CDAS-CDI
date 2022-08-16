@@ -116,8 +116,8 @@ exports.addPackage = async function (req, res) {
         let namingconventionValue = naming_convention;
         let compressionType = compression_type;
         let sftpPath = sftp_path;
-        if(!nopackageconfig) {
-          namingconventionValue = '';
+        if (!nopackageconfig) {
+          namingconventionValue = "";
           nopackageconfigValue = 1;
           compressionType = "";
           sftpPath = "";
