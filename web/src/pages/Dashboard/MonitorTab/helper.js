@@ -10,4 +10,15 @@ const queryParams = {
   CONTROL: "control",
 };
 
-export { queryParams };
+const queryParamsFull = {
+  JOB_STATUS_FAILED: "Failed",
+  JOB_STATUS_IN_QUEUE: "Queued",
+  EXCEEDS_PER_CHANGE: "ExceedsPercentage",
+  STALE: "Stale",
+  QUARANTINE: "Quarantined",
+  LATENCY_WARNING: "Datalatancywarnings",
+  REFRESH_ALERTS: "ra",
+  CONTROL: "control",
+};
+
+export { queryParams, queryParamsFull };

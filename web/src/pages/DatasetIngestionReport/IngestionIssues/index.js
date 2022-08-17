@@ -5,7 +5,7 @@
 /* eslint-disable no-script-url */
 import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
+import { useLocation, useParams } from "react-router";
 import { useHistory } from "react-router-dom";
 
 import "../ingestionReport.scss";
@@ -44,6 +44,7 @@ import { downloadRows, exportToCSV } from "../../../utils/downloadData";
 const IngestionIssues = () => {
   const toast = useContext(MessageContext);
   const history = useHistory();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { datasetProperties } = useSelector((state) => state.ingestionReports);
   const [tableRows, setTableRows] = useState([]);
@@ -79,8 +80,21 @@ const IngestionIssues = () => {
     setRowDetails(row);
   };
 
+  const checkCurrentLocation = () => {
+    return location.pathname.includes("/cdihome/ingestion-issues") || false;
+  };
+
   const breadcrumpItems = [
-    { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
+    {
+      href: "javascript:void(0)",
+      onClick: () => {
+        if (checkCurrentLocation()) {
+          history.push("/cdihome");
+        } else {
+          history.push("/dashboard");
+        }
+      },
+    },
     {
       href: "javascript:void(0)",
       title: "File Ingestion Issues",

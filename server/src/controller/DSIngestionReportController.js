@@ -8,6 +8,7 @@ const constants = require("../config/constants");
 const moment = require("moment");
 const { COMMON_ERR } = require("../config/messageConstants");
 const { forEach } = require("lodash");
+const { DRIVER_NAMES } = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const createTemporaryLog = async (
@@ -683,16 +684,17 @@ exports.getIssueColumns = async (req, res) => {
         "Please select atleast one issue to proceed"
       );
     }
-    const { HIVE_USER: dbUser, HIVE_PASS: dbPass } = process.env;
-    if (!dbPass || !dbUser) {
+    const {
+      HIVE_USER: dbUser,
+      HIVE_PASS: dbPass,
+      INGESTION_HIVE_CONNECTION_URL: connectionUrl,
+    } = process.env;
+    if (!dbPass || !dbUser || !connectionUrl) {
       return apiResponse.ErrorResponse(
         res,
-        "Please check your hive db credentials"
+        "Please correct your hive db credentials and connection url"
       );
     }
-    const hostName = "uskhdphive.quintiles.net";
-    const driverName = "com.cloudera.hive.jdbc41.HS2Driver";
-    const connectionUrl = `jdbc:hive2://${hostName}:10000/default;KrbRealm=QUINTILES.NET;AuthMech=1;KrbHostFQDN=${hostName};KrbServiceName=hive;principal=hive/${hostName}@QUINTILES.NET;ssl=1;`;
     let errColumns = [];
     let errRows = [];
     let dbName = null;
@@ -746,7 +748,7 @@ exports.getIssueColumns = async (req, res) => {
       dbUser,
       dbPass,
       connectionUrl,
-      driverName,
+      DRIVER_NAMES.HIVE,
       concatQuery,
       "Issue retrieved successfully.",
       res

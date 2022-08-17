@@ -63,7 +63,7 @@ exports.getStudyDataflows = async (req, res) => {
       inner join ${schemaName}.vendor v on df.vend_id = v.vend_id
       inner join ${schemaName}.source_location sl on sl.src_loc_id = df.src_loc_id
       inner join ${schemaName}.datapackage dp on dp.dataflowid = df.dataflowid
-      left join ${schemaName}.dataset ds on (ds.datapackageid= dp.datapackageid)
+      left join ${schemaName}.dataset ds on (ds.datapackageid= dp.datapackageid and (ds.del_flg is distinct from 1))
       left join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid = df.dataflowid
       where s.prot_id = $1
       and coalesce (df.del_flg,0) != 1
@@ -1051,7 +1051,7 @@ exports.updateDataFlow = async (req, res) => {
                                       j
                                     ].primaryKey === "Yes"
                                   )
-                                  saveFlagYes = true;
+                                    saveFlagYes = true;
                                 }
                                 if (!saveFlagYes)
                                   return apiResponse.ErrorResponse(

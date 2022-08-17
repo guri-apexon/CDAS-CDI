@@ -157,9 +157,13 @@ const DatasetCell = ({ row, column: { accessor } }) => {
     // eslint-disable-next-line jsx-a11y/anchor-is-valid
     <Link
       disabled={!canReadIngestionIssues}
-      onClick={() =>
-        history.push(`/dashboard/ingestion-report/${row.datasetid}`)
-      }
+      onClick={() => {
+        if (row?.fromAllMonitor) {
+          history.push(`/cdihome/ingestion-report/${row.datasetid}`);
+        } else {
+          history.push(`/dashboard/ingestion-report/${row.datasetid}`);
+        }
+      }}
       // to={`/dashboard/ingestion-report/${row.datasetid}`}
       style={{
         fontWeight: 500,
@@ -370,7 +374,11 @@ const ProcessStatusCell = ({ row, column: { accessor } }) => {
                 minWidth: 100,
               }}
               onClick={() => {
-                history.push(`/dashboard/ingestion-issues/${row.datasetid}`);
+                if (row?.fromAllMonitor) {
+                  history.push(`/cdihome/ingestion-issues/${row.datasetid}`);
+                } else {
+                  history.push(`/dashboard/ingestion-issues/${row.datasetid}`);
+                }
               }}
               Icon={ProcessedIcon}
             />
@@ -536,23 +544,39 @@ const TextFieldFilter = ({ accessor, filters, updateFilterValue }) => {
 };
 
 const ActionCell = ({ row }) => {
+  const history = useHistory();
   const menuItems = [
     {
       text: "View",
       id: 1,
+      onClick: () => {
+        if (row?.fromAllMonitor) {
+          history.push(`/cdihome/ingestion-report/${row.datasetid}`);
+        } else {
+          history.push(`/dashboard/ingestion-report/${row.datasetid}`);
+        }
+      },
     },
     {
       text: "Data Refresh History",
       id: 3,
+      onClick: () => {
+        if (row?.fromAllMonitor) {
+          history.push(`/cdihome/ingestion-report/${row.datasetid}?logs`);
+        } else {
+          history.push(`/dashboard/ingestion-report/${row.datasetid}?logs`);
+        }
+      },
     },
-    {
-      text: "Refresh Data",
-      id: 4,
-    },
-    {
-      text: "Reload Data",
-      id: 5,
-    },
+    // Not part of current scope
+    // {
+    //   text: "Refresh Data",
+    //   id: 4,
+    // },
+    // {
+    //   text: "Reload Data",
+    //   id: 5,
+    // },
   ];
   return (
     <div style={{ display: "flex", justifyContent: "end" }}>
