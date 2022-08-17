@@ -12,7 +12,13 @@ import usePermission, {
   useStudyPermission,
 } from "../../../components/Common/usePermission";
 
-const DatasetTable = ({ rows, CustomHeader }) => {
+const DatasetTable = ({
+  rows,
+  CustomHeader,
+  sortColumn = "",
+  sortOrder = "",
+  fromAllMonitor = false,
+}) => {
   const [columnsState, setColumns] = useState(moreColumnsWithFrozen);
 
   const dashboard = useSelector((state) => state.dashboard);
@@ -20,11 +26,15 @@ const DatasetTable = ({ rows, CustomHeader }) => {
 
   const history = useHistory();
 
-  const { canEnabled: canReadIngestionIssues } = useStudyPermission(
+  let { canEnabled: canReadIngestionIssues } = useStudyPermission(
     Categories.MENU,
     Features.CDI_INGESTION_ISSUES,
     protId
   );
+
+  if (fromAllMonitor) {
+    canReadIngestionIssues = true;
+  }
 
   return (
     <Table
@@ -50,9 +60,11 @@ const DatasetTable = ({ rows, CustomHeader }) => {
         ...row,
         canReadIngestionIssues,
         history,
+        fromAllMonitor: fromAllMonitor || false,
       }))}
       defaultRowsPerPage={10}
-      initialSortedColumn="processstatus"
+      initialSortedColumn={sortColumn || "processstatus"}
+      sortOrder={sortOrder || "asc"}
       rowsPerPageOptions={[10, 50, 100, "All"]}
       tablePaginationProps={{
         labelDisplayedRows: ({ from, to, count }) =>

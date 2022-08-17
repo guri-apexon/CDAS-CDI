@@ -4,6 +4,7 @@ const locationRoute = require("./location");
 const dataPackageRoute = require("./datapackages");
 const AuditLogRoute = require("./auditlogs");
 const studyRoute = require("./study");
+const studyMonitorRoute = require("./studymonitor");
 const vendorRoute = require("./vendor");
 const dataFlowRoute = require("./dataflow");
 const dataKindRoute = require("./datakind");
@@ -24,6 +25,7 @@ router.use(
 router.use("/location/", locationRoute);
 router.use("/data-package/", dataPackageRoute);
 router.use("/study/", studyRoute);
+router.use("/cdihome/", studyMonitorRoute);
 router.use("/vendor/", vendorRoute);
 router.use("/audit-logs/", AuditLogRoute);
 router.use("/dataflow/", dataFlowRoute);
