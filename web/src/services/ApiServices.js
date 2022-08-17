@@ -442,7 +442,7 @@ export const deleteCD = async (columnId, dsId, dpId, dfId, CDVersionBump) => {
       dfId,
       dpId,
       userId,
-      CDVersionBump,
+      versionFreezed: CDVersionBump,
     });
     return res.data?.status === 1;
   } catch (err) {
