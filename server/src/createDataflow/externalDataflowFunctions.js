@@ -2294,7 +2294,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
       obj.filePwd ? "Yes" : "No",
       helper.getCurrentTime(),
       obj.delimiter || "",
-      helper.convertEscapeChar(obj.escapeCharacter) || "",
+      helper.convertEscapeChar(obj.escapeCharacter) || null,
       obj.quote || "",
       obj.rowDecreaseAllowed || 0,
       obj.dataTransferFrequency || "",
@@ -2303,6 +2303,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
       obj.conditionalExpression || null,
       0,
     ];
+
     const {
       rows: [createdDS],
     } = await DB.executeQuery(
@@ -4145,11 +4146,15 @@ exports.datasetUpdate = async (
       updateQueryDS += `,ovrd_stale_alert='${data.OverrideStaleAlert}'`;
     }
     if (data.headerRowNumber || data.headerRowNumber === 0) {
-      updateQueryDS += `,headerrow='${data.headerRowNumber}'`;
+      updateQueryDS += `,headerrow='${
+        data.headerRowNumber && data.headerRowNumber != "" ? 1 : 0
+      }'`;
       updateQueryDS += `,headerrownumber='${data.headerRowNumber}'`;
     }
     if (data.footerRowNumber) {
-      updateQueryDS += `,footerrow='${data.footerRowNumber}'`;
+      updateQueryDS += `,footerrow='${
+        data.footerRowNumber && data.footerRowNumber != "" ? 1 : 0
+      }'`;
       updateQueryDS += `,footerrownumber='${data.footerRowNumber}'`;
     }
     if (data.customsql) {
@@ -4171,12 +4176,10 @@ exports.datasetUpdate = async (
       )}'`;
     }
     if (data.encoding) {
-      updateQueryDS += `,charset='${helper.convertEscapeChar(data.encoding)}'`;
+      updateQueryDS += `,charset='${data.encoding}'`;
     }
     if (data.offset_val) {
-      updateQueryDS += `,offset_val='${helper.convertEscapeChar(
-        data.offset_val
-      )}'`;
+      updateQueryDS += `,offset_val='${data.offset_val}'`;
     }
     if (data.quote) {
       updateQueryDS += `,quote='${data.quote}'`;
@@ -4949,10 +4952,10 @@ exports.removeDataPackage = async (externalID, DPID, DFId, version, userId) => {
     for (let key of DSID) {
       const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where datasetid='${key.datasetid}';`;
       const removeCd = await DB.executeQuery(deleteQueryCD);
-    }
 
-    const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
-    const qcDelete = await DB.executeQuery(deleteQc);
+      const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where datasetid ='${key.datasetid}'`;
+      const qcDelete = await DB.executeQuery(deleteQc);
+    }
 
     newDfobj.ExternalId = externalID;
     newDfobj.ID = DPID;
@@ -5005,7 +5008,7 @@ exports.removeDataSet = async (
     const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where datasetid='${DSID}';`;
     const removeCd = await DB.executeQuery(deleteQueryCD);
 
-    const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
+    const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where datasetid ='${DSID}'`;
     const qcDelete = await DB.executeQuery(deleteQc);
 
     newDfobj.ExternalId = externalID;

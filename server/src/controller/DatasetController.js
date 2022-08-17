@@ -199,7 +199,8 @@ exports.saveDatasetData = async (req, res) => {
       values.fileType,
       values.encoding || null,
       values.delimiter || null,
-      values.escapeCharacter || null,
+      // values.escapeCharacter || null,
+      helper.convertEscapeChar(values.escapeCharacter) || null,
       values.quote || null,
       values.headerRowNumber > 0 ? 1 : 0,
       values.footerRowNumber > 0 ? 1 : 0,
@@ -446,7 +447,7 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
 exports.updateDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    console.log("values", values);
+
     const curDate = helper.getCurrentTime();
     Logger.info({ message: "update Dataset" });
     const {
@@ -604,7 +605,8 @@ exports.updateDatasetData = async (req, res) => {
       values.fileType || null,
       values.encoding || null,
       values.delimiter || null,
-      values.escapeCharacter || null,
+      // values.escapeCharacter || null,
+      helper.convertEscapeChar(values.escapeCharacter) || null,
       values.quote || null,
       values.headerRowNumber || 0,
       values.footerRowNumber || 0,

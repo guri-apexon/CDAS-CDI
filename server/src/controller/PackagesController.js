@@ -12,7 +12,7 @@ exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
     const { dataflowId } = req.params;
-    let searchQuery = `SELECT nopackageconfig, datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 'Y') ORDER BY insrt_tm DESC;`;
+    let searchQuery = `SELECT nopackageconfig, datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 1) ORDER BY insrt_tm DESC;`;
     if (searchParam) {
       searchQuery = `SELECT nopackageconfig, datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage 
       WHERE LOWER(name) LIKE '%${searchParam}%' and dataflowid='${dataflowId}' ORDER BY insrt_tm DESC;`;
@@ -116,8 +116,8 @@ exports.addPackage = async function (req, res) {
         let namingconventionValue = naming_convention;
         let compressionType = compression_type;
         let sftpPath = sftp_path;
-        if(!nopackageconfig) {
-          namingconventionValue = '';
+        if (!nopackageconfig) {
+          namingconventionValue = "";
           nopackageconfigValue = 1;
           compressionType = "";
           sftpPath = "";
