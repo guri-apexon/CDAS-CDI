@@ -3360,8 +3360,22 @@ exports.packageUpdate = async (
     // var str3 = /[< >]/;
     var str3 = /[\/:*?”<|>]/;
 
+    const {
+      rows: [packageData],
+    } = await DB.executeQuery(
+      `select type, nopackageconfig ,name from ${schemaName}.datapackage where datapackageid='${DPId}';`
+    );
+
+    let isPackage = packageData.nopackageconfig;
+    let packageType = packageData?.type || null;
+    let packageName = packageData?.name || null;
+
+    if (data.noPackageConfig === 0 || data.noPackageConfig === 1) {
+      isPackage = data.noPackageConfig;
+    }
+
     if (helper.isSftp(LocationType)) {
-      // if (LocationType == "Hive CDH") {
+      // if (LocationType == "Hive CDH"1) {
 
       if (typeof data.noPackageConfig != "undefined") {
         valData.push({
@@ -3378,7 +3392,7 @@ exports.packageUpdate = async (
         errorPackage = errorPackage.concat(dpResUpdate);
       }
 
-      if (!helper.stringToBoolean(data.noPackageConfig)) {
+      if (!helper.stringToBoolean(isPackage)) {
         const TypeSas = [];
 
         //008
@@ -3443,7 +3457,7 @@ exports.packageUpdate = async (
         }
       }
 
-      if (helper.stringToBoolean(data.noPackageConfig)) {
+      if (helper.stringToBoolean(isPackage)) {
         if (
           data.type ||
           data.sasXptMethod ||
@@ -3552,7 +3566,7 @@ exports.packageUpdate = async (
       }
     } else {
       if (
-        !helper.stringToBoolean(data.noPackageConfig) ||
+        !helper.stringToBoolean(isPackage) ||
         !helper.stringToBoolean(data.active)
       ) {
         errorPackage.push("In jdbc noPackageConfig, active should be true");
