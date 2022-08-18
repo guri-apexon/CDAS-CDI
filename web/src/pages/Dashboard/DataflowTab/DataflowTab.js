@@ -442,6 +442,7 @@ export default function DataflowTab({ updateData, updateHeight }) {
             variant="secondary"
             icon={FilterIcon}
             onClick={toggleFilters}
+            disabled={totalRows === 0}
           >
             Filter
           </Button>
@@ -750,19 +751,28 @@ export default function DataflowTab({ updateData, updateHeight }) {
       />
       <Typography
         variant="title1"
-        style={{ color: neutral7, lineHeight: "32px", marginBottom: 14 }}
+        style={{ color: neutral7, lineHeight: "32px" }}
       >
         No Data Flows
       </Typography>
-      <Button
-        variant="secondary"
-        icon={<PlusIcon />}
-        size="small"
-        style={{ marginLeft: "8px" }}
-        onClick={() => history.push("/dashboard/dataflow-management")}
-      >
-        Add a data flow
-      </Button>
+      {selectedCard.prot_id === "" ? (
+        <Typography
+          variant="title1"
+          style={{ color: neutral7, fontSize: 18, lineHeight: "24px" }}
+        >
+          Please select a study.
+        </Typography>
+      ) : (
+        <Button
+          variant="secondary"
+          icon={<PlusIcon />}
+          size="small"
+          style={{ marginLeft: "8px", marginTop: "14px" }}
+          onClick={() => history.push("/dashboard/dataflow/create")}
+        >
+          Add a data flow
+        </Button>
+      )}
     </div>
   );
 
