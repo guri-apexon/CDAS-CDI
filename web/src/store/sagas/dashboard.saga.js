@@ -52,7 +52,7 @@ export function* fetchDatasetIngestionSummaryData(payload) {
     }
     const fetchDBData = yield call(
       axios.get,
-      `${baseURL}/${STUDYAPI}/datasetIngestionDetail/${payload.protocolId}?active=${active}&testFlag=${testFlag}`,
+      `${baseURL}/${STUDYAPI}/datasetIngestionDetail/${payload.protocolId}?active=${active}&testFlag=${testFlag}&userId=${payload.userId}`,
       {}
     );
 

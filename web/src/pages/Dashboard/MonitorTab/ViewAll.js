@@ -16,7 +16,9 @@ import ChevronLeft from "apollo-react-icons/ChevronLeft";
 import DatasetTable from "./DatasetTable";
 import { getDatasetIngestionOfStudy } from "../../../store/actions/DashboardAction";
 import { queryParams } from "./helper";
+import { getUserId } from "../../../utils/index";
 
+const userId = getUserId();
 const queryString = require("query-string");
 
 const useStyles = makeStyles(() => ({
@@ -60,7 +62,12 @@ const ViewAll = () => {
   const fetchLatestData = (c = "", active = 1) => {
     if (dashboard?.selectedCard?.prot_id) {
       dispatch(
-        getDatasetIngestionOfStudy(dashboard.selectedCard.prot_id, c, active)
+        getDatasetIngestionOfStudy(
+          dashboard.selectedCard.prot_id,
+          c,
+          active,
+          userId
+        )
       );
     }
   };
