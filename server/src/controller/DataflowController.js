@@ -19,9 +19,7 @@ exports.getStudyDataflows = async (req, res) => {
     const { protocolId } = req.body;
     if (protocolId) {
       const query = `select * from fn_get_study_dataflows('${protocolId}')`;
-
       const $q1 = await DB.executeQuery(query);
-
       const formatDateValues = await $q1.rows.map((e) => {
         let editT = moment(e.lastModified).format("MM/DD/YYYY");
         let addT = moment(e.dateCreated).format("MM/DD/YYYY");
