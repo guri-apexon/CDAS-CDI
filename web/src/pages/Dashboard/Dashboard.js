@@ -15,6 +15,7 @@ import {
 
 import LeftPanel from "./LeftPanel";
 import "./Dashboard.scss";
+import { getUserId } from "../../utils/index";
 
 // import { downloadTemplate } from "../../utils/downloadData";
 
@@ -24,6 +25,8 @@ import { freezeDfVersion } from "../../store/actions/DataFlowAction";
 import { resetFTP, resetJDBC } from "../../store/actions/DataSetsAction";
 
 const queryString = require("query-string");
+
+const userId = getUserId();
 
 const styles = {
   pageRootInnerWrapper: {
@@ -94,7 +97,8 @@ const Dashboard = () => {
         getDatasetIngestionOfStudy(
           dashboard.selectedCard.prot_id,
           control,
-          activeOnly
+          activeOnly,
+          userId
         )
       );
     }
