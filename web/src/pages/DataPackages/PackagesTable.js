@@ -301,7 +301,7 @@ const PackagesList = ({ data, userInfo }) => {
         disabled: !canUpdateDataFlow,
       },
       {
-        text: "Set all dataset to active",
+        text: "Set all datasets to active",
         onClick: () => toggleDatasetActive(true),
         disabled: !canUpdateDataFlow,
       },
