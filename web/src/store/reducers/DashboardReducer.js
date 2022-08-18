@@ -10,6 +10,12 @@ import {
   GET_DATASET_INGESTION_SUMMARY,
   GET_DATASET_INGESTION_SUMMARY_SUCCESS,
   GET_DATASET_INGESTION_SUMMARY_FAILURE,
+  GET_ALL_INGESTION_SUMMARY,
+  GET_ALL_INGESTION_SUMMARY_SUCCESS,
+  GET_ALL_INGESTION_SUMMARY_FAILURE,
+  GET_SPECIFIC_INGESTION_DATASETS,
+  GET_SPECIFIC_INGESTION_DATASETS_SUCCESS,
+  GET_SPECIFIC_INGESTION_DATASETS_FAILURE,
   GET_STUDIES_LIST,
   GET_STUDIES_LIST_SUCCESS,
   GET_STUDIES_LIST_FAILURE,
@@ -26,6 +32,7 @@ export const initialState = {
   summaryLoading: false,
   exportStudy: null,
   ingestionData: {},
+  ingestnData: {},
   flowData: [],
   selectedCard: {
     prot_id: "",
@@ -49,6 +56,7 @@ export const initialState = {
   },
   dfId: "",
   userStudies: [],
+  userStudiesLoading: false,
   selectedDataFlow: "",
   userPinnedStudies: [],
 };
@@ -74,15 +82,18 @@ const DashboardReducer = (state = initialState, action) =>
         break;
 
       case GET_STUDIES_LIST:
+        newState.userStudiesLoading = true;
         newState.loading = true;
         break;
 
       case GET_STUDIES_LIST_SUCCESS:
+        newState.userStudiesLoading = false;
         newState.loading = false;
         newState.userStudies = action.userStudies;
         break;
 
       case GET_STUDIES_LIST_FAILURE:
+        newState.userStudiesLoading = false;
         newState.loading = false;
         break;
 
@@ -126,6 +137,32 @@ const DashboardReducer = (state = initialState, action) =>
         break;
 
       case GET_DATASET_INGESTION_SUMMARY_FAILURE:
+        newState.summaryLoading = false;
+        break;
+
+      case GET_ALL_INGESTION_SUMMARY:
+        newState.summaryLoading = true;
+        break;
+
+      case GET_ALL_INGESTION_SUMMARY_SUCCESS:
+        newState.summaryLoading = false;
+        newState.ingestnData = action.ingestnData;
+        break;
+
+      case GET_ALL_INGESTION_SUMMARY_FAILURE:
+        newState.summaryLoading = false;
+        break;
+
+      case GET_SPECIFIC_INGESTION_DATASETS:
+        newState.summaryLoading = true;
+        break;
+
+      case GET_SPECIFIC_INGESTION_DATASETS_SUCCESS:
+        newState.summaryLoading = false;
+        newState.ingestionData = action.ingestionData;
+        break;
+
+      case GET_SPECIFIC_INGESTION_DATASETS_FAILURE:
         newState.summaryLoading = false;
         break;
 

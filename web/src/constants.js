@@ -175,6 +175,19 @@ export const GET_PREVIEW_SQL = "GET_PREVIEW_SQL";
 export const FETCH_PREVIEW_SQL_SUCCESS = "FETCH_PREVIEW_SQL_SUCCESS";
 export const FETCH_PREVIEW_SQL_FAILURE = "FETCH_PREVIEW_SQL_FAILURE";
 
+export const GET_ALL_INGESTION_SUMMARY = "GET_ALL_INGESTION_SUMMARY";
+export const GET_ALL_INGESTION_SUMMARY_SUCCESS =
+  "GET_ALL_INGESTION_SUMMARY_SUCCESS";
+export const GET_ALL_INGESTION_SUMMARY_FAILURE =
+  "GET_ALL_INGESTION_SUMMARY_FAILURE";
+
+export const GET_SPECIFIC_INGESTION_DATASETS =
+  "GET_SPECIFIC_INGESTION_DATASETS";
+export const GET_SPECIFIC_INGESTION_DATASETS_SUCCESS =
+  "GET_SPECIFIC_INGESTION_DATASETS_SUCCESS";
+export const GET_SPECIFIC_INGESTION_DATASETS_FAILURE =
+  "GET_SPECIFIC_INGESTION_DATASETS_FAILURE";
+
 export const GET_DATASET_INGESTION_SUMMARY = "GET_DATASET_INGESTION_SUMMARY";
 export const GET_DATASET_INGESTION_SUMMARY_SUCCESS =
   "GET_DATASET_INGESTION_SUMMARY_SUCCESS";
@@ -228,6 +241,8 @@ export const FETCH_DATASET_INGESTION_TRANSFER_LOG_FAILURE =
 export const GETSTUDYDF = "v1/api/dataflow/studyDataflowList";
 export const STUDYSEARCH = "v1/api/study/search-study";
 export const STUDYAPI = "v1/api/study";
+export const CDIHOMEAPI = "v1/api/cdihome";
+
 export const HARDDELETE = "v1/api/dataflow/hard-delete";
 export const SYNCNOW = "v1/api/dataflow/syncNow";
 export const ACTIVATEDF = "v1/api/dataflow/activate";
@@ -254,12 +269,14 @@ export const AUDIT_LOGS_FETCH = "v1/api/audit-logs/get";
 
 export const LOCATIONAPI = "v1/api/location";
 export const LOCATIONPASSWORDAPI = "v1/api/location/get_password";
+export const LISTTYPES = "v1/api/location/list-types";
 
 export const VENDORAPI = "v1/api/vendor";
 export const DATAKINDAPI = "v1/api/datakind";
 export const DATASETAPI = "v1/api/dataset";
 export const COLUMNSAPI = "v1/api/columnset";
 export const DATAFLOWAPI = "v1/api/dataflow";
+
 export const VLCDATAAPI = "v1/api/dataset/getVLCData";
 export const SQLTABLESAPI = "v1/api/dataset/getTables";
 export const SQLCOLUMNSAPI = "v1/api/dataset/getColumns";

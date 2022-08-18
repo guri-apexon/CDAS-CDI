@@ -12,12 +12,12 @@ exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
     const { dataflowId } = req.params;
-    let searchQuery = `SELECT datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 'Y') ORDER BY insrt_tm DESC;`;
+    let searchQuery = `SELECT nopackageconfig, datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 1) ORDER BY insrt_tm DESC;`;
     if (searchParam) {
-      searchQuery = `SELECT datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage 
+      searchQuery = `SELECT nopackageconfig, datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage 
       WHERE LOWER(name) LIKE '%${searchParam}%' and dataflowid='${dataflowId}' ORDER BY insrt_tm DESC;`;
     }
-    const datasetQuery = `SELECT datasetid, mnemonic, active, type, insrt_tm from ${schemaName}.dataset where datapackageid = $1 ORDER BY insrt_tm DESC`;
+    const datasetQuery = `SELECT datasetid, mnemonic, active, type, insrt_tm from ${schemaName}.dataset where datapackageid = $1 and (del_flg is distinct from 1) ORDER BY insrt_tm DESC`;
     Logger.info({ message: "packagesList" });
 
     DB.executeQuery(searchQuery).then(async (response) => {
@@ -81,6 +81,7 @@ exports.addPackage = async function (req, res) {
       sod_view_type = "",
       package_id,
       versionFreezed,
+      nopackageconfig,
     } = req.body;
 
     // const versionFreezed = true;
@@ -111,20 +112,32 @@ exports.addPackage = async function (req, res) {
         query_response && query_response.rowCount > 0 && query_response.rows[0];
       const pp = package_password ? "Yes" : "No";
       if (package) {
+        let nopackageconfigValue = 0;
+        let namingconventionValue = naming_convention;
+        let compressionType = compression_type;
+        let sftpPath = sftp_path;
+        if (!nopackageconfig) {
+          namingconventionValue = "";
+          nopackageconfigValue = 1;
+          compressionType = "";
+          sftpPath = "";
+        }
         const updateResult = await DB.executeQuery(
           `UPDATE ${schemaName}.datapackage
-           SET dataflowid=$1, "type"=$2, "path"=$3, "password"=$4, sod_view_type=$5, name=$6
+           SET dataflowid=$1, "type"=$2, "path"=$3, "password"=$4, sod_view_type=$5, name=$6, nopackageconfig=$7 
            WHERE datapackageid='${package_id}' RETURNING*`,
           [
             dataflow_id,
-            compression_type,
-            sftp_path,
+            compressionType,
+            sftpPath,
             pp,
             sod_view_type,
-            naming_convention,
+            namingconventionValue,
+            nopackageconfigValue,
           ]
         );
       }
+
       if (package.type !== compression_type)
         audit_log.push({
           attribute: "type",
@@ -169,7 +182,7 @@ exports.addPackage = async function (req, res) {
           sftp_path,
           package_password ? "Yes" : "No",
           "0",
-          "N",
+          0,
           getCurrentTime(),
         ]
       );
@@ -293,7 +306,7 @@ exports.deletePackage = async (req, res) => {
   try {
     const { active, package_id, user_id, versionFreezed } = req.body;
     const query = `UPDATE ${schemaName}.datapackage
-    SET del_flg = 'Y'
+    SET del_flg = 1
     WHERE datapackageid = '${package_id}' RETURNING *`;
 
     // const versionFreezed = false;
@@ -318,7 +331,7 @@ exports.deletePackage = async (req, res) => {
       );
     }
 
-    const dataSetQuery = `UPDATE ${schemaName}.dataset SET del_flg = 'Y' WHERE datapackageid = '${package_id}' RETURNING datasetid`;
+    const dataSetQuery = `UPDATE ${schemaName}.dataset SET del_flg = 1 WHERE datapackageid = '${package_id}' RETURNING datasetid`;
     const columnQuery = `UPDATE ${schemaName}.columndefinition SET del_flg = 1 WHERE datasetid = $1`;
 
     DB.executeQuery(query).then(async (response) => {
@@ -334,7 +347,7 @@ exports.deletePackage = async (req, res) => {
       const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
-        [{ attribute: "del_flg", old_val: "N", new_val: "Y" }],
+        [{ attribute: "del_flg", old_val: "0", new_val: "1" }],
         versionFreezed
       );
       if (!historyVersion) throw new Error("History not updated");

@@ -135,20 +135,20 @@ const Header = (props) => {
         open={openModal}
         variant="warning"
         onClose={() => setOpenModal(false)}
-        title="Exit"
-        message="Do you really want to exit and discard dataflow changes"
+        title="Lose your work?"
+        message="All unsaved changes will be lost."
         buttonProps={[
           {
-            label: "Discard changes",
+            label: "Keep editing",
+            onClick: () => setOpenModal(false),
+          },
+          {
+            variant: "primary",
+            label: "Leave without saving",
             onClick: () => {
               props.close();
               setOpenModal(false);
             },
-          },
-          {
-            label: "Continue editing data flow",
-            variant: "primary",
-            onClick: () => setOpenModal(false),
           },
         ]}
         id="success"

@@ -113,8 +113,21 @@ const DatasetIngestionReport = () => {
   const { datasetId } = useParams();
   const parsedQuery = queryString.parse(location.search);
 
+  const checkCurrentLocation = () => {
+    return location.pathname.includes("/cdihome/ingestion-report") || false;
+  };
+
   const breadcrumpItems = [
-    { href: "javascript:void(0)", onClick: () => history.push("/dashboard") },
+    {
+      href: "javascript:void(0)",
+      onClick: () => {
+        if (checkCurrentLocation()) {
+          history.push("/cdihome");
+        } else {
+          history.push("/dashboard");
+        }
+      },
+    },
     {
       href: "javascript:void(0)",
       title: "Study Ingestion Report",

@@ -59,12 +59,13 @@ async function saveSQLDataset(
       values.filterCondition || null,
       curDate,
       dpId,
+      0,
     ];
 
     const {
       rows: [datasetObj],
     } = await DB.executeQuery(
-      `INSERT into ${schemaName}.dataset (mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10, $11) returning *`,
+      `INSERT into ${schemaName}.dataset (mnemonic, active, datakindid, customsql_yn, customsql, incremental, tbl_nm, offsetcolumn, dataset_fltr, insrt_tm, updt_tm, datapackageid,del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10, $11,$12) returning *`,
       body
     );
 
@@ -199,7 +200,8 @@ exports.saveDatasetData = async (req, res) => {
       values.fileType,
       values.encoding || null,
       values.delimiter || null,
-      values.escapeCharacter || null,
+      // values.escapeCharacter || null,
+      helper.convertEscapeChar(values.escapeCharacter) || null,
       values.quote || null,
       values.headerRowNumber > 0 ? 1 : 0,
       values.footerRowNumber > 0 ? 1 : 0,
@@ -216,10 +218,11 @@ exports.saveDatasetData = async (req, res) => {
       curDate,
       dpId,
       values.loadType == "Incremental" ? "Y" : "N",
+      0,
     ];
 
     DB.executeQuery(
-      `INSERT into ${schemaName}.dataset (mnemonic, type, charset, delimiter, escapecode, quote, headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, datapackageid, incremental) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) returning *`,
+      `INSERT into ${schemaName}.dataset (mnemonic, type, charset, delimiter, escapecode, quote, headerrow, footerrow, headerrownumber, footerrownumber, active, name, path, file_pwd, datakindid, data_freq, ovrd_stale_alert, rowdecreaseallowed, insrt_tm, datapackageid, incremental,del_flg) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21,$22) returning *`,
       body
     ).then(async (response) => {
       const { rows: datasetObj } = response;
@@ -446,7 +449,7 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
 exports.updateDatasetData = async (req, res) => {
   try {
     const values = req.body;
-    console.log("values", values);
+
     const curDate = helper.getCurrentTime();
     Logger.info({ message: "update Dataset" });
     const {
@@ -483,10 +486,15 @@ exports.updateDatasetData = async (req, res) => {
       }
 
       if (dataSet_count < 2) {
-        return apiResponse.ErrorResponse(
-          res,
-          "Please inactivate the dataflow in order to inactive datasets"
+        const dataFlowDetails = await DB.executeQuery(
+          `SELECT active from ${schemaName}.dataflow WHERE dataflowid='${dfId}'`
         );
+        if (dataFlowDetails?.rowCount && dataFlowDetails?.rows[0]?.active) {
+          return apiResponse.ErrorResponse(
+            res,
+            "Please inactivate the dataflow in order to inactive datasets"
+          );
+        }
       }
     }
 
@@ -599,7 +607,8 @@ exports.updateDatasetData = async (req, res) => {
       values.fileType || null,
       values.encoding || null,
       values.delimiter || null,
-      values.escapeCharacter || null,
+      // values.escapeCharacter || null,
+      helper.convertEscapeChar(values.escapeCharacter) || null,
       values.quote || null,
       values.headerRowNumber || 0,
       values.footerRowNumber || 0,

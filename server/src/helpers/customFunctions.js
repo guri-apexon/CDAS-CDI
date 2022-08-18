@@ -90,7 +90,8 @@ const stringToBoolean = (exports.stringToBoolean = (string) => {
 });
 
 exports.convertEscapeChar = (str) => {
-  return str ? String.raw`${str}`.replace(/\\/g, "\\\\") : "";
+  return str ? String.raw`${str}`.replace(/'%\'/g, "\\\\") : "\\";
+  // return str ? String.raw`${str}`.replace(/\\/g, "\\\\") : "";
 };
 
 exports.validation = (data) => {
@@ -416,6 +417,30 @@ exports.addPackagesValidations = (data) => {
           "If Package type is SAS XPT then package naming convention should be end with (.xpt)"
         );
       }
+    }
+  }
+  return errorMessages;
+};
+
+exports.minMaxLengthValidations = (data) => {
+  const errorMessages = [];
+  const minLength = data.minLength;
+  const maxLength = data.maxLength;
+  if (minLength < 0 || maxLength < 0) {
+    errorMessages.push("maxLength and minLength should be positive numbers.");
+  } else if (
+    minLength &&
+    minLength > 0 &&
+    (!maxLength || trim(maxLength).length === 0)
+  ) {
+    errorMessages.push(
+      "maxLength should be provided and should be greater than or equals to minLength."
+    );
+  } else if (minLength && maxLength) {
+    if (parseInt(minLength) >= parseInt(maxLength)) {
+      errorMessages.push(
+        "maxLength should be greater than or equals to minLength."
+      );
     }
   }
   return errorMessages;

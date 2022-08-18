@@ -9,7 +9,7 @@ const constants = require("../config/constants");
 const apiResponse = require("../helpers/apiResponse");
 
 const { Console } = require("winston/lib/winston/transports");
-const { trim } = require("lodash");
+const { trim, filter } = require("lodash");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const dataTyperForamtValidate = (exports.dataTyperForamtValidate = (
@@ -57,7 +57,13 @@ exports.namingCconventionValidate = (name) => {
             e === "<mmyyyydd>" ||
             e === "<ddyyyymm>" ||
             e === "<yyyymmdd>" ||
-            e === "<yyyyddmm>"
+            e === "<yyyyddmm>" ||
+            e === "<dd-mm-yyyy>" ||
+            e === "<mm-dd-yyyy>" ||
+            e === "<mm-yyyy-dd>" ||
+            e === "<dd-yyyy-mm>" ||
+            e === "<yyyy-mm-dd>" ||
+            e === "<yyyy-dd-mm>"
           ) {
             return true;
           } else {
@@ -219,6 +225,8 @@ exports.insertValidation = async (req) => {
 
   if (req.dataPackage && req.dataPackage.length > 0) {
     // console.log("data package data", req.body.dataPackage.length);
+    let mnenomicArray = [];
+
     dfObj.dataPackages = [];
 
     let dpErrArray = [];
@@ -415,7 +423,11 @@ exports.insertValidation = async (req) => {
           if (each.dataSet && each.dataSet.length > 0) {
             dpNewObj.dataSets = [];
             let dsErrArray = [];
+            // console.log("obj", each.dataSet);
+
             for (let obj of each.dataSet) {
+              let clNameArray = [];
+
               dsErrArray = [];
               let dsNewObj = {
                 ExternalId: obj.ExternalId,
@@ -593,6 +605,39 @@ exports.insertValidation = async (req) => {
                 //     "fileNamingConvention should not have the following special characters < >"
                 //   );
                 // }
+              }
+
+              // Duplicate mnemonic check in payload
+              const duplicate = mnenomicArray.includes(obj.datasetName);
+              if (duplicate) {
+                dsErrArray.push(
+                  "In this payload duplicate datasetName(mnemonic) name found"
+                );
+              }
+              mnenomicArray.push(obj.datasetName);
+              // console.log("array", mnenomicArray, duplicate);
+
+              // Duplicate mnemonic check in DB
+              if (obj.datasetName) {
+                const tFlg = helper.stringToBoolean(req.testFlag) ? 1 : 0;
+                let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
+                    inner join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+                    inner join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+                    inner join cdascfg.study s on (df.prot_id = s.prot_id)
+                    where s.prot_nbr_stnd = '${req.protocolNumberStandard}' and 
+                    df.vend_id = '${req.vendorid}' 
+                    and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
+                    and ds.datakindid = '${
+                      obj.dataKindID
+                    }'and df.testflag = '${tFlg}'`;
+
+                let queryMnemonic = await DB.executeQuery(selectMnemonic);
+
+                if (queryMnemonic.rows.length > 0) {
+                  dsErrArray.push(
+                    "In this environment this datasetName(mnemonic) name already Exist!"
+                  );
+                }
               }
 
               if (obj.dataTransferFrequency === 0) {
@@ -816,16 +861,25 @@ exports.insertValidation = async (req) => {
                       }
                     }
                   }
-                  if (el.minLength) {
-                    if (
-                      typeof el.minLength != "undefined" &&
-                      typeof el.maxLength != "undefined"
-                    ) {
-                      if (el.minLength <= el.maxLength) {
-                      } else {
-                        clErrArray.push("minLength always less than maxLength");
-                      }
-                    }
+                  // This message validated/changed in minMaxLengthValidations function
+                  // if (el.minLength) {
+                  //   if (
+                  //     typeof el.minLength != "undefined" &&
+                  //     typeof el.maxLength != "undefined"
+                  //   ) {
+                  //     if (el.minLength <= el.maxLength) {
+                  //     } else {
+                  //       clErrArray.push(
+                  //         "minLength always less than maxLength1"
+                  //       );
+                  //     }
+                  //   }
+                  // }
+
+                  // min max validations changes
+                  const minMaxErrors = helper.minMaxLengthValidations(el);
+                  if (minMaxErrors && minMaxErrors.length > 0) {
+                    clErrArray.push(...minMaxErrors);
                   }
                   if (el.lov) {
                     const last = el.lov.charAt(el.lov.length - 1);
@@ -841,6 +895,17 @@ exports.insertValidation = async (req) => {
                     }
                     // }
                   }
+
+                  // Duplicate column name check in payload
+                  const duplicate = clNameArray.includes(el.columnName);
+                  if (duplicate) {
+                    clErrArray.push(
+                      "Column Names (Headers) must be unique in a data set file structure. Please amend."
+                    );
+                  }
+                  clNameArray.push(el.columnName);
+                  // console.log("array", clNameArray, duplicate);
+
                   if (clErrArray.length > 0) {
                     let clErrRes = clErrArray.join(" '|' ");
                     clNewObj.message = clErrRes;
@@ -975,6 +1040,7 @@ exports.insertValidation = async (req) => {
             dpNewObj.dataSets = [];
             let dsErrArray = [];
             for (let obj of each.dataSet) {
+              let clNameArray = [];
               dsErrArray = [];
               let dsNewObj = {
                 ExternalId: obj.ExternalId,
@@ -1069,11 +1135,44 @@ exports.insertValidation = async (req) => {
                 },
               ];
 
-              // point - 28 story - 7277
+              // point - 28 story -: 7277
               if (obj.columncount === 0) {
                 dsErrArray.push(
                   "Data set column count should be minimum 1 or greater than 1. Please amend."
                 );
+              }
+
+              // duplicate mnenomic check in payload
+              const duplicate = mnenomicArray.includes(obj.datasetName);
+              if (duplicate) {
+                dsErrArray.push(
+                  "In this payload duplicate datasetName(mnemonic) name found"
+                );
+              }
+              mnenomicArray.push(obj.datasetName);
+              // console.log("array", mnenomicArray, duplicate);
+
+              // Duplicate mnemonic check in DB
+              if (obj.datasetName) {
+                const tFlg = helper.stringToBoolean(req.testFlag) ? 1 : 0;
+                let selectMnemonic = `select ds.mnemonic from ${schemaName}.dataset ds
+                    inner join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+                    inner join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+                    inner join cdascfg.study s on (df.prot_id = s.prot_id)
+                    where s.prot_nbr_stnd = '${req.protocolNumberStandard}' and 
+                    df.vend_id = '${req.vendorid}' 
+                    and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
+                    and ds.datakindid = '${
+                      obj.dataKindID
+                    }'and df.testflag = '${tFlg}'`;
+
+                let queryMnemonic = await DB.executeQuery(selectMnemonic);
+
+                if (queryMnemonic.rows.length > 0) {
+                  dsErrArray.push(
+                    "In this environment this datasetName(mnemonic) name already Exist!"
+                  );
+                }
               }
 
               if (obj.customsql_yn) {
@@ -1213,18 +1312,31 @@ exports.insertValidation = async (req) => {
                     clErrArray = clErrArray.concat(clRes);
                   }
 
+                  // min max validations changed from here
+                  const minMaxErrors = helper.minMaxLengthValidations(el);
+                  if (minMaxErrors && minMaxErrors.length > 0) {
+                    clErrArray.push(...minMaxErrors);
+                  }
                   if (
-                    el.minLength ||
-                    el.maxLength ||
-                    el.minLength === 0 ||
-                    el.maxLength === 0 ||
+                    // el.minLength ||
+                    // el.maxLength ||
+                    // el.minLength === 0 ||
+                    // el.maxLength === 0 ||
                     el.lov ||
                     el.position
                   ) {
+                    clErrArray.push("In JDBC position, lov should be blank");
+                  }
+
+                  // Duplicate column name check in payload
+                  const duplicate = clNameArray.includes(el.columnName);
+                  if (duplicate) {
                     clErrArray.push(
-                      "In jdbc minLength, maxLength, position, lov should be blank"
+                      "Column Names (Headers) must be unique in a data set file structure. Please amend."
                     );
                   }
+                  clNameArray.push(el.columnName);
+                  // console.log("array", clNameArray, duplicate);
 
                   if (clErrArray.length > 0) {
                     let clErrRes = clErrArray.join(" '|' ");
@@ -1361,6 +1473,7 @@ exports.packageLevelInsert = async (
     var str2 = /[.]/;
     // var str3 = /[< >]/;
     var str3 = /[\/:*?”<|>]/;
+    let errStatus = false;
 
     if (!isNew) {
       if (helper.isSftp(LocationType)) {
@@ -1565,6 +1678,9 @@ exports.packageLevelInsert = async (
       };
 
       // return { errRes: errorPackage };
+      if (!isNew) {
+        return { errRes: errObj, errStatus: true };
+      }
       return { errRes: errObj };
     }
 
@@ -1666,10 +1782,20 @@ exports.packageLevelInsert = async (
           if (res && res.sucRes) {
             DpObj.dataSets.push(res.sucRes);
           }
+          if (res && res.errStatus) {
+            errStatus = true;
+          }
         });
+
+        // if (isNew && isError) {
+        //   return { sucRes: DpObj, errRes: dpErrObj };
+        // }
       }
     }
     // console.log("package insert ", DpObj);
+    if (!isNew) {
+      return { sucRes: DpObj, errRes: dpErrObj, errStatus: errStatus };
+    }
     if (isError) {
       return { sucRes: DpObj, errRes: dpErrObj };
     }
@@ -1707,6 +1833,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
     var str2 = /[.]/;
     // var str3 = /[< >]/;
     var str3 = /[\/:*?”<|>]/;
+    let errStatus = false;
 
     const isCDI = externalSysName === "CDI" ? true : false;
 
@@ -2116,6 +2243,9 @@ const saveDataset = (exports.datasetLevelInsert = async (
       };
 
       //  return { errRes: errorDataset };
+      if (!isNew) {
+        return { errRes: errObj, errStatus: true };
+      }
       return { errRes: errObj };
     }
 
@@ -2164,7 +2294,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
       obj.filePwd ? "Yes" : "No",
       helper.getCurrentTime(),
       obj.delimiter || "",
-      helper.convertEscapeChar(obj.escapeCharacter) || "",
+      helper.convertEscapeChar(obj.escapeCharacter) || null,
       obj.quote || "",
       obj.rowDecreaseAllowed || 0,
       obj.dataTransferFrequency || "",
@@ -2173,6 +2303,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
       obj.conditionalExpression || null,
       0,
     ];
+
     const {
       rows: [createdDS],
     } = await DB.executeQuery(
@@ -2244,11 +2375,15 @@ const saveDataset = (exports.datasetLevelInsert = async (
             DPId,
             dsUid,
             version,
-            userId
+            userId,
+            isNew
           ).then((res) => {
             if (res && Object.keys(res.errRes)?.length) {
               dsErrObj.vlc.push(res.errRes);
-              isError = true;
+              if (res.errRes.message) {
+                isError = true;
+                errStatus = true;
+              }
               // errorDataset.push(dsErrObj);
             }
             if (res && res.sucRes) {
@@ -2281,7 +2416,11 @@ const saveDataset = (exports.datasetLevelInsert = async (
         ).then((res) => {
           if (res && Object.keys(res.errRes)?.length) {
             dsErrObj.columnDefinition.push(res.errRes);
-            isError = true;
+
+            if (res.errRes.message) {
+              isError = true;
+              errStatus = true;
+            }
           }
 
           if (res && res.sucRes) {
@@ -2291,13 +2430,16 @@ const saveDataset = (exports.datasetLevelInsert = async (
       }
     }
 
+    if (!isNew) {
+      return { sucRes: dsObj, errRes: dsErrObj, errStatus: errStatus };
+    }
     if (isError) {
       return { sucRes: dsObj, errRes: dsErrObj };
     }
     return { sucRes: dsObj, errRes: {} };
     // return { sucRes: dsObj, errRes: errorDataset };
   } catch (err) {
-    console.log("dataset catch", err);
+    console.log("dataset catch 1", err);
     //throw error in json response with status 500.
     Logger.error("catch :Dataset level insert");
     Logger.error(err);
@@ -2456,15 +2598,22 @@ const columnSave = (exports.columnDefinationInsert = async (
           }
         }
 
-        if (el.minLength) {
-          if (
-            typeof el.minLength != "undefined" &&
-            typeof el.maxLength != "undefined"
-          ) {
-            if (el.minLength >= el.maxLength) {
-              errorColumnDef.push("minLength always less than maxLength ");
-            }
-          }
+        // This message validated/changed in minMaxLengthValidations function
+        // if (el.minLength) {
+        //   if (
+        //     typeof el.minLength != "undefined" &&
+        //     typeof el.maxLength != "undefined"
+        //   ) {
+        //     if (el.minLength >= el.maxLength) {
+        //       errorColumnDef.push("minLength always less than maxLength 2");
+        //     }
+        //   }
+        // }
+
+        // min max validations changes
+        const minMaxErrors = helper.minMaxLengthValidations(el);
+        if (minMaxErrors && minMaxErrors.length > 0) {
+          errorColumnDef.push(...minMaxErrors);
         }
 
         if (el.lov) {
@@ -2557,18 +2706,22 @@ const columnSave = (exports.columnDefinationInsert = async (
           errorColumnDef = errorColumnDef.concat(clRes);
         }
 
+        // min max validations changed from here
+        const minMaxErrors = helper.minMaxLengthValidations(el);
+        if (minMaxErrors && minMaxErrors.length > 0) {
+          errorColumnDef.push(...minMaxErrors);
+        }
+
         if (
-          el.minLength ||
-          el.minLength === 0 ||
-          el.maxLength ||
-          el.maxLength === 0 ||
+          // el.minLength ||
+          // el.minLength === 0 ||
+          // el.maxLength ||
+          // el.maxLength === 0 ||
           el.lov ||
           el.position
         ) {
           // console.log(val.key, val.value);
-          errorColumnDef.push(
-            "For JBDC minLength, maxLength, lov, position fields should be Blank"
-          );
+          errorColumnDef.push("For JBDC lov, position fields should be Blank");
         }
       }
     }
@@ -2685,6 +2838,9 @@ const columnSave = (exports.columnDefinationInsert = async (
       ]
     );
 
+    if (!isNew) {
+      return { sucRes: cdObj, errRes: cdObj };
+    }
     // console.log("column insert", cdObj);
     return { sucRes: cdObj, errRes: errorColumnDef };
   } catch (e) {
@@ -2701,7 +2857,8 @@ const saveVlc = (exports.VlcInsert = async (
   DPId,
   dsUid,
   version,
-  userId
+  userId,
+  isNew
 ) => {
   try {
     //vl holds all Conditional Expressions data
@@ -2858,6 +3015,9 @@ const saveVlc = (exports.VlcInsert = async (
     );
 
     // console.log("vlc insert ", vlcObj);
+    if (!isNew) {
+      return { sucRes: vlcObj, errRes: vlcObj };
+    }
     return { sucRes: vlcObj, errRes: errorVlc };
   } catch (err) {
     console.log("vlc", err);
@@ -3200,8 +3360,22 @@ exports.packageUpdate = async (
     // var str3 = /[< >]/;
     var str3 = /[\/:*?”<|>]/;
 
+    const {
+      rows: [packageData],
+    } = await DB.executeQuery(
+      `select type, nopackageconfig ,name from ${schemaName}.datapackage where datapackageid='${DPId}';`
+    );
+
+    let isPackage = packageData.nopackageconfig;
+    let packageType = packageData?.type || null;
+    let packageName = packageData?.name || null;
+
+    if (data.noPackageConfig === 0 || data.noPackageConfig === 1) {
+      isPackage = data.noPackageConfig;
+    }
+
     if (helper.isSftp(LocationType)) {
-      // if (LocationType == "Hive CDH") {
+      // if (LocationType == "Hive CDH"1) {
 
       if (typeof data.noPackageConfig != "undefined") {
         valData.push({
@@ -3218,7 +3392,7 @@ exports.packageUpdate = async (
         errorPackage = errorPackage.concat(dpResUpdate);
       }
 
-      if (!helper.stringToBoolean(data.noPackageConfig)) {
+      if (!helper.stringToBoolean(isPackage)) {
         const TypeSas = [];
 
         //008
@@ -3283,7 +3457,7 @@ exports.packageUpdate = async (
         }
       }
 
-      if (helper.stringToBoolean(data.noPackageConfig)) {
+      if (helper.stringToBoolean(isPackage)) {
         if (
           data.type ||
           data.sasXptMethod ||
@@ -3392,7 +3566,7 @@ exports.packageUpdate = async (
       }
     } else {
       if (
-        !helper.stringToBoolean(data.noPackageConfig) ||
+        !helper.stringToBoolean(isPackage) ||
         !helper.stringToBoolean(data.active)
       ) {
         errorPackage.push("In jdbc noPackageConfig, active should be true");
@@ -3986,11 +4160,15 @@ exports.datasetUpdate = async (
       updateQueryDS += `,ovrd_stale_alert='${data.OverrideStaleAlert}'`;
     }
     if (data.headerRowNumber || data.headerRowNumber === 0) {
-      updateQueryDS += `,headerrow='${data.headerRowNumber}'`;
+      updateQueryDS += `,headerrow='${
+        data.headerRowNumber && data.headerRowNumber != "" ? 1 : 0
+      }'`;
       updateQueryDS += `,headerrownumber='${data.headerRowNumber}'`;
     }
     if (data.footerRowNumber) {
-      updateQueryDS += `,footerrow='${data.footerRowNumber}'`;
+      updateQueryDS += `,footerrow='${
+        data.footerRowNumber && data.footerRowNumber != "" ? 1 : 0
+      }'`;
       updateQueryDS += `,footerrownumber='${data.footerRowNumber}'`;
     }
     if (data.customsql) {
@@ -4012,12 +4190,10 @@ exports.datasetUpdate = async (
       )}'`;
     }
     if (data.encoding) {
-      updateQueryDS += `,charset='${helper.convertEscapeChar(data.encoding)}'`;
+      updateQueryDS += `,charset='${data.encoding}'`;
     }
     if (data.offset_val) {
-      updateQueryDS += `,offset_val='${helper.convertEscapeChar(
-        data.offset_val
-      )}'`;
+      updateQueryDS += `,offset_val='${data.offset_val}'`;
     }
     if (data.quote) {
       updateQueryDS += `,quote='${data.quote}'`;
@@ -4235,16 +4411,22 @@ exports.clDefUpdate = async (
       }
 
       //dadadda
+      // This message validated/changed in minMaxLengthValidations function
+      // if (data.minLength) {
+      //   if (
+      //     typeof data.minLength != "undefined" &&
+      //     typeof data.maxLength != "undefined"
+      //   ) {
+      //     if (data.minLength >= data.maxLength) {
+      //       errorcolDef.push("minLength always less than maxLength3");
+      //     }
+      //   }
+      // }
 
-      if (data.minLength) {
-        if (
-          typeof data.minLength != "undefined" &&
-          typeof data.maxLength != "undefined"
-        ) {
-          if (data.minLength >= data.maxLength) {
-            errorcolDef.push("minLength always less than maxLength");
-          }
-        }
+      // min max validations changes
+      const minMaxErrors = helper.minMaxLengthValidations(data);
+      if (minMaxErrors && minMaxErrors.length > 0) {
+        errorcolDef.push(...minMaxErrors);
       }
 
       if (typeof data.primaryKey != "undefined") {
@@ -4391,17 +4573,21 @@ exports.clDefUpdate = async (
         }
       }
 
+      // min max validations changed from here
+      const minMaxErrors = helper.minMaxLengthValidations(data);
+      if (minMaxErrors && minMaxErrors.length > 0) {
+        errorcolDef.push(...minMaxErrors);
+      }
+
       if (
-        data.minLength ||
-        data.minLength === 0 ||
-        data.maxLength ||
-        data.maxLength === 0 ||
+        // data.minLength ||
+        // data.minLength === 0 ||
+        // data.maxLength ||
+        // data.maxLength === 0 ||
         data.lov ||
         data.position
       ) {
-        errorcolDef.push(
-          "For JBDC minLength, maxLength, lov, position fields should be Blank"
-        );
+        errorcolDef.push("For JBDC lov, position fields should be Blank");
       }
     }
 
@@ -4780,10 +4966,10 @@ exports.removeDataPackage = async (externalID, DPID, DFId, version, userId) => {
     for (let key of DSID) {
       const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where datasetid='${key.datasetid}';`;
       const removeCd = await DB.executeQuery(deleteQueryCD);
-    }
 
-    const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
-    const qcDelete = await DB.executeQuery(deleteQc);
+      const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where datasetid ='${key.datasetid}'`;
+      const qcDelete = await DB.executeQuery(deleteQc);
+    }
 
     newDfobj.ExternalId = externalID;
     newDfobj.ID = DPID;
@@ -4836,7 +5022,7 @@ exports.removeDataSet = async (
     const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where datasetid='${DSID}';`;
     const removeCd = await DB.executeQuery(deleteQueryCD);
 
-    const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where dataflowid ='${DFId}'`;
+    const deleteQc = `update ${schemaName}.dataset_qc_rules set updated_dttm=NOW(), active_yn='N' where datasetid ='${DSID}'`;
     const qcDelete = await DB.executeQuery(deleteQc);
 
     newDfobj.ExternalId = externalID;

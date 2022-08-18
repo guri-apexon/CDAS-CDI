@@ -19,4 +19,7 @@ module.exports = Object.freeze({
     "Content-Type": "application/json",
   },
   FSR_API_URI: "https://rds-cdrfsr-dev.gdev-car3-k8s.work.iqvia.com/fsr",
+  DRIVER_NAMES: {
+    HIVE: "com.cloudera.hive.jdbc41.HS2Driver",
+  },
 });

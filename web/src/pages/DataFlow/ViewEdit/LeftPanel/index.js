@@ -135,11 +135,6 @@ const LeftPanel = () => {
   }, [refreshData]);
   useEffect(() => {
     getPackages(dataFlowId);
-    if (status === 1) {
-      dispatch(updateDFStatus(dataFlowId, "Active"));
-    } else if (status === 0) {
-      dispatch(updateDFStatus(dataFlowId, "Inactive"));
-    }
   }, [dataFlowId]);
   const searchTrigger = (e) => {
     const newValue = e.target.value;
@@ -207,7 +202,7 @@ const LeftPanel = () => {
           <Switch
             label="Active"
             className="inline-checkbox"
-            checked={status === "Active"}
+            checked={status === "Active" || status === 1}
             onChange={handleStatusUpdate}
             disabled={!canUpdateDataFlow}
             size="small"

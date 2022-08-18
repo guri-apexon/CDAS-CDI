@@ -46,7 +46,6 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
       return false;
     }
     setCustomValue(val);
-    setSelectedMenuText(`Within past ${val} days`);
     setErrorInput(false);
     return null;
   };
@@ -260,7 +259,12 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
       </Grid>
       <Modal
         open={menuOpen}
-        onClose={() => setMenuOpen(false)}
+        onClose={() => {
+          setMenuOpen(false);
+          setCustomValue(null);
+          setSelectedMenuText(selectedMenuText);
+          setErrorInput(false);
+        }}
         title="Choose Custom Days"
         message={
           <TextField
@@ -277,7 +281,10 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
           {
             label: "Ok",
             disabled: errorInput || !customValue,
-            onClick: () => getFileHistoryData(customValue),
+            onClick: () => {
+              getFileHistoryData(customValue);
+              setSelectedMenuText(`Within past ${customValue} days`);
+            },
           },
         ]}
       />

@@ -38,6 +38,7 @@ import usePermission, {
   useStudyPermission,
 } from "../../components/Common/usePermission";
 import { hideErrorMessage } from "../../store/actions/DataFlowAction";
+import PreviewColumns from "../../components/Dataset/PreviewColumns";
 // import { getPreviewSQL } from "../../services/ApiServices";
 
 const styles = {
@@ -95,6 +96,7 @@ const DataSetsFormBase = (props) => {
   const [sqlColumnsArr, setSqlColumnsArr] = useState([]);
   const [cdtValue, setCdtValue] = useState(null);
   const [selectedTable, setSelectedTable] = useState(null);
+  const [isColumnAPICalled, setIsColumnAPICalled] = useState(false);
 
   const onChangeOffsetColumn = (obj) => {
     setSelectedOffsetColumns(obj);
@@ -155,6 +157,24 @@ const DataSetsFormBase = (props) => {
       setShowPreview(false);
     }
   }, [formValues.isCustomSQL]);
+
+  // fetch table columns on page load
+  useEffect(() => {
+    if (
+      formValues?.isCustomSQL === "No" &&
+      formValues?.tableName &&
+      !isColumnAPICalled
+    ) {
+      setSqlColumnsArr([]);
+      dispatch(
+        getSQLColumns({
+          ...locationDetail,
+          tableName: formValues.tableName,
+        })
+      );
+      setIsColumnAPICalled(true);
+    }
+  }, [formValues.tableName]);
 
   useEffect(() => {
     if (previewSQL?.length && formValues.isCustomSQL?.toLowerCase() === "yes") {
@@ -423,20 +443,7 @@ const DataSetsFormBase = (props) => {
               )}
             </>
           )}
-          {/* {showPreview && (
-            <div className="preview-table">
-              {previewSQL.length > 0 && (
-                <Table
-                  columns={Object.keys(previewSQL[0]).map((e) => ({
-                    header: e,
-                    accessor: e,
-                  }))}
-                  rows={previewSQL}
-                  hidePagination
-                />
-              )}
-            </div>
-          )} */}
+          {showPreview && <PreviewColumns previewSQL={previewSQL} />}
         </div>
       </Paper>
     </form>

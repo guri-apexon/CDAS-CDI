@@ -36,7 +36,7 @@ import {
  */
 const SaveChangesModal = ({
   continueBtnLabel = "Keep editing",
-  discardBtnLabel = "Discard changes",
+  discardBtnLabel = "Leave without saving",
   isManualTrigger = false,
   manualTriggerToggle = false,
   manualIsAnyChangeCheck = false,
@@ -45,8 +45,8 @@ const SaveChangesModal = ({
   handleManualChecker = () => {},
   shouldTriggerOnRedirect = true,
   shouldCheckForChanges = true,
-  message = "Do you really want to exit and discard dataflow changes",
-  title = "Exit",
+  message = "All unsaved changes will be lost.",
+  title = "Lose your work?",
   handlePostManualContinue = () => {},
   handlePostManualDiscardChange = () => {},
 }) => {
@@ -61,6 +61,7 @@ const SaveChangesModal = ({
 
   const alertStore = useSelector((state) => state.alert);
   const form = useSelector((state) => state.form) || null;
+  const dataFlowStore = useSelector((state) => state.dataFlow) || null;
 
   // Save Changes Modal Variables
   const routerHandle = useRef();
@@ -112,7 +113,7 @@ const SaveChangesModal = ({
 
         // go through redux form data and check if there is any change
         if (!manualIsAnyChangeCheck) {
-          isAnyChange = checkFormChanges(form) || false;
+          isAnyChange = checkFormChanges(form, dataFlowStore) || false;
         }
         if (manualIsAnyChangeCheck) {
           isAnyChange = manualIsAnyChangeFlag || false;
@@ -197,8 +198,8 @@ const SaveChangesModal = ({
         <AlertBox
           onClose={keepEditingBtn}
           submit={leavePageBtn}
-          message="Do you really want to exit and discard dataflow changes"
-          title="Exit"
+          message="All unsaved changes will be lost."
+          title="Lose your work?"
           dataflow
         />
       )}
@@ -216,8 +217,8 @@ const SaveChangesModal = ({
             onClick: handleCloseSaveChangesModal,
           },
           {
-            label: discardBtnLabel,
             variant: "primary",
+            label: discardBtnLabel,
             onClick: handleDiscardChanges,
           },
         ]}
