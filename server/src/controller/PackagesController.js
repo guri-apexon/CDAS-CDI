@@ -242,7 +242,7 @@ exports.changeStatus = async (req, res) => {
       const {
         rows: [dataSetCount],
       } = await DB.executeQuery(
-        `SELECT count(1) from ${schemaName}.dataset WHERE datapackageid = '${package_id}'`
+        `SELECT count(1) from ${schemaName}.dataset WHERE datapackageid = '${package_id}' and (del_flg is distinct from 1)`
       );
 
       if (dataSetCount.count == 0) {
@@ -313,7 +313,7 @@ exports.deletePackage = async (req, res) => {
     Logger.info({ message: "deletePackage" });
 
     const {
-      rows: [dfId],
+      rows: [dfObj],
     } = await DB.executeQuery(
       `SELECT dataflowid from ${schemaName}.datapackage WHERE datapackageid = '${package_id}'`
     );
@@ -321,7 +321,7 @@ exports.deletePackage = async (req, res) => {
     const {
       rows: [dataPackageCount],
     } = await DB.executeQuery(
-      `SELECT count(1) from ${schemaName}.datapackage WHERE dataflowid = '${dfId.dataflowid}'`
+      `SELECT count(1) from ${schemaName}.datapackage WHERE dataflowid = '${dfObj.dataflowid}' and (del_flg is distinct from 1)`
     );
 
     if (dataPackageCount.count < 2) {
@@ -394,18 +394,22 @@ exports.changeDatasetsStatus = async (req, res) => {
     Logger.info({ message: "change Datasets Status" });
 
     const {
-      rows: [dfId],
+      rows: [dfObj],
     } = await DB.executeQuery(
-      `SELECT dataflowid from ${schemaName}.datapackage WHERE datapackageid = '${packageId}'`
+      // `SELECT dataflowid from ${schemaName}.datapackage WHERE datapackageid = '${packageId}'`
+      `SELECT df.dataflowid, df.active from ${schemaName}.dataflow df
+      left join ${schemaName}.datapackage dp on (dp.dataflowid = df.dataflowid)
+      where dp.datapackageid = '${packageId}';`
     );
-    if (active == 0) {
+    if (active == 0 && dfObj?.active == 1) {
       const {
-        rows: [dataPackageCount],
+        rows: [datasetCount],
       } = await DB.executeQuery(
-        `SELECT count(1) from ${schemaName}.datapackage WHERE dataflowid = '${dfId.dataflowid}'`
+        `SELECT count(1) from ${schemaName}.dataset ds
+   left join cdascfg.datapackage dp on (dp.datapackageid = ds.datapackageid)
+   WHERE (ds.datapackageid is distinct from '${packageId}') and (ds.del_flg is distinct from 1) and (ds.active = 1) and dp.dataflowid = '${dfObj.dataflowid}';`
       );
-
-      if (dataPackageCount.count < 2) {
+      if (datasetCount.count == 0) {
         return apiResponse.ErrorResponse(
           res,
           "If data flow is active, there must be at least one active Data Set"
@@ -430,7 +434,7 @@ exports.changeDatasetsStatus = async (req, res) => {
       const datasets = response.rows[0] || [];
 
       const oldVer = await DB.executeQuery(
-        `SELECT version from ${schemaName}.dataflow_version  WHERE dataflowid = '${dfId.dataflowid}' order by version DESC limit 1`
+        `SELECT version from ${schemaName}.dataflow_version  WHERE dataflowid = '${dfObj.dataflowid}' order by version DESC limit 1`
       );
 
       const historyVersion = oldVer.rows[0]?.version || 0;
@@ -446,7 +450,7 @@ exports.changeDatasetsStatus = async (req, res) => {
           rows: [data],
         } = await DB.executeQuery(
           `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5) RETURNING version`,
-          [dfId.dataflowid, version, null, userId, curDate]
+          [dfObj.dataflowid, version, null, userId, curDate]
         );
 
         newVersion = data.version;
@@ -454,7 +458,7 @@ exports.changeDatasetsStatus = async (req, res) => {
           `INSERT INTO ${schemaName}.cdr_ta_queue
             (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count, datapackageid)
             VALUES($1, 'CONFIG', $2, 'QUEUE', $5, $5, '', $3, '', 1, '', 0, $4)`,
-          [dfId.dataflowid, userId, version, packageId, curDate]
+          [dfObj.dataflowid, userId, version, packageId, curDate]
         );
       }
 
@@ -462,7 +466,7 @@ exports.changeDatasetsStatus = async (req, res) => {
         await DB.executeQuery(
           `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid, datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
           [
-            dfId.dataflowid,
+            dfObj.dataflowid,
             packageId,
             key.datasetid,
             version,
