@@ -198,6 +198,7 @@ const TopNavbar = ({ history, location: { pathname }, setLoggedIn }) => {
   const LogOut = async () => {
     setOpen(true);
     const isLogout = await userLogOut();
+    console.log("Logged of user, isLogout: ", isLogout);
     if (isLogout) {
       setLoggedIn(false);
       history.push("/logout");
