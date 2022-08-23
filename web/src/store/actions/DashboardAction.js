@@ -50,13 +50,15 @@ export const getFlowDetailsOfStudy = (protocolId) => {
 export const getDatasetIngestionOfStudy = (
   protocolId,
   testFlag = "",
-  active = ""
+  active = "",
+  userId = ""
 ) => {
   return {
     type: GET_DATASET_INGESTION_SUMMARY,
     protocolId,
     testFlag,
     active,
+    userId,
   };
 };
 

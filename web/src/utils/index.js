@@ -462,7 +462,7 @@ export const formatDataNew = (incomingData, protNo) => {
   return { headerNotMatching: !isAllDataMatch, data: [] };
 };
 
-export const capitaliseString = (str) => {
+export const capitaliseString = (str = "") => {
   if (str.length > 1) {
     return str ? str[0].toUpperCase() + str.toLowerCase().substring(1) : "";
   }
