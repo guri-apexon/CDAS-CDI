@@ -4,6 +4,8 @@ import {
   SELECTED_DATAFLOW,
   GET_DATA_FLOW_LIST,
   GET_DATASET_INGESTION_SUMMARY,
+  GET_ALL_INGESTION_SUMMARY,
+  GET_SPECIFIC_INGESTION_DATASETS,
   GET_STUDIES_LIST,
   GET_PINNED_LIST,
   UPDATE_HEADER_COUNT,
@@ -48,13 +50,53 @@ export const getFlowDetailsOfStudy = (protocolId) => {
 export const getDatasetIngestionOfStudy = (
   protocolId,
   testFlag = "",
-  active = ""
+  active = "",
+  userId = ""
 ) => {
   return {
     type: GET_DATASET_INGESTION_SUMMARY,
     protocolId,
     testFlag,
     active,
+    userId,
+  };
+};
+
+export const getAllIngestionOfStudy = (
+  UserID,
+  testFlag = "",
+  active = "",
+  processStatus = "",
+  limit = "",
+  noOfDays = ""
+) => {
+  return {
+    type: GET_ALL_INGESTION_SUMMARY,
+    UserID,
+    testFlag,
+    active,
+    processStatus,
+    limit,
+    noOfDays,
+  };
+};
+
+export const getSpecificIngestionDataSets = (
+  UserID,
+  processStatus = "",
+  active = "",
+  testFlag = "",
+  noOfDays = "",
+  limit = ""
+) => {
+  return {
+    type: GET_SPECIFIC_INGESTION_DATASETS,
+    UserID,
+    testFlag,
+    active,
+    processStatus,
+    limit,
+    noOfDays,
   };
 };
 

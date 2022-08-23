@@ -13,6 +13,12 @@ import { userLogOut } from "./services/ApiServices";
 
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const Monitor = lazy(() => import("./pages/Dashboard/MonitorTab/ViewAll"));
+const AllViewMonitorPage = lazy(() =>
+  import("./pages/Dashboard/AllMonitorTab/AllMonitorViewAll")
+);
+const CDIhome = lazy(() =>
+  import("./pages/Dashboard/AllMonitorTab/AllMonitor")
+);
 const DataFlow = lazy(() => import("./pages/DataFlow/ViewEdit"));
 const DataFlowCreate = lazy(() => import("./pages/DataFlow/Create"));
 const DataFlowClone = lazy(() => import("./pages/CloneDataFlow/index"));
@@ -92,12 +98,22 @@ const WithOutPageHeader = () => {
     <>
       <Switch>
         <Route path={`${match.path}/cdi`} exact render={() => <CDIAdmin />} />
-        {/* <Route path={`${match.path}/jdbc`} exact render={() => <JDBCForm />} />  */}
-        {/* <Route
-          path={`${match.path}/columns`}
+        <Route path="/cdihome" exact render={() => <CDIhome />} />
+        <Route
+          path="/cdihome/ingestion-report/:datasetId"
           exact
-          render={() => <ColumnsTab />}
-        /> */}
+          render={() => <DatasetIngestionReport />}
+        />
+        <Route
+          path="/cdihome/ingestion-issues/:datasetId"
+          exact
+          render={() => <IngestionIssues />}
+        />
+        <Route
+          path={`${match.path}/monitor`}
+          exact
+          render={() => <AllViewMonitorPage />}
+        />
       </Switch>
       <AppFooter width="100%" />
     </>
@@ -158,6 +174,7 @@ const CDIWrapper = () => {
           <TopNavbar setLoggedIn={setLoggedIn} />
           <Switch>
             <Route path="/dashboard" render={() => <WithPageHeader />} />
+            <Route path="/cdihome" render={() => <WithOutPageHeader />} />
             <Route path="/admin" render={() => <WithOutPageHeader />} />
             <Route path="*" render={() => <WithPageHeader />} />
           </Switch>

@@ -213,7 +213,7 @@ const PackagesList = ({ data, userInfo }) => {
         onClick: () => setActive(active),
       },
       {
-        text: "Set all dataset to active",
+        text: "Set all datasets to active",
         // onClick: () => onRowEdit(packageName),
       },
       {

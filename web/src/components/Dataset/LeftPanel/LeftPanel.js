@@ -135,6 +135,14 @@ const LeftPanel = () => {
       history.push("/dashboard/data-packages");
     }
   };
+  const redirectDataflow = () => {
+    if (
+      location.pathname.startsWith("/dashboard/dataset") ||
+      location.pathname.startsWith("/dashboard/data-packages")
+    ) {
+      history.push(`/dashboard/dataflow-management/${dataflowid}`);
+    }
+  };
   const menuItems = [
     {
       text: "View audit log",
@@ -214,6 +222,7 @@ const LeftPanel = () => {
           style={{ marginTop: 17 }}
           fullWidth
           size="small"
+          onClick={redirectDataflow}
         >
           View settings
         </Button>

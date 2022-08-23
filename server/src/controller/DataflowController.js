@@ -18,61 +18,8 @@ exports.getStudyDataflows = async (req, res) => {
   try {
     const { protocolId } = req.body;
     if (protocolId) {
-      const query = `select 
-      "studyId",
-      "dataFlowId",
-      count(distinct datasetid) as "dsCount",
-      count(distinct datapackageid) as "dpCount",
-      "studyName",
-      "version",
-      "dataFlowName",
-      "type",
-      "dateCreated",
-      "vendorSource",
-      description,
-      adapter,
-      status,
-      "externalSourceSystem",
-      "fsrStatus",
-      "locationType",
-      "lastModified",
-      "lastSyncDate"
-      from
-      (
-      select
-      s.prot_id as "studyId",
-      df.dataflowid as "dataFlowId",
-      dp.datapackageid ,
-      ds.datasetid ,
-      s.prot_nbr as "studyName",
-      dh."version",
-      df.name as "dataFlowName",
-      df.fsrstatus as "fsrStatus",
-      df.testflag as "type",
-      df.insrt_tm as "dateCreated",
-      v.vend_nm as "vendorSource",
-      df.description,
-      df.type as "adapter",
-      df.active as "status",
-      df.externalsystemname as "externalSourceSystem",
-      sl.loc_typ as "locationType",
-      df.updt_tm as "lastModified",
-      df.refreshtimestamp as "lastSyncDate"
-      from ${schemaName}.study s 
-      Inner JOIN ${schemaName}.dataflow df on s.prot_id = df.prot_id
-      inner join ${schemaName}.vendor v on df.vend_id = v.vend_id
-      inner join ${schemaName}.source_location sl on sl.src_loc_id = df.src_loc_id
-      inner join ${schemaName}.datapackage dp on dp.dataflowid = df.dataflowid
-      left join ${schemaName}.dataset ds on (ds.datapackageid= dp.datapackageid)
-      left join (select dataflowid,max("version") as "version" from ${schemaName}.dataflow_version dv group by dataflowid ) dh on dh.dataflowid = df.dataflowid
-      where s.prot_id = $1
-      and coalesce (df.del_flg,0) != 1
-      ) as df
-      group by "studyId","dataFlowId","studyName","version","dataFlowName","type","dateCreated","vendorSource",description,adapter,status,"externalSourceSystem",
-      "fsrStatus","locationType","lastModified","lastSyncDate";`;
-
-      const $q1 = await DB.executeQuery(query, [protocolId]);
-
+      const query = `select * from fn_get_study_dataflows('${protocolId}')`;
+      const $q1 = await DB.executeQuery(query);
       const formatDateValues = await $q1.rows.map((e) => {
         let editT = moment(e.lastModified).format("MM/DD/YYYY");
         let addT = moment(e.dateCreated).format("MM/DD/YYYY");
@@ -1051,7 +998,7 @@ exports.updateDataFlow = async (req, res) => {
                                       j
                                     ].primaryKey === "Yes"
                                   )
-                                  saveFlagYes = true;
+                                    saveFlagYes = true;
                                 }
                                 if (!saveFlagYes)
                                   return apiResponse.ErrorResponse(

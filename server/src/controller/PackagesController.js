@@ -12,12 +12,12 @@ exports.searchList = async (req, res) => {
   try {
     const searchParam = req.params.query?.toLowerCase() || "";
     const { dataflowId } = req.params;
-    let searchQuery = `SELECT nopackageconfig, datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 'Y') ORDER BY insrt_tm DESC;`;
+    let searchQuery = `SELECT nopackageconfig, datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage WHERE dataflowid='${dataflowId}' and (del_flg is distinct from 1) ORDER BY insrt_tm DESC;`;
     if (searchParam) {
       searchQuery = `SELECT nopackageconfig, datapackageid, dataflowid, name, active, type, sod_view_type, path, password, updt_tm, insrt_tm from ${schemaName}.datapackage 
       WHERE LOWER(name) LIKE '%${searchParam}%' and dataflowid='${dataflowId}' ORDER BY insrt_tm DESC;`;
     }
-    const datasetQuery = `SELECT datasetid, mnemonic, active, type, insrt_tm from ${schemaName}.dataset where datapackageid = $1 ORDER BY insrt_tm DESC`;
+    const datasetQuery = `SELECT datasetid, mnemonic, active, type, insrt_tm from ${schemaName}.dataset where datapackageid = $1 and (del_flg is distinct from 1) ORDER BY insrt_tm DESC`;
     Logger.info({ message: "packagesList" });
 
     DB.executeQuery(searchQuery).then(async (response) => {
@@ -116,8 +116,8 @@ exports.addPackage = async function (req, res) {
         let namingconventionValue = naming_convention;
         let compressionType = compression_type;
         let sftpPath = sftp_path;
-        if(!nopackageconfig) {
-          namingconventionValue = '';
+        if (!nopackageconfig) {
+          namingconventionValue = "";
           nopackageconfigValue = 1;
           compressionType = "";
           sftpPath = "";
@@ -182,7 +182,7 @@ exports.addPackage = async function (req, res) {
           sftp_path,
           package_password ? "Yes" : "No",
           "0",
-          "N",
+          0,
           getCurrentTime(),
         ]
       );
@@ -242,7 +242,7 @@ exports.changeStatus = async (req, res) => {
       const {
         rows: [dataSetCount],
       } = await DB.executeQuery(
-        `SELECT count(1) from ${schemaName}.dataset WHERE datapackageid = '${package_id}'`
+        `SELECT count(1) from ${schemaName}.dataset WHERE datapackageid = '${package_id}' and (del_flg is distinct from 1)`
       );
 
       if (dataSetCount.count == 0) {
@@ -306,14 +306,14 @@ exports.deletePackage = async (req, res) => {
   try {
     const { active, package_id, user_id, versionFreezed } = req.body;
     const query = `UPDATE ${schemaName}.datapackage
-    SET del_flg = 'Y'
+    SET del_flg = 1
     WHERE datapackageid = '${package_id}' RETURNING *`;
 
     // const versionFreezed = false;
     Logger.info({ message: "deletePackage" });
 
     const {
-      rows: [dfId],
+      rows: [dfObj],
     } = await DB.executeQuery(
       `SELECT dataflowid from ${schemaName}.datapackage WHERE datapackageid = '${package_id}'`
     );
@@ -321,7 +321,7 @@ exports.deletePackage = async (req, res) => {
     const {
       rows: [dataPackageCount],
     } = await DB.executeQuery(
-      `SELECT count(1) from ${schemaName}.datapackage WHERE dataflowid = '${dfId.dataflowid}'`
+      `SELECT count(1) from ${schemaName}.datapackage WHERE dataflowid = '${dfObj.dataflowid}' and (del_flg is distinct from 1)`
     );
 
     if (dataPackageCount.count < 2) {
@@ -331,7 +331,7 @@ exports.deletePackage = async (req, res) => {
       );
     }
 
-    const dataSetQuery = `UPDATE ${schemaName}.dataset SET del_flg = 'Y' WHERE datapackageid = '${package_id}' RETURNING datasetid`;
+    const dataSetQuery = `UPDATE ${schemaName}.dataset SET del_flg = 1 WHERE datapackageid = '${package_id}' RETURNING datasetid`;
     const columnQuery = `UPDATE ${schemaName}.columndefinition SET del_flg = 1 WHERE datasetid = $1`;
 
     DB.executeQuery(query).then(async (response) => {
@@ -347,7 +347,7 @@ exports.deletePackage = async (req, res) => {
       const historyVersion = await CommonController.addPackageHistory(
         package,
         user_id,
-        [{ attribute: "del_flg", old_val: "N", new_val: "Y" }],
+        [{ attribute: "del_flg", old_val: "0", new_val: "1" }],
         versionFreezed
       );
       if (!historyVersion) throw new Error("History not updated");
@@ -394,18 +394,22 @@ exports.changeDatasetsStatus = async (req, res) => {
     Logger.info({ message: "change Datasets Status" });
 
     const {
-      rows: [dfId],
+      rows: [dfObj],
     } = await DB.executeQuery(
-      `SELECT dataflowid from ${schemaName}.datapackage WHERE datapackageid = '${packageId}'`
+      // `SELECT dataflowid from ${schemaName}.datapackage WHERE datapackageid = '${packageId}'`
+      `SELECT df.dataflowid, df.active from ${schemaName}.dataflow df
+      left join ${schemaName}.datapackage dp on (dp.dataflowid = df.dataflowid)
+      where dp.datapackageid = '${packageId}';`
     );
-    if (active == 0) {
+    if (active == 0 && dfObj?.active == 1) {
       const {
-        rows: [dataPackageCount],
+        rows: [datasetCount],
       } = await DB.executeQuery(
-        `SELECT count(1) from ${schemaName}.datapackage WHERE dataflowid = '${dfId.dataflowid}'`
+        `SELECT count(1) from ${schemaName}.dataset ds
+   left join cdascfg.datapackage dp on (dp.datapackageid = ds.datapackageid)
+   WHERE (ds.datapackageid is distinct from '${packageId}') and (ds.del_flg is distinct from 1) and (ds.active = 1) and dp.dataflowid = '${dfObj.dataflowid}';`
       );
-
-      if (dataPackageCount.count < 2) {
+      if (datasetCount.count == 0) {
         return apiResponse.ErrorResponse(
           res,
           "If data flow is active, there must be at least one active Data Set"
@@ -430,7 +434,7 @@ exports.changeDatasetsStatus = async (req, res) => {
       const datasets = response.rows[0] || [];
 
       const oldVer = await DB.executeQuery(
-        `SELECT version from ${schemaName}.dataflow_version  WHERE dataflowid = '${dfId.dataflowid}' order by version DESC limit 1`
+        `SELECT version from ${schemaName}.dataflow_version  WHERE dataflowid = '${dfObj.dataflowid}' order by version DESC limit 1`
       );
 
       const historyVersion = oldVer.rows[0]?.version || 0;
@@ -446,7 +450,7 @@ exports.changeDatasetsStatus = async (req, res) => {
           rows: [data],
         } = await DB.executeQuery(
           `INSERT INTO ${schemaName}.dataflow_version(dataflowid, version, config_json, created_by, created_on) VALUES($1, $2, $3, $4, $5) RETURNING version`,
-          [dfId.dataflowid, version, null, userId, curDate]
+          [dfObj.dataflowid, version, null, userId, curDate]
         );
 
         newVersion = data.version;
@@ -454,7 +458,7 @@ exports.changeDatasetsStatus = async (req, res) => {
           `INSERT INTO ${schemaName}.cdr_ta_queue
             (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count, datapackageid)
             VALUES($1, 'CONFIG', $2, 'QUEUE', $5, $5, '', $3, '', 1, '', 0, $4)`,
-          [dfId.dataflowid, userId, version, packageId, curDate]
+          [dfObj.dataflowid, userId, version, packageId, curDate]
         );
       }
 
@@ -462,7 +466,7 @@ exports.changeDatasetsStatus = async (req, res) => {
         await DB.executeQuery(
           `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid, datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
           [
-            dfId.dataflowid,
+            dfObj.dataflowid,
             packageId,
             key.datasetid,
             version,
