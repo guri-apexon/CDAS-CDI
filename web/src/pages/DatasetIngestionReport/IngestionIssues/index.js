@@ -167,10 +167,10 @@ const IngestionIssues = () => {
     const tableData = data ? data : tableRows;
     if (tableData?.length) {
       const issuesColumns = Object.keys(tableData[0]).filter(
-        (x) => x !== "_rowno"
+        (x) => !["_rowno", "rowIndex"].includes(x)
       );
       const columnsArr = [...fixedColumns];
-      console.log("viewAll", viewAll, selectedIssues);
+      // console.log("viewAll", viewAll, selectedIssues);
       if (selectedIssues?.length) {
         const allColumns = JSON.parse(selectedIssues[0].allcolumns);
 
@@ -213,6 +213,7 @@ const IngestionIssues = () => {
       setTableloading(true);
       const { data: refreshedData, error } = await getIngestionIssueCols({
         selectedIssues: data,
+        viewAll: viewAllCol,
       });
       if (error) {
         toast.showErrorMessage(error);
@@ -222,7 +223,7 @@ const IngestionIssues = () => {
       if (refreshedData) {
         // console.log("refreshedData", refreshedData, error);
         addDynamicCol(refreshedData, data);
-        setTableRows(refreshedData);
+        setTableRows(refreshedData.map((x, i) => ({ ...x, rowIndex: i })));
         setTableloading(false);
       }
     } else {
@@ -236,7 +237,8 @@ const IngestionIssues = () => {
     dispatch(getDatasetProperties(datasetId));
   };
   useEffect(() => {
-    addDynamicCol(tableRows, selectedIssues, viewAllCol);
+    // addDynamicCol(tableRows, selectedIssues, viewAllCol);
+    refreshData(selectedIssues);
   }, [viewAllCol]);
 
   useEffect(() => {
@@ -283,7 +285,7 @@ const IngestionIssues = () => {
               subtitle={`${tableRows.length} records with issues`}
               columns={columns}
               rows={tableRows}
-              rowId="_rowno"
+              rowId="rowIndex"
               initialSortedColumn="_rowno"
               initialSortOrder="asc"
               rowsPerPageOptions={[5, 10, 15, "All"]}
