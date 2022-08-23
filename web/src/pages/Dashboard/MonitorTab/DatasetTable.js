@@ -64,7 +64,7 @@ const DatasetTable = ({
       }))}
       defaultRowsPerPage={10}
       initialSortedColumn={sortColumn || "processstatus"}
-      sortOrder={sortOrder || "asc"}
+      initialSortOrder={sortOrder || "asc"}
       rowsPerPageOptions={[10, 50, 100, "All"]}
       tablePaginationProps={{
         labelDisplayedRows: ({ from, to, count }) =>
