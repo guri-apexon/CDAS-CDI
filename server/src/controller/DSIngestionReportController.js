@@ -394,7 +394,7 @@ exports.getIssues = async (req, res) => {
 
 exports.getIssueColumns = async (req, res) => {
   try {
-    const { selectedIssues } = req.body;
+    const { selectedIssues, viewAll } = req.body;
     if (!selectedIssues || (selectedIssues && !Array.isArray(selectedIssues))) {
       return apiResponse.ErrorResponse(
         res,
@@ -417,8 +417,13 @@ exports.getIssueColumns = async (req, res) => {
     let dbName = null;
     let tableName = null;
     selectedIssues.forEach(async (issue) => {
-      const { databasename, tablename, errorrownumbers, errorcolumnnames } =
-        issue;
+      const {
+        databasename,
+        tablename,
+        errorrownumbers,
+        errorcolumnnames,
+        allcolumns,
+      } = issue;
       if (
         databasename &&
         tablename &&
@@ -427,7 +432,9 @@ exports.getIssueColumns = async (req, res) => {
         Array.isArray(errorrownumbers) &&
         Array.isArray(errorcolumnnames)
       ) {
-        errColumns = errColumns.concat(errorcolumnnames);
+        errColumns = errColumns.concat(
+          viewAll ? JSON.parse(allcolumns) : errorcolumnnames
+        );
         errRows = errRows.concat(errorrownumbers);
         dbName = databasename;
         tableName = tablename;

@@ -1850,10 +1850,10 @@ exports.fetchdataflowDetails = async (req, res) => {
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner Join ${schemaName}.study S on (d.prot_id = S.prot_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
-    left join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
-    left join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    left join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid and (d2.del_flg is distinct from 1))
+    left join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid and (d3.del_flg is distinct from 1))
     left join ${schemaName}.datakind dk on (dk.datakindid=d3.datakindid)
-    left join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
+    left join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid and (c.del_flg is distinct from 1))
     where d.dataflowid ='${dataflow_id}'`;
     Logger.info({
       message: "fetchdataflowDetails",
