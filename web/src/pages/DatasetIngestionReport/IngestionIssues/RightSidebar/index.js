@@ -95,15 +95,14 @@ const IssueRightPanel = ({
                 </AccordionSummary>
                 <AccordionDetails>
                   <ul>
-                    {columns &&
-                      Object.keys(columns).map((col) => {
-                        return (
-                          <li key={col}>
-                            <small>{`${col}:`}</small>
-                            <span>{columns[col]}</span>
-                          </li>
-                        );
-                      })}
+                    {issue.errorcolumnnames?.map((col) => {
+                      return (
+                        <li key={col}>
+                          <small>{`${col}:`}</small>
+                          <span>{columns[col]}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </AccordionDetails>
               </Accordion>
