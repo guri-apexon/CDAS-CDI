@@ -25,7 +25,6 @@ const Logout = () => {
             variant: "primary",
             onClick: () => {
               goToCore();
-              window.location.reload();
             },
           },
         ]}
