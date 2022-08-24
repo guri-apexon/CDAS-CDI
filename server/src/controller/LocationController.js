@@ -58,8 +58,9 @@ exports.locationDetails = async (req, res) => {
         "\\"
       );
     }
-    if (locationObj?.pswd) {
-      const credentials = await helper.readVaultData(locationId);
+    const credentials = await helper.readVaultData(locationId);
+    console.log(credentials);
+    if (credentials) {
       result = {
         ...locationObj,
         connectionPassword: credentials?.password,
@@ -70,7 +71,6 @@ exports.locationDetails = async (req, res) => {
         connectionPassword: "",
       };
     }
-
     return apiResponse.successResponseWithData(
       res,
       "Operation success",
