@@ -150,21 +150,31 @@ const ColumnsTab = ({
     setFormattedData([]);
     setIsImportReady(false);
   };
+  const showImportProtErr = () => {
+    messageContext.showErrorMessage(
+      `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+    );
+    handleDelete();
+  };
 
   useEffect(() => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
         const newData = formatData(importedData, protocolnumber);
+        if (newData.some((x) => x.columnName === "")) {
+          messageContext.showErrorMessage(
+            `Please fill column name in each row`
+          );
+          handleDelete();
+          return false;
+        }
         // eslint-disable-next-line no-unused-expressions
         if (newData.length > 0) {
           setFormattedData(newData);
           setIsImportReady(true);
         } else {
-          messageContext.showErrorMessage(
-            `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
-          );
-          handleDelete();
+          showImportProtErr();
         }
       } else {
         messageContext.showErrorMessage(
@@ -172,6 +182,8 @@ const ColumnsTab = ({
         );
         handleDelete();
       }
+    } else if (importedData.length === 1) {
+      showImportProtErr();
     }
   }, [importedData]);
 

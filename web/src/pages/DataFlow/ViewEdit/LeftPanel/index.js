@@ -156,7 +156,7 @@ const LeftPanel = () => {
       disabled: !canUpdateDataFlow,
       onClick: viewAuditLog,
     },
-    { text: "Clone data flow", disabled: !CanCreateDataFlow },
+    // { text: "Clone data flow", disabled: !CanCreateDataFlow },
     {
       text: "Hard delete data flow",
       disabled:
