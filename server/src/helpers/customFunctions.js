@@ -437,7 +437,7 @@ exports.minMaxLengthValidations = (data) => {
       "maxLength should be provided and should be greater than or equals to minLength."
     );
   } else if (minLength && maxLength) {
-    if (parseInt(minLength) >= parseInt(maxLength)) {
+    if (parseInt(minLength) > parseInt(maxLength)) {
       errorMessages.push(
         "maxLength should be greater than or equals to minLength."
       );
