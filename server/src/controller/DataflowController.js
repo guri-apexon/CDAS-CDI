@@ -2082,12 +2082,12 @@ exports.updateDataflowConfig = async (req, res) => {
       }
     }
 
-    if (dataFlowCount.count == 0) {
-      return apiResponse.ErrorResponse(
-        res,
-        "Please make dataFlow active in order to save the configuration"
-      );
-    }
+    // if (dataFlowCount.count == 0) {
+    //   return apiResponse.ErrorResponse(
+    //     res,
+    //     "Please make dataFlow active in order to save the configuration"
+    //   );
+    // }
     if (dataStructure !== "TabularRaveSOD" && dataSet_count == 0) {
       return apiResponse.ErrorResponse(
         res,
