@@ -5,6 +5,8 @@ const _ = require("lodash");
 const { createUniqueID } = require("../helpers/customFunctions");
 const { addDataflowHistory } = require("../controller/CommonController");
 const helper = require("../helpers/customFunctions");
+const dataFlow = require("../controller/DataflowController");
+
 const constants = require("../config/constants");
 const apiResponse = require("../helpers/apiResponse");
 
@@ -3043,6 +3045,8 @@ exports.dataflowUpdate = async (
     let errorDF = [];
     let studyId;
     let vName;
+    let vendor_Id;
+
     let vNameDB;
     let ptNum;
     let desc;
@@ -3178,8 +3182,10 @@ exports.dataflowUpdate = async (
     if (data.vendorid) {
       // vName = data.vendorid;
       vName = vNameDB;
+      vendor_Id = data.vendorid;
     } else {
       vName = vendorData.rows[0].vend_nm;
+      vendor_Id = dataflowData.rows[0].vend_id;
     }
 
     if (data.protocolNumberStandard) {
@@ -3201,7 +3207,8 @@ exports.dataflowUpdate = async (
       desc = dataflowData.rows[0].description;
     }
 
-    var DFTestname = `${vName}-${ptNum}-${desc}`;
+    // var DFTestname = `${vName}-${ptNum}-${desc}`;
+
     var testFlag = dataflowData.rows[0].testflag;
 
     if (data.testFlag) {
@@ -3211,9 +3218,16 @@ exports.dataflowUpdate = async (
       testFlag = helper.stringToBoolean(data.testFlag);
     }
 
-    if (helper.stringToBoolean(testFlag)) {
-      DFTestname = "TST-" + DFTestname;
-    }
+    var DFTestname = await dataFlow.createDataflowName(
+      vendor_Id,
+      ptNum,
+      desc,
+      helper.stringToBoolean(testFlag)
+    );
+
+    // if (helper.stringToBoolean(testFlag)) {
+    //   DFTestname = "TST-" + DFTestname;
+    // }
 
     let serviceUrl = [];
     if (data.serviceOwners) {
@@ -3235,9 +3249,9 @@ exports.dataflowUpdate = async (
     if (data.description) {
       updateQueryDF += `,description='${data.description}'`;
     }
-    if (data.externalSystemName) {
-      updateQueryDF += `,externalsystemname='${data.externalSystemName}'`;
-    }
+    // if (data.externalSystemName) {
+    //   updateQueryDF += `,externalsystemname='${data.externalSystemName}'`;
+    // }
     if (data.exptDtOfFirstProdFile) {
       updateQueryDF += `,expt_fst_prd_dt='${data.exptDtOfFirstProdFile}'`;
     }
@@ -4198,7 +4212,7 @@ exports.datasetUpdate = async (
     if (data.quote) {
       updateQueryDS += `,quote='${data.quote}'`;
     }
-    if (data.rowDecreaseAllowed) {
+    if (data.rowDecreaseAllowed || data.rowDecreaseAllowed == 0) {
       updateQueryDS += `,rowdecreaseallowed='${data.rowDecreaseAllowed}'`;
     }
     if (data.dataTransferFrequency) {
@@ -4620,10 +4634,10 @@ exports.clDefUpdate = async (
     if (data.dataType) {
       updateQueryCD += `,datatype='${data.dataType}'`;
     }
-    if (data.minLength) {
+    if (data.minLength || data.minLength == 0) {
       updateQueryCD += `,charactermin='${data.minLength}'`;
     }
-    if (data.maxLength) {
+    if (data.maxLength || data.maxLength == 0) {
       updateQueryCD += `,charactermax='${data.maxLength}'`;
     }
     if (typeof data.primaryKey != "undefined") {

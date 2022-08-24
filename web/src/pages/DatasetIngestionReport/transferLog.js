@@ -548,14 +548,14 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
           <MenuItem value="custom">Custom date range</MenuItem>
         </SelectButton>
       </div>
-      <Button
+      {/* <Button
         id="addLocationBtn"
         icon={<DownloadIcon />}
         size="small"
         style={{ marginLeft: 16 }}
       >
         Download
-      </Button>
+      </Button> */}
       <Button
         size="small"
         id="filterBtn"

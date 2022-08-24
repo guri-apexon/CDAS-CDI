@@ -41,14 +41,14 @@ const IssueRightPanel = ({
     return [];
   };
   useEffect(() => {
-    const { _rowno, ...rest } = rowDetails;
+    const { _rowno, rowIndex, ...rest } = rowDetails;
     setColumns(rest);
     if (_rowno) {
       const data = selectedIssues.filter((x) =>
         x.errorrownumbers.includes(_rowno)
       );
       setRowFilters(data);
-      console.log("selectedIssues", rowFilters, rest);
+      // console.log("selectedIssues", rowFilters, rest);
     }
   }, [rowDetails]);
 
@@ -90,7 +90,7 @@ const IssueRightPanel = ({
                 <AccordionSummary className="issue-header">
                   <Typography>
                     {issue.issue_type}
-                    <span>{Object.keys(columns).length}</span>
+                    <span>{issue.errorcolumnnames?.length}</span>
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>

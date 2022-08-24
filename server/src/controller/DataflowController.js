@@ -74,7 +74,7 @@ exports.getStudyDataflows = async (req, res) => {
     return apiResponse.ErrorResponse(res, err);
   }
 };
-const createDataflowName = async (
+const createDataflowName = (exports.createDataflowName = async (
   vendorId,
   prtNbrStnd,
   desc,
@@ -107,7 +107,7 @@ const createDataflowName = async (
     dfNewName = `${dfNewName}-${dfNewVersion}`;
   }
   return dfNewName;
-};
+});
 
 const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
   let dataFlowId = null;
@@ -306,25 +306,35 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       return apiResponse.ErrorResponse(res, `Vendor doesn't exist.`);
     }
 
-    var DFTestname = `${selectedVendor.vend_nm}-${protocolNumberStandard}-${description}`;
-    if (testFlag === true) {
-      DFTestname = "TST-" + DFTestname;
-    }
-    //check for dataflowname && sequence logic
-    const executeCheckDf = await DB.executeQuery(
-      `select name from ${schemaName}.dataflow where name LIKE '${DFTestname}%';`
+    // var DFTestname = `${selectedVendor.vend_nm}-${protocolNumberStandard}-${description}`;
+    // if (testFlag === true) {
+    //   DFTestname = "TST-" + DFTestname;
+    // }
+    // //check for dataflowname && sequence logic
+    // const executeCheckDf = await DB.executeQuery(
+    //   `select name from ${schemaName}.dataflow where name LIKE '${DFTestname}%';`
+    // );
+    // if (executeCheckDf?.rows?.length) {
+    //   let splittedVal =
+    //     executeCheckDf.rows[executeCheckDf.rows.length - 1].name.split("-");
+    //   let _index = testFlag === true ? 4 : 3;
+
+    //   if (splittedVal.length > _index) {
+    //     let newParsed = parseInt(splittedVal[_index]);
+
+    //     DFTestname = DFTestname + "-" + (newParsed + 1);
+    //   } else {
+    //     DFTestname = DFTestname + "-1";
+    //   }
+    // }
+
+    var DFTestname = await createDataflowName(
+      vendorid,
+      protocolNumberStandard,
+      description,
+      helper.stringToBoolean(testFlag)
     );
-    if (executeCheckDf?.rows?.length) {
-      let splittedVal =
-        executeCheckDf.rows[executeCheckDf.rows.length - 1].name.split("-");
-      let _index = testFlag === true ? 4 : 3;
-      if (splittedVal.length > _index) {
-        let newParsed = parseInt(splittedVal[_index]);
-        DFTestname = DFTestname + "-" + (newParsed + 1);
-      } else {
-        DFTestname = DFTestname + "-1";
-      }
-    }
+
     DFBody = [
       DFTestname,
       vendorid,
@@ -1850,10 +1860,10 @@ exports.fetchdataflowDetails = async (req, res) => {
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner Join ${schemaName}.study S on (d.prot_id = S.prot_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
-    left join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
-    left join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    left join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid and (d2.del_flg is distinct from 1))
+    left join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid and (d3.del_flg is distinct from 1))
     left join ${schemaName}.datakind dk on (dk.datakindid=d3.datakindid)
-    left join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
+    left join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid and (c.del_flg is distinct from 1))
     where d.dataflowid ='${dataflow_id}'`;
     Logger.info({
       message: "fetchdataflowDetails",
@@ -2152,14 +2162,18 @@ exports.updateDataflowConfig = async (req, res) => {
         locationName,
         testFlag,
         connectionType,
-        externalSystemName,
+        // externalSystemName,
         dFTimestamp,
         serviceOwners,
         moment(firstFileDate).isValid() ? firstFileDate : null,
       ];
-      let fieldsStr = `vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, externalsystemname=$8, updt_tm=$9, serv_ownr=$10, expt_fst_prd_dt=$11`;
+      // let fieldsStr = `vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, externalsystemname=$8, updt_tm=$9, serv_ownr=$10, expt_fst_prd_dt=$11`;
+      let fieldsStr = `vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, updt_tm=$8, serv_ownr=$9, expt_fst_prd_dt=$10`;
+
       if (dfUpdatedName) {
-        fieldsStr = `${fieldsStr}, name=$12`;
+        // fieldsStr = `${fieldsStr}, name=$12`;
+        fieldsStr = `${fieldsStr}, name=$11`;
+
         dFBody.push(dfUpdatedName);
       }
       // update dataflow schema into db
