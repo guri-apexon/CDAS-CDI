@@ -492,6 +492,12 @@ const DataFlow = ({
     if (step !== currentStep) setCurrentStep({ step });
   }, [messageContext?.createDfConfig?.currentStep]);
 
+  useEffect(() => {
+    return () => {
+      dispatch(updateSelectedLocation({}));
+    };
+  }, []);
+
   const RenderForm = () => {
     const formEl = (
       <>
