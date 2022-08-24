@@ -105,6 +105,12 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    const showMonitorTab =
+      process.env.REACT_APP_MONITOR_VIEW_DEFAULT === "true" ? 0 : 1;
+    setValue(showMonitorTab);
+  }, []);
+
+  useEffect(() => {
     if (dashboard?.selectedCard?.prot_id) {
       updateData();
       // fetchLatestData();
@@ -146,7 +152,6 @@ const Dashboard = () => {
       setValue(0);
     }
   }, []);
-
   return (
     <>
       <div className="pageRoot dashboard-wrapper">
@@ -156,7 +161,7 @@ const Dashboard = () => {
           open={isPanelOpen}
           width={407}
         >
-          <LeftPanel stydyHeight={sidebarHeight - 40} />
+          <LeftPanel stydyHeight={sidebarHeight - 40} setValue={setValue} />
         </Panel>
         <Panel
           className={

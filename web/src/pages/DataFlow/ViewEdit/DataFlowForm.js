@@ -242,6 +242,7 @@ const DataFlowFormBase = (props) => {
                   label="Vendor"
                   source={vendors}
                   id="vendor"
+                  matchFrom="any"
                   input={{
                     value: selectedVendor,
                     onChange: onChangeVendor,
@@ -328,6 +329,7 @@ const DataFlowFormBase = (props) => {
                     <ReduxFormAutocompleteV2
                       name="locationName"
                       label="Location Name"
+                      matchFrom="any"
                       input={{
                         onChange: changeLocationData,
                         value: locationDetail,

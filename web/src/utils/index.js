@@ -663,6 +663,12 @@ export const generatedBName = (locType) => {
 export const matchAppUrl = () => {
   let appUrl = getCookie("user.app_url");
   if (appUrl) appUrl = decodeURIComponent(appUrl);
+  console.log("appUrl: ", appUrl);
+  console.log("ENV URL: ", process.env?.REACT_APP_CORE_URL?.replace(/\/$/, ""));
+  console.log(
+    "appUrl === ENV URL: ",
+    appUrl === process.env?.REACT_APP_CORE_URL?.replace(/\/$/, "")
+  );
   return process.env?.REACT_APP_CORE_URL?.replace(/\/$/, "") === appUrl;
 };
 

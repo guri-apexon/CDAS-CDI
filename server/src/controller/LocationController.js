@@ -58,7 +58,7 @@ exports.locationDetails = async (req, res) => {
         "\\"
       );
     }
-    if (locationObj?.pswd === "Yes") {
+    if (locationObj?.pswd) {
       const credentials = await helper.readVaultData(locationId);
       result = {
         ...locationObj,

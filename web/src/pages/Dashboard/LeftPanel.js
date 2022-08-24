@@ -75,7 +75,7 @@ const styles = {
   },
 };
 
-const LeftPanel = ({ stydyHeight }) => {
+const LeftPanel = ({ stydyHeight, setValue }) => {
   const useStyles = makeStyles(styles);
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -225,6 +225,7 @@ const LeftPanel = ({ stydyHeight }) => {
                     classes={classes}
                     setSelectedStudy={setSelectedStudy}
                     selectedStudy={selectedStudy}
+                    setValue={setValue}
                   />
                 ))}
               </div>
@@ -243,6 +244,7 @@ const LeftPanel = ({ stydyHeight }) => {
                   classes={classes}
                   setSelectedStudy={setSelectedStudy}
                   selectedStudy={selectedStudy}
+                  setValue={setValue}
                 />
               ))}
             </div>
