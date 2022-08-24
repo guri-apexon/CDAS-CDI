@@ -19,6 +19,7 @@ const CustomCard = ({
   setSelectedStudy,
   selectedStudy,
   classes,
+  setValue,
 }) => {
   const {
     prot_id: protId,
@@ -30,7 +31,12 @@ const CustomCard = ({
     ingestionCount,
     priorityCount,
   } = data;
-
+  const handleStudyClick = () => {
+    setSelectedStudy(protId);
+    if (process.env.REACT_APP_MONITOR_VIEW_DEFAULT === "true") {
+      setValue(0);
+    }
+  };
   return (
     <Card
       color="dark"
@@ -40,7 +46,7 @@ const CustomCard = ({
         classes.card,
         protId === selectedStudy && classes.cardHighlight
       )}
-      onClick={() => setSelectedStudy(protId)}
+      onClick={handleStudyClick}
     >
       {/* {console.log("data", data)} */}
       <CardContent>

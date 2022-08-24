@@ -159,6 +159,7 @@ const DataFlowFormBase = (props) => {
               source={vendors}
               id="vendor"
               className="autocomplete_field"
+              matchFrom="any"
               input={{
                 onChange: onChangeVendor,
               }}

@@ -242,6 +242,7 @@ const DataFlowFormBase = (props) => {
                   label="Vendor"
                   source={vendors}
                   id="vendor"
+                  matchFrom="any"
                   input={{
                     value: selectedVendor,
                     onChange: onChangeVendor,
