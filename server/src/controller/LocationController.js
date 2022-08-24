@@ -59,7 +59,6 @@ exports.locationDetails = async (req, res) => {
       );
     }
     const credentials = await helper.readVaultData(locationId);
-    console.log(credentials);
     if (credentials) {
       result = {
         ...locationObj,
