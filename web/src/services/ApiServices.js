@@ -271,27 +271,29 @@ export const syncNowDataFlow = async ({ version, dataFlowId }) => {
   }
 };
 
-export const activateDF = async (dataFlowId) => {
+export const activateDF = async (dataFlowId, versionFreezed = false) => {
   try {
     const res = await axios.post(`${baseURL}/${ACTIVATEDF}`, {
       dataFlowId,
       userId,
+      versionFreezed,
     });
     return res?.data || [];
   } catch (err) {
-    return err.response.data;
+    return err.response?.data || {};
   }
 };
 
-export const inActivateDF = async (dataFlowId) => {
+export const inActivateDF = async (dataFlowId, versionFreezed = false) => {
   try {
     const res = await axios.post(`${baseURL}/${INACTIVATE}`, {
       dataFlowId,
       userId,
+      versionFreezed,
     });
     return res.data || [];
   } catch (err) {
-    return err.response.data;
+    return err.response?.data || {};
   }
 };
 

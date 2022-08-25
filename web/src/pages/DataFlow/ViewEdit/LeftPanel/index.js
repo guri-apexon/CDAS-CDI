@@ -107,7 +107,7 @@ const LeftPanel = () => {
     protId
   );
 
-  // const dataflow = useSelector((state) => state.dataFlow);
+  const { versionFreezed } = useSelector((state) => state.dataFlow);
   const {
     dataFlowId,
     dataFlowName,
@@ -180,7 +180,10 @@ const LeftPanel = () => {
 
   const handleStatusUpdate = async () => {
     if (status === "Active") {
-      const { data, message, status } = await inActivateDF(dataFlowId);
+      const { data, message, status } = await inActivateDF(
+        dataFlowId,
+        versionFreezed
+      );
       if (status && data?.active === 0) {
         showSuccessMessage(message);
         dispatch(updateDFStatus(dataFlowId, "Inactive"));
@@ -188,7 +191,10 @@ const LeftPanel = () => {
         showErrorMessage(message);
       }
     } else {
-      const { data, message, status } = await activateDF(dataFlowId);
+      const { data, message, status } = await activateDF(
+        dataFlowId,
+        versionFreezed
+      );
       if (status) {
         if (parseInt(data?.active, 10) === 1) {
           showSuccessMessage(message);

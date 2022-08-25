@@ -1,5 +1,6 @@
+/* eslint-disable no-shadow */
 /* eslint-disable react/jsx-wrap-multilines */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -32,6 +33,7 @@ import usePermission, {
 import "./LeftPanel.scss";
 import { activateDF, inActivateDF } from "../../../services/ApiServices";
 import { updateDFStatus } from "../../../store/actions/DashboardAction";
+import { MessageContext } from "../../Providers/MessageProvider";
 
 const useStyles = makeStyles(() => ({
   drawerHeader: {
@@ -82,10 +84,16 @@ const LeftPanel = () => {
   const [searchTxt, setSearchTxt] = useState("");
   const packageData = useSelector((state) => state.dataPackage);
   const dataFlow = useSelector((state) => state.dataFlow);
-  const { dataFlowdetail, isDatasetCreation, dataflowType: type } = dataFlow;
+  const {
+    dataFlowdetail,
+    isDatasetCreation,
+    dataflowType: type,
+    versionFreezed,
+  } = dataFlow;
   const { description, dataflowid, vendorname, name, testflag, active } =
     dataFlowdetail;
   const { loading, packagesList, refreshData } = packageData;
+  const { showErrorMessage, showSuccessMessage } = useContext(MessageContext);
   const userInfo = getUserInfo();
   const location = useLocation();
 
@@ -158,14 +166,28 @@ const LeftPanel = () => {
   ];
   const handleStatusUpdate = async () => {
     if (status === "Active") {
-      const data = await inActivateDF(dataflowid);
-      if (data?.active === 0) {
+      const { data, message, status } = await inActivateDF(
+        dataflowid,
+        versionFreezed
+      );
+      if (status && data?.active === 0) {
+        showSuccessMessage(message);
         dispatch(updateDFStatus(dataflowid, "Inactive"));
+      } else {
+        showErrorMessage(message);
       }
     } else {
-      const data = await activateDF(dataflowid);
-      if (parseInt(data?.data?.active, 10) === 1) {
-        dispatch(updateDFStatus(dataflowid, "Active"));
+      const { data, message, status } = await activateDF(
+        dataflowid,
+        versionFreezed
+      );
+      if (status) {
+        if (parseInt(data?.active, 10) === 1) {
+          showSuccessMessage(message);
+          dispatch(updateDFStatus(dataflowid, "Active"));
+        }
+      } else {
+        showErrorMessage(message);
       }
     }
   };

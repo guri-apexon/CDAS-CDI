@@ -476,7 +476,9 @@ exports.getIssueColumns = async (req, res) => {
       DRIVER_NAMES.HIVE,
       concatQuery,
       "Issue retrieved successfully.",
-      res
+      res,
+      null,
+      "Unable to connect to clinical database. Please retry or contact system administrator"
     );
   } catch (err) {
     const msg = err.message || COMMON_ERR;
