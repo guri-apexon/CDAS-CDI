@@ -1612,6 +1612,39 @@ exports.activateDataFlow = async (req, res) => {
     const { dataFlowId, userId, versionFreezed } = req.body;
     Logger.info({ message: "activateDataFlow" });
 
+    let childCount = 0;
+    // del_flg is distinct from 1
+
+    const packageCount = await DB.executeQuery(
+      `SELECT datapackageid from ${schemaName}.datapackage
+      WHERE dataflowid = '${dataFlowId}' and active=1 and (del_flg is distinct from 1) `
+    );
+
+    childCount += packageCount.rows?.length;
+
+    console.log("pacakge childCount", childCount, packageCount.rows?.length);
+
+    const dataSetCount =
+      await DB.executeQuery(`select datasetid from ${schemaName}.dataset ds
+                left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+                left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+                where ds.active =1 and (ds.del_flg is distinct from 1)
+                and df.dataflowid ='${dataFlowId}'`);
+
+    childCount += dataSetCount.rows?.length;
+
+    console.log("total childCount", childCount, dataSetCount.rows?.length);
+
+    if (!childCount) {
+      return apiResponse.validationErrorWithData(
+        res,
+        "If Data Flow is active, there must be at least one active Data Package or Data Set",
+        {
+          success: false,
+        }
+      );
+    }
+
     const {
       rows: [oldVersion],
     } = await DB.executeQuery(
@@ -1619,67 +1652,67 @@ exports.activateDataFlow = async (req, res) => {
       WHERE dataflowid = '${dataFlowId}' order by version DESC limit 1`
     );
 
-    const {
-      rows: [dataflow],
-    } = await DB.executeQuery(
-      `SELECT * FROM ${schemaName}.dataflow where dataflowid = $1`,
-      [dataFlowId]
-    );
-    let flag = false;
-    if (dataflow?.type.toLowerCase() === "tabular") {
-      const q0 = `select d3.active from ${schemaName}.dataflow d
-      inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid  
-      inner join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1 and d2.active=1`;
-      const $q0 = await DB.executeQuery(q0, [dataFlowId]);
-      if ($q0.rows.map((e) => e.active).includes(1)) flag = true;
-    } else if (dataflow?.active === 0) flag = true;
+    // const {
+    //   rows: [dataflow],
+    // } = await DB.executeQuery(
+    //   `SELECT * FROM ${schemaName}.dataflow where dataflowid = $1`,
+    //   [dataFlowId]
+    // );
+    // let flag = false;
+    // if (dataflow?.type.toLowerCase() === "tabular") {
+    //   const q0 = `select d3.active from ${schemaName}.dataflow d
+    //   inner join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
+    //   inner join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid where d.dataflowid = $1 and d2.active=1`;
+    //   const $q0 = await DB.executeQuery(q0, [dataFlowId]);
+    //   if ($q0.rows.map((e) => e.active).includes(1)) flag = true;
+    // } else if (dataflow?.active === 0) flag = true;
 
-    if (flag) {
-      const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1 returning *`;
-      const updatedDF = await DB.executeQuery(q2, [dataFlowId]);
+    // if (flag) {
+    const q2 = `UPDATE ${schemaName}.dataflow set active=1 WHERE dataflowid=$1 returning *`;
+    const updatedDF = await DB.executeQuery(q2, [dataFlowId]);
 
-      if (!updatedDF?.rowCount) {
-        return apiResponse.ErrorResponse(res, "Something went wrong on update");
-      }
-      const dataflowObj = updatedDF.rows[0];
-      const existDf = { active: 0 };
-      const diffObj = { active: 1 };
+    if (!updatedDF?.rowCount) {
+      return apiResponse.ErrorResponse(res, "Something went wrong on update");
+    }
+    const dataflowObj = updatedDF.rows[0];
+    const existDf = { active: 0 };
+    const diffObj = { active: 1 };
 
-      const updatedLogs = await addDataflowHistory({
-        dataflowId: dataFlowId,
-        externalSystemName: "CDI",
-        userId,
-        config_json: dataflowObj,
-        diffObj,
-        existDf,
-        versionFreezed,
-      });
+    const updatedLogs = await addDataflowHistory({
+      dataflowId: dataFlowId,
+      externalSystemName: "CDI",
+      userId,
+      config_json: dataflowObj,
+      diffObj,
+      existDf,
+      versionFreezed,
+    });
 
-      // console.log(oldVersion.version, updatedLogs);
-      var resData = { ...dataflowObj, version: updatedLogs };
-      if (oldVersion?.version === updatedLogs) {
-        resData.versionBumped = false;
-      } else {
-        resData.versionBumped = true;
-      }
-
-      if (updatedLogs) {
-        return apiResponse.successResponseWithData(
-          res,
-          "Dataflow config updated successfully.",
-          // { ...dataflowObj, version: updatedLogs }
-          resData
-        );
-      }
-
-      return apiResponse.successResponseWithData(res, "Operation success", {
-        success: true,
-      });
+    // console.log(oldVersion.version, updatedLogs);
+    var resData = { ...dataflowObj, version: updatedLogs };
+    if (oldVersion?.version === updatedLogs) {
+      resData.versionBumped = false;
+    } else {
+      resData.versionBumped = true;
     }
 
-    return apiResponse.validationErrorWithData(res, "Dataflow having issues", {
-      success: false,
+    if (updatedLogs) {
+      return apiResponse.successResponseWithData(
+        res,
+        "Dataflow config updated successfully.",
+        // { ...dataflowObj, version: updatedLogs }
+        resData
+      );
+    }
+
+    return apiResponse.successResponseWithData(res, "Operation success", {
+      success: true,
     });
+    // }
+
+    // return apiResponse.validationErrorWithData(res, "Dataflow having issues", {
+    //   success: false,
+    // });
   } catch (err) {
     console.log(err);
     Logger.error("catch :activateDataFlow");
