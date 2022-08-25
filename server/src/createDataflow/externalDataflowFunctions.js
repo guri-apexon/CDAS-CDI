@@ -3222,7 +3222,8 @@ exports.dataflowUpdate = async (
       vendor_Id,
       ptNum,
       desc,
-      helper.stringToBoolean(testFlag)
+      helper.stringToBoolean(testFlag),
+      DFId
     );
 
     // if (helper.stringToBoolean(testFlag)) {

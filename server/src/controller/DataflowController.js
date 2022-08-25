@@ -78,7 +78,8 @@ const createDataflowName = (exports.createDataflowName = async (
   vendorId,
   prtNbrStnd,
   desc,
-  testFlag = false
+  testFlag = false,
+  dfId
 ) => {
   if (!vendorId || !prtNbrStnd || !desc) {
     return false;
@@ -96,7 +97,8 @@ const createDataflowName = (exports.createDataflowName = async (
   }
   //check for dataflowname && sequence logic
   const { rows: dfRows } = await DB.executeQuery(
-    `select name from ${schemaName}.dataflow where name LIKE '${dfNewName}%';`
+    // `select name from ${schemaName}.dataflow where name LIKE '${dfNewName}%';`
+    `select name from ${schemaName}.dataflow where name LIKE '${dfNewName}%' and dataflowid !='${dfId}';`
   );
   if (dfRows?.length) {
     let dfNewVersion;
