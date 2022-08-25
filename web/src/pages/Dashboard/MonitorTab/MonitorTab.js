@@ -43,7 +43,7 @@ import usePermission, {
   useStudyPermission,
 } from "../../../components/Common/usePermission";
 import DatasetTable from "./DatasetTable";
-import { queryParams } from "./helper";
+import { queryParamsFull } from "./helper";
 
 export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
   const [open, setOpen] = useState(false);
@@ -117,9 +117,9 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
   const handleViewButton = (query = "") => {
     let q = query;
     if (q.length && control !== "all") {
-      q += `&${queryParams.CONTROL}=${control}`;
+      q += `&${queryParamsFull.CONTROL}=${control}`;
     } else if (control !== "all") {
-      q += `${queryParams.CONTROL}=${control}`;
+      q += `${queryParamsFull.CONTROL}=${control}`;
     }
     if (q.length) {
       history.push(`/dashboard/monitor?${q}`);
@@ -240,7 +240,7 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.JOB_STATUS_IN_QUEUE);
+              handleViewButton(queryParamsFull.JOB_STATUS_IN_QUEUE);
             }}
           />
           <InfoCard
@@ -253,7 +253,7 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.REFRESH_ALERTS);
+              handleViewButton(queryParamsFull.JOB_STATUS_FAILED);
             }}
           />
           <InfoCard
@@ -272,7 +272,7 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.LATENCY_WARNING);
+              handleViewButton(queryParamsFull.LATENCY_WARNING);
             }}
           />
           <InfoCard
@@ -291,7 +291,7 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.EXCEEDS_PER_CHANGE);
+              handleViewButton(queryParamsFull.EXCEEDS_PER_CHANGE);
             }}
           />
           <InfoCard
@@ -305,7 +305,7 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.STALE);
+              handleViewButton(queryParamsFull.STALE);
             }}
           />
           <InfoCard
@@ -326,7 +326,7 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParams.QUARANTINE);
+              handleViewButton(queryParamsFull.QUARANTINE);
             }}
           />
           <Peek
