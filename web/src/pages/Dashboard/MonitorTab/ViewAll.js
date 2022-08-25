@@ -59,6 +59,13 @@ const ViewAll = () => {
     parsedQuery[queryParams.CONTROL] || "all"
   );
 
+  // Go through query params to get processStatus by ignoring control parameter
+  const [processStatus] = useState(
+    Object.keys(parsedQuery)?.filter(
+      (item) => item !== queryParams.CONTROL
+    )[0] || ""
+  );
+
   const fetchLatestData = (c = "", active = 1) => {
     if (dashboard?.selectedCard?.prot_id) {
       dispatch(
@@ -66,7 +73,8 @@ const ViewAll = () => {
           dashboard.selectedCard.prot_id,
           c,
           active,
-          userId
+          userId,
+          processStatus
         )
       );
     }
@@ -110,7 +118,7 @@ const ViewAll = () => {
 
   useEffect(() => {
     fetchLatestData(control, activeOnly);
-  }, [activeOnly, control]);
+  }, [processStatus, activeOnly, control]);
 
   const goToDashboard = () => {
     history.push("/dashboard?monitor");
