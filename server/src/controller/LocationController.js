@@ -355,8 +355,29 @@ exports.saveLocationData = async function (req, res) {
         );
       }
 
+      let loc_Id = "";
+      let oldStatus = active;
+
       if (ExternalId) {
         existingLoc = await DB.executeQuery($selectExternalId, [ExternalId]);
+
+        if (existingLoc.rows?.length) {
+          loc_Id = existingLoc.rows[0].src_loc_id;
+          oldStatus = existingLoc.rows[0].active;
+        }
+      }
+
+      if (loc_Id) {
+        const inDFExist = await DB.executeQuery(
+          `select src_loc_id from ${schemaName}.dataflow d where src_loc_id='${loc_Id}'`
+        );
+
+        if (inDFExist.rows?.length > 0 && oldStatus != active) {
+          return apiResponse.ErrorResponse(
+            res,
+            "Location cannot be inactivated until removed from other dataflows using this Location."
+          );
+        }
       }
     }
 
@@ -546,6 +567,7 @@ exports.saveLocationData = async function (req, res) {
     }
   } catch (err) {
     //throw error in json response with status 500.
+    console.log("err", err);
     Logger.error("catch :storeLocation");
     Logger.error(err);
     return apiResponse.ErrorResponse(res, err);
