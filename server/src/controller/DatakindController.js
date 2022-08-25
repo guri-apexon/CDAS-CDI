@@ -9,10 +9,10 @@ const CommonController = require("./CommonController");
 const { isClinicalDataPartOfDataFlow } = require("../helpers/userHelper");
 
 async function checkIsExistInDF(dkId) {
-  let listQuery = `select distinct (d3.datakindid) from ${schemaName}.dataflow d 
-  right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid 
-  right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid
-  where d.active = 1 and d2.active = 1 and d3.active = 1`;
+  let listQuery = `select distinct (d3.datakindid) from ${schemaName}.dataflow d
+  right join ${schemaName}.datapackage d2 on d.dataflowid = d2.dataflowid
+  right join ${schemaName}.dataset d3 on d2.datapackageid = d3.datapackageid`;
+  // where d.active = 1 and d2.active = 1 and d3.active = 1`;
   const res = await DB.executeQuery(listQuery);
   const existingInDF = res.rows.map((e) => e.datakindid);
   return existingInDF.includes(dkId.toString());
@@ -205,7 +205,8 @@ exports.createDataKind = async (req, res) => {
       const isExist = await checkIsExistInDF(id);
 
       // inactivating status is not allowed
-      if (isExist && !existingDK?.rows[0].active === dkStatus) {
+      // if (isExist && !existingDK?.rows[0].active === dkStatus) {
+      if (isExist && existingDK?.rows[0].active != dkStatus) {
         return apiResponse.ErrorResponse(res, inactiveNotAllowed);
       }
 
@@ -214,7 +215,8 @@ exports.createDataKind = async (req, res) => {
         console.log("line 189");
         const updatedData = await DB.executeQuery(updateQuery, [
           ...payload,
-          null,
+          // null,
+          ExternalId,
           id,
         ]);
         console.log("line 195");
