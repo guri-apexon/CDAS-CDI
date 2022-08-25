@@ -117,7 +117,7 @@ const LeftPanel = ({ protId, packages, setFormType, myform }) => {
   };
   const menuItems = [
     { text: "View audit log", onClick: viewAuditLog },
-    { text: "Clone data flow" },
+    // { text: "Clone data flow" },
     { text: "Hard delete data flow" },
   ];
   const ContextMenu = () => {

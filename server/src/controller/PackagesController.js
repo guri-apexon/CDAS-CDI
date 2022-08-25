@@ -251,6 +251,28 @@ exports.changeStatus = async (req, res) => {
           "Please add at-least one dataset in order to make active"
         );
       }
+    } else if (active == 0) {
+      const {
+        rows: [dfObj],
+      } = await DB.executeQuery(
+        `select dataflowid, active from ${schemaName}.dataflow where dataflowid = (select dataflowid from ${schemaName}.datapackage dp where dp.datapackageid ='${package_id}');`
+      );
+      if (dfObj?.dataflowid && dfObj?.active == 1) {
+        const {
+          rows: [dpList],
+        } = await DB.executeQuery(
+          `SELECT count(1) from ${schemaName}.datapackage dp1 
+          where dp1.dataflowid = '${dfObj.dataflowid}' and 
+          (dp1.del_flg is distinct from 1) and 
+          (dp1.active = 1);`
+        );
+        if (dpList.count <= 1) {
+          return apiResponse.ErrorResponse(
+            res,
+            "Atleast one active datapackage should be there in active dataflow"
+          );
+        }
+      }
     }
 
     const query = `UPDATE ${schemaName}.datapackage
@@ -298,7 +320,10 @@ exports.changeStatus = async (req, res) => {
       );
     });
   } catch (err) {
-    return apiResponse.ErrorResponse(res, err);
+    Logger.error("catch :packageupdateStatusFailed");
+    const errMsg = err.message || COMMON_ERR;
+    Logger.error(errMsg);
+    return apiResponse.ErrorResponse(res, errMsg);
   }
 };
 
