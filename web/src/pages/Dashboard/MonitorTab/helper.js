@@ -11,12 +11,12 @@ const queryParams = {
 };
 
 const queryParamsFull = {
-  JOB_STATUS_FAILED: "Failed",
-  JOB_STATUS_IN_QUEUE: "Queued",
-  EXCEEDS_PER_CHANGE: "ExceedsPercentage",
-  STALE: "Stale",
-  QUARANTINE: "Quarantined",
-  LATENCY_WARNING: "Datalatancywarnings",
+  JOB_STATUS_FAILED: "FAILED",
+  JOB_STATUS_IN_QUEUE: "QUEUED",
+  EXCEEDS_PER_CHANGE: "EXCEEDSPERCENTAGE",
+  STALE: "STALE",
+  QUARANTINE: "QUARANTINED",
+  LATENCY_WARNING: "DATALATENCYWARNINGS",
   REFRESH_ALERTS: "ra",
   CONTROL: "control",
 };

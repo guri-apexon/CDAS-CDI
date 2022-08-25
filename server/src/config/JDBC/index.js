@@ -62,7 +62,8 @@ module.exports = async (
   query,
   msg,
   res,
-  callSrc = null
+  callSrc = null,
+  errorMessage
 ) => {
   try {
     var config = {
@@ -79,7 +80,10 @@ module.exports = async (
     jdbc.initialize(function (err) {
       console.log("err:initialize:::: ", err);
       if (err) {
-        return apiResponse.ErrorResponse(res, "Location config is wrong");
+        return apiResponse.ErrorResponse(
+          res,
+          errorMessage || "Location config is wrong"
+        );
       }
       jdbc.reserve(function (err, connObj) {
         console.log("err:reserve:::: ", err);
@@ -111,7 +115,7 @@ module.exports = async (
                       console.log("err:executeQuery:::: ", err, resultset);
                       res.status(500).json({
                         status: 0,
-                        message: "Something wrong with query",
+                        message: errorMessage || "Something wrong with query",
                         error: err,
                       });
                     } else {
@@ -150,7 +154,8 @@ module.exports = async (
   } catch (err) {
     return apiResponse.ErrorResponse(
       res,
-      "Location config is wrong. Please select correct location to proceed."
+      errorMessage ||
+        "Location config is wrong. Please select correct location to proceed."
     );
   }
 };

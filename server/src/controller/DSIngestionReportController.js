@@ -50,9 +50,8 @@ exports.getDatasetIngestionReportProperties = (req, res) => {
   try {
     const id = req.params.datasetid;
     const userId = req.headers["userid"];
-    const searchQuery = `SELECT datasetid,"DatasetName","Vendor",vend_id,"VendorContactInformation","DateLastChecked","DateofLastSuccessfulProcess","ExpectedDateofNextTransfer","ExpectedTransferFrequency","LoadType", "SourceOrigin", dataflowid, "DataFlowName", datapackageid, "FileName", "DataPackageNamingConvention", "DatasetStatus" from ${schemaName}.dataset_stat_current 
-            WHERE datasetid = $1`;
-    Logger.info({ message: "getDatasetIngestionReportProperties" });
+    const searchQuery = `SELECT * from fn_get_dataset_metric($1)`;
+    Logger.info({ message: "fn_get_dataset_metric" });
 
     DB.executeQuery(searchQuery, [id])
       .then(async (response) => {
@@ -134,6 +133,7 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
         let metrics = {};
         if (records && records.LoadType === "Incremental") {
           metrics = {
+            dataFlowType: records.DataFlowType,
             loadType: records.LoadType,
             totalIncrementalFileTransferred:
               records.inctotalincrementalfilestransferred,
@@ -169,6 +169,7 @@ exports.getDatasetIngestionReportMetrics = (req, res) => {
           };
         } else if (records && records.LoadType === "Full") {
           metrics = {
+            dataFlowType: records.DataFlowType,
             loadType: records.LoadType,
             transferDate: records.TransferDate,
             postIngestionIssues: records.postingestionissues,
@@ -475,7 +476,9 @@ exports.getIssueColumns = async (req, res) => {
       DRIVER_NAMES.HIVE,
       concatQuery,
       "Issue retrieved successfully.",
-      res
+      res,
+      null,
+      "Unable to connect to clinical database. Please retry or contact system administrator"
     );
   } catch (err) {
     const msg = err.message || COMMON_ERR;

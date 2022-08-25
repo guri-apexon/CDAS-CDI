@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
@@ -30,6 +31,7 @@ import usePermission, {
 } from "../../../../components/Common/usePermission";
 
 import "./LeftPanel.scss";
+import { MessageContext } from "../../../../components/Providers/MessageProvider";
 
 const useStyles = makeStyles(() => ({
   drawerHeader: {
@@ -105,7 +107,7 @@ const LeftPanel = () => {
     protId
   );
 
-  // const dataflow = useSelector((state) => state.dataFlow);
+  const { versionFreezed } = useSelector((state) => state.dataFlow);
   const {
     dataFlowId,
     dataFlowName,
@@ -118,6 +120,7 @@ const LeftPanel = () => {
   const { loading, packagesList, refreshData } = packageData;
   const userInfo = getUserInfo();
   const location = useLocation();
+  const { showErrorMessage, showSuccessMessage } = useContext(MessageContext);
   const viewAuditLog = () => {
     history.push(`/dashboard/audit-logs/${dataFlowId}`);
   };
@@ -177,14 +180,28 @@ const LeftPanel = () => {
 
   const handleStatusUpdate = async () => {
     if (status === "Active") {
-      const data = await inActivateDF(dataFlowId);
-      if (data?.active === 0) {
+      const { data, message, status } = await inActivateDF(
+        dataFlowId,
+        versionFreezed
+      );
+      if (status && data?.active === 0) {
+        showSuccessMessage(message);
         dispatch(updateDFStatus(dataFlowId, "Inactive"));
+      } else {
+        showErrorMessage(message);
       }
     } else {
-      const data = await activateDF(dataFlowId);
-      if (parseInt(data?.data?.active, 10) === 1) {
-        dispatch(updateDFStatus(dataFlowId, "Active"));
+      const { data, message, status } = await activateDF(
+        dataFlowId,
+        versionFreezed
+      );
+      if (status) {
+        if (parseInt(data?.active, 10) === 1) {
+          showSuccessMessage(message);
+          dispatch(updateDFStatus(dataFlowId, "Active"));
+        }
+      } else {
+        showErrorMessage(message);
       }
     }
   };

@@ -431,7 +431,7 @@ export const formatDataNew = (incomingData, protNo) => {
   } else if (data.length > 1) {
     isAllDataMatch = data
       .map((e) => e[0])
-      .every((ele) => ele.toString() === protNo.toString()); // checking for protocol match
+      .every((ele) => ele?.toString() === protNo.toString()); // checking for protocol match
   }
   if (isAllDataMatch) {
     const newData =
@@ -477,7 +477,7 @@ export const formatData = (incomingData, protNo) => {
   } else {
     isAllDataMatch = data
       .map((e) => e[0])
-      .every((ele) => ele.toString() === protNo.toString()); // checking for protocol match
+      .every((ele) => ele?.toString() === protNo.toString()); // checking for protocol match
   }
 
   if (isAllDataMatch) {

@@ -1699,7 +1699,7 @@ exports.activateDataFlow = async (req, res) => {
     if (updatedLogs) {
       return apiResponse.successResponseWithData(
         res,
-        "Dataflow config updated successfully.",
+        "Dataflow activated successfully.",
         // { ...dataflowObj, version: updatedLogs }
         resData
       );
@@ -1762,7 +1762,7 @@ exports.inActivateDataFlow = async (req, res) => {
     if (updatedLogs) {
       return apiResponse.successResponseWithData(
         res,
-        "Dataflow config updated successfully.",
+        "Dataflow inactivated successfully.",
         // { ...dataflowObj, version: updatedLogs }
         resData
       );

@@ -51,7 +51,8 @@ export const getDatasetIngestionOfStudy = (
   protocolId,
   testFlag = "",
   active = "",
-  userId = ""
+  userId = "",
+  processStatus = ""
 ) => {
   return {
     type: GET_DATASET_INGESTION_SUMMARY,
@@ -59,6 +60,7 @@ export const getDatasetIngestionOfStudy = (
     testFlag,
     active,
     userId,
+    processStatus,
   };
 };
 

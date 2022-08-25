@@ -99,6 +99,10 @@ export const hasSpecialCHar = (str = "") => {
   return /[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(str);
 };
 
+export const hasSpCharExTild = (str = "") => {
+  return /[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(str);
+};
+
 export const checkAlphaNumericFileName = (value) => {
   const regexp = /^[A-Za-z0-9-_.%@&()!#~;+,{}<>[\] \b]+$/;
   const regexp2 = /[^hmsdyinx_%/-\s]/gi;
@@ -364,8 +368,6 @@ export const validateRow = (row, extraValidation = true) => {
     position,
   } = row;
 
-  const min = Number.parseInt(minLength, 10);
-  const max = Number.parseInt(maxLength, 10);
   if (
     !dataType ||
     !columnName ||
@@ -373,11 +375,16 @@ export const validateRow = (row, extraValidation = true) => {
     (haveHeader === false && checkNumeric(position, true)) ||
     // (columnName && hasSpecialCHar(columnName)) ||
     (dataType && format && checkFormat(format, "format", dataType)) ||
-    ((minLength || maxLength) &&
-      (Number.isNaN(min) ||
-        Number.isNaN(max) ||
-        !(!Number.isNaN(min) && !Number.isNaN(max) && min <= max)))
+    minLength ||
+    maxLength
   ) {
+    if (minLength && maxLength) {
+      if (parseInt(minLength, 10) <= parseInt(maxLength, 10)) {
+        return true;
+      }
+    } else if (maxLength && !Number.isNaN(minLength)) {
+      return true;
+    }
     return false;
   }
   return true;
