@@ -279,7 +279,7 @@ export const activateDF = async (dataFlowId) => {
     });
     return res?.data || [];
   } catch (err) {
-    return console.log("Error", err);
+    return err.response.data;
   }
 };
 
@@ -289,9 +289,9 @@ export const inActivateDF = async (dataFlowId) => {
       dataFlowId,
       userId,
     });
-    return res.data?.data || [];
+    return res.data || [];
   } catch (err) {
-    return console.log("Error", err);
+    return err.response.data;
   }
 };
 

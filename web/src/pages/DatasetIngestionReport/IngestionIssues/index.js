@@ -174,10 +174,12 @@ const IngestionIssues = () => {
       if (selectedIssues?.length) {
         const allColumns = JSON.parse(selectedIssues[0].allcolumns);
 
-        (viewAll ? allColumns : issuesColumns).forEach((col) => {
+        (viewAllCol ? allColumns : issuesColumns).forEach((col) => {
           const colName = col?.toLowerCase();
           const haveIssue =
-            !viewAll || (viewAll && issuesColumns.includes(colName));
+            !viewAllCol ||
+            (viewAllCol &&
+              selectedIssues[0].errorcolumnnames.includes(colName));
           const columnObj = {
             header: haveIssue ? (
               <>
