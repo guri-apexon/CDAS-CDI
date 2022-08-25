@@ -3,7 +3,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useHistory, useParams } from "react-router";
+import { useHistory, useLocation, useParams } from "react-router";
 import moment from "moment";
 import Typography from "apollo-react/components/Typography";
 import SelectButton from "apollo-react/components/SelectButton";
@@ -98,7 +98,12 @@ const StatusCell = ({ row, column: { accessor } }) => {
   const status = row[accessor] || "";
   const { canReadIngestionIssues } = row;
   const history = useHistory();
+  const location = useLocation();
   const { datasetId } = useParams();
+
+  const isCDIHomePage = location.pathname.includes("/cdihome/ingestion-report");
+
+  const isDisabled = isCDIHomePage || canReadIngestionIssues;
 
   // if (
   //   status?.toLowerCase() === "loaded without issues" ||
@@ -225,10 +230,14 @@ const StatusCell = ({ row, column: { accessor } }) => {
             />
           </Tooltip>
           <Link
-            disabled={!canReadIngestionIssues}
-            onClick={() =>
-              history.push(`/dashboard/ingestion-issues/${datasetId}`)
-            }
+            disabled={!isDisabled}
+            onClick={() => {
+              if (isCDIHomePage) {
+                history.push(`/cdihome/ingestion-issues/${datasetId}`);
+              } else {
+                history.push(`/dashboard/ingestion-issues/${datasetId}`);
+              }
+            }}
             style={{ fontWeight: 500, marginLeft: 8 }}
           >
             View
@@ -539,14 +548,14 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
           <MenuItem value="custom">Custom date range</MenuItem>
         </SelectButton>
       </div>
-      <Button
+      {/* <Button
         id="addLocationBtn"
         icon={<DownloadIcon />}
         size="small"
         style={{ marginLeft: 16 }}
       >
         Download
-      </Button>
+      </Button> */}
       <Button
         size="small"
         id="filterBtn"

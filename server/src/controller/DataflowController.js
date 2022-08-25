@@ -1807,11 +1807,13 @@ exports.searchDataflow = async (req, res) => {
       message: "searchDataflow",
       searchParam,
     });
-    const searchQuery = `SELECT d.dataflowid, d."name" as "dataFlowName", d.description, d.externalsystemname as "externalSourceSystem" , v.vend_nm as "vendorSource" 
+    const searchQuery = `SELECT d.dataflowid, d.type, d."name" as "dataFlowName", d.description, d.externalsystemname as "externalSourceSystem" , v.vend_nm as "vendorSource" 
     FROM ${schemaName}.dataflow d 
     inner join ${schemaName}.vendor v on d.vend_id  = v.vend_id 
     where d.prot_id = '${studyId}' and 
-    ((LOWER(v.vend_nm)) LIKE '${searchParam}%' or (LOWER(d.name)) LIKE '${searchParam}%' or (LOWER(d.description)) LIKE '${searchParam}%' or (LOWER(d.externalsystemname)) LIKE '${searchParam}%') LIMIT 10`;
+    LOWER(d.type) = 'tabular' and
+    ((LOWER(v.vend_nm)) LIKE '${searchParam}%' or (LOWER(d.name)) LIKE '${searchParam}%' or (LOWER(d.description)) LIKE '${searchParam}%' or (LOWER(d.externalsystemname)) LIKE '${searchParam}%')
+    LIMIT 10`;
     // console.log(searchQuery);
     let { rows } = await DB.executeQuery(searchQuery);
     return apiResponse.successResponseWithData(res, "Operation success", {
@@ -1862,10 +1864,10 @@ exports.fetchdataflowDetails = async (req, res) => {
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner Join ${schemaName}.study S on (d.prot_id = S.prot_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
-    left join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
-    left join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    left join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid and (d2.del_flg is distinct from 1))
+    left join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid and (d3.del_flg is distinct from 1))
     left join ${schemaName}.datakind dk on (dk.datakindid=d3.datakindid)
-    left join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid)
+    left join ${schemaName}.columndefinition c on (c.datasetid =d3.datasetid and (c.del_flg is distinct from 1))
     where d.dataflowid ='${dataflow_id}'`;
     Logger.info({
       message: "fetchdataflowDetails",
@@ -2082,12 +2084,12 @@ exports.updateDataflowConfig = async (req, res) => {
       }
     }
 
-    if (dataFlowCount.count == 0) {
-      return apiResponse.ErrorResponse(
-        res,
-        "Please make dataFlow active in order to save the configuration"
-      );
-    }
+    // if (dataFlowCount.count == 0) {
+    //   return apiResponse.ErrorResponse(
+    //     res,
+    //     "Please make dataFlow active in order to save the configuration"
+    //   );
+    // }
     if (dataStructure !== "TabularRaveSOD" && dataSet_count == 0) {
       return apiResponse.ErrorResponse(
         res,

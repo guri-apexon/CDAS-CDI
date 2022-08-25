@@ -175,7 +175,7 @@ exports.getDatasetIngestionDashboardDetail = async function (req, res) {
     return apiResponse.successResponseWithData(res, "Operation success", {
       summary: summary,
       datasets: datasets,
-      totalSize: response.rowCount,
+      totalSize: summary?.dataset_pipelines || response.rowCount,
     });
   } catch (err) {
     //throw error in json response with status 500.

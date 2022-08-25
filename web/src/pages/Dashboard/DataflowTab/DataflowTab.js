@@ -363,12 +363,12 @@ export default function DataflowTab({ updateData, updateHeight }) {
         onClick: () => sendSyncRequest(row),
         disabled: status !== "Active" || !canSync,
       },
-      {
-        text: "Clone data flow",
-        id: 4,
-        onClick: () => cloneDataFlowAction(dataFlowId),
-        disabled: !canCreateDataFlow,
-      },
+      // {
+      //   text: "Clone data flow",
+      //   id: 4,
+      //   onClick: () => cloneDataFlowAction(dataFlowId),
+      //   disabled: !canCreateDataFlow,
+      // },
       {
         text: "Hard delete data flow",
         id: 5,
