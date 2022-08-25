@@ -85,9 +85,13 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
 
   useEffect(() => {
     fetchLatestData(control, activeOnly);
+
+    // trigger refresh data every 5 minutes
     const intervalId = setInterval(() => {
       fetchLatestData(control, activeOnly);
-    }, 60000);
+    }, 300000);
+
+    // clear interval on unmount
     return () => {
       clearInterval(intervalId);
     };
