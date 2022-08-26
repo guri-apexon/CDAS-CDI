@@ -256,7 +256,7 @@ const IngestionIssues = () => {
         subTitle={getTitle()}
         icon={<IssueIcon className="black-icon" />}
         saveBtnLabel="View summary"
-        hideCancel
+        hideBtns
         tabs={["Data", "Properties"]}
         selectedTab={0}
         onTabChange={(v) => setCurrentTab(v)}
