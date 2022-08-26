@@ -45,6 +45,7 @@ const Properties = ({ datasetProperties }) => {
     datapackageid,
     dataflowid,
     DataPackageNamingConvention,
+    dataFlowType,
   } = datasetProperties;
   const goToDataset = () => {
     dispatch(
@@ -76,6 +77,7 @@ const Properties = ({ datasetProperties }) => {
             onClick={() => setModalOpen(true)}
             size="small"
             style={{ marginRight: 10 }}
+            disabled={dataFlowType !== "Tabular"}
           >
             View dataset settings
           </Button>
