@@ -111,8 +111,14 @@ const ColumnsTab = ({
               primaryKey: column.primarykey === 1 ? "Yes" : "No",
               unique: column.unique === 1 ? "Yes" : "No",
               required: column.required === 1 ? "Yes" : "No",
-              minLength: column.charactermin || "",
-              maxLength: column.charactermax || "",
+              minLength:
+                column.charactermin || column.charactermin === 0
+                  ? column.charactermin
+                  : "",
+              maxLength:
+                column.charactermax || column.charactermax === 0
+                  ? column.charactermax
+                  : "",
               values: column.lov || "",
               isInitLoad: true,
               isHavingColumnName: true,
