@@ -27,7 +27,10 @@ import usePermission, {
   Features,
   useStudyPermission,
 } from "../../../components/Common/usePermission";
-import { hasSpCharExTild } from "../../../components/FormComponents/validators";
+import {
+  hasSpCharExTild,
+  isVlcTildSaparated,
+} from "../../../components/FormComponents/validators";
 
 const ColumnsTab = ({
   locationType,
@@ -198,8 +201,8 @@ const ColumnsTab = ({
             return false;
           }
           if (
-            newData?.data.some(
-              (x) => x.values !== "" && hasSpCharExTild(x.values)
+            newData.some(
+              (x) => x.values !== "" && !isVlcTildSaparated(x.values)
             )
           ) {
             messageContext.showErrorMessage(
