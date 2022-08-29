@@ -631,7 +631,7 @@ exports.insertValidation = async (req) => {
                     and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
                     and ds.datakindid = '${
                       obj.dataKindID
-                    }'and df.testflag = '${tFlg}'`;
+                    }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
                 let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -1189,7 +1189,7 @@ exports.insertValidation = async (req) => {
                     and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
                     and ds.datakindid = '${
                       obj.dataKindID
-                    }'and df.testflag = '${tFlg}'`;
+                    }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
                 let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -2264,7 +2264,9 @@ const saveDataset = (exports.datasetLevelInsert = async (
           inner join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
           where df.prot_id = '${study}' and df.vend_id = '${vendor}' 
           and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
-          and ds.datakindid = '${obj.dataKindID}'and df.testflag = '${tFlg}'`;
+          and ds.datakindid = '${
+            obj.dataKindID
+          }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
         let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -3806,7 +3808,7 @@ exports.datasetUpdate = async (
           where df.prot_id = '${study}' and df.vend_id = '${vendor}' 
           and UPPER(ds.mnemonic) ='${data.datasetName.toUpperCase()}'
           and ds.datakindid = '${dkId}' 
-          and ds.datasetid !=$1 and df.testflag = '${tFlg}'`;
+          and ds.datasetid !=$1 and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
       let queryMnemonic = await DB.executeQuery(selectMnemonic, [DSId]);
 
