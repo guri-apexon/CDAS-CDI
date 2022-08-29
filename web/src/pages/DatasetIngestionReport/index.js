@@ -131,6 +131,7 @@ const DatasetIngestionReport = () => {
     {
       href: "javascript:void(0)",
       title: "Study Ingestion Report",
+      onClick: () => history.push("/dashboard"),
     },
     {
       href: "javascript:void(0)",
