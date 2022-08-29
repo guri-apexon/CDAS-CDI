@@ -3297,14 +3297,14 @@ exports.dataflowUpdate = async (
     // if (data.externalSystemName) {
     //   updateQueryDF += `,externalsystemname='${data.externalSystemName}'`;
     // }
-    console.log("update exptDtOfFirstProdFile", data.exptDtOfFirstProdFile);
-    if (typeof data.exptDtOfFirstProdFile != "undefined") {
-      if (data.exptDtOfFirstProdFile) {
-        updateQueryDF += `,expt_fst_prd_dt='${data.exptDtOfFirstProdFile}'`;
-      } else {
-        updateQueryDF += `,expt_fst_prd_dt=null`;
-      }
-    }
+    // console.log("update exptDtOfFirstProdFile", data.exptDtOfFirstProdFile);
+    // if (typeof data.exptDtOfFirstProdFile != "undefined") {
+    //   if (data.exptDtOfFirstProdFile) {
+    //     updateQueryDF += `,expt_fst_prd_dt='${data.exptDtOfFirstProdFile}'`;
+    //   } else {
+    //     updateQueryDF += `,expt_fst_prd_dt=null`;
+    //   }
+    // }
     if (typeof data.testFlag != "undefined") {
       updateQueryDF += `,testflag=${
         helper.stringToBoolean(data.testFlag) ? 1 : 0
