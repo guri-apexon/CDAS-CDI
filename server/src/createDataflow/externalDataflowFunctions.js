@@ -710,6 +710,29 @@ exports.insertValidation = async (req) => {
                     dsErrArray = dsErrArray.concat(dsResdt);
                   }
                 }
+
+                if (obj.fileType.toLowerCase() === "sas") {
+                  const dsArrayEncod = [
+                    {
+                      key: "encoding",
+                      value: obj.encoding,
+                      type: "string",
+                    },
+                  ];
+
+                  let dsResEncod = helper.validation(dsArrayEncod);
+                  if (dsResEncod.length > 0) {
+                    dsErrArray = dsErrArray.concat(dsResEncod);
+                  }
+                }
+
+                if (obj.encoding) {
+                  if (!helper.isEncoding(obj.encoding)) {
+                    dsErrArray.push(
+                      "encoding supported values : WLATIN1, UTF-8"
+                    );
+                  }
+                }
               }
 
               if (!obj.columnDefinition) {
@@ -2023,6 +2046,27 @@ const saveDataset = (exports.datasetLevelInsert = async (
             if (dsResdt.length > 0) {
               // errorDataset.push(dsResdt);
               errorDataset = errorDataset.concat(dsResdt);
+            }
+          }
+
+          if (obj.fileType.toLowerCase() === "sas") {
+            const dsArrayEncod = [
+              {
+                key: "encoding",
+                value: obj.encoding,
+                type: "string",
+              },
+            ];
+
+            let dsResEncod = helper.validation(dsArrayEncod);
+            if (dsResEncod.length > 0) {
+              errorDataset = errorDataset.concat(dsResEncod);
+            }
+          }
+
+          if (obj.encoding) {
+            if (!helper.isEncoding(obj.encoding)) {
+              errorDataset.push("encoding supported values : WLATIN1, UTF-8");
             }
           }
         }
@@ -3801,8 +3845,24 @@ exports.datasetUpdate = async (
               "fileType supported values : EXCEL, DELIMITED, FIXED WIDTH, SAS"
             );
           }
+          if (data.fileType.toLowerCase() === "sas") {
+            if (typeof data.encoding != "undefined") {
+              valDataset.push({
+                key: "encoding ",
+                value: data.encoding,
+                type: "string",
+              });
+            }
+          }
         }
       }
+
+      if (data.encoding) {
+        if (!helper.isEncoding(data.encoding)) {
+          errorDataset.push("encoding supported values : WLATIN1, UTF-8");
+        }
+      }
+
       if (typeof data.fileNamingConvention != "undefined") {
         valDataset.push({
           key: "fileNamingConvention ",
@@ -4630,7 +4690,6 @@ exports.clDefUpdate = async (
 
     let updateQueryCD = `UPDATE ${schemaName}.columndefinition set updt_tm=NOW() `;
 
-    console.log("data.minLength", data.minLength);
     if (data.columnName) {
       updateQueryCD += `,name='${data.columnName}'`;
     }
