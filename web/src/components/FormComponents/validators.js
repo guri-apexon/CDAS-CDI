@@ -99,6 +99,10 @@ export const hasSpecialCHar = (str = "") => {
   return /[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(str);
 };
 
+export const hasSpCharExTild = (str = "") => {
+  return /[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(str);
+};
+
 export const checkAlphaNumericFileName = (value) => {
   const regexp = /^[A-Za-z0-9-_.%@&()!#~;+,{}<>[\] \b]+$/;
   const regexp2 = /[^hmsdyinx_%/-\s]/gi;

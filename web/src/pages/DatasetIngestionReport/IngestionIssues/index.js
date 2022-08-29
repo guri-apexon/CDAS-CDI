@@ -174,10 +174,12 @@ const IngestionIssues = () => {
       if (selectedIssues?.length) {
         const allColumns = JSON.parse(selectedIssues[0].allcolumns);
 
-        (viewAll ? allColumns : issuesColumns).forEach((col) => {
+        (viewAllCol ? allColumns : issuesColumns).forEach((col) => {
           const colName = col?.toLowerCase();
           const haveIssue =
-            !viewAll || (viewAll && issuesColumns.includes(colName));
+            !viewAllCol ||
+            (viewAllCol &&
+              selectedIssues[0].errorcolumnnames.includes(colName));
           const columnObj = {
             header: haveIssue ? (
               <>
@@ -254,7 +256,7 @@ const IngestionIssues = () => {
         subTitle={getTitle()}
         icon={<IssueIcon className="black-icon" />}
         saveBtnLabel="View summary"
-        hideCancel
+        hideBtns
         tabs={["Data", "Properties"]}
         selectedTab={0}
         onTabChange={(v) => setCurrentTab(v)}

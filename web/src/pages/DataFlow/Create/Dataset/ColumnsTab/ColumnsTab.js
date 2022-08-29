@@ -16,6 +16,7 @@ import DSColumnTable from "./DSColumnTable";
 import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 import Progress from "../../../../../components/Common/Progress/Progress";
+import { hasSpCharExTild } from "../../../../../components/FormComponents/validators";
 
 const ColumnsTab = ({
   locationType,
@@ -69,17 +70,22 @@ const ColumnsTab = ({
       const reader = new FileReader();
       reader.onload = (e) => {
         const data = e.target.result;
-        const readedData = XLSX.read(data, { type: "binary" });
-        const wsname = readedData.SheetNames[0];
-        const ws = readedData.Sheets[wsname];
-        const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        if (dataParse[0]?.length) {
-          setImportedData(dataParse);
-        } else {
-          messageContext.showErrorMessage(
-            `The selected file does not match the template`
-          );
-          setSelectedFile([]);
+        try {
+          const readedData = XLSX.read(data, { type: "binary" });
+
+          const wsname = readedData.SheetNames[0];
+          const ws = readedData.Sheets[wsname];
+          const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
+          if (dataParse[0]?.length) {
+            setImportedData(dataParse);
+          } else {
+            messageContext.showErrorMessage(
+              `The selected file does not match the template`
+            );
+            setSelectedFile([]);
+          }
+        } catch (err) {
+          console.log("err", err.message);
         }
       };
       reader.readAsBinaryString(f);
@@ -156,9 +162,10 @@ const ColumnsTab = ({
     setFormattedData([]);
     setIsImportReady(false);
   };
-  const showImportProtErr = () => {
+  const showImportProtErr = (msg) => {
     messageContext.showErrorMessage(
-      `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+      msg ||
+        `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
     );
     handleDelete();
   };
@@ -168,15 +175,24 @@ const ColumnsTab = ({
       const correctHeader = checkHeaders(importedData);
       if (correctHeader) {
         const newData = formatData(importedData, protocolnumber);
-        if (newData.some((x) => x.columnName === "")) {
-          messageContext.showErrorMessage(
-            `Please fill column name in each row`
-          );
-          handleDelete();
-          return false;
-        }
         // eslint-disable-next-line no-unused-expressions
         if (newData.length > 0) {
+          if (newData.some((x) => x.columnName === "")) {
+            messageContext.showErrorMessage(
+              `The selected file does not match the template - provide column name.`
+            );
+            handleDelete();
+            return false;
+          }
+          if (
+            newData.some((x) => x.values !== "" && hasSpCharExTild(x.values))
+          ) {
+            messageContext.showErrorMessage(
+              `The selected file does not match the template - LOV must be separated by a tilde “~”`
+            );
+            handleDelete();
+            return false;
+          }
           setFormattedData(newData);
           setIsImportReady(true);
         } else {
@@ -189,7 +205,9 @@ const ColumnsTab = ({
         handleDelete();
       }
     } else if (importedData.length === 1) {
-      showImportProtErr();
+      showImportProtErr(
+        "The selected file does not match the template - provide protocol number and column name."
+      );
     }
   }, [importedData]);
 

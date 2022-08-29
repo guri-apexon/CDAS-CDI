@@ -60,6 +60,7 @@ const Header = (props) => {
     saveBtnLabel,
     saveDisabled,
     hideCancel,
+    hideBtns,
     saveBtn,
     tabs,
     selectedTab,
@@ -117,30 +118,32 @@ const Header = (props) => {
               )}
             </div>
             <div>
-              <ButtonGroup
-                alignItems="right"
-                buttonProps={[
-                  ...(hideCancel
-                    ? []
-                    : [
-                        {
-                          label: "Cancel",
-                          onClick: onCancel,
-                        },
-                      ]),
-                  ...(saveBtn
-                    ? [saveBtn]
-                    : [
-                        {
-                          variant: "primary",
-                          size: "small",
-                          label: saveBtnLabel || "Save",
-                          // disabled: !canUpdateDataFlow || saveDisabled,
-                          onClick: () => props.submit(),
-                        },
-                      ]),
-                ]}
-              />
+              {!hideBtns && (
+                <ButtonGroup
+                  alignItems="right"
+                  buttonProps={[
+                    ...(hideCancel
+                      ? []
+                      : [
+                          {
+                            label: "Cancel",
+                            onClick: onCancel,
+                          },
+                        ]),
+                    ...(saveBtn
+                      ? [saveBtn]
+                      : [
+                          {
+                            variant: "primary",
+                            size: "small",
+                            label: saveBtnLabel || "Save",
+                            // disabled: !canUpdateDataFlow || saveDisabled,
+                            onClick: () => props.submit(),
+                          },
+                        ]),
+                  ]}
+                />
+              )}
             </div>
           </div>
         </Box>

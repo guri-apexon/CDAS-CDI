@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-constant-condition */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-nested-ternary */
@@ -26,6 +27,7 @@ import usePermission, {
   Features,
   useStudyPermission,
 } from "../../../components/Common/usePermission";
+import { hasSpCharExTild } from "../../../components/FormComponents/validators";
 
 const ColumnsTab = ({
   locationType,
@@ -86,11 +88,15 @@ const ColumnsTab = ({
       const reader = new FileReader();
       reader.onload = (e) => {
         const data = e.target.result;
-        const readedData = XLSX.read(data, { type: "binary" });
-        const wsname = readedData.SheetNames[0];
-        const ws = readedData.Sheets[wsname];
-        const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        setImportedData(dataParse);
+        try {
+          const readedData = XLSX.read(data, { type: "binary" });
+          const wsname = readedData.SheetNames[0];
+          const ws = readedData.Sheets[wsname];
+          const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
+          setImportedData(dataParse);
+        } catch (err) {
+          console.log("ERR::::", err.message);
+        }
       };
       reader.readAsBinaryString(f);
     }, 1000);
@@ -166,6 +172,14 @@ const ColumnsTab = ({
     setIsImportReady(false);
   };
 
+  const showImportProtErr = (msg) => {
+    messageContext.showErrorMessage(
+      msg ||
+        `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
+    );
+    handleDelete();
+  };
+
   useEffect(() => {
     if (importedData.length > 1) {
       const correctHeader = checkHeaders(importedData);
@@ -175,13 +189,31 @@ const ColumnsTab = ({
           messageContext.showErrorMessage(
             `Protocol number in file does not match protocol number ‘${protocolnumber}’ for this data flow. Please make sure these match and try again`
           );
-          handleDelete();
+          showImportProtErr();
         } else if (newData?.data?.length === 0) {
           messageContext.showErrorMessage(
             `Please add some proper data and try with import`
           );
           handleDelete();
         } else if (newData?.data?.length > 0) {
+          if (newData?.data.some((x) => x.columnName === "")) {
+            messageContext.showErrorMessage(
+              `The selected file does not match the template - provide column name.`
+            );
+            handleDelete();
+            return false;
+          }
+          if (
+            newData?.data.some(
+              (x) => x.values !== "" && hasSpCharExTild(x.values)
+            )
+          ) {
+            messageContext.showErrorMessage(
+              `The selected file does not match the template - LOV must be separated by a tilde “~”`
+            );
+            handleDelete();
+            return false;
+          }
           setFormattedData(newData.data);
           setIsImportReady(true);
         }
@@ -191,6 +223,10 @@ const ColumnsTab = ({
         );
         handleDelete();
       }
+    } else if (importedData.length === 1) {
+      showImportProtErr(
+        "The selected file does not match the template - provide protocol number and column name."
+      );
     }
   }, [importedData]);
 

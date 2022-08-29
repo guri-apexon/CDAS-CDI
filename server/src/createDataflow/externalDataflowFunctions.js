@@ -710,6 +710,29 @@ exports.insertValidation = async (req) => {
                     dsErrArray = dsErrArray.concat(dsResdt);
                   }
                 }
+
+                if (obj.fileType.toLowerCase() === "sas") {
+                  const dsArrayEncod = [
+                    {
+                      key: "encoding",
+                      value: obj.encoding,
+                      type: "string",
+                    },
+                  ];
+
+                  let dsResEncod = helper.validation(dsArrayEncod);
+                  if (dsResEncod.length > 0) {
+                    dsErrArray = dsErrArray.concat(dsResEncod);
+                  }
+                }
+
+                if (obj.encoding) {
+                  if (!helper.isEncoding(obj.encoding)) {
+                    dsErrArray.push(
+                      "encoding supported values : WLATIN1, UTF-8"
+                    );
+                  }
+                }
               }
 
               if (!obj.columnDefinition) {
@@ -2025,6 +2048,27 @@ const saveDataset = (exports.datasetLevelInsert = async (
               errorDataset = errorDataset.concat(dsResdt);
             }
           }
+
+          if (obj.fileType.toLowerCase() === "sas") {
+            const dsArrayEncod = [
+              {
+                key: "encoding",
+                value: obj.encoding,
+                type: "string",
+              },
+            ];
+
+            let dsResEncod = helper.validation(dsArrayEncod);
+            if (dsResEncod.length > 0) {
+              errorDataset = errorDataset.concat(dsResEncod);
+            }
+          }
+
+          if (obj.encoding) {
+            if (!helper.isEncoding(obj.encoding)) {
+              errorDataset.push("encoding supported values : WLATIN1, UTF-8");
+            }
+          }
         }
 
         if (obj.headerRowNumber) {
@@ -3253,8 +3297,13 @@ exports.dataflowUpdate = async (
     // if (data.externalSystemName) {
     //   updateQueryDF += `,externalsystemname='${data.externalSystemName}'`;
     // }
-    if (data.exptDtOfFirstProdFile) {
-      updateQueryDF += `,expt_fst_prd_dt='${data.exptDtOfFirstProdFile}'`;
+    console.log("update exptDtOfFirstProdFile", data.exptDtOfFirstProdFile);
+    if (typeof data.exptDtOfFirstProdFile != "undefined") {
+      if (data.exptDtOfFirstProdFile) {
+        updateQueryDF += `,expt_fst_prd_dt='${data.exptDtOfFirstProdFile}'`;
+      } else {
+        updateQueryDF += `,expt_fst_prd_dt=null`;
+      }
     }
     if (typeof data.testFlag != "undefined") {
       updateQueryDF += `,testflag=${
@@ -3282,7 +3331,7 @@ exports.dataflowUpdate = async (
     ) {
       updateQueryDF += `,name='${DFTestname}'`;
     }
-    if (data.serviceOwners) {
+    if (typeof data.serviceOwners != "undefined") {
       updateQueryDF += ` ,serv_ownr= '${
         serviceUrl && Array.isArray(serviceUrl) ? serviceUrl.join() : ""
       }'`;
@@ -3614,11 +3663,11 @@ exports.packageUpdate = async (
     if (data.path) {
       updateQueryDP += `, path='${data.path}'`;
     }
-    if (data.sasXptMethod) {
+    if (typeof data.sasXptMethod != "undefined") {
       updateQueryDP += `, sasxptmethod='${data.sasXptMethod}'`;
     }
-    if (data.password) {
-      updateQueryDP += `, password='${data.password}'`;
+    if (typeof data.password != "undefined") {
+      updateQueryDP += `, password='${data.password ? "Yes" : "No"}'`;
     }
 
     if (typeof data.noPackageConfig != "undefined") {
@@ -3800,8 +3849,24 @@ exports.datasetUpdate = async (
               "fileType supported values : EXCEL, DELIMITED, FIXED WIDTH, SAS"
             );
           }
+          if (data.fileType.toLowerCase() === "sas") {
+            if (typeof data.encoding != "undefined") {
+              valDataset.push({
+                key: "encoding ",
+                value: data.encoding,
+                type: "string",
+              });
+            }
+          }
         }
       }
+
+      if (data.encoding) {
+        if (!helper.isEncoding(data.encoding)) {
+          errorDataset.push("encoding supported values : WLATIN1, UTF-8");
+        }
+      }
+
       if (typeof data.fileNamingConvention != "undefined") {
         valDataset.push({
           key: "fileNamingConvention ",
@@ -4162,64 +4227,64 @@ exports.datasetUpdate = async (
         helper.stringToBoolean(data.incremental) ? "Y" : "N"
       }'`;
     }
-    if (data.offsetcolumn) {
+    if (typeof data.offsetcolumn != "undefined") {
       updateQueryDS += `,offsetcolumn='${data.offsetcolumn}'`;
     }
     if (data.fileType) {
       updateQueryDS += `,type='${data.fileType}'`;
     }
-    if (data.path) {
+    if (typeof data.path != "undefined") {
       updateQueryDS += `,path='${data.path}'`;
     }
-    if (data.OverrideStaleAlert) {
+    if (typeof data.OverrideStaleAlert != "undefined") {
       updateQueryDS += `,ovrd_stale_alert='${data.OverrideStaleAlert}'`;
     }
-    if (data.headerRowNumber || data.headerRowNumber === 0) {
+    if (typeof data.headerRowNumber != "undefined") {
       updateQueryDS += `,headerrow='${
         data.headerRowNumber && data.headerRowNumber != "" ? 1 : 0
       }'`;
-      updateQueryDS += `,headerrownumber='${data.headerRowNumber}'`;
+      updateQueryDS += `,headerrownumber='${data.headerRowNumber || 0}'`;
     }
-    if (data.footerRowNumber) {
+    if (typeof data.footerRowNumber != "undefined") {
       updateQueryDS += `,footerrow='${
         data.footerRowNumber && data.footerRowNumber != "" ? 1 : 0
       }'`;
-      updateQueryDS += `,footerrownumber='${data.footerRowNumber}'`;
+      updateQueryDS += `,footerrownumber='${data.footerRowNumber || 0}'`;
     }
-    if (data.customsql) {
+    if (typeof data.customsql != "undefined") {
       updateQueryDS += `,customsql='${sqlQuery}'`;
     }
 
     if (typeof data.customsql_yn != "undefined") {
       updateQueryDS += `,customsql_yn='${data.customsql_yn}'`;
     }
-    if (data.tbl_nm) {
+    if (typeof data.tbl_nm != "undefined") {
       updateQueryDS += `,tbl_nm='${data.tbl_nm}'`;
     }
-    if (data.delimiter) {
+    if (typeof data.delimiter != "undefined") {
       updateQueryDS += `,delimiter='${data.delimiter}'`;
     }
-    if (data.escapeCharacter) {
+    if (typeof data.escapeCharacter != "undefined") {
       updateQueryDS += `,escapecode='${helper.convertEscapeChar(
         data.escapeCharacter
       )}'`;
     }
-    if (data.encoding) {
+    if (typeof data.encoding != "undefined") {
       updateQueryDS += `,charset='${data.encoding}'`;
     }
-    if (data.offset_val) {
+    if (typeof data.offset_val != "undefined") {
       updateQueryDS += `,offset_val='${data.offset_val}'`;
     }
-    if (data.quote) {
-      updateQueryDS += `,quote='${data.quote}'`;
+    if (typeof data.quote != "undefined") {
+      updateQueryDS += `,quote='${data.quote || '"'}'`;
     }
-    if (data.rowDecreaseAllowed || data.rowDecreaseAllowed == 0) {
-      updateQueryDS += `,rowdecreaseallowed='${data.rowDecreaseAllowed}'`;
+    if (typeof data.rowDecreaseAllowed != "undefined") {
+      updateQueryDS += `,rowdecreaseallowed='${data.rowDecreaseAllowed || 0}'`;
     }
     if (data.dataTransferFrequency) {
       updateQueryDS += `,data_freq='${data.dataTransferFrequency}'`;
     }
-    if (data.conditionalExpression) {
+    if (typeof data.conditionalExpression != "undefined") {
       updateQueryDS += `,dataset_fltr='${data.conditionalExpression}'`;
     }
 
@@ -4635,11 +4700,11 @@ exports.clDefUpdate = async (
     if (data.dataType) {
       updateQueryCD += `,datatype='${data.dataType}'`;
     }
-    if (data.minLength || data.minLength == 0) {
-      updateQueryCD += `,charactermin='${data.minLength}'`;
+    if (typeof data.minLength != "undefined") {
+      updateQueryCD += `,charactermin='${data.minLength || 0}'`;
     }
-    if (data.maxLength || data.maxLength == 0) {
-      updateQueryCD += `,charactermax='${data.maxLength}'`;
+    if (typeof data.maxLength != "undefined") {
+      updateQueryCD += `,charactermax='${data.maxLength || 0}'`;
     }
     if (typeof data.primaryKey != "undefined") {
       updateQueryCD += `,primarykey='${
@@ -4656,16 +4721,16 @@ exports.clDefUpdate = async (
         helper.stringToBoolean(data.unique) ? 1 : 0
       }'`;
     }
-    if (data.position) {
-      updateQueryCD += `,position='${data.position}'`;
+    if (typeof data.position != "undefined") {
+      updateQueryCD += `,position='${data.position || 0}'`;
     }
-    if (data.format) {
+    if (typeof data.format != "undefined") {
       updateQueryCD += `,format='${data.format}'`;
     }
-    if (data.lov) {
+    if (typeof data.lov != "undefined") {
       updateQueryCD += `,lov='${data.lov}'`;
     }
-    if (data.variableLabel) {
+    if (typeof data.variableLabel != "undefined") {
       updateQueryCD += `,variable='${data.variableLabel}'`;
     }
 
@@ -4820,7 +4885,7 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
     if (vl.conditionalExpression) {
       updateQueryVLC += `,ruleexpr='${vl.conditionalExpression}'`;
     }
-    if (vl.errorMessage) {
+    if (typeof vl.errorMessage != "undefined") {
       updateQueryVLC += `,errormessage='${vl.errorMessage}'`;
     }
     if (vl.inUse) {

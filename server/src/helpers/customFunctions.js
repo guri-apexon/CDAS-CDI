@@ -159,6 +159,10 @@ exports.isColumnType = (str) => {
   return ["alphanumeric", "numeric", "date"].includes(str.toLowerCase());
 };
 
+exports.isEncoding = (str) => {
+  return ["wlatin1", "utf-8"].includes(str.toLowerCase());
+};
+
 exports.isActive = (str) => {
   return ["y", "n"].includes(str.toLowerCase());
 };
