@@ -35,6 +35,7 @@ import {
   checkFormat,
   checkCharacterLength,
   validateRow,
+  isVlcTildSaparated,
 } from "../../../../../components/FormComponents/validators";
 
 const fieldStyles = {
@@ -260,6 +261,28 @@ export const EditableCell = ({ row, column: { accessor: key } }) => {
   );
 };
 
+export const ValuesEditableCell = ({ row, column: { accessor: key } }) => {
+  const { editMode } = row;
+  // const errorText = checkAlphaNumeric(row[key], key);
+  const errorText =
+    row[key] && !isVlcTildSaparated(row[key])
+      ? "LOV must be separated by a tilde “~”"
+      : false;
+  return editMode ? (
+    <TextField
+      size="small"
+      fullWidth
+      value={row[key]}
+      onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
+      error={!row.isInitLoad && errorText ? true : false}
+      helperText={!row.isInitLoad ? errorText : ""}
+      {...fieldStyles}
+    />
+  ) : (
+    row[key]
+  );
+};
+
 export const Cell = ({ row, column }) => (
   <div style={{ paddingTop: row.editMode ? 12 : 0 }}>
     {row[column.accessor]}
@@ -415,7 +438,7 @@ export const columns = [
   {
     header: "List of values",
     accessor: "values",
-    customCell: EditableCell,
+    customCell: ValuesEditableCell,
     sortFunction: compareStrings,
     filterFunction: createStringSearchFilter("values"),
     filterComponent: TextFieldFilter,
