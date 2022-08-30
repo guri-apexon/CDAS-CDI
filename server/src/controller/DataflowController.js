@@ -981,7 +981,7 @@ exports.updateDataFlow = async (req, res) => {
                         const dk_id = currentDs.datakindid;
 
                         const custSql = currentDs.customsql;
-                        const DSheaderRow = currentDs.headerrow;
+
                         const dataflow = await dataflowHelper.findById(DFId);
                         const dataset = await datasetHelper.findById(DSId);
 
@@ -1104,6 +1104,14 @@ exports.updateDataFlow = async (req, res) => {
                                 let { rows: cdRows } = await DB.executeQuery(
                                   selectCD
                                 );
+
+                                let {
+                                  rows: [dataSEtdata],
+                                } = await DB.executeQuery(
+                                  `select headerrownumber from ${schemaName}.dataset where datasetid='${DSId}'`
+                                );
+                                const DSheaderRow = dataSEtdata.headerrownumber;
+                                // console.log("dataSEtdata", dataSEtdata);
 
                                 const cdExternalId = el.ExternalId;
                                 const currentCd = cdRows ? cdRows[0] : null;
