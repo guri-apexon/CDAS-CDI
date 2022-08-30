@@ -631,7 +631,7 @@ exports.insertValidation = async (req) => {
                     and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
                     and ds.datakindid = '${
                       obj.dataKindID
-                    }'and df.testflag = '${tFlg}'`;
+                    }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
                 let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -1189,7 +1189,7 @@ exports.insertValidation = async (req) => {
                     and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
                     and ds.datakindid = '${
                       obj.dataKindID
-                    }'and df.testflag = '${tFlg}'`;
+                    }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
                 let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -2264,7 +2264,9 @@ const saveDataset = (exports.datasetLevelInsert = async (
           inner join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
           where df.prot_id = '${study}' and df.vend_id = '${vendor}' 
           and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
-          and ds.datakindid = '${obj.dataKindID}'and df.testflag = '${tFlg}'`;
+          and ds.datakindid = '${
+            obj.dataKindID
+          }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
         let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -3297,14 +3299,14 @@ exports.dataflowUpdate = async (
     // if (data.externalSystemName) {
     //   updateQueryDF += `,externalsystemname='${data.externalSystemName}'`;
     // }
-    console.log("update exptDtOfFirstProdFile", data.exptDtOfFirstProdFile);
-    if (typeof data.exptDtOfFirstProdFile != "undefined") {
-      if (data.exptDtOfFirstProdFile) {
-        updateQueryDF += `,expt_fst_prd_dt='${data.exptDtOfFirstProdFile}'`;
-      } else {
-        updateQueryDF += `,expt_fst_prd_dt=null`;
-      }
-    }
+    // console.log("update exptDtOfFirstProdFile", data.exptDtOfFirstProdFile);
+    // if (typeof data.exptDtOfFirstProdFile != "undefined") {
+    //   if (data.exptDtOfFirstProdFile) {
+    //     updateQueryDF += `,expt_fst_prd_dt='${data.exptDtOfFirstProdFile}'`;
+    //   } else {
+    //     updateQueryDF += `,expt_fst_prd_dt=null`;
+    //   }
+    // }
     if (typeof data.testFlag != "undefined") {
       updateQueryDF += `,testflag=${
         helper.stringToBoolean(data.testFlag) ? 1 : 0
@@ -3664,7 +3666,11 @@ exports.packageUpdate = async (
       updateQueryDP += `, path='${data.path}'`;
     }
     if (typeof data.sasXptMethod != "undefined") {
-      updateQueryDP += `, sasxptmethod='${data.sasXptMethod}'`;
+      if (data.sasXptMethod) {
+        updateQueryDP += `, sasxptmethod='${data.sasXptMethod}'`;
+      } else {
+        updateQueryDP += `, sasxptmethod=null`;
+      }
     }
     if (typeof data.password != "undefined") {
       updateQueryDP += `, password='${data.password ? "Yes" : "No"}'`;
@@ -3806,7 +3812,7 @@ exports.datasetUpdate = async (
           where df.prot_id = '${study}' and df.vend_id = '${vendor}' 
           and UPPER(ds.mnemonic) ='${data.datasetName.toUpperCase()}'
           and ds.datakindid = '${dkId}' 
-          and ds.datasetid !=$1 and df.testflag = '${tFlg}'`;
+          and ds.datasetid !=$1 and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
       let queryMnemonic = await DB.executeQuery(selectMnemonic, [DSId]);
 
@@ -4228,16 +4234,28 @@ exports.datasetUpdate = async (
       }'`;
     }
     if (typeof data.offsetcolumn != "undefined") {
-      updateQueryDS += `,offsetcolumn='${data.offsetcolumn}'`;
+      if (data.offsetcolumn) {
+        updateQueryDS += `,offsetcolumn='${data.offsetcolumn}'`;
+      } else {
+        updateQueryDS += `,offsetcolumn=null`;
+      }
     }
     if (data.fileType) {
       updateQueryDS += `,type='${data.fileType}'`;
     }
     if (typeof data.path != "undefined") {
-      updateQueryDS += `,path='${data.path}'`;
+      if (data.path) {
+        updateQueryDS += `,path='${data.path}'`;
+      } else {
+        updateQueryDS += `,path=null`;
+      }
     }
     if (typeof data.OverrideStaleAlert != "undefined") {
-      updateQueryDS += `,ovrd_stale_alert='${data.OverrideStaleAlert}'`;
+      if (data.OverrideStaleAlert || data.OverrideStaleAlert === 0) {
+        updateQueryDS += `,ovrd_stale_alert='${data.OverrideStaleAlert}'`;
+      } else {
+        updateQueryDS += `,ovrd_stale_alert=null`;
+      }
     }
     if (typeof data.headerRowNumber != "undefined") {
       updateQueryDS += `,headerrow='${
@@ -4256,10 +4274,18 @@ exports.datasetUpdate = async (
     }
 
     if (typeof data.customsql_yn != "undefined") {
-      updateQueryDS += `,customsql_yn='${data.customsql_yn}'`;
+      if (data.customsql_yn) {
+        updateQueryDS += `,customsql_yn='${data.customsql_yn}'`;
+      } else {
+        updateQueryDS += `,customsql_yn=null`;
+      }
     }
     if (typeof data.tbl_nm != "undefined") {
-      updateQueryDS += `,tbl_nm='${data.tbl_nm}'`;
+      if (data.tbl_nm) {
+        updateQueryDS += `,tbl_nm='${data.tbl_nm}'`;
+      } else {
+        updateQueryDS += `,tbl_nm=null`;
+      }
     }
     if (typeof data.delimiter != "undefined") {
       updateQueryDS += `,delimiter='${data.delimiter}'`;
@@ -4273,7 +4299,11 @@ exports.datasetUpdate = async (
       updateQueryDS += `,charset='${data.encoding}'`;
     }
     if (typeof data.offset_val != "undefined") {
-      updateQueryDS += `,offset_val='${data.offset_val}'`;
+      if (data.offset_val) {
+        updateQueryDS += `,offset_val='${data.offset_val}'`;
+      } else {
+        updateQueryDS += `,offset_val=null`;
+      }
     }
     if (typeof data.quote != "undefined") {
       updateQueryDS += `,quote='${data.quote || '"'}'`;
@@ -4285,7 +4315,11 @@ exports.datasetUpdate = async (
       updateQueryDS += `,data_freq='${data.dataTransferFrequency}'`;
     }
     if (typeof data.conditionalExpression != "undefined") {
-      updateQueryDS += `,dataset_fltr='${data.conditionalExpression}'`;
+      if (data.conditionalExpression) {
+        updateQueryDS += `,dataset_fltr='${data.conditionalExpression}'`;
+      } else {
+        updateQueryDS += `,dataset_fltr=null`;
+      }
     }
 
     updateQueryDS += ` where datapackageid='${DPId}' and externalid='${externalID}' returning *;`;
@@ -4725,13 +4759,25 @@ exports.clDefUpdate = async (
       updateQueryCD += `,position='${data.position || 0}'`;
     }
     if (typeof data.format != "undefined") {
-      updateQueryCD += `,format='${data.format}'`;
+      if (data.format) {
+        updateQueryCD += `,format='${data.format}'`;
+      } else {
+        updateQueryCD += `,format=null`;
+      }
     }
     if (typeof data.lov != "undefined") {
-      updateQueryCD += `,lov='${data.lov}'`;
+      if (data.lov) {
+        updateQueryCD += `,lov='${data.lov}'`;
+      } else {
+        updateQueryCD += `,lov=null`;
+      }
     }
     if (typeof data.variableLabel != "undefined") {
-      updateQueryCD += `,variable='${data.variableLabel}'`;
+      if (data.variableLabel) {
+        updateQueryCD += `,variable='${data.variableLabel}'`;
+      } else {
+        updateQueryCD += `,variable=null`;
+      }
     }
 
     updateQueryCD += ` where datasetid='${DSId}' and externalid='${externalId}' returning *;`;
@@ -4886,7 +4932,11 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
       updateQueryVLC += `,ruleexpr='${vl.conditionalExpression}'`;
     }
     if (typeof vl.errorMessage != "undefined") {
-      updateQueryVLC += `,errormessage='${vl.errorMessage}'`;
+      if (vl.errorMessage) {
+        updateQueryVLC += `,errormessage='${vl.errorMessage}'`;
+      } else {
+        updateQueryVLC += `,errormessage=null`;
+      }
     }
     if (vl.inUse) {
       updateQueryVLC += `,active_yn='${vl.inUse.toUpperCase()}'`;
