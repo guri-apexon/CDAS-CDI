@@ -119,6 +119,7 @@ export const downloadRows = (props) => {
     inlineFilters,
     sortedColumn,
     sortedValue,
+    showHidden,
   } = props;
   // console.log("inDown", exportHeader);
   const exportRows = exportDataRows(
@@ -131,11 +132,12 @@ export const downloadRows = (props) => {
   );
   const tempObj = {};
   // console.log("exportRows", exportRows);
-  columns
-    .filter((d) => d.hidden !== true && d.ignore !== true)
-    .forEach((d) => {
-      tempObj[d.accessor] = d.header;
-    });
+  (showHidden
+    ? columns
+    : columns.filter((d) => d.hidden !== true && d.ignore !== true)
+  ).forEach((d) => {
+    tempObj[d.accessor] = d.header;
+  });
   const newData = exportRows.map((obj) => {
     const newObj = pick(obj, Object.keys(tempObj));
     return newObj;
