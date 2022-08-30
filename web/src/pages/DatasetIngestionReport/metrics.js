@@ -226,12 +226,12 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
             >
               {historyData.length > 0 ? (
                 <ClusterColumnChart
-                  // {...(historyData.length > 4 && {
-                  //   width:
-                  //     historyData.length > 10
-                  //       ? historyData.length * 80 + 1000
-                  //       : "1560",
-                  // })}
+                  {...(historyData.length && {
+                    width:
+                      historyData.length > 10
+                        ? historyData.length * 160
+                        : window.innerWidth - 400,
+                  })}
                   data={historyData}
                   suffix="k"
                   yTicks={6}
