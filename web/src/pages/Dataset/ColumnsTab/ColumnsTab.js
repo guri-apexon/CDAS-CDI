@@ -207,7 +207,7 @@ const ColumnsTab = ({
             return false;
           }
           if (
-            newData.some(
+            newData.data?.some(
               (x) => x.values !== "" && !isVlcTildSaparated(x.values)
             )
           ) {

@@ -457,7 +457,7 @@ exports.getIssueColumns = async (req, res) => {
         "Selected issue doesn't have any columns"
       );
     }
-    const baseQuery = `SELECT \`_rowno\`, ${errColumns} from ${dbName}.${tableName} WHERE \`_rowno\` in`;
+    const baseQuery = `SELECT \`_rowno\`, \`_error\`, ${errColumns} from ${dbName}.${tableName} WHERE \`_valid\` = "false" and \`_rowno\` in`;
     let concatQuery = "";
     if (errRows.length > 1000) {
       for (let i = 0; i < errRows.length; i += 1000) {

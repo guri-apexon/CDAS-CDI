@@ -118,7 +118,7 @@ const IngestionIssues = () => {
         ? { ...x, header: x.header.props?.children[1] || "" }
         : x;
     });
-    console.log("filteredColumns", filteredColumns, tableRows);
+    // console.log("filteredColumns", filteredColumns, tableRows);
     downloadRows({
       name: `Dataset-(${datasetId})-Ingestion-issue`,
       ext: "xlsx",
@@ -131,6 +131,7 @@ const IngestionIssues = () => {
       inlineFilters,
       sortedColumn,
       sortedValue,
+      showHidden: true,
     });
   };
 
@@ -197,6 +198,9 @@ const IngestionIssues = () => {
             columnObj.customCell = ({ row, column: { accessor: key } }) => {
               return <span>{row[key] || "----"}</span>; // className="issue-td" For Highlited
             };
+          }
+          if (colName === "_error") {
+            columnObj.hidden = true;
           }
           columnsArr.push(columnObj);
         });
