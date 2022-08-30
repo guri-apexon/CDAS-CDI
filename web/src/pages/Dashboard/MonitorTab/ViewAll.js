@@ -8,7 +8,6 @@ import Loader from "apollo-react/components/Loader";
 import BreadcrumbsUI from "apollo-react/components/Breadcrumbs";
 import Button from "apollo-react/components/Button";
 import Typography from "apollo-react/components/Typography";
-import Switch from "apollo-react/components/Switch";
 import FilterIcon from "apollo-react-icons/Filter";
 import DownloadIcon from "apollo-react-icons/Download";
 import ChevronLeft from "apollo-react-icons/ChevronLeft";
@@ -51,7 +50,6 @@ const ViewAll = () => {
   const location = useLocation();
 
   const [rows, setRowData] = useState([]);
-  const [activeOnly, setActiveOnly] = useState(true);
 
   const parsedQuery = queryString.parse(location.search);
 
@@ -117,8 +115,8 @@ const ViewAll = () => {
   }, [dashboard.ingestionData]);
 
   useEffect(() => {
-    fetchLatestData(control, activeOnly);
-  }, [processStatus, activeOnly, control]);
+    fetchLatestData(control, true);
+  }, [processStatus, control]);
 
   const goToDashboard = () => {
     history.push("/dashboard?monitor");
@@ -132,21 +130,8 @@ const ViewAll = () => {
     },
   ];
 
-  const handleChange = (e, checked) => {
-    setActiveOnly(checked);
-  };
-
   const CustomHeader = ({ toggleFilters }) => (
     <div>
-      <Switch
-        label="Show active datasets"
-        size="small"
-        checked={activeOnly}
-        labelPlacement="start"
-        className="MuiSwitch"
-        onChange={handleChange}
-        style={{ marginRight: 21 }}
-      />
       <Button
         id="downloadBtn"
         icon={<DownloadIcon />}
