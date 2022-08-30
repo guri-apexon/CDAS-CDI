@@ -16,7 +16,10 @@ import DSColumnTable from "./DSColumnTable";
 import { downloadTemplate } from "../../../../../utils/downloadData";
 import { checkHeaders, formatData, isSftp } from "../../../../../utils/index";
 import Progress from "../../../../../components/Common/Progress/Progress";
-import { hasSpCharExTild } from "../../../../../components/FormComponents/validators";
+import {
+  hasSpCharExTild,
+  isVlcTildSaparated,
+} from "../../../../../components/FormComponents/validators";
 
 const ColumnsTab = ({
   locationType,
@@ -108,8 +111,14 @@ const ColumnsTab = ({
               primaryKey: column.primaryKey ? "Yes" : "No",
               unique: column.unique === 1 ? "Yes" : "No",
               required: column.required === 1 ? "Yes" : "No",
-              minLength: column.charactermin || "",
-              maxLength: column.charactermax || "",
+              minLength:
+                column.charactermin || column.charactermin === 0
+                  ? column.charactermin
+                  : "",
+              maxLength:
+                column.charactermax || column.charactermax === 0
+                  ? column.charactermax
+                  : "",
               values: column.lov || "",
               isInitLoad: true,
               isHavingColumnName: true,
@@ -179,7 +188,9 @@ const ColumnsTab = ({
             return false;
           }
           if (
-            newData.some((x) => x.values !== "" && hasSpCharExTild(x.values))
+            newData.some(
+              (x) => x.values !== "" && !isVlcTildSaparated(x.values)
+            )
           ) {
             messageContext.showErrorMessage(
               `The selected file does not match the template - LOV must be separated by a tilde “~”`

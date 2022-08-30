@@ -103,6 +103,13 @@ export const hasSpCharExTild = (str = "") => {
   return /[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(str);
 };
 
+export const isVlcTildSaparated = (str = "") => {
+  const value = str.trim();
+  if (!value.includes("~") || value.startsWith("~") || value.endsWith("~"))
+    return false;
+  return true;
+};
+
 export const checkAlphaNumericFileName = (value) => {
   const regexp = /^[A-Za-z0-9-_.%@&()!#~;+,{}<>[\] \b]+$/;
   const regexp2 = /[^hmsdyinx_%/-\s]/gi;
@@ -366,6 +373,7 @@ export const validateRow = (row, extraValidation = true) => {
     format,
     haveHeader,
     position,
+    values,
   } = row;
 
   if (
@@ -373,6 +381,7 @@ export const validateRow = (row, extraValidation = true) => {
     !columnName ||
     !extraValidation ||
     (haveHeader === false && checkNumeric(position, true)) ||
+    (values && !isVlcTildSaparated(values)) ||
     // (columnName && hasSpecialCHar(columnName)) ||
     (dataType && format && checkFormat(format, "format", dataType)) ||
     minLength ||
