@@ -3138,16 +3138,20 @@ exports.dataflowUpdate = async (
     }
 
     if (data.exptDtOfFirstProdFile) {
-      function validateDOB(date) {
-        var pattern =
-          /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/;
-        if (!pattern.test(date)) {
-          errorDF.push(
-            "exptDtOfFirstProdFile optional and data format should be [YYYY-MM-DD HH:MI:SS]"
-          );
-        }
-      }
-      validateDOB(data.exptDtOfFirstProdFile);
+      // function validateDOB(date) {
+      //   var pattern =
+      //     /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/;
+      //   if (!pattern.test(date)) {
+      //     errorDF.push(
+      //       "exptDtOfFirstProdFile optional and data format should be [YYYY-MM-DD HH:MI:SS]"
+      //     );
+      //   }
+      // }
+      // validateDOB(data.exptDtOfFirstProdFile);
+
+      errorDF.push(
+        "Expected First File Date can only be updated manually from CDI"
+      );
     }
 
     if (typeof data.externalSystemName != "undefined") {
