@@ -172,6 +172,12 @@ const DataFlow = ({ FormValues, dashboard }) => {
     }
   }, [dataFlowdetail]);
 
+  useEffect(() => {
+    return () => {
+      dispatch(updateSelectedLocation({}));
+    };
+  }, []);
+
   // useEffect(() => {
   //   if (!dashboard?.selectedCard?.prot_id) {
   //     history.push("/dashboard");
