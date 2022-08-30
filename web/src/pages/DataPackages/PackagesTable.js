@@ -62,7 +62,13 @@ const NameCustomCell = ({ row, column: { accessor } }) => {
   return (
     <div className="flex package-name-td">
       <PackageIcon style={{ width: 15, margin: "0px 10px" }} />
-      <span className="b-font">{title}</span>
+      {title.length > 20 ? (
+        <Tooltip title={title} placement="top">
+          <span className="b-font">{title}</span>
+        </Tooltip>
+      ) : (
+        <span className="b-font">{title}</span>
+      )}
     </div>
   );
 };
