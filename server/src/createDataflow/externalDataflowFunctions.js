@@ -2777,7 +2777,7 @@ const columnSave = (exports.columnDefinationInsert = async (
     // Column Def Name check
     if (el.columnName) {
       let clName = await DB.executeQuery(
-        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${el.columnName}';`
+        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${el.columnName}' and del_flg=0;`
       );
       //new changes1
       if (clName.rows.length > 0) {
@@ -3093,9 +3093,11 @@ exports.dataflowUpdate = async (
     let vName;
     let vendor_Id;
 
+    let isUpdate = false;
     let vNameDB;
     let ptNum;
     let desc;
+    var testFlag;
     var newDfobj = {};
     let valData = [];
 
@@ -3257,28 +3259,33 @@ exports.dataflowUpdate = async (
       desc = dataflowData.rows[0].description;
     }
 
-    // var DFTestname = `${vName}-${ptNum}-${desc}`;
-
-    var testFlag = dataflowData.rows[0].testflag;
-
-    if (data.testFlag) {
+    if (data.testFlag || data.testFlag === 0) {
       testFlag = helper.stringToBoolean(data.testFlag);
-    }
-    if (data.testFlag === 0) {
-      testFlag = helper.stringToBoolean(data.testFlag);
+    } else {
+      testFlag = dataflowData.rows[0].testflag;
     }
 
-    var DFTestname = await dataFlow.createDataflowName(
-      vendor_Id,
-      ptNum,
-      desc,
-      helper.stringToBoolean(testFlag),
-      DFId
-    );
+    // any difference check
+    if (
+      data.vendorid != dataflowData.rows[0].vend_id ||
+      data.protocolNumberStandard != protocolData.rows[0].prot_nbr_stnd ||
+      data.description != dataflowData.rows[0].description ||
+      data.testFlag !== dataflowData.rows[0].testflag
+    ) {
+      console.log("difference somthings");
+      isUpdate = true;
+    }
 
-    // if (helper.stringToBoolean(testFlag)) {
-    //   DFTestname = "TST-" + DFTestname;
-    // }
+    var DFTestname = dataflowData.rows[0].name;
+    if (isUpdate) {
+      DFTestname = await dataFlow.createDataflowName(
+        vendor_Id,
+        ptNum,
+        desc,
+        helper.stringToBoolean(testFlag),
+        DFId
+      );
+    }
 
     let serviceUrl = [];
     if (data.serviceOwners) {
@@ -4711,7 +4718,7 @@ exports.clDefUpdate = async (
 
     if (data.columnName) {
       let clName = await DB.executeQuery(
-        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and columnid !='${cdId}' and name='${data.columnName}';`
+        `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and columnid !='${cdId}' and name='${data.columnName}' and del_flg=0;`
       );
       if (clName.rows.length > 0) {
         errorcolDef.push(
