@@ -457,7 +457,12 @@ exports.getIssueColumns = async (req, res) => {
         "Selected issue doesn't have any columns"
       );
     }
-    const baseQuery = `SELECT \`_rowno\`, \`_error\`, ${errColumns} from ${dbName}.${tableName} WHERE \`_valid\` = "false" and \`_rowno\` in`;
+    let columnsStr = "";
+    errColumns.forEach((x) => {
+      columnsStr += columnsStr ? `, \`${x}\`` : `\`${x}\``;
+    });
+    const baseQuery = `SELECT \`_rowno\`, \`_error\`, ${columnsStr} from ${dbName}.${tableName} WHERE \`_valid\` = "false" and \`_rowno\` in`;
+    // console.log("baseQuery", baseQuery);
     let concatQuery = "";
     if (errRows.length > 1000) {
       for (let i = 0; i < errRows.length; i += 1000) {
