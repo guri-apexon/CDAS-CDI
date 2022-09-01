@@ -75,6 +75,7 @@ const DashboardReducer = (state = initialState, action) =>
       case GET_DATA_FLOW_LIST_SUCCESS:
         newState.loading = false;
         newState.flowData = action.flowData;
+        newState.readPermission = action.readPermission;
         break;
 
       case GET_DATA_FLOW_LIST_FAILURE:
