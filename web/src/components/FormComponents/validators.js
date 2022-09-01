@@ -381,7 +381,7 @@ export const validateRow = (row, extraValidation = true) => {
 
   if (
     !dataType ||
-    !columnName ||
+    (haveHeader && !columnName) ||
     !extraValidation ||
     (haveHeader === false && checkNumeric(position, true)) ||
     (values && !isVlcTildSaparated(values)) ||
