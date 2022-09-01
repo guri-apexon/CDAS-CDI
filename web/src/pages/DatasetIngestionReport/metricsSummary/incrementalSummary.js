@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
+import { useHistory, useParams } from "react-router";
 import DonutChartV2 from "apollo-react/components/DonutChartV2";
 import Typography from "apollo-react/components/Typography";
 import Link from "apollo-react/components/Link";
@@ -20,6 +21,10 @@ const IncrementalSummary = ({
   const totalFileIngested = datasetProperties?.totalFileIngested || 0;
   const filesWithIssuesPer =
     totalFileIngested > 0 ? (filesWithIssues * 100) / totalFileIngested : 0;
+
+  const history = useHistory();
+  const { datasetId } = useParams();
+
   return (
     <div className="summary-body" style={{ marginTop: 40 }}>
       <div className="post-ingestion-issues">
@@ -88,7 +93,9 @@ const IncrementalSummary = ({
           </Typography>
 
           <Link
-            onClick={() => console.log("link clicked")}
+            onClick={() =>
+              history.push(`/dashboard/ingestion-issues/${datasetId}`)
+            }
             style={{ color: "#fff", fontSize: 14, fontWeight: 500 }}
           >
             View ingestion issue report
