@@ -83,6 +83,6 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "jest-html-reporters": "^2.1.2",
     "prettier": "2.4.1",
-    "xlsx": "^0.17.5"
+    "xlsx": "^0.18.5"
   }
 }
