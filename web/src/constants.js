@@ -239,6 +239,7 @@ export const FETCH_DATASET_INGESTION_TRANSFER_LOG_FAILURE =
 // API URLS
 
 export const GETSTUDYDF = "v1/api/dataflow/studyDataflowList";
+export const GET_STUDY_PERMISSION = "v1/api/dataflow/check-permission";
 export const STUDYSEARCH = "v1/api/study/search-study";
 export const STUDYAPI = "v1/api/study";
 export const CDIHOMEAPI = "v1/api/cdihome";
