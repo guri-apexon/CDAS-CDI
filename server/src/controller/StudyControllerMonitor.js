@@ -8,6 +8,7 @@ exports.getDatasetIngestionMonitorDetail = async function (req, res) {
     const testFlag = req.query.testFlag || 9; // default value 9
     const processStatus = req.query.processStatus || null;
     const limit = req.query.limit || 10; // default valu is 10
+    const active = parseInt(req.query.active, 10) === 1 ? "Y" : "N";
     const noOfDays = req.query.noOfDays || 10; // deafult value is 10
     const summaryCount = await DB.executeQuery(
       `select * from fn_get_study_summary('${userId}', null, ${testFlag})`
@@ -20,7 +21,7 @@ exports.getDatasetIngestionMonitorDetail = async function (req, res) {
     const response = await DB.executeQuery(
       `select * from fn_get_study_dataset_summary('${userId}', ${testFlag}, '', ${
         processStatus ? `'${processStatus}'` : null
-      }, ${limit}, ${noOfDays})`
+      }, ${limit}, ${noOfDays}, '${active}')`
     );
     const dataSets = response.rows || [];
     const summary = summaryCount.rows ? summaryCount.rows[0] : {};
@@ -43,12 +44,13 @@ exports.getIngestionMonitorDataSets = async function (req, res) {
   const testFlag = req.query.testFlag || 9; // default value 9
   const processStatus = req.query.processStatus || null; // default value null
   const limit = req.query.limit || 0; // pass 0 if all records required
+  const active = parseInt(req.query.active, 10) === 1 ? "Y" : "N";
   const noOfDays = req.query.noOfDays || 3; // default value is 3
   try {
     const dataSetResult = await DB.executeQuery(
       `select * from fn_get_study_dataset_summary('${userId}', ${testFlag}, '', ${
         processStatus ? `'${processStatus}'` : null
-      }, ${limit}, ${noOfDays})`
+      }, ${limit}, ${noOfDays}, '${active}')`
     );
     const datasets = dataSetResult?.rows || [];
     Logger.info({
