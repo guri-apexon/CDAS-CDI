@@ -510,7 +510,10 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
         ? transferHistory?.records.filter((rec) => {
             if (transferLogFilter === "ingestion_issues") {
               return (
-                rec.FileTransferStatus?.toLowerCase() === "loaded with issues"
+                rec.FileTransferStatus?.toLowerCase() ===
+                  "loaded with issues" ||
+                rec.FileTransferStatus?.toLowerCase() ===
+                  "processed with errors"
               );
             }
             if (transferLogFilter === "failed") {
