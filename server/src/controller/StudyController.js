@@ -145,7 +145,7 @@ exports.getDatasetIngestionDashboardDetail = async function (req, res) {
     let searchCondition = " and df.testflag in (1, 0)";
     let queryCondition = " and df.testflag in (1, 0)";
     const testFlag = req.query.testFlag || 9;
-    const active = req.query.active || null;
+    const active = parseInt(req.query.active, 10) === 1 ? 'Y' : 'N';
     const processStatus = req.query.processStatus || null;
     const limit = req.query.limit || null; // default valu is 10
     const noOfDays = req.query.noOfDays || null; // deafult value is 10
@@ -166,7 +166,7 @@ exports.getDatasetIngestionDashboardDetail = async function (req, res) {
 
     const searchQuery = `select * from fn_get_study_dataset_summary('${userId}', ${testFlag}, '${prot_id}', ${
       processStatus ? `'${processStatus}'` : null
-    }, ${limit}, ${noOfDays})`;
+    }, ${limit}, ${noOfDays}, '${active}')`;
 
     const response = await DB.executeQuery(searchQuery);
 
