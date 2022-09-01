@@ -41,7 +41,7 @@ const IssueRightPanel = ({
     return [];
   };
   useEffect(() => {
-    const { _rowno, rowIndex, ...rest } = rowDetails;
+    const { _rowno, rowIndex, _error, ...rest } = rowDetails;
     setColumns(rest);
     if (_rowno) {
       const data = selectedIssues.filter((x) =>
