@@ -428,7 +428,7 @@ export default function DataflowTab({ updateData, updateHeight }) {
           </SegmentedControlGroup>
         </div>
         <div>
-          {canCreateDataFlow && (
+          {canCreateDataFlow && dashboard?.readPermission && (
             <MenuButton
               buttonText="Add data flow"
               menuItems={menuItems}
