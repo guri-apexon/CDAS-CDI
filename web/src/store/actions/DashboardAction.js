@@ -40,10 +40,16 @@ export const updateSelectedStudy = (study) => {
   };
 };
 
-export const getFlowDetailsOfStudy = (protocolId) => {
+export const getFlowDetailsOfStudy = (
+  protocolId,
+  protocolnumberstandard,
+  userId
+) => {
   return {
     type: GET_DATA_FLOW_LIST,
     protocolId,
+    protocolnumberstandard,
+    userId,
   };
 };
 

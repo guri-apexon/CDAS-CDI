@@ -5,6 +5,10 @@ const router = express.Router();
 
 router.post("/studyDataflowList", DataflowController.getStudyDataflows);
 router.get("/detail/:dataFlowId", DataflowController.getDataflowDetail);
+router.post(
+  "/check-permission",
+  DataflowController.checkUserStudyAlterPermission
+);
 router.post("/create-dataflow", DataflowController.createDataflow);
 router.post("/update-config", DataflowController.updateDataflowConfig);
 router.post("/hard-delete", DataflowController.hardDeleteNew);
