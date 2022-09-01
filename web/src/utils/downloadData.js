@@ -11,7 +11,6 @@ export const exportToCSV = (
   rowsPerPageRecord
 ) => {
   const wb = XLSX.utils.book_new();
-  let ws = XLSX.worksheet;
   const rowPerPage =
     rowsPerPageRecord === "All" ? exportData.length : rowsPerPageRecord;
   const from = pageNo * rowPerPage;
@@ -23,7 +22,7 @@ export const exportToCSV = (
   // }));
   newData.unshift(headers);
 
-  ws = XLSX.utils.json_to_sheet(newData, { skipHeader: true });
+  const ws = XLSX.utils.json_to_sheet(newData, { skipHeader: true });
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
   XLSX.writeFile(wb, fileName);
 };
