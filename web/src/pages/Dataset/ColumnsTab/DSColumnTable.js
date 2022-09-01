@@ -558,7 +558,10 @@ export default function DSColumnTable({
       e.columnName.toLowerCase()
     );
 
-    if (formattedColumnData.length !== _.uniq(columnNames).length) {
+    if (
+      haveHeader &&
+      formattedColumnData.length !== _.uniq(columnNames).length
+    ) {
       messageContext.showErrorMessage(
         "Column name should be unique for a dataset"
       );
@@ -657,6 +660,7 @@ export default function DSColumnTable({
       .find((e) => e.uniqueId === uniqueId);
 
     if (
+      haveHeader &&
       rows.some(
         (r) =>
           r.columnName.toLowerCase() ===
@@ -824,9 +828,7 @@ export default function DSColumnTable({
     }
     if (
       editedlength &&
-      editedData.some(
-        (row) => !validateRow(row, positionValidation(haveHeader, row.position))
-      )
+      editedData.some((row) => !validateRow({ ...row, haveHeader }))
     ) {
       setDisableSaveAll(true);
     } else {

@@ -173,7 +173,12 @@ const IngestionIssues = () => {
       const columnsArr = [...fixedColumns];
       // console.log("viewAll", viewAll, selectedIssues);
       if (selectedIssues?.length) {
-        const allColumns = JSON.parse(selectedIssues[0].allcolumns);
+        const allColumns = [
+          ...new Set([
+            ...JSON.parse(selectedIssues[0].allcolumns),
+            ...issuesColumns,
+          ]),
+        ];
 
         (viewAllCol ? allColumns : issuesColumns).forEach((col) => {
           const colName = col?.toLowerCase();
