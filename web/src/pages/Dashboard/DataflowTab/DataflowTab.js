@@ -428,7 +428,7 @@ export default function DataflowTab({ updateData, updateHeight }) {
           </SegmentedControlGroup>
         </div>
         <div>
-          {canCreateDataFlow && dashboard?.readPermission && (
+          {dashboard?.readPermission && (
             <MenuButton
               buttonText="Add data flow"
               menuItems={menuItems}
@@ -767,6 +767,7 @@ export default function DataflowTab({ updateData, updateHeight }) {
           variant="secondary"
           icon={<PlusIcon />}
           size="small"
+          disabled={!dashboard?.readPermission}
           style={{ marginLeft: "8px", marginTop: "14px" }}
           onClick={() => history.push("/dashboard/dataflow/create")}
         >
