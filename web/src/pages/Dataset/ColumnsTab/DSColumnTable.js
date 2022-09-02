@@ -110,6 +110,9 @@ export default function DSColumnTable({
   const [isDFSynced, setIsDFSynced] = useState(false);
   const [isSftpDf, setIsSftpDf] = useState(false);
 
+  // flag for maintaining overriding data in DB
+  const [isOverride, setIsOverride] = useState(false);
+
   const setInitRow = () => {
     setRows([{ uniqueId: 1, ...initColumnObj }]);
   };
@@ -263,6 +266,7 @@ export default function DSColumnTable({
           // setEditedRows([...newData?.data]);
           // setSelectedRows([...initRows]);
         }
+        setIsOverride(true);
       } else {
         messageContext.showErrorMessage(
           `The selected file does not match the template`
@@ -272,6 +276,7 @@ export default function DSColumnTable({
     } else {
       setSelectedFile(null);
       setIsFilePicked(false);
+      setIsOverride(false);
       setShowOverWrite(false);
       messageContext.showErrorMessage(
         "File not picked correctly please try again"
@@ -594,6 +599,7 @@ export default function DSColumnTable({
         dpId,
         userId: userInfo.userId,
         versionFreezed,
+        isOverride: isOverride || false,
       });
       if (created?.status && Object.keys(created?.data).length) {
         const prevRows = [...rows];
@@ -629,9 +635,11 @@ export default function DSColumnTable({
     }
     setEditedBackup([]);
     dispatch(getDatasetColumns(dsId));
+    setIsOverride(false);
   };
 
   const onRowSave = async (uniqueId) => {
+    setIsOverride(false);
     const editedRowData = _.filter(
       getEditedRows(),
       (e) => e.uniqueId === uniqueId
@@ -736,6 +744,7 @@ export default function DSColumnTable({
 
   const onCancelAll = () => {
     toggleEditMode("All");
+    setIsOverride(false);
     // setIsEditAll(false);
     // setEditMode(false);
   };
