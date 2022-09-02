@@ -15,21 +15,18 @@ const CummulativeSummary = ({
 }) => {
   const history = useHistory();
   const { datasetId } = useParams();
+  console.log(datasetProperties, "data");
   const data = [
     {
       type: "New Records",
       a:
-        datasetProperties?.totalRecords > 0
-          ? ((datasetProperties?.newRecords || 0) * 100) /
-            datasetProperties?.totalRecords
-          : 0,
+        datasetProperties?.totalRecords > 0 ? datasetProperties?.newRecords : 0,
     },
     {
       type: "Modified Records",
       a:
         datasetProperties?.totalRecords > 0
-          ? ((datasetProperties?.modifiedRecords || 0) * 100) /
-            datasetProperties?.totalRecords
+          ? datasetProperties?.modifiedRecords
           : 0,
     },
   ];
@@ -124,7 +121,7 @@ const CummulativeSummary = ({
         >
           Number of Records Changed by status from Previous Transfer
         </Typography>
-        <BarChart suffix="%" data={data} width={308} height={250} />
+        <BarChart data={data} width={308} height={250} />
       </div>
     </div>
   );
