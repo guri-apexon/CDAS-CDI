@@ -877,7 +877,7 @@ export default function DSColumnTable({
           initialSortOrder="asc"
           rowId="uniqueId"
           hasScroll={true}
-          rows={rows.map((row, i) => ({
+          rows={filteredRows.map((row, i) => ({
             ...row,
             onRowDelete,
             editRow,
