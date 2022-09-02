@@ -296,6 +296,9 @@ const IngestionIssues = () => {
               subtitle={`${tableRows.length} records with issues`}
               columns={columns}
               rows={tableRows}
+              defaultRowsPerPage={5}
+              maxHeight={337}
+              hasScroll
               rowId="rowIndex"
               initialSortedColumn="_rowno"
               initialSortOrder="asc"
