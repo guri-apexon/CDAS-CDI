@@ -154,9 +154,7 @@ exports.checkPermissionStudy = async (userid, feature, prot_nbr_stnd) => {
   try {
     const result = await DB.executeQuery(query);
     if (result && result.rowCount > 0) return result.rows[0].count !== "0";
-  } catch (error) {
-    console.log("error", error);
-  }
+  } catch (error) {}
   return false;
 };
 
