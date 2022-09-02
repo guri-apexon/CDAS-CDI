@@ -66,6 +66,10 @@ exports.saveDatasetColumns = async (req, res) => {
     if (!dsId) {
       return apiResponse.ErrorResponse(res, "Please pass dataset id");
     }
+
+    // flag for checking if existing data needs to be override
+    const isOverride = req.body.isOverride || false;
+
     const curDate = helper.getCurrentTime();
 
     // const versionFreezed = false;
@@ -87,6 +91,17 @@ exports.saveDatasetColumns = async (req, res) => {
     const datasetColumns = [];
 
     if (values?.length) {
+      // set existing data delete flag in case of override
+      if (isOverride) {
+        const response = await this.overrideDatasetColumns(req, res);
+        if (response !== true) {
+          return apiResponse.ErrorResponse(
+            res,
+            "Error in overriding existing data"
+          );
+        }
+      }
+
       const configJsonArr = [];
       for (let value of values) {
         const body = [
@@ -345,6 +360,38 @@ exports.deleteColumns = async (req, res) => {
     });
   } catch (err) {
     Logger.error("catch: deleteColumns");
+    Logger.error(err.message);
+    return apiResponse.ErrorResponse(res, err.message);
+  }
+};
+
+exports.overrideDatasetColumns = async (req, res) => {
+  try {
+    const { dsId, dpId, dfId, userId, versionFreezed } = req.body;
+    if (!dsId) {
+      return false;
+    }
+    Logger.info({ message: "overrideDatasetColumns" });
+
+    const updateQuery = `update ${schemaName}.columndefinition set del_flg = 1 where datasetid = $1 returning *;`;
+
+    const response = await DB.executeQuery(updateQuery, [dsId]);
+    const columnObj = response?.rows?.length ? response.rows[0] : null;
+    await updateSqlQuery(dsId, true);
+    const historyVersion = await CommonController.addColumnHistory(
+      dsId,
+      dfId,
+      dpId,
+      userId,
+      JSON.stringify(columnObj),
+      { [dsId]: { del_flg: 0 } },
+      { [dsId]: { del_flg: 1 } },
+      versionFreezed
+    );
+    if (!historyVersion) throw new Error("History not updated");
+    return true;
+  } catch (err) {
+    Logger.error("catch: overrideDatasetColumns");
     Logger.error(err.message);
     return apiResponse.ErrorResponse(res, err.message);
   }
