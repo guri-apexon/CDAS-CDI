@@ -11,6 +11,7 @@ import Typography from "apollo-react/components/Typography";
 import Switch from "apollo-react/components/Switch";
 import FilterIcon from "apollo-react-icons/Filter";
 import DownloadIcon from "apollo-react-icons/Download";
+import RefreshIcon from "apollo-react-icons/Refresh";
 import ChevronLeft from "apollo-react-icons/ChevronLeft";
 
 import DatasetTable from "./DatasetTable";
@@ -161,8 +162,18 @@ const ViewAll = () => {
         variant="secondary"
         icon={FilterIcon}
         onClick={toggleFilters}
+        style={{ marginRight: "10px" }}
       >
         Filter
+      </Button>
+      <Button
+        size="small"
+        id="filterBtn"
+        variant="secondary"
+        icon={RefreshIcon}
+        onClick={() => fetchLatestData(control, activeOnly)}
+      >
+        Refresh
       </Button>
     </div>
   );
