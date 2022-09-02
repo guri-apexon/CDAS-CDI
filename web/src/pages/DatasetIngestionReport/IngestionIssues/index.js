@@ -182,10 +182,13 @@ const IngestionIssues = () => {
 
         (viewAllCol ? allColumns : issuesColumns).forEach((col) => {
           const colName = col?.toLowerCase();
+
           const haveIssue =
             !viewAllCol ||
             (viewAllCol &&
-              selectedIssues[0].errorcolumnnames.includes(colName));
+              selectedIssues?.some((x) =>
+                x.errorcolumnnames.includes(colName)
+              ));
           const columnObj = {
             header: haveIssue ? (
               <>
