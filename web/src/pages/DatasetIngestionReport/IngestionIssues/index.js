@@ -175,8 +175,8 @@ const IngestionIssues = () => {
       if (selectedIssues?.length) {
         const allColumns = [
           ...new Set([
-            ...JSON.parse(selectedIssues[0].allcolumns),
             ...issuesColumns,
+            ...JSON.parse(selectedIssues[0].allcolumns),
           ]),
         ];
 
