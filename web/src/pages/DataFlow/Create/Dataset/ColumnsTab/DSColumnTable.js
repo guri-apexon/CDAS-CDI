@@ -226,7 +226,7 @@ export default function DSColumnTable({
       return (
         rw?.variableLabel?.toLowerCase().includes(value) ||
         rw?.columnName?.toLowerCase().includes(value) ||
-        rw?.position?.toLowerCase().includes(value) ||
+        rw?.position?.toString().includes(value) ||
         rw?.format?.toLowerCase().includes(value) ||
         rw?.dataType?.toLowerCase().includes(value) ||
         rw?.primaryKey?.toLowerCase().includes(value) ||
