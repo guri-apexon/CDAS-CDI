@@ -147,13 +147,16 @@ exports.checkPermissionStudy = async (userid, feature, prot_nbr_stnd) => {
   f2.feat_nm = '${feature}' and 
   sur.usr_id ='${userid}' and 
   UPPER(u.usr_stat)= 'ACTIVE' and 
-  s.prot_nbr_stnd ='${prot_nbr_stnd}' 
-      `;
+  s.prot_nbr_stnd ='${prot_nbr_stnd}' and 
+  p2.prod_nm = 'Ingestion' and 
+  su.act_flg =1 and sur.act_flg = 1 and rp.act_flg =1 and pppm.act_flg =1 and pp.act_flg=1;`;
 
   try {
     const result = await DB.executeQuery(query);
     if (result && result.rowCount > 0) return result.rows[0].count !== "0";
-  } catch (error) {}
+  } catch (error) {
+    console.log("error", error);
+  }
   return false;
 };
 
