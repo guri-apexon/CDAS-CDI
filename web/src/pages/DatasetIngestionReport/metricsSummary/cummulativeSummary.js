@@ -15,7 +15,6 @@ const CummulativeSummary = ({
 }) => {
   const history = useHistory();
   const { datasetId } = useParams();
-  console.log(datasetProperties, "data");
   const data = [
     {
       type: "New Records",
