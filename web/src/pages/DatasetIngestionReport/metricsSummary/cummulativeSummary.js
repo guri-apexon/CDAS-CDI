@@ -20,6 +20,11 @@ const CummulativeSummary = ({
       type: "New Records",
       a:
         datasetProperties?.totalRecords > 0 ? datasetProperties?.newRecords : 0,
+      // Logic to convert into percentage
+      // datasetProperties?.totalRecords > 0
+      //   ? ((datasetProperties?.newRecords || 0) * 100) /
+      //     datasetProperties?.totalRecords
+      //   : 0,
     },
     {
       type: "Modified Records",
@@ -27,6 +32,11 @@ const CummulativeSummary = ({
         datasetProperties?.totalRecords > 0
           ? datasetProperties?.modifiedRecords
           : 0,
+      // Logic to convert into percentage
+      // datasetProperties?.totalRecords > 0
+      //   ? ((datasetProperties?.modifiedRecords || 0) * 100) /
+      //     datasetProperties?.totalRecords
+      //   : 0,
     },
   ];
   const postIngestionIssues = datasetProperties?.postIngestionIssues || 0;
