@@ -19,18 +19,24 @@ const CummulativeSummary = ({
     {
       type: "New Records",
       a:
-        datasetProperties?.totalRecords > 0
-          ? ((datasetProperties?.newRecords || 0) * 100) /
-            datasetProperties?.totalRecords
-          : 0,
+        datasetProperties?.totalRecords > 0 ? datasetProperties?.newRecords : 0,
+      // Logic to convert into percentage
+      // datasetProperties?.totalRecords > 0
+      //   ? ((datasetProperties?.newRecords || 0) * 100) /
+      //     datasetProperties?.totalRecords
+      //   : 0,
     },
     {
       type: "Modified Records",
       a:
         datasetProperties?.totalRecords > 0
-          ? ((datasetProperties?.modifiedRecords || 0) * 100) /
-            datasetProperties?.totalRecords
+          ? datasetProperties?.modifiedRecords
           : 0,
+      // Logic to convert into percentage
+      // datasetProperties?.totalRecords > 0
+      //   ? ((datasetProperties?.modifiedRecords || 0) * 100) /
+      //     datasetProperties?.totalRecords
+      //   : 0,
     },
   ];
   const postIngestionIssues = datasetProperties?.postIngestionIssues || 0;
@@ -124,7 +130,7 @@ const CummulativeSummary = ({
         >
           Number of Records Changed by status from Previous Transfer
         </Typography>
-        <BarChart suffix="%" data={data} width={308} height={250} />
+        <BarChart data={data} width={308} height={250} />
       </div>
     </div>
   );
