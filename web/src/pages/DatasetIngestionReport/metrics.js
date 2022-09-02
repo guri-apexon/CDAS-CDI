@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable react/jsx-indent */
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-script-url */
@@ -80,7 +82,7 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
           label2: ":test",
           data: [
             {
-              Total: (record.new_records + record.modified_records) / 1000,
+              Total: record.processtrnx / 1000,
               New: record.new_records / 1000,
               Modified: record.modified_records / 1000,
             },
@@ -93,10 +95,14 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
           label: `${formatDate(record.lastsucceeded)}`,
           data: [
             {
-              Total: (record.new_records + record.modified_records) / 1000,
+              Total: record.processtrnx / 1000,
               New: record.new_records / 1000,
               Modified: record.modified_records / 1000,
-              Unchanged: record.new_records / 1000,
+              Unchanged:
+                (record.processtrnx -
+                  record.new_records -
+                  record.modified_records) /
+                1000,
             },
           ],
         });
@@ -207,17 +213,16 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
                 {connectionTypeCheck.indexOf(
                   datasetProperties?.SourceOrigin?.toLowerCase()
                 ) !== -1 && (
-                  <div>
-                    <Typography
-                      variant="body2"
-                      style={{ fontSize: 14, marginTop: 14 }}
-                    >
-                      {`Expected transfer frequency: ${
-                        datasetProperties?.ExpectedTransferFrequency || ""
-                      }`}
-                    </Typography>
-                  </div>
-                )}
+                    <div>
+                      <Typography
+                        variant="body2"
+                        style={{ fontSize: 14, marginTop: 14 }}
+                      >
+                        {`Expected transfer frequency: ${datasetProperties?.ExpectedTransferFrequency || ""
+                          }`}
+                      </Typography>
+                    </div>
+                  )}
               </div>
             </div>
             <div
