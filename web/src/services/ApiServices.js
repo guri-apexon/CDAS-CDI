@@ -554,13 +554,7 @@ export const updatePackageStatus = async (reqBody) => {
 export const getListTypes = async (reqBody) => {
   try {
     const res = await axios.get(`${baseURL}/${LISTTYPES}`, reqBody);
-    const result = res.data
-      ? {
-          ...res.data,
-          data: res.data?.data.filter((x) => x.type?.toUpperCase() !== "FTPS"),
-        }
-      : {};
-
+    const result = res.data || {};
     return result;
   } catch (err) {
     return {
