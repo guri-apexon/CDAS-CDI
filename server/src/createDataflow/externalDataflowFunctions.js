@@ -3235,6 +3235,9 @@ exports.dataflowUpdate = async (
       // vName = data.vendorid;
       vName = vNameDB;
       vendor_Id = data.vendorid;
+      if (data.vendorid != dataflowData.rows[0].vend_id) {
+        isUpdate = true;
+      }
     } else {
       vName = vendorData.rows[0].vend_nm;
       vendor_Id = dataflowData.rows[0].vend_id;
@@ -3249,35 +3252,46 @@ exports.dataflowUpdate = async (
       if (studyRows.rows.length > 0) {
         studyId = studyRows.rows[0].prot_id;
       }
+      if (data.protocolNumberStandard != protocolData.rows[0].prot_nbr_stnd) {
+        isUpdate = true;
+      }
     } else {
       ptNum = protocolData.rows[0].prot_nbr_stnd;
     }
 
     if (data.description) {
       desc = data.description;
+      if (data.description != dataflowData.rows[0].description) {
+        isUpdate = true;
+      }
     } else {
       desc = dataflowData.rows[0].description;
     }
 
     if (data.testFlag || data.testFlag === 0) {
       testFlag = helper.stringToBoolean(data.testFlag);
+      if (data.testFlag != dataflowData.rows[0].testflag) {
+        isUpdate = true;
+      }
     } else {
       testFlag = dataflowData.rows[0].testflag;
     }
 
-    // any difference check
-    if (
-      data.vendorid != dataflowData.rows[0].vend_id ||
-      data.protocolNumberStandard != protocolData.rows[0].prot_nbr_stnd ||
-      data.description != dataflowData.rows[0].description ||
-      data.testFlag !== dataflowData.rows[0].testflag
-    ) {
-      console.log("difference somthings");
-      isUpdate = true;
-    }
+    // // any difference check
+    // if (
+    //   data.vendorid != dataflowData.rows[0].vend_id ||
+    //   data.protocolNumberStandard != protocolData.rows[0].prot_nbr_stnd ||
+    //   data.description != dataflowData.rows[0].description ||
+    //   data.testFlag != dataflowData.rows[0].testflag
+    // ) {
+    //   console.log("difference somthings 11");
+    //   isUpdate = true;
+    // }
 
     var DFTestname = dataflowData.rows[0].name;
     if (isUpdate) {
+      console.log("difference somthings");
+
       DFTestname = await dataFlow.createDataflowName(
         vendor_Id,
         ptNum,
@@ -4778,6 +4792,7 @@ exports.clDefUpdate = async (
     }
     if (typeof data.lov != "undefined") {
       if (data.lov) {
+        console.log("update lov");
         updateQueryCD += `,lov='${data.lov}'`;
       } else {
         updateQueryCD += `,lov=null`;
@@ -4785,6 +4800,7 @@ exports.clDefUpdate = async (
     }
     if (typeof data.variableLabel != "undefined") {
       if (data.variableLabel) {
+        console.log("update var");
         updateQueryCD += `,variable='${data.variableLabel}'`;
       } else {
         updateQueryCD += `,variable=null`;
