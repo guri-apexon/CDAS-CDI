@@ -258,12 +258,46 @@ exports.getFileTransferHistory = (req, res) => {
     const id = req.params.datasetid;
     const dayFilter = req.query.dayFilter ?? "10";
     const page = req.query.page ? req.query.page * 10 : 10;
-    const searchQuery = `SELECT count(datasetid) OVER() AS total_transfered, dataflowid, executionid, "VERSION", datapackageid, datasetid, mnemonicfile, datapackagename, datasetname, datasettype, processtype, "user", downloadstatus, downloadstarttime, downloadendtime, processstatus, processstarttime, processendtime, downloadtrnx, processtrnx, filerpath, lastsucceeded, lastattempted, failurecat, refreshtimestamp, stage, fst_prd_file_recvd, deleted_records, modified_records, new_records from ${schemaName}.transaction_summary
-              WHERE datasetid = $1 and lastsucceeded BETWEEN NOW() - INTERVAL '${dayFilter} days' AND NOW() order by lastsucceeded desc  `;
+    const searchQuery = `SELECT count(datasetid) over() AS total_transfered,
+    dataflowid,
+    executionid,
+    "VERSION",
+    datapackageid,
+    datasetid,
+    mnemonicfile,
+    datapackagename,
+    datasetname,
+    datasettype,
+    processtype,
+    "user",
+    downloadstatus,
+    downloadstarttime,
+    downloadendtime,
+    processstatus,
+    processstarttime,
+    processendtime,
+    downloadtrnx,
+    processtrnx,
+    filerpath,
+    lastsucceeded,
+    lastattempted,
+    failurecat,
+    refreshtimestamp,
+    stage,
+    fst_prd_file_recvd,
+    deleted_records,
+    modified_records,
+    new_records,
+    (lead(processtrnx, 1, 0) OVER (PARTITION BY datasetid
+                                   ORDER BY lastsucceeded DESC,externalid DESC) - modified_records)AS unchanged_records
+    FROM ${schemaName}.transaction_summary
+    WHERE datasetid = $1
+    AND processstatus in ('PROCESSED WITH ERRORS', 'SUCCESSFUL')
+    AND lastsucceeded BETWEEN NOW() - interval '${dayFilter} days' AND NOW()
+    ORDER BY lastsucceeded DESC`;
     // limit $2
     //  and lastattempted BETWEEN NOW() - INTERVAL '${dayFilter} days' AND NOW()
     Logger.info({ message: "getFileTransferHistory" });
-
     DB.executeQuery(searchQuery, [id])
       .then((response) => {
         const records = response.rows || [];
