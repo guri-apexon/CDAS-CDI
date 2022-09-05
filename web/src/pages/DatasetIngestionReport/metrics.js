@@ -98,11 +98,7 @@ const Metrics = ({ datasetProperties, issuetypes, handleChangeTab }) => {
               Total: record.processtrnx / 1000,
               New: record.new_records / 1000,
               Modified: record.modified_records / 1000,
-              Unchanged:
-                (record.processtrnx - (
-                  record.new_records +
-                  record.modified_records)) /
-                1000,
+              Unchanged: record.unchanged_records / 1000,
             },
           ],
         });
