@@ -2,9 +2,23 @@ const moment = require("moment");
 const request = require("request");
 const axios = require("axios");
 const btoa = require("btoa");
+const jwt = require("jsonwebtoken");
 const apiResponse = require("../helpers/apiResponse");
 const Logger = require("../config/logger");
 const userController = require("../controller/UserController");
+const {
+  getCurrentTime,
+  getJWTokenFromHeader,
+} = require("../helpers/customFunctions");
+const constants = require("../config/constants");
+const DB = require("../config/db");
+
+const { DB_SCHEMA_NAME: schemaName } = constants;
+
+const decodeJWToken = (jwt_token) => {
+  const decodedValue = jwt.decode(jwt_token) || {};
+  return decodedValue;
+};
 
 const getToken = (code, clientId, clientSecret, callbackUrl, ssoUrl) => {
   return new Promise((resolve, reject) => {
@@ -139,7 +153,25 @@ exports.logoutHandler = async (req, res) => {
     if (!ok) {
       return res.status(resp.status).json(false);
     } else {
-      return res.status(200).json(true);
+      try {
+        const jwt_token = getJWTokenFromHeader(req);
+        const { userid } = decodeJWToken(jwt_token);
+        if (userid) {
+          const logoutTime = getCurrentTime(true);
+          const { rows } = await DB.executeQuery(
+            `SELECT * from ${schemaName}.user_login_details WHERE usr_id='${userid}'`
+          );
+          let query = "";
+          if (rows.length) {
+            query = `UPDATE ${schemaName}.user_login_details set logout_tm='${logoutTime}' WHERE usr_id='${userid}'`;
+            await DB.executeQuery(query).then((response) => {
+              return res.status(200).json(true);
+            });
+          }
+        }
+      } catch (e) {
+        return apiResponse.ErrorResponse(res, e);
+      }
     }
   } catch (e) {
     // console.error(e);
