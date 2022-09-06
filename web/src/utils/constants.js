@@ -63,6 +63,7 @@ export const DATA_TYPES = {
   date: [
     "TIMESTAMP",
     "DATE",
+    "TIME",
     "DATETIME",
     "DATETIME2",
     "SMALLDATETIME",
