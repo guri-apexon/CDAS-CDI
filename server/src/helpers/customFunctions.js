@@ -186,9 +186,9 @@ exports.isConnectionType = (str) => {
 };
 
 exports.createCustomSql = (clname, tableName, condition) => {
-  sqlQuery = `Select ${clname.join(", ")} from ${tableName} ${
-    condition ? condition : "where 1=1"
-  }`;
+  sqlQuery = `Select ${clname
+    .map((d) => `"${d}"`)
+    .join(", ")} from ${tableName} ${condition ? condition : "where 1=1"}`;
 
   return sqlQuery;
 };

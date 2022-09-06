@@ -2304,7 +2304,9 @@ const saveDataset = (exports.datasetLevelInsert = async (
       if (custQryYn.toLowerCase() === "no") {
         if (obj.columnDefinition.length) {
           const cList = obj.columnDefinition
-            .map((el) => el.name || el.columnName)
+            // .map((el) => el.name || el.columnName)
+            .map((el) => `"${el.name || el.columnName}"`)
+
             .join(", ");
 
           sqlQuery = `Select ${cList} from ${obj.tableName || obj.tbl_nm} ${

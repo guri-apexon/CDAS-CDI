@@ -44,7 +44,9 @@ const updateSqlQuery = async (datasetId, del = false) => {
         [datasetId]
       );
       let newQuery = dataset.customsql || "where 1=1";
-      const columnNames = CDList?.map((x) => x.name).join(", ") || "";
+      // const columnNames = CDList?.map((x) => x.name).join(", ") || "";
+      const columnNames = CDList?.map((x) => `"${x.name}"`).join(", ") || "";
+
       const whereCondition = newQuery.split("where")?.pop()?.trim();
       newQuery = `Select ${columnNames} from ${
         dataset.tbl_nm || ""
