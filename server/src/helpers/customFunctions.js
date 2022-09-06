@@ -197,10 +197,10 @@ exports.formatDBColumns = (data) => {
   return data?.map((d) => {
     return {
       columnName: d.columnName || d.Field || d.col_name,
-      datatype: d.datatype || d.Type || d.data_type,
-      primaryKey: d.primaryKey || d.Key === "PRI",
-      required: d.required || d.Null === "NO",
-      unique: d.unique || false,
+      datatype: d.dataType || d.datatype || d.Type || d.data_type,
+      primaryKey: stringToBoolean(d.primaryKey || d.Key === "PRI"),
+      required: stringToBoolean(d.required || d.Null === "NO"),
+      unique: stringToBoolean(d.unique || false),
     };
   });
 };
