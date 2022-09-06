@@ -351,10 +351,12 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
       case GET_PREVIEW_SQL:
         newState.loading = true;
+        newState.previewSQL = [];
         break;
       case FETCH_PREVIEW_SQL_FAILURE:
         newState.loading = false;
         newState.error = action.message;
+        newState.previewSQL = [];
         break;
       case FETCH_PREVIEW_SQL_SUCCESS:
         newState.loading = false;
