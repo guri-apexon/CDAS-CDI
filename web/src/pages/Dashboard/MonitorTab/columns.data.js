@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
 import moment from "moment";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router";
 import Check from "apollo-react-icons/Check";
 import StatusNegativeIcon from "apollo-react-icons/StatusNegative";
@@ -38,6 +38,7 @@ import { ReactComponent as InProgressIcon } from "../../../components/Icons/In P
 
 import "../Dashboard.scss";
 import { dateFilterCustom, IntegerFilter } from "../../../utils/index";
+import { SelectedDataflow } from "../../../store/actions/DashboardAction";
 
 const DateFilter = ({ accessor, filters, updateFilterValue }) => {
   return (
@@ -152,6 +153,8 @@ const createAutocompleteFilter =
 const DatasetCell = ({ row, column: { accessor } }) => {
   const dataset = row[accessor];
   const { canReadIngestionIssues, history } = row;
+  const dashboard = useSelector((state) => state.dashboard);
+  const dispatch = useDispatch();
 
   return (
     // eslint-disable-next-line jsx-a11y/anchor-is-valid
@@ -161,6 +164,11 @@ const DatasetCell = ({ row, column: { accessor } }) => {
         if (row?.fromAllMonitor) {
           history.push(`/cdihome/ingestion-report/${row.datasetid}`);
         } else {
+          const selectedDataflow =
+            dashboard?.flowData.filter(
+              (data) => data.dataFlowName === row?.dataflow_name
+            )[0] || {};
+          dispatch(SelectedDataflow(selectedDataflow));
           history.push(`/dashboard/ingestion-report/${row.datasetid}`);
         }
       }}

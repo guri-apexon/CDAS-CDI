@@ -554,7 +554,8 @@ export const updatePackageStatus = async (reqBody) => {
 export const getListTypes = async (reqBody) => {
   try {
     const res = await axios.get(`${baseURL}/${LISTTYPES}`, reqBody);
-    return res.data || [];
+    const result = res.data || {};
+    return result;
   } catch (err) {
     return {
       data: [],

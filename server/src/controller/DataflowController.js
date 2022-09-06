@@ -14,6 +14,25 @@ const datasetHelper = require("../helpers/datasetHelper");
 const { checkPermissionStudy } = require("../helpers/userHelper");
 const { Console } = require("winston/lib/winston/transports");
 
+exports.checkUserStudyAlterPermission = async (req, res) => {
+  const { protocolnumberstandard, userId } = req.body;
+  try {
+    const permission = await checkPermissionStudy(
+      userId,
+      "Data Flow Configuration",
+      protocolnumberstandard
+    );
+
+    return apiResponse.successResponseWithData(res, "Operation success", {
+      permission,
+    });
+  } catch (err) {
+    Logger.error("catch :checkUserStudyAlterPermission");
+    Logger.error(err);
+    return apiResponse.ErrorResponse(res, err);
+  }
+};
+
 exports.getStudyDataflows = async (req, res) => {
   try {
     const { protocolId } = req.body;

@@ -376,24 +376,20 @@ export const validateRow = (row, extraValidation = true) => {
     values,
   } = row;
 
+  const min = parseInt(minLength, 10);
+  const max = parseInt(maxLength, 10);
+
   if (
     !dataType ||
-    !columnName ||
+    (haveHeader && !columnName) ||
     !extraValidation ||
     (haveHeader === false && checkNumeric(position, true)) ||
     (values && !isVlcTildSaparated(values)) ||
     // (columnName && hasSpecialCHar(columnName)) ||
     (dataType && format && checkFormat(format, "format", dataType)) ||
-    minLength ||
-    maxLength
+    (minLength && maxLength && min > max) ||
+    (minLength && !maxLength)
   ) {
-    if (minLength && maxLength) {
-      if (parseInt(minLength, 10) <= parseInt(maxLength, 10)) {
-        return true;
-      }
-    } else if (maxLength && !Number.isNaN(minLength)) {
-      return true;
-    }
     return false;
   }
   return true;

@@ -88,7 +88,13 @@ const Dashboard = () => {
   };
 
   const updateData = () => {
-    dispatch(getFlowDetailsOfStudy(dashboard.selectedCard.prot_id));
+    dispatch(
+      getFlowDetailsOfStudy(
+        dashboard.selectedCard.prot_id,
+        dashboard.selectedCard.protocolnumberstandard,
+        getUserId()
+      )
+    );
   };
 
   const fetchLatestData = (control = "", activeOnly = 1) => {

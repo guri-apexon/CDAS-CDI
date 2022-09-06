@@ -226,7 +226,7 @@ export default function DSColumnTable({
       return (
         rw?.variableLabel?.toLowerCase().includes(value) ||
         rw?.columnName?.toLowerCase().includes(value) ||
-        rw?.position?.toLowerCase().includes(value) ||
+        rw?.position?.toString().includes(value) ||
         rw?.format?.toLowerCase().includes(value) ||
         rw?.dataType?.toLowerCase().includes(value) ||
         rw?.primaryKey?.toLowerCase().includes(value) ||
@@ -349,6 +349,8 @@ export default function DSColumnTable({
     }
   };
 
+  const haveHeader = parseInt(headerValue, 10) > 0;
+
   const onSaveAll = async () => {
     const removeSpaces = editedRows
       .map((e) => {
@@ -391,7 +393,7 @@ export default function DSColumnTable({
     }
     const columnNames = removeSpaces.map((e) => e.columnName?.toLowerCase());
 
-    if (removeSpaces.length !== _.uniq(columnNames).length) {
+    if (haveHeader && removeSpaces.length !== _.uniq(columnNames).length) {
       messageContext.showErrorMessage(
         "Column name should be unique for a dataset"
       );
@@ -458,6 +460,7 @@ export default function DSColumnTable({
       })
       .find((e) => e.uniqueId === uniqueId);
     if (
+      haveHeader &&
       rows.some(
         (r) =>
           r?.columnName?.toLowerCase() ===
@@ -513,8 +516,6 @@ export default function DSColumnTable({
     setSelectedRows([...unsavedRows]);
   };
 
-  const haveHeader = parseInt(headerValue, 10) > 0;
-
   // const showColumnNameRequried = () => {
   //   messageContext.showErrorMessage("Column name Should be there");
   // };
@@ -558,11 +559,7 @@ export default function DSColumnTable({
   };
 
   useEffect(() => {
-    if (
-      editedRows.some(
-        (row) => !validateRow(row, positionValidation(haveHeader, row.position))
-      )
-    ) {
+    if (editedRows.some((row) => !validateRow({ ...row, haveHeader }))) {
       setDisableSaveAll(true);
     } else {
       setDisableSaveAll(false);

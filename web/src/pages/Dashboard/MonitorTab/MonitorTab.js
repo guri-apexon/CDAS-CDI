@@ -21,6 +21,7 @@ import Button from "apollo-react/components/Button";
 import Switch from "apollo-react/components/Switch";
 import DownloadIcon from "apollo-react-icons/Download";
 import FilterIcon from "apollo-react-icons/Filter";
+import RefreshIcon from "apollo-react-icons/Refresh";
 import StatusCheckIcon from "apollo-react-icons/StatusCheck";
 import StatusDotOutlineIcon from "apollo-react-icons/StatusDotOutline";
 import StatusExclamationIcon from "apollo-react-icons/StatusExclamation";
@@ -85,16 +86,6 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
 
   useEffect(() => {
     fetchLatestData(control, activeOnly);
-
-    // trigger refresh data every 5 minutes
-    const intervalId = setInterval(() => {
-      fetchLatestData(control, activeOnly);
-    }, 300000);
-
-    // clear interval on unmount
-    return () => {
-      clearInterval(intervalId);
-    };
   }, [activeOnly, control, protId]);
 
   useEffect(() => {
@@ -178,6 +169,22 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
     <div>
       {/* {dashboard.summaryLoading && !hasLoadedOnce && <Loader />} */}
       {dashboard.summaryLoading && <Loader />}
+      <div
+        style={{
+          textAlign: "right",
+          marginBottom: "10px",
+        }}
+      >
+        <Button
+          size="small"
+          id="filterBtn"
+          variant="secondary"
+          icon={RefreshIcon}
+          onClick={() => fetchLatestData(control, activeOnly)}
+        >
+          Refresh
+        </Button>
+      </div>
       <Hero>
         <div className="topContainer" style={{ position: "relative" }}>
           <Typography
