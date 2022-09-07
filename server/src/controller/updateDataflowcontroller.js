@@ -481,8 +481,16 @@ const packageLevelInsert = async (
                       el.dataType || null,
                       helper.stringToBoolean(el.primaryKey) ? 1 : 0,
                       helper.stringToBoolean(el.required) ? 1 : 0,
-                      el.characterMin || el.minLength || 0,
-                      el.characterMax || el.maxLength || 0,
+                      el.characterMin ||
+                        (el.characterMin === 0 && el.characterMin) ||
+                        el.minLength ||
+                        (el.minLength === 0 && el.minLength) ||
+                        null,
+                      el.characterMax ||
+                        (el.characterMax === 0 && el.characterMax) ||
+                        el.maxLength ||
+                        (el.maxLength === 0 && el.maxLength) ||
+                        null,
                       el.position || 0,
                       el.format || null,
                       el.lov || el.values || null,
@@ -813,8 +821,16 @@ const packageLevelInsert = async (
                       el.dataType || null,
                       helper.stringToBoolean(el.primaryKey) ? 1 : 0,
                       helper.stringToBoolean(el.required) ? 1 : 0,
-                      el.characterMin || el.minLength || 0,
-                      el.characterMax || el.maxLength || 0,
+                      el.characterMin ||
+                        (el.characterMin === 0 && el.characterMin) ||
+                        el.minLength ||
+                        (el.minLength === 0 && el.minLength) ||
+                        null,
+                      el.characterMax ||
+                        (el.characterMax === 0 && el.characterMax) ||
+                        el.maxLength ||
+                        (el.maxLength === 0 && el.maxLength) ||
+                        null,
                       el.position || 0,
                       el.format || null,
                       el.lov || el.values || null,
@@ -1165,8 +1181,16 @@ const datasetLevelInsert = async (
               el.dataType || null,
               helper.stringToBoolean(el.primaryKey) ? 1 : 0,
               helper.stringToBoolean(el.required) ? 1 : 0,
-              el.characterMin || el.minLength || 0,
-              el.characterMax || el.maxLength || 0,
+              el.characterMin ||
+                (el.characterMin === 0 && el.characterMin) ||
+                el.minLength ||
+                (el.minLength === 0 && el.minLength) ||
+                null,
+              el.characterMax ||
+                (el.characterMax === 0 && el.characterMax) ||
+                el.maxLength ||
+                (el.maxLength === 0 && el.maxLength) ||
+                null,
               el.position || 0,
               el.format || null,
               el.lov || el.values || null,
@@ -1495,8 +1519,16 @@ const datasetLevelInsert = async (
               el.dataType || null,
               helper.stringToBoolean(el.primaryKey) ? 1 : 0,
               helper.stringToBoolean(el.required) ? 1 : 0,
-              el.characterMin || el.minLength || 0,
-              el.characterMax || el.maxLength || 0,
+              el.characterMin ||
+                (el.characterMin === 0 && el.characterMin) ||
+                el.minLength ||
+                (el.minLength === 0 && el.minLength) ||
+                null,
+              el.characterMax ||
+                (el.characterMax === 0 && el.characterMax) ||
+                el.maxLength ||
+                (el.maxLength === 0 && el.maxLength) ||
+                null,
               el.position || 0,
               el.format || null,
               el.lov || el.values || null,
