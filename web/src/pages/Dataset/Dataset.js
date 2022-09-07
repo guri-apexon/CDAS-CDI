@@ -220,10 +220,12 @@ const Dataset = () => {
       setTempTabValue(v);
 
       // check if there is any changes within form and set toggle for modal
-      const isAnyChange =
-        form?.DataSetsForm?.anyTouched ||
-        form?.DataSetsFormSQL?.anyTouched ||
-        false;
+      let isAnyChange = false;
+      if (isSftp(locationType)) {
+        isAnyChange = checkFormChanges(form, form?.DataSetsForm) || false;
+      } else {
+        isAnyChange = checkFormChanges(form, form?.DataSetsFormSQL) || false;
+      }
       if (isAnyChange) {
         setManualTriggerToggle(true);
       }

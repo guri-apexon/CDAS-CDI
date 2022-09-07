@@ -113,8 +113,8 @@ exports.saveDatasetColumns = async (req, res) => {
           value.primaryKey === "Yes" ? 1 : 0,
           value.required === "Yes" ? 1 : 0,
           value.unique === "Yes" ? 1 : 0,
-          value.minLength || null,
-          value.maxLength || null,
+          value.minLength || value.minLength === 0 ? value.minLength : null,
+          value.maxLength || value.maxLength === 0 ? value.maxLength : null,
           value.position || 0,
           value.format.toString().trim() || null,
           value.values
@@ -223,8 +223,8 @@ exports.updateColumns = async (req, res) => {
               value.dataType.trim() || null,
               value.primaryKey === "Yes" ? 1 : 0,
               value.required === "Yes" ? 1 : 0,
-              value.minLength || null,
-              value.maxLength || null,
+              value.minLength || value.minLength === 0 ? value.minLength : null,
+              value.maxLength || value.maxLength === 0 ? value.maxLength : null,
               value.position || 0,
               value.format.toString().trim() || null,
               value.values.trim().replace(/(^\~+|\~+$)/, "") || null,
@@ -243,8 +243,14 @@ exports.updateColumns = async (req, res) => {
               primarykey: value.primaryKey == "Yes" ? 1 : 0,
               required: value.required == "Yes" ? 1 : 0,
               unique: value.unique == "Yes" ? 1 : 0,
-              charactermin: value.minLength || 0,
-              charactermax: value.maxLength || 0,
+              charactermin:
+                value.minLength || value.minLength === 0
+                  ? value.minLength
+                  : null,
+              charactermax:
+                value.maxLength || value.maxLength === 0
+                  ? value.maxLength
+                  : null,
               position: value.position || 0,
               format: value.format.trim() || null,
               lov: value.values.trim().replace(/(^\~+|\~+$)/, "") || null,

@@ -207,13 +207,25 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
               style={{ margin: "auto 20%" }}
               onChange={(event, value) => onSegmentChange(value)}
             >
-              <SegmentedControl className="monitor-btn" value="all">
+              <SegmentedControl
+                className="monitor-btn"
+                value="all"
+                disabled={control === "all"}
+              >
                 All
               </SegmentedControl>
-              <SegmentedControl className="monitor-btn" value="0">
+              <SegmentedControl
+                className="monitor-btn"
+                value="0"
+                disabled={control === "0"}
+              >
                 Production
               </SegmentedControl>
-              <SegmentedControl className="monitor-btn" value="1">
+              <SegmentedControl
+                className="monitor-btn"
+                value="1"
+                disabled={control === "1"}
+              >
                 Test
               </SegmentedControl>
             </SegmentedControlGroup>
