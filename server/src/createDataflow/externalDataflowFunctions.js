@@ -2817,8 +2817,10 @@ const columnSave = (exports.columnDefinationInsert = async (
       el.dataType || null,
       helper.stringToBoolean(el.primaryKey) ? 1 : 0,
       helper.stringToBoolean(el.required) ? 1 : 0,
-      el.minLength || el.minLength || 0,
-      el.maxLength || el.maxLength || 0,
+      // el.minLength || el.minLength || 0,
+      // el.maxLength || el.maxLength || 0,
+      el.minLength || el.minLength || null,
+      el.maxLength || el.maxLength || null,
       el.position || 0,
       el.format || null,
       el.lov || el.values || null,
@@ -4766,10 +4768,20 @@ exports.clDefUpdate = async (
       updateQueryCD += `,datatype='${data.dataType}'`;
     }
     if (typeof data.minLength != "undefined") {
-      updateQueryCD += `,charactermin='${data.minLength || 0}'`;
+      // updateQueryCD += `,charactermin='${data.minLength || 0}'`;
+      if (data.minLength) {
+        updateQueryCD += `,charactermin='${data.minLength}'`;
+      } else {
+        updateQueryCD += `,charactermin=null`;
+      }
     }
     if (typeof data.maxLength != "undefined") {
-      updateQueryCD += `,charactermax='${data.maxLength || 0}'`;
+      // updateQueryCD += `,charactermax='${data.maxLength || 0}'`;
+      if (data.maxLength) {
+        updateQueryCD += `,charactermax='${data.maxLength || null}'`;
+      } else {
+        updateQueryCD += `,charactermax=null`;
+      }
     }
     if (typeof data.primaryKey != "undefined") {
       updateQueryCD += `,primarykey='${
