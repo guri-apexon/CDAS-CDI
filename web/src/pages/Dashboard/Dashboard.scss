@@ -82,6 +82,9 @@
     width: 102px;
   }
 }
+.MuiToggleButton-root.Mui-disabled {
+  opacity: unset;
+}
 .dashboardSummary {
   display: flex;
   align-items: center;

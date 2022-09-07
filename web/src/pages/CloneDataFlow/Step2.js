@@ -39,8 +39,8 @@ const Step2 = ({
   const searchDataflow = useCallback(
     (e, el) => {
       e.preventDefault();
-      const newValue = e.target.value;
-      setSearchTxt(e.target.value);
+      const newValue = e.target.value?.trimStart();
+      setSearchTxt(newValue);
       if (newValue !== "") {
         if (el === "dataflow") {
           debounceFunction(async () => {

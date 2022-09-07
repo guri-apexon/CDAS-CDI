@@ -220,10 +220,12 @@ const Dataset = () => {
       setTempTabValue(v);
 
       // check if there is any changes within form and set toggle for modal
-      const isAnyChange =
-        form?.DataSetsForm?.anyTouched ||
-        form?.DataSetsFormSQL?.anyTouched ||
-        false;
+      let isAnyChange = false;
+      if (isSftp(locationType)) {
+        isAnyChange = checkFormChanges(form, form?.DataSetsForm) || false;
+      } else {
+        isAnyChange = checkFormChanges(form, form?.DataSetsFormSQL) || false;
+      }
       if (isAnyChange) {
         setManualTriggerToggle(true);
       }
@@ -311,6 +313,12 @@ const Dataset = () => {
       dispatch(getVLCData(datasetid));
     }
   }, [datasetid, dsCreatedSuccessfully]);
+
+  // useEffect(() => {
+  //   if (datasetid !== "New" && !isSftp(loctyp)) {
+  //     dispatch(resetJDBC(["sqlColumns", "datasetColumns"]));
+  //   }
+  // }, [datasetid]);
 
   useEffect(() => {
     if (isDatasetCreated && isDatasetCreation) {
@@ -454,6 +462,12 @@ const Dataset = () => {
           );
           return false;
         }
+        // if (
+        //   !isSftp(locationType) &&
+        //   formValue?.isCustomSQL?.toLowerCase() === "yes"
+        // ) {
+        //   dispatch(resetJDBC(["sqlColumns"]));
+        // }
         dispatch(updateDatasetData(data));
       } else {
         dispatch(saveDatasetData(data));

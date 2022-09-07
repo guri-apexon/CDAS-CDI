@@ -19,6 +19,7 @@ import {
   STORE_DATASET_COLUMNS_FAILURE,
   SAVE_DATASET_COLUMNS_COUNT,
   TOGGLE_DATASET_PREVIWED_SQL,
+  UPDATE_COLUMNS_DATA_LOADING,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -74,6 +75,13 @@ export const updateDatasetColumns = (
   };
 };
 
+export const updateDatasetColumnsLoading = (value) => {
+  return {
+    type: UPDATE_COLUMNS_DATA_LOADING,
+    value,
+  };
+};
+
 export const getDataSetDetail = (dsId, dfId, dpId) => {
   return {
     type: GET_DATASET_DETAIL,
@@ -124,9 +132,10 @@ export const resetFTP = () => {
   };
 };
 
-export const resetJDBC = () => {
+export const resetJDBC = (fieldsArr = []) => {
   return {
     type: RESET_JDBC_FORM,
+    fieldsArr,
   };
 };
 
