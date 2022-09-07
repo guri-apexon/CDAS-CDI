@@ -63,10 +63,12 @@ export const DATA_TYPES = {
   date: [
     "TIMESTAMP",
     "DATE",
+    "TIME",
     "DATETIME",
     "DATETIME2",
     "SMALLDATETIME",
     "TIMESTAMP WITH TIME ZONE",
+    "TIMESTAMP WITHOUT TIME ZONE",
     "TIMESTAMP(3)",
     "TIMESTAMP(6)",
   ],

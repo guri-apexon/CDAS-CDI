@@ -134,8 +134,8 @@ exports.tablecolumns = async (req, res) => {
         c.name columnName,
         t1.name as dataType,
         case
-            when c.is_nullable = 1 then 'yes'
-            else 'no'
+            when c.is_nullable = 1 then 'no'
+            else 'yes'
         end as required,
         case
             when r.ConstraintType in ('PK' ,
@@ -189,8 +189,8 @@ exports.tablecolumns = async (req, res) => {
         c.name columnName,
         t1.name as dataType,
         case
-            when c.is_nullable = 1 then 'yes'
-            else 'no'
+            when c.is_nullable = 1 then 'no'
+            else 'yes'
         end as required,
         case
             when r.ConstraintType in ('PK' ,

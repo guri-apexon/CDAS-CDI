@@ -124,7 +124,10 @@ const createDataflowName = (exports.createDataflowName = async (
     const dfVersions = dfRows
       .map((d) => parseInt(d.name.split("-").pop()))
       .filter((d) => !isNaN(d));
+    // console.log("dfVersions", dfVersions);
     dfNewVersion = dfVersions.length ? Math.max(...dfVersions) + 1 : 1;
+
+    // console.log("dfVersions max ", Math.max(...dfVersions));
     dfNewName = `${dfNewName}-${dfNewVersion}`;
   }
   return dfNewName;

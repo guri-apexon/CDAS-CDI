@@ -908,7 +908,8 @@ exports.insertValidation = async (req) => {
                   }
                   if (el.lov) {
                     const last = el.lov.charAt(el.lov.length - 1);
-                    const first = el.lov.charAt(el.lov.charAt(0));
+                    // const first = el.lov.charAt(el.lov.charAt(0));
+                    const first = el.lov.charAt(0);
 
                     // if (str1.test(el.lov) === false) {
                     //   clErrArray.push("LOV should be seperated by tilde(~)");
@@ -2303,7 +2304,9 @@ const saveDataset = (exports.datasetLevelInsert = async (
       if (custQryYn.toLowerCase() === "no") {
         if (obj.columnDefinition.length) {
           const cList = obj.columnDefinition
-            .map((el) => el.name || el.columnName)
+            // .map((el) => el.name || el.columnName)
+            .map((el) => `"${el.name || el.columnName}"`)
+
             .join(", ");
 
           sqlQuery = `Select ${cList} from ${obj.tableName || obj.tbl_nm} ${
@@ -2666,7 +2669,8 @@ const columnSave = (exports.columnDefinationInsert = async (
 
         if (el.lov) {
           const last = el.lov.charAt(el.lov.length - 1);
-          const first = el.lov.charAt(el.lov.charAt(0));
+          // const first = el.lov.charAt(el.lov.charAt(0));
+          const first = el.lov.charAt(0);
 
           // if (str1.test(el.lov) === false) {
           //   errorColumnDef.push("LOV should be seperated by tilde(~)");
@@ -4594,7 +4598,9 @@ exports.clDefUpdate = async (
 
       if (data.lov) {
         const last = data.lov.charAt(data.lov.length - 1);
-        const first = data.lov.charAt(data.lov.charAt(0));
+        // const first = data.lov.charAt(data.lov.charAt(0));
+
+        const first = data.lov.charAt(0);
 
         // if (str1.test(data.lov) === false) {
         //   errorcolDef.push("LOV should be seperated by tilde(~)");
