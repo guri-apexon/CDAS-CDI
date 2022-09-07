@@ -312,6 +312,12 @@ const Dataset = () => {
     }
   }, [datasetid, dsCreatedSuccessfully]);
 
+  // useEffect(() => {
+  //   if (datasetid !== "New" && !isSftp(loctyp)) {
+  //     dispatch(resetJDBC(["sqlColumns", "datasetColumns"]));
+  //   }
+  // }, [datasetid]);
+
   useEffect(() => {
     if (isDatasetCreated && isDatasetCreation) {
       messageContext.showSuccessMessage("Dataset was saved successfully");
@@ -454,6 +460,12 @@ const Dataset = () => {
           );
           return false;
         }
+        // if (
+        //   !isSftp(locationType) &&
+        //   formValue?.isCustomSQL?.toLowerCase() === "yes"
+        // ) {
+        //   dispatch(resetJDBC(["sqlColumns"]));
+        // }
         dispatch(updateDatasetData(data));
       } else {
         dispatch(saveDatasetData(data));
