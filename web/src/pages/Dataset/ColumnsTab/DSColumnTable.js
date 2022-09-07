@@ -17,6 +17,7 @@ import {
   updateDatasetColumns,
   getDatasetColumns,
   setDataSetColumnCount,
+  updateDatasetColumnsLoading,
 } from "../../../store/actions/DataSetsAction";
 import { createColumns, deleteCD } from "../../../services/ApiServices";
 import {
@@ -112,6 +113,9 @@ export default function DSColumnTable({
 
   // flag for maintaining overriding data in DB
   const [isOverride, setIsOverride] = useState(false);
+
+  // flag to trigger get columns
+  const [getList, setGetList] = useState(false);
 
   const setInitRow = () => {
     setRows([{ uniqueId: 1, ...initColumnObj }]);
@@ -533,9 +537,11 @@ export default function DSColumnTable({
       );
     }
   };
+
   const getEditedRows = () => {
     return rows.filter((x) => x.isEditMode);
   };
+
   const onSaveAll = async () => {
     setDisableSaveAll(true);
     const formattedColumnData = _.map(getEditedRows(), (e) => {
@@ -621,6 +627,8 @@ export default function DSColumnTable({
     }
 
     if (existingCD?.length) {
+      // set updateLoading flag to true to avoid calling list API
+      dispatch(updateDatasetColumnsLoading(true));
       dispatch(
         updateDatasetColumns(
           existingCD,
@@ -631,12 +639,23 @@ export default function DSColumnTable({
           versionFreezed
         )
       );
-      setRows((prevRows) => prevRows.map((x) => ({ ...x, isEditMode: false })));
+      setGetList(true);
     }
     setEditedBackup([]);
-    dispatch(getDatasetColumns(dsId));
+    // call list API in case of newly created
+    if (!existingCD?.length) {
+      dispatch(getDatasetColumns(dsId));
+    }
     setIsOverride(false);
   };
+
+  // effect to handle after update API
+  useEffect(() => {
+    if (!dataSets.updateLoading && getList) {
+      dispatch(getDatasetColumns(dsId));
+      setGetList(false);
+    }
+  }, [dataSets.updateLoading]);
 
   const onRowSave = async (uniqueId) => {
     setIsOverride(false);
