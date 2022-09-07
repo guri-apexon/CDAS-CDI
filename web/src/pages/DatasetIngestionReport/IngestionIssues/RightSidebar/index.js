@@ -32,11 +32,16 @@ const IssueRightPanel = ({
   const [selectedTab, setSelectedTab] = useState(1);
   const [columns, setColumns] = useState([]);
   const [rowFilters, setRowFilters] = useState([]);
-  const [colFilters, setColFilters] = useState([]);
-  const colFilter = (col) => colFilters.includes(col);
+  const [error, setError] = useState({});
+
+  const colFilter = (col, issueType) =>
+    error[issueType]?.some((x) => x?.includes(col));
+
   const getColumnsIssue = (column) => {
     if (rowFilters?.length && column) {
-      return rowFilters.filter(colFilter).map((x) => x.issue_type);
+      return rowFilters
+        .filter((x) => colFilter(column, x.originalattributename))
+        .map((x) => x.issue_type);
     }
     return [];
   };
@@ -45,7 +50,7 @@ const IssueRightPanel = ({
     Object.keys(source)
       ?.filter((key) => keys.indexOf(key) !== -1)
       ?.reduce((result, key) => {
-        result[key] = source[key];
+        if (source[key]) result[key] = source[key];
         return result;
       }, {});
 
@@ -60,12 +65,9 @@ const IssueRightPanel = ({
       try {
         const attrs = selectedIssues?.map((r) => r.originalattributename); // get the attributes to be processed
         const errorSubset = subset(JSON.parse(_error), attrs); // remove unwanted keys
-        const colsToFilter = Object.keys(errorSubset)
-          .map((k) => errorSubset[k].map((e) => e?.split(":")[1]))
-          .flat(); // create an array of columns to be shown
-        setColFilters(colsToFilter);
-      } catch (error) {
-        setColFilters([]);
+        setError(errorSubset);
+      } catch (er) {
+        setError({});
       }
     }
   }, [rowDetails]);
@@ -109,20 +111,28 @@ const IssueRightPanel = ({
                   <Typography>
                     {issue.issue_type}
                     <span>
-                      {issue.errorcolumnnames?.filter(colFilter).length}
+                      {
+                        issue.errorcolumnnames?.filter((col) =>
+                          colFilter(col, issue.originalattributename)
+                        ).length
+                      }
                     </span>
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <ul>
-                    {issue.errorcolumnnames?.filter(colFilter).map((col) => {
-                      return (
-                        <li key={col}>
-                          <small>{`${col}:`}</small>
-                          <span>{columns[col]}</span>
-                        </li>
-                      );
-                    })}
+                    {issue.errorcolumnnames
+                      ?.filter((col) =>
+                        colFilter(col, issue.originalattributename)
+                      )
+                      .map((col) => {
+                        return (
+                          <li key={col}>
+                            <small>{`${col}:`}</small>
+                            <span>{columns[col]}</span>
+                          </li>
+                        );
+                      })}
                   </ul>
                 </AccordionDetails>
               </Accordion>
@@ -135,7 +145,7 @@ const IssueRightPanel = ({
           <ListHeader menu={["Column name", "Issues"]} />
           {columns &&
             Object.keys(columns)
-              .filter(colFilter)
+              .filter((x) => getColumnsIssue(x).length > 0)
               .map((col, i) => {
                 const columnIssues = getColumnsIssue(col);
                 return (

@@ -300,7 +300,7 @@ const IngestionIssues = () => {
               columns={columns}
               rows={tableRows}
               defaultRowsPerPage={5}
-              maxHeight={337}
+              maxHeight={576}
               hasScroll
               rowId="rowIndex"
               initialSortedColumn="_rowno"
