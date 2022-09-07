@@ -19,6 +19,7 @@ import {
   STORE_DATASET_COLUMNS_FAILURE,
   SAVE_DATASET_COLUMNS_COUNT,
   TOGGLE_DATASET_PREVIWED_SQL,
+  UPDATE_COLUMNS_DATA_LOADING,
 } from "../../constants";
 
 // eslint-disable-next-line import/prefer-default-export
@@ -71,6 +72,13 @@ export const updateDatasetColumns = (
     dpId,
     userId,
     versionFreezed,
+  };
+};
+
+export const updateDatasetColumnsLoading = (value) => {
+  return {
+    type: UPDATE_COLUMNS_DATA_LOADING,
+    value,
   };
 };
 
