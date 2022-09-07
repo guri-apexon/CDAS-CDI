@@ -32,14 +32,28 @@ const IssueRightPanel = ({
   const [selectedTab, setSelectedTab] = useState(1);
   const [columns, setColumns] = useState([]);
   const [rowFilters, setRowFilters] = useState([]);
+  const [error, setError] = useState({});
+
+  const colFilter = (col, issueType) =>
+    error[issueType]?.some((x) => x?.includes(col));
+
   const getColumnsIssue = (column) => {
     if (rowFilters?.length && column) {
       return rowFilters
-        .filter((x) => x.errorcolumnnames.includes(column))
+        .filter((x) => colFilter(column, x.originalattributename))
         .map((x) => x.issue_type);
     }
     return [];
   };
+
+  const subset = (source, keys) =>
+    Object.keys(source)
+      ?.filter((key) => keys.indexOf(key) !== -1)
+      ?.reduce((result, key) => {
+        if (source[key]) result[key] = source[key];
+        return result;
+      }, {});
+
   useEffect(() => {
     const { _rowno, rowIndex, _error, ...rest } = rowDetails;
     setColumns(rest);
@@ -48,7 +62,13 @@ const IssueRightPanel = ({
         x.errorrownumbers.includes(_rowno)
       );
       setRowFilters(data);
-      // console.log("selectedIssues", rowFilters, rest);
+      try {
+        const attrs = selectedIssues?.map((r) => r.originalattributename); // get the attributes to be processed
+        const errorSubset = subset(JSON.parse(_error), attrs); // remove unwanted keys
+        setError(errorSubset);
+      } catch (er) {
+        setError({});
+      }
     }
   }, [rowDetails]);
 
@@ -90,19 +110,29 @@ const IssueRightPanel = ({
                 <AccordionSummary className="issue-header">
                   <Typography>
                     {issue.issue_type}
-                    <span>{issue.errorcolumnnames?.length}</span>
+                    <span>
+                      {
+                        issue.errorcolumnnames?.filter((col) =>
+                          colFilter(col, issue.originalattributename)
+                        ).length
+                      }
+                    </span>
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <ul>
-                    {issue.errorcolumnnames?.map((col) => {
-                      return (
-                        <li key={col}>
-                          <small>{`${col}:`}</small>
-                          <span>{columns[col]}</span>
-                        </li>
-                      );
-                    })}
+                    {issue.errorcolumnnames
+                      ?.filter((col) =>
+                        colFilter(col, issue.originalattributename)
+                      )
+                      .map((col) => {
+                        return (
+                          <li key={col}>
+                            <small>{`${col}:`}</small>
+                            <span>{columns[col]}</span>
+                          </li>
+                        );
+                      })}
                   </ul>
                 </AccordionDetails>
               </Accordion>
@@ -114,34 +144,36 @@ const IssueRightPanel = ({
         <div className="columns-list">
           <ListHeader menu={["Column name", "Issues"]} />
           {columns &&
-            Object.keys(columns).map((col, i) => {
-              const columnIssues = getColumnsIssue(col);
-              return (
-                <Accordion defaultExpanded={i === 0}>
-                  <AccordionSummary className="issue-header">
-                    <Typography>
-                      {col}
-                      <span>{columnIssues.length}</span>
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <ul>
-                      <li>
-                        <span>Value:&nbsp;</span>
-                        <span>{columns[col]}</span>
-                      </li>
-                      {columnIssues.map((err) => {
-                        return (
-                          <li key={err}>
-                            <span>{err}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </AccordionDetails>
-                </Accordion>
-              );
-            })}
+            Object.keys(columns)
+              .filter((x) => getColumnsIssue(x).length > 0)
+              .map((col, i) => {
+                const columnIssues = getColumnsIssue(col);
+                return (
+                  <Accordion defaultExpanded={i === 0}>
+                    <AccordionSummary className="issue-header">
+                      <Typography>
+                        {col}
+                        <span>{columnIssues.length}</span>
+                      </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <ul>
+                        <li>
+                          <span>Value:&nbsp;</span>
+                          <span>{columns[col]}</span>
+                        </li>
+                        {columnIssues.map((err) => {
+                          return (
+                            <li key={err}>
+                              <span>{err}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </AccordionDetails>
+                  </Accordion>
+                );
+              })}
         </div>
       )}
     </aside>
