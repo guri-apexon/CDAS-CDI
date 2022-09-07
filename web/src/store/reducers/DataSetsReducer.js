@@ -45,6 +45,7 @@ import {
   FETCH_LOCATION_DETAIL_SUCCESS,
   SAVE_DATASET_COLUMNS_COUNT,
   TOGGLE_DATASET_PREVIWED_SQL,
+  UPDATE_COLUMNS_DATA_LOADING,
 } from "../../constants";
 
 import { dateTypeForJDBC, parseBool } from "../../utils/index";
@@ -107,6 +108,7 @@ export const initialState = {
   dataSetRowCount: 0,
   previewedSql: false,
   datasetUpdated: false,
+  updateLoading: false,
 };
 
 const DataFlowReducer = (state = initialState, action) =>
@@ -140,13 +142,28 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
 
       case RESET_JDBC_FORM:
-        newState.formDataSQL = {
-          ...defaultDataSQL,
-        };
-        newState.previewedSql = false;
-        newState.datasetColumns = [];
-        newState.sqlColumns = [];
-        newState.datasetUpdated = false;
+        if (action.fieldsArr?.length) {
+          action.fieldsArr.forEach((x) => {
+            switch (x) {
+              case "sqlColumns":
+                newState.sqlColumns = [];
+                break;
+              case "datasetColumns":
+                newState.datasetColumns = [];
+                break;
+              default:
+                break;
+            }
+          });
+        } else {
+          newState.formDataSQL = {
+            ...defaultDataSQL,
+          };
+          newState.previewedSql = false;
+          newState.datasetColumns = [];
+          newState.sqlColumns = [];
+          newState.datasetUpdated = false;
+        }
         break;
 
       case UPDATE_DS_STATUS:
@@ -309,14 +326,19 @@ const DataFlowReducer = (state = initialState, action) =>
         newState.sucessMsg = null;
         newState.error = action.message;
         break;
+      case UPDATE_COLUMNS_DATA_LOADING:
+        newState.updateLoading = action.value;
+        break;
       case UPDATE_COLUMNS_SUCCESS:
         newState.loading = false;
+        newState.updateLoading = false;
         newState.error = null;
         if (action.versionBumped) newState.CDVersionBump = false;
         newState.sucessMsg = "Column definition was updated successfully";
         break;
       case UPDATE_COLUMNS_FAILURE:
         newState.loading = false;
+        newState.updateLoading = false;
         newState.sucessMsg = null;
         newState.error = action.message;
         break;

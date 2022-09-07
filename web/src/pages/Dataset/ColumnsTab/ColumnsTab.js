@@ -250,6 +250,8 @@ const ColumnsTab = ({
         formatJDBCColumns(datasetColumns);
       } else if (sqlColumns.length) {
         formatJDBCColumns(sqlColumns, !!columnsEditMode);
+      } else {
+        // setFormattedData([]);
       }
     } else if (isSftp(locationType) && datasetColumns.length) {
       // console.log("SFTP", locationType);
