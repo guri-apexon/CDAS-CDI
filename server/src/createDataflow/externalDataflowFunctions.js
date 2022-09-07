@@ -3154,10 +3154,9 @@ exports.dataflowUpdate = async (
       //   }
       // }
       // validateDOB(data.exptDtOfFirstProdFile);
-
-      errorDF.push(
-        "Expected First File Date can only be updated manually from CDI"
-      );
+      // errorDF.push(
+      //   "Expected First File Date can only be updated manually from CDI"
+      // );
     }
 
     if (typeof data.externalSystemName != "undefined") {
@@ -4766,10 +4765,20 @@ exports.clDefUpdate = async (
       updateQueryCD += `,datatype='${data.dataType}'`;
     }
     if (typeof data.minLength != "undefined") {
-      updateQueryCD += `,charactermin='${data.minLength || 0}'`;
+      // updateQueryCD += `,charactermin='${data.minLength || 0}'`;
+      if (data.minLength) {
+        updateQueryCD += `,charactermin='${data.minLength}'`;
+      } else {
+        updateQueryCD += `,charactermin=null`;
+      }
     }
     if (typeof data.maxLength != "undefined") {
-      updateQueryCD += `,charactermax='${data.maxLength || 0}'`;
+      // updateQueryCD += `,charactermax='${data.maxLength || 0}'`;
+      if (data.maxLength) {
+        updateQueryCD += `,charactermax='${data.maxLength || null}'`;
+      } else {
+        updateQueryCD += `,charactermax=null`;
+      }
     }
     if (typeof data.primaryKey != "undefined") {
       updateQueryCD += `,primarykey='${

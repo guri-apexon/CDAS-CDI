@@ -132,9 +132,10 @@ export const resetFTP = () => {
   };
 };
 
-export const resetJDBC = () => {
+export const resetJDBC = (fieldsArr = []) => {
   return {
     type: RESET_JDBC_FORM,
+    fieldsArr,
   };
 };
 

@@ -824,7 +824,7 @@ exports.updateDataFlow = async (req, res) => {
     let {
       rows: [existDf],
     } = await DB.executeQuery(
-      `select * from ${schemaName}.dataflow where UPPER(externalsystemname)='${externalSystemName.toUpperCase()}' and externalid='${ExternalId}'`
+      `select * from ${schemaName}.dataflow where UPPER(externalsystemname)='${externalSystemName.toUpperCase()}' and del_flg=0 and externalid='${ExternalId}'`
     );
 
     if (existDf && !isCDI) {
@@ -919,7 +919,7 @@ exports.updateDataFlow = async (req, res) => {
             let dpErrObj = {};
 
             let dpRows = await DB.executeQuery(
-              `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
+              `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and del_flg=0 and externalid='${each.ExternalId}'`
             );
 
             const packageExternalId = each.ExternalId;
@@ -981,7 +981,7 @@ exports.updateDataFlow = async (req, res) => {
 
                   if (each.dataSet?.length) {
                     let dpRowsUpdated = await DB.executeQuery(
-                      `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
+                      `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and del_flg=0 and externalid='${each.ExternalId}'`
                     );
                     const noPackageConfig =
                       dpRowsUpdated?.rows[0].nopackageconfig;
@@ -992,7 +992,7 @@ exports.updateDataFlow = async (req, res) => {
                     for (let obj of each.dataSet) {
                       let dsResObj = {};
                       let dsErrObj = {};
-                      let selectDS = `select * from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${obj.ExternalId}'`;
+                      let selectDS = `select * from ${schemaName}.dataset where datapackageid='${DPId}' and del_flg=0 and externalid='${obj.ExternalId}'`;
                       let { rows: dsRows } = await DB.executeQuery(selectDS);
 
                       const datasetExternalId = obj.ExternalId;
@@ -1122,7 +1122,7 @@ exports.updateDataFlow = async (req, res) => {
                               dsResObj.columnDefinition = [];
                               dsErrObj.columnDefinition = [];
                               for (let el of obj.columnDefinition) {
-                                let selectCD = `select * from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${el.ExternalId}'`;
+                                let selectCD = `select * from ${schemaName}.columndefinition where datasetid='${DSId}' and del_flg=0 and externalid='${el.ExternalId}'`;
                                 let { rows: cdRows } = await DB.executeQuery(
                                   selectCD
                                 );
@@ -1254,7 +1254,7 @@ exports.updateDataFlow = async (req, res) => {
                                 dsResObj.vlc = [];
                                 dsErrObj.vlc = [];
                                 for (let vlc of obj.conditionalExpressions) {
-                                  let selectVLC = `select * from ${schemaName}.dataset_qc_rules where datasetid='${DSId}' and ext_ruleid='${vlc.conditionalExpressionNumber}'`;
+                                  let selectVLC = `select * from ${schemaName}.dataset_qc_rules where datasetid='${DSId}' and active_yn='Y' and ext_ruleid='${vlc.conditionalExpressionNumber}'`;
                                   let { rows: vlcRows } = await DB.executeQuery(
                                     selectVLC
                                   );
@@ -1996,8 +1996,8 @@ exports.fetchdataflowDetails = async (req, res) => {
                 dataType: obj.datatype,
                 primaryKey: obj.primarykey,
                 required: obj.required,
-                characterMin: obj.charactermin,
-                characterMax: obj.charactermax,
+                minLength: obj.charactermin,
+                maxLength: obj.charactermax,
                 position: obj.position,
                 format: obj.format,
                 lov: obj.lov,

@@ -142,13 +142,28 @@ const DataFlowReducer = (state = initialState, action) =>
         break;
 
       case RESET_JDBC_FORM:
-        newState.formDataSQL = {
-          ...defaultDataSQL,
-        };
-        newState.previewedSql = false;
-        newState.datasetColumns = [];
-        newState.sqlColumns = [];
-        newState.datasetUpdated = false;
+        if (action.fieldsArr?.length) {
+          action.fieldsArr.forEach((x) => {
+            switch (x) {
+              case "sqlColumns":
+                newState.sqlColumns = [];
+                break;
+              case "datasetColumns":
+                newState.datasetColumns = [];
+                break;
+              default:
+                break;
+            }
+          });
+        } else {
+          newState.formDataSQL = {
+            ...defaultDataSQL,
+          };
+          newState.previewedSql = false;
+          newState.datasetColumns = [];
+          newState.sqlColumns = [];
+          newState.datasetUpdated = false;
+        }
         break;
 
       case UPDATE_DS_STATUS:

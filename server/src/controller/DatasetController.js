@@ -353,16 +353,38 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
     );
     const oldData = tempData[0];
 
+    const oldcustomsql_yn = tempData[0].customsql_yn;
+    let table_name = tableName;
+    let filter_condition = filterCondition;
+    let offset_column = offsetColumn;
+    let increment = dataType === "Incremental" ? "Y" : "N";
+
+    if (oldcustomsql_yn) {
+      if (isCustomSQL === "Yes" && oldcustomsql_yn.toLowerCase() === "no") {
+        await DB.executeQuery(
+          `DELETE from ${schemaName}.columndefinition where datasetid = '${datasetid}';`
+        );
+        table_name = null;
+        filter_condition = null;
+        offset_column = null;
+        increment = "N";
+      }
+    }
+
     const body = [
       datasetName,
       helper.stringToBoolean(active) ? 1 : 0,
       clinicalDataType ? clinicalDataType[0] : null,
       isCustomSQL || null,
       updatedSqlQuery || null,
-      tableName || null,
-      filterCondition || null,
-      dataType === "Incremental" ? "Y" : "N" || null,
-      offsetColumn || null,
+      // tableName || null,
+      // filterCondition || null,
+      // dataType === "Incremental" ? "Y" : "N" || null,
+      // offsetColumn || null,
+      table_name,
+      filter_condition,
+      increment,
+      offset_column,
       curDate,
       datasetid,
     ];
@@ -373,10 +395,14 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
       datakindid: clinicalDataType ? clinicalDataType[0] : null,
       customsql_yn: isCustomSQL || null,
       customsql: updatedSqlQuery || null,
-      tbl_nm: tableName || null,
-      dataset_fltr: filterCondition || null,
-      offsetcolumn: offsetColumn,
-      incremental: dataType === "Incremental" ? "Y" : "N" || null,
+      // tbl_nm: tableName || null,
+      // dataset_fltr: filterCondition || null,
+      // offsetcolumn: offsetColumn,
+      // incremental: dataType === "Incremental" ? "Y" : "N" || null,
+      tbl_nm: table_name,
+      dataset_fltr: filter_condition,
+      offsetcolumn: offset_column,
+      incremental: increment,
     };
 
     const updateDS = await DB.executeQuery(
