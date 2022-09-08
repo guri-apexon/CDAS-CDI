@@ -3211,7 +3211,9 @@ exports.dataflowUpdate = async (
       return { errRes: errorDF };
     }
 
-    const q1 = `select * from ${schemaName}.dataflow where externalsystemname='${externalSysName}' and externalid='${externalID}'`;
+    // const q1 = `select * from ${schemaName}.dataflow where externalsystemname='${externalSysName}' and externalid='${externalID}'`;
+    const q1 = `select * from ${schemaName}.dataflow where dataflowid='${DFId}'`;
+
     let q3 = `select vend_nm from ${schemaName}.vendor where vend_id=$1;`;
     let q4 = `select prot_nbr_stnd  from study where prot_id=$1;`;
 
@@ -3367,13 +3369,21 @@ exports.dataflowUpdate = async (
       }'`;
     }
 
-    updateQueryDF += ` where externalsystemname='${externalSysName}' and externalid='${externalID}' returning *;`;
-    // console.log(updateQueryDF);
+    // updateQueryDF += ` where externalsystemname='${externalSysName}' and externalid='${externalID}' returning *;`;
+    updateQueryDF += ` where dataflowid='${DFId}' returning *;`;
+
+    // console.log(updateQueryDF); dataflowid='${DFId}'
+
+    // const { rows: existDfRows } = await DB.executeQuery(
+    //   `SELECT type, description,src_loc_id, externalsystemname , expt_fst_prd_dt ,
+    //    testflag , active, prot_id , vend_id , name, serv_ownr
+    //    from ${schemaName}.dataflow where externalsystemname='${externalSysName}' and externalid='${externalID}';`
+    // );
 
     const { rows: existDfRows } = await DB.executeQuery(
       `SELECT type, description,src_loc_id, externalsystemname , expt_fst_prd_dt ,
        testflag , active, prot_id , vend_id , name, serv_ownr
-       from ${schemaName}.dataflow where externalsystemname='${externalSysName}' and externalid='${externalID}';`
+       from ${schemaName}.dataflow where dataflowid='${DFId}';`
     );
     const existDf = existDfRows[0];
     const dataflowupdate = await DB.executeQuery(updateQueryDF);
@@ -3708,11 +3718,17 @@ exports.packageUpdate = async (
       updateQueryDP += `, nopackageconfig='
       ${helper.stringToBoolean(data.noPackageConfig) ? 1 : 0}'`;
     }
-    updateQueryDP += ` where dataflowid='${DFId}' and externalid='${externalID}' returning *;`;
+    // updateQueryDP += ` where dataflowid='${DFId}' and externalid='${externalID}' returning *;`;
+    updateQueryDP += ` where datapackageid='${DPId}' returning *;`;
+
+    // const { rows: existDPRows } = await DB.executeQuery(
+    //   `SELECT type, name, path, sasxptmethod ,password, nopackageconfig
+    //    from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${externalID}';`
+    // );
 
     const { rows: existDPRows } = await DB.executeQuery(
       `SELECT type, name, path, sasxptmethod ,password, nopackageconfig 
-       from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${externalID}';`
+       from ${schemaName}.datapackage where datapackageid='${DPId}';`
     );
 
     const existDP = existDPRows[0];
@@ -4350,15 +4366,22 @@ exports.datasetUpdate = async (
       }
     }
 
-    updateQueryDS += ` where datapackageid='${DPId}' and externalid='${externalID}' returning *;`;
+    // updateQueryDS += ` where datapackageid='${DPId}' and externalid='${externalID}' returning *;`;
+    updateQueryDS += ` where  datasetid='${DSId}' returning *;`;
 
     // console.log(updateQueryDS);
 
+    // const { rows: existDSRows } = await DB.executeQuery(
+    //   `SELECT datakindid , mnemonic, name, columncount, incremental, offsetcolumn , type,
+    //    path, ovrd_stale_alert ,headerrow , headerrownumber ,footerrow , footerrownumber ,
+    //    customsql ,customsql_yn , tbl_nm , delimiter, escapecode, charset, offset_val ,quote,
+    //    rowdecreaseallowed , data_freq,dataset_fltr from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${externalID}';`
+    // );
     const { rows: existDSRows } = await DB.executeQuery(
       `SELECT datakindid , mnemonic, name, columncount, incremental, offsetcolumn , type, 
        path, ovrd_stale_alert ,headerrow , headerrownumber ,footerrow , footerrownumber ,
        customsql ,customsql_yn , tbl_nm , delimiter, escapecode, charset, offset_val ,quote, 
-       rowdecreaseallowed , data_freq,dataset_fltr from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${externalID}';`
+       rowdecreaseallowed , data_freq,dataset_fltr from ${schemaName}.dataset where datasetid='${DSId}';`
     );
 
     const existDs = existDSRows[0];
@@ -4822,13 +4845,19 @@ exports.clDefUpdate = async (
       }
     }
 
-    updateQueryCD += ` where datasetid='${DSId}' and externalid='${externalId}' returning *;`;
+    // updateQueryCD += ` where datasetid='${DSId}' and externalid='${externalId}' returning *;`;
+    updateQueryCD += ` where columnid='${cdId}' returning *;`;
 
     // console.log(updateQueryCD);
 
+    // const { rows: existCDRows } = await DB.executeQuery(
+    //   `SELECT name, datatype, charactermin,charactermax,primarykey,required,"unique",position,
+    //   format, lov, variable from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${externalId}';`
+    // );
+
     const { rows: existCDRows } = await DB.executeQuery(
       `SELECT name, datatype, charactermin,charactermax,primarykey,required,"unique",position,
-      format, lov, variable from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${externalId}';`
+      format, lov, variable from ${schemaName}.columndefinition where columnid='${cdId}';`
     );
 
     const existClDef = existCDRows[0];
@@ -4984,13 +5013,18 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
       updateQueryVLC += `,active_yn='${vl.inUse.toUpperCase()}'`;
     }
 
-    updateQueryVLC += ` where datasetid='${DSId}' and ext_ruleid='${vl.conditionalExpressionNumber}' returning *;`;
+    // updateQueryVLC += ` where datasetid='${DSId}' and ext_ruleid='${vl.conditionalExpressionNumber}' returning *;`;
+    updateQueryVLC += ` where datasetid='${DSId}' and active_yn='Y' and ext_ruleid='${vl.conditionalExpressionNumber}' returning *;`;
 
     // console.log(updateQueryCD);
 
+    // const { rows: existVLCRows } = await DB.executeQuery(
+    //   `SELECT ruleseq, action, ruleexpr,errormessage,active_yn from ${schemaName}.dataset_qc_rules
+    //    where datasetid='${DSId}' and ext_ruleid='${vl.conditionalExpressionNumber}';`
+    // );
     const { rows: existVLCRows } = await DB.executeQuery(
       `SELECT ruleseq, action, ruleexpr,errormessage,active_yn from ${schemaName}.dataset_qc_rules
-       where datasetid='${DSId}' and ext_ruleid='${vl.conditionalExpressionNumber}';`
+       where datasetid='${DSId}' and active_yn='Y' and ext_ruleid='${vl.conditionalExpressionNumber}';`
     );
 
     const existVlc = existVLCRows[0];
@@ -5052,16 +5086,16 @@ exports.removeDataflow = async (
     let ts = new Date().toLocaleString();
     var dataflow = [];
 
-    const deleteQueryDF = `update ${schemaName}.dataflow set updt_tm=NOW(),refreshtimestamp=NOW(),updated_by_user='${userId}', del_flg=1 where dataflowid='${DFId}' `;
+    const deleteQueryDF = `update ${schemaName}.dataflow set updt_tm=NOW(),refreshtimestamp=NOW(),updated_by_user='${userId}', del_flg=1, active=0 where dataflowid='${DFId}' `;
     const removeDf = await DB.executeQuery(deleteQueryDF);
 
-    const deleteQueryDP = `update ${schemaName}.datapackage set updt_tm=NOW(), del_flg=1 where dataflowid='${DFId}' returning datapackageid;`;
+    const deleteQueryDP = `update ${schemaName}.datapackage set updt_tm=NOW(), del_flg=1, active=0 where dataflowid='${DFId}' returning datapackageid;`;
     const removeDp = await DB.executeQuery(deleteQueryDP);
 
     const DPID = removeDp.rows;
 
     for (let id of DPID) {
-      const deleteQueryDS = `update ${schemaName}.dataset set updt_tm=NOW(), del_flg=1 where datapackageid='${id.datapackageid}' returning *;`;
+      const deleteQueryDS = `update ${schemaName}.dataset set updt_tm=NOW(), del_flg=1 , active=0 where datapackageid='${id.datapackageid}' returning *;`;
       const removeDs = await DB.executeQuery(deleteQueryDS);
       const DSID = removeDs.rows;
 
@@ -5128,10 +5162,10 @@ exports.removeDataPackage = async (externalID, DPID, DFId, version, userId) => {
     var dataPackage = [];
     var newDfobj = {};
 
-    const deleteQueryDP = `update ${schemaName}.datapackage set updt_tm=NOW(), del_flg=1 where datapackageid='${DPID}';`;
+    const deleteQueryDP = `update ${schemaName}.datapackage set updt_tm=NOW(), del_flg=1,active=0 where datapackageid='${DPID}';`;
     const removeDp = await DB.executeQuery(deleteQueryDP);
 
-    const deleteQueryDS = `update ${schemaName}.dataset set updt_tm=NOW(), del_flg=1 where datapackageid='${DPID}' returning *;`;
+    const deleteQueryDS = `update ${schemaName}.dataset set updt_tm=NOW(), del_flg=1 , active=0 where datapackageid='${DPID}' returning *;`;
     const removeDs = await DB.executeQuery(deleteQueryDS);
     const DSID = removeDs.rows;
 
@@ -5188,7 +5222,7 @@ exports.removeDataSet = async (
     var dataSet = [];
     var newDfobj = {};
 
-    const deleteQueryDS = `update ${schemaName}.dataset set updt_tm=NOW(), del_flg=1 where datasetid='${DSID}';`;
+    const deleteQueryDS = `update ${schemaName}.dataset set updt_tm=NOW(), del_flg=1, active=0 where datasetid='${DSID}';`;
     const removeDs = await DB.executeQuery(deleteQueryDS);
 
     const deleteQueryCD = `update ${schemaName}.columndefinition set updt_tm=NOW(), del_flg=1 where datasetid='${DSID}';`;

@@ -299,7 +299,7 @@ const Dataset = () => {
   useEffect(() => {
     setValue(0);
     //   setColumnsActive(false);
-    if (createMode) {
+    if (createMode || !(!createMode && isDatasetCreated && isDatasetCreation)) {
       dispatch(resetJDBC());
     }
   }, [params]);
@@ -313,12 +313,6 @@ const Dataset = () => {
       dispatch(getVLCData(datasetid));
     }
   }, [datasetid, dsCreatedSuccessfully]);
-
-  // useEffect(() => {
-  //   if (datasetid !== "New" && !isSftp(loctyp)) {
-  //     dispatch(resetJDBC(["sqlColumns", "datasetColumns"]));
-  //   }
-  // }, [datasetid]);
 
   useEffect(() => {
     if (isDatasetCreated && isDatasetCreation) {
@@ -462,12 +456,12 @@ const Dataset = () => {
           );
           return false;
         }
-        // if (
-        //   !isSftp(locationType) &&
-        //   formValue?.isCustomSQL?.toLowerCase() === "yes"
-        // ) {
-        //   dispatch(resetJDBC(["sqlColumns"]));
-        // }
+        if (
+          !isSftp(locationType) &&
+          formValue?.isCustomSQL?.toLowerCase() === "yes"
+        ) {
+          dispatch(resetJDBC(["sqlColumns", "datasetColumns"]));
+        }
         dispatch(updateDatasetData(data));
       } else {
         dispatch(saveDatasetData(data));
