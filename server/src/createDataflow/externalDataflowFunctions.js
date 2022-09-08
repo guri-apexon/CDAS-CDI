@@ -3156,10 +3156,9 @@ exports.dataflowUpdate = async (
       //   }
       // }
       // validateDOB(data.exptDtOfFirstProdFile);
-
-      errorDF.push(
-        "Expected First File Date can only be updated manually from CDI"
-      );
+      // errorDF.push(
+      //   "Expected First File Date can only be updated manually from CDI"
+      // );
     }
 
     if (typeof data.externalSystemName != "undefined") {
