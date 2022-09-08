@@ -66,7 +66,7 @@ const AuditLog = () => {
         filteredRows = filteredRows.filter((row) => {
           return column.filterFunction(row, filts);
         });
-        if (column.sortFunction) {
+        if (column.sortFunction && column.accessor === sortedColumnValue) {
           filteredRows.sort(
             column.sortFunction(sortedColumnValue, sortOrderValue)
           );
@@ -74,15 +74,15 @@ const AuditLog = () => {
       }
     });
     if (sortedColumnValue === "update_dt") {
-      filteredRows.sort((a, b) => {
-        return (
-          sortOrderValue === "asc"
-            ? Number(a[sortedColumnValue]) > Number(b[sortedColumnValue])
-            : Number(a[sortedColumnValue]) < Number(b[sortedColumnValue])
-        )
-          ? 1
-          : -1;
-      });
+      // filteredRows.sort((a, b) => {
+      //   return (
+      //     sortOrderValue === "asc"
+      //       ? Number(a[sortedColumnValue]) > Number(b[sortedColumnValue])
+      //       : Number(a[sortedColumnValue]) < Number(b[sortedColumnValue])
+      //   )
+      //     ? 1
+      //     : -1;
+      // });
     }
     return filteredRows;
   };
