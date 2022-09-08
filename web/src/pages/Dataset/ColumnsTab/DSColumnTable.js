@@ -210,8 +210,9 @@ export default function DSColumnTable({
   };
 
   const handleFileUpdate = (event) => {
-    const file = event.target.files[0];
+    const file = event.target.files[0] || null;
     if (
+      file &&
       allowedTypes.length &&
       !allowedTypes.filter((type) => file.type.includes(type)).length
     ) {
@@ -244,7 +245,7 @@ export default function DSColumnTable({
     setSelectedFile(null);
     setImportedData([]);
     // document.querySelector("#file").value = "";
-    inputFile.current.value = "";
+    inputFile.current.value = null;
   };
 
   const handleOverWrite = async () => {
@@ -647,6 +648,7 @@ export default function DSColumnTable({
       dispatch(getDatasetColumns(dsId));
     }
     setIsOverride(false);
+    inputFile.current.value = null;
   };
 
   // effect to handle after update API
@@ -762,8 +764,9 @@ export default function DSColumnTable({
   };
 
   const onCancelAll = () => {
-    toggleEditMode("All");
+    dispatch(getDatasetColumns(dsId));
     setIsOverride(false);
+    inputFile.current.value = null;
     // setIsEditAll(false);
     // setEditMode(false);
   };

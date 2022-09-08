@@ -107,9 +107,9 @@ const IngestionIssues = () => {
       ? datasetProperties.DatasetName || "------"
       : datasetProperties.FileName || "------";
   };
-  const [rowsPerPage, setRowPerPage] = useState(10);
+  const [rowsPerPage, setRowPerPage] = useState(5);
   const [pageNo, setPageNo] = useState(0);
-  const [sortedColumn, setSortedColumnValue] = useState("update_dt");
+  const [sortedColumn, setSortedColumnValue] = useState("_rowno");
   const [sortedValue, setSortOrderValue] = useState("asc");
   const [inlineFilters, setInlineFilters] = useState([]);
   const downloadSummery = (e) => {
@@ -118,7 +118,7 @@ const IngestionIssues = () => {
         ? { ...x, header: x.header.props?.children[1] || "" }
         : x;
     });
-    // console.log("filteredColumns", filteredColumns, tableRows);
+    // console.log("filteredColumns", sortedColumn, sortedValue);
     downloadRows({
       name: `Dataset-(${datasetId})-Ingestion-issue`,
       ext: "xlsx",
@@ -299,7 +299,7 @@ const IngestionIssues = () => {
               subtitle={`${tableRows.length} records with issues`}
               columns={columns}
               rows={tableRows}
-              defaultRowsPerPage={5}
+              defaultRowsPerPage={rowsPerPage}
               maxHeight={576}
               hasScroll
               rowId="rowIndex"
