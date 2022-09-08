@@ -104,7 +104,7 @@ export const hasSpCharExTild = (str = "") => {
 };
 
 export const isVlcTildSaparated = (str = "") => {
-  const value = str.trim();
+  const value = str.toString().trim();
   if (value.includes(" ") || value.startsWith("~") || value.endsWith("~"))
     return false;
   return true;

@@ -762,7 +762,7 @@ export default function DSColumnTable({
   };
 
   const onCancelAll = () => {
-    toggleEditMode("All");
+    dispatch(getDatasetColumns(dsId));
     setIsOverride(false);
     // setIsEditAll(false);
     // setEditMode(false);
