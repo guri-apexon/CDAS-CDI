@@ -107,7 +107,7 @@ const IngestionIssues = () => {
       ? datasetProperties.DatasetName || "------"
       : datasetProperties.FileName || "------";
   };
-  const [rowsPerPage, setRowPerPage] = useState(10);
+  const [rowsPerPage, setRowPerPage] = useState(5);
   const [pageNo, setPageNo] = useState(0);
   const [sortedColumn, setSortedColumnValue] = useState("update_dt");
   const [sortedValue, setSortOrderValue] = useState("asc");
@@ -299,7 +299,7 @@ const IngestionIssues = () => {
               subtitle={`${tableRows.length} records with issues`}
               columns={columns}
               rows={tableRows}
-              defaultRowsPerPage={5}
+              defaultRowsPerPage={rowsPerPage}
               maxHeight={576}
               hasScroll
               rowId="rowIndex"
