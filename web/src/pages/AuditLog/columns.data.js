@@ -112,7 +112,7 @@ const columns = [
   {
     header: "Old Value",
     accessor: "old_val",
-    sortFunction: compareStrings,
+    // sortFunction: compareStrings,
     customCell: displayTextFn,
     filterFunction: createStringSearchFilter("old_val"),
     filterComponent: TextFieldFilter,
@@ -121,7 +121,7 @@ const columns = [
   {
     header: "New Value",
     accessor: "new_val",
-    sortFunction: compareStrings,
+    // sortFunction: compareStrings,
     customCell: displayTextFn,
     filterFunction: createStringSearchFilter("new_val"),
     filterComponent: TextFieldFilter,
