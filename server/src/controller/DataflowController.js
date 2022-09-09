@@ -868,419 +868,445 @@ exports.updateDataFlow = async (req, res) => {
       if (existDf.del_flg === 1) {
         // errRes.message = "This dataFlow already removed";
         // isAnyError = true;
-      }
-
-      if (delFlag === 1) {
-        await externalFunction
-          .removeDataflow(
-            DFId,
-            ExternalId,
-            DFVer,
-            externalSysName,
-            conf_data,
-            userId
-          )
-          .then((res) => {
-            if (res && res.sucRes) {
-              isSomthingUpdate = true;
-            }
-          });
       } else {
-        //dataFlow update function Call
-        var updateDataflow = await externalFunction
-          .dataflowUpdate(
-            req.body,
-            ExternalId,
-            DFId,
-            DFVer,
-            externalSysName,
-            conf_data,
-            userId,
-            ConnectionType
-          )
-          .then((res) => {
-            if (res && res.errRes?.length) {
-              let dfErrRes = res.errRes.join(" '|' ");
-              errRes.message = dfErrRes;
-              isAnyError = true;
-            }
+        if (delFlag === 1) {
+          await externalFunction
+            .removeDataflow(
+              DFId,
+              ExternalId,
+              DFVer,
+              externalSysName,
+              conf_data,
+              userId
+            )
+            .then((res) => {
+              if (res && res.sucRes) {
+                isSomthingUpdate = true;
+              }
+            });
+        } else {
+          //dataFlow update function Call
+          var updateDataflow = await externalFunction
+            .dataflowUpdate(
+              req.body,
+              ExternalId,
+              DFId,
+              DFVer,
+              externalSysName,
+              conf_data,
+              userId,
+              ConnectionType
+            )
+            .then((res) => {
+              if (res && res.errRes?.length) {
+                let dfErrRes = res.errRes.join(" '|' ");
+                errRes.message = dfErrRes;
+                isAnyError = true;
+              }
 
-            if (res && res.sucRes) {
-              // console.log("res.sucRes", res.sucRes);
-              (ResponseBody.dataFlowName = res.sucRes.name),
-                (isSomthingUpdate = true);
-            }
-          });
+              if (res && res.sucRes) {
+                // console.log("res.sucRes", res.sucRes);
+                (ResponseBody.dataFlowName = res.sucRes.name),
+                  (isSomthingUpdate = true);
+              }
+            });
 
-        if (dataPackage && Array.isArray(dataPackage) && dataPackage.length) {
-          errRes.dataPackages = [];
-          for (let each of dataPackage) {
-            let dpResObj = {};
-            let dpErrObj = {};
+          if (dataPackage && Array.isArray(dataPackage) && dataPackage.length) {
+            errRes.dataPackages = [];
+            for (let each of dataPackage) {
+              let dpResObj = {};
+              let dpErrObj = {};
 
-            let dpRows = await DB.executeQuery(
-              `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
-            );
+              let dpRows = await DB.executeQuery(
+                `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
+              );
 
-            const packageExternalId = each.ExternalId;
-            const currentDp = dpRows.rows ? dpRows.rows[0] : null;
+              const packageExternalId = each.ExternalId;
+              const currentDp = dpRows.rows ? dpRows.rows[0] : null;
 
-            dpErrObj.ExternalId = packageExternalId;
+              dpErrObj.ExternalId = packageExternalId;
 
-            if (currentDp) {
-              const DPId = currentDp.datapackageid;
-              dpResObj.ExternalId = packageExternalId;
-              dpResObj.ID = DPId;
+              if (currentDp) {
+                const DPId = currentDp.datapackageid;
+                dpResObj.ExternalId = packageExternalId;
+                dpResObj.ID = DPId;
 
-              dpErrObj.ID = DPId;
+                dpErrObj.ID = DPId;
 
-              if (currentDp.del_flg == 1) {
-                // (dpErrObj.message = `This Data package already removed`),
-                //   (isAnyError = true);
-              } else {
-                if (each.delFlag === 1) {
-                  await externalFunction
-                    .removeDataPackage(
-                      packageExternalId,
-                      DPId,
-                      DFId,
-                      DFVer,
-                      userId
-                    )
-                    .then((res) => {
-                      if (res && res.sucRes) {
-                        // ResponseBody.dataPackage.push(res.sucRes);
-                        isSomthingUpdate = true;
-                      }
-                    });
+                if (currentDp.del_flg == 1) {
+                  // (dpErrObj.message = `This Data package already removed`),
+                  //   (isAnyError = true);
                 } else {
-                  var updatePackage = await externalFunction
-                    .packageUpdate(
-                      each,
-                      packageExternalId,
-                      DPId,
-                      DFId,
-                      DFVer,
-                      ConnectionType,
-                      userId
-                    )
-                    .then((res) => {
-                      // if (res.sucRes?.length) {
-                      //   ResponseBody.success.push(res.sucRes);
-                      // }
-                      if (res && res.sucRes) {
-                        // dpResObj = res.sucRes;
-                        isSomthingUpdate = true;
-                      }
-                      if (res && res.errRes?.length) {
-                        let dpErrRes = res.errRes.join(" '|' ");
-                        dpErrObj.message = dpErrRes;
-                        isAnyError = true;
-                      }
-                    });
+                  if (each.delFlag === 1) {
+                    await externalFunction
+                      .removeDataPackage(
+                        packageExternalId,
+                        DPId,
+                        DFId,
+                        DFVer,
+                        userId
+                      )
+                      .then((res) => {
+                        if (res && res.sucRes) {
+                          // ResponseBody.dataPackage.push(res.sucRes);
+                          isSomthingUpdate = true;
+                        }
+                      });
+                  } else {
+                    var updatePackage = await externalFunction
+                      .packageUpdate(
+                        each,
+                        packageExternalId,
+                        DPId,
+                        DFId,
+                        DFVer,
+                        ConnectionType,
+                        userId
+                      )
+                      .then((res) => {
+                        // if (res.sucRes?.length) {
+                        //   ResponseBody.success.push(res.sucRes);
+                        // }
+                        if (res && res.sucRes) {
+                          // dpResObj = res.sucRes;
+                          isSomthingUpdate = true;
+                        }
+                        if (res && res.errRes?.length) {
+                          let dpErrRes = res.errRes.join(" '|' ");
+                          dpErrObj.message = dpErrRes;
+                          isAnyError = true;
+                        }
+                      });
 
-                  if (each.dataSet?.length) {
-                    let dpRowsUpdated = await DB.executeQuery(
-                      `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
-                    );
-                    const noPackageConfig =
-                      dpRowsUpdated?.rows[0].nopackageconfig;
-                    // if datasets exists
-                    dpResObj.dataSets = [];
-                    dpErrObj.dataSets = [];
+                    if (each.dataSet?.length) {
+                      let dpRowsUpdated = await DB.executeQuery(
+                        `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
+                      );
+                      const noPackageConfig =
+                        dpRowsUpdated?.rows[0].nopackageconfig;
+                      // if datasets exists
+                      dpResObj.dataSets = [];
+                      dpErrObj.dataSets = [];
 
-                    for (let obj of each.dataSet) {
-                      let dsResObj = {};
-                      let dsErrObj = {};
-                      let selectDS = `select * from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${obj.ExternalId}'`;
-                      let { rows: dsRows } = await DB.executeQuery(selectDS);
+                      for (let obj of each.dataSet) {
+                        let dsResObj = {};
+                        let dsErrObj = {};
+                        let selectDS = `select * from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${obj.ExternalId}'`;
+                        let { rows: dsRows } = await DB.executeQuery(selectDS);
 
-                      const datasetExternalId = obj.ExternalId;
-                      const currentDs = dsRows ? dsRows[0] : null;
+                        const datasetExternalId = obj.ExternalId;
+                        const currentDs = dsRows ? dsRows[0] : null;
 
-                      if (currentDs) {
-                        const DSId = currentDs.datasetid;
-                        const dk_id = currentDs.datakindid;
+                        if (currentDs) {
+                          const DSId = currentDs.datasetid;
+                          const dk_id = currentDs.datakindid;
 
-                        const custSql = currentDs.customsql;
+                          const custSql = currentDs.customsql;
 
-                        const dataflow = await dataflowHelper.findById(DFId);
-                        const dataset = await datasetHelper.findById(DSId);
+                          const dataflow = await dataflowHelper.findById(DFId);
+                          const dataset = await datasetHelper.findById(DSId);
 
-                        // check for primaryKey for Prod
-                        let saveFlagYes = false;
-                        if (testFlag === 0) {
-                          for (let i = 0; i < dataPackage.length; i++) {
-                            for (
-                              let k = 0;
-                              k < dataPackage[i]?.dataSet.length;
-                              k++
-                            ) {
-                              saveFlagYes = false;
-                              if (
-                                dataPackage[i].dataSet[k].incremental === true
+                          // check for primaryKey for Prod
+                          let saveFlagYes = false;
+                          if (testFlag === 0) {
+                            for (let i = 0; i < dataPackage.length; i++) {
+                              for (
+                                let k = 0;
+                                k < dataPackage[i]?.dataSet.length;
+                                k++
                               ) {
-                                for (
-                                  let j = 0;
-                                  j <
-                                  dataPackage[i].dataSet[k].columnDefinition
-                                    .length;
-                                  j++
+                                saveFlagYes = false;
+                                if (
+                                  dataPackage[i].dataSet[k].incremental === true
                                 ) {
-                                  if (
-                                    dataPackage[i].dataSet[k].columnDefinition[
-                                      j
-                                    ].primaryKey === "Yes"
-                                  )
-                                    saveFlagYes = true;
+                                  for (
+                                    let j = 0;
+                                    j <
+                                    dataPackage[i].dataSet[k].columnDefinition
+                                      .length;
+                                    j++
+                                  ) {
+                                    if (
+                                      dataPackage[i].dataSet[k]
+                                        .columnDefinition[j].primaryKey ===
+                                      "Yes"
+                                    )
+                                      saveFlagYes = true;
+                                  }
+                                  if (!saveFlagYes)
+                                    return apiResponse.ErrorResponse(
+                                      res,
+                                      `Cannot switch to Incremental if a primaryKey has not been defined as primaryKey is mandatory for incremental.`
+                                    );
                                 }
-                                if (!saveFlagYes)
+                                if (
+                                  dataflow.data_in_cdr === "Y" &&
+                                  dataset.incremental === "Y" &&
+                                  testFlag === 0 &&
+                                  dataPackage[i].dataSet[k].incremental ===
+                                    false
+                                ) {
                                   return apiResponse.ErrorResponse(
                                     res,
-                                    `Cannot switch to Incremental if a primaryKey has not been defined as primaryKey is mandatory for incremental.`
+                                    `Cannot switch to Cumulative if the dataflow has been synced once.`
                                   );
-                              }
-                              if (
-                                dataflow.data_in_cdr === "Y" &&
-                                dataset.incremental === "Y" &&
-                                testFlag === 0 &&
-                                dataPackage[i].dataSet[k].incremental === false
-                              ) {
-                                return apiResponse.ErrorResponse(
-                                  res,
-                                  `Cannot switch to Cumulative if the dataflow has been synced once.`
-                                );
+                                }
                               }
                             }
                           }
-                        }
 
-                        dsResObj.ExternalId = datasetExternalId;
-                        dsResObj.ID = DSId;
+                          dsResObj.ExternalId = datasetExternalId;
+                          dsResObj.ID = DSId;
 
-                        dsErrObj.ExternalId = datasetExternalId;
-                        dsErrObj.ID = DSId;
+                          dsErrObj.ExternalId = datasetExternalId;
+                          dsErrObj.ID = DSId;
 
-                        if (currentDs.del_flg == 1) {
-                          // (dsErrObj.message = `This Data set already removed`),
-                          //   (isAnyError = true);
-                        } else {
-                          if (obj.delFlag === 1) {
-                            await externalFunction
-                              .removeDataSet(
-                                datasetExternalId,
-                                DPId,
-                                DFId,
-                                DSId,
-                                DFVer,
-                                userId
-                              )
-                              .then((res) => {
-                                if (res && res.sucRes) {
-                                  // ResponseBody.success.push(res.sucRes);
-                                  // dsResObj = res.sucRes;
-                                  isSomthingUpdate = true;
-                                }
-                              });
+                          if (currentDs.del_flg == 1) {
+                            // (dsErrObj.message = `This Data set already removed`),
+                            //   (isAnyError = true);
                           } else {
-                            //Function call for update dataSet data
-                            var updateDataset = await externalFunction
-                              .datasetUpdate(
-                                obj,
-                                datasetExternalId,
-                                DSId,
-                                DPId,
-                                DFId,
-                                DFVer,
-                                ConnectionType,
-                                custSql,
-                                externalSysName,
-                                testFlag,
-                                userId,
-                                noPackageConfig,
-                                dk_id
-                              )
-                              .then((res) => {
-                                // if (res.sucRes?.length) {
-                                //   ResponseBody.success.push(res.sucRes);
-                                // }
-
-                                if (res && res.sucRes) {
-                                  // dsResObj = res.sucRes;
-                                  isSomthingUpdate = true;
-                                }
-
-                                if (res && res.errRes?.length) {
-                                  let dsErrRes = res.errRes.join(" '|' ");
-                                  dsErrObj.message = dsErrRes;
-                                  isAnyError = true;
-                                  // ResponseBody.errors.push(res.errRes);
-                                }
-                              });
-
-                            if (obj.columnDefinition?.length) {
-                              dsResObj.columnDefinition = [];
-                              dsErrObj.columnDefinition = [];
-                              for (let el of obj.columnDefinition) {
-                                let selectCD = `select * from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${el.ExternalId}'`;
-                                let { rows: cdRows } = await DB.executeQuery(
-                                  selectCD
-                                );
-
-                                let {
-                                  rows: [dataSEtdata],
-                                } = await DB.executeQuery(
-                                  `select headerrownumber from ${schemaName}.dataset where datasetid='${DSId}'`
-                                );
-                                const DSheaderRow = dataSEtdata.headerrownumber;
-                                // console.log("dataSEtdata", dataSEtdata);
-
-                                const cdExternalId = el.ExternalId;
-                                const currentCd = cdRows ? cdRows[0] : null;
-                                let errObj = {};
-
-                                if (currentCd) {
-                                  let newObj = {};
-                                  const cdId = currentCd.columnid;
-                                  const oldDataType = currentCd.datatype;
-                                  const oldFormat = currentCd.format;
-                                  newObj.ExternalId = cdExternalId;
-                                  newObj.ID = cdId;
-                                  dsResObj.columnDefinition.push(newObj);
-
-                                  errObj.ExternalId = cdExternalId;
-                                  errObj.ID = cdId;
-
-                                  if (currentCd.del_flg === 1) {
-                                    // (errObj.message = `This column definition already removed`),
-                                    //   (isAnyError = true);
-                                  } else {
-                                    if (el.delFlag === 1) {
-                                      await externalFunction
-                                        .removeColumnDefination(
-                                          cdExternalId,
-                                          DPId,
-                                          DFId,
-                                          DSId,
-                                          DFVer,
-                                          cdId,
-                                          userId
-                                        )
-                                        .then((res) => {
-                                          // ResponseBody.success.push(res.sucRes);
-                                          if (res && res.sucRes) {
-                                            // dsResObj.columnDefinition.push(
-                                            //   res.sucRes
-                                            // );
-                                            isSomthingUpdate = true;
-                                          }
-                                        });
-                                    } else {
-                                      var updateClDef = await externalFunction
-                                        .clDefUpdate(
-                                          el,
-                                          cdExternalId,
-                                          DSId,
-                                          DPId,
-                                          DFId,
-                                          cdId,
-                                          DFVer,
-                                          ConnectionType,
-                                          userId,
-                                          DSheaderRow,
-                                          oldDataType,
-                                          oldFormat
-                                        )
-                                        .then((res) => {
-                                          if (res && res.sucRes) {
-                                            // dsResObj.columnDefinition.push(
-                                            //   res.sucRes
-                                            // );
-                                            isSomthingUpdate = true;
-                                          }
-                                          if (res && res.errRes?.length) {
-                                            let clErrRes =
-                                              res.errRes.join(" '|' ");
-                                            errObj.message = clErrRes;
-                                            isAnyError = true;
-                                          }
-                                        });
-                                    }
+                            if (obj.delFlag === 1) {
+                              await externalFunction
+                                .removeDataSet(
+                                  datasetExternalId,
+                                  DPId,
+                                  DFId,
+                                  DSId,
+                                  DFVer,
+                                  userId
+                                )
+                                .then((res) => {
+                                  if (res && res.sucRes) {
+                                    // ResponseBody.success.push(res.sucRes);
+                                    // dsResObj = res.sucRes;
+                                    isSomthingUpdate = true;
                                   }
-                                  dsErrObj.columnDefinition.push(errObj);
-                                } else {
-                                  var cdInsert = await externalFunction
-                                    .columnDefinationInsert(
-                                      el,
-                                      cdExternalId,
-                                      DPId,
-                                      DFId,
-                                      DSId,
-                                      DFVer,
-                                      ConnectionType,
-                                      userId,
-                                      null,
-                                      DSheaderRow
-                                    )
-                                    .then((res) => {
-                                      // if (res.sucRes?.length) {
-                                      //   ResponseBody.success.push(res.sucRes);
-                                      // }
-                                      if (res && res.sucRes) {
-                                        dsResObj.columnDefinition.push(
-                                          res.sucRes
-                                        );
-                                        isSomthingUpdate = true;
-                                      }
-                                      if (
-                                        res &&
-                                        Object.keys(res.errRes)?.length
-                                      ) {
-                                        dsErrObj.columnDefinition.push(
-                                          res.errRes
-                                        );
+                                });
+                            } else {
+                              //Function call for update dataSet data
+                              var updateDataset = await externalFunction
+                                .datasetUpdate(
+                                  obj,
+                                  datasetExternalId,
+                                  DSId,
+                                  DPId,
+                                  DFId,
+                                  DFVer,
+                                  ConnectionType,
+                                  custSql,
+                                  externalSysName,
+                                  testFlag,
+                                  userId,
+                                  noPackageConfig,
+                                  dk_id
+                                )
+                                .then((res) => {
+                                  // if (res.sucRes?.length) {
+                                  //   ResponseBody.success.push(res.sucRes);
+                                  // }
 
-                                        if (res.errRes.message) {
-                                          isAnyError = true;
-                                        }
-                                      }
-                                    });
-                                }
-                              }
-                            }
+                                  if (res && res.sucRes) {
+                                    // dsResObj = res.sucRes;
+                                    isSomthingUpdate = true;
+                                  }
 
-                            if (obj.qcType) {
-                              if (obj.conditionalExpressions?.length) {
-                                dsResObj.vlc = [];
-                                dsErrObj.vlc = [];
-                                for (let vlc of obj.conditionalExpressions) {
-                                  let selectVLC = `select * from ${schemaName}.dataset_qc_rules where datasetid='${DSId}' and ext_ruleid='${vlc.conditionalExpressionNumber}'`;
-                                  let { rows: vlcRows } = await DB.executeQuery(
-                                    selectVLC
+                                  if (res && res.errRes?.length) {
+                                    let dsErrRes = res.errRes.join(" '|' ");
+                                    dsErrObj.message = dsErrRes;
+                                    isAnyError = true;
+                                    // ResponseBody.errors.push(res.errRes);
+                                  }
+                                });
+
+                              if (obj.columnDefinition?.length) {
+                                dsResObj.columnDefinition = [];
+                                dsErrObj.columnDefinition = [];
+                                for (let el of obj.columnDefinition) {
+                                  let selectCD = `select * from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${el.ExternalId}'`;
+                                  let { rows: cdRows } = await DB.executeQuery(
+                                    selectCD
                                   );
-                                  const currentVlc = vlcRows
-                                    ? vlcRows[0]
-                                    : null;
 
+                                  let {
+                                    rows: [dataSEtdata],
+                                  } = await DB.executeQuery(
+                                    `select headerrownumber from ${schemaName}.dataset where datasetid='${DSId}'`
+                                  );
+                                  const DSheaderRow =
+                                    dataSEtdata.headerrownumber;
+                                  // console.log("dataSEtdata", dataSEtdata);
+
+                                  const cdExternalId = el.ExternalId;
+                                  const currentCd = cdRows ? cdRows[0] : null;
                                   let errObj = {};
 
-                                  if (currentVlc) {
+                                  if (currentCd) {
                                     let newObj = {};
-                                    newObj.conditionalExpressionNumber =
-                                      vlc.conditionalExpressionNumber;
-                                    newObj.ID = currentVlc.dsqcruleid;
-                                    dsResObj.vlc.push(newObj);
+                                    const cdId = currentCd.columnid;
+                                    const oldDataType = currentCd.datatype;
+                                    const oldFormat = currentCd.format;
+                                    newObj.ExternalId = cdExternalId;
+                                    newObj.ID = cdId;
+                                    dsResObj.columnDefinition.push(newObj);
 
-                                    errObj.conditionalExpressionNumber =
-                                      vlc.conditionalExpressionNumber;
-                                    errObj.ID = currentVlc.dsqcruleid;
+                                    errObj.ExternalId = cdExternalId;
+                                    errObj.ID = cdId;
 
-                                    if (currentVlc.active_yn === "N") {
-                                      // (errObj.message = `This - Qc Rules already removed`),
+                                    if (currentCd.del_flg === 1) {
+                                      // (errObj.message = `This column definition already removed`),
                                       //   (isAnyError = true);
                                     } else {
-                                      var VlcDataUpdate = await externalFunction
-                                        .vlcUpdate(
+                                      if (el.delFlag === 1) {
+                                        await externalFunction
+                                          .removeColumnDefination(
+                                            cdExternalId,
+                                            DPId,
+                                            DFId,
+                                            DSId,
+                                            DFVer,
+                                            cdId,
+                                            userId
+                                          )
+                                          .then((res) => {
+                                            // ResponseBody.success.push(res.sucRes);
+                                            if (res && res.sucRes) {
+                                              // dsResObj.columnDefinition.push(
+                                              //   res.sucRes
+                                              // );
+                                              isSomthingUpdate = true;
+                                            }
+                                          });
+                                      } else {
+                                        var updateClDef = await externalFunction
+                                          .clDefUpdate(
+                                            el,
+                                            cdExternalId,
+                                            DSId,
+                                            DPId,
+                                            DFId,
+                                            cdId,
+                                            DFVer,
+                                            ConnectionType,
+                                            userId,
+                                            DSheaderRow,
+                                            oldDataType,
+                                            oldFormat
+                                          )
+                                          .then((res) => {
+                                            if (res && res.sucRes) {
+                                              // dsResObj.columnDefinition.push(
+                                              //   res.sucRes
+                                              // );
+                                              isSomthingUpdate = true;
+                                            }
+                                            if (res && res.errRes?.length) {
+                                              let clErrRes =
+                                                res.errRes.join(" '|' ");
+                                              errObj.message = clErrRes;
+                                              isAnyError = true;
+                                            }
+                                          });
+                                      }
+                                    }
+                                    dsErrObj.columnDefinition.push(errObj);
+                                  } else {
+                                    var cdInsert = await externalFunction
+                                      .columnDefinationInsert(
+                                        el,
+                                        cdExternalId,
+                                        DPId,
+                                        DFId,
+                                        DSId,
+                                        DFVer,
+                                        ConnectionType,
+                                        userId,
+                                        null,
+                                        DSheaderRow
+                                      )
+                                      .then((res) => {
+                                        // if (res.sucRes?.length) {
+                                        //   ResponseBody.success.push(res.sucRes);
+                                        // }
+                                        if (res && res.sucRes) {
+                                          dsResObj.columnDefinition.push(
+                                            res.sucRes
+                                          );
+                                          isSomthingUpdate = true;
+                                        }
+                                        if (
+                                          res &&
+                                          Object.keys(res.errRes)?.length
+                                        ) {
+                                          dsErrObj.columnDefinition.push(
+                                            res.errRes
+                                          );
+
+                                          if (res.errRes.message) {
+                                            isAnyError = true;
+                                          }
+                                        }
+                                      });
+                                  }
+                                }
+                              }
+
+                              if (obj.qcType) {
+                                if (obj.conditionalExpressions?.length) {
+                                  dsResObj.vlc = [];
+                                  dsErrObj.vlc = [];
+                                  for (let vlc of obj.conditionalExpressions) {
+                                    let selectVLC = `select * from ${schemaName}.dataset_qc_rules where datasetid='${DSId}' and ext_ruleid='${vlc.conditionalExpressionNumber}'`;
+                                    let { rows: vlcRows } =
+                                      await DB.executeQuery(selectVLC);
+                                    const currentVlc = vlcRows
+                                      ? vlcRows[0]
+                                      : null;
+
+                                    let errObj = {};
+
+                                    if (currentVlc) {
+                                      let newObj = {};
+                                      newObj.conditionalExpressionNumber =
+                                        vlc.conditionalExpressionNumber;
+                                      newObj.ID = currentVlc.dsqcruleid;
+                                      dsResObj.vlc.push(newObj);
+
+                                      errObj.conditionalExpressionNumber =
+                                        vlc.conditionalExpressionNumber;
+                                      errObj.ID = currentVlc.dsqcruleid;
+
+                                      if (currentVlc.active_yn === "N") {
+                                        // (errObj.message = `This - Qc Rules already removed`),
+                                        //   (isAnyError = true);
+                                      } else {
+                                        var VlcDataUpdate =
+                                          await externalFunction
+                                            .vlcUpdate(
+                                              vlc,
+                                              obj.qcType,
+                                              DFId,
+                                              DPId,
+                                              DSId,
+                                              DFVer,
+                                              userId
+                                            )
+                                            .then((res) => {
+                                              if (res && res.sucRes) {
+                                                // dsResObj.vlc.push(res.sucRes);
+                                                isSomthingUpdate = true;
+                                              }
+                                              if (res && res.errRes?.length) {
+                                                let vlcErrRes =
+                                                  res.errRes.join(" '|' ");
+                                                errObj.message = vlcErrRes;
+                                                isAnyError = true;
+                                              }
+                                            });
+                                      }
+                                      dsErrObj.vlc.push(errObj);
+                                    } else {
+                                      var VlcDataInsert = await externalFunction
+                                        .VlcInsert(
                                           vlc,
                                           obj.qcType,
                                           DFId,
@@ -1290,134 +1316,110 @@ exports.updateDataFlow = async (req, res) => {
                                           userId
                                         )
                                         .then((res) => {
+                                          // if (res.sucRes?.length) {
+                                          //   ResponseBody.success.push(res.sucRes);
+                                          // }
+
                                           if (res && res.sucRes) {
-                                            // dsResObj.vlc.push(res.sucRes);
+                                            dsResObj.vlc.push(res.sucRes);
                                             isSomthingUpdate = true;
                                           }
-                                          if (res && res.errRes?.length) {
-                                            let vlcErrRes =
-                                              res.errRes.join(" '|' ");
-                                            errObj.message = vlcErrRes;
-                                            isAnyError = true;
+                                          if (
+                                            res &&
+                                            Object.keys(res.errRes)?.length
+                                          ) {
+                                            if (res.errRes.message) {
+                                              isAnyError = true;
+                                            }
+
+                                            dsErrObj.vlc.push(res.errRes);
                                           }
                                         });
                                     }
-                                    dsErrObj.vlc.push(errObj);
-                                  } else {
-                                    var VlcDataInsert = await externalFunction
-                                      .VlcInsert(
-                                        vlc,
-                                        obj.qcType,
-                                        DFId,
-                                        DPId,
-                                        DSId,
-                                        DFVer,
-                                        userId
-                                      )
-                                      .then((res) => {
-                                        // if (res.sucRes?.length) {
-                                        //   ResponseBody.success.push(res.sucRes);
-                                        // }
 
-                                        if (res && res.sucRes) {
-                                          dsResObj.vlc.push(res.sucRes);
-                                          isSomthingUpdate = true;
-                                        }
-                                        if (
-                                          res &&
-                                          Object.keys(res.errRes)?.length
-                                        ) {
-                                          if (res.errRes.message) {
-                                            isAnyError = true;
-                                          }
-
-                                          dsErrObj.vlc.push(res.errRes);
-                                        }
-                                      });
+                                    // dsErrObj.vlc.push(errObj);
                                   }
-
-                                  // dsErrObj.vlc.push(errObj);
                                 }
                               }
                             }
                           }
+                          dpResObj.dataSets.push(dsResObj);
+                          dpErrObj.dataSets.push(dsErrObj);
+                        } else {
+                          // Function call for insert dataSet level data
+                          const noPackageConfig = each.noPackageConfig;
+                          var DatasetInsert = await externalFunction
+                            .datasetLevelInsert(
+                              obj,
+                              datasetExternalId,
+                              DPId,
+                              DFId,
+                              DFVer,
+                              ConnectionType,
+                              externalSysName,
+                              testFlag,
+                              userId,
+                              null,
+                              noPackageConfig
+                            )
+                            .then((res) => {
+                              // if (res.sucRes?.length) {
+                              //   ResponseBody.success.push(res.sucRes);
+                              // }
+
+                              if (res && res.sucRes) {
+                                dsResObj = res.sucRes;
+
+                                isSomthingUpdate = true;
+                                dpResObj.dataSets.push(dsResObj);
+                              }
+                              if (res && Object.keys(res.errRes)?.length) {
+                                dpErrObj.dataSets.push(res.errRes);
+                              }
+                              if (res && res.errStatus) {
+                                isAnyError = true;
+                              }
+                            });
+                          // dpResObj.dataSet.push(dsResObj);
                         }
-                        dpResObj.dataSets.push(dsResObj);
-                        dpErrObj.dataSets.push(dsErrObj);
-                      } else {
-                        // Function call for insert dataSet level data
-                        const noPackageConfig = each.noPackageConfig;
-                        var DatasetInsert = await externalFunction
-                          .datasetLevelInsert(
-                            obj,
-                            datasetExternalId,
-                            DPId,
-                            DFId,
-                            DFVer,
-                            ConnectionType,
-                            externalSysName,
-                            testFlag,
-                            userId,
-                            null,
-                            noPackageConfig
-                          )
-                          .then((res) => {
-                            // if (res.sucRes?.length) {
-                            //   ResponseBody.success.push(res.sucRes);
-                            // }
-
-                            if (res && res.sucRes) {
-                              dsResObj = res.sucRes;
-
-                              isSomthingUpdate = true;
-                              dpResObj.dataSets.push(dsResObj);
-                            }
-                            if (res && Object.keys(res.errRes)?.length) {
-                              dpErrObj.dataSets.push(res.errRes);
-                            }
-                            if (res && res.errStatus) {
-                              isAnyError = true;
-                            }
-                          });
-                        // dpResObj.dataSet.push(dsResObj);
                       }
                     }
                   }
                 }
+
+                ResponseBody.dataPackages.push(dpResObj);
+                errRes.dataPackages.push(dpErrObj);
+              } else {
+                var PackageInsert = await externalFunction
+                  .packageLevelInsert(
+                    each,
+                    DFId,
+                    DFVer,
+                    ConnectionType,
+                    externalSysName,
+                    testFlag,
+                    userId,
+                    null
+                  )
+                  .then((res) => {
+                    // if (res.sucRes?.length) {
+                    //   ResponseBody.success.push(res.sucRes);
+                    // }
+
+                    if (res && res.sucRes) {
+                      dpResObj = res.sucRes;
+                      isSomthingUpdate = true;
+                      ResponseBody.dataPackages.push(dpResObj);
+                    }
+                    if (res && Object.keys(res.errRes)?.length) {
+                      // ResponseBody.errors.push(res.errRes);
+                      errRes.dataPackages.push(res.errRes);
+                    }
+                    if (res && res.errStatus) {
+                      isAnyError = true;
+                    }
+                  });
               }
-
-              ResponseBody.dataPackages.push(dpResObj);
-              errRes.dataPackages.push(dpErrObj);
-            } else {
-              var PackageInsert = await externalFunction
-                .packageLevelInsert(
-                  each,
-                  DFId,
-                  DFVer,
-                  ConnectionType,
-                  externalSysName,
-                  testFlag,
-                  userId,
-                  null
-                )
-                .then((res) => {
-                  // if (res.sucRes?.length) {
-                  //   ResponseBody.success.push(res.sucRes);
-                  // }
-
-                  if (res && res.sucRes) {
-                    dpResObj = res.sucRes;
-                    isSomthingUpdate = true;
-                    ResponseBody.dataPackages.push(dpResObj);
-                  }
-                  if (res && Object.keys(res.errRes)?.length) {
-                    // ResponseBody.errors.push(res.errRes);
-                    errRes.dataPackages.push(res.errRes);
-                  }
-                  if (res && res.errStatus) {
-                    isAnyError = true;
-                  }
-                });
             }
           }
         }
@@ -1989,9 +1991,11 @@ exports.fetchdataflowDetails = async (req, res) => {
             columnDefinition: [],
             active: el.active,
           };
+          const cdArr = [];
           for (let obj of response) {
-            if (obj.datasetid === el.datasetid) {
+            if (obj.datasetid === el.datasetid && obj.name && obj.datatype) {
               let columnObj = {
+                columnid: obj.columnid,
                 columnName: obj.name,
                 dataType: obj.datatype,
                 primaryKey: obj.primarykey,
@@ -2003,11 +2007,12 @@ exports.fetchdataflowDetails = async (req, res) => {
                 lov: obj.lov,
                 requiredfield: obj.requiredfield?.requiredfield || null,
                 unique: obj.unique,
-                variable: obj.variable?.variable || null,
+                variableLabel: obj.variable || null,
               };
-              datasetObj.columnDefinition.push(columnObj);
+              cdArr.push(columnObj);
             }
           }
+          datasetObj.columnDefinition = cdArr.sort(helper.sortString);
           datapackageObj.dataSet.push(datasetObj);
           // }
         }
