@@ -159,6 +159,7 @@ const DataFlowReducer = (state = initialState, action) =>
           newState.formDataSQL = {
             ...defaultDataSQL,
           };
+          newState.selectedDataset = {};
           newState.previewedSql = false;
           newState.datasetColumns = [];
           newState.sqlColumns = [];
@@ -401,7 +402,6 @@ const DataFlowReducer = (state = initialState, action) =>
           e.unique = parseBool(e.unique || "false");
           return e;
         });
-        console.log("action.sqlColumns", action.sqlColumns);
         newState.sqlColumns = action.sqlColumns;
         break;
       case GET_DATASET_DETAIL:
