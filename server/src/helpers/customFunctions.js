@@ -192,9 +192,16 @@ exports.createCustomSql = (clname, tableName, condition) => {
 
   return sqlQuery;
 };
-exports.formatDBColumns = (data) => {
+exports.formatDBColumns = (data, driver = null) => {
   if (!data) return [];
   return data?.map((d) => {
+    if (
+      driver &&
+      driver.includes("postgresql") &&
+      d.datatype === "time without time zone"
+    ) {
+      d.datatype = "character varying";
+    }
     return {
       columnName: d.columnName || d.Field || d.col_name,
       datatype: d.dataType || d.datatype || d.Type || d.data_type,

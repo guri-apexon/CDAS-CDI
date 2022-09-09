@@ -66,7 +66,7 @@ const IssueLeftPanel = ({
       customCell: checkBoxCell,
     },
     {
-      header: "# of records",
+      header: "# of issues",
       accessor: "nooferrors",
       sortFunction: compareNumbers,
       width: 120,
