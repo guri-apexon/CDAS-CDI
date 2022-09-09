@@ -1989,9 +1989,11 @@ exports.fetchdataflowDetails = async (req, res) => {
             columnDefinition: [],
             active: el.active,
           };
+          const cdArr = [];
           for (let obj of response) {
-            if (obj.datasetid === el.datasetid) {
+            if (obj.datasetid === el.datasetid && obj.name && obj.datatype) {
               let columnObj = {
+                columnid: obj.columnid,
                 columnName: obj.name,
                 dataType: obj.datatype,
                 primaryKey: obj.primarykey,
@@ -2003,11 +2005,12 @@ exports.fetchdataflowDetails = async (req, res) => {
                 lov: obj.lov,
                 requiredfield: obj.requiredfield?.requiredfield || null,
                 unique: obj.unique,
-                variable: obj.variable?.variable || null,
+                variableLabel: obj.variable || null,
               };
-              datasetObj.columnDefinition.push(columnObj);
+              cdArr.push(columnObj);
             }
           }
+          datasetObj.columnDefinition = cdArr.sort(helper.sortString);
           datapackageObj.dataSet.push(datasetObj);
           // }
         }

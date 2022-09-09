@@ -449,3 +449,13 @@ exports.minMaxLengthValidations = (data) => {
   }
   return errorMessages;
 };
+
+exports.sortString = (a, b) => {
+  if (a.columnid < b.columnid) {
+    return -1;
+  }
+  if (a.columnid > b.columnid) {
+    return 1;
+  }
+  return 0;
+};
