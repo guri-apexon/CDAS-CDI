@@ -71,6 +71,7 @@ const IngestionIssues = () => {
       filterFunction: numberSearchFilter("_rowno"),
       filterComponent: IntegerFilter,
       customCell: rowNoCell,
+      frozen: true,
     },
   ];
   const [columns, setColumns] = useState(fixedColumns);
@@ -321,6 +322,10 @@ const IngestionIssues = () => {
                 setPageNo(page);
               }}
               CustomHeader={(props) => <CustomButtonHeader {...props} />}
+              columnSettings={{
+                defaultColumns: columns,
+                frozenColumnsEnabled: true,
+              }}
             />
           </div>
           {rowDetails && (
