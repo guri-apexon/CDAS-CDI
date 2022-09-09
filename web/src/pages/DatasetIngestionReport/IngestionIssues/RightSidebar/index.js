@@ -36,7 +36,9 @@ const IssueRightPanel = ({
 
   const colFilter = (col, issueType) =>
     error[issueType]?.some((x) =>
-      x?.split(":").length > 0 ? x?.split(":")[1] === col : false
+      x && typeof x === "string" && x.split(":").length > 0
+        ? x.split(":")[1] === col
+        : false
     );
 
   const getColumnsIssue = (column) => {
