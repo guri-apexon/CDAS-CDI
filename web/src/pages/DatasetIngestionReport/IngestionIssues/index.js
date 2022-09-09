@@ -297,6 +297,7 @@ const IngestionIssues = () => {
             <Table
               isLoading={tableLoading}
               title="Ingestion Issues"
+              className="ingestion-table"
               subtitle={`${tableRows.length} records with issues`}
               columns={columns}
               rows={tableRows}

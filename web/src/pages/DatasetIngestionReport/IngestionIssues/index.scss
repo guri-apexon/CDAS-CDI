@@ -42,6 +42,36 @@
       padding: 0 10px;
       display: inline-block;
     }
+    div[class^="MuiPaper-root"] {
+      div[class^="Table-root"] {
+        div[class^="Table-tableWrapper-"] {
+          table {
+            thead {
+              tr {
+                border-bottom: 1px SOLID dimgray;
+              }
+              th {
+                border-right: 1px solid dimgray;
+              }
+              th:last-child {
+                border-right: none;
+              }
+            }
+            tbody {
+              tr {
+                border-bottom: 1px SOLID dimgray;
+                td {
+                  border-right: 1px SOLID dimgray;
+                }
+                td:last-child {
+                  border-right: none;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     .MuiTableCell-body:not(:first-child) {
       padding: 0 8px;
     }
