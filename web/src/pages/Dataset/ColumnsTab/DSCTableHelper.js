@@ -284,7 +284,7 @@ export const ValuesEditableCell = ({ row, column: { accessor: key } }) => {
       fullWidth
       defaultValue={row[key]}
       onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
-      error={!row.isInitLoad && errorText}
+      error={!row.isInitLoad && errorText ? true : false}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
     />
