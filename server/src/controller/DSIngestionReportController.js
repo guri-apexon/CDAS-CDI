@@ -291,7 +291,7 @@ exports.getFileTransferHistory = (req, res) => {
     (lead(processtrnx, 1, 0) OVER (PARTITION BY datasetid
                                    ORDER BY lastsucceeded DESC,externalid DESC) - modified_records)AS unchanged_records
     FROM ${schemaName}.transaction_summary
-    WHERE datasetid = $1
+    WHERE datasetid = $1 and processtype = 'SYNC'
     AND processstatus in ('PROCESSED WITH ERRORS', 'SUCCESSFUL')
     AND lastsucceeded BETWEEN NOW() - interval '${dayFilter} days' AND NOW()
     ORDER BY lastsucceeded DESC`;
