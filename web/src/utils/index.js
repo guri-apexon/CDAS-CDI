@@ -450,7 +450,7 @@ export const formatDataNew = (incomingData, protNo) => {
               minLength: e[8] || e[8] === 0 ? e[8] : "",
               maxLength: e[9] || e[9] === 0 ? e[9] : "",
               values: e[10] || "",
-              isInitLoad: true,
+              isInitLoad: false,
               isHavingColumnName: true,
               isEditMode: true,
             };
