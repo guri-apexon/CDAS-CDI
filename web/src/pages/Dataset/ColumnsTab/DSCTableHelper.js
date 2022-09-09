@@ -166,7 +166,7 @@ export const NumericEditableCell = ({ row, column: { accessor: key } }) => {
     <TextField
       size="small"
       fullWidth
-      value={row[key]}
+      defaultValue={row[key]}
       onChange={(e) =>
         !e.target.value.includes(".") &&
         row.editRow(row.uniqueId, key, e.target.value)
@@ -193,7 +193,7 @@ export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
     <TextField
       size="small"
       fullWidth
-      value={row[key]}
+      defaultValue={row[key]}
       onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
       disabled={row.dsProdLock}
       error={!row.isInitLoad && errorText}
@@ -220,7 +220,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
     <TextField
       size="small"
       fullWidth
-      value={row[key]}
+      defaultValue={row[key]}
       inputProps={{
         maxLength: row.fileType === "SAS" ? 32 : null,
       }}
@@ -242,7 +242,7 @@ export const FormatCell = ({ row, column: { accessor: key } }) => {
     <TextField
       size="small"
       fullWidth
-      value={row[key]}
+      defaultValue={row[key]}
       onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
       error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
@@ -260,7 +260,7 @@ export const EditableCell = ({ row, column: { accessor: key } }) => {
     <TextField
       size="small"
       fullWidth
-      value={row[key]}
+      defaultValue={row[key]}
       onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
       error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
@@ -282,7 +282,7 @@ export const ValuesEditableCell = ({ row, column: { accessor: key } }) => {
     <TextField
       size="small"
       fullWidth
-      value={row[key]}
+      defaultValue={row[key]}
       onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
       error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
