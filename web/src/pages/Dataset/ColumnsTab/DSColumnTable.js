@@ -117,6 +117,10 @@ export default function DSColumnTable({
   // flag to trigger get columns
   const [getList, setGetList] = useState(false);
 
+  // flag to skip redux state set
+  const [shouldSetCount, setShouldSetCount] = useState(true);
+  const [shouldResetCount, setShouldResetCount] = useState(true);
+
   const setInitRow = () => {
     setRows([{ uniqueId: 1, ...initColumnObj }]);
   };
@@ -484,7 +488,13 @@ export default function DSColumnTable({
       setMoreColumns(allColumns);
     }
     setIsSftpDf(isSftp(locationType));
+
+    return () => {
+      // reset count for rows whenever component is unmounted
+      dispatch(setDataSetColumnCount(0));
+    };
   }, []);
+
   const toggleEditMode = (cancel) => {
     setRows((prevRows) => {
       let data;
@@ -649,6 +659,9 @@ export default function DSColumnTable({
     }
     setIsOverride(false);
     inputFile.current.value = null;
+
+    setShouldResetCount(true);
+    setShouldSetCount(true);
   };
 
   // effect to handle after update API
@@ -761,12 +774,18 @@ export default function DSColumnTable({
     }
     // await dispatch(getDatasetColumns(dsId));
     setEditedBackup([]);
+
+    setShouldResetCount(true);
+    setShouldSetCount(true);
   };
 
   const onCancelAll = () => {
     dispatch(getDatasetColumns(dsId));
     setIsOverride(false);
     inputFile.current.value = null;
+
+    setShouldResetCount(true);
+    setShouldSetCount(true);
     // setIsEditAll(false);
     // setEditMode(false);
   };
@@ -780,6 +799,8 @@ export default function DSColumnTable({
         prevRows.filter((e) => e.uniqueId !== row.uniqueId)
       );
     }
+    setShouldResetCount(true);
+    setShouldSetCount(true);
     // if (!editedData?.isSaved) {
     //   const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
     //   setEditedRows(removeEdited);
@@ -845,18 +866,28 @@ export default function DSColumnTable({
       })
     );
   };
+
   useEffect(() => {
     const editedData = getEditedRows();
     const editedlength = editedData.length;
     setEditedCount(editedlength);
 
-    // Set edit row count in store for monitoring changes and update form status
-    dispatch(setDataSetColumnCount(editedlength));
-    if (editedlength !== 0) {
+    // set edit row count in store for monitoring changes and update form status
+    // trigger only once
+    if (editedlength > 0 && shouldSetCount) {
+      dispatch(setDataSetColumnCount(editedlength));
       dispatch(formComponentActive());
-    } else {
-      dispatch(formComponentInActive());
+      setShouldSetCount(false);
     }
+
+    // if changes are cancel then reset count
+    // trigger only once
+    if (editedlength === 0 && shouldResetCount) {
+      dispatch(setDataSetColumnCount(0));
+      dispatch(formComponentInActive());
+      setShouldResetCount(false);
+    }
+
     if (
       editedlength &&
       editedData.some((row) => !validateRow({ ...row, haveHeader }))
@@ -865,11 +896,6 @@ export default function DSColumnTable({
     } else {
       setDisableSaveAll(false);
     }
-
-    return () => {
-      // reset count for rows whenever component is unmounted
-      dispatch(setDataSetColumnCount(0));
-    };
   }, [rows]);
 
   return (
