@@ -35,6 +35,7 @@ const IssueRightPanel = ({
   const [error, setError] = useState({});
 
   const colFilter = (col, issueType) =>
+    (issueType && ["pkvRow", "dupRecRow"].includes(issueType)) ||
     error[issueType]?.some((x) =>
       x && typeof x === "string" && x.split(":").length > 0
         ? x.split(":")[1] === col
@@ -60,6 +61,7 @@ const IssueRightPanel = ({
 
   useEffect(() => {
     const { _rowno, rowIndex, _error, ...rest } = rowDetails;
+    console.log(">> err", rowDetails, selectedIssues);
     setColumns(rest);
     if (_rowno) {
       const data = selectedIssues.filter((x) =>

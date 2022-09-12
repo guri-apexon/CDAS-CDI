@@ -1009,10 +1009,10 @@ exports.updateDataFlow = async (req, res) => {
                           // check for primaryKey for Prod
                           let saveFlagYes = false;
                           if (testFlag === 0) {
-                            for (let i = 0; i < dataPackage.length; i++) {
+                            for (let i = 0; i < dataPackage?.length; i++) {
                               for (
                                 let k = 0;
-                                k < dataPackage[i]?.dataSet.length;
+                                k < dataPackage[i]?.dataSet?.length;
                                 k++
                               ) {
                                 saveFlagYes = false;
