@@ -39,6 +39,7 @@ import usePermission, {
 } from "../../components/Common/usePermission";
 import { hideErrorMessage } from "../../store/actions/DataFlowAction";
 import PreviewColumns from "../../components/Dataset/PreviewColumns";
+import { checkRequired } from "../../components/FormComponents/validators";
 // import { getPreviewSQL } from "../../services/ApiServices";
 
 const styles = {
@@ -232,7 +233,7 @@ const DataSetsFormBase = (props) => {
 
   const onChangeCDT = (v) => {
     setCdtValue(v);
-    change("clinicalDataType", [v.datakindid]);
+    change("clinicalDataType", v?.datakindid ? [v.datakindid] : null);
   };
 
   useEffect(() => {
@@ -309,6 +310,7 @@ const DataSetsFormBase = (props) => {
                 <ReduxFormAutocompleteV2
                   name="clinicalDataType"
                   id="clinicalDataType"
+                  validate={checkRequired}
                   label="Clinical Data Type"
                   source={datakind}
                   input={{
