@@ -124,7 +124,9 @@ const DataSetsFormBase = (props) => {
 
   const onChangeCDT = (v) => {
     setCdtValue(v);
-    dispatch(change("DataSetsForm", "clinicalDataType", [v.datakindid]));
+    dispatch(
+      change("DataSetsForm", "clinicalDataType", [v?.datakindid || null])
+    );
   };
 
   useEffect(() => {
