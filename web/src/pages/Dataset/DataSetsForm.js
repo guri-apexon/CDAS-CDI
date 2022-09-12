@@ -34,6 +34,7 @@ import usePermission, {
   Features,
   useStudyPermission,
 } from "../../components/Common/usePermission";
+import { checkRequired } from "../../components/FormComponents/validators";
 
 const styles = {
   paper: {
@@ -125,7 +126,11 @@ const DataSetsFormBase = (props) => {
   const onChangeCDT = (v) => {
     setCdtValue(v);
     dispatch(
-      change("DataSetsForm", "clinicalDataType", [v?.datakindid || null])
+      change(
+        "DataSetsForm",
+        "clinicalDataType",
+        v?.datakindid ? [v.datakindid] : null
+      )
     );
   };
 
@@ -293,6 +298,7 @@ const DataSetsFormBase = (props) => {
                 <ReduxFormAutocompleteV2
                   name="clinicalDataType"
                   autoSelect
+                  validate={checkRequired}
                   id="clinicalDataType"
                   label="Clinical Data Type"
                   source={datakind}
