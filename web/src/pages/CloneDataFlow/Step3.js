@@ -9,6 +9,7 @@ import Typography from "apollo-react/components/Typography";
 import Divider from "apollo-react/components/Divider";
 import Table from "apollo-react/components/Table";
 import Paper from "apollo-react/components/Paper";
+import Tag from "apollo-react/components/Tag/Tag";
 
 const Step3 = ({
   classes,
@@ -21,14 +22,29 @@ const Step3 = ({
   goToDashboard,
 }) => {
   const boldCell = ({ row, column: { accessor } }) => {
+    let cellEl = null;
     if (accessor === "testflag") {
-      return (
+      cellEl = (
         <span className={classes.bold}>
           {row[accessor] === 0 ? "Production" : "Test"}
         </span>
       );
+    } else if (accessor === "name") {
+      const isActive = row.active?.toString() === "1";
+      cellEl = (
+        <>
+          <span className={classes.bold}>{row[accessor]}</span>
+          &nbsp;
+          <Tag
+            label={isActive ? "Active" : "Inactive"}
+            variant={isActive ? "green" : "grey"}
+          />
+        </>
+      );
+    } else {
+      cellEl = <span className={classes.bold}>{row[accessor]}</span>;
     }
-    return <span className={classes.bold}>{row[accessor]}</span>;
+    return cellEl;
   };
 
   const dfColumns = [

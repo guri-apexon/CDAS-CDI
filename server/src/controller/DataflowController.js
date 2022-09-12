@@ -1896,7 +1896,7 @@ exports.searchDataflow = async (req, res) => {
 exports.fetchdataflowSource = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
-    let q = `select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."mnemonic" as datasetname from ${schemaName}.dataflow d
+    let q = `select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."mnemonic" as datasetname, d.active from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
     inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)

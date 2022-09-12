@@ -291,7 +291,7 @@ const LocationForm = (props) => {
               <Button
                 variant="secondary"
                 size="small"
-                disabled={loading}
+                disabled={loading || locType === "FTPS" ? true : false}
                 onClick={() => props.testConnection(formState)}
               >
                 Test connection
