@@ -123,7 +123,7 @@ module.exports = async (
                         if (results?.length) {
                           let data = [];
                           if (callSrc === "fetchColumns") {
-                            data = formatDBColumns(results);
+                            data = formatDBColumns(results, drivername);
                           } else if (callSrc === "fetchTables") {
                             data = formatDBTables(results);
                           } else {
