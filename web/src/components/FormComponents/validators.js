@@ -184,12 +184,21 @@ export const checkRequiredValue = (value, key = "", primary = "") => {
 };
 
 export const checkCharacterLength = (value, key, minLength, maxLength) => {
-  return (
-    (key === "minLength" || key === "maxLength") &&
-    // eslint-disable-next-line no-undef
-    parseInt(minLength, 10) > parseInt(maxLength, 10) &&
-    "Max length should be greater than or equal to min length"
-  );
+  if (key === "minLength") {
+    if (parseInt(minLength, 10) > 9999) {
+      return "Min length should be less than or equal to 9,999";
+    }
+  }
+  if (key === "maxLength") {
+    if (parseInt(maxLength, 10) > 10000) {
+      return "Max length should be less than or equal to 10,000";
+    }
+  }
+  if (key === "minLength" || key === "maxLength") {
+    if (parseInt(minLength, 10) > parseInt(maxLength, 10)) {
+      return "Max length should be greater than or equal to min length";
+    }
+  }
 };
 
 export const checkFormat = (value, key = "", dataType = "") => {
@@ -390,8 +399,7 @@ export const validateRow = (row, extraValidation = true) => {
     (values && !isVlcTildSaparated(values)) ||
     // (columnName && hasSpecialCHar(columnName)) ||
     (dataType && format && checkFormat(format, "format", dataType)) ||
-    (minLength && maxLength && min > max) ||
-    (minLength && !maxLength)
+    (minLength && maxLength && min > max)
   ) {
     return false;
   }

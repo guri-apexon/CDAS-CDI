@@ -433,26 +433,26 @@ exports.addPackagesValidations = (data) => {
   return errorMessages;
 };
 
-exports.minMaxLengthValidations = (data) => {
+exports.minMaxLengthValidations = (data, locationType) => {
   const errorMessages = [];
   const minLength = data.minLength;
   const maxLength = data.maxLength;
   if (minLength < 0 || maxLength < 0) {
     errorMessages.push("maxLength and minLength should be positive numbers.");
-  } else if (
-    minLength &&
-    minLength > 0 &&
-    (!maxLength || trim(maxLength).length === 0)
-  ) {
-    errorMessages.push(
-      "maxLength should be provided and should be greater than or equals to minLength."
-    );
   } else if (minLength && maxLength) {
-    if (parseInt(minLength) > parseInt(maxLength)) {
+    if (parseInt(minLength, 10) > parseInt(maxLength, 10)) {
       errorMessages.push(
         "maxLength should be greater than or equals to minLength."
       );
     }
+  } else if (minLength && parseInt(minLength) > 9999) {
+    errorMessages.push(
+      "Min Length must be between values of 1 and 9,999. Please amend."
+    );
+  } if (maxLength && parseInt(maxLength) > 10000 && !helper.isSftp(locationType)) {
+    errorMessages.push(
+      "Max Length must be between values of 1 and 10,000. Please amend."
+    );
   }
   return errorMessages;
 };
