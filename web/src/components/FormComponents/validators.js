@@ -215,109 +215,112 @@ export const checkFormat = (value, key = "", dataType = "") => {
     if (value.includes("$") || String.raw`${value}`.includes("\\")) {
       return "\\ and $ are not allowed";
     }
-    if (value && value.length > 0) {
-      const allowedSymbols = [
-        "SSSSSS",
-        "MONTH",
-        "YYYY",
-        "yyyy",
-        "SSSZ",
-        "SSS",
-        "DAY",
-        "EEE",
-        "MMM",
-        "MM",
-        "mm",
-        "YY",
-        "yy",
-        "HH",
-        "hh",
-        "KK",
-        "kk",
-        "MI",
-        "mi",
-        "ss",
-        "dd",
-        "DD",
-      ];
 
-      const invalidFormat = /<(.*)?>/;
-      const regexPattern = new RegExp(invalidFormat, "g");
-      if (!regexPattern.test(value)) {
-        return "Not a valid date format.";
-      }
-
-      const invalidFormatChars = /<[aGzZ].>|<>|>>|<</;
-      const regexPatternChars = new RegExp(invalidFormatChars, "gm");
-      if (regexPatternChars.test(value)) {
-        return "Not a valid date format.";
-      }
-
-      const invalidFormatSpace =
-        /<[aGzZ].>|<\s+.*\s+>|<\s+.*>|<.*\s+>|<.*?\s\s+.*?>/;
-
-      const regexPatternSpace = new RegExp(invalidFormatSpace, "gm");
-      if (regexPatternSpace.test(value)) {
-        return "Not a valid date format.";
-      }
-
-      const invalidFormatDuplicate =
-        /<[!@#^*&+=._:/,\s-]+?>|<.*[!@#^*&+=._:/,\s-]+>|<[!@#^*&+=._:/,\s-]+.*>/;
-      const regexPatternDuplicate = new RegExp(invalidFormatDuplicate, "gm");
-      if (regexPatternDuplicate.test(value)) {
-        return "Not a valid date format.";
-      }
-
-      const regPattern = /<(.*?)>/g;
-      let result;
-      let invalidDateFormat = false;
-      // eslint-disable-next-line no-cond-assign
-      while ((result = regPattern.exec(value)) !== null) {
-        let matchedToken = result[0];
-        if (
-          /(>|<)|([!@#^*&+=._:/,\s-][!@#^*&+=._:/,\s-])|[dm]y|[my]d|[dy]m|(\wmonth\w?|\w?month\w)/gi.test(
-            result[1]
-          )
-        ) {
-          invalidDateFormat = true;
-          break;
+    /* Start - Do not remove this code, This will be reused later for validations, currently commented
+      if (value && value.length > 0) {
+        const allowedSymbols = [
+          "SSSSSS",
+          "MONTH",
+          "YYYY",
+          "yyyy",
+          "SSSZ",
+          "SSS",
+          "DAY",
+          "EEE",
+          "MMM",
+          "MM",
+          "mm",
+          "YY",
+          "yy",
+          "HH",
+          "hh",
+          "KK",
+          "kk",
+          "MI",
+          "mi",
+          "ss",
+          "dd",
+          "DD",
+        ];
+  
+        const invalidFormat = /<(.*)?>/;
+        const regexPattern = new RegExp(invalidFormat, "g");
+        if (!regexPattern.test(value)) {
+          return "Not a valid date format.";
         }
-        const timeFormat = /(HH|hh)\W((MI|mi|mm)\W)?((ss)(Z|z))?/;
-        const timePattern = new RegExp(timeFormat, "g");
-        matchedToken = matchedToken.replace(timePattern, "");
-
-        const singleDateFormats = /<[z|Z|%|a|G]>/;
-        const singlePattern = new RegExp(singleDateFormats, "g");
-        matchedToken = matchedToken.replace(singlePattern, "");
-
-        allowedSymbols.forEach((item) => {
-          const find = `<${item}>`;
-          const re = new RegExp(find, "g");
-          matchedToken = matchedToken.replace(re, "");
-        });
-
-        allowedSymbols.forEach((item) => {
-          const find = `<(.*?)${item}(.*?)>`;
-          const re = new RegExp(find, "g");
-          matchedToken = matchedToken.replace(re, "<$1$2>");
-        });
-
-        const find = /<[!@#^*&+=._:/,\s-]*?>/;
-        const findRegex = new RegExp(find, "g");
-        matchedToken = matchedToken.replace(findRegex, "");
-
-        const regex = `<(.*)?>`;
-        const pattern = new RegExp(regex, "g");
-        if (pattern.test(matchedToken)) {
-          invalidDateFormat = true;
-          break;
+  
+        const invalidFormatChars = /<[aGzZ].>|<>|>>|<</;
+        const regexPatternChars = new RegExp(invalidFormatChars, "gm");
+        if (regexPatternChars.test(value)) {
+          return "Not a valid date format.";
+        }
+  
+        const invalidFormatSpace =
+          /<[aGzZ].>|<\s+.*\s+>|<\s+.*>|<.*\s+>|<.*?\s\s+.*?>/;
+  
+        const regexPatternSpace = new RegExp(invalidFormatSpace, "gm");
+        if (regexPatternSpace.test(value)) {
+          return "Not a valid date format.";
+        }
+  
+        const invalidFormatDuplicate =
+          /<[!@#^*&+=._:/,\s-]+?>|<.*[!@#^*&+=._:/,\s-]+>|<[!@#^*&+=._:/,\s-]+.*>/;
+        const regexPatternDuplicate = new RegExp(invalidFormatDuplicate, "gm");
+        if (regexPatternDuplicate.test(value)) {
+          return "Not a valid date format.";
+        }
+  
+        const regPattern = /<(.*?)>/g;
+        let result;
+        let invalidDateFormat = false;
+        // eslint-disable-next-line no-cond-assign
+        while ((result = regPattern.exec(value)) !== null) {
+          let matchedToken = result[0];
+          if (
+            /(>|<)|([!@#^*&+=._:/,\s-][!@#^*&+=._:/,\s-])|[dm]y|[my]d|[dy]m|(\wmonth\w?|\w?month\w)/gi.test(
+              result[1]
+            )
+          ) {
+            invalidDateFormat = true;
+            break;
+          }
+          const timeFormat = /(HH|hh)\W((MI|mi|mm)\W)?((ss)(Z|z))?/;
+          const timePattern = new RegExp(timeFormat, "g");
+          matchedToken = matchedToken.replace(timePattern, "");
+  
+          const singleDateFormats = /<[z|Z|%|a|G]>/;
+          const singlePattern = new RegExp(singleDateFormats, "g");
+          matchedToken = matchedToken.replace(singlePattern, "");
+  
+          allowedSymbols.forEach((item) => {
+            const find = `<${item}>`;
+            const re = new RegExp(find, "g");
+            matchedToken = matchedToken.replace(re, "");
+          });
+  
+          allowedSymbols.forEach((item) => {
+            const find = `<(.*?)${item}(.*?)>`;
+            const re = new RegExp(find, "g");
+            matchedToken = matchedToken.replace(re, "<$1$2>");
+          });
+  
+          const find = /<[!@#^*&+=._:/,\s-]*?>/;
+          const findRegex = new RegExp(find, "g");
+          matchedToken = matchedToken.replace(findRegex, "");
+  
+          const regex = `<(.*)?>`;
+          const pattern = new RegExp(regex, "g");
+          if (pattern.test(matchedToken)) {
+            invalidDateFormat = true;
+            break;
+          }
+        }
+  
+        if (invalidDateFormat) {
+          return "Not a valid date format.";
         }
       }
-
-      if (invalidDateFormat) {
-        return "Not a valid date format.";
-      }
-    }
+      */
 
     // const optionArr = [
     //   "Date:<dd><MM><yyyy>Time:<hh>:<mm>:<ss>",
