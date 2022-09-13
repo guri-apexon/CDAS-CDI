@@ -156,15 +156,6 @@ export default function DSColumnTable({
   }, [locationType, dsTestLock, dsProdLock]);
 
   useEffect(() => {
-    if (rows.length) {
-      setFilteredRows(rows);
-    }
-    setDatasetColumnsExist(
-      rows.find((e) => e?.isSaved === true)?.isSaved ? true : false
-    );
-  }, [rows]);
-
-  useEffect(() => {
     const { isSync, testflag } = dataFlowdetail;
     if (isSync === "Y" && selectedDataset.isSync === "Y" && testflag === 0) {
       setIsDFSynced(true);
@@ -896,6 +887,12 @@ export default function DSColumnTable({
     } else {
       setDisableSaveAll(false);
     }
+    if (rows.length) {
+      setFilteredRows(rows);
+    }
+    setDatasetColumnsExist(
+      rows.find((e) => e?.isSaved === true)?.isSaved ? true : false
+    );
   }, [rows]);
 
   return (

@@ -35,6 +35,7 @@ const IssueRightPanel = ({
   const [error, setError] = useState({});
 
   const colFilter = (col, issueType) =>
+    (issueType && ["pkvRow", "dupRecRow"].includes(issueType)) ||
     error[issueType]?.some((x) =>
       x && typeof x === "string" && x.split(":").length > 0
         ? x.split(":")[1] === col
