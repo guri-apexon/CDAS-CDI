@@ -1811,12 +1811,16 @@ exports.inActivateDataFlow = async (req, res) => {
 
 exports.syncDataFlow = async (req, res) => {
   try {
-    let { version, userId, dataFlowId } = req.body;
-    const curDate = helper.getCurrentTime();
+    let { version, userId, dataFlowId, currentTime = null } = req.body;
+    if (!currentTime) {
+      currentTime = helper.getCurrentTime();
+    }
+    // const curDate = helper.getCurrentTime();
+
     let q = `INSERT INTO ${schemaName}.cdr_ta_queue
     (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
     VALUES($1, 'SYNC', $2, 'QUEUE', $4, $4, '', $3, '', 1, '', 0)`;
-    await DB.executeQuery(q, [dataFlowId, userId, version, curDate]);
+    await DB.executeQuery(q, [dataFlowId, userId, version, currentTime]);
 
     // await DB.executeQuery(
     //   `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
