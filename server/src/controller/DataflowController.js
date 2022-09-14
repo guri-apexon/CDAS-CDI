@@ -517,7 +517,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
       [createdDF.dataFlowId, dFTimestamp]
     );
-
+    Logger.info(`DataFlow created successfully DataFlow ID = ${createdDF.dataFlowId}, ${ExternalId ? `External ID = ${ExternalId}` : ''}`);
     return apiResponse.successResponseWithData(
       res,
       "Data flow created successfully.",
@@ -527,7 +527,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
   } catch (err) {
     console.log("err", err);
     //throw error in json response with status 500.
-    Logger.error("catch :createDataflow");
+    Logger.error(`catch :Error while creating DataFlow ${dataFlowId} `);
     await externalFunction.dataflowRollBack(dataFlowId);
     return apiResponse.ErrorResponse(
       res,
@@ -563,6 +563,8 @@ exports.updateDataFlow = async (req, res) => {
     //   await creatDataflow(req, res);
     //   return false;
     // }
+    Logger.info(`DataFlow create/update process started ${ExternalId ? `External ID = ${ExternalId}` : ''}`);
+
     const isCDI = externalSystemName === "CDI" ? true : false;
 
     var validate = [];
@@ -824,11 +826,12 @@ exports.updateDataFlow = async (req, res) => {
     let {
       rows: [existDf],
     } = await DB.executeQuery(
-      `select * from ${schemaName}.dataflow where UPPER(externalsystemname)='${externalSystemName.toUpperCase()}' and externalid='${ExternalId}'`
+      `select * from ${schemaName}.dataflow where UPPER(externalsystemname) = '${externalSystemName.toUpperCase()}' and externalid = '${ExternalId}'`
     );
 
     if (existDf && !isCDI) {
       const DFId = existDf.dataflowid;
+      Logger.info(`Update DataFlow process started: ${DFId} `);
       let { rows: versions } = await DB.executeQuery(
         `SELECT version from ${schemaName}.dataflow_version
       WHERE dataflowid = $1 order by version DESC limit 1`,
@@ -918,7 +921,7 @@ exports.updateDataFlow = async (req, res) => {
               let dpErrObj = {};
 
               let dpRows = await DB.executeQuery(
-                `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
+                `select * from ${schemaName}.datapackage where dataflowid = '${DFId}' and externalid = '${each.ExternalId}'`
               );
 
               const packageExternalId = each.ExternalId;
@@ -980,7 +983,7 @@ exports.updateDataFlow = async (req, res) => {
 
                     if (each.dataSet?.length) {
                       let dpRowsUpdated = await DB.executeQuery(
-                        `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
+                        `select * from ${schemaName}.datapackage where dataflowid = '${DFId}' and externalid = '${each.ExternalId}'`
                       );
                       const noPackageConfig =
                         dpRowsUpdated?.rows[0].nopackageconfig;
@@ -991,7 +994,7 @@ exports.updateDataFlow = async (req, res) => {
                       for (let obj of each.dataSet) {
                         let dsResObj = {};
                         let dsErrObj = {};
-                        let selectDS = `select * from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${obj.ExternalId}'`;
+                        let selectDS = `select * from ${schemaName}.dataset where datapackageid = '${DPId}' and externalid = '${obj.ExternalId}'`;
                         let { rows: dsRows } = await DB.executeQuery(selectDS);
 
                         const datasetExternalId = obj.ExternalId;
@@ -1044,7 +1047,7 @@ exports.updateDataFlow = async (req, res) => {
                                   dataset.incremental === "Y" &&
                                   testFlag === 0 &&
                                   dataPackage[i].dataSet[k].incremental ===
-                                    false
+                                  false
                                 ) {
                                   return apiResponse.ErrorResponse(
                                     res,
@@ -1122,7 +1125,7 @@ exports.updateDataFlow = async (req, res) => {
                                 dsResObj.columnDefinition = [];
                                 dsErrObj.columnDefinition = [];
                                 for (let el of obj.columnDefinition) {
-                                  let selectCD = `select * from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${el.ExternalId}'`;
+                                  let selectCD = `select * from ${schemaName}.columndefinition where datasetid = '${DSId}' and externalid = '${el.ExternalId}'`;
                                   let { rows: cdRows } = await DB.executeQuery(
                                     selectCD
                                   );
@@ -1130,7 +1133,7 @@ exports.updateDataFlow = async (req, res) => {
                                   let {
                                     rows: [dataSEtdata],
                                   } = await DB.executeQuery(
-                                    `select headerrownumber from ${schemaName}.dataset where datasetid='${DSId}'`
+                                    `select headerrownumber from ${schemaName}.dataset where datasetid = '${DSId}'`
                                   );
                                   const DSheaderRow =
                                     dataSEtdata.headerrownumber;
@@ -1255,7 +1258,7 @@ exports.updateDataFlow = async (req, res) => {
                                   dsResObj.vlc = [];
                                   dsErrObj.vlc = [];
                                   for (let vlc of obj.conditionalExpressions) {
-                                    let selectVLC = `select * from ${schemaName}.dataset_qc_rules where datasetid='${DSId}' and ext_ruleid='${vlc.conditionalExpressionNumber}'`;
+                                    let selectVLC = `select * from ${schemaName}.dataset_qc_rules where datasetid = '${DSId}' and ext_ruleid = '${vlc.conditionalExpressionNumber}'`;
                                     let { rows: vlcRows } =
                                       await DB.executeQuery(selectVLC);
                                     const currentVlc = vlcRows
@@ -1429,12 +1432,12 @@ exports.updateDataFlow = async (req, res) => {
       // // if (helper.isEmpty(sucData)) {
 
       if (!isSomthingUpdate) {
-        const deleteQuery = `delete from ${schemaName}.dataflow_version where dataflowid='${DFId}' and
-        version ='${DFVer}'`;
+        const deleteQuery = `delete from ${schemaName}.dataflow_version where dataflowid = '${DFId}' and
+  version = '${DFVer}'`;
         await DB.executeQuery(deleteQuery);
 
-        const deleteCdr = `delete from ${schemaName}.cdr_ta_queue where dataflowid='${DFId}' and
-        "VERSION" ='${DFVer}'`;
+        const deleteCdr = `delete from ${schemaName}.cdr_ta_queue where dataflowid = '${DFId}' and
+  "VERSION" = '${DFVer}'`;
         await DB.executeQuery(deleteCdr);
 
         Object.keys(ResponseBody).forEach((key) => {
@@ -1446,6 +1449,7 @@ exports.updateDataFlow = async (req, res) => {
       if (isAnyError) {
         ResponseBody.errors.push(errRes);
       }
+      Logger.info(`DataFlow updated successfully : ${DFId} `);
       return apiResponse.successResponseWithData(
         res,
         "Dataflow update successfully.",
@@ -1467,7 +1471,7 @@ exports.updateDataFlow = async (req, res) => {
 //   const values = [dataflowId];
 //   let result, dataFlow;
 //   await DB.executeQuery(
-//     `SELECT * from ${schemaName}.dataflow WHERE dataflowid=$1`,
+//     `SELECT * from ${ schemaName }.dataflow WHERE dataflowid = $1`,
 //     values
 //   ).then(async (response) => {
 //     dataFlow = response.rows ? response.rows[0] : null;
@@ -1475,7 +1479,7 @@ exports.updateDataFlow = async (req, res) => {
 //   if (!dataFlow) {
 //     return "not_found";
 //   }
-//   const deleteQuery = `DELETE FROM ${schemaName}.dataflow_audit_log da
+//   const deleteQuery = `DELETE FROM ${ schemaName }.dataflow_audit_log da
 //       WHERE da.dataflowid = $1`;
 //   await DB.executeQuery(deleteQuery, values)
 //     .then(async (response) => {
@@ -2214,7 +2218,7 @@ exports.updateDataflowConfig = async (req, res) => {
         existDf.vendorID != vendorID ||
         existDf.description != description ||
         helper.stringToBoolean(existDf.testFlag) !==
-          helper.stringToBoolean(testFlag)
+        helper.stringToBoolean(testFlag)
       ) {
         dfUpdatedName = await createDataflowName(
           vendorID,
