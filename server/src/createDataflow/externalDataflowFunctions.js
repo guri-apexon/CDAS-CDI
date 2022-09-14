@@ -4820,7 +4820,6 @@ exports.clDefUpdate = async (
     }
     if (typeof data.variableLabel != "undefined") {
       if (data.variableLabel) {
-        console.log("update var");
         updateQueryCD += `,variable='${data.variableLabel}'`;
       } else {
         updateQueryCD += `,variable=null`;
