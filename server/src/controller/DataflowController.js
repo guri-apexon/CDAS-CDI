@@ -517,7 +517,11 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
       [createdDF.dataFlowId, dFTimestamp]
     );
-
+    Logger.info(
+      `DataFlow created successfully DataFlow ID = ${createdDF.dataFlowId}, ${
+        ExternalId ? `External ID = ${ExternalId}` : ""
+      }`
+    );
     return apiResponse.successResponseWithData(
       res,
       "Data flow created successfully.",
@@ -527,7 +531,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
   } catch (err) {
     console.log("err", err);
     //throw error in json response with status 500.
-    Logger.error("catch :createDataflow");
+    Logger.error(`catch :Error while creating DataFlow ${dataFlowId} `);
     await externalFunction.dataflowRollBack(dataFlowId);
     return apiResponse.ErrorResponse(
       res,
@@ -563,6 +567,12 @@ exports.updateDataFlow = async (req, res) => {
     //   await creatDataflow(req, res);
     //   return false;
     // }
+    Logger.info(
+      `DataFlow create/update process started ${
+        ExternalId ? `External ID = ${ExternalId}` : ""
+      }`
+    );
+
     const isCDI = externalSystemName === "CDI" ? true : false;
 
     var validate = [];
@@ -824,11 +834,12 @@ exports.updateDataFlow = async (req, res) => {
     let {
       rows: [existDf],
     } = await DB.executeQuery(
-      `select * from ${schemaName}.dataflow where UPPER(externalsystemname)='${externalSystemName.toUpperCase()}' and externalid='${ExternalId}'`
+      `select * from ${schemaName}.dataflow where UPPER(externalsystemname) = '${externalSystemName.toUpperCase()}' and externalid = '${ExternalId}'`
     );
 
     if (existDf && !isCDI) {
       const DFId = existDf.dataflowid;
+      Logger.info(`Update DataFlow process started: ${DFId} `);
       let { rows: versions } = await DB.executeQuery(
         `SELECT version from ${schemaName}.dataflow_version
       WHERE dataflowid = $1 order by version DESC limit 1`,
@@ -918,7 +929,7 @@ exports.updateDataFlow = async (req, res) => {
               let dpErrObj = {};
 
               let dpRows = await DB.executeQuery(
-                `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
+                `select * from ${schemaName}.datapackage where dataflowid = '${DFId}' and externalid = '${each.ExternalId}'`
               );
 
               const packageExternalId = each.ExternalId;
@@ -980,7 +991,7 @@ exports.updateDataFlow = async (req, res) => {
 
                     if (each.dataSet?.length) {
                       let dpRowsUpdated = await DB.executeQuery(
-                        `select * from ${schemaName}.datapackage where dataflowid='${DFId}' and externalid='${each.ExternalId}'`
+                        `select * from ${schemaName}.datapackage where dataflowid = '${DFId}' and externalid = '${each.ExternalId}'`
                       );
                       const noPackageConfig =
                         dpRowsUpdated?.rows[0].nopackageconfig;
@@ -991,7 +1002,7 @@ exports.updateDataFlow = async (req, res) => {
                       for (let obj of each.dataSet) {
                         let dsResObj = {};
                         let dsErrObj = {};
-                        let selectDS = `select * from ${schemaName}.dataset where datapackageid='${DPId}' and externalid='${obj.ExternalId}'`;
+                        let selectDS = `select * from ${schemaName}.dataset where datapackageid = '${DPId}' and externalid = '${obj.ExternalId}'`;
                         let { rows: dsRows } = await DB.executeQuery(selectDS);
 
                         const datasetExternalId = obj.ExternalId;
@@ -1122,7 +1133,7 @@ exports.updateDataFlow = async (req, res) => {
                                 dsResObj.columnDefinition = [];
                                 dsErrObj.columnDefinition = [];
                                 for (let el of obj.columnDefinition) {
-                                  let selectCD = `select * from ${schemaName}.columndefinition where datasetid='${DSId}' and externalid='${el.ExternalId}'`;
+                                  let selectCD = `select * from ${schemaName}.columndefinition where datasetid = '${DSId}' and externalid = '${el.ExternalId}'`;
                                   let { rows: cdRows } = await DB.executeQuery(
                                     selectCD
                                   );
@@ -1130,7 +1141,7 @@ exports.updateDataFlow = async (req, res) => {
                                   let {
                                     rows: [dataSEtdata],
                                   } = await DB.executeQuery(
-                                    `select headerrownumber from ${schemaName}.dataset where datasetid='${DSId}'`
+                                    `select headerrownumber from ${schemaName}.dataset where datasetid = '${DSId}'`
                                   );
                                   const DSheaderRow =
                                     dataSEtdata.headerrownumber;
@@ -1255,7 +1266,7 @@ exports.updateDataFlow = async (req, res) => {
                                   dsResObj.vlc = [];
                                   dsErrObj.vlc = [];
                                   for (let vlc of obj.conditionalExpressions) {
-                                    let selectVLC = `select * from ${schemaName}.dataset_qc_rules where datasetid='${DSId}' and ext_ruleid='${vlc.conditionalExpressionNumber}'`;
+                                    let selectVLC = `select * from ${schemaName}.dataset_qc_rules where datasetid = '${DSId}' and ext_ruleid = '${vlc.conditionalExpressionNumber}'`;
                                     let { rows: vlcRows } =
                                       await DB.executeQuery(selectVLC);
                                     const currentVlc = vlcRows
@@ -1429,12 +1440,12 @@ exports.updateDataFlow = async (req, res) => {
       // // if (helper.isEmpty(sucData)) {
 
       if (!isSomthingUpdate) {
-        const deleteQuery = `delete from ${schemaName}.dataflow_version where dataflowid='${DFId}' and
-        version ='${DFVer}'`;
+        const deleteQuery = `delete from ${schemaName}.dataflow_version where dataflowid = '${DFId}' and
+  version = '${DFVer}'`;
         await DB.executeQuery(deleteQuery);
 
-        const deleteCdr = `delete from ${schemaName}.cdr_ta_queue where dataflowid='${DFId}' and
-        "VERSION" ='${DFVer}'`;
+        const deleteCdr = `delete from ${schemaName}.cdr_ta_queue where dataflowid = '${DFId}' and
+  "VERSION" = '${DFVer}'`;
         await DB.executeQuery(deleteCdr);
 
         Object.keys(ResponseBody).forEach((key) => {
@@ -1446,6 +1457,7 @@ exports.updateDataFlow = async (req, res) => {
       if (isAnyError) {
         ResponseBody.errors.push(errRes);
       }
+      Logger.info(`DataFlow updated successfully : ${DFId} `);
       return apiResponse.successResponseWithData(
         res,
         "Dataflow update successfully.",
@@ -1467,7 +1479,7 @@ exports.updateDataFlow = async (req, res) => {
 //   const values = [dataflowId];
 //   let result, dataFlow;
 //   await DB.executeQuery(
-//     `SELECT * from ${schemaName}.dataflow WHERE dataflowid=$1`,
+//     `SELECT * from ${ schemaName }.dataflow WHERE dataflowid = $1`,
 //     values
 //   ).then(async (response) => {
 //     dataFlow = response.rows ? response.rows[0] : null;
@@ -1475,7 +1487,7 @@ exports.updateDataFlow = async (req, res) => {
 //   if (!dataFlow) {
 //     return "not_found";
 //   }
-//   const deleteQuery = `DELETE FROM ${schemaName}.dataflow_audit_log da
+//   const deleteQuery = `DELETE FROM ${ schemaName }.dataflow_audit_log da
 //       WHERE da.dataflowid = $1`;
 //   await DB.executeQuery(deleteQuery, values)
 //     .then(async (response) => {
@@ -1811,12 +1823,16 @@ exports.inActivateDataFlow = async (req, res) => {
 
 exports.syncDataFlow = async (req, res) => {
   try {
-    let { version, userId, dataFlowId } = req.body;
-    const curDate = helper.getCurrentTime();
+    let { version, userId, dataFlowId, currentTime = null } = req.body;
+    if (!currentTime) {
+      currentTime = helper.getCurrentTime();
+    }
+    // const curDate = helper.getCurrentTime();
+
     let q = `INSERT INTO ${schemaName}.cdr_ta_queue
     (dataflowid, "action", action_user, status, inserttimestamp, updatetimestamp, executionid, "VERSION", "COMMENTS", priority, exec_node, retry_count)
     VALUES($1, 'SYNC', $2, 'QUEUE', $4, $4, '', $3, '', 1, '', 0)`;
-    await DB.executeQuery(q, [dataFlowId, userId, version, curDate]);
+    await DB.executeQuery(q, [dataFlowId, userId, version, currentTime]);
 
     // await DB.executeQuery(
     //   `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
@@ -1899,8 +1915,8 @@ exports.fetchdataflowSource = async (req, res) => {
     let q = `select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."mnemonic" as datasetname, d.active from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
-    inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
-      inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid and (d2.del_flg is distinct from 1))
+      inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid and (d3.del_flg is distinct from 1))
       where d.dataflowid ='${dataflow_id}'`;
     Logger.info({
       message: "fetchdataflowSource",
@@ -1924,7 +1940,7 @@ exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
     let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, d2."type" as datapackagetype, d2."path" as datapackagepath,
-    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, d3.datasetid, S.prot_nbr_stnd
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, d3.datasetid, S.prot_nbr_stnd, d2.datapackageid AS "dpId", d3.datasetid AS "dsId", d2.active AS "dpActive", d3.active AS "dsActive"
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner Join ${schemaName}.study S on (d.prot_id = S.prot_id)
@@ -1947,8 +1963,8 @@ exports.fetchdataflowDetails = async (req, res) => {
     }
     // console.log("el.datasetid", response);
     // return;
-    const tempDP = _.uniqBy(response, "datapackageid");
-    const tempDS = _.uniqBy(response, "datasetid");
+    const tempDP = _.uniqBy(response, "dpId");
+    const tempDS = _.uniqBy(response, "dsId");
     const dataflowObj = response[0];
     const packageArr = [];
     for (const each of tempDP) {
@@ -1961,10 +1977,10 @@ exports.fetchdataflowDetails = async (req, res) => {
         noPackageConfig: each.nopackageconfig,
         name: each.datapackagename,
         dataSet: [],
-        active: each.active,
+        active: each.dpActive,
       };
       for (const el of tempDS) {
-        if (el.datapackageid === each.datapackageid) {
+        if (el.datapackageid === each.dpId) {
           // if (el.datasetid === each.datasetid) {
           let datasetObj = {
             columncount: el.columncount,
@@ -1989,11 +2005,11 @@ exports.fetchdataflowDetails = async (req, res) => {
             dataKind: el.datakindid,
             naming_convention: el.naming_convention,
             columnDefinition: [],
-            active: el.active,
+            active: el.dsActive,
           };
           const cdArr = [];
           for (let obj of response) {
-            if (obj.datasetid === el.datasetid && obj.name && obj.datatype) {
+            if (obj.datasetid === el.dsId && obj.name && obj.datatype) {
               let columnObj = {
                 columnid: obj.columnid,
                 columnName: obj.name,
@@ -2017,7 +2033,7 @@ exports.fetchdataflowDetails = async (req, res) => {
           // }
         }
       }
-      packageArr.push(datapackageObj);
+      if (datapackageObj.dataSet?.length) packageArr.push(datapackageObj);
     }
     let myobj = {
       vendorName: dataflowObj.vend_nm,
@@ -2237,7 +2253,9 @@ exports.updateDataflowConfig = async (req, res) => {
         // externalSystemName,
         dFTimestamp,
         serviceOwners,
-        moment(firstFileDate).isValid() ? firstFileDate : null,
+        moment(firstFileDate, "DD-MMM-yyyy", true).isValid()
+          ? firstFileDate
+          : null,
       ];
       // let fieldsStr = `vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, externalsystemname=$8, updt_tm=$9, serv_ownr=$10, expt_fst_prd_dt=$11`;
       let fieldsStr = `vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, updt_tm=$8, serv_ownr=$9, expt_fst_prd_dt=$10`;
@@ -2266,7 +2284,12 @@ exports.updateDataflowConfig = async (req, res) => {
         connectionType,
         serviceOwners,
       };
-      if (!moment(firstFileDate).isSame(existDf.firstFileDate, "day")) {
+      if (
+        !moment(firstFileDate, "DD-MMM-yyyy", true).isSame(
+          existDf.firstFileDate,
+          "day"
+        )
+      ) {
         comparisionObj.firstFileDate = firstFileDate;
       }
       const diffObj = helper.getdiffKeys(comparisionObj, existDf);

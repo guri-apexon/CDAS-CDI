@@ -1,5 +1,6 @@
 /* eslint-disable dot-notation */
 import axios from "axios";
+import moment from "moment";
 import CryptoJS from "crypto-js";
 import {
   baseURL,
@@ -259,11 +260,13 @@ export const getVLCDataList = async () => {
 
 export const syncNowDataFlow = async ({ version, dataFlowId }) => {
   try {
+    const currentTime = moment().utc().format("YYYY-MM-DD HH:mm:ss");
     const res = await axios.post(`${baseURL}/${SYNCNOW}`, {
       version,
       userId,
       dataFlowId,
       action: "SYNC",
+      currentTime,
     });
     return res?.data || [];
   } catch (err) {

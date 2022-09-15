@@ -28,7 +28,7 @@ exports.getDatasetIngestionMonitorDetail = async function (req, res) {
     return apiResponse.successResponseWithData(res, "Operation success", {
       summary: summary,
       datasets: dataSets,
-      totalSize: summary.dataset_pipelines,
+      totalSize: summary?.dataset_pipelines,
     });
   } catch (err) {
     console.log(err, "eerre");
