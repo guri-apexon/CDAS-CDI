@@ -517,7 +517,11 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       `UPDATE ${schemaName}.dataflow SET updt_tm=$2, configured=0 WHERE dataflowid=$1`,
       [createdDF.dataFlowId, dFTimestamp]
     );
-    Logger.info(`DataFlow created successfully DataFlow ID = ${createdDF.dataFlowId}, ${ExternalId ? `External ID = ${ExternalId}` : ''}`);
+    Logger.info(
+      `DataFlow created successfully DataFlow ID = ${createdDF.dataFlowId}, ${
+        ExternalId ? `External ID = ${ExternalId}` : ""
+      }`
+    );
     return apiResponse.successResponseWithData(
       res,
       "Data flow created successfully.",
@@ -563,7 +567,11 @@ exports.updateDataFlow = async (req, res) => {
     //   await creatDataflow(req, res);
     //   return false;
     // }
-    Logger.info(`DataFlow create/update process started ${ExternalId ? `External ID = ${ExternalId}` : ''}`);
+    Logger.info(
+      `DataFlow create/update process started ${
+        ExternalId ? `External ID = ${ExternalId}` : ""
+      }`
+    );
 
     const isCDI = externalSystemName === "CDI" ? true : false;
 
@@ -1047,7 +1055,7 @@ exports.updateDataFlow = async (req, res) => {
                                   dataset.incremental === "Y" &&
                                   testFlag === 0 &&
                                   dataPackage[i].dataSet[k].incremental ===
-                                  false
+                                    false
                                 ) {
                                   return apiResponse.ErrorResponse(
                                     res,
@@ -2218,7 +2226,7 @@ exports.updateDataflowConfig = async (req, res) => {
         existDf.vendorID != vendorID ||
         existDf.description != description ||
         helper.stringToBoolean(existDf.testFlag) !==
-        helper.stringToBoolean(testFlag)
+          helper.stringToBoolean(testFlag)
       ) {
         dfUpdatedName = await createDataflowName(
           vendorID,
@@ -2245,7 +2253,9 @@ exports.updateDataflowConfig = async (req, res) => {
         // externalSystemName,
         dFTimestamp,
         serviceOwners,
-        moment(firstFileDate).isValid() ? firstFileDate : null,
+        moment(firstFileDate, "DD-MMM-yyyy", true).isValid()
+          ? firstFileDate
+          : null,
       ];
       // let fieldsStr = `vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, externalsystemname=$8, updt_tm=$9, serv_ownr=$10, expt_fst_prd_dt=$11`;
       let fieldsStr = `vend_id=$2, type=$3, description=$4, src_loc_id=$5, testflag=$6, connectiontype=$7, updt_tm=$8, serv_ownr=$9, expt_fst_prd_dt=$10`;
@@ -2274,7 +2284,12 @@ exports.updateDataflowConfig = async (req, res) => {
         connectionType,
         serviceOwners,
       };
-      if (!moment(firstFileDate).isSame(existDf.firstFileDate, "day")) {
+      if (
+        !moment(firstFileDate, "DD-MMM-yyyy", true).isSame(
+          existDf.firstFileDate,
+          "day"
+        )
+      ) {
         comparisionObj.firstFileDate = firstFileDate;
       }
       const diffObj = helper.getdiffKeys(comparisionObj, existDf);
