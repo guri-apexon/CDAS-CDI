@@ -18,6 +18,7 @@ import {
   formatData,
   isSftp,
   columnObj,
+  checkLOVError,
 } from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
 import {
@@ -722,6 +723,8 @@ export default function DSColumnTable({
                     sizeAdjustable
                     minWidth={340}
                     minHeight={278}
+                    error={checkLOVError(selectedRow.values, true) || false}
+                    helperText={checkLOVError(selectedRow.values) || ""}
                   />
                 </div>
               ) : (
@@ -735,7 +738,11 @@ export default function DSColumnTable({
         buttonProps={
           isEditLOVs
             ? [
-                { label: "Save", onClick: handleSaveLOV },
+                {
+                  label: "Save",
+                  onClick: handleSaveLOV,
+                  disabled: checkLOVError(selectedRow.values, true),
+                },
                 { label: "Cancel", onClick: hideViewLOVs },
               ]
             : [

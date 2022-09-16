@@ -27,6 +27,7 @@ import {
   isSftp,
   columnObj,
   getInitColumnObj,
+  checkLOVError,
 } from "../../../utils/index";
 import { allowedTypes } from "../../../constants";
 import {
@@ -1008,6 +1009,8 @@ export default function DSColumnTable({
                     minWidth={340}
                     minHeight={278}
                     disabled={!canUpdateDataFlow}
+                    error={checkLOVError(selectedRow.values, true) || false}
+                    helperText={checkLOVError(selectedRow.values) || ""}
                   />
                 </div>
               ) : (
@@ -1024,7 +1027,9 @@ export default function DSColumnTable({
                 {
                   label: "Save",
                   onClick: handleSaveLOV,
-                  disabled: !canUpdateDataFlow,
+                  disabled:
+                    !canUpdateDataFlow ||
+                    checkLOVError(selectedRow.values, true),
                 },
                 { label: "Cancel", onClick: hideViewLOVs },
               ]
