@@ -1915,8 +1915,8 @@ exports.fetchdataflowSource = async (req, res) => {
     let q = `select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."mnemonic" as datasetname, d.active from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
-    inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
-      inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid and (d2.del_flg is distinct from 1))
+      inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid and (d3.del_flg is distinct from 1))
       where d.dataflowid ='${dataflow_id}'`;
     Logger.info({
       message: "fetchdataflowSource",
@@ -1940,7 +1940,7 @@ exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
     let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, d2."type" as datapackagetype, d2."path" as datapackagepath,
-    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, d3.datasetid, S.prot_nbr_stnd
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, d3.datasetid, S.prot_nbr_stnd, d2.datapackageid AS "dpId", d3.datasetid AS "dsId", d2.active AS "dpActive", d3.active AS "dsActive"
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner Join ${schemaName}.study S on (d.prot_id = S.prot_id)
@@ -1963,8 +1963,8 @@ exports.fetchdataflowDetails = async (req, res) => {
     }
     // console.log("el.datasetid", response);
     // return;
-    const tempDP = _.uniqBy(response, "datapackageid");
-    const tempDS = _.uniqBy(response, "datasetid");
+    const tempDP = _.uniqBy(response, "dpId");
+    const tempDS = _.uniqBy(response, "dsId");
     const dataflowObj = response[0];
     const packageArr = [];
     for (const each of tempDP) {
@@ -1977,10 +1977,10 @@ exports.fetchdataflowDetails = async (req, res) => {
         noPackageConfig: each.nopackageconfig,
         name: each.datapackagename,
         dataSet: [],
-        active: each.active,
+        active: each.dpActive,
       };
       for (const el of tempDS) {
-        if (el.datapackageid === each.datapackageid) {
+        if (el.datapackageid === each.dpId) {
           // if (el.datasetid === each.datasetid) {
           let datasetObj = {
             columncount: el.columncount,
@@ -1990,7 +1990,7 @@ exports.fetchdataflowDetails = async (req, res) => {
             tableName: el.tbl_nm,
             incremental: el.incremental,
             offsetColumn: el.offsetcolumn,
-            type: el.type,
+            fileType: el.type,
             dataTransferFrequency: el.data_freq,
             OverrideStaleAlert: el.ovrd_stale_alert,
             rowDecreaseAllowed: el.rowdecreaseallowed,
@@ -2000,16 +2000,16 @@ exports.fetchdataflowDetails = async (req, res) => {
             mnemonic: el.mnemonic,
             headerRowNumber: el.headerrownumber,
             footerRowNumber: el.footerrownumber,
-            escapeCode: el.escapecode,
+            escapeCharacter: el.escapecode,
             delimiter: el.delimiter,
             dataKind: el.datakindid,
-            naming_convention: el.naming_convention,
+            fileNamingConvention: el.datasetname,
             columnDefinition: [],
-            active: el.active,
+            active: el.dsActive,
           };
           const cdArr = [];
           for (let obj of response) {
-            if (obj.datasetid === el.datasetid && obj.name && obj.datatype) {
+            if (obj.datasetid === el.dsId && obj.name && obj.datatype) {
               let columnObj = {
                 columnid: obj.columnid,
                 columnName: obj.name,
@@ -2033,7 +2033,7 @@ exports.fetchdataflowDetails = async (req, res) => {
           // }
         }
       }
-      packageArr.push(datapackageObj);
+      if (datapackageObj.dataSet?.length) packageArr.push(datapackageObj);
     }
     let myobj = {
       vendorName: dataflowObj.vend_nm,
