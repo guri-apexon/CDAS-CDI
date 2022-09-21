@@ -2,7 +2,13 @@
 /* eslint-disable consistent-return */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react/button-has-type */
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useContext,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import * as XLSX from "xlsx";
 import _ from "lodash";
@@ -540,9 +546,9 @@ export default function DSColumnTable({
     }
   };
 
-  const getEditedRows = () => {
+  const getEditedRows = useCallback(() => {
     return rows.filter((x) => x.isEditMode);
-  };
+  }, [rows]);
 
   const onSaveAll = async () => {
     setDisableSaveAll(true);
@@ -663,112 +669,129 @@ export default function DSColumnTable({
     }
   }, [dataSets.updateLoading]);
 
-  const onRowSave = async (uniqueId) => {
-    setIsOverride(false);
-    const editedRowData = _.filter(
-      getEditedRows(),
-      (e) => e.uniqueId === uniqueId
-    )
-      .map((e) => {
-        const d = {
-          ...e,
-          isSaved: true,
-          values: e.values.toString().trim(),
-          columnName: e.columnName.toString().trim(),
-          isEditMode: false,
-        };
-        return d;
-      })
-      .map((e) => {
-        const hasAtFirst = e.values.charAt(0) === "~";
-        const hasAtLast = e.values.charAt(e.values.length - 1) === "~";
-        if (hasAtFirst) {
-          e.values = e.values.substring(1);
-        }
-        if (hasAtLast) {
-          e.values = e.values.slice(0, -1);
-        }
-        return e;
-      })
-      .find((e) => e.uniqueId === uniqueId);
-
-    if (
-      haveHeader &&
-      rows.some(
-        (r) =>
-          r.columnName.toLowerCase() ===
-            editedRowData.columnName.toLowerCase() &&
-          r.uniqueId !== editedRowData.uniqueId
+  const onRowSave = useCallback(
+    async (uniqueId) => {
+      setIsOverride(false);
+      const editedRowData = _.filter(
+        getEditedRows(),
+        (e) => e.uniqueId === uniqueId
       )
-    ) {
-      messageContext.showErrorMessage(
-        "Column name should be unique for a dataset"
-      );
-    } else if (
-      rows?.length &&
-      (selectedDataset?.loadType === "Incremental" ||
-        selectedDataset?.incremental === "Y") &&
-      rows.every((x) => x.primaryKey === "No")
-    ) {
-      setErrorprimary(true);
-      return false;
-    } else {
-      setErrorprimary(false);
-      // const removeRow = selectedRows.filter((e) => e !== uniqueId);
-      // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
-      const removeExistingRowData = rows.filter((e) => e.uniqueId !== uniqueId);
+        .map((e) => {
+          const d = {
+            ...e,
+            isSaved: true,
+            values: e.values.toString().trim(),
+            columnName: e.columnName.toString().trim(),
+            isEditMode: false,
+          };
+          return d;
+        })
+        .map((e) => {
+          const hasAtFirst = e.values.charAt(0) === "~";
+          const hasAtLast = e.values.charAt(e.values.length - 1) === "~";
+          if (hasAtFirst) {
+            e.values = e.values.substring(1);
+          }
+          if (hasAtLast) {
+            e.values = e.values.slice(0, -1);
+          }
+          return e;
+        })
+        .find((e) => e.uniqueId === uniqueId);
 
-      if (editedRowData?.dbColumnId) {
-        await dispatch(
-          updateDatasetColumns(
-            [editedRowData],
+      if (
+        haveHeader &&
+        rows.some(
+          (r) =>
+            r.columnName.toLowerCase() ===
+              editedRowData.columnName.toLowerCase() &&
+            r.uniqueId !== editedRowData.uniqueId
+        )
+      ) {
+        messageContext.showErrorMessage(
+          "Column name should be unique for a dataset"
+        );
+      } else if (
+        rows?.length &&
+        (selectedDataset?.loadType === "Incremental" ||
+          selectedDataset?.incremental === "Y") &&
+        rows.every((x) => x.primaryKey === "No")
+      ) {
+        setErrorprimary(true);
+        return false;
+      } else {
+        setErrorprimary(false);
+        // const removeRow = selectedRows.filter((e) => e !== uniqueId);
+        // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+        const removeExistingRowData = rows.filter(
+          (e) => e.uniqueId !== uniqueId
+        );
+
+        if (editedRowData?.dbColumnId) {
+          await dispatch(
+            updateDatasetColumns(
+              [editedRowData],
+              dsId,
+              dfId,
+              dpId,
+              userInfo.userId,
+              versionFreezed
+            )
+          );
+        } else {
+          const created = await createColumns({
+            values: [editedRowData],
             dsId,
             dfId,
             dpId,
-            userInfo.userId,
-            versionFreezed
-          )
-        );
-      } else {
-        const created = await createColumns({
-          values: [editedRowData],
-          dsId,
-          dfId,
-          dpId,
-          userId: userInfo.userId,
-          versionFreezed,
-        });
+            userId: userInfo.userId,
+            versionFreezed,
+          });
 
-        if (created?.status) {
-          const createdId = created.data[0]?.columnid;
-          if (createdId) {
-            editedRowData.dbColumnId = createdId;
+          if (created?.status) {
+            const createdId = created.data[0]?.columnid;
+            if (createdId) {
+              editedRowData.dbColumnId = createdId;
+            }
           }
         }
+
+        // const newData = _.orderBy(
+        //   [...removeExistingRowData, editedRowData],
+        //   ["uniqueId"],
+        //   ["asc"]
+        // );
+
+        removeExistingRowData.splice(
+          editedRowData.uniqueId - 1,
+          0,
+          editedRowData
+        );
+
+        setRows([...removeExistingRowData]);
+        // setEditedRows([...removeEdited]);
+        // setSelectedRows([...removeRow]);
       }
+      // await dispatch(getDatasetColumns(dsId));
+      setEditedBackup([]);
 
-      // const newData = _.orderBy(
-      //   [...removeExistingRowData, editedRowData],
-      //   ["uniqueId"],
-      //   ["asc"]
-      // );
-
-      removeExistingRowData.splice(
-        editedRowData.uniqueId - 1,
-        0,
-        editedRowData
-      );
-
-      setRows([...removeExistingRowData]);
-      // setEditedRows([...removeEdited]);
-      // setSelectedRows([...removeRow]);
-    }
-    // await dispatch(getDatasetColumns(dsId));
-    setEditedBackup([]);
-
-    setShouldResetCount(true);
-    setShouldSetCount(true);
-  };
+      setShouldResetCount(true);
+      setShouldSetCount(true);
+    },
+    [
+      dfId,
+      dispatch,
+      dpId,
+      dsId,
+      getEditedRows,
+      haveHeader,
+      messageContext,
+      rows,
+      selectedDataset,
+      userInfo,
+      versionFreezed,
+    ]
+  );
 
   const onCancelAll = () => {
     dispatch(getDatasetColumns(dsId));
@@ -799,7 +822,7 @@ export default function DSColumnTable({
     // setSelectedRows([...removeRow]);
   };
 
-  const onRowEdit = (row) => {
+  const onRowEdit = _.debounce((row) => {
     console.log({ row });
     setEditedBackup([{ ...row }]);
     setRows((prevRows) =>
@@ -809,29 +832,32 @@ export default function DSColumnTable({
     );
     // setSelectedRows([...selectedRows, uniqueId]);
     // setEditedRows(rows);
-  };
+  }, 600);
 
-  const onRowDelete = async (uniqueId) => {
-    const isInDB = rows.find((row) => row.uniqueId === uniqueId);
-    // if (dataFlowdetail.active) {
-    //   messageContext.showErrorMessage(`Please Inactivate the data flow first`);
-    // } else
-    if (isInDB) {
-      if (isInDB.dbColumnId !== ("" || undefined || null)) {
-        const deleteRes = await deleteCD(
-          isInDB.dbColumnId,
-          dsId,
-          dpId,
-          dfId,
-          versionFreezed
-        );
+  const onRowDelete = useCallback(
+    async (uniqueId) => {
+      const isInDB = rows.find((row) => row.uniqueId === uniqueId);
+      // if (dataFlowdetail.active) {
+      //   messageContext.showErrorMessage(`Please Inactivate the data flow first`);
+      // } else
+      if (isInDB) {
+        if (isInDB.dbColumnId !== ("" || undefined || null)) {
+          const deleteRes = await deleteCD(
+            isInDB.dbColumnId,
+            dsId,
+            dpId,
+            dfId,
+            versionFreezed
+          );
+        }
+        setRows((prevRows) => prevRows.filter((e) => e.uniqueId !== uniqueId));
       }
-      setRows((prevRows) => prevRows.filter((e) => e.uniqueId !== uniqueId));
-    }
-    // setEditedRows([...newData]);
-  };
+      // setEditedRows([...newData]);
+    },
+    [dfId, dpId, dsId, rows, versionFreezed]
+  );
 
-  const editRow = (uniqueId, key, value) => {
+  const editRow = _.debounce((uniqueId, key, value) => {
     setRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
@@ -856,7 +882,7 @@ export default function DSColumnTable({
         return row;
       })
     );
-  };
+  }, 600);
 
   useEffect(() => {
     const editedData = getEditedRows();
