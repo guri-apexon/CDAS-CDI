@@ -14,6 +14,7 @@ const PORT = process.env.PORT;
 let dir = "./public/exports";
 const apiRoutes = require("./route/apiRoutes");
 const baseRoutes = require("./route/baseRoutes");
+const tracer = require("dd-trace").init();
 
 const Logger = require("./config/logger");
 
