@@ -10,6 +10,8 @@ import {
   GET_PINNED_LIST,
   UPDATE_HEADER_COUNT,
   UPDATE_DF_STATUS,
+  UPDATE_PREVIOUS_STATE_ACTIVE_ONLY_BTN,
+  UPDATE_PREVIOUS_SEGMENT_CONTROL,
 } from "../../constants";
 
 export const getStudyboardData = (protocolId) => {
@@ -138,6 +140,20 @@ export const updateDFStatus = (dfId, newStatus) => {
   return {
     type: UPDATE_DF_STATUS,
     dfId,
+    newStatus,
+  };
+};
+
+export const updatePreviousStateActiveOnlyBtn = (newStatus) => {
+  return {
+    type: UPDATE_PREVIOUS_STATE_ACTIVE_ONLY_BTN,
+    newStatus,
+  };
+};
+
+export const updatePreviousStateSegmentControlTab = (newStatus) => {
+  return {
+    type: UPDATE_PREVIOUS_SEGMENT_CONTROL,
     newStatus,
   };
 };
