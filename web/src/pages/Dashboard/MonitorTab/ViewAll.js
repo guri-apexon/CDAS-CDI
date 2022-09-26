@@ -13,13 +13,15 @@ import FilterIcon from "apollo-react-icons/Filter";
 import DownloadIcon from "apollo-react-icons/Download";
 import RefreshIcon from "apollo-react-icons/Refresh";
 import ChevronLeft from "apollo-react-icons/ChevronLeft";
+import SegmentedControl from "apollo-react/components/SegmentedControl";
+import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup";
 
 import DatasetTable from "./DatasetTable";
 import {
   getDatasetIngestionOfStudy,
   updatePreviousStateActiveOnlyBtn,
 } from "../../../store/actions/DashboardAction";
-import { queryParams } from "./helper";
+import { queryParams, queryParamsFull } from "./helper";
 import { getUserId } from "../../../utils/index";
 
 const userId = getUserId();
@@ -64,6 +66,8 @@ const ViewAll = () => {
   const [control, setSegmentControl] = useState(
     parsedQuery[queryParams.CONTROL] || "all"
   );
+
+  const [selectedFilter, setSelectedFilter] = useState(control);
 
   // Go through query params to get processStatus by ignoring control parameter
   const [processStatus] = useState(
@@ -146,44 +150,60 @@ const ViewAll = () => {
   };
 
   const CustomHeader = ({ toggleFilters }) => (
-    <div>
-      <Switch
-        label="Show active datasets"
-        size="small"
-        checked={activeOnly}
-        labelPlacement="start"
-        className="MuiSwitch"
-        onChange={handleChange}
-        style={{ marginRight: 21 }}
-      />
-      <Button
-        id="downloadBtn"
-        icon={<DownloadIcon />}
-        size="small"
-        style={{ marginRight: 16 }}
-      >
-        Download
-      </Button>
-      <Button
-        size="small"
-        id="filterBtn"
-        variant="secondary"
-        icon={FilterIcon}
-        onClick={toggleFilters}
-        style={{ marginRight: "10px" }}
-      >
-        Filter
-      </Button>
-      <Button
-        size="small"
-        id="filterBtn"
-        variant="secondary"
-        icon={RefreshIcon}
-        onClick={() => fetchLatestData(control, activeOnly)}
-      >
-        Refresh
-      </Button>
-    </div>
+    <>
+      <div>
+        <SegmentedControlGroup
+          value={selectedFilter}
+          exclusive
+          onChange={(event, value) => {
+            setSelectedFilter(value);
+            setSegmentControl(value);
+          }}
+        >
+          <SegmentedControl value="all">All</SegmentedControl>
+          <SegmentedControl value="0">Production</SegmentedControl>
+          <SegmentedControl value="1">Test</SegmentedControl>
+        </SegmentedControlGroup>
+      </div>
+      <div>
+        <Switch
+          label="View only active datasets"
+          size="small"
+          checked={activeOnly}
+          labelPlacement="start"
+          className="MuiSwitch"
+          onChange={handleChange}
+          style={{ marginRight: 21 }}
+        />
+        <Button
+          id="downloadBtn"
+          icon={<DownloadIcon />}
+          size="small"
+          style={{ marginRight: 16 }}
+        >
+          Download
+        </Button>
+        <Button
+          size="small"
+          id="filterBtn"
+          variant="secondary"
+          icon={FilterIcon}
+          onClick={toggleFilters}
+          style={{ marginRight: "10px" }}
+        >
+          Filter
+        </Button>
+        <Button
+          size="small"
+          id="filterBtn"
+          variant="secondary"
+          icon={RefreshIcon}
+          onClick={() => fetchLatestData(control, activeOnly)}
+        >
+          Refresh
+        </Button>
+      </div>
+    </>
   );
 
   return (
