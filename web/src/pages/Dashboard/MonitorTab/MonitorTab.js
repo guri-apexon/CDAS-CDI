@@ -3,7 +3,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { neutral8, orange } from "apollo-react/colors";
 import Hero from "apollo-react/components/Hero";
 import Grid from "apollo-react/components/Grid";
@@ -45,11 +45,16 @@ import usePermission, {
 } from "../../../components/Common/usePermission";
 import DatasetTable from "./DatasetTable";
 import { queryParamsFull } from "./helper";
+import { updatePreviousStateSegmentControlTab } from "../../../store/actions/DashboardAction";
 
 export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
+  const dashboard = useSelector((state) => state.dashboard);
+
   const [open, setOpen] = useState(false);
   const [curRow, setCurRow] = useState({});
-  const [control, setSegmentControl] = useState("0");
+  const [control, setSegmentControl] = useState(
+    dashboard.previousState.segmentControl || "0"
+  );
   const [rows, setRowData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [activeOnly, setActiveOnly] = useState(true);
@@ -65,9 +70,10 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
     fileswith_issues: 0,
     stale_datasets: 0,
   });
-  const dashboard = useSelector((state) => state.dashboard);
 
   const history = useHistory();
+
+  const dispatch = useDispatch();
 
   const { canEnabled: canReadIngestionIssues } = useStudyPermission(
     Categories.MENU,
@@ -104,6 +110,9 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
   };
   const onSegmentChange = (value) => {
     setSegmentControl(value);
+
+    // update segment value in store as well
+    dispatch(updatePreviousStateSegmentControlTab(value));
   };
   const handleViewButton = (query = "") => {
     let q = query;
