@@ -118,8 +118,17 @@ const LeftPanel = ({ stydyHeight, setValue }) => {
   }, [isLoading, userStudiesLoading]);
 
   useEffect(() => {
-    setStudyList([...userStudies]);
-  }, [userStudies]);
+    const list =
+      searchTxt && Array.isArray(userStudies) && userStudies.length > 0
+        ? userStudies.filter(
+            (item) =>
+              Object.values(item)
+                .map((x) => x.toString().toLowerCase())
+                .findIndex((x) => x.includes(searchTxt)) !== -1
+          )
+        : userStudies;
+    setStudyList([...list]);
+  }, [userStudies, searchTxt]);
 
   useEffect(() => {
     setPinned([...userPinnedStudies]);
@@ -135,17 +144,17 @@ const LeftPanel = ({ stydyHeight, setValue }) => {
     if (userStudiesLoading) return;
     const newValue = e.target.value;
     setSearchTxt(newValue);
-    debounceFunction(async () => {
-      setLoading(true);
-      const newStudies = await searchStudy(newValue);
-      // eslint-disable-next-line no-unused-expressions
-      newStudies && newStudies.studies
-        ? setUnPinnedStudies([...newStudies.studies])
-        : setUnPinnedStudies([]);
-      // eslint-disable-next-line no-unused-expressions
-      !newStudies && updateList();
-      setLoading(false);
-    }, 1000);
+    // debounceFunction(async () => {
+    //   setLoading(true);
+    //   const newStudies = await searchStudy(newValue);
+    //   // eslint-disable-next-line no-unused-expressions
+    //   newStudies && newStudies.studies
+    //     ? setUnPinnedStudies([...newStudies.studies])
+    //     : setUnPinnedStudies([]);
+    //   // eslint-disable-next-line no-unused-expressions
+    //   !newStudies && updateList();
+    //   setLoading(false);
+    // }, 1000);
   };
 
   const pinningStudy = async (id) => {
