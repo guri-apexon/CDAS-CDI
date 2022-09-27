@@ -263,42 +263,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       }
     }
 
-    // check for primaryKey
-    if (dataStructure !== "TabularRaveSOD") {
-      let saveflagyes = false;
-      if (dataPackage && Array.isArray(dataPackage)) {
-        for (let i = 0; i < dataPackage.length; i++) {
-          if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
-            for (let k = 0; k < dataPackage[i].dataSet.length; k++) {
-              /// Below value check is for incremental instead of loadtype
-              if (dataPackage[i].dataSet[k].incremental === true) {
-                if (
-                  dataPackage[i].dataSet[k].columnDefinition &&
-                  Array.isArray(dataPackage[i].dataSet[k].columnDefinition)
-                ) {
-                  for (
-                    let j = 0;
-                    j < dataPackage[i].dataSet[k].columnDefinition.length;
-                    j++
-                  ) {
-                    if (
-                      dataPackage[i].dataSet[k].columnDefinition[j]
-                        .primaryKey === "Yes"
-                    )
-                      saveflagyes = true;
-                  }
-                }
-                if (!saveflagyes)
-                  return apiResponse.ErrorResponse(
-                    res,
-                    `At least one primaryKey column must be identified when incremental is true.`
-                  );
-              }
-            }
-          }
-        }
-      }
-    }
     testFlag = helper.stringToBoolean(testFlag);
 
     if (locationID) {
@@ -728,7 +692,11 @@ exports.updateDataFlow = async (req, res) => {
                     "Column Definition Level delFlag  required and it's either 0 or 1"
                   );
                 }
-
+                helper.primaryKeyValidations(
+                  dataStructure,
+                  dataPackage,
+                  clErrArray
+                );
                 if (clErrArray.length > 0) {
                   let clErrRes = clErrArray.join(" '|' ");
                   clNewObj.message = clErrRes;
@@ -770,6 +738,43 @@ exports.updateDataFlow = async (req, res) => {
         }
       }
     }
+
+    //primary key validations starts
+    if (dataPackage && dataPackage.length && isCDI) {
+      dfErrObj.dataPackages = [];
+      let isval = false;
+      let dpNewObj = {};
+
+      dfErrObj.dataPackages.push(dpNewObj);
+      // Data Set External Id validation
+      dpNewObj.dataSets = [];
+
+      let dsNewObj = {};
+
+      dpNewObj.dataSets.push(dsNewObj);
+
+      dsNewObj.columnDefinition = [];
+      let clErrArray = [];
+      let clNewObj = {};
+
+      helper.primaryKeyValidations(dataStructure, dataPackage, clErrArray);
+      if (clErrArray.length > 0) {
+        let clErrRes = clErrArray.join(" '|' ");
+        clNewObj.message = clErrRes;
+        isval = true;
+      }
+      dsNewObj.columnDefinition.push(clNewObj);
+      if (isval) {
+        errorBody.errors.push(dfErrObj);
+        return apiResponse.validationErrorWithData(
+          res,
+          "Data flow key validation message.",
+          errorBody
+        );
+      }
+    }
+
+    // primary key validation ends
 
     // data package configuration validatiaon for both internal and external system
     if (
