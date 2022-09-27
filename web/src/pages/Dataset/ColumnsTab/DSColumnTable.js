@@ -728,6 +728,7 @@ export default function DSColumnTable({
         );
 
         if (editedRowData?.dbColumnId) {
+          dispatch(updateDatasetColumnsLoading(true));
           await dispatch(
             updateDatasetColumns(
               [editedRowData],
@@ -738,6 +739,7 @@ export default function DSColumnTable({
               versionFreezed
             )
           );
+          setGetList(true);
         } else {
           const created = await createColumns({
             values: [editedRowData],

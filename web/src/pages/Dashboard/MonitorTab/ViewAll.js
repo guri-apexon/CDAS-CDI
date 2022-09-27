@@ -20,6 +20,7 @@ import DatasetTable from "./DatasetTable";
 import {
   getDatasetIngestionOfStudy,
   updatePreviousStateActiveOnlyBtn,
+  updatePreviousStateSegmentControlTab,
 } from "../../../store/actions/DashboardAction";
 import { queryParams, queryParamsFull } from "./helper";
 import { getUserId } from "../../../utils/index";
@@ -158,6 +159,9 @@ const ViewAll = () => {
           onChange={(event, value) => {
             setSelectedFilter(value);
             setSegmentControl(value);
+
+            // update segment value in store as well
+            dispatch(updatePreviousStateSegmentControlTab(value));
           }}
         >
           <SegmentedControl value="all">All</SegmentedControl>
