@@ -33,6 +33,7 @@ exports.listTables = async (req, res) => {
         break;
       case "mysql":
       case "my sql":
+      case "azure – sql server":
         // q = `SELECT table_name as "tableName" FROM information_schema.tables`;
         q = `SELECT CONCAT(table_schema , '.',table_name)  as "tableName"
         FROM information_schema.tables
