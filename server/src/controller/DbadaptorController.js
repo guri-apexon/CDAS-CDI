@@ -131,6 +131,7 @@ exports.tablecolumns = async (req, res) => {
 
       case "sqlserver":
       case "sql server":
+      case "azure – sql server":
         q = `select
         c.name columnName,
         t1.name as dataType,
@@ -251,7 +252,7 @@ exports.tablecolumns = async (req, res) => {
       case "mysql":
         q = `SHOW COLUMNS FROM ${schemaName}.${tableName}`;
         break;
-      case "azure – sql server":
+      case "azure – snowflake":
         q = `describe table ${schemaName}.${tableName}`;
         break;
       default:
