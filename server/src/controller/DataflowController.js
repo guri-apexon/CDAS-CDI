@@ -664,6 +664,17 @@ exports.updateDataFlow = async (req, res) => {
               }
             }
 
+            if (obj.qcType && obj.qcType?.toLowerCase() === "vlc") {
+              if (
+                !obj.conditionalExpressions ||
+                obj.conditionalExpressions?.length === 0
+              ) {
+                dsErrArray.push(
+                  "conditionalExpressions is required and Value should be an array"
+                );
+              }
+            }
+
             if (dsErrArray.length > 0) {
               let dsErrRes = dsErrArray.join(" '|' ");
               dsNewObj.message = dsErrRes;
