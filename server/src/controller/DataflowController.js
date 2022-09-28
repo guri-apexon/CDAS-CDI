@@ -670,7 +670,7 @@ exports.updateDataFlow = async (req, res) => {
                 obj.conditionalExpressions?.length === 0
               ) {
                 dsErrArray.push(
-                  "conditionalExpressions is required and Value should be an array"
+                  "Conditional Expression is required and value should be an array"
                 );
               }
             }
