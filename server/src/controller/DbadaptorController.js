@@ -47,6 +47,9 @@ exports.listTables = async (req, res) => {
         q = `SELECT lower(table_schema||'.'||table_name) as "tableName"
         FROM information_schema.tables where upper(table_schema) not in ('PG_CATALOG', 'PUBLIC', 'INFORMATION_SCHEMA') and upper(table_type) in('BASE TABLE','VIEW')`;
         break;
+      case "azure – snowflake":
+        q = `show tables`;
+        break;
       default:
         q = `SELECT table_name as "tableName" FROM information_schema.tables`;
         break;
@@ -253,7 +256,7 @@ exports.tablecolumns = async (req, res) => {
         q = `SHOW COLUMNS FROM ${schemaName}.${tableName}`;
         break;
       case "azure – snowflake":
-        q = `describe table ${schemaName}.${tableName}`;
+        q = `describe table ${tableName}`;
         break;
       default:
         q = `SHOW COLUMNS FROM ${schemaName}.${tableName}`;
