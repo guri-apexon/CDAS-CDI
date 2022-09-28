@@ -267,7 +267,9 @@ exports.generateConnectionURL = (
       : "";
   }
   if (locType === "Azure – SQL Server") {
-    return port && dbName ? `jdbc:mysql://${hostName}:${port}/${dbName}` : "";
+    return port && dbName
+      ? `jdbc:sqlserver://${hostName}:${port};databaseName=${dbName}`
+      : "";
   }
   if (locType === "Azure - Snowflake") {
     return port && dbName && warehouse && schema

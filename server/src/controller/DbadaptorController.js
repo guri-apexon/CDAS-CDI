@@ -251,6 +251,9 @@ exports.tablecolumns = async (req, res) => {
       case "mysql":
         q = `SHOW COLUMNS FROM ${schemaName}.${tableName}`;
         break;
+      case "azure – sql server":
+        q = `describe table ${schemaName}.${tableName}`;
+        break;
       default:
         q = `SHOW COLUMNS FROM ${schemaName}.${tableName}`;
         break;
