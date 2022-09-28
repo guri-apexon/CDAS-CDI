@@ -27,6 +27,8 @@ export const locationModalValidate = ({
   port,
   dbName,
   password,
+  warehouse,
+  schema,
 }) =>
   removeUndefined({
     locationName: checkRequired(locationName),
@@ -37,6 +39,10 @@ export const locationModalValidate = ({
     userName: checkRequired(userName),
     port: checkRequired(port),
     dbName: checkRequired(dbName),
+    warehouse:
+      locationType === "Azure – Snowflake" ? checkRequired(warehouse) : false,
+    schema:
+      locationType === "Azure – Snowflake" ? checkRequired(schema) : false,
     password:
       checkRequired(password) &&
       locationType?.toLowerCase() !== "sftp" &&
