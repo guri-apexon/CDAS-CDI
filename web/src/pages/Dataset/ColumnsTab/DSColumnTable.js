@@ -421,7 +421,7 @@ export default function DSColumnTable({
 
   const addNewRows = (value) => {
     const total = parseInt(rows.length, 10) + parseInt(value, 10);
-    if (total < 500) {
+    if (total <= 500) {
       setNewRows(parseInt(value, 10));
     } else if (total) {
       messageContext.showErrorMessage(`Not allowed more than 500 Columns`);
