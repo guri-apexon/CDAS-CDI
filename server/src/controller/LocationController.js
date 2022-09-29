@@ -153,16 +153,13 @@ exports.getLocationList = async (req, res) => {
   try {
     let type = req.query.type || null;
     let extrnl_sys_nm = req.query.extrnl_sys_nm || null;
-    // line number 142 and 147 added for ALM-1298
     let filter = "";
     if (extrnl_sys_nm) {
-      // filter = `extrnl_sys_nm = '${extrnl_sys_nm}' and`;
-      filter = ` where extrnl_sys_nm = '${extrnl_sys_nm}'`;
+      filter = `extrnl_sys_nm = '${extrnl_sys_nm}' and`;
     }
 
     let select = `src_loc_id, src_loc_id as "ID", external_id as "ExternalID", src_loc_id as value, CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm, loc_alias_nm,db_nm`;
-    // let searchQuery = `SELECT ${select} from ${schemaName}.source_location where ${filter} active=1 order by label asc`;
-    let searchQuery = `SELECT ${select} from ${schemaName}.source_location ${filter} order by label asc`;
+    let searchQuery = `SELECT ${select} from ${schemaName}.source_location where ${filter} active=1 order by label asc`;
     Logger.info({ message: "getLocationList" });
     // console.log(searchQuery);
     if (type) {
