@@ -67,6 +67,8 @@ const LocationForm = (props) => {
     selectedHost,
     selectedPort,
     selectedDB,
+    warehouse = "",
+    schema = "",
     isActive,
     formState,
     loading,
@@ -92,6 +94,17 @@ const LocationForm = (props) => {
     getENSlists();
     getLocTypes();
   }, []);
+
+  useEffect(() => {
+    if (
+      !props.locationViewMode &&
+      locType !== "Azure - Snowflake" &&
+      (warehouse || schema)
+    ) {
+      dispatch(change("AddLocationForm", "warehouse", ""));
+      dispatch(change("AddLocationForm", "schema", ""));
+    }
+  }, [locType]);
 
   return (
     <form id="location-modal" onSubmit={props.handleSubmit}>
@@ -165,7 +178,9 @@ const LocationForm = (props) => {
                   v.target.value,
                   selectedHost,
                   selectedPort,
-                  selectedDB
+                  selectedDB,
+                  warehouse,
+                  schema
                 );
                 // if (v.target.value?.includes("Dynamic Port")) {
                 //   dispatch(change("AddLocationForm", "port", ""));
@@ -175,7 +190,7 @@ const LocationForm = (props) => {
               fullWidth
             >
               {locationTypes?.map((type) => (
-                <MenuItem key={type.value} value={type}>
+                <MenuItem key={type} value={type}>
                   {type}
                 </MenuItem>
               ))}
@@ -198,7 +213,9 @@ const LocationForm = (props) => {
                   locType,
                   v.target.value,
                   selectedPort,
-                  selectedDB
+                  selectedDB,
+                  warehouse,
+                  schema
                 )
               }
               InputProps={{ readOnly: props.locationViewMode }}
@@ -227,7 +244,9 @@ const LocationForm = (props) => {
                       locType,
                       selectedHost,
                       v.target.value,
-                      selectedDB
+                      selectedDB,
+                      warehouse,
+                      schema
                     )
                   }
                 />
@@ -245,7 +264,9 @@ const LocationForm = (props) => {
                       locType,
                       selectedHost,
                       selectedPort,
-                      v.target.value
+                      v.target.value,
+                      warehouse,
+                      schema
                     )
                   }
                   InputProps={{ readOnly: props.locationViewMode }}
@@ -253,6 +274,50 @@ const LocationForm = (props) => {
               </Grid>
             </Grid>
           </>
+        )}
+
+        {/* Azure - Snowflake additional fields */}
+        {!!(locType === "Azure – Snowflake") && (
+          <Grid container spacing={2}>
+            <Grid item md={5} id="for-warehouse">
+              <ReduxFormTextField
+                fullWidth
+                name="warehouse"
+                size="small"
+                label="Warehouse"
+                onChange={(v) =>
+                  props.generateUrl(
+                    locType,
+                    selectedHost,
+                    selectedPort,
+                    selectedDB,
+                    v.target.value,
+                    schema
+                  )
+                }
+                InputProps={{ readOnly: props.locationViewMode }}
+              />
+            </Grid>
+            <Grid item md={5} id="for-schema">
+              <ReduxFormTextField
+                fullWidth
+                name="schema"
+                size="small"
+                label="Schema"
+                onChange={(v) =>
+                  props.generateUrl(
+                    locType,
+                    selectedHost,
+                    selectedPort,
+                    selectedDB,
+                    warehouse,
+                    v.target.value
+                  )
+                }
+                InputProps={{ readOnly: props.locationViewMode }}
+              />
+            </Grid>
+          </Grid>
         )}
         <Grid container spacing={2}>
           <Grid item md={5} id="for-userName">
@@ -291,7 +356,13 @@ const LocationForm = (props) => {
               <Button
                 variant="secondary"
                 size="small"
-                disabled={loading || locType === "FTPS" ? true : false}
+                disabled={
+                  loading ||
+                  locType === "FTPS" ||
+                  locType === "Azure – Snowflake"
+                    ? true
+                    : false
+                }
                 onClick={() => props.testConnection(formState)}
               >
                 Test connection
@@ -360,24 +431,37 @@ const LocationModal = (props) => {
       }, 5000);
     }
   }, [error, success, existErr]);
+
   useEffect(() => {
     props.handleModalClose();
   }, [createTriggered]);
+
   const handleBannerClose = () => {
     setExistErr("");
     dispatch(removeErrMessage());
   };
+
   if (!props.locationEditMode && !props.locationViewMode) {
     dispatch(change("AddLocationForm", "active", true));
     dispatch(change("AddLocationForm", "dataStructure", "Tabular"));
     // dispatch(change("AddLocationForm", "locationType", "SFTP"));
   }
-  const generateUrl = (locType, selectedHost, selectedPort, selectedDB) => {
+
+  const generateUrl = (
+    locType,
+    selectedHost,
+    selectedPort,
+    selectedDB,
+    warehouse = "",
+    schema = ""
+  ) => {
     const connurl = generateConnectionURL(
       locType,
       selectedHost,
       selectedPort,
-      selectedDB
+      selectedDB,
+      warehouse,
+      schema
     );
     if (connurl) {
       dispatch(change("AddLocationForm", "connURL", connurl));
@@ -539,6 +623,8 @@ const ReduxForm = compose(
     selectedPort: selector(state, "port"),
     selectedDB: selector(state, "dbName"),
     locType: selector(state, "locationType"),
+    warehouse: selector(state, "warehouse"),
+    schema: selector(state, "schema"),
     formState: getFormValues("AddLocationForm")(state),
   }))
 )(LocationForm);

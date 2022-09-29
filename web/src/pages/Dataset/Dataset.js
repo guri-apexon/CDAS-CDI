@@ -460,6 +460,9 @@ const Dataset = () => {
           !isSftp(locationType) &&
           formValue?.isCustomSQL?.toLowerCase() === "yes"
         ) {
+          if (data?.dataType) {
+            delete data.dataType;
+          }
           dispatch(resetJDBC(["sqlColumns", "datasetColumns"]));
         }
         dispatch(updateDatasetData(data));

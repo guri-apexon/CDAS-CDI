@@ -25,6 +25,8 @@ import {
   SELECTED_DATAFLOW,
   UPDATE_HEADER_COUNT,
   UPDATE_DF_STATUS,
+  UPDATE_PREVIOUS_STATE_ACTIVE_ONLY_BTN,
+  UPDATE_PREVIOUS_SEGMENT_CONTROL,
 } from "../../constants";
 
 export const initialState = {
@@ -59,6 +61,10 @@ export const initialState = {
   userStudiesLoading: false,
   selectedDataFlow: "",
   userPinnedStudies: [],
+  previousState: {
+    activeOnlyBtn: true, // dashboard/monitor -> page -> Show active datasets btn
+    segmentControl: "0", // dashboard -> monitor tab -> (all ->"all", prod -> "0", test -> "1") tab control
+  },
 };
 
 const DashboardReducer = (state = initialState, action) =>
@@ -200,6 +206,14 @@ const DashboardReducer = (state = initialState, action) =>
 
       case SELECTED_DATAFLOW:
         newState.selectedDataFlow = action.dataflow;
+        break;
+
+      case UPDATE_PREVIOUS_STATE_ACTIVE_ONLY_BTN:
+        newState.previousState.activeOnlyBtn = action.newStatus;
+        break;
+
+      case UPDATE_PREVIOUS_SEGMENT_CONTROL:
+        newState.previousState.segmentControl = action.newStatus;
         break;
 
       default:

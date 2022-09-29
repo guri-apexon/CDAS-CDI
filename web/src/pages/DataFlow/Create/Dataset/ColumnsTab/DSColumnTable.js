@@ -1,7 +1,13 @@
 /* eslint-disable consistent-return */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react/button-has-type */
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useContext,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import * as XLSX from "xlsx";
 import Table from "apollo-react/components/Table";
@@ -293,7 +299,7 @@ export default function DSColumnTable({
 
   const addNewRows = (value) => {
     const total = parseInt(rows.length, 10) + parseInt(value, 10);
-    if (total < 500) {
+    if (total <= 500) {
       setNewRows(parseInt(value, 10));
     } else if (total) {
       messageContext.showErrorMessage(`Not allowed more than 500 columns`);
@@ -439,91 +445,99 @@ export default function DSColumnTable({
   //   const cName = arr.map((e) => e.columnName).join(", ");
   // };
 
-  const onRowSave = async (uniqueId) => {
-    const editedRowData = _.filter(editedRows, (e) => e.uniqueId === uniqueId)
-      .map((e) => {
-        const d = {
-          ...e,
-          isSaved: true,
-          values: e.values.toString().trim(),
-          columnName: e.columnName.toString().trim(),
-        };
-        return d;
-      })
-      .map((e) => {
-        const isFirst = e.values.charAt(0) === "~";
-        const isLast = e.values.charAt(e.values.length - 1) === "~";
-        if (isFirst) {
-          e.values = e.values.substring(1);
-        }
-        if (isLast) {
-          e.values = e.values.slice(0, -1);
-        }
-        return e;
-      })
-      .find((e) => e.uniqueId === uniqueId);
-    if (
-      haveHeader &&
-      rows.some(
-        (r) =>
-          r?.columnName?.toLowerCase() ===
-            editedRowData?.columnName?.toLowerCase() &&
-          r?.uniqueId !== editedRowData.uniqueId
-      )
-    ) {
-      messageContext.showErrorMessage(
-        "Column name should be unique for a dataset"
+  const onRowSave = useCallback(
+    async (uniqueId) => {
+      const editedRowData = _.filter(editedRows, (e) => e.uniqueId === uniqueId)
+        .map((e) => {
+          const d = {
+            ...e,
+            isSaved: true,
+            values: e.values.toString().trim(),
+            columnName: e.columnName.toString().trim(),
+          };
+          return d;
+        })
+        .map((e) => {
+          const isFirst = e.values.charAt(0) === "~";
+          const isLast = e.values.charAt(e.values.length - 1) === "~";
+          if (isFirst) {
+            e.values = e.values.substring(1);
+          }
+          if (isLast) {
+            e.values = e.values.slice(0, -1);
+          }
+          return e;
+        })
+        .find((e) => e.uniqueId === uniqueId);
+      if (
+        haveHeader &&
+        rows.some(
+          (r) =>
+            r?.columnName?.toLowerCase() ===
+              editedRowData?.columnName?.toLowerCase() &&
+            r?.uniqueId !== editedRowData.uniqueId
+        )
+      ) {
+        messageContext.showErrorMessage(
+          "Column name should be unique for a dataset"
+        );
+        return false;
+      }
+      if (editedRowData && editedRowData.dataType === "") {
+        messageContext.showErrorMessage(
+          `Please select data type for this record to save.`
+        );
+        return false;
+      }
+      const removeRow = selectedRows.filter((e) => e !== uniqueId);
+      // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
+      const removeExistingRowData = rows.filter(
+        (e) => e?.uniqueId !== uniqueId
       );
-      return false;
-    }
-    if (editedRowData && editedRowData.dataType === "") {
-      messageContext.showErrorMessage(
-        `Please select data type for this record to save.`
+      const newData = _.orderBy(
+        [...removeExistingRowData, editedRowData],
+        ["index"],
+        ["asc"]
       );
-      return false;
-    }
-    const removeRow = selectedRows.filter((e) => e !== uniqueId);
-    // const removeEdited = editedRows.filter((e) => e.uniqueId !== uniqueId);
-    const removeExistingRowData = rows.filter((e) => e?.uniqueId !== uniqueId);
-    const newData = _.orderBy(
-      [...removeExistingRowData, editedRowData],
-      ["index"],
-      ["asc"]
-    );
-    setRows([...newData]);
-    // setEditedRows([...removeEdited]);
-    setSelectedRows([...removeRow]);
-  };
+      setRows([...newData]);
+      // setEditedRows([...removeEdited]);
+      setSelectedRows([...removeRow]);
+    },
+    [editedRows, haveHeader, messageContext, rows, selectedRows]
+  );
 
-  const onRowEdit = (uniqueId) => {
+  const onRowEdit = _.debounce((uniqueId) => {
     setSelectedRows([...selectedRows, uniqueId]);
     // setEditedRows([...rows]);
     setEditedRows([...editedRows]);
-  };
+  }, 600);
 
-  const onRowDelete = async (uniqueId) => {
-    const newData = (editMode ? editedRows : filteredRows).filter(
-      (row) => row.uniqueId !== uniqueId
-    );
-    setFilteredRows([...newData]);
-    setRows([...newData]);
-    setEditedRows(newData);
-    const rowsUniqueIds = rows.map((e) => e.uniqueId);
-    const unsavedRows = [
-      ...rows,
-      ...newData.filter((e) => !rowsUniqueIds.includes(e.uniqueId)),
-    ]
-      .filter((e) => (e?.isSaved ? false : true))
-      .map((e, i) => e.uniqueId);
-    // setRows([...unsavedRows]);
-    setSelectedRows([...unsavedRows]);
-  };
+  const onRowDelete = useCallback(
+    (uniqueId) => {
+      const newData = (editMode ? editedRows : filteredRows).filter(
+        (row) => row.uniqueId !== uniqueId
+      );
+      setFilteredRows([...newData]);
+      setRows([...newData]);
+      setEditedRows(newData);
+      const rowsUniqueIds = rows.map((e) => e.uniqueId);
+      const unsavedRows = [
+        ...rows,
+        ...newData.filter((e) => !rowsUniqueIds.includes(e.uniqueId)),
+      ]
+        .filter((e) => (e?.isSaved ? false : true))
+        .map((e, i) => e.uniqueId);
+      // setRows([...unsavedRows]);
+      setSelectedRows([...unsavedRows]);
+    },
+    [editMode, editedRows, filteredRows, rows]
+  );
 
   // const showColumnNameRequried = () => {
   //   messageContext.showErrorMessage("Column name Should be there");
   // };
 
-  const editRow = (uniqueId, key, value) => {
+  const editRow = _.debounce((uniqueId, key, value) => {
     setEditedRows((rws) =>
       rws.map((row) => {
         if (row.uniqueId === uniqueId) {
@@ -559,7 +573,7 @@ export default function DSColumnTable({
         return row;
       })
     );
-  };
+  }, 600);
 
   useEffect(() => {
     if (editedRows.some((row) => !validateRow({ ...row, haveHeader }))) {

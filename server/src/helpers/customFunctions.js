@@ -220,7 +220,14 @@ exports.formatDBTables = (data) => {
   });
 };
 
-exports.generateConnectionURL = (locType, hostName, port, dbName) => {
+exports.generateConnectionURL = (
+  locType,
+  hostName,
+  port,
+  dbName,
+  warehouse = "",
+  schema = ""
+) => {
   if (!locType || !hostName) {
     return "";
   }
@@ -257,6 +264,16 @@ exports.generateConnectionURL = (locType, hostName, port, dbName) => {
   if (locType === "Impala") {
     return port
       ? `jdbc:impala://${hostName}:${port}/${dbName};ssl=1;AllowSelfSignedCerts=1;AuthMech=3`
+      : "";
+  }
+  if (locType === "Azure – SQL Server") {
+    return port && dbName
+      ? `jdbc:sqlserver://${hostName}:${port};databaseName=${dbName}`
+      : "";
+  }
+  if (locType === "Azure - Snowflake") {
+    return port && dbName && warehouse && schema
+      ? `jdbc:snowflake://${hostName}:${port}/?db=${dbName}&warehouse=${warehouse}&schema=${schema}`
       : "";
   }
   if (locType && hostName && port && dbName) {
@@ -449,7 +466,12 @@ exports.minMaxLengthValidations = (data, locationType) => {
     errorMessages.push(
       "Min Length must be between values of 1 and 9,999. Please amend."
     );
-  } if (maxLength && parseInt(maxLength) > 10000 && !helper.isSftp(locationType)) {
+  }
+  if (
+    maxLength &&
+    parseInt(maxLength) > 10000 &&
+    !helper.isSftp(locationType)
+  ) {
     errorMessages.push(
       "Max Length must be between values of 1 and 10,000. Please amend."
     );
@@ -465,4 +487,41 @@ exports.sortString = (a, b) => {
     return 1;
   }
   return 0;
+};
+
+exports.primaryKeyValidations = (dataStructure, dataPackage, clErrArray) => {
+  if (dataStructure !== "TabularRaveSOD") {
+    let saveflagyes = false;
+    if (dataPackage && Array.isArray(dataPackage)) {
+      for (let i = 0; i < dataPackage.length; i++) {
+        if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
+          for (let k = 0; k < dataPackage[i].dataSet.length; k++) {
+            /// Below value check is for incremental instead of loadtype
+            if (dataPackage[i].dataSet[k].incremental === true) {
+              if (
+                dataPackage[i].dataSet[k].columnDefinition &&
+                Array.isArray(dataPackage[i].dataSet[k].columnDefinition)
+              ) {
+                for (
+                  let j = 0;
+                  j < dataPackage[i].dataSet[k].columnDefinition.length;
+                  j++
+                ) {
+                  if (
+                    dataPackage[i].dataSet[k].columnDefinition[j].primaryKey ===
+                    "Yes" || dataPackage[i].dataSet[k].columnDefinition[j].primaryKey == 1 
+                  )
+                    saveflagyes = true;
+                }
+              }
+              if (!saveflagyes)
+                clErrArray.push(
+                  `At least one primaryKey column must be identified when incremental is true.`
+                );
+            }
+          }
+        }
+      }
+    }
+  }
 };
