@@ -724,10 +724,7 @@ export default function DSColumnTable({
           // eslint-disable-next-line react/jsx-wrap-multilines
           <>
             <div className="lov-modal">
-              <div className="lov-quote">
-                Values separated by ~ (tilde). Multiple word values placed in
-                quotations.
-              </div>
+              <div className="lov-quote">Values separated by ~ (tilde).</div>
 
               {isEditLOVs ? (
                 <div className="lov-edit-mode">
