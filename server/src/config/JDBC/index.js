@@ -25,6 +25,13 @@ const sqlServerDriver = path.join(
   "Drivers",
   "mssql-jdbc-9.2.0.jre8.jar"
 );
+
+const snowflakeDriver = path.join(
+  __dirname,
+  "Drivers",
+  "snowflake-jdbc-3.8.5.jar"
+);
+
 const hiveCDHServerDriver = path.join(__dirname, "Drivers", "HiveJDBC41.jar");
 if (!jinst.isJvmCreated()) {
   jinst.addOption("-Xrs");
@@ -52,6 +59,7 @@ if (!jinst.isJvmCreated()) {
     postgresqlDriver,
     sqlServerDriver,
     hiveCDHServerDriver,
+    snowflakeDriver,
   ]);
 }
 module.exports = async (

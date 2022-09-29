@@ -263,42 +263,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       }
     }
 
-    // check for primaryKey
-    if (dataStructure !== "TabularRaveSOD") {
-      let saveflagyes = false;
-      if (dataPackage && Array.isArray(dataPackage)) {
-        for (let i = 0; i < dataPackage.length; i++) {
-          if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
-            for (let k = 0; k < dataPackage[i].dataSet.length; k++) {
-              /// Below value check is for incremental instead of loadtype
-              if (dataPackage[i].dataSet[k].incremental === true) {
-                if (
-                  dataPackage[i].dataSet[k].columnDefinition &&
-                  Array.isArray(dataPackage[i].dataSet[k].columnDefinition)
-                ) {
-                  for (
-                    let j = 0;
-                    j < dataPackage[i].dataSet[k].columnDefinition.length;
-                    j++
-                  ) {
-                    if (
-                      dataPackage[i].dataSet[k].columnDefinition[j]
-                        .primaryKey === "Yes"
-                    )
-                      saveflagyes = true;
-                  }
-                }
-                if (!saveflagyes)
-                  return apiResponse.ErrorResponse(
-                    res,
-                    `At least one primaryKey column must be identified when incremental is true.`
-                  );
-              }
-            }
-          }
-        }
-      }
-    }
     testFlag = helper.stringToBoolean(testFlag);
 
     if (locationID) {
@@ -700,6 +664,17 @@ exports.updateDataFlow = async (req, res) => {
               }
             }
 
+            if (obj.qcType && obj.qcType?.toLowerCase() === "vlc") {
+              if (
+                !obj.conditionalExpressions ||
+                obj.conditionalExpressions?.length === 0
+              ) {
+                dsErrArray.push(
+                  "Conditional Expression is required and value should be an array"
+                );
+              }
+            }
+
             if (dsErrArray.length > 0) {
               let dsErrRes = dsErrArray.join(" '|' ");
               dsNewObj.message = dsErrRes;
@@ -728,7 +703,11 @@ exports.updateDataFlow = async (req, res) => {
                     "Column Definition Level delFlag  required and it's either 0 or 1"
                   );
                 }
-
+                helper.primaryKeyValidations(
+                  dataStructure,
+                  dataPackage,
+                  clErrArray
+                );
                 if (clErrArray.length > 0) {
                   let clErrRes = clErrArray.join(" '|' ");
                   clNewObj.message = clErrRes;
@@ -770,6 +749,43 @@ exports.updateDataFlow = async (req, res) => {
         }
       }
     }
+
+    //primary key validations starts
+    if (dataPackage && dataPackage.length && isCDI) {
+      dfErrObj.dataPackages = [];
+      let isval = false;
+      let dpNewObj = {};
+
+      dfErrObj.dataPackages.push(dpNewObj);
+      // Data Set External Id validation
+      dpNewObj.dataSets = [];
+
+      let dsNewObj = {};
+
+      dpNewObj.dataSets.push(dsNewObj);
+
+      dsNewObj.columnDefinition = [];
+      let clErrArray = [];
+      let clNewObj = {};
+
+      helper.primaryKeyValidations(dataStructure, dataPackage, clErrArray);
+      if (clErrArray.length > 0) {
+        let clErrRes = clErrArray.join(" '|' ");
+        clNewObj.message = clErrRes;
+        isval = true;
+      }
+      dsNewObj.columnDefinition.push(clNewObj);
+      if (isval) {
+        errorBody.errors.push(dfErrObj);
+        return apiResponse.validationErrorWithData(
+          res,
+          "Data flow key validation message.",
+          errorBody
+        );
+      }
+    }
+
+    // primary key validation ends
 
     // data package configuration validatiaon for both internal and external system
     if (
@@ -1915,8 +1931,8 @@ exports.fetchdataflowSource = async (req, res) => {
     let q = `select d."name",v.vend_nm as vendorName,sl.loc_typ as locationType ,d.description,d.vend_id ,d."type" , d.externalsystemname ,d.src_loc_id ,d.testflag ,d2."name" as datapackagename ,d3."mnemonic" as datasetname, d.active from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner join ${schemaName}.source_location sl on (sl.src_loc_id = d.src_loc_id)  
-    inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid)
-      inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid)
+    inner join ${schemaName}.datapackage d2 on (d.dataflowid=d2.dataflowid and (d2.del_flg is distinct from 1))
+      inner join ${schemaName}.dataset d3 on (d3.datapackageid=d2.datapackageid and (d3.del_flg is distinct from 1))
       where d.dataflowid ='${dataflow_id}'`;
     Logger.info({
       message: "fetchdataflowSource",
@@ -1940,7 +1956,7 @@ exports.fetchdataflowDetails = async (req, res) => {
   try {
     let dataflow_id = req.params.id;
     let q = `select d."name" as dataflowname,d."type" as datastructure, d.*,v.vend_nm,sl.loc_typ, d2."name" as datapackagename, d2."type" as datapackagetype, d2."path" as datapackagepath,
-    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, d3.datasetid, S.prot_nbr_stnd
+    d2.* ,d3."name" as datasetname ,d3.*,c.*,d.testflag as test_flag, dk.name as datakind, d3.datasetid, S.prot_nbr_stnd, d2.datapackageid AS "dpId", d3.datasetid AS "dsId", d2.active AS "dpActive", d3.active AS "dsActive"
     from ${schemaName}.dataflow d
     inner join ${schemaName}.vendor v on (v.vend_id = d.vend_id)
     inner Join ${schemaName}.study S on (d.prot_id = S.prot_id)
@@ -1963,8 +1979,8 @@ exports.fetchdataflowDetails = async (req, res) => {
     }
     // console.log("el.datasetid", response);
     // return;
-    const tempDP = _.uniqBy(response, "datapackageid");
-    const tempDS = _.uniqBy(response, "datasetid");
+    const tempDP = _.uniqBy(response, "dpId");
+    const tempDS = _.uniqBy(response, "dsId");
     const dataflowObj = response[0];
     const packageArr = [];
     for (const each of tempDP) {
@@ -1977,10 +1993,10 @@ exports.fetchdataflowDetails = async (req, res) => {
         noPackageConfig: each.nopackageconfig,
         name: each.datapackagename,
         dataSet: [],
-        active: each.active,
+        active: each.dpActive,
       };
       for (const el of tempDS) {
-        if (el.datapackageid === each.datapackageid) {
+        if (el.datapackageid === each.dpId) {
           // if (el.datasetid === each.datasetid) {
           let datasetObj = {
             columncount: el.columncount,
@@ -1990,7 +2006,7 @@ exports.fetchdataflowDetails = async (req, res) => {
             tableName: el.tbl_nm,
             incremental: el.incremental,
             offsetColumn: el.offsetcolumn,
-            type: el.type,
+            fileType: el.type,
             dataTransferFrequency: el.data_freq,
             OverrideStaleAlert: el.ovrd_stale_alert,
             rowDecreaseAllowed: el.rowdecreaseallowed,
@@ -2000,16 +2016,16 @@ exports.fetchdataflowDetails = async (req, res) => {
             mnemonic: el.mnemonic,
             headerRowNumber: el.headerrownumber,
             footerRowNumber: el.footerrownumber,
-            escapeCode: el.escapecode,
+            escapeCharacter: el.escapecode,
             delimiter: el.delimiter,
             dataKind: el.datakindid,
-            naming_convention: el.naming_convention,
+            fileNamingConvention: el.datasetname,
             columnDefinition: [],
-            active: el.active,
+            active: el.dsActive,
           };
           const cdArr = [];
           for (let obj of response) {
-            if (obj.datasetid === el.datasetid && obj.name && obj.datatype) {
+            if (obj.datasetid === el.dsId && obj.name && obj.datatype) {
               let columnObj = {
                 columnid: obj.columnid,
                 columnName: obj.name,
@@ -2033,7 +2049,7 @@ exports.fetchdataflowDetails = async (req, res) => {
           // }
         }
       }
-      packageArr.push(datapackageObj);
+      if (datapackageObj.dataSet?.length) packageArr.push(datapackageObj);
     }
     let myobj = {
       vendorName: dataflowObj.vend_nm,

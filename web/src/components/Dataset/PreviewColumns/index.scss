@@ -1,5 +1,36 @@
 #previewSqlColumns {
   .MuiDialog-paper {
     width: 80%;
+    max-width: 80%;
+  }
+  div[class^="MuiPaper-root"] {
+    div[class^="Table-root"] {
+      div[class^="Table-tableWrapper-"] {
+        table {
+          thead {
+            tr {
+              border-bottom: 1px solid rgb(165, 165, 165);
+            }
+            th {
+              border-right: 1px solid rgb(165, 165, 165);
+            }
+            th:last-child {
+              border-right: none;
+            }
+          }
+          tbody {
+            tr {
+              border-bottom: 1px solid rgb(165, 165, 165);
+              td {
+                border-right: 1px solid rgb(165, 165, 165);
+              }
+              td:last-child {
+                border-right: none;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

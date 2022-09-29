@@ -806,6 +806,7 @@ exports.previewSql = async (req, res) => {
             break;
           case "sql server":
           case "sqlserver":
+          case "azure – sql server":
             q = `${q} SET ROWCOUNT ${recordsCount}`;
             break;
           default:

@@ -33,6 +33,7 @@ exports.listTables = async (req, res) => {
         break;
       case "mysql":
       case "my sql":
+      case "azure – sql server":
         // q = `SELECT table_name as "tableName" FROM information_schema.tables`;
         q = `SELECT CONCAT(table_schema , '.',table_name)  as "tableName"
         FROM information_schema.tables
@@ -45,6 +46,9 @@ exports.listTables = async (req, res) => {
         // q = `SELECT table_name as "tableName" FROM information_schema.tables`;
         q = `SELECT lower(table_schema||'.'||table_name) as "tableName"
         FROM information_schema.tables where upper(table_schema) not in ('PG_CATALOG', 'PUBLIC', 'INFORMATION_SCHEMA') and upper(table_type) in('BASE TABLE','VIEW')`;
+        break;
+      case "azure – snowflake":
+        q = `show tables`;
         break;
       default:
         q = `SELECT table_name as "tableName" FROM information_schema.tables`;
@@ -130,6 +134,7 @@ exports.tablecolumns = async (req, res) => {
 
       case "sqlserver":
       case "sql server":
+      case "azure – sql server":
         q = `select
         c.name columnName,
         t1.name as dataType,
@@ -249,6 +254,9 @@ exports.tablecolumns = async (req, res) => {
 
       case "mysql":
         q = `SHOW COLUMNS FROM ${schemaName}.${tableName}`;
+        break;
+      case "azure – snowflake":
+        q = `describe table ${tableName}`;
         break;
       default:
         q = `SHOW COLUMNS FROM ${schemaName}.${tableName}`;

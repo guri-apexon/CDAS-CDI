@@ -35,6 +35,7 @@ const PreviewColumns = ({ previewSQL }) => {
     >
       <div className="preview-table">
         <Table
+          col
           columns={
             tableRows.length &&
             Object.keys(tableRows[0]).map((e) => ({
@@ -43,6 +44,12 @@ const PreviewColumns = ({ previewSQL }) => {
             }))
           }
           rows={tableRows}
+          hasScroll={true}
+          columnSettings={{
+            enabled: true,
+            frozenColumnsEnabled: true,
+          }}
+          maxHeight="calc(100vh - 293px)"
           hidePagination
         />
       </div>

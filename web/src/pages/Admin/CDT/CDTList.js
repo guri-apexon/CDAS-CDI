@@ -312,7 +312,7 @@ export default function CDTList() {
         }
         if (res.status === 0) {
           hideViewData();
-          messageContext.showErrorMessage(res.message || res.data);
+          messageContext.showErrorMessage(res.data || res.message);
         }
       });
     } else {

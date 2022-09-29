@@ -605,7 +605,14 @@ export const truncateString = (str, length) => {
   return "";
 };
 
-export const generateConnectionURL = (locType, hostName, port, dbName) => {
+export const generateConnectionURL = (
+  locType,
+  hostName,
+  port,
+  dbName,
+  warehouse = "",
+  schema = ""
+) => {
   if (!locType || !hostName) {
     return "";
   }
@@ -642,6 +649,16 @@ export const generateConnectionURL = (locType, hostName, port, dbName) => {
   if (locType === "Impala") {
     return port
       ? `jdbc:impala://${hostName}:${port}/${dbName};ssl=1;AllowSelfSignedCerts=1;AuthMech=3`
+      : "";
+  }
+  if (locType === "Azure – SQL Server") {
+    return port && dbName
+      ? `jdbc:sqlserver://${hostName}:${port};databaseName=${dbName}`
+      : "";
+  }
+  if (locType === "Azure – Snowflake") {
+    return port && dbName && warehouse && schema
+      ? `jdbc:snowflake://${hostName}:${port}/?db=${dbName}&warehouse=${warehouse}&schema=${schema}`
       : "";
   }
   if (locType && hostName && port && dbName) {
