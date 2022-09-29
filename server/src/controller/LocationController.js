@@ -158,7 +158,7 @@ exports.getLocationList = async (req, res) => {
       filter = `extrnl_sys_nm = '${extrnl_sys_nm}' and`;
     }
 
-    let select = `src_loc_id, src_loc_id as "ID", external_id as "ExternalID", src_loc_id as value, CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm, loc_alias_nm,db_nm,warehouse,schema`;
+    let select = `src_loc_id, src_loc_id as "ID", external_id as "ExternalID", src_loc_id as value, CONCAT(extrnl_sys_nm, ': ', loc_alias_nm) as label,loc_typ,ip_servr,port,usr_nm,pswd,cnn_url,data_strc,active,extrnl_sys_nm, loc_alias_nm,db_nm`;
     let searchQuery = `SELECT ${select} from ${schemaName}.source_location where ${filter} active=1 order by label asc`;
     Logger.info({ message: "getLocationList" });
     // console.log(searchQuery);

@@ -1163,7 +1163,7 @@ exports.updateDataFlow = async (req, res) => {
                                     `select headerrownumber from ${schemaName}.dataset where datasetid = '${DSId}'`
                                   );
                                   const DSheaderRow =
-                                    dataSEtdata.headerrownumber;
+                                    dataSEtdata?.headerrownumber;
                                   // console.log("dataSEtdata", dataSEtdata);
 
                                   const cdExternalId = el.ExternalId;
