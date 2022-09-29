@@ -509,7 +509,7 @@ exports.primaryKeyValidations = (dataStructure, dataPackage, clErrArray) => {
                 ) {
                   if (
                     dataPackage[i].dataSet[k].columnDefinition[j].primaryKey ===
-                    "Yes"
+                    "Yes" || dataPackage[i].dataSet[k].columnDefinition[j].primaryKey == 1 
                   )
                     saveflagyes = true;
                 }
