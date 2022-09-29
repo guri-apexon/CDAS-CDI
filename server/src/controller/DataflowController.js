@@ -402,12 +402,15 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
           true
         );
 
-        if (PackageInsert.sucRes) {
+        if (PackageInsert?.sucRes) {
           // console.log("dataflow", PackageInsert.sucRes);
           ResponseBody.dataPackages.push(PackageInsert.sucRes);
         }
         // if (PackageInsert.errRes.length)
-        if (PackageInsert.errRes && Object.keys(PackageInsert.errRes)?.length) {
+        if (
+          PackageInsert?.errRes &&
+          Object.keys(PackageInsert.errRes)?.length
+        ) {
           // return apiResponse.errResponse(res, PackageInsert.errRes);
 
           dfErrNewobj.dataPackages.push(PackageInsert.errRes);
@@ -1010,7 +1013,7 @@ exports.updateDataFlow = async (req, res) => {
                         `select * from ${schemaName}.datapackage where dataflowid = '${DFId}' and externalid = '${each.ExternalId}'`
                       );
                       const noPackageConfig =
-                        dpRowsUpdated?.rows[0].nopackageconfig;
+                        dpRowsUpdated?.rows[0]?.nopackageconfig;
                       // if datasets exists
                       dpResObj.dataSets = [];
                       dpErrObj.dataSets = [];
