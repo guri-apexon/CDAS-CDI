@@ -820,7 +820,8 @@ exports.previewSql = async (req, res) => {
           driverName,
           q,
           "query executed successfully.",
-          res
+          res,
+          "previewSQL"
         );
       } else {
         return apiResponse.ErrorResponse(

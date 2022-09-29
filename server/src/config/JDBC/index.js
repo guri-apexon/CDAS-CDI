@@ -121,9 +121,20 @@ module.exports = async (
                   statement.executeQuery(query, function (err, resultset) {
                     if (err) {
                       console.log("err:executeQuery:::: ", err, resultset);
+                      let errorMsg =
+                        errorMessage ||
+                        "Query Compilation Error, check query syntax.";
+                      if (callSrc === "previewSQL") {
+                        if (err?.toString()?.includes("Invalid object name")) {
+                          errorMsg = "Table Not Found";
+                        }
+                        if (err?.toString()?.includes("Invalid column name")) {
+                          errorMsg = "Offset Column Not Found";
+                        }
+                      }
                       res.status(500).json({
                         status: 0,
-                        message: errorMessage || "Something wrong with query",
+                        message: errorMsg,
                         error: err,
                       });
                     } else {
@@ -143,12 +154,17 @@ module.exports = async (
                             data,
                           });
                         } else {
+                          let errorMessage =
+                            "No data returned. Please reach out to admin.";
+                          if (callSrc === "fetchTables") {
+                            errorMessage =
+                              "No Tables Returned. Please reach out to admins";
+                          } else if (callSrc === "previewSQL") {
+                            errorMessage = "No records found.";
+                          }
                           res.status(500).json({
                             status: 0,
-                            message:
-                              callSrc === "fetchTables"
-                                ? "No Tables Returned. Please reach out to admins"
-                                : "No data returned. Please reach out to admin.",
+                            message: errorMessage,
                           });
                         }
                       });
