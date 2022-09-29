@@ -31,6 +31,7 @@ const updateActive = `UPDATE ${schemaName}.datakind SET "name"=$2, dk_desc=$3, e
 const selectQuery = `SELECT * FROM ${schemaName}.datakind WHERE datakindid=$1`;
 const selectExternalId = `SELECT * FROM ${schemaName}.datakind WHERE extrnl_id=$1`;
 const selectExist = `SELECT "name", extrnl_sys_nm, dk_desc FROM ${schemaName}.datakind where datakindid = $1`;
+const dataKindExistQuery = `SELECT count(1) FROM ${schemaName}.datakind where LOWER(name) = LOWER($1) and LOWER(extrnl_sys_nm) = LOWER($2)`;
 
 const getReleatedDF = `select distinct (d.dataflowid), max (dv."version") from ${schemaName}.dataflow d 
 inner join ${schemaName}.dataflow_version dv on d.dataflowid = dv.dataflowid 
@@ -90,6 +91,18 @@ exports.createDataKind = async (req, res) => {
       }
     }
 
+    const dataKindResult = await DB.executeQuery(dataKindExistQuery, [
+      dkName,
+      dkESName,
+    ]);
+
+    if (dataKindResult && dataKindResult?.rows[0]?.count > 0) {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Operation failed",
+        alreadyExist
+      );
+    }
     // return;
 
     let payload = [curDate, dkName, dkDesc || null, dkESName];
