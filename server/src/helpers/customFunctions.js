@@ -203,11 +203,21 @@ exports.formatDBColumns = (data, driver = null) => {
       d.datatype = "character varying";
     }
     return {
-      columnName: d.columnName || d.Field || d.col_name,
-      datatype: d.dataType || d.datatype || d.Type || d.data_type,
-      primaryKey: stringToBoolean(d.primaryKey || d.Key === "PRI"),
-      required: stringToBoolean(d.required || d.Null === "NO"),
-      unique: stringToBoolean(d.unique || false),
+      columnName: d.columnName || d.Field || d.col_name || d.name,
+      datatype:
+        d.dataType ||
+        d.datatype ||
+        d.Type ||
+        d.data_type ||
+        d?.type?.split("(")?.[0]?.toString()?.toLowerCase() ||
+        d.type,
+      primaryKey: stringToBoolean(
+        d.primaryKey || d.Key === "PRI" || d["primary key"] === "Y"
+      ),
+      required: stringToBoolean(
+        d.required || d.Null === "NO" || d["null?"] === "N"
+      ),
+      unique: stringToBoolean(d.unique || d["unique key"] === "Y" || false),
     };
   });
 };
@@ -215,7 +225,7 @@ exports.formatDBTables = (data) => {
   if (!data) return [];
   return data?.map((d) => {
     return {
-      tableName: d.tableName || d.tab_name || "",
+      tableName: d.tableName || d.tab_name || d.name || "",
     };
   });
 };
