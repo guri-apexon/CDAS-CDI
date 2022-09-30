@@ -646,6 +646,7 @@ export default function DSColumnTable({
             prevRows[objIndex].dbColumnId = created.data[key].columnid;
             prevRows[objIndex].isEditMode = false;
           }
+          return key;
         });
         setRows([...prevRows]);
       } else {

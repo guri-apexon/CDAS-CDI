@@ -658,7 +658,8 @@ export default function DSColumnTable({
       setEditedRows([{ index: 0, uniqueId: initUniqueId, ...columnObj }]);
     }
     if (previewSQL?.length) {
-      addMulti(previewSQL);
+      // addMulti(previewSQL);
+      addMulti();
     }
   }, []);
 
