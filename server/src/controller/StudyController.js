@@ -172,7 +172,6 @@ exports.getDatasetIngestionDashboardDetail = async function (req, res) {
 
     const datasets = response.rows || [];
     const summary = summaryCount.rows ? summaryCount.rows[0] : {};
-    console.log(">> summary", summary);
     return apiResponse.successResponseWithData(res, "Operation success", {
       summary: summary,
       datasets: datasets,
