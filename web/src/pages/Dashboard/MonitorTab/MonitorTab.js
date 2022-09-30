@@ -248,7 +248,7 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
             value={totalCount}
             icon={() => {
               return (
-                <StatusCheckIcon
+                <DatasetsIcon
                   style={{ fill: "#00C221" }}
                   className="newMonitor-icon"
                 />
@@ -276,7 +276,7 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
           <InfoCard
             title="Datasets with Issues"
             subtitle={`Files which were processed successfully but in which dataset configuration or VLC compliance issues were identified (will be listed as "PROCESSED WITH ERRORS" in data flow monitor)`}
-            value={summary?.dataset_with_issues}
+            value={summary?.datasetwithissues}
             icon={() => {
               return (
                 <StatusExclamationIcon
@@ -289,7 +289,7 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParamsFull.LATENCY_WARNING);
+              handleViewButton(queryParamsFull.DATASET_WITH_ISSUES);
             }}
           />
           <InfoCard

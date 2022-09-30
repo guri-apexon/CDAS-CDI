@@ -161,7 +161,7 @@ exports.getDatasetIngestionDashboardDetail = async function (req, res) {
     });
 
     const summaryCount = await DB.executeQuery(
-      `select * from fn_get_study_summary_20('${userId}', '${prot_id}', ${testFlag})`
+      `select * from fn_get_study_summary('${userId}', '${prot_id}', ${testFlag})`
     );
 
     const searchQuery = `select * from fn_get_study_dataset_summary('${userId}', ${testFlag}, '${prot_id}', ${
