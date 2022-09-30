@@ -55,9 +55,7 @@ const SaveChangesModal = ({
 
   // Save Change Master Flag
   const SAVE_CHANGE_MODAL_FLAG =
-    process.env.REACT_APP_SAVE_CHANGE_MODAL_FLAG === "true"
-      ? true
-      : false || false;
+    process.env.REACT_APP_SAVE_CHANGE_MODAL_FLAG === "true" ? true : false;
 
   const alertStore = useSelector((state) => state.alert);
   const form = useSelector((state) => state.form) || null;
