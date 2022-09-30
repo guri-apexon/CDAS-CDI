@@ -433,7 +433,7 @@ const Dataset = () => {
       // }
       if (formValue?.sQLQuery?.includes("*")) {
         messageContext.showErrorMessage(
-          `Please remove * from query to proceed.`
+          `Custom SQL Query should not contain select *`
         );
         return false;
       }
