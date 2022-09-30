@@ -638,7 +638,7 @@ export default function DSColumnTable({
       });
       if (created?.status && Object.keys(created?.data).length) {
         const prevRows = [...rows];
-        Object.keys(created.data).map((key) => {
+        Object.keys(created.data).forEach((key) => {
           if (typeof created.data[key] === "object") {
             const objIndex = prevRows.findIndex(
               (x) => x.uniqueId === created.data[key].frontendUniqueRef
