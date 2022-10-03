@@ -12,6 +12,7 @@ const apiResponse = require("../helpers/apiResponse");
 
 const { Console } = require("winston/lib/winston/transports");
 const { trim, filter } = require("lodash");
+const { updateAndValidateLOV } = require("../helpers/userHelper");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const dataTyperForamtValidate = (exports.dataTyperForamtValidate = (
@@ -448,7 +449,8 @@ exports.insertValidation = async (req) => {
 
               if (obj.dataKindID && req.externalSystemName) {
                 let checkDataKind = await DB.executeQuery(
-                  `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and datakindid='${obj.dataKindID
+                  `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and datakindid='${
+                    obj.dataKindID
                   }';`
                 );
 
@@ -628,8 +630,9 @@ exports.insertValidation = async (req) => {
                     where s.prot_nbr_stnd = '${req.protocolNumberStandard}' and 
                     df.vend_id = '${req.vendorid}' 
                     and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
-                    and ds.datakindid = '${obj.dataKindID
-                  }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
+                    and ds.datakindid = '${
+                      obj.dataKindID
+                    }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
                 let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -900,24 +903,28 @@ exports.insertValidation = async (req) => {
                   // }
 
                   // min max validations changes
-                  const minMaxErrors = helper.minMaxLengthValidations(el, req.locationType);
+                  const minMaxErrors = helper.minMaxLengthValidations(
+                    el,
+                    req.locationType
+                  );
                   if (minMaxErrors && minMaxErrors.length > 0) {
                     clErrArray.push(...minMaxErrors);
                   }
                   if (el.lov) {
-                    const last = el.lov.charAt(el.lov.length - 1);
+                    // const last = el.lov.charAt(el.lov.length - 1);
                     // const first = el.lov.charAt(el.lov.charAt(0));
-                    const first = el.lov.charAt(0);
+                    // const first = el.lov.charAt(0);
 
                     // if (str1.test(el.lov) === false) {
                     //   clErrArray.push("LOV should be seperated by tilde(~)");
                     // } else {
-                    if (last === "~" || first === "~") {
-                      clErrArray.push(
-                        "Tilde(~) can't be used start or end of string"
-                      );
-                    }
+                    // if (last === "~" || first === "~") {
+                    //   clErrArray.push(
+                    //     "Tilde(~) can't be used start or end of string"
+                    //   );
                     // }
+                    // }
+                    el.lov = updateAndValidateLOV(el.lov) || el.lov;
                   }
 
                   // Duplicate column name check in payload
@@ -1084,7 +1091,8 @@ exports.insertValidation = async (req) => {
 
               if (obj.dataKindID && req.externalSystemName) {
                 let checkDataKind = await DB.executeQuery(
-                  `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and datakindid='${obj.dataKindID
+                  `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and datakindid='${
+                    obj.dataKindID
                   }';`
                 );
 
@@ -1185,8 +1193,9 @@ exports.insertValidation = async (req) => {
                     where s.prot_nbr_stnd = '${req.protocolNumberStandard}' and 
                     df.vend_id = '${req.vendorid}' 
                     and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
-                    and ds.datakindid = '${obj.dataKindID
-                  }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
+                    and ds.datakindid = '${
+                      obj.dataKindID
+                    }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
                 let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -1335,7 +1344,10 @@ exports.insertValidation = async (req) => {
                   }
 
                   // min max validations changed from here
-                  const minMaxErrors = helper.minMaxLengthValidations(el, req.locationType);
+                  const minMaxErrors = helper.minMaxLengthValidations(
+                    el,
+                    req.locationType
+                  );
                   if (minMaxErrors && minMaxErrors.length > 0) {
                     clErrArray.push(...minMaxErrors);
                   }
@@ -2225,7 +2237,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
       if (obj.dataKindID && externalSysName) {
         let checkDataKind = await DB.executeQuery(
-          `select datakindid, active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${obj.dataKindID
+          `select datakindid, active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${
+            obj.dataKindID
           }';`
         );
 
@@ -2260,7 +2273,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
           inner join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
           where df.prot_id = '${study}' and df.vend_id = '${vendor}' 
           and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
-          and ds.datakindid = '${obj.dataKindID
+          and ds.datakindid = '${
+            obj.dataKindID
           }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
         let queryMnemonic = await DB.executeQuery(selectMnemonic);
@@ -2303,11 +2317,13 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
             .join(", ");
 
-          sqlQuery = `Select ${cList} from ${obj.tableName || obj.tbl_nm} ${obj.conditionalExpression ? obj.conditionalExpression : "where 1=1"
-            }`;
+          sqlQuery = `Select ${cList} from ${obj.tableName || obj.tbl_nm} ${
+            obj.conditionalExpression ? obj.conditionalExpression : "where 1=1"
+          }`;
         } else {
-          sqlQuery = `Select from ${obj.tableName || obj.tbl_nm} ${obj.conditionalExpression ? obj.conditionalExpression : "where 1=1"
-            }`;
+          sqlQuery = `Select from ${obj.tableName || obj.tbl_nm} ${
+            obj.conditionalExpression ? obj.conditionalExpression : "where 1=1"
+          }`;
         }
       } else {
         sqlQuery = obj.customSql || obj.customsql;
@@ -2659,20 +2675,22 @@ const columnSave = (exports.columnDefinationInsert = async (
           errorColumnDef.push(...minMaxErrors);
         }
 
+        // validate LOV
         if (el.lov) {
-          const last = el.lov.charAt(el.lov.length - 1);
+          // const last = el.lov.charAt(el.lov.length - 1);
           // const first = el.lov.charAt(el.lov.charAt(0));
-          const first = el.lov.charAt(0);
+          // const first = el.lov.charAt(0);
 
           // if (str1.test(el.lov) === false) {
           //   errorColumnDef.push("LOV should be seperated by tilde(~)");
           // } else {
-          if (last === "~" || first === "~") {
-            errorColumnDef.push(
-              "Tilde(~) can't be used start or end of string"
-            );
-          }
+          // if (last === "~" || first === "~") {
+          //   errorColumnDef.push(
+          //     "Tilde(~) can't be used start or end of string"
+          //   );
           // }
+          // }
+          el.lov = updateAndValidateLOV(el.lov) || el.lov;
         }
       } else {
         const clArray = [
@@ -2846,7 +2864,8 @@ const columnSave = (exports.columnDefinationInsert = async (
     );
 
     const clCountUpdate = await DB.executeQuery(
-      `update ${schemaName}.dataset set columncount='${existCDs.count || 0
+      `update ${schemaName}.dataset set columncount='${
+        existCDs.count || 0
       }' where datasetid ='${DSId}'`
     );
 
@@ -3329,8 +3348,9 @@ exports.dataflowUpdate = async (
     //   }
     // }
     if (typeof data.testFlag != "undefined") {
-      updateQueryDF += `,testflag=${helper.stringToBoolean(data.testFlag) ? 1 : 0
-        }`;
+      updateQueryDF += `,testflag=${
+        helper.stringToBoolean(data.testFlag) ? 1 : 0
+      }`;
     }
     if (typeof data.active != "undefined") {
       updateQueryDF += `,active=${helper.stringToBoolean(data.active) ? 1 : 0}`;
@@ -3354,8 +3374,9 @@ exports.dataflowUpdate = async (
       updateQueryDF += `,name='${DFTestname}'`;
     }
     if (typeof data.serviceOwners != "undefined") {
-      updateQueryDF += ` ,serv_ownr= '${serviceUrl && Array.isArray(serviceUrl) ? serviceUrl.join() : ""
-        }'`;
+      updateQueryDF += ` ,serv_ownr= '${
+        serviceUrl && Array.isArray(serviceUrl) ? serviceUrl.join() : ""
+      }'`;
     }
 
     // updateQueryDF += ` where externalsystemname='${externalSysName}' and externalid='${externalID}' returning *;`;
@@ -3805,7 +3826,8 @@ exports.datasetUpdate = async (
 
     if (data.dataKindID && externalSysName) {
       let checkDataKind = await DB.executeQuery(
-        `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${data.dataKindID
+        `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${
+          data.dataKindID
         }';`
       );
 
@@ -4261,8 +4283,9 @@ exports.datasetUpdate = async (
       updateQueryDS += `,columncount='${data.columncount}'`;
     }
     if (typeof data.incremental != "undefined") {
-      updateQueryDS += `,incremental='${helper.stringToBoolean(data.incremental) ? "Y" : "N"
-        }'`;
+      updateQueryDS += `,incremental='${
+        helper.stringToBoolean(data.incremental) ? "Y" : "N"
+      }'`;
     }
     if (typeof data.offsetcolumn != "undefined") {
       if (data.offsetcolumn) {
@@ -4289,13 +4312,15 @@ exports.datasetUpdate = async (
       }
     }
     if (typeof data.headerRowNumber != "undefined") {
-      updateQueryDS += `,headerrow='${data.headerRowNumber && data.headerRowNumber != "" ? 1 : 0
-        }'`;
+      updateQueryDS += `,headerrow='${
+        data.headerRowNumber && data.headerRowNumber != "" ? 1 : 0
+      }'`;
       updateQueryDS += `,headerrownumber='${data.headerRowNumber || 0}'`;
     }
     if (typeof data.footerRowNumber != "undefined") {
-      updateQueryDS += `,footerrow='${data.footerRowNumber && data.footerRowNumber != "" ? 1 : 0
-        }'`;
+      updateQueryDS += `,footerrow='${
+        data.footerRowNumber && data.footerRowNumber != "" ? 1 : 0
+      }'`;
       updateQueryDS += `,footerrownumber='${data.footerRowNumber || 0}'`;
     }
     if (typeof data.customsql != "undefined") {
@@ -4604,18 +4629,19 @@ exports.clDefUpdate = async (
       }
 
       if (data.lov) {
-        const last = data.lov.charAt(data.lov.length - 1);
+        // const last = data.lov.charAt(data.lov.length - 1);
         // const first = data.lov.charAt(data.lov.charAt(0));
 
-        const first = data.lov.charAt(0);
+        // const first = data.lov.charAt(0);
 
         // if (str1.test(data.lov) === false) {
         //   errorcolDef.push("LOV should be seperated by tilde(~)");
         // } else {
-        if (last === "~" || first === "~") {
-          errorcolDef.push("Tilde(~) can't be used start or end of string");
-        }
+        // if (last === "~" || first === "~") {
+        //   errorcolDef.push("Tilde(~) can't be used start or end of string");
         // }
+        // }
+        data.lov = updateAndValidateLOV(data.lov) || data.lov;
       }
 
       let colDefRes = helper.validation(valColDef);
@@ -4789,16 +4815,19 @@ exports.clDefUpdate = async (
       }
     }
     if (typeof data.primaryKey != "undefined") {
-      updateQueryCD += `,primarykey='${helper.stringToBoolean(data.primaryKey) ? 1 : 0
-        }'`;
+      updateQueryCD += `,primarykey='${
+        helper.stringToBoolean(data.primaryKey) ? 1 : 0
+      }'`;
     }
     if (typeof data.required != "undefined") {
-      updateQueryCD += `,required='${helper.stringToBoolean(data.required) ? 1 : 0
-        }'`;
+      updateQueryCD += `,required='${
+        helper.stringToBoolean(data.required) ? 1 : 0
+      }'`;
     }
     if (typeof data.unique != "undefined") {
-      updateQueryCD += `,"unique"='${helper.stringToBoolean(data.unique) ? 1 : 0
-        }'`;
+      updateQueryCD += `,"unique"='${
+        helper.stringToBoolean(data.unique) ? 1 : 0
+      }'`;
     }
     if (typeof data.position != "undefined") {
       updateQueryCD += `,position='${data.position || 0}'`;

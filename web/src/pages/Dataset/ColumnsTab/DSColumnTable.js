@@ -610,6 +610,7 @@ export default function DSColumnTable({
     // setEditedRows([...newData]);
     // setRows([...newData]);
     if (newCD?.length) {
+      dispatch(updateDatasetColumnsLoading(true));
       const created = await createColumns({
         values: newCD,
         dsId,
@@ -619,6 +620,9 @@ export default function DSColumnTable({
         versionFreezed,
         isOverride: isOverride || false,
       });
+      setGetList(true);
+      dispatch(updateDatasetColumnsLoading(false));
+
       if (created?.status && Object.keys(created?.data).length) {
         const prevRows = [...rows];
         Object.keys(created.data).map((key) => {
@@ -745,6 +749,7 @@ export default function DSColumnTable({
           );
           setGetList(true);
         } else {
+          dispatch(updateDatasetColumnsLoading(true));
           const created = await createColumns({
             values: [editedRowData],
             dsId,
@@ -753,6 +758,8 @@ export default function DSColumnTable({
             userId: userInfo.userId,
             versionFreezed,
           });
+          setGetList(true);
+          dispatch(updateDatasetColumnsLoading(false));
 
           if (created?.status) {
             const createdId = created.data[0]?.columnid;
