@@ -593,27 +593,6 @@ export default function DSColumnTable({
 
     if (
       rows?.length &&
-      rows.find((x) => x.primaryKey === "Yes" && x.required === "No")
-    ) {
-      messageContext.showErrorMessage(
-        `Columns with primary keys with value Y should also have Required value Y`
-      );
-      return false;
-    }
-
-    if (
-      !isSftp(locationType) &&
-      rows?.length &&
-      rows.filter((x) => x.primaryKey === "Yes").length === 0
-    ) {
-      messageContext.showErrorMessage(
-        `One or more columns must be set as Primary Key and Required before saving the dataset`
-      );
-      return false;
-    }
-
-    if (
-      rows?.length &&
       (selectedDataset?.loadType === "Incremental" ||
         selectedDataset?.incremental === "Y") &&
       rows.every((x) => x.primaryKey === "No")

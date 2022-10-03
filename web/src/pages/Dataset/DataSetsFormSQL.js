@@ -196,9 +196,7 @@ const DataSetsFormBase = (props) => {
       return false;
     }
     if (formValues?.sQLQuery?.includes("*")) {
-      messageContext.showErrorMessage(
-        `Custom SQL Query should not contain select *`
-      );
+      messageContext.showErrorMessage(`Please remove * from query to proceed.`);
       return false;
     }
     setShowPreview(true);
