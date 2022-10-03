@@ -43,6 +43,17 @@ const getClinicalTypeErrorMsg = (dataKindName) => {
   return `Clinical Data Type ${dataKindName} cannot be updated because it is currently in use by a dataflow.`;
 };
 
+const getDataKindExist = async (dkName, dkESName) => {
+  const dataKindResult = await DB.executeQuery(dataKindExistQuery, [
+    dkName,
+    dkESName,
+  ]);
+  if (dataKindResult && dataKindResult?.rows[0]?.count > 0) {
+    return true;
+  }
+  return false;
+};
+
 exports.createDataKind = async (req, res) => {
   try {
     Logger.info({ message: "handle datakind" });
@@ -91,27 +102,24 @@ exports.createDataKind = async (req, res) => {
       }
     }
 
-    const dataKindResult = await DB.executeQuery(dataKindExistQuery, [
-      dkName,
-      dkESName,
-    ]);
-
-    if (dataKindResult && dataKindResult?.rows[0]?.count > 0) {
-      return apiResponse.validationErrorWithData(
-        res,
-        "Operation failed",
-        alreadyExist
-      );
-    }
     // return;
 
     let payload = [curDate, dkName, dkDesc || null, dkESName];
+    const isDataKindExist = await getDataKindExist(dkName, dkESName);
 
     // for cdi application
     if (systemName === "CDI") {
       console.log("UI Create");
       //create datakind for cdi application
+
       if (!dkId) {
+        if (isDataKindExist) {
+          return apiResponse.validationErrorWithData(
+            res,
+            "Operation failed",
+            alreadyExist
+          );
+        }
         const inset = await DB.executeQuery(insertQuery, [
           ...payload,
           dkStatus,
@@ -141,14 +149,19 @@ exports.createDataKind = async (req, res) => {
           dkId
         );
 
-        if (isDataKindPartOfDataFlow) {
-          return apiResponse.ErrorResponse(
-            res,
-            getClinicalTypeErrorMsg(existingDK?.rows[0]?.name)
-          );
-        }
-
         if (isExist) {
+          if (isDataKindPartOfDataFlow) {
+            if (
+              dkName !== existingDK?.rows[0]?.name ||
+              dkESName !== existingDK?.rows[0]?.extrnl_sys_nm ||
+              dkStatus !== existingDK?.rows[0]?.active
+            ) {
+              return apiResponse.ErrorResponse(
+                res,
+                getClinicalTypeErrorMsg(existingDK?.rows[0]?.name)
+              );
+            }
+          }
           const updatedData = await DB.executeQuery(updateQuery, [
             ...payload,
             null,
@@ -226,6 +239,17 @@ exports.createDataKind = async (req, res) => {
       // update datakind and related dataflow
       if (isExist) {
         console.log("line 189");
+        if (
+          dkName !== existingDK?.rows[0]?.name ||
+          dkESName !== existingDK?.rows[0]?.extrnl_sys_nm ||
+          dkStatus !== existingDK?.rows[0]?.active
+        ) {
+          return apiResponse.ErrorResponse(
+            res,
+            getClinicalTypeErrorMsg(existingDK?.rows[0]?.name)
+          );
+        }
+
         const updatedData = await DB.executeQuery(updateQuery, [
           ...payload,
           // null,
@@ -273,6 +297,13 @@ exports.createDataKind = async (req, res) => {
         return apiResponse.successResponseWithMoreData(res, { ExternalId, id });
       }
     } else {
+      if (isDataKindExist) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Operation failed",
+          alreadyExist
+        );
+      }
       const inset = await DB.executeQuery(insertQuery, [
         ...payload,
         dkStatus,

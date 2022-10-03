@@ -593,6 +593,27 @@ export default function DSColumnTable({
 
     if (
       rows?.length &&
+      rows.find((x) => x.primaryKey === "Yes" && x.required === "No")
+    ) {
+      messageContext.showErrorMessage(
+        `Columns with primary keys with value Y should also have Required value Y`
+      );
+      return false;
+    }
+
+    if (
+      !isSftp(locationType) &&
+      rows?.length &&
+      rows.filter((x) => x.primaryKey === "Yes").length === 0
+    ) {
+      messageContext.showErrorMessage(
+        `One or more columns must be set as Primary Key and Required before saving the dataset`
+      );
+      return false;
+    }
+
+    if (
+      rows?.length &&
       (selectedDataset?.loadType === "Incremental" ||
         selectedDataset?.incremental === "Y") &&
       rows.every((x) => x.primaryKey === "No")
@@ -625,7 +646,7 @@ export default function DSColumnTable({
 
       if (created?.status && Object.keys(created?.data).length) {
         const prevRows = [...rows];
-        Object.keys(created.data).map((key) => {
+        Object.keys(created.data).forEach((key) => {
           if (typeof created.data[key] === "object") {
             const objIndex = prevRows.findIndex(
               (x) => x.uniqueId === created.data[key].frontendUniqueRef
@@ -633,6 +654,7 @@ export default function DSColumnTable({
             prevRows[objIndex].dbColumnId = created.data[key].columnid;
             prevRows[objIndex].isEditMode = false;
           }
+          return key;
         });
         setRows([...prevRows]);
       } else {

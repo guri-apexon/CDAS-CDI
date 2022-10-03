@@ -165,6 +165,26 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       protocolNumberStandard,
       serviceOwners,
     } = req.body;
+    //Logger added for API_log start -- shankar
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.api_log
+    ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+      [
+        ExternalId,
+        null,
+        null,
+        null,
+        null,
+        null,
+        "createDataFlow",
+        "/v1/api/dataflow/create",
+        userId,
+        helper.getCurrentTime(),
+        "createDataFlow Started",
+      ]
+    );
+    //Logger added for API_log end -- shankar
 
     let errorBody = {
       timestamp: helper.getCurrentTime(),
@@ -402,12 +422,15 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
           true
         );
 
-        if (PackageInsert.sucRes) {
+        if (PackageInsert?.sucRes) {
           // console.log("dataflow", PackageInsert.sucRes);
           ResponseBody.dataPackages.push(PackageInsert.sucRes);
         }
         // if (PackageInsert.errRes.length)
-        if (PackageInsert.errRes && Object.keys(PackageInsert.errRes)?.length) {
+        if (
+          PackageInsert?.errRes &&
+          Object.keys(PackageInsert.errRes)?.length
+        ) {
           // return apiResponse.errResponse(res, PackageInsert.errRes);
 
           dfErrNewobj.dataPackages.push(PackageInsert.errRes);
@@ -420,6 +443,27 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
         }
       }
     }
+
+    //Logger added for API_log start -- shankar
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.api_log
+    ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+      [
+        ExternalId,
+        createdDF.dataFlowId,
+        null,
+        null,
+        null,
+        null,
+        "createDataFlow",
+        "/v1/api/dataflow/create",
+        userId,
+        helper.getCurrentTime(),
+        "createDataFlow End",
+      ]
+    );
+    //Logger added for API_log end -- shankar
 
     await DB.executeQuery(
       `INSERT INTO ${schemaName}.dataflow_audit_log
@@ -1010,7 +1054,7 @@ exports.updateDataFlow = async (req, res) => {
                         `select * from ${schemaName}.datapackage where dataflowid = '${DFId}' and externalid = '${each.ExternalId}'`
                       );
                       const noPackageConfig =
-                        dpRowsUpdated?.rows[0].nopackageconfig;
+                        dpRowsUpdated?.rows[0]?.nopackageconfig;
                       // if datasets exists
                       dpResObj.dataSets = [];
                       dpErrObj.dataSets = [];
@@ -1160,7 +1204,7 @@ exports.updateDataFlow = async (req, res) => {
                                     `select headerrownumber from ${schemaName}.dataset where datasetid = '${DSId}'`
                                   );
                                   const DSheaderRow =
-                                    dataSEtdata.headerrownumber;
+                                    dataSEtdata?.headerrownumber;
                                   // console.log("dataSEtdata", dataSEtdata);
 
                                   const cdExternalId = el.ExternalId;

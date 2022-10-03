@@ -399,6 +399,28 @@ export default function DSColumnTable({
       );
       return false;
     }
+
+    if (
+      removeSpaces?.length &&
+      removeSpaces.find((x) => x.primaryKey === "Yes" && x.required === "No")
+    ) {
+      messageContext.showErrorMessage(
+        `Columns with primary keys with value Y should also have Required value Y`
+      );
+      return false;
+    }
+
+    if (
+      !isSftp(locationType) &&
+      removeSpaces?.length &&
+      removeSpaces.filter((x) => x.primaryKey === "Yes").length === 0
+    ) {
+      messageContext.showErrorMessage(
+        `One or more columns must be set as Primary Key and Required before saving the dataset`
+      );
+      return false;
+    }
+
     const columnNames = removeSpaces.map((e) => e.columnName?.toLowerCase());
 
     if (haveHeader && removeSpaces.length !== _.uniq(columnNames).length) {
@@ -637,7 +659,8 @@ export default function DSColumnTable({
       setEditedRows([{ index: 0, uniqueId: initUniqueId, ...columnObj }]);
     }
     if (previewSQL?.length) {
-      addMulti(previewSQL);
+      // addMulti(previewSQL);
+      addMulti();
     }
   }, []);
 
