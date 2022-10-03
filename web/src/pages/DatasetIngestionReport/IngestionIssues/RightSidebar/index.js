@@ -36,10 +36,13 @@ const IssueRightPanel = ({
 
   const colFilter = (col, issueType) =>
     (issueType && ["dupRecRow"].includes(issueType)) ||
-    error[issueType]?.some((x) =>
-      x && typeof x === "string" && x.split(":").length > 0
-        ? x.split(":")[1] === col
-        : false
+    error[issueType]?.some(
+      (x) =>
+        x &&
+        typeof x === "string" &&
+        x.split(":").length > 0 &&
+        x.split(":")[1] &&
+        x.split(":")[1].split(",").includes(col)
     );
 
   const getColumnsIssue = (column) => {
