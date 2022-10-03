@@ -72,8 +72,10 @@ const LocationForm = (props) => {
     isActive,
     formState,
     loading,
+    locationID,
   } = props;
 
+  const [locationUsed, setLocationUsed] = useState(false);
   const [ensList, setENSList] = useState([]);
   const [locationTypes, setLocationTypes] = useState([]);
   const getENSlists = async () => {
@@ -106,6 +108,16 @@ const LocationForm = (props) => {
     }
   }, [locType]);
 
+  useEffect(() => {
+    const checkLocationUsed = async () => {
+      const checkInDf = await checkLocationExistsInDataFlow(locationID);
+      setLocationUsed(checkInDf > 0);
+      console.log(">>> is used", locationID, checkInDf);
+    };
+
+    if (locationID) checkLocationUsed();
+  }, [locationID]);
+
   return (
     <form id="location-modal" onSubmit={props.handleSubmit}>
       <div className={`${classes.section} removeClickFromMenu`}>
@@ -129,6 +141,7 @@ const LocationForm = (props) => {
                 className="activeField MuiSwitch"
                 size="small"
                 labelPlacement="start"
+                disabled={locationUsed && (isActive || isActive === 1)}
               />
             </Grid>
           )}
@@ -158,6 +171,7 @@ const LocationForm = (props) => {
               canDeselect={false}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
               fullWidth
+              disabled={locationUsed}
             >
               {dataStruct?.map((type) => (
                 <MenuItem key={type.value} value={type.value}>
@@ -171,6 +185,7 @@ const LocationForm = (props) => {
               name="locationType"
               label="Location Type"
               size="small"
+              disabled={locationUsed}
               InputProps={{ readOnly: props.locationViewMode }}
               canDeselect={false}
               onChange={(v) => {
@@ -618,6 +633,7 @@ const ReduxForm = compose(
     validate: locationModalValidate,
   }),
   connect((state) => ({
+    locationID: selector(state, "locationID"),
     isActive: selector(state, "active"),
     selectedHost: selector(state, "ipServer"),
     selectedPort: selector(state, "port"),
