@@ -35,33 +35,21 @@ const DatasetTable = ({
   if (fromAllMonitor) {
     canReadIngestionIssues = true;
   }
+  const mappedRows = rows.map((row) => ({
+    ...row,
+    dataflow_type: row.testdataflow === 0 ? "Production" : "Test",
+    canReadIngestionIssues,
+    history,
+    fromAllMonitor: fromAllMonitor || false,
+  }));
 
   return (
     <Table
       key="studyDatasets"
       title="Dataset Pipeline Summary"
       hasScroll={true}
-      // subtitle={
-      //   <div style={{ position: "relative" }}>
-      //     <DatasetsIcon
-      //       style={{
-      //         position: "relative",
-      //         top: 2,
-      //         marginRight: 5,
-      //         width: "14px",
-      //         height: "14px",
-      //       }}
-      //     />
-      //     {`${totalCount} datasets`}
-      //   </div>
-      // }
       columns={columnsState}
-      rows={rows.map((row) => ({
-        ...row,
-        canReadIngestionIssues,
-        history,
-        fromAllMonitor: fromAllMonitor || false,
-      }))}
+      rows={mappedRows}
       defaultRowsPerPage={10}
       initialSortedColumn={sortColumn || "processstatus"}
       initialSortOrder={sortOrder || "asc"}
