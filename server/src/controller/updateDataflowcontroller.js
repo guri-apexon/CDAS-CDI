@@ -8,6 +8,7 @@ const helper = require("../helpers/customFunctions");
 const constants = require("../config/constants");
 const { addDataflowHistory } = require("./CommonController");
 const { Console } = require("winston/lib/winston/transports");
+const { updateAndValidateLOV } = require("../helpers/userHelper");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const packageLevelInsert = async (
@@ -474,6 +475,14 @@ const packageLevelInsert = async (
                     let cdObj = {};
                     const CDUid = createUniqueID();
 
+                    // validate LOV
+                    if (el.lov) {
+                      el.lov = updateAndValidateLOV(el.lov) || el.lov;
+                    }
+                    if (el.values) {
+                      el.values = updateAndValidateLOV(el.values) || el.values;
+                    }
+
                     let CDBody = [
                       dsUid,
                       CDUid,
@@ -813,6 +822,14 @@ const packageLevelInsert = async (
 
                     let cdObj = {};
                     const CDUid = createUniqueID();
+
+                    // validate LOV
+                    if (el.lov) {
+                      el.lov = updateAndValidateLOV(el.lov) || el.lov;
+                    }
+                    if (el.values) {
+                      el.values = updateAndValidateLOV(el.values) || el.values;
+                    }
 
                     let CDBody = [
                       dsUid,
@@ -1174,6 +1191,14 @@ const datasetLevelInsert = async (
             let cdObj = {};
             const CDUid = createUniqueID();
 
+            // validate LOV
+            if (el.lov) {
+              el.lov = updateAndValidateLOV(el.lov) || el.lov;
+            }
+            if (el.values) {
+              el.values = updateAndValidateLOV(el.values) || el.values;
+            }
+
             let CDBody = [
               dsUid,
               CDUid,
@@ -1511,6 +1536,14 @@ const datasetLevelInsert = async (
 
             let cdObj = {};
             const CDUid = createUniqueID();
+
+            // validate LOV
+            if (el.lov) {
+              el.lov = updateAndValidateLOV(el.lov) || el.lov;
+            }
+            if (el.values) {
+              el.values = updateAndValidateLOV(el.values) || el.values;
+            }
 
             let CDBody = [
               dsUid,

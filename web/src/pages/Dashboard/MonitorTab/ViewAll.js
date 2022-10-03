@@ -19,7 +19,6 @@ import SegmentedControlGroup from "apollo-react/components/SegmentedControlGroup
 import DatasetTable from "./DatasetTable";
 import {
   getDatasetIngestionOfStudy,
-  updatePreviousStateActiveOnlyBtn,
   updatePreviousStateSegmentControlTab,
 } from "../../../store/actions/DashboardAction";
 import { queryParams, queryParamsFull } from "./helper";
@@ -58,9 +57,7 @@ const ViewAll = () => {
   const location = useLocation();
 
   const [rows, setRowData] = useState([]);
-  const [activeOnly, setActiveOnly] = useState(
-    dashboard.previousState.activeOnlyBtn
-  );
+  const [activeOnly, setActiveOnly] = useState(true);
 
   const parsedQuery = queryString.parse(location.search);
 
@@ -145,9 +142,6 @@ const ViewAll = () => {
 
   const handleChange = (e, checked) => {
     setActiveOnly(checked);
-
-    // update active only value in store as well
-    dispatch(updatePreviousStateActiveOnlyBtn(checked));
   };
 
   const CustomHeader = ({ toggleFilters }) => (

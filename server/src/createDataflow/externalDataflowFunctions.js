@@ -12,6 +12,7 @@ const apiResponse = require("../helpers/apiResponse");
 
 const { Console } = require("winston/lib/winston/transports");
 const { trim, filter } = require("lodash");
+const { updateAndValidateLOV } = require("../helpers/userHelper");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const dataTyperForamtValidate = (exports.dataTyperForamtValidate = (
@@ -910,19 +911,20 @@ exports.insertValidation = async (req) => {
                     clErrArray.push(...minMaxErrors);
                   }
                   if (el.lov) {
-                    const last = el.lov.charAt(el.lov.length - 1);
+                    // const last = el.lov.charAt(el.lov.length - 1);
                     // const first = el.lov.charAt(el.lov.charAt(0));
-                    const first = el.lov.charAt(0);
+                    // const first = el.lov.charAt(0);
 
                     // if (str1.test(el.lov) === false) {
                     //   clErrArray.push("LOV should be seperated by tilde(~)");
                     // } else {
-                    if (last === "~" || first === "~") {
-                      clErrArray.push(
-                        "Tilde(~) can't be used start or end of string"
-                      );
-                    }
+                    // if (last === "~" || first === "~") {
+                    //   clErrArray.push(
+                    //     "Tilde(~) can't be used start or end of string"
+                    //   );
                     // }
+                    // }
+                    el.lov = updateAndValidateLOV(el.lov) || el.lov;
                   }
 
                   // Duplicate column name check in payload
@@ -2780,20 +2782,22 @@ const columnSave = (exports.columnDefinationInsert = async (
           errorColumnDef.push(...minMaxErrors);
         }
 
+        // validate LOV
         if (el.lov) {
-          const last = el.lov.charAt(el.lov.length - 1);
+          // const last = el.lov.charAt(el.lov.length - 1);
           // const first = el.lov.charAt(el.lov.charAt(0));
-          const first = el.lov.charAt(0);
+          // const first = el.lov.charAt(0);
 
           // if (str1.test(el.lov) === false) {
           //   errorColumnDef.push("LOV should be seperated by tilde(~)");
           // } else {
-          if (last === "~" || first === "~") {
-            errorColumnDef.push(
-              "Tilde(~) can't be used start or end of string"
-            );
-          }
+          // if (last === "~" || first === "~") {
+          //   errorColumnDef.push(
+          //     "Tilde(~) can't be used start or end of string"
+          //   );
           // }
+          // }
+          el.lov = updateAndValidateLOV(el.lov) || el.lov;
         }
       } else {
         const clArray = [
@@ -4795,18 +4799,19 @@ exports.clDefUpdate = async (
       }
 
       if (data.lov) {
-        const last = data.lov.charAt(data.lov.length - 1);
+        // const last = data.lov.charAt(data.lov.length - 1);
         // const first = data.lov.charAt(data.lov.charAt(0));
 
-        const first = data.lov.charAt(0);
+        // const first = data.lov.charAt(0);
 
         // if (str1.test(data.lov) === false) {
         //   errorcolDef.push("LOV should be seperated by tilde(~)");
         // } else {
-        if (last === "~" || first === "~") {
-          errorcolDef.push("Tilde(~) can't be used start or end of string");
-        }
+        // if (last === "~" || first === "~") {
+        //   errorcolDef.push("Tilde(~) can't be used start or end of string");
         // }
+        // }
+        data.lov = updateAndValidateLOV(data.lov) || data.lov;
       }
 
       let colDefRes = helper.validation(valColDef);

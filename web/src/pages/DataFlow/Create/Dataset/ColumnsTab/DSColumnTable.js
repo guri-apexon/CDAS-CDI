@@ -24,6 +24,7 @@ import {
   formatData,
   isSftp,
   columnObj,
+  checkLOVError,
 } from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
 import {
@@ -398,28 +399,6 @@ export default function DSColumnTable({
       );
       return false;
     }
-
-    if (
-      removeSpaces?.length &&
-      removeSpaces.find((x) => x.primaryKey === "Yes" && x.required === "No")
-    ) {
-      messageContext.showErrorMessage(
-        `Columns with primary keys with value Y should also have Required value Y`
-      );
-      return false;
-    }
-
-    if (
-      !isSftp(locationType) &&
-      removeSpaces?.length &&
-      removeSpaces.filter((x) => x.primaryKey === "Yes").length === 0
-    ) {
-      messageContext.showErrorMessage(
-        `One or more columns must be set as Primary Key and Required before saving the dataset`
-      );
-      return false;
-    }
-
     const columnNames = removeSpaces.map((e) => e.columnName?.toLowerCase());
 
     if (haveHeader && removeSpaces.length !== _.uniq(columnNames).length) {
@@ -746,10 +725,7 @@ export default function DSColumnTable({
           // eslint-disable-next-line react/jsx-wrap-multilines
           <>
             <div className="lov-modal">
-              <div className="lov-quote">
-                Values separated by ~ (tilde). Multiple word values placed in
-                quotations.
-              </div>
+              <div className="lov-quote">Values separated by ~ (tilde).</div>
 
               {isEditLOVs ? (
                 <div className="lov-edit-mode">
@@ -759,6 +735,8 @@ export default function DSColumnTable({
                     sizeAdjustable
                     minWidth={340}
                     minHeight={278}
+                    error={checkLOVError(selectedRow.values, true) || false}
+                    helperText={checkLOVError(selectedRow.values) || ""}
                   />
                 </div>
               ) : (
@@ -772,7 +750,11 @@ export default function DSColumnTable({
         buttonProps={
           isEditLOVs
             ? [
-                { label: "Save", onClick: handleSaveLOV },
+                {
+                  label: "Save",
+                  onClick: handleSaveLOV,
+                  disabled: checkLOVError(selectedRow.values, true),
+                },
                 { label: "Cancel", onClick: hideViewLOVs },
               ]
             : [

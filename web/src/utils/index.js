@@ -7,6 +7,7 @@ import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import DateRangePickerV2 from "apollo-react/components/DateRangePickerV2";
 import { TextField } from "apollo-react/components/TextField/TextField";
 import { DATA_TYPES, IDLE_LOGOUT_TIME } from "./constants";
+import { isVlcTildSaparated } from "../components/FormComponents/validators";
 // import { hive2CDH, hive2CDP, impala, oracle, SQLServer } from "../constants";
 
 export const getCookie = (key) => {
@@ -859,4 +860,14 @@ export const stringToBoolean = (string) => {
     default:
       return false;
   }
+};
+
+// check if LOV is valid for input fields
+export const checkLOVError = (input, returnBool = false) => {
+  if (!returnBool) {
+    return input && !isVlcTildSaparated(input)
+      ? "LOV must be separated by a tilde “~”"
+      : false;
+  }
+  return input && !isVlcTildSaparated(input) ? true : false;
 };

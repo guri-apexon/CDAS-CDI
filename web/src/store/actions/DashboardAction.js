@@ -144,13 +144,6 @@ export const updateDFStatus = (dfId, newStatus) => {
   };
 };
 
-export const updatePreviousStateActiveOnlyBtn = (newStatus) => {
-  return {
-    type: UPDATE_PREVIOUS_STATE_ACTIVE_ONLY_BTN,
-    newStatus,
-  };
-};
-
 export const updatePreviousStateSegmentControlTab = (newStatus) => {
   return {
     type: UPDATE_PREVIOUS_SEGMENT_CONTROL,
