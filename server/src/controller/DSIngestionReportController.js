@@ -288,8 +288,8 @@ exports.getFileTransferHistory = (req, res) => {
     deleted_records,
     modified_records,
     new_records,
-    (lead(processtrnx, 1, 0) OVER (PARTITION BY datasetid
-                                   ORDER BY lastsucceeded DESC,externalid DESC) - modified_records)AS unchanged_records
+    --(lead(processtrnx, 1, 0) OVER (PARTITION BY datasetid ORDER BY lastsucceeded DESC,externalid DESC) - modified_records) AS unchanged_records
+	  processtrnx -(new_records + modified_records + deleted_records) AS unchanged_records
     FROM ${schemaName}.transaction_summary
     WHERE datasetid = $1 and processtype = 'SYNC'
     AND processstatus in ('PROCESSED WITH ERRORS', 'SUCCESSFUL')
