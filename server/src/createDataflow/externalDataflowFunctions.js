@@ -12,6 +12,7 @@ const apiResponse = require("../helpers/apiResponse");
 
 const { Console } = require("winston/lib/winston/transports");
 const { trim, filter } = require("lodash");
+const { updateAndValidateLOV } = require("../helpers/userHelper");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const dataTyperForamtValidate = (exports.dataTyperForamtValidate = (
@@ -448,7 +449,8 @@ exports.insertValidation = async (req) => {
 
               if (obj.dataKindID && req.externalSystemName) {
                 let checkDataKind = await DB.executeQuery(
-                  `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and datakindid='${obj.dataKindID
+                  `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and datakindid='${
+                    obj.dataKindID
                   }';`
                 );
 
@@ -628,8 +630,9 @@ exports.insertValidation = async (req) => {
                     where s.prot_nbr_stnd = '${req.protocolNumberStandard}' and 
                     df.vend_id = '${req.vendorid}' 
                     and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
-                    and ds.datakindid = '${obj.dataKindID
-                  }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
+                    and ds.datakindid = '${
+                      obj.dataKindID
+                    }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
                 let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -900,24 +903,28 @@ exports.insertValidation = async (req) => {
                   // }
 
                   // min max validations changes
-                  const minMaxErrors = helper.minMaxLengthValidations(el, req.locationType);
+                  const minMaxErrors = helper.minMaxLengthValidations(
+                    el,
+                    req.locationType
+                  );
                   if (minMaxErrors && minMaxErrors.length > 0) {
                     clErrArray.push(...minMaxErrors);
                   }
                   if (el.lov) {
-                    const last = el.lov.charAt(el.lov.length - 1);
+                    // const last = el.lov.charAt(el.lov.length - 1);
                     // const first = el.lov.charAt(el.lov.charAt(0));
-                    const first = el.lov.charAt(0);
+                    // const first = el.lov.charAt(0);
 
                     // if (str1.test(el.lov) === false) {
                     //   clErrArray.push("LOV should be seperated by tilde(~)");
                     // } else {
-                    if (last === "~" || first === "~") {
-                      clErrArray.push(
-                        "Tilde(~) can't be used start or end of string"
-                      );
-                    }
+                    // if (last === "~" || first === "~") {
+                    //   clErrArray.push(
+                    //     "Tilde(~) can't be used start or end of string"
+                    //   );
                     // }
+                    // }
+                    el.lov = updateAndValidateLOV(el.lov) || el.lov;
                   }
 
                   // Duplicate column name check in payload
@@ -1084,7 +1091,8 @@ exports.insertValidation = async (req) => {
 
               if (obj.dataKindID && req.externalSystemName) {
                 let checkDataKind = await DB.executeQuery(
-                  `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and datakindid='${obj.dataKindID
+                  `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${req.externalSystemName.toUpperCase()}' and datakindid='${
+                    obj.dataKindID
                   }';`
                 );
 
@@ -1185,8 +1193,9 @@ exports.insertValidation = async (req) => {
                     where s.prot_nbr_stnd = '${req.protocolNumberStandard}' and 
                     df.vend_id = '${req.vendorid}' 
                     and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
-                    and ds.datakindid = '${obj.dataKindID
-                  }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
+                    and ds.datakindid = '${
+                      obj.dataKindID
+                    }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
                 let queryMnemonic = await DB.executeQuery(selectMnemonic);
 
@@ -1335,7 +1344,10 @@ exports.insertValidation = async (req) => {
                   }
 
                   // min max validations changed from here
-                  const minMaxErrors = helper.minMaxLengthValidations(el, req.locationType);
+                  const minMaxErrors = helper.minMaxLengthValidations(
+                    el,
+                    req.locationType
+                  );
                   if (minMaxErrors && minMaxErrors.length > 0) {
                     clErrArray.push(...minMaxErrors);
                   }
@@ -1496,6 +1508,27 @@ exports.packageLevelInsert = async (
     // var str3 = /[< >]/;
     var str3 = /[\/:*?”<|>]/;
     let errStatus = false;
+
+    //Logger added for API_log start -- shankar package
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.api_log
+    ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+      [
+        ExternalId,
+        DFId,
+        null,
+        null,
+        null,
+        null,
+        "packageLevelInsert",
+        "/v1/api/dataflow/create",
+        userId,
+        helper.getCurrentTime(),
+        "packageLevelInsert Started",
+      ]
+    );
+    //Logger added for API_log end -- shankar package
 
     if (!isNew) {
       if (helper.isSftp(LocationType)) {
@@ -1815,6 +1848,28 @@ exports.packageLevelInsert = async (
       }
     }
     // console.log("package insert ", DpObj);
+
+    //Logger added for API_log start -- shankar package
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.api_log
+        ( extrnl_id, dataflowid, datapackageid, datasetid, columnid, dsqcruleid, method_name, api_nm, adt_usr, adt_ts, comment)
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+      [
+        ExternalId,
+        DFId,
+        dpUid,
+        null,
+        null,
+        null,
+        "packageLevelInsert",
+        "/v1/api/dataflow/create",
+        userId,
+        helper.getCurrentTime(),
+        "packageLevelInsert End",
+      ]
+    );
+    //Logger added for API_log end -- shankar package
+
     if (!isNew) {
       return { sucRes: DpObj, errRes: dpErrObj, errStatus: errStatus };
     }
@@ -1856,6 +1911,27 @@ const saveDataset = (exports.datasetLevelInsert = async (
     // var str3 = /[< >]/;
     var str3 = /[\/:*?”<|>]/;
     let errStatus = false;
+
+    //Logger added for API_log start -- shankar saveDataset
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.api_log
+    ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+      [
+        obj?.ExternalId,
+        DFId,
+        DPId,
+        null,
+        null,
+        null,
+        "saveDataset",
+        "/v1/api/dataflow/create",
+        userId,
+        helper.getCurrentTime(),
+        "saveDataset Started",
+      ]
+    );
+    //Logger added for API_log end -- shankar saveDataset
 
     const isCDI = externalSysName === "CDI" ? true : false;
 
@@ -2225,7 +2301,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
       if (obj.dataKindID && externalSysName) {
         let checkDataKind = await DB.executeQuery(
-          `select datakindid, active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${obj.dataKindID
+          `select datakindid, active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${
+            obj.dataKindID
           }';`
         );
 
@@ -2260,7 +2337,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
           inner join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
           where df.prot_id = '${study}' and df.vend_id = '${vendor}' 
           and UPPER(ds.mnemonic) ='${obj.datasetName.toUpperCase()}' 
-          and ds.datakindid = '${obj.dataKindID
+          and ds.datakindid = '${
+            obj.dataKindID
           }'and df.testflag = '${tFlg}' and ds.del_flg =0`;
 
         let queryMnemonic = await DB.executeQuery(selectMnemonic);
@@ -2303,11 +2381,13 @@ const saveDataset = (exports.datasetLevelInsert = async (
 
             .join(", ");
 
-          sqlQuery = `Select ${cList} from ${obj.tableName || obj.tbl_nm} ${obj.conditionalExpression ? obj.conditionalExpression : "where 1=1"
-            }`;
+          sqlQuery = `Select ${cList} from ${obj.tableName || obj.tbl_nm} ${
+            obj.conditionalExpression ? obj.conditionalExpression : "where 1=1"
+          }`;
         } else {
-          sqlQuery = `Select from ${obj.tableName || obj.tbl_nm} ${obj.conditionalExpression ? obj.conditionalExpression : "where 1=1"
-            }`;
+          sqlQuery = `Select from ${obj.tableName || obj.tbl_nm} ${
+            obj.conditionalExpression ? obj.conditionalExpression : "where 1=1"
+          }`;
         }
       } else {
         sqlQuery = obj.customSql || obj.customsql;
@@ -2419,7 +2499,8 @@ const saveDataset = (exports.datasetLevelInsert = async (
             dsUid,
             version,
             userId,
-            isNew
+            isNew,
+            obj?.ExternalId
           ).then((res) => {
             if (res && Object.keys(res.errRes)?.length) {
               dsErrObj.vlc.push(res.errRes);
@@ -2473,6 +2554,27 @@ const saveDataset = (exports.datasetLevelInsert = async (
       }
     }
 
+    //Logger added for API_log start -- shankar saveDataset
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.api_log
+            ( extrnl_id, dataflowid, datapackageid, datasetid, columnid, dsqcruleid, method_name, api_nm, adt_usr, adt_ts, comment)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+      [
+        obj?.ExternalId,
+        DFId,
+        DPId,
+        dsUid,
+        null,
+        null,
+        "saveDataset",
+        "/v1/api/dataflow/create",
+        userId,
+        helper.getCurrentTime(),
+        "saveDataset End",
+      ]
+    );
+    //Logger added for API_log end -- shankar saveDataset
+
     if (!isNew) {
       return { sucRes: dsObj, errRes: dsErrObj, errStatus: errStatus };
     }
@@ -2507,6 +2609,27 @@ const columnSave = (exports.columnDefinationInsert = async (
     let errorColumnDef = [];
     var ColumnDef = [];
     var str1 = /[~]/;
+
+    //Logger added for API_log start -- shankar columnSave
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.api_log
+    ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+      [
+        cdExternalId,
+        DFId,
+        DPId,
+        DSId,
+        null,
+        null,
+        "columnSave",
+        "/v1/api/dataflow/create",
+        userId,
+        helper.getCurrentTime(),
+        "columnSave Started",
+      ]
+    );
+    //Logger added for API_log end -- shankar columnSave
 
     if (!isNew) {
       if (el.delFlag !== 0) {
@@ -2659,20 +2782,22 @@ const columnSave = (exports.columnDefinationInsert = async (
           errorColumnDef.push(...minMaxErrors);
         }
 
+        // validate LOV
         if (el.lov) {
-          const last = el.lov.charAt(el.lov.length - 1);
+          // const last = el.lov.charAt(el.lov.length - 1);
           // const first = el.lov.charAt(el.lov.charAt(0));
-          const first = el.lov.charAt(0);
+          // const first = el.lov.charAt(0);
 
           // if (str1.test(el.lov) === false) {
           //   errorColumnDef.push("LOV should be seperated by tilde(~)");
           // } else {
-          if (last === "~" || first === "~") {
-            errorColumnDef.push(
-              "Tilde(~) can't be used start or end of string"
-            );
-          }
+          // if (last === "~" || first === "~") {
+          //   errorColumnDef.push(
+          //     "Tilde(~) can't be used start or end of string"
+          //   );
           // }
+          // }
+          el.lov = updateAndValidateLOV(el.lov) || el.lov;
         }
       } else {
         const clArray = [
@@ -2833,6 +2958,27 @@ const columnSave = (exports.columnDefinationInsert = async (
 
     const CDUid = createdCD?.columnId || null;
 
+    //Logger added for API_log start -- shankar columnSave
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.api_log
+            ( extrnl_id, dataflowid, datapackageid, datasetid, columnid, dsqcruleid, method_name, api_nm, adt_usr, adt_ts, comment)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+      [
+        cdExternalId,
+        DFId,
+        DPId,
+        DSId,
+        CDUid,
+        null,
+        "columnSave",
+        "/v1/api/dataflow/create",
+        userId,
+        helper.getCurrentTime(),
+        "columnSave End",
+      ]
+    );
+    //Logger added for API_log end -- shankar columnSave
+
     if (isNew) {
       if (!CDUid) {
         await dfRollBack(DFId);
@@ -2846,7 +2992,8 @@ const columnSave = (exports.columnDefinationInsert = async (
     );
 
     const clCountUpdate = await DB.executeQuery(
-      `update ${schemaName}.dataset set columncount='${existCDs.count || 0
+      `update ${schemaName}.dataset set columncount='${
+        existCDs.count || 0
       }' where datasetid ='${DSId}'`
     );
 
@@ -2901,13 +3048,34 @@ const saveVlc = (exports.VlcInsert = async (
   dsUid,
   version,
   userId,
-  isNew
+  isNew,
+  ExternalId
 ) => {
   try {
     //vl holds all Conditional Expressions data
     let ts = new Date().toLocaleString();
     let errorVlc = [];
     var vlc = [];
+    //Logger added for API_log start -- shankar saveVlc
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.api_log
+    ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+      [
+        ExternalId,
+        DFId,
+        DPId,
+        dsUid,
+        null,
+        null,
+        "saveVlc",
+        "/v1/api/dataflow/create",
+        userId,
+        helper.getCurrentTime(),
+        "saveVlc Started",
+      ]
+    );
+    //Logger added for API_log end -- shankar saveVlc
 
     if (qcType) {
       const vlcArray = [
@@ -3030,6 +3198,27 @@ const saveVlc = (exports.VlcInsert = async (
 
     const vlcId = createdVlc?.vlcID || null;
     // const vlcId = null;
+
+    //Logger added for API_log start -- shankar saveVlc
+    await DB.executeQuery(
+      `INSERT INTO ${schemaName}.api_log
+                ( extrnl_id, dataflowid, datapackageid, datasetid, columnid, dsqcruleid, method_name, api_nm, adt_usr, adt_ts, comment)
+                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+      [
+        ExternalId,
+        DFId,
+        DPId,
+        dsUid,
+        null,
+        vlcId,
+        "saveVlc",
+        "/v1/api/dataflow/create",
+        userId,
+        helper.getCurrentTime(),
+        "saveVlc End",
+      ]
+    );
+    //Logger added for API_log end -- shankar saveVlc
 
     let vlcObj = {
       conditionalExpressionNumber: vl.conditionalExpressionNumber,
@@ -3329,8 +3518,9 @@ exports.dataflowUpdate = async (
     //   }
     // }
     if (typeof data.testFlag != "undefined") {
-      updateQueryDF += `,testflag=${helper.stringToBoolean(data.testFlag) ? 1 : 0
-        }`;
+      updateQueryDF += `,testflag=${
+        helper.stringToBoolean(data.testFlag) ? 1 : 0
+      }`;
     }
     if (typeof data.active != "undefined") {
       updateQueryDF += `,active=${helper.stringToBoolean(data.active) ? 1 : 0}`;
@@ -3354,8 +3544,9 @@ exports.dataflowUpdate = async (
       updateQueryDF += `,name='${DFTestname}'`;
     }
     if (typeof data.serviceOwners != "undefined") {
-      updateQueryDF += ` ,serv_ownr= '${serviceUrl && Array.isArray(serviceUrl) ? serviceUrl.join() : ""
-        }'`;
+      updateQueryDF += ` ,serv_ownr= '${
+        serviceUrl && Array.isArray(serviceUrl) ? serviceUrl.join() : ""
+      }'`;
     }
 
     // updateQueryDF += ` where externalsystemname='${externalSysName}' and externalid='${externalID}' returning *;`;
@@ -3459,18 +3650,18 @@ exports.packageUpdate = async (
       `select type, nopackageconfig ,name from ${schemaName}.datapackage where datapackageid='${DPId}';`
     );
 
-    let isPackage = packageData.nopackageconfig;
+    let isPackage = packageData?.nopackageconfig;
     let packageType = packageData?.type || null;
     let packageName = packageData?.name || null;
 
-    if (data.noPackageConfig === 0 || data.noPackageConfig === 1) {
-      isPackage = data.noPackageConfig;
+    if (data?.noPackageConfig === 0 || data?.noPackageConfig === 1) {
+      isPackage = data?.noPackageConfig;
     }
 
     if (helper.isSftp(LocationType)) {
       // if (LocationType == "Hive CDH"1) {
 
-      if (typeof data.noPackageConfig != "undefined") {
+      if (typeof data?.noPackageConfig != "undefined") {
         valData.push({
           key: "noPackageConfig ",
           value: data.noPackageConfig,
@@ -3805,7 +3996,8 @@ exports.datasetUpdate = async (
 
     if (data.dataKindID && externalSysName) {
       let checkDataKind = await DB.executeQuery(
-        `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${data.dataKindID
+        `select datakindid,active from ${schemaName}.datakind where UPPER(extrnl_sys_nm)='${externalSysName.toUpperCase()}' and datakindid='${
+          data.dataKindID
         }';`
       );
 
@@ -4261,8 +4453,9 @@ exports.datasetUpdate = async (
       updateQueryDS += `,columncount='${data.columncount}'`;
     }
     if (typeof data.incremental != "undefined") {
-      updateQueryDS += `,incremental='${helper.stringToBoolean(data.incremental) ? "Y" : "N"
-        }'`;
+      updateQueryDS += `,incremental='${
+        helper.stringToBoolean(data.incremental) ? "Y" : "N"
+      }'`;
     }
     if (typeof data.offsetcolumn != "undefined") {
       if (data.offsetcolumn) {
@@ -4289,13 +4482,15 @@ exports.datasetUpdate = async (
       }
     }
     if (typeof data.headerRowNumber != "undefined") {
-      updateQueryDS += `,headerrow='${data.headerRowNumber && data.headerRowNumber != "" ? 1 : 0
-        }'`;
+      updateQueryDS += `,headerrow='${
+        data.headerRowNumber && data.headerRowNumber != "" ? 1 : 0
+      }'`;
       updateQueryDS += `,headerrownumber='${data.headerRowNumber || 0}'`;
     }
     if (typeof data.footerRowNumber != "undefined") {
-      updateQueryDS += `,footerrow='${data.footerRowNumber && data.footerRowNumber != "" ? 1 : 0
-        }'`;
+      updateQueryDS += `,footerrow='${
+        data.footerRowNumber && data.footerRowNumber != "" ? 1 : 0
+      }'`;
       updateQueryDS += `,footerrownumber='${data.footerRowNumber || 0}'`;
     }
     if (typeof data.customsql != "undefined") {
@@ -4604,18 +4799,19 @@ exports.clDefUpdate = async (
       }
 
       if (data.lov) {
-        const last = data.lov.charAt(data.lov.length - 1);
+        // const last = data.lov.charAt(data.lov.length - 1);
         // const first = data.lov.charAt(data.lov.charAt(0));
 
-        const first = data.lov.charAt(0);
+        // const first = data.lov.charAt(0);
 
         // if (str1.test(data.lov) === false) {
         //   errorcolDef.push("LOV should be seperated by tilde(~)");
         // } else {
-        if (last === "~" || first === "~") {
-          errorcolDef.push("Tilde(~) can't be used start or end of string");
-        }
+        // if (last === "~" || first === "~") {
+        //   errorcolDef.push("Tilde(~) can't be used start or end of string");
         // }
+        // }
+        data.lov = updateAndValidateLOV(data.lov) || data.lov;
       }
 
       let colDefRes = helper.validation(valColDef);
@@ -4789,16 +4985,19 @@ exports.clDefUpdate = async (
       }
     }
     if (typeof data.primaryKey != "undefined") {
-      updateQueryCD += `,primarykey='${helper.stringToBoolean(data.primaryKey) ? 1 : 0
-        }'`;
+      updateQueryCD += `,primarykey='${
+        helper.stringToBoolean(data.primaryKey) ? 1 : 0
+      }'`;
     }
     if (typeof data.required != "undefined") {
-      updateQueryCD += `,required='${helper.stringToBoolean(data.required) ? 1 : 0
-        }'`;
+      updateQueryCD += `,required='${
+        helper.stringToBoolean(data.required) ? 1 : 0
+      }'`;
     }
     if (typeof data.unique != "undefined") {
-      updateQueryCD += `,"unique"='${helper.stringToBoolean(data.unique) ? 1 : 0
-        }'`;
+      updateQueryCD += `,"unique"='${
+        helper.stringToBoolean(data.unique) ? 1 : 0
+      }'`;
     }
     if (typeof data.position != "undefined") {
       updateQueryCD += `,position='${data.position || 0}'`;

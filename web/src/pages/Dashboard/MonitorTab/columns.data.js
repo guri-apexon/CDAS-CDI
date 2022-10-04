@@ -772,6 +772,13 @@ const columns = [
     filterFunction: createStringSearchFilter("dataflow_name"),
     filterComponent: TextFieldFilter,
   },
+  {
+    header: "Data Flow Type",
+    accessor: "dataflow_type",
+    sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("dataflow_type"),
+    filterComponent: TextFieldFilter,
+  },
 ];
 
 const ActionColumn = [

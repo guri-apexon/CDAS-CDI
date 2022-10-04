@@ -105,7 +105,9 @@ export const hasSpCharExTild = (str = "") => {
 
 export const isVlcTildSaparated = (str = "") => {
   const value = str.toString().trim();
-  if (value.startsWith("~") || value.endsWith("~")) return false;
+  // remove validation part of CDAS-15319
+  // if (value.startsWith("~") || value.endsWith("~")) return false;
+  if (!value) return false;
   return true;
 };
 

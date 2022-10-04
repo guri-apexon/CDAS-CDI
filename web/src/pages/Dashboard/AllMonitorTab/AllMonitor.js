@@ -22,11 +22,12 @@ import Typography from "apollo-react/components/Typography";
 import InfoCard from "../MonitorTab/InfoCard";
 import DatasetTable from "../MonitorTab/DatasetTable";
 // helpers
+import { ReactComponent as DatasetsIcon } from "../../../components/Icons/dataset.svg";
 import { getAllIngestionOfStudy } from "../../../store/actions/DashboardAction";
 import { getUserInfo, getUserId } from "../../../utils/index";
 import { moreColumnsWithFrozen } from "../MonitorTab/columns.data";
 import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
-import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale.svg";
+import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale-grey.svg";
 import { queryParamsFull } from "../MonitorTab/helper";
 import {
   Categories,
@@ -208,7 +209,7 @@ export default function MonitorTab({ userID }) {
             value={totalCount}
             icon={() => {
               return (
-                <StatusCheckIcon
+                <DatasetsIcon
                   style={{ fill: "#00C221" }}
                   className="newMonitor-icon"
                 />
@@ -218,18 +219,6 @@ export default function MonitorTab({ userID }) {
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
               handleViewButton();
-            }}
-          />
-          <InfoCard
-            title="In Queue"
-            subtitle="Count of all datasets whose latest job status is Queued"
-            value={summary?.in_queue}
-            icon={StatusDotOutlineIcon}
-            color="blueDark"
-            handlePeekOpen={handlePeekOpen}
-            closePeek={() => setOpen(false)}
-            handleViewClick={() => {
-              handleViewButton(queryParamsFull.JOB_STATUS_IN_QUEUE);
             }}
           />
           <InfoCard
@@ -246,9 +235,9 @@ export default function MonitorTab({ userID }) {
             }}
           />
           <InfoCard
-            title="Data Latency Warnings"
-            subtitle="Count of all jobs which breached the SLA (SLA = 3 hours) for the latest job run"
-            value={summary?.data_latency_warnings}
+            title="Datasets with Issues"
+            subtitle={`Files which were processed successfully but in which dataset configuration or VLC compliance issues were identified (will be listed as "PROCESSED WITH ERRORS" in data flow monitor)`}
+            value={summary?.datasetwithissues}
             icon={() => {
               return (
                 <StatusExclamationIcon
@@ -261,26 +250,7 @@ export default function MonitorTab({ userID }) {
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
             handleViewClick={() => {
-              handleViewButton(queryParamsFull.LATENCY_WARNING);
-            }}
-          />
-          <InfoCard
-            title="Files exceed % of change"
-            subtitle="Files in which the change in the number of records received exceeded the configured % row count decrease allowed."
-            value={summary?.files_exceeding}
-            icon={() => {
-              return (
-                <SwapVertIcon
-                  style={{ fill: "#595959" }}
-                  className="conter-icon"
-                />
-              );
-            }}
-            color="orange"
-            handlePeekOpen={handlePeekOpen}
-            closePeek={() => setOpen(false)}
-            handleViewClick={() => {
-              handleViewButton(queryParamsFull.EXCEEDS_PER_CHANGE);
+              handleViewButton(queryParamsFull.DATASET_WITH_ISSUES);
             }}
           />
           <InfoCard
@@ -288,7 +258,12 @@ export default function MonitorTab({ userID }) {
             subtitle="Datasets for which a file has not been received within the specified number of days."
             value={summary?.stale_datasets}
             icon={() => {
-              return <StaleIcon style={{ fill: "#e20000" }} />;
+              return (
+                <StaleIcon
+                  style={{ fill: "#F2F2F2", color: "#FF2733" }}
+                  className="newMonitor-icon"
+                />
+              );
             }}
             color="orange"
             handlePeekOpen={handlePeekOpen}
@@ -318,6 +293,39 @@ export default function MonitorTab({ userID }) {
               handleViewButton(queryParamsFull.QUARANTINE);
             }}
           />
+          <InfoCard
+            title="Files exceed % of change"
+            subtitle="Files in which the change in the number of records received exceeded the configured % row count decrease allowed."
+            value={summary?.files_exceeding}
+            icon={() => {
+              return (
+                <SwapVertIcon
+                  style={{ fill: "#595959" }}
+                  className="conter-icon"
+                />
+              );
+            }}
+            color="orange"
+            handlePeekOpen={handlePeekOpen}
+            closePeek={() => setOpen(false)}
+            handleViewClick={() => {
+              handleViewButton(queryParamsFull.EXCEEDS_PER_CHANGE);
+            }}
+          />
+
+          <InfoCard
+            title="In Queue"
+            subtitle="Count of all datasets whose latest job status is Queued"
+            value={summary?.in_queue}
+            icon={StatusDotOutlineIcon}
+            color="blueDark"
+            handlePeekOpen={handlePeekOpen}
+            closePeek={() => setOpen(false)}
+            handleViewClick={() => {
+              handleViewButton(queryParamsFull.JOB_STATUS_IN_QUEUE);
+            }}
+          />
+
           <Peek
             open={open}
             followCursor

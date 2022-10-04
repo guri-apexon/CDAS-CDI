@@ -30,17 +30,14 @@
     }
 
     input {
-      font-size: 14px;
+      font-size: 14px; 
       line-height: 30px !important;
-      padding-top: 0px !important;
-      padding-bottom: 0px !important;
-      font: inherit;
+      padding: 0px 8px 0px 7px !important;
       color: #000000;
       width: 100%;
       border: 1px solid #d9d9d9;
       margin: 0;
       display: block;
-      padding: 8px 8px 8px 7px;
       min-width: 0;
       background: none;
       box-sizing: border-box;
@@ -51,7 +48,6 @@
       transition-duration: 0.4s;
       transition-property: border-color;
       -webkit-tap-highlight-color: transparent;
-      width: 100%;
       &:hover,
       &:focus {
         border-color: #0768fd;

@@ -33,6 +33,7 @@ import {
   isSftp,
   columnObj,
   getInitColumnObj,
+  checkLOVError,
 } from "../../../utils/index";
 import { allowedTypes } from "../../../constants";
 import {
@@ -324,6 +325,8 @@ export default function DSColumnTable({
           return e;
         });
 
+      // set updateLoading flag to true to avoid calling list API
+      dispatch(updateDatasetColumnsLoading(true));
       dispatch(
         updateDatasetColumns(
           editedRowData,
@@ -334,6 +337,7 @@ export default function DSColumnTable({
           versionFreezed
         )
       );
+      setGetList(true);
 
       const newData = _.orderBy(
         [...removeExistingRowData, ...editedRowData],
@@ -606,6 +610,7 @@ export default function DSColumnTable({
     // setEditedRows([...newData]);
     // setRows([...newData]);
     if (newCD?.length) {
+      dispatch(updateDatasetColumnsLoading(true));
       const created = await createColumns({
         values: newCD,
         dsId,
@@ -615,9 +620,12 @@ export default function DSColumnTable({
         versionFreezed,
         isOverride: isOverride || false,
       });
+      setGetList(true);
+      dispatch(updateDatasetColumnsLoading(false));
+
       if (created?.status && Object.keys(created?.data).length) {
         const prevRows = [...rows];
-        Object.keys(created.data).map((key) => {
+        Object.keys(created.data).forEach((key) => {
           if (typeof created.data[key] === "object") {
             const objIndex = prevRows.findIndex(
               (x) => x.uniqueId === created.data[key].frontendUniqueRef
@@ -625,6 +633,7 @@ export default function DSColumnTable({
             prevRows[objIndex].dbColumnId = created.data[key].columnid;
             prevRows[objIndex].isEditMode = false;
           }
+          return key;
         });
         setRows([...prevRows]);
       } else {
@@ -741,6 +750,7 @@ export default function DSColumnTable({
           );
           setGetList(true);
         } else {
+          dispatch(updateDatasetColumnsLoading(true));
           const created = await createColumns({
             values: [editedRowData],
             dsId,
@@ -749,6 +759,8 @@ export default function DSColumnTable({
             userId: userInfo.userId,
             versionFreezed,
           });
+          setGetList(true);
+          dispatch(updateDatasetColumnsLoading(false));
 
           if (created?.status) {
             const createdId = created.data[0]?.columnid;
@@ -1022,10 +1034,7 @@ export default function DSColumnTable({
           // eslint-disable-next-line react/jsx-wrap-multilines
           <>
             <div className="lov-modal">
-              <div className="lov-quote">
-                Values separated by ~ (tilde). Multiple word values placed in
-                quotations.
-              </div>
+              <div className="lov-quote">Values separated by ~ (tilde).</div>
 
               {isEditLOVs ? (
                 <div className="lov-edit-mode">
@@ -1036,6 +1045,8 @@ export default function DSColumnTable({
                     minWidth={340}
                     minHeight={278}
                     disabled={!canUpdateDataFlow}
+                    error={checkLOVError(selectedRow.values, true) || false}
+                    helperText={checkLOVError(selectedRow.values) || ""}
                   />
                 </div>
               ) : (
@@ -1052,7 +1063,9 @@ export default function DSColumnTable({
                 {
                   label: "Save",
                   onClick: handleSaveLOV,
-                  disabled: !canUpdateDataFlow,
+                  disabled:
+                    !canUpdateDataFlow ||
+                    checkLOVError(selectedRow.values, true),
                 },
                 { label: "Cancel", onClick: hideViewLOVs },
               ]

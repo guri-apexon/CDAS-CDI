@@ -4,6 +4,7 @@ const Logger = require("../config/logger");
 const helper = require("../helpers/customFunctions");
 const CommonController = require("./CommonController");
 const constants = require("../config/constants");
+const { updateAndValidateLOV } = require("../helpers/userHelper");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 exports.getColumnsSet = async (req, res) => {
@@ -106,6 +107,11 @@ exports.saveDatasetColumns = async (req, res) => {
 
       const configJsonArr = [];
       for (let value of values) {
+        // validate LOV
+        if (value.values) {
+          value.values = updateAndValidateLOV(value.values) || value.values;
+        }
+
         const body = [
           dsId,
           value.columnName.toString().trim() || null,
@@ -218,6 +224,11 @@ exports.updateColumns = async (req, res) => {
           } = await DB.executeQuery(selectQuery, [columnid]);
 
           if (oldData) {
+            // validate LOV
+            if (value.values) {
+              value.values = updateAndValidateLOV(value.values) || value.values;
+            }
+
             const body = [
               value.columnName.toString().trim() || null,
               value.dataType.trim() || null,
