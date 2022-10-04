@@ -65,7 +65,7 @@ const Permissions = {
 
 const useStudyPermission = (category, feature, studyId) => {
   const appContext = useContext(AppContext);
-  const { studyPermissions } = appContext.user;
+  const { studyPermissions } = appContext?.user || { studyPermissions: {} };
   const permission = studyPermissions?.[studyId]?.find(
     (p) =>
       p.categoryName?.trim().toUpperCase() === category?.trim().toUpperCase() &&
