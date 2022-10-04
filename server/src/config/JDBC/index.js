@@ -146,7 +146,9 @@ module.exports = async (
                           res.status(500).json({
                             status: 0,
                             message:
-                              "No data returned. Please reach out to admin.",
+                              callSrc === "fetchTables"
+                                ? "No Tables Returned. Please reach out to admins"
+                                : "No data returned. Please reach out to admin.",
                           });
                         }
                       });

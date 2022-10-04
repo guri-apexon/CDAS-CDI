@@ -24,6 +24,7 @@ import {
   formatData,
   isSftp,
   columnObj,
+  checkLOVError,
 } from "../../../../../utils/index";
 import { allowedTypes } from "../../../../../constants";
 import {
@@ -636,7 +637,8 @@ export default function DSColumnTable({
       setEditedRows([{ index: 0, uniqueId: initUniqueId, ...columnObj }]);
     }
     if (previewSQL?.length) {
-      addMulti(previewSQL);
+      // addMulti(previewSQL);
+      addMulti();
     }
   }, []);
 
@@ -723,10 +725,7 @@ export default function DSColumnTable({
           // eslint-disable-next-line react/jsx-wrap-multilines
           <>
             <div className="lov-modal">
-              <div className="lov-quote">
-                Values separated by ~ (tilde). Multiple word values placed in
-                quotations.
-              </div>
+              <div className="lov-quote">Values separated by ~ (tilde).</div>
 
               {isEditLOVs ? (
                 <div className="lov-edit-mode">
@@ -736,6 +735,8 @@ export default function DSColumnTable({
                     sizeAdjustable
                     minWidth={340}
                     minHeight={278}
+                    error={checkLOVError(selectedRow.values, true) || false}
+                    helperText={checkLOVError(selectedRow.values) || ""}
                   />
                 </div>
               ) : (
@@ -749,7 +750,11 @@ export default function DSColumnTable({
         buttonProps={
           isEditLOVs
             ? [
-                { label: "Save", onClick: handleSaveLOV },
+                {
+                  label: "Save",
+                  onClick: handleSaveLOV,
+                  disabled: checkLOVError(selectedRow.values, true),
+                },
                 { label: "Cancel", onClick: hideViewLOVs },
               ]
             : [

@@ -172,3 +172,21 @@ exports.isClinicalDataPartOfDataFlow = async function (dataKindId) {
   }
   return false;
 };
+
+exports.updateAndValidateLOV = function (lovValue) {
+  try {
+    let updatedLOV = lovValue;
+    const isFirst = updatedLOV.charAt(0) === "~";
+    const isLast = updatedLOV.charAt(updatedLOV.length - 1) === "~";
+    if (isFirst) {
+      updatedLOV = updatedLOV.substring(1);
+    }
+    if (isLast) {
+      updatedLOV = updatedLOV.slice(0, -1);
+    }
+    return updatedLOV;
+  } catch (error) {
+    Logger.error("userHelper.updateAndValidateLOV", error);
+    return lovValue;
+  }
+};

@@ -8,6 +8,7 @@ const queryParams = {
   LATENCY_WARNING: "lw",
   REFRESH_ALERTS: "ra",
   CONTROL: "control",
+  DATASET_WITH_ISSUES: "DATASETWITHISSUES",
 };
 
 const queryParamsFull = {
@@ -19,6 +20,7 @@ const queryParamsFull = {
   LATENCY_WARNING: "DATALATENCYWARNINGS",
   REFRESH_ALERTS: "ra",
   CONTROL: "control",
+  DATASET_WITH_ISSUES: "DATASETWITHISSUES",
 };
 
 export { queryParams, queryParamsFull };
