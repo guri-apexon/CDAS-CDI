@@ -264,7 +264,9 @@ const JDBCForm = forwardRef((props, ref) => {
       return false;
     }
     if (sQLQuery.includes("*")) {
-      messageContext.showErrorMessage(`Please remove * from query to proceed.`);
+      messageContext.showErrorMessage(
+        `Custom SQL Query should not contain select *`
+      );
       return false;
     }
     setIsPreviewReady(true);

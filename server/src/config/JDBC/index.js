@@ -123,7 +123,9 @@ module.exports = async (
                       console.log("err:executeQuery:::: ", err, resultset);
                       res.status(500).json({
                         status: 0,
-                        message: errorMessage || "Something wrong with query",
+                        message:
+                          errorMessage ||
+                          "Query Compilation Error, check query syntax.",
                         error: err,
                       });
                     } else {
@@ -148,7 +150,7 @@ module.exports = async (
                             message:
                               callSrc === "fetchTables"
                                 ? "No Tables Returned. Please reach out to admins"
-                                : "No data returned. Please reach out to admin.",
+                                : "No records found.",
                           });
                         }
                       });
