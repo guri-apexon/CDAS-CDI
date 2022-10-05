@@ -141,7 +141,6 @@ const LocationForm = (props) => {
                 className="activeField MuiSwitch"
                 size="small"
                 labelPlacement="start"
-                disabled={locationUsed && (isActive || isActive === 1)}
               />
             </Grid>
           )}
