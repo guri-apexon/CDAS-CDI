@@ -89,7 +89,7 @@ module.exports = {
         }
 
         const anditLogsQueries = [];
-        Object.keys(diffObj).map((key) => {
+        Object.keys(diffObj).forEach((key) => {
           // if (diffObj[key] || diffObj[key] == 0) {
           anditLogsQueries.push(
             DB.executeQuery(
@@ -140,7 +140,7 @@ module.exports = {
           values
         ).then(async (response) => {
           const anditLogsQueries = [];
-          Object.keys(diffObj).map((key) => {
+          Object.keys(diffObj).forEach((key) => {
             anditLogsQueries.push(
               DB.executeQuery(
                 `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7))`,
@@ -413,7 +413,7 @@ module.exports = {
             )
           );
         } else {
-          Object.keys(diffObj).map((key) => {
+          Object.keys(diffObj).forEach((key) => {
             anditLogsQueries.push(
               DB.executeQuery(
                 `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid, datasetid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
@@ -494,9 +494,9 @@ module.exports = {
 
         const anditLogsQueries = [];
         if (diffObj && oldData) {
-          Object.keys(diffObj).map((columnId) => {
+          Object.keys(diffObj).forEach((columnId) => {
             const columnsObj = diffObj[columnId];
-            Object.keys(columnsObj).map((key) => {
+            Object.keys(columnsObj).forEach((key) => {
               anditLogsQueries.push(
                 DB.executeQuery(
                   `INSERT INTO ${schemaName}.dataflow_audit_log(dataflowid, datapackageid,datasetid,columnid, audit_vers, attribute,old_val, new_val, audit_updt_by, audit_updt_dt) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
