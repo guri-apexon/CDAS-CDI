@@ -112,7 +112,6 @@ const LocationForm = (props) => {
     const checkLocationUsed = async () => {
       const checkInDf = await checkLocationExistsInDataFlow(locationID);
       setLocationUsed(checkInDf > 0);
-      console.log(">>> is used", locationID, checkInDf);
     };
 
     if (locationID) checkLocationUsed();
