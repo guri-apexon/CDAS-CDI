@@ -12,7 +12,7 @@ import Status from "apollo-react/components/Status";
 import StatusDotSolid from "apollo-react-icons/StatusDotSolid";
 import MenuItem from "apollo-react/components/MenuItem";
 import { useDispatch, useSelector } from "react-redux";
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import { ReactComponent as RoundPlusSvg } from "../../components/Icons/roundplus.svg";
 import { ReactComponent as PackageIcon } from "../../components/Icons/datapackage.svg";
 import {
@@ -98,6 +98,8 @@ const PackagesList = ({ data, userInfo }) => {
   const { versionFreezed } = useSelector((state) => state.dataFlow);
   const { prot_id: protId } = selectedCard;
 
+  const params = useParams();
+
   const { canUpdate: canUpdateDataFlow } = useStudyPermission(
     Categories.CONFIGURATION,
     Features.DATA_FLOW_CONFIGURATION,
@@ -169,6 +171,10 @@ const PackagesList = ({ data, userInfo }) => {
     dsName,
     path = null
   ) => {
+    // return if user is on same dataset
+    if (params?.datasetId && dsId && params?.datasetId === dsId) {
+      return;
+    }
     dispatch(
       redirectToDataSet(dfId, dfName, dpId, dpName, dsId, dsName, null, path)
     );
