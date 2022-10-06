@@ -226,7 +226,12 @@ export default function MonitorTab({ userID }) {
             subtitle="Count of all datasets whose latest job status is Failed."
             value={summary?.data_refresh_alerts}
             icon={() => {
-              return <FailureIcon style={{ fill: "#e20000" }} />;
+              return (
+                <StatusExclamationIcon
+                  style={{ color: orange }}
+                  className="newMonitor-icon"
+                />
+              );
             }}
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
@@ -239,12 +244,7 @@ export default function MonitorTab({ userID }) {
             subtitle={`Files which were processed successfully but in which dataset configuration or VLC compliance issues were identified (will be listed as "PROCESSED WITH ERRORS" in data flow monitor)`}
             value={summary?.datasetwithissues}
             icon={() => {
-              return (
-                <StatusExclamationIcon
-                  style={{ color: orange }}
-                  className="newMonitor-icon"
-                />
-              );
+              return <FailureIcon style={{ fill: "#e20000" }} />;
             }}
             color="orange"
             handlePeekOpen={handlePeekOpen}
