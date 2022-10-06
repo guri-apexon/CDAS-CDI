@@ -63,19 +63,21 @@ const IssueRightPanel = ({
       }, {});
 
   useEffect(() => {
-    const { _rowno, rowIndex, _error, ...rest } = rowDetails;
-    setColumns(rest);
-    if (_rowno) {
-      const data = selectedIssues.filter((x) =>
-        x.errorrownumbers.includes(_rowno)
-      );
-      setRowFilters(data);
-      try {
-        const attrs = selectedIssues?.map((r) => r.originalattributename); // get the attributes to be processed
-        const errorSubset = subset(JSON.parse(_error), attrs); // remove unwanted keys
-        setError(errorSubset);
-      } catch (er) {
-        setError({});
+    if (rowDetails) {
+      const { _rowno, rowIndex, _error, ...rest } = rowDetails;
+      setColumns(rest);
+      if (_rowno) {
+        const data = selectedIssues.filter((x) =>
+          x.errorrownumbers.includes(_rowno)
+        );
+        setRowFilters(data);
+        try {
+          const attrs = selectedIssues?.map((r) => r.originalattributename); // get the attributes to be processed
+          const errorSubset = subset(JSON.parse(_error), attrs); // remove unwanted keys
+          setError(errorSubset);
+        } catch (er) {
+          setError({});
+        }
       }
     }
   }, [rowDetails]);
@@ -85,7 +87,7 @@ const IssueRightPanel = ({
       <div className="header">
         <Typography variant="title1">
           Record&nbsp;
-          {rowDetails._rowno}
+          {rowDetails?._rowno}
         </Typography>
         <Typography variant="title">Record issues</Typography>
         <IconButton className="close" size="small">

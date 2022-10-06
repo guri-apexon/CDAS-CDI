@@ -2097,7 +2097,6 @@ exports.fetchdataflowDetails = async (req, res) => {
     }
     let myobj = {
       vendorName: dataflowObj.vend_nm,
-      protocolNumberStandard: dataflowObj.prot_nbr_stnd,
       type: dataflowObj.type,
       name: dataflowObj.dataflowname,
       externalID: dataflowObj.externalid,

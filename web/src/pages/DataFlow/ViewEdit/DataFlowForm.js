@@ -169,7 +169,7 @@ const DataFlowFormBase = (props) => {
   }, [initialValues, vendors, locations]);
 
   useEffect(() => {
-    if (selectedLocation.value) setLocationDetail(selectedLocation || null);
+    if (selectedLocation?.value) setLocationDetail(selectedLocation || null);
   }, [selectedLocation]);
 
   useEffect(() => {

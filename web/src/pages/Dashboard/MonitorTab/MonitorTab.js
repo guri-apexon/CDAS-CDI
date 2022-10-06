@@ -264,11 +264,16 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
             title="Data Refresh Alerts"
             subtitle="Count of all datasets whose latest job status is Failed."
             value={summary?.data_refresh_alerts}
-            icon={() => {
-              return <FailureIcon style={{ fill: "#e20000" }} />;
-            }}
             handlePeekOpen={handlePeekOpen}
             closePeek={() => setOpen(false)}
+            icon={() => {
+              return (
+                <StatusExclamationIcon
+                  style={{ color: orange }}
+                  className="newMonitor-icon"
+                />
+              );
+            }}
             handleViewClick={() => {
               handleViewButton(queryParamsFull.JOB_STATUS_FAILED);
             }}
@@ -278,12 +283,7 @@ export default function MonitorTab({ fetchLatestData, protId, updateHeight }) {
             subtitle={`Files which were processed successfully but in which dataset configuration or VLC compliance issues were identified (will be listed as "PROCESSED WITH ERRORS" in data flow monitor)`}
             value={summary?.datasetwithissues}
             icon={() => {
-              return (
-                <StatusExclamationIcon
-                  style={{ color: orange }}
-                  className="newMonitor-icon"
-                />
-              );
+              return <FailureIcon style={{ fill: "#e20000" }} />;
             }}
             color="orange"
             handlePeekOpen={handlePeekOpen}

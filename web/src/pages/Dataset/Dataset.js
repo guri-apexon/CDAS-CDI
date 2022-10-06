@@ -431,7 +431,7 @@ const Dataset = () => {
       // }
       if (formValue?.sQLQuery?.includes("*")) {
         messageContext.showErrorMessage(
-          `Please remove * from query to proceed.`
+          `Custom SQL Query should not contain select *`
         );
         return false;
       }
@@ -523,7 +523,7 @@ const Dataset = () => {
         />
       )}
 
-      <div className="pageRoot">
+      <div className="pageRoot" data-testid="datasetcomponent">
         <Panel
           onClose={handleClose}
           onOpen={handleOpen}

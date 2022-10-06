@@ -15,16 +15,16 @@ async function checkLocationExists(
   db_name = "",
   esys_nm = "",
   loc_id = null,
-  warehouse = "",
-  schema = ""
+  whse = "",
+  schem = ""
 ) {
   const locType = locationType.toLowerCase();
   const connUrl = cnUnl ? cnUnl.toLowerCase() : null;
   const uname = u_name ? u_name.toLowerCase() : null;
   const dbname = db_name ? db_name.toLowerCase() : null;
   const exsys_nm = esys_nm ? esys_nm.toLowerCase() : null;
-  const data_warehouse = warehouse ? warehouse.toLowerCase() : null;
-  const schema_name = schema ? schema.toLowerCase() : null;
+  const data_warehouse = whse ? whse.toLowerCase() : null;
+  const schema_name = schem ? schem.toLowerCase() : null;
 
   let searchQuery = `SELECT src_loc_id from ${schemaName}.source_location where LOWER(loc_typ)=$1 and LOWER(cnn_url)=$2 and LOWER(usr_nm)=$3 and LOWER(extrnl_sys_nm)=$4 and LOWER(db_nm)=$5`;
   let dep = [locType, connUrl, uname, exsys_nm, dbname];
@@ -33,7 +33,7 @@ async function checkLocationExists(
     dep = [locType, connUrl, uname, exsys_nm, dbname, loc_id];
   }
   if (locType === "Azure - Snowflake") {
-    searchQuery = `SELECT src_loc_id from ${schemaName}.source_location where LOWER(loc_typ) = $1 and  LOWER(cnn_url) = $2 and LOWER(usr_nm) = $3 and LOWER(extrnl_sys_nm) = $4 and LOWER(db_nm)=$5 and LOWER(warehouse) = $7 and LOWER(schema) = $8 and src_loc_id != $6 `;
+    searchQuery = `SELECT src_loc_id from ${schemaName}.source_location where LOWER(loc_typ) = $1 and  LOWER(cnn_url) = $2 and LOWER(usr_nm) = $3 and LOWER(extrnl_sys_nm) = $4 and LOWER(db_nm)=$5 and LOWER(whse) = $7 and LOWER(schem) = $8 and src_loc_id != $6 `;
     dep = [
       locType,
       connUrl,
@@ -226,7 +226,7 @@ exports.getPassword = async function (req, res) {
 exports.getLocationById = async function (req, res) {
   try {
     const id = req.params.location_id;
-    const searchQuery = `SELECT src_loc_id,loc_typ,ip_servr,port,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,warehouse,schema from ${schemaName}.source_location WHERE src_loc_id = $1`;
+    const searchQuery = `SELECT src_loc_id,loc_typ,ip_servr,port,cnn_url,data_strc,active,extrnl_sys_nm,loc_alias_nm,whse,schem from ${schemaName}.source_location WHERE src_loc_id = $1`;
     Logger.info({ message: "getLocationById" });
     const response = await DB.executeQuery(searchQuery, [id]);
     if (response.rows[0]) {
@@ -334,10 +334,10 @@ exports.statusUpdate = async (req, res) => {
   }
 };
 
-const $insertLocation = `INSERT into ${schemaName}.source_location (insrt_tm, loc_alias_nm, loc_typ, data_strc, extrnl_sys_nm, active, usr_nm, pswd, ip_servr, cnn_url, port, db_nm, external_id, warehouse, schema) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`;
-const $selectLocation = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id, warehouse, schema FROM ${schemaName}.source_location WHERE src_loc_id=$1`;
-const $updateLocation = `UPDATE ${schemaName}.source_location set updt_tm=$1, loc_alias_nm=$2, loc_typ=$3, data_strc=$4, extrnl_sys_nm=$5, active=$6, usr_nm=$7, pswd=$8, ip_servr=$9, cnn_url=$10, port=$11, db_nm=$12, external_id=$13, warehouse=$14, schema=$15 WHERE src_loc_id=$16 returning *`;
-const $selectExternalId = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id, warehouse, schema FROM ${schemaName}.source_location WHERE external_id=$1`;
+const $insertLocation = `INSERT into ${schemaName}.source_location (insrt_tm, loc_alias_nm, loc_typ, data_strc, extrnl_sys_nm, active, usr_nm, pswd, ip_servr, cnn_url, port, db_nm, external_id, whse, schem) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`;
+const $selectLocation = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id, whse, schem FROM ${schemaName}.source_location WHERE src_loc_id=$1`;
+const $updateLocation = `UPDATE ${schemaName}.source_location set updt_tm=$1, loc_alias_nm=$2, loc_typ=$3, data_strc=$4, extrnl_sys_nm=$5, active=$6, usr_nm=$7, pswd=$8, ip_servr=$9, cnn_url=$10, port=$11, db_nm=$12, external_id=$13, whse=$14, schem=$15 WHERE src_loc_id=$16 returning *`;
+const $selectExternalId = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id, whse, schem FROM ${schemaName}.source_location WHERE external_id=$1`;
 
 exports.saveLocationData = async function (req, res) {
   Logger.info({ message: "storeLocation" });
@@ -357,8 +357,8 @@ exports.saveLocationData = async function (req, res) {
       port,
       userName,
       password,
-      warehouse = null,
-      schema = null,
+      whse = null,
+      schem = null,
     } = req.body;
     const curDate = helper.getCurrentTime();
 
@@ -413,7 +413,7 @@ exports.saveLocationData = async function (req, res) {
       !password ||
       typeof active !== "boolean" ||
       locationType === "Azure - Snowflake"
-        ? !warehouse || !schema
+        ? !whse || !schem
         : false
     ) {
       return apiResponse.validationErrorWithData(
@@ -442,8 +442,8 @@ exports.saveLocationData = async function (req, res) {
       ipServer,
       port,
       dbName,
-      warehouse || "",
-      schema || ""
+      whse || "",
+      schem || ""
     );
 
     const updatedURL = connURL || newURL;
@@ -485,8 +485,8 @@ exports.saveLocationData = async function (req, res) {
       port || null,
       dbName || null,
       ExternalId || null,
-      warehouse || null,
-      schema || null,
+      whse || null,
+      schem || null,
     ];
 
     const vaultData = {
@@ -564,8 +564,8 @@ exports.saveLocationData = async function (req, res) {
             cnn_url: updatedURL,
             usr_nm: userName,
             pswd: password ? "Yes" : "No",
-            warehouse: warehouse || null,
-            schema: schema || null,
+            whse: whse || null,
+            schem: schem || null,
           };
           const diffObj = helper.getdiffKeys(comparisionObj, existingObj);
           await CommonController.addLocationCDHHistory({

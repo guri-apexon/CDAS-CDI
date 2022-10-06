@@ -260,7 +260,7 @@ const IngestionIssues = () => {
     getProperties();
   }, []);
   return (
-    <main className="ingestion-issues">
+    <main className="ingestion-issues" data-testid="ingestionissues">
       <Header
         close={() => history.push("/dashboard")}
         submit={downloadSummery}

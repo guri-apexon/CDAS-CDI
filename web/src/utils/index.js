@@ -610,8 +610,8 @@ export const generateConnectionURL = (
   hostName,
   port,
   dbName,
-  warehouse = "",
-  schema = ""
+  whse = "",
+  schem = ""
 ) => {
   if (!locType || !hostName) {
     return "";
@@ -657,8 +657,8 @@ export const generateConnectionURL = (
       : "";
   }
   if (locType === "Azure – Snowflake") {
-    return port && dbName && warehouse && schema
-      ? `jdbc:snowflake://${hostName}:${port}/?db=${dbName}&warehouse=${warehouse}&schema=${schema}`
+    return port && dbName && whse && schem
+      ? `jdbc:snowflake://${hostName}:${port}/?db=${dbName}&whse=${whse}&schem=${schem}`
       : "";
   }
   if (locType && hostName && port && dbName) {

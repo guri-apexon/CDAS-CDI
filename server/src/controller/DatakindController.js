@@ -24,6 +24,8 @@ const commonError = `Something went wrong`;
 const mandatoryMissing = `Please check payload mandatory fields are missing`;
 const alreadyExist = `Clinical data type name and external system name combination already exists.`;
 const inactiveNotAllowed = `Clinical Data Type Name cannot be inactivated until removed from all datasets using this Clinical Data Type.`;
+const systemNameMatchError = `External system name does not match sending system.`;
+const invalidSysNameError = `Invalid external system name.`;
 
 const insertQuery = `INSERT INTO ${schemaName}.datakind ("name", dk_desc, extrnl_sys_nm, active, extrnl_id, insrt_tm, updt_tm) VALUES($2, $3, $4, $5, $6, $1, $1) RETURNING *`;
 const updateQuery = `UPDATE ${schemaName}.datakind SET "name"=$2, dk_desc=$3, extrnl_sys_nm=$4, extrnl_id=$5, updt_tm=$1 WHERE datakindid=$6 RETURNING *`;
@@ -32,6 +34,7 @@ const selectQuery = `SELECT * FROM ${schemaName}.datakind WHERE datakindid=$1`;
 const selectExternalId = `SELECT * FROM ${schemaName}.datakind WHERE extrnl_id=$1`;
 const selectExist = `SELECT "name", extrnl_sys_nm, dk_desc FROM ${schemaName}.datakind where datakindid = $1`;
 const dataKindExistQuery = `SELECT count(1) FROM ${schemaName}.datakind where LOWER(name) = LOWER($1) and LOWER(extrnl_sys_nm) = LOWER($2)`;
+const externalSysNameQuery = `select distinct lov_nm from ${schemaName}.cdas_core_lov`;
 
 const getReleatedDF = `select distinct (d.dataflowid), max (dv."version") from ${schemaName}.dataflow d 
 inner join ${schemaName}.dataflow_version dv on d.dataflowid = dv.dataflowid 
@@ -54,6 +57,20 @@ const getDataKindExist = async (dkName, dkESName) => {
   return false;
 };
 
+const getExternalSysName = async () => {
+  try {
+    const queryResult = await DB.executeQuery(externalSysNameQuery);
+    if (queryResult && queryResult?.rows) {
+      return queryResult.rows;
+    }
+    return [];
+  } catch (err) {
+    //throw error in json response with status 500.
+    return apiResponse.ErrorResponse(res, commonError);
+  }
+  return [];
+};
+
 exports.createDataKind = async (req, res) => {
   try {
     Logger.info({ message: "handle datakind" });
@@ -67,8 +84,15 @@ exports.createDataKind = async (req, res) => {
       systemName,
       userId,
     } = req.body;
-
     const curDate = helper.getCurrentTime();
+
+    if (dkESName && dkESName !== req?.headers["sys-name"] && ExternalId) {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Operation failed",
+        systemNameMatchError
+      );
+    }
 
     if (!dkName || !dkESName || typeof dkStatus !== "number") {
       return apiResponse.validationErrorWithData(
@@ -76,6 +100,20 @@ exports.createDataKind = async (req, res) => {
         "Operation failed",
         mandatoryMissing
       );
+    }
+
+    if (ExternalId && dkESName) {
+      const exterSysNameList = await getExternalSysName();
+      const isSysNameExist = exterSysNameList.some(
+        (item) => item.lov_nm === dkESName
+      );
+      if (!isSysNameExist) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Operation failed",
+          invalidSysNameError
+        );
+      }
     }
 
     if (dkName) {
@@ -154,7 +192,7 @@ exports.createDataKind = async (req, res) => {
             if (
               dkName !== existingDK?.rows[0]?.name ||
               dkESName !== existingDK?.rows[0]?.extrnl_sys_nm ||
-              dkStatus !== existingDK?.rows[0]?.active
+              (existingDK?.rows[0]?.active === 1 && dkStatus === 0)
             ) {
               return apiResponse.ErrorResponse(
                 res,
@@ -242,7 +280,7 @@ exports.createDataKind = async (req, res) => {
         if (
           dkName !== existingDK?.rows[0]?.name ||
           dkESName !== existingDK?.rows[0]?.extrnl_sys_nm ||
-          dkStatus !== existingDK?.rows[0]?.active
+          (existingDK?.rows[0]?.active === 1 && dkStatus === 0)
         ) {
           return apiResponse.ErrorResponse(
             res,

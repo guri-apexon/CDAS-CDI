@@ -298,7 +298,7 @@ const ColumnsTab = ({
   }, [showColumns, loading, formattedData]);
 
   return (
-    <>
+    <div data-testid="columnscomponent">
       {loading && <Progress />}
       {!showColumns && !loading && (
         <div className="tab colums-tab">
@@ -368,7 +368,7 @@ const ColumnsTab = ({
         </div>
       )}
       {showColumns && <>{showTable}</>}
-    </>
+    </div>
   );
 };
 
