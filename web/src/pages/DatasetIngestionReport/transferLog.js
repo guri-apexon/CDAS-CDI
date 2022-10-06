@@ -572,7 +572,10 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
   );
 
   return (
-    <div style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24 }}>
+    <div
+      style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24 }}
+      data-testid="transferlog"
+    >
       <Table
         title={`${loadType} File Transfer Log`}
         subtitle={

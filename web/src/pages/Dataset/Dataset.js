@@ -523,7 +523,7 @@ const Dataset = () => {
         />
       )}
 
-      <div className="pageRoot">
+      <div className="pageRoot" data-testid="datasetcomponent">
         <Panel
           onClose={handleClose}
           onOpen={handleOpen}

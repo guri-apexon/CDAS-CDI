@@ -63,7 +63,10 @@ const Properties = ({ datasetProperties }) => {
     history.push(`/dashboard/dataset/${datasetId}`, datasetId);
   };
   return (
-    <div style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24 }}>
+    <div
+      style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24 }}
+      data-testid="trasferlogprop"
+    >
       <Paper
         style={{ padding: 24, backgroundColor: "#fff" }}
         id="properties-box"
