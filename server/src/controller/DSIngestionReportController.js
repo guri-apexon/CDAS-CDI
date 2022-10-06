@@ -406,6 +406,8 @@ exports.getIssues = async (req, res) => {
     //   ) a --where Issue_Type in ('Format Mismatch')
     //   group by datasetid,databasename,tablename,originalAttributeName,Issue_Type,allcolumns,prot_id;`;
 
+    Logger.info({ message: "getIngestionIssues" });
+
     const query = `select datasetid,databasename,tablename,originalattributename,issue_type,nooferrors,pkcolumns, errorrownumbers, errorcolumnnames::json, allcolumns
     from cdascfg.fn_get_file_ingestion_issues('${datasetId}');`;
 
@@ -418,7 +420,6 @@ exports.getIssues = async (req, res) => {
       "Issues retieved successfully",
       issues
     );
-    Logger.info({ message: "getIngestionIssues" });
   } catch (err) {
     const msg = err.message || COMMON_ERR;
     Logger.error("catch :getIssues");

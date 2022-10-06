@@ -193,8 +193,8 @@ const Location = () => {
     dispatch(change("AddLocationForm", "ipServer", row?.ip_servr));
     dispatch(change("AddLocationForm", "dataStructure", row?.data_strc));
     dispatch(change("AddLocationForm", "userName", row?.usr_nm));
-    dispatch(change("AddLocationForm", "warehouse", row?.warehouse));
-    dispatch(change("AddLocationForm", "schema", row?.schema));
+    dispatch(change("AddLocationForm", "whse", row?.whse));
+    dispatch(change("AddLocationForm", "schem", row?.schem));
     dispatch(
       change(
         "AddLocationForm",

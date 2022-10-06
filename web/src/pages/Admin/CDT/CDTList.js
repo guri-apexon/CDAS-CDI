@@ -152,6 +152,7 @@ export default function CDTList() {
   const dispatch = useDispatch();
   const { cdtList, loading } = useSelector((state) => state.cdiadmin);
   const [ensList, setENSList] = useState([]);
+  const [addCDTList, setAddCDTList] = useState([]);
 
   const { canUpdate: canUpdateClinicalData, canCreate: canCreateClinicalData } =
     usePermission(Categories.CONFIGURATION, Features.CLINICAL_DATA_TYPE_SETUP);
@@ -205,16 +206,22 @@ export default function CDTList() {
   const getENSlists = async () => {
     if (ensList.length <= 0) {
       const list = await getENSList();
-      setENSList([...list]);
+      return list;
     }
+    return ensList;
   };
 
   const handleLink = async (e, Id) => {
     e.preventDefault();
     const selected = cdtList.find((d) => d.ID === Id);
-    await getENSlists();
+    const list = await getENSlists();
+    setENSList([...list]);
     const { dkName, dkStatus, dkDesc, dkESName, dkExternalId } = selected;
     // console.log("handleLink", selected, picked);
+    if (dkESName !== "GDMPM-DAS") {
+      const filteredList = list?.filter((item) => item.label !== "GDMPM-DAS");
+      setAddCDTList([...filteredList]);
+    }
     setSelectedRow(Id);
     setENS(dkESName || "");
     setCName(dkName || "");
@@ -232,12 +239,15 @@ export default function CDTList() {
 
   const handleAddCDT = async () => {
     setViewModal(true);
-    await getENSlists();
+    const list = await getENSlists();
+    setENSList([...list]);
+    const filteredList = list?.filter((item) => item.label !== "GDMPM-DAS");
+    setAddCDTList([...filteredList]);
   };
 
   const handleSelection = (e) => {
     const { value } = e.target;
-    const selected = ensList.find((d) => d.label === value);
+    const selected = ensList?.find((d) => d.label === value);
     setENS(selected.label);
     setENSId(selected.value);
   };
@@ -430,7 +440,10 @@ export default function CDTList() {
                       (CharError && "Exceeds allowed length of 80 characters.")
                     }
                     error={nameError || reqNameError || CharError}
-                    disabled={selectedRow && !canUpdateClinicalData}
+                    disabled={
+                      selectedRow &&
+                      (!canUpdateClinicalData || ens === "GDMPM-DAS")
+                    }
                   />
                 </div>
                 <div style={{ display: "flex" }}>
@@ -442,7 +455,10 @@ export default function CDTList() {
                       name="status"
                       onChange={handleStatusUpdate}
                       size="small"
-                      disabled={selectedRow && !canUpdateClinicalData}
+                      disabled={
+                        selectedRow &&
+                        (!canUpdateClinicalData || ens === "GDMPM-DAS")
+                      }
                     />
                   </div>
                 </div>
@@ -462,13 +478,24 @@ export default function CDTList() {
                       reqENSError && "External system shouldn't be empty"
                     }
                     error={reqENSError}
-                    disabled={selectedRow && !canUpdateClinicalData}
+                    disabled={
+                      selectedRow &&
+                      (!canUpdateClinicalData || ens === "GDMPM-DAS")
+                    }
                   >
-                    {ensList.map((option) => (
-                      <MenuItem key={option.value} value={option.label}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
+                    {selectedRow && ens === "GDMPM-DAS"
+                      ? ensList.map((option) => (
+                          // eslint-disable-next-line react/jsx-indent
+                          <MenuItem key={option.value} value={option.label}>
+                            {option.label}
+                          </MenuItem>
+                        ))
+                      : addCDTList.map((option) => (
+                          // eslint-disable-next-line react/jsx-indent
+                          <MenuItem key={option.value} value={option.label}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
                   </Select>
                 </div>
                 <div className="desc-box">
@@ -482,7 +509,10 @@ export default function CDTList() {
                     onChange={(e) => handleChange(e)}
                     optional
                     sizeAdjustable
-                    disabled={selectedRow && !canUpdateClinicalData}
+                    disabled={
+                      selectedRow &&
+                      (!canUpdateClinicalData || ens === "GDMPM-DAS")
+                    }
                   />
                 </div>
               </div>
@@ -494,7 +524,8 @@ export default function CDTList() {
           {
             label: "Save",
             onClick: handleSave,
-            disabled: selectedRow && !canUpdateClinicalData,
+            disabled:
+              selectedRow && (!canUpdateClinicalData || ens === "GDMPM-DAS"),
           },
         ]}
         id="createDataKind"
