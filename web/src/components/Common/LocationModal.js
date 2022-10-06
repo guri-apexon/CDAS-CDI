@@ -67,8 +67,8 @@ const LocationForm = (props) => {
     selectedHost,
     selectedPort,
     selectedDB,
-    warehouse = "",
-    schema = "",
+    whse = "",
+    schem = "",
     isActive,
     formState,
     loading,
@@ -101,10 +101,10 @@ const LocationForm = (props) => {
     if (
       !props.locationViewMode &&
       locType !== "Azure - Snowflake" &&
-      (warehouse || schema)
+      (whse || schem)
     ) {
-      dispatch(change("AddLocationForm", "warehouse", ""));
-      dispatch(change("AddLocationForm", "schema", ""));
+      dispatch(change("AddLocationForm", "whse", ""));
+      dispatch(change("AddLocationForm", "schem", ""));
     }
   }, [locType]);
 
@@ -192,8 +192,8 @@ const LocationForm = (props) => {
                   selectedHost,
                   selectedPort,
                   selectedDB,
-                  warehouse,
-                  schema
+                  whse,
+                  schem
                 );
                 // if (v.target.value?.includes("Dynamic Port")) {
                 //   dispatch(change("AddLocationForm", "port", ""));
@@ -227,8 +227,8 @@ const LocationForm = (props) => {
                   v.target.value,
                   selectedPort,
                   selectedDB,
-                  warehouse,
-                  schema
+                  whse,
+                  schem
                 )
               }
               InputProps={{ readOnly: props.locationViewMode }}
@@ -258,8 +258,8 @@ const LocationForm = (props) => {
                       selectedHost,
                       v.target.value,
                       selectedDB,
-                      warehouse,
-                      schema
+                      whse,
+                      schem
                     )
                   }
                 />
@@ -278,8 +278,8 @@ const LocationForm = (props) => {
                       selectedHost,
                       selectedPort,
                       v.target.value,
-                      warehouse,
-                      schema
+                      whse,
+                      schem
                     )
                   }
                   InputProps={{ readOnly: props.locationViewMode }}
@@ -292,12 +292,12 @@ const LocationForm = (props) => {
         {/* Azure - Snowflake additional fields */}
         {!!(locType === "Azure – Snowflake") && (
           <Grid container spacing={2}>
-            <Grid item md={5} id="for-warehouse">
+            <Grid item md={5} id="for-whse">
               <ReduxFormTextField
                 fullWidth
-                name="warehouse"
+                name="whse"
                 size="small"
-                label="Warehouse"
+                label="whse"
                 onChange={(v) =>
                   props.generateUrl(
                     locType,
@@ -305,25 +305,25 @@ const LocationForm = (props) => {
                     selectedPort,
                     selectedDB,
                     v.target.value,
-                    schema
+                    schem
                   )
                 }
                 InputProps={{ readOnly: props.locationViewMode }}
               />
             </Grid>
-            <Grid item md={5} id="for-schema">
+            <Grid item md={5} id="for-schem">
               <ReduxFormTextField
                 fullWidth
-                name="schema"
+                name="schem"
                 size="small"
-                label="Schema"
+                label="schem"
                 onChange={(v) =>
                   props.generateUrl(
                     locType,
                     selectedHost,
                     selectedPort,
                     selectedDB,
-                    warehouse,
+                    whse,
                     v.target.value
                   )
                 }
@@ -465,16 +465,16 @@ const LocationModal = (props) => {
     selectedHost,
     selectedPort,
     selectedDB,
-    warehouse = "",
-    schema = ""
+    whse = "",
+    schem = ""
   ) => {
     const connurl = generateConnectionURL(
       locType,
       selectedHost,
       selectedPort,
       selectedDB,
-      warehouse,
-      schema
+      whse,
+      schem
     );
     if (connurl) {
       dispatch(change("AddLocationForm", "connURL", connurl));
@@ -637,8 +637,8 @@ const ReduxForm = compose(
     selectedPort: selector(state, "port"),
     selectedDB: selector(state, "dbName"),
     locType: selector(state, "locationType"),
-    warehouse: selector(state, "warehouse"),
-    schema: selector(state, "schema"),
+    whse: selector(state, "whse"),
+    schem: selector(state, "schem"),
     formState: getFormValues("AddLocationForm")(state),
   }))
 )(LocationForm);
