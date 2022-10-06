@@ -2928,6 +2928,15 @@ const columnSave = (exports.columnDefinationInsert = async (
       return { errRes: errObj };
     }
 
+    // validate LOV
+    let updatedLOV = el.lov || el.values || null;
+    if (el.lov) {
+      updatedLOV = updateAndValidateLOV(obj?.lov) || el.lov;
+    }
+    if (el.values) {
+      updatedLOV = updateAndValidateLOV(el.values) || el.values;
+    }
+
     let CDBody = [
       DSId,
       el.columnName || null,
@@ -2938,7 +2947,7 @@ const columnSave = (exports.columnDefinationInsert = async (
       el.maxLength || el.maxLength === 0 ? el.maxLength : null,
       el.position || 0,
       el.format || null,
-      el.lov || el.values || null,
+      updatedLOV || el.lov || el.values || null,
       helper.stringToBoolean(el.unique) ? 1 : 0,
       el.requiredfield || null,
       helper.getCurrentTime(),

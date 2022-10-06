@@ -2070,6 +2070,12 @@ exports.fetchdataflowDetails = async (req, res) => {
           const cdArr = [];
           for (let obj of response) {
             if (obj.datasetid === el.dsId && obj.name && obj.datatype) {
+              // validate LOV
+              let updatedLOV = obj?.lov || null;
+              if (obj?.lov) {
+                updatedLOV = updateAndValidateLOV(obj?.lov) || obj?.lov;
+              }
+
               let columnObj = {
                 columnid: obj.columnid,
                 columnName: obj.name,
@@ -2080,7 +2086,7 @@ exports.fetchdataflowDetails = async (req, res) => {
                 maxLength: obj.charactermax,
                 position: obj.position,
                 format: obj.format,
-                lov: obj.lov,
+                lov: updatedLOV || obj?.lov,
                 requiredfield: obj.requiredfield?.requiredfield || null,
                 unique: obj.unique,
                 variableLabel: obj.variable || null,
