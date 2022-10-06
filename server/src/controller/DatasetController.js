@@ -348,10 +348,27 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
     }
 
     const { rows: tempData } = await DB.executeQuery(
-      `select mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, dataset_fltr, offsetcolumn, incremental from ${schemaName}.dataset where datasetid = $1`,
+      `select mnemonic, active, datakindid, customsql_yn, customsql, tbl_nm, dataset_fltr, offsetcolumn, incremental, data_in_cdr  from ${schemaName}.dataset where datasetid = $1`,
       [datasetid]
     );
     const oldData = tempData[0];
+
+    let req_loadType = dataType === "Incremental" ? "Y" : "N";
+
+    if (oldData.data_in_cdr === "Y") {
+      if (req_loadType === "Y" && oldData.incremental != "Y") {
+        let checkPrimary = await DB.executeQuery(
+          `select columnid from ${schemaName}.columndefinition where primarykey=1 and datasetid='${datasetid}';`
+        );
+
+        if (checkPrimary.rows.length == 0) {
+          return apiResponse.ErrorResponse(
+            res,
+            "Cannot switch to Incremental as the file that has been synched does not have any primary key defined."
+          );
+        }
+      }
+    }
 
     const oldcustomsql_yn = tempData[0].customsql_yn;
     let table_name = tableName;
