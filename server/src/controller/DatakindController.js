@@ -61,6 +61,7 @@ const getExternalSysName = async () => {
   try {
     const queryResult = await DB.executeQuery(externalSysNameQuery);
     if (queryResult && queryResult?.rows) {
+      queryResult.rows.push({ lov_nm: "CDI" });
       return queryResult.rows;
     }
     return [];
