@@ -2897,6 +2897,7 @@ const columnSave = (exports.columnDefinationInsert = async (
 
     // Column Def Name check
     if (el.columnName) {
+      el.columnName = el.columnName.replace(/'/g, "''");
       let clName = await DB.executeQuery(
         `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${el.columnName}' and del_flg=0;`
       );
@@ -4524,9 +4525,9 @@ exports.datasetUpdate = async (
       updateQueryDS += `,delimiter='${data.delimiter}'`;
     }
     if (typeof data.escapeCharacter != "undefined") {
-      updateQueryDS += `,escapecode='${helper.convertEscapeChar(
-        data.escapeCharacter
-      )}'`;
+      updateQueryDS += `,escapecode='${helper
+        .convertEscapeChar(data.escapeCharacter)
+        .replace(/'/g, "''")}'`;
     }
     if (typeof data.encoding != "undefined") {
       updateQueryDS += `,charset='${data.encoding}'`;
@@ -4539,7 +4540,7 @@ exports.datasetUpdate = async (
       }
     }
     if (typeof data.quote != "undefined") {
-      updateQueryDS += `,quote='${data.quote || '"'}'`;
+      updateQueryDS += `,quote='${data.quote.replace(/'/g, "''") || '"'}'`;
     }
     if (typeof data.rowDecreaseAllowed != "undefined") {
       updateQueryDS += `,rowdecreaseallowed='${data.rowDecreaseAllowed || 0}'`;
@@ -4949,6 +4950,7 @@ exports.clDefUpdate = async (
     }
 
     if (data.columnName) {
+      data.columnName = data.columnName.replace(/'/g, "''");
       let clName = await DB.executeQuery(
         `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and columnid !='${cdId}' and name='${data.columnName}' and del_flg=0;`
       );
