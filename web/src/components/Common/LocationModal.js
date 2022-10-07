@@ -297,7 +297,7 @@ const LocationForm = (props) => {
                 fullWidth
                 name="whse"
                 size="small"
-                label="whse"
+                label="Warehouse"
                 onChange={(v) =>
                   props.generateUrl(
                     locType,
@@ -316,7 +316,7 @@ const LocationForm = (props) => {
                 fullWidth
                 name="schem"
                 size="small"
-                label="schem"
+                label="Schema"
                 onChange={(v) =>
                   props.generateUrl(
                     locType,
