@@ -1510,7 +1510,7 @@ exports.packageLevelInsert = async (
     let errStatus = false;
 
     //Logger added for API_log start -- shankar package
-    if (process.env.DEBUG === "true") {
+    if (process.env.CDI_LOGGING === "DEBUG") {
       await DB.executeQuery(
         `INSERT INTO ${schemaName}.api_log
     ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
@@ -1852,7 +1852,7 @@ exports.packageLevelInsert = async (
     // console.log("package insert ", DpObj);
 
     //Logger added for API_log start -- shankar package
-    if (process.env.DEBUG === "true") {
+    if (process.env.CDI_LOGGING === "DEBUG") {
       await DB.executeQuery(
         `INSERT INTO ${schemaName}.api_log
         ( extrnl_id, dataflowid, datapackageid, datasetid, columnid, dsqcruleid, method_name, api_nm, adt_usr, adt_ts, comment)
@@ -1917,7 +1917,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
     let errStatus = false;
 
     //Logger added for API_log start -- shankar saveDataset
-    if (process.env.DEBUG === "true") {
+    if (process.env.CDI_LOGGING === "DEBUG") {
       await DB.executeQuery(
         `INSERT INTO ${schemaName}.api_log
     ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
@@ -2561,7 +2561,7 @@ const saveDataset = (exports.datasetLevelInsert = async (
     }
 
     //Logger added for API_log start -- shankar saveDataset
-    if (process.env.DEBUG === "true") {
+    if (process.env.CDI_LOGGING === "DEBUG") {
       await DB.executeQuery(
         `INSERT INTO ${schemaName}.api_log
             ( extrnl_id, dataflowid, datapackageid, datasetid, columnid, dsqcruleid, method_name, api_nm, adt_usr, adt_ts, comment)
@@ -2619,7 +2619,7 @@ const columnSave = (exports.columnDefinationInsert = async (
     var str1 = /[~]/;
 
     //Logger added for API_log start -- shankar columnSave
-    if (process.env.DEBUG === "true") {
+    if (process.env.CDI_LOGGING === "DEBUG") {
       await DB.executeQuery(
         `INSERT INTO ${schemaName}.api_log
     ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
@@ -2980,7 +2980,7 @@ const columnSave = (exports.columnDefinationInsert = async (
     const CDUid = createdCD?.columnId || null;
 
     //Logger added for API_log start -- shankar columnSave
-    if (process.env.DEBUG === "true") {
+    if (process.env.CDI_LOGGING === "DEBUG") {
       await DB.executeQuery(
         `INSERT INTO ${schemaName}.api_log
             ( extrnl_id, dataflowid, datapackageid, datasetid, columnid, dsqcruleid, method_name, api_nm, adt_usr, adt_ts, comment)
@@ -3080,7 +3080,7 @@ const saveVlc = (exports.VlcInsert = async (
     let errorVlc = [];
     var vlc = [];
     //Logger added for API_log start -- shankar saveVlc
-    if (process.env.DEBUG === "true") {
+    if (process.env.CDI_LOGGING === "DEBUG") {
       await DB.executeQuery(
         `INSERT INTO ${schemaName}.api_log
     ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
@@ -3225,7 +3225,7 @@ const saveVlc = (exports.VlcInsert = async (
     // const vlcId = null;
 
     //Logger added for API_log start -- shankar saveVlc
-    if (process.env.DEBUG === "true") {
+    if (process.env.CDI_LOGGING === "DEBUG") {
       await DB.executeQuery(
         `INSERT INTO ${schemaName}.api_log
                 ( extrnl_id, dataflowid, datapackageid, datasetid, columnid, dsqcruleid, method_name, api_nm, adt_usr, adt_ts, comment)
