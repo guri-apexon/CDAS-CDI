@@ -11,7 +11,10 @@ const { addDataflowHistory } = require("./CommonController");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 const externalFunction = require("../createDataflow/externalDataflowFunctions");
 const datasetHelper = require("../helpers/datasetHelper");
-const { checkPermissionStudy } = require("../helpers/userHelper");
+const {
+  checkPermissionStudy,
+  updateAndValidateLOV,
+} = require("../helpers/userHelper");
 const { Console } = require("winston/lib/winston/transports");
 
 exports.checkUserStudyAlterPermission = async (req, res) => {

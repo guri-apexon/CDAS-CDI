@@ -2933,7 +2933,7 @@ const columnSave = (exports.columnDefinationInsert = async (
     // validate LOV
     let updatedLOV = el.lov || el.values || null;
     if (el.lov) {
-      updatedLOV = updateAndValidateLOV(obj?.lov) || el.lov;
+      updatedLOV = updateAndValidateLOV(el?.lov) || el.lov;
     }
     if (el.values) {
       updatedLOV = updateAndValidateLOV(el.values) || el.values;
