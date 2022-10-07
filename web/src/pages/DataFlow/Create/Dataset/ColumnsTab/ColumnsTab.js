@@ -130,7 +130,7 @@ const ColumnsTab = ({
     setLoading(false);
   };
 
-  const formatJDBCColumns = (arr) => {
+  const formatJDBCColumns = (arr, customSqlNo = false) => {
     const newData =
       arr.length > 0
         ? arr.map((column, i) => {
@@ -151,6 +151,7 @@ const ColumnsTab = ({
               values: column.lov || "",
               isInitLoad: true,
               isHavingColumnName: true,
+              customSqlNo,
             };
             return newObj;
           })
@@ -222,7 +223,11 @@ const ColumnsTab = ({
         formatDBColumns(datasetColumns);
         setSelectedMethod("fromDB");
       } else if (sqlColumns.length > 0) {
-        formatJDBCColumns(sqlColumns);
+        const customNo =
+          myForm?.dataPackage?.length &&
+          myForm?.dataPackage[0].dataSet.length &&
+          myForm?.dataPackage[0].dataSet[0].customQuery === "No";
+        formatJDBCColumns(sqlColumns, customNo);
         setSelectedMethod("fromDB");
       }
       setShowColumns(true);
