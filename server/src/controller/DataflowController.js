@@ -168,27 +168,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       protocolNumberStandard,
       serviceOwners,
     } = req.body;
-    //Logger added for API_log start -- shankar
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
-    ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
-    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        ExternalId,
-        null,
-        null,
-        null,
-        null,
-        null,
-        "createDataFlow",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "createDataFlow Started",
-      ]
-    );
-    //Logger added for API_log end -- shankar
-
     let errorBody = {
       timestamp: helper.getCurrentTime(),
       ExternalId: ExternalId,
@@ -204,6 +183,33 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
 
     if (!permission)
       return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
+
+    //Logger added for API_log start -- shankar
+    if (
+      process.env.API_LOG_DF === "true" ||
+      process.env.API_LOG_DF_DP_DS_VLC === "true" ||
+      process.env.API_LOG_ALL === "true"
+    ) {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
+          ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+        [
+          ExternalId,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "createDataFlow",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "createDataFlow Started",
+        ]
+      );
+      //Logger added for API_log end -- shankar
+    }
 
     if (externalSystemName !== "CDI") {
       var dataRes = await externalFunction.insertValidation(req.body);
@@ -448,24 +454,30 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     }
 
     //Logger added for API_log start -- shankar
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
+    if (
+      process.env.API_LOG_DF === "true" ||
+      process.env.API_LOG_DF_DP_DS_VLC === "true" ||
+      process.env.API_LOG_ALL === "true"
+    ) {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
     ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        ExternalId,
-        createdDF.dataFlowId,
-        null,
-        null,
-        null,
-        null,
-        "createDataFlow",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "createDataFlow End",
-      ]
-    );
+        [
+          ExternalId,
+          createdDF.dataFlowId,
+          null,
+          null,
+          null,
+          null,
+          "createDataFlow",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "createDataFlow End",
+        ]
+      );
+    }
     //Logger added for API_log end -- shankar
 
     await DB.executeQuery(
