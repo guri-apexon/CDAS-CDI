@@ -121,6 +121,7 @@ export const DataTypeEditableSelectCell =
         helperText={!row.isInitLoad && !row.isFormatLoad ? errorText : ""}
         onChange={(e) => row.editRow(row.uniqueId, key, e.target.value)}
         {...fieldStyles}
+        disabled={row.customSqlNo}
       >
         {options.map((option) => (
           <MenuItem key={option} value={option}>
@@ -206,7 +207,7 @@ export const PositionEditableCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
-  const { isEditMode, haveHeader, primaryKey } = row;
+  const { isEditMode, haveHeader, primaryKey, customSqlNo } = row;
   let errorText;
   if (haveHeader) {
     errorText = checkRequired(row[key]);
@@ -228,7 +229,7 @@ export const ColumnNameCell = ({ row, column: { accessor: key } }) => {
       error={!row.isInitLoad && errorText ? true : false}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
-      disabled={primaryKey === "Yes" && row.dsProdLock}
+      disabled={customSqlNo || (primaryKey === "Yes" && row.dsProdLock)}
     />
   ) : (
     row[key]
@@ -254,7 +255,7 @@ export const FormatCell = ({ row, column: { accessor: key } }) => {
 };
 
 export const EditableCell = ({ row, column: { accessor: key } }) => {
-  const { isEditMode } = row;
+  const { isEditMode, customSqlNo } = row;
   const errorText = checkAlphaNumeric(row[key], key);
   return isEditMode ? (
     <TextField
@@ -265,6 +266,7 @@ export const EditableCell = ({ row, column: { accessor: key } }) => {
       error={!row.isInitLoad && errorText}
       helperText={!row.isInitLoad ? errorText : ""}
       {...fieldStyles}
+      disabled={customSqlNo}
     />
   ) : (
     row[key]

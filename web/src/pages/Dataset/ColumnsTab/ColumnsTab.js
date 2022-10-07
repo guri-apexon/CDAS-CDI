@@ -141,7 +141,7 @@ const ColumnsTab = ({
     setFormattedData([...newData]);
   };
 
-  const formatJDBCColumns = (arr, editMode = false) => {
+  const formatJDBCColumns = (arr, editMode = false, customSqlNo = false) => {
     const newData =
       arr.length > 0
         ? arr.map((column, i) => {
@@ -161,6 +161,7 @@ const ColumnsTab = ({
               isInitLoad: true,
               isHavingColumnName: true,
               isEditMode: editMode,
+              customSqlNo,
             };
             return newObj;
           })
@@ -243,13 +244,21 @@ const ColumnsTab = ({
 
   useEffect(() => {
     if (!isSftp(locationType)) {
-      // console.log("JDBC", locationType);
+      console.log("JDBC", selectedDataset);
       setShowColumns(true);
       setSelectedMethod("fromAPICall");
       if (datasetColumns.length) {
-        formatJDBCColumns(datasetColumns);
+        formatJDBCColumns(
+          datasetColumns,
+          false,
+          selectedDataset?.customsql_yn === "No"
+        );
       } else if (sqlColumns.length) {
-        formatJDBCColumns(sqlColumns, !!columnsEditMode);
+        formatJDBCColumns(
+          sqlColumns,
+          !!columnsEditMode,
+          selectedDataset?.customsql_yn === "No"
+        );
       } else {
         // setFormattedData([]);
       }
