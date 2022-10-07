@@ -185,7 +185,10 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
 
     //Logger added for API_log start -- shankar
-    if (process.env.INFO === "true" || process.env.DEBUG === "true") {
+    if (
+      process.env.CDI_LOGGING === "DEBUG" ||
+      process.env.CDI_LOGGING === "INFO"
+    ) {
       await DB.executeQuery(
         `INSERT INTO ${schemaName}.api_log
           ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
@@ -450,7 +453,10 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     }
 
     //Logger added for API_log start -- shankar
-    if (process.env.INFO === "true" || process.env.DEBUG === "true") {
+    if (
+      process.env.CDI_LOGGING === "DEBUG" ||
+      process.env.CDI_LOGGING === "INFO"
+    ) {
       await DB.executeQuery(
         `INSERT INTO ${schemaName}.api_log
     ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
