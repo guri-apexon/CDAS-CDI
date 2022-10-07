@@ -2910,6 +2910,7 @@ const columnSave = (exports.columnDefinationInsert = async (
           await dfRollBack(DFId);
         }
       }
+      el.columnName = el.columnName.replace(/''/g, "'");
     }
 
     if (errorColumnDef.length > 0) {
