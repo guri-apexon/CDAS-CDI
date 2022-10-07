@@ -70,6 +70,33 @@ exports.saveDatasetColumns = async (req, res) => {
       return apiResponse.ErrorResponse(res, "Please pass dataset id");
     }
 
+    const { rows: tempData } =
+      await DB.executeQuery(`select df.connectiontype, ds.incremental from ${schemaName}.dataset ds
+                left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+                left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+                where ds.datasetid ='${dsId}'`);
+
+    const oldData = tempData[0];
+
+    if (!helper.isSftp(oldData.connectiontype)) {
+      if (oldData.incremental === "Y" && values?.length > 1) {
+        let isPrimary = false;
+
+        values.forEach((e) => {
+          if (e.primaryKey === "Yes" && e.required === "Yes") {
+            isPrimary = true;
+          }
+        });
+
+        if (!isPrimary) {
+          return apiResponse.ErrorResponse(
+            res,
+            "One or more columns must be set as Primary Key and Required before saving the dataset"
+          );
+        }
+      }
+    }
+
     // flag for checking if existing data needs to be override
     const isOverride = req.body.isOverride || false;
 
@@ -201,6 +228,33 @@ exports.updateColumns = async (req, res) => {
 
     Logger.info({ message: "update set columns" });
     // const versionFreezed = false;
+
+    const { rows: tempData } =
+      await DB.executeQuery(`select df.connectiontype , ds.incremental from ${schemaName}.dataset ds
+                left join ${schemaName}.datapackage dp on (dp.datapackageid =ds.datapackageid)
+                left join ${schemaName}.dataflow df on (df.dataflowid =dp.dataflowid)
+                where ds.datasetid ='${dsId}'`);
+
+    const oldData = tempData[0];
+
+    if (!helper.isSftp(oldData.connectiontype)) {
+      if (oldData.incremental === "Y" && values?.length > 1) {
+        let isPrimary = false;
+
+        values.forEach((e) => {
+          if (e.primaryKey === "Yes" && e.required === "Yes") {
+            isPrimary = true;
+          }
+        });
+
+        if (!isPrimary) {
+          return apiResponse.ErrorResponse(
+            res,
+            "One or more columns must be set as Primary Key and Required before saving the dataset"
+          );
+        }
+      }
+    }
 
     const {
       rows: [oldVersion],
@@ -415,3 +469,13 @@ exports.overrideDatasetColumns = async (req, res) => {
     return apiResponse.ErrorResponse(res, err.message);
   }
 };
+
+// const reqPrimary = values.map((e) => e.primaryKey);
+// const reqRequired = values.map((x) => x.required);
+// if (reqPrimary.includes("Yes")) {
+//   isPrimary = true;
+// }
+
+// if (reqRequired.includes("Yes")) {
+//   isRequired = true;
+// }

@@ -355,7 +355,7 @@ async function updateSQLDataset(res, values, versionFreezed, existingVersion) {
 
     let req_loadType = dataType === "Incremental" ? "Y" : "N";
 
-    if (oldData.data_in_cdr === "Y") {
+    if (oldData.data_in_cdr === "Y" && isCustomSQL === "No") {
       if (req_loadType === "Y" && oldData.incremental != "Y") {
         let checkPrimary = await DB.executeQuery(
           `select columnid from ${schemaName}.columndefinition where primarykey=1 and datasetid='${datasetid}';`
