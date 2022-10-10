@@ -499,41 +499,31 @@ exports.sortString = (a, b) => {
   return 0;
 };
 
-exports.primaryKeyValidations = (dataStructure, dataPackage, clErrArray) => {
+exports.primaryKeyValidations = (dataStructure, dataSet) => {
+  const errorList = [];
   if (dataStructure !== "TabularRaveSOD") {
     let saveflagyes = false;
-    if (dataPackage && Array.isArray(dataPackage)) {
-      for (let i = 0; i < dataPackage.length; i++) {
-        if (dataPackage[i].dataSet && Array.isArray(dataPackage[i].dataSet)) {
-          for (let k = 0; k < dataPackage[i].dataSet.length; k++) {
-            /// Below value check is for incremental instead of loadtype
-            if (dataPackage[i].dataSet[k].incremental === true) {
-              if (
-                dataPackage[i].dataSet[k].columnDefinition &&
-                Array.isArray(dataPackage[i].dataSet[k].columnDefinition)
-              ) {
-                for (
-                  let j = 0;
-                  j < dataPackage[i].dataSet[k].columnDefinition.length;
-                  j++
-                ) {
-                  if (
-                    dataPackage[i].dataSet[k].columnDefinition[j].primaryKey ===
-                      "Yes" ||
-                    dataPackage[i].dataSet[k].columnDefinition[j].primaryKey ==
-                      1
-                  )
-                    saveflagyes = true;
-                }
-              }
-              if (!saveflagyes)
-                clErrArray.push(
-                  `At least one primaryKey column must be identified when incremental is true.`
-                );
-            }
+    if (dataSet && Object.keys(dataSet).length > 0) {
+      /// Below value check is for incremental instead of loadtype
+      if (dataSet?.incremental === true) {
+        if (
+          dataSet?.columnDefinition &&
+          Array.isArray(dataSet?.columnDefinition)
+        ) {
+          for (let j = 0; j < dataSet?.columnDefinition.length; j++) {
+            if (
+              dataSet?.columnDefinition[j].primaryKey === "Yes" ||
+              dataSet?.columnDefinition[j].primaryKey == 1
+            )
+              saveflagyes = true;
           }
         }
+        if (!saveflagyes)
+          errorList.push(
+            `At least one primaryKey column must be identified when incremental is true.`
+          );
       }
     }
   }
+  return errorList;
 };

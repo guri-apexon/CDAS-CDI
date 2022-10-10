@@ -5222,7 +5222,7 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
     }
 
     // updateQueryVLC += ` where datasetid='${DSId}' and ext_ruleid='${vl.conditionalExpressionNumber}' returning *;`;
-    updateQueryVLC += ` where datasetid='${DSId}' and active_yn='Y' and ext_ruleid='${vl.conditionalExpressionNumber}' returning *;`;
+    updateQueryVLC += ` where datasetid='${DSId}' and ext_ruleid='${vl.conditionalExpressionNumber}' returning *;`;
 
     // console.log(updateQueryCD);
 
@@ -5232,7 +5232,7 @@ exports.vlcUpdate = async (vl, qcType, DFId, DPId, DSId, version, userId) => {
     // );
     const { rows: existVLCRows } = await DB.executeQuery(
       `SELECT ruleseq, action, ruleexpr,errormessage,active_yn from ${schemaName}.dataset_qc_rules
-       where datasetid='${DSId}' and active_yn='Y' and ext_ruleid='${vl.conditionalExpressionNumber}';`
+       where datasetid='${DSId}' and ext_ruleid='${vl.conditionalExpressionNumber}';`
     );
 
     const existVlc = existVLCRows[0];
