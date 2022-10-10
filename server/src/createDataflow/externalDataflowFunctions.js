@@ -1240,6 +1240,23 @@ exports.insertValidation = async (req) => {
                 }
               }
 
+              // Column Definition Primary and required validation
+              if (helper.stringToBoolean(obj.incremental)) {
+                if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                  let isPrimary = false;
+                  for (let el of obj.columnDefinition) {
+                    if (el.primaryKey === "Yes" && el.required === "Yes") {
+                      isPrimary = true;
+                    }
+                  }
+                  if (!isPrimary) {
+                    dsErrArray.push(
+                      "One or more columns must be set as Primary Key and Required before saving the dataset"
+                    );
+                  }
+                }
+              }
+
               if (!obj.columnDefinition) {
                 dsErrArray.push(
                   "While adding a new dataset, please provide at least one columnDefinition details"
@@ -4871,6 +4888,44 @@ exports.clDefUpdate = async (
       if (colDefRes.length > 0) {
         // errorcolDef.push(colDefRes);
         errorcolDef = errorcolDef.concat(colDefRes);
+      }
+
+      // Column Definition Primary and required validation
+
+      const { rows: tempData } = await DB.executeQuery(
+        `select incremental from ${schemaName}.dataset where datasetid ='${DSId}'`
+      );
+      const dsData = tempData[0];
+
+      const { rows: columData } = await DB.executeQuery(
+        `select externalid, primarykey,required from ${schemaName}.columndefinition where datasetid='${DSId}' and columnid !='${cdId}'`
+      );
+
+      if (dsData.incremental === "Y") {
+        let oldPrimary = false;
+        let reqPrimary = false;
+
+        columData.forEach((e) => {
+          if (e.primarykey === 1 && e.required === 1) {
+            oldPrimary = true;
+          }
+        });
+
+        if (!oldPrimary) {
+          if (data.primaryKey && data.required) {
+            if (
+              data.primaryKey.toLowerCase() === "yes" &&
+              data.required.toLowerCase() === "yes"
+            ) {
+              reqPrimary = true;
+            }
+            if (!reqPrimary) {
+              errorcolDef.push([
+                "One or more columns must be set as Primary Key and Required before saving the dataset",
+              ]);
+            }
+          }
+        }
       }
 
       //last add
