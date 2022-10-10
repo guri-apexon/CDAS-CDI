@@ -11,7 +11,10 @@ const { addDataflowHistory } = require("./CommonController");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 const externalFunction = require("../createDataflow/externalDataflowFunctions");
 const datasetHelper = require("../helpers/datasetHelper");
-const { checkPermissionStudy } = require("../helpers/userHelper");
+const {
+  checkPermissionStudy,
+  updateAndValidateLOV,
+} = require("../helpers/userHelper");
 const { Console } = require("winston/lib/winston/transports");
 
 exports.checkUserStudyAlterPermission = async (req, res) => {
@@ -165,27 +168,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       protocolNumberStandard,
       serviceOwners,
     } = req.body;
-    //Logger added for API_log start -- shankar
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
-    ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
-    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        ExternalId,
-        null,
-        null,
-        null,
-        null,
-        null,
-        "createDataFlow",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "createDataFlow Started",
-      ]
-    );
-    //Logger added for API_log end -- shankar
-
     let errorBody = {
       timestamp: helper.getCurrentTime(),
       ExternalId: ExternalId,
@@ -201,6 +183,32 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
 
     if (!permission)
       return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
+
+    //Logger added for API_log start -- shankar
+    if (
+      process.env.CDI_LOGGING === "DEBUG" ||
+      process.env.CDI_LOGGING === "INFO"
+    ) {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
+          ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+        [
+          ExternalId,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "createDataFlow",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "createDataFlow Started",
+        ]
+      );
+      //Logger added for API_log end -- shankar
+    }
 
     if (externalSystemName !== "CDI") {
       var dataRes = await externalFunction.insertValidation(req.body);
@@ -445,24 +453,29 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     }
 
     //Logger added for API_log start -- shankar
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
+    if (
+      process.env.CDI_LOGGING === "DEBUG" ||
+      process.env.CDI_LOGGING === "INFO"
+    ) {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
     ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        ExternalId,
-        createdDF.dataFlowId,
-        null,
-        null,
-        null,
-        null,
-        "createDataFlow",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "createDataFlow End",
-      ]
-    );
+        [
+          ExternalId,
+          createdDF.dataFlowId,
+          null,
+          null,
+          null,
+          null,
+          "createDataFlow",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "createDataFlow End",
+        ]
+      );
+    }
     //Logger added for API_log end -- shankar
 
     await DB.executeQuery(
@@ -2070,6 +2083,12 @@ exports.fetchdataflowDetails = async (req, res) => {
           const cdArr = [];
           for (let obj of response) {
             if (obj.datasetid === el.dsId && obj.name && obj.datatype) {
+              // validate LOV
+              let updatedLOV = obj?.lov || null;
+              if (obj?.lov) {
+                updatedLOV = updateAndValidateLOV(obj?.lov) || obj?.lov;
+              }
+
               let columnObj = {
                 columnid: obj.columnid,
                 columnName: obj.name,
@@ -2080,7 +2099,7 @@ exports.fetchdataflowDetails = async (req, res) => {
                 maxLength: obj.charactermax,
                 position: obj.position,
                 format: obj.format,
-                lov: obj.lov,
+                lov: updatedLOV || obj?.lov,
                 requiredfield: obj.requiredfield?.requiredfield || null,
                 unique: obj.unique,
                 variableLabel: obj.variable || null,

@@ -1527,24 +1527,26 @@ exports.packageLevelInsert = async (
     let errStatus = false;
 
     //Logger added for API_log start -- shankar package
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
+    if (process.env.CDI_LOGGING === "DEBUG") {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
     ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        ExternalId,
-        DFId,
-        null,
-        null,
-        null,
-        null,
-        "packageLevelInsert",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "packageLevelInsert Started",
-      ]
-    );
+        [
+          ExternalId,
+          DFId,
+          null,
+          null,
+          null,
+          null,
+          "packageLevelInsert",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "packageLevelInsert Started",
+        ]
+      );
+    }
     //Logger added for API_log end -- shankar package
 
     if (!isNew) {
@@ -1867,24 +1869,26 @@ exports.packageLevelInsert = async (
     // console.log("package insert ", DpObj);
 
     //Logger added for API_log start -- shankar package
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
+    if (process.env.CDI_LOGGING === "DEBUG") {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
         ( extrnl_id, dataflowid, datapackageid, datasetid, columnid, dsqcruleid, method_name, api_nm, adt_usr, adt_ts, comment)
         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        ExternalId,
-        DFId,
-        dpUid,
-        null,
-        null,
-        null,
-        "packageLevelInsert",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "packageLevelInsert End",
-      ]
-    );
+        [
+          ExternalId,
+          DFId,
+          dpUid,
+          null,
+          null,
+          null,
+          "packageLevelInsert",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "packageLevelInsert End",
+        ]
+      );
+    }
     //Logger added for API_log end -- shankar package
 
     if (!isNew) {
@@ -1930,24 +1934,26 @@ const saveDataset = (exports.datasetLevelInsert = async (
     let errStatus = false;
 
     //Logger added for API_log start -- shankar saveDataset
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
+    if (process.env.CDI_LOGGING === "DEBUG") {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
     ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        obj?.ExternalId,
-        DFId,
-        DPId,
-        null,
-        null,
-        null,
-        "saveDataset",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "saveDataset Started",
-      ]
-    );
+        [
+          obj?.ExternalId,
+          DFId,
+          DPId,
+          null,
+          null,
+          null,
+          "saveDataset",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "saveDataset Started",
+        ]
+      );
+    }
     //Logger added for API_log end -- shankar saveDataset
 
     const isCDI = externalSysName === "CDI" ? true : false;
@@ -2572,24 +2578,26 @@ const saveDataset = (exports.datasetLevelInsert = async (
     }
 
     //Logger added for API_log start -- shankar saveDataset
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
+    if (process.env.CDI_LOGGING === "DEBUG") {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
             ( extrnl_id, dataflowid, datapackageid, datasetid, columnid, dsqcruleid, method_name, api_nm, adt_usr, adt_ts, comment)
             VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        obj?.ExternalId,
-        DFId,
-        DPId,
-        dsUid,
-        null,
-        null,
-        "saveDataset",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "saveDataset End",
-      ]
-    );
+        [
+          obj?.ExternalId,
+          DFId,
+          DPId,
+          dsUid,
+          null,
+          null,
+          "saveDataset",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "saveDataset End",
+        ]
+      );
+    }
     //Logger added for API_log end -- shankar saveDataset
 
     if (!isNew) {
@@ -2628,24 +2636,26 @@ const columnSave = (exports.columnDefinationInsert = async (
     var str1 = /[~]/;
 
     //Logger added for API_log start -- shankar columnSave
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
+    if (process.env.CDI_LOGGING === "DEBUG") {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
     ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        cdExternalId,
-        DFId,
-        DPId,
-        DSId,
-        null,
-        null,
-        "columnSave",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "columnSave Started",
-      ]
-    );
+        [
+          cdExternalId,
+          DFId,
+          DPId,
+          DSId,
+          null,
+          null,
+          "columnSave",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "columnSave Started",
+        ]
+      );
+    }
     //Logger added for API_log end -- shankar columnSave
 
     if (!isNew) {
@@ -2914,6 +2924,7 @@ const columnSave = (exports.columnDefinationInsert = async (
 
     // Column Def Name check
     if (el.columnName) {
+      el.columnName = el.columnName.replace(/'/g, "''");
       let clName = await DB.executeQuery(
         `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and name='${el.columnName}' and del_flg=0;`
       );
@@ -2926,6 +2937,7 @@ const columnSave = (exports.columnDefinationInsert = async (
           await dfRollBack(DFId);
         }
       }
+      el.columnName = el.columnName.replace(/''/g, "'");
     }
 
     if (errorColumnDef.length > 0) {
@@ -2945,6 +2957,15 @@ const columnSave = (exports.columnDefinationInsert = async (
       return { errRes: errObj };
     }
 
+    // validate LOV
+    let updatedLOV = el.lov || el.values || null;
+    if (el.lov) {
+      updatedLOV = updateAndValidateLOV(el?.lov) || el.lov;
+    }
+    if (el.values) {
+      updatedLOV = updateAndValidateLOV(el.values) || el.values;
+    }
+
     let CDBody = [
       DSId,
       el.columnName || null,
@@ -2955,7 +2976,7 @@ const columnSave = (exports.columnDefinationInsert = async (
       el.maxLength || el.maxLength === 0 ? el.maxLength : null,
       el.position || 0,
       el.format || null,
-      el.lov || el.values || null,
+      updatedLOV || el.lov || el.values || null,
       helper.stringToBoolean(el.unique) ? 1 : 0,
       el.requiredfield || null,
       helper.getCurrentTime(),
@@ -2976,24 +2997,26 @@ const columnSave = (exports.columnDefinationInsert = async (
     const CDUid = createdCD?.columnId || null;
 
     //Logger added for API_log start -- shankar columnSave
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
+    if (process.env.CDI_LOGGING === "DEBUG") {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
             ( extrnl_id, dataflowid, datapackageid, datasetid, columnid, dsqcruleid, method_name, api_nm, adt_usr, adt_ts, comment)
             VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        cdExternalId,
-        DFId,
-        DPId,
-        DSId,
-        CDUid,
-        null,
-        "columnSave",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "columnSave End",
-      ]
-    );
+        [
+          cdExternalId,
+          DFId,
+          DPId,
+          DSId,
+          CDUid,
+          null,
+          "columnSave",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "columnSave End",
+        ]
+      );
+    }
     //Logger added for API_log end -- shankar columnSave
 
     if (isNew) {
@@ -3074,24 +3097,26 @@ const saveVlc = (exports.VlcInsert = async (
     let errorVlc = [];
     var vlc = [];
     //Logger added for API_log start -- shankar saveVlc
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
+    if (process.env.CDI_LOGGING === "DEBUG") {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
     ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        ExternalId,
-        DFId,
-        DPId,
-        dsUid,
-        null,
-        null,
-        "saveVlc",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "saveVlc Started",
-      ]
-    );
+        [
+          ExternalId,
+          DFId,
+          DPId,
+          dsUid,
+          null,
+          null,
+          "saveVlc",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "saveVlc Started",
+        ]
+      );
+    }
     //Logger added for API_log end -- shankar saveVlc
 
     if (qcType) {
@@ -3217,24 +3242,26 @@ const saveVlc = (exports.VlcInsert = async (
     // const vlcId = null;
 
     //Logger added for API_log start -- shankar saveVlc
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
+    if (process.env.CDI_LOGGING === "DEBUG") {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
                 ( extrnl_id, dataflowid, datapackageid, datasetid, columnid, dsqcruleid, method_name, api_nm, adt_usr, adt_ts, comment)
                 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        ExternalId,
-        DFId,
-        DPId,
-        dsUid,
-        null,
-        vlcId,
-        "saveVlc",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "saveVlc End",
-      ]
-    );
+        [
+          ExternalId,
+          DFId,
+          DPId,
+          dsUid,
+          null,
+          vlcId,
+          "saveVlc",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "saveVlc End",
+        ]
+      );
+    }
     //Logger added for API_log end -- shankar saveVlc
 
     let vlcObj = {
@@ -4532,9 +4559,9 @@ exports.datasetUpdate = async (
       updateQueryDS += `,delimiter='${data.delimiter}'`;
     }
     if (typeof data.escapeCharacter != "undefined") {
-      updateQueryDS += `,escapecode='${helper.convertEscapeChar(
-        data.escapeCharacter
-      )}'`;
+      updateQueryDS += `,escapecode='${helper
+        .convertEscapeChar(data.escapeCharacter)
+        .replace(/'/g, "''")}'`;
     }
     if (typeof data.encoding != "undefined") {
       updateQueryDS += `,charset='${data.encoding}'`;
@@ -4547,7 +4574,7 @@ exports.datasetUpdate = async (
       }
     }
     if (typeof data.quote != "undefined") {
-      updateQueryDS += `,quote='${data.quote || '"'}'`;
+      updateQueryDS += `,quote='${data.quote.replace(/'/g, "''") || '"'}'`;
     }
     if (typeof data.rowDecreaseAllowed != "undefined") {
       updateQueryDS += `,rowdecreaseallowed='${data.rowDecreaseAllowed || 0}'`;
@@ -4995,6 +5022,7 @@ exports.clDefUpdate = async (
     }
 
     if (data.columnName) {
+      data.columnName = data.columnName.replace(/'/g, "''");
       let clName = await DB.executeQuery(
         `select name from ${schemaName}.columndefinition where datasetid='${DSId}' and columnid !='${cdId}' and name='${data.columnName}' and del_flg=0;`
       );

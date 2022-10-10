@@ -175,7 +175,7 @@ exports.isClinicalDataPartOfDataFlow = async function (dataKindId) {
 
 exports.updateAndValidateLOV = function (lovValue) {
   try {
-    let updatedLOV = lovValue;
+    let updatedLOV = lovValue.trim() || lovValue;
     const isFirst = updatedLOV.charAt(0) === "~";
     const isLast = updatedLOV.charAt(updatedLOV.length - 1) === "~";
     if (isFirst) {
@@ -184,6 +184,7 @@ exports.updateAndValidateLOV = function (lovValue) {
     if (isLast) {
       updatedLOV = updatedLOV.slice(0, -1);
     }
+    updatedLOV = updatedLOV.trim();
     return updatedLOV;
   } catch (error) {
     Logger.error("userHelper.updateAndValidateLOV", error);

@@ -61,6 +61,7 @@ const getExternalSysName = async () => {
   try {
     const queryResult = await DB.executeQuery(externalSysNameQuery);
     if (queryResult && queryResult?.rows) {
+      queryResult.rows.push({ lov_nm: "CDI" });
       return queryResult.rows;
     }
     return [];
@@ -86,34 +87,12 @@ exports.createDataKind = async (req, res) => {
     } = req.body;
     const curDate = helper.getCurrentTime();
 
-    if (dkESName && dkESName !== req?.headers["sys-name"] && ExternalId) {
-      return apiResponse.validationErrorWithData(
-        res,
-        "Operation failed",
-        systemNameMatchError
-      );
-    }
-
     if (!dkName || !dkESName || typeof dkStatus !== "number") {
       return apiResponse.validationErrorWithData(
         res,
         "Operation failed",
         mandatoryMissing
       );
-    }
-
-    if (ExternalId && dkESName) {
-      const exterSysNameList = await getExternalSysName();
-      const isSysNameExist = exterSysNameList.some(
-        (item) => item.lov_nm === dkESName
-      );
-      if (!isSysNameExist) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Operation failed",
-          invalidSysNameError
-        );
-      }
     }
 
     if (dkName) {
@@ -138,6 +117,28 @@ exports.createDataKind = async (req, res) => {
           data: " The Clinical Data Type Name value is too long. The maximum allowed length is 80 characters.",
         });
       }
+    }
+
+    if (ExternalId && dkESName) {
+      const exterSysNameList = await getExternalSysName();
+      const isSysNameExist = exterSysNameList.some(
+        (item) => item.lov_nm === dkESName
+      );
+      if (!isSysNameExist) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Operation failed",
+          invalidSysNameError
+        );
+      }
+    }
+
+    if (dkESName && dkESName !== req?.headers["sys-name"] && ExternalId) {
+      return apiResponse.validationErrorWithData(
+        res,
+        "Operation failed",
+        systemNameMatchError
+      );
     }
 
     // return;
