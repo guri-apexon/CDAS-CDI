@@ -338,6 +338,11 @@ const $insertLocation = `INSERT into ${schemaName}.source_location (insrt_tm, lo
 const $selectLocation = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id, whse, schem FROM ${schemaName}.source_location WHERE src_loc_id=$1`;
 const $updateLocation = `UPDATE ${schemaName}.source_location set updt_tm=$1, loc_alias_nm=$2, loc_typ=$3, data_strc=$4, extrnl_sys_nm=$5, active=$6, usr_nm=$7, pswd=$8, ip_servr=$9, cnn_url=$10, port=$11, db_nm=$12, external_id=$13, whse=$14, schem=$15 WHERE src_loc_id=$16 returning *`;
 const $selectExternalId = `SELECT loc_typ, ip_servr, loc_alias_nm, port, usr_nm, pswd, cnn_url, data_strc, active, extrnl_sys_nm, updt_tm, db_nm, src_loc_id, whse, schem FROM ${schemaName}.source_location WHERE external_id=$1`;
+const system_not_match = `External system name does not match sending system.`;
+const location_cant_be_inactive =
+  "Location cannot be made inactive it is part of a dataflow";
+const location_type_uneditable =
+  "Location Data Structure and Type are not editable for locations that are part of a dataflow";
 
 exports.saveLocationData = async function (req, res) {
   Logger.info({ message: "storeLocation" });
@@ -362,45 +367,44 @@ exports.saveLocationData = async function (req, res) {
     } = req.body;
     const curDate = helper.getCurrentTime();
 
-    let existingLoc = "";
+    let existingLoc = null;
+    let updatedID = "";
 
-    if (systemName !== "CDI") {
-      if (!ExternalId) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Operation failed",
-          PAYLOAD_ERR
-        );
+    if (req?.headers["sys-name"] !== systemName)
+      return apiResponse.ErrorResponse(res, system_not_match);
+
+    if (systemName !== "CDI" && !ExternalId)
+      return apiResponse.validationErrorWithData(
+        res,
+        "Operation failed",
+        PAYLOAD_ERR
+      );
+
+    if (locationID || ExternalId) {
+      existingLoc = ExternalId
+        ? await DB.executeQuery($selectExternalId, [ExternalId])
+        : await DB.executeQuery($selectLocation, [locationID]);
+
+      updatedID = existingLoc?.rows[0]?.src_loc_id;
+      const inDataFlow = await DB.executeQuery(
+        `select src_loc_id from ${schemaName}.dataflow d where src_loc_id='${updatedID}'`
+      );
+      const isInDataflow = inDataFlow?.rows?.length > 0;
+
+      if (isInDataflow) {
+        let oldStatus = existingLoc?.rows[0]?.active;
+        let oldDataStructure = existingLoc?.rows[0]?.data_strc;
+        let oldLocationType = existingLoc?.rows[0]?.loc_typ;
+
+        if (!active && oldStatus === 1)
+          return apiResponse.ErrorResponse(res, location_cant_be_inactive);
+
+        if (
+          oldDataStructure !== dataStructure ||
+          oldLocationType !== locationType
+        )
+          return apiResponse.ErrorResponse(res, location_type_uneditable);
       }
-
-      let loc_Id = "";
-      let oldStatus = active;
-
-      if (ExternalId) {
-        existingLoc = await DB.executeQuery($selectExternalId, [ExternalId]);
-
-        if (existingLoc.rows?.length) {
-          loc_Id = existingLoc.rows[0].src_loc_id;
-          oldStatus = existingLoc.rows[0].active;
-        }
-      }
-
-      if (loc_Id) {
-        const inDFExist = await DB.executeQuery(
-          `select src_loc_id from ${schemaName}.dataflow d where src_loc_id='${loc_Id}'`
-        );
-
-        if (inDFExist.rows?.length > 0 && oldStatus != active) {
-          return apiResponse.ErrorResponse(
-            res,
-            "Location cannot be inactivated until removed from other dataflows using this Location."
-          );
-        }
-      }
-    }
-
-    if (locationID) {
-      existingLoc = await DB.executeQuery($selectLocation, [locationID]);
     }
 
     if (
@@ -447,11 +451,6 @@ exports.saveLocationData = async function (req, res) {
     );
 
     const updatedURL = connURL || newURL;
-    let updatedID = "";
-
-    if (existingLoc?.rows) {
-      updatedID = existingLoc?.rows[0]?.src_loc_id;
-    }
 
     // check for location exist
     const isExist = await checkLocationExists(
