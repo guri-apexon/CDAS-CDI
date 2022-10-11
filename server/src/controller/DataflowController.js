@@ -240,6 +240,35 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     console.log("Success");
     // return;
 
+    // Column Definition Primary and required validation
+    if (!ExternalId && !helper.isSftp(connectionType)) {
+      console.log("CDI JDBC", connectionType);
+      if (dataPackage && Array.isArray(dataPackage)) {
+        for (let each of dataPackage) {
+          if (each.dataSet && each.dataSet.length > 0) {
+            for (let obj of each.dataSet) {
+              if (helper.stringToBoolean(obj.incremental)) {
+                if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                  let isPrimary = false;
+                  for (let el of obj.columnDefinition) {
+                    if (el.primaryKey === "Yes" && el.required === "Yes") {
+                      isPrimary = true;
+                    }
+                  }
+                  if (!isPrimary) {
+                    return apiResponse.ErrorResponse(
+                      res,
+                      "One or more columns must be set as Primary Key and Required before saving the dataset"
+                    );
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     let ResponseBody = {};
 
     let studyId = null;
