@@ -761,17 +761,20 @@ exports.updateDataFlow = async (req, res) => {
               }
             }
 
-            if (dsErrArray.length > 0) {
-              let dsErrRes = dsErrArray.join(" '|' ");
+            const errorList = helper.primaryKeyValidations(dataStructure, obj);
+
+            if (errorList && errorList?.length > 0) {
+              let dsErrRes = errorList.join(" '|' ");
               dsNewObj.message = dsErrRes;
               isval = true;
             }
+
             dpNewObj.dataSets.push(dsNewObj);
 
             if (obj.columnDefinition?.length) {
               dsNewObj.columnDefinition = [];
-              let clErrArray = [];
               for (let el of obj.columnDefinition) {
+                let clErrArray = [];
                 let clNewObj = {
                   ExternalId: el.ExternalId,
                 };
@@ -789,11 +792,6 @@ exports.updateDataFlow = async (req, res) => {
                     "Column Definition Level delFlag  required and it's either 0 or 1"
                   );
                 }
-                helper.primaryKeyValidations(
-                  dataStructure,
-                  dataPackage,
-                  clErrArray
-                );
                 if (clErrArray.length > 0) {
                   let clErrRes = clErrArray.join(" '|' ");
                   clNewObj.message = clErrRes;
@@ -837,40 +835,46 @@ exports.updateDataFlow = async (req, res) => {
     }
 
     //primary key validations starts
-    if (dataPackage && dataPackage.length && isCDI) {
+    if (dataPackage && dataPackage.length > 0 && isCDI) {
       dfErrObj.dataPackages = [];
-      let isval = false;
-      let dpNewObj = {};
+      let isVal = false;
+      if (dataPackage && Array.isArray(dataPackage)) {
+        for (let i = 0; i < dataPackage.length; i++) {
+          let dpNewObj = {};
 
-      dfErrObj.dataPackages.push(dpNewObj);
-      // Data Set External Id validation
-      dpNewObj.dataSets = [];
+          dfErrObj.dataPackages.push(dpNewObj);
+          dpNewObj.dataSets = [];
 
-      let dsNewObj = {};
+          if (
+            dataPackage[i]?.dataSet &&
+            Array.isArray(dataPackage[i]?.dataSet)
+          ) {
+            for (let k = 0; k < dataPackage[i].dataSet.length; k++) {
+              let dsNewObj = {};
 
-      dpNewObj.dataSets.push(dsNewObj);
-
-      dsNewObj.columnDefinition = [];
-      let clErrArray = [];
-      let clNewObj = {};
-
-      helper.primaryKeyValidations(dataStructure, dataPackage, clErrArray);
-      if (clErrArray.length > 0) {
-        let clErrRes = clErrArray.join(" '|' ");
-        clNewObj.message = clErrRes;
-        isval = true;
-      }
-      dsNewObj.columnDefinition.push(clNewObj);
-      if (isval) {
-        errorBody.errors.push(dfErrObj);
-        return apiResponse.validationErrorWithData(
-          res,
-          "Data flow key validation message.",
-          errorBody
-        );
+              const errorList = helper.primaryKeyValidations(
+                dataStructure,
+                dataPackage[i].dataSet[k]
+              );
+              if (errorList && errorList?.length > 0) {
+                let dsErrRes = errorList.join(" '|' ");
+                dsNewObj.message = dsErrRes;
+                isVal = true;
+                dpNewObj.dataSets.push(dsNewObj);
+              }
+            }
+          }
+        }
+        if (isVal) {
+          errorBody.errors.push(dfErrObj);
+          return apiResponse.validationErrorWithData(
+            res,
+            "Data flow key validation message.",
+            errorBody
+          );
+        }
       }
     }
-
     // primary key validation ends
 
     // data package configuration validatiaon for both internal and external system
@@ -1388,34 +1392,33 @@ exports.updateDataFlow = async (req, res) => {
                                         vlc.conditionalExpressionNumber;
                                       errObj.ID = currentVlc.dsqcruleid;
 
-                                      if (currentVlc.active_yn === "N") {
-                                        // (errObj.message = `This - Qc Rules already removed`),
-                                        //   (isAnyError = true);
-                                      } else {
-                                        var VlcDataUpdate =
-                                          await externalFunction
-                                            .vlcUpdate(
-                                              vlc,
-                                              obj.qcType,
-                                              DFId,
-                                              DPId,
-                                              DSId,
-                                              DFVer,
-                                              userId
-                                            )
-                                            .then((res) => {
-                                              if (res && res.sucRes) {
-                                                // dsResObj.vlc.push(res.sucRes);
-                                                isSomthingUpdate = true;
-                                              }
-                                              if (res && res.errRes?.length) {
-                                                let vlcErrRes =
-                                                  res.errRes.join(" '|' ");
-                                                errObj.message = vlcErrRes;
-                                                isAnyError = true;
-                                              }
-                                            });
-                                      }
+                                      // if (currentVlc.active_yn === "N") {
+                                      //   // (errObj.message = `This - Qc Rules already removed`),
+                                      //   //   (isAnyError = true);
+                                      // } else {
+                                      var VlcDataUpdate = await externalFunction
+                                        .vlcUpdate(
+                                          vlc,
+                                          obj.qcType,
+                                          DFId,
+                                          DPId,
+                                          DSId,
+                                          DFVer,
+                                          userId
+                                        )
+                                        .then((res) => {
+                                          if (res && res.sucRes) {
+                                            // dsResObj.vlc.push(res.sucRes);
+                                            isSomthingUpdate = true;
+                                          }
+                                          if (res && res.errRes?.length) {
+                                            let vlcErrRes =
+                                              res.errRes.join(" '|' ");
+                                            errObj.message = vlcErrRes;
+                                            isAnyError = true;
+                                          }
+                                        });
+                                      // }
                                       dsErrObj.vlc.push(errObj);
                                     } else {
                                       var VlcDataInsert = await externalFunction
