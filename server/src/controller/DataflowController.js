@@ -823,14 +823,14 @@ exports.updateDataFlow = async (req, res) => {
             }
           }
         }
-        if (isval) {
-          errorBody.errors.push(dfErrObj);
-          return apiResponse.validationErrorWithData(
-            res,
-            "Data flow key validation message.",
-            errorBody
-          );
-        }
+      }
+      if (isval) {
+        errorBody.errors.push(dfErrObj);
+        return apiResponse.validationErrorWithData(
+          res,
+          "Data flow key validation message.",
+          errorBody
+        );
       }
     }
 
@@ -865,14 +865,14 @@ exports.updateDataFlow = async (req, res) => {
             }
           }
         }
-        if (isVal) {
-          errorBody.errors.push(dfErrObj);
-          return apiResponse.validationErrorWithData(
-            res,
-            "Data flow key validation message.",
-            errorBody
-          );
-        }
+      }
+      if (isVal) {
+        errorBody.errors.push(dfErrObj);
+        return apiResponse.validationErrorWithData(
+          res,
+          "Data flow key validation message.",
+          errorBody
+        );
       }
     }
     // primary key validation ends
