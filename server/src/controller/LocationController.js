@@ -342,7 +342,7 @@ const system_not_match = `External system name does not match sending system.`;
 const location_cant_be_inactive =
   "Location cannot be made inactive it is part of a dataflow";
 const location_type_uneditable =
-  "Location Data Structure and Type are not editable for locations that are part of a dataflow";
+  "Status, External System Name, Loacation Data Structure and Type are not editable for locations that are part of a dataflow";
 
 exports.saveLocationData = async function (req, res) {
   Logger.info({ message: "storeLocation" });
@@ -395,13 +395,16 @@ exports.saveLocationData = async function (req, res) {
         let oldStatus = existingLoc?.rows[0]?.active;
         let oldDataStructure = existingLoc?.rows[0]?.data_strc;
         let oldLocationType = existingLoc?.rows[0]?.loc_typ;
-
-        if (!active && oldStatus === 1)
-          return apiResponse.ErrorResponse(res, location_cant_be_inactive);
+        let oldExternalSystemName = existingLoc?.rows[0]?.extrnl_sys_nm;
+        // if (!active && oldStatus === 1)
+        //   return apiResponse.ErrorResponse(res, location_cant_be_inactive);
 
         if (
+          (oldStatus === 1 && !active) ||
+          (oldStatus === 0 && active) ||
           oldDataStructure !== dataStructure ||
-          oldLocationType !== locationType
+          oldLocationType !== locationType ||
+          oldExternalSystemName !== externalSystemName
         )
           return apiResponse.ErrorResponse(res, location_type_uneditable);
       }
