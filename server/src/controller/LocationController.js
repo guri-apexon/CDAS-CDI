@@ -342,7 +342,7 @@ const system_not_match = `External system name does not match sending system.`;
 const location_cant_be_inactive =
   "Location cannot be made inactive it is part of a dataflow";
 const location_type_uneditable =
-  "Status, External System Name, Loacation Data Structure and Type are not editable for locations that are part of a dataflow";
+  "Status, External System Name, Location Data Structure and Type are not editable for locations that are part of a dataflow";
 
 exports.saveLocationData = async function (req, res) {
   Logger.info({ message: "storeLocation" });
