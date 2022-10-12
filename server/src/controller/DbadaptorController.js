@@ -29,6 +29,7 @@ exports.listTables = async (req, res) => {
       case "hivecdh":
       case "hivecdp":
       case "hive cdp":
+      case "impala":
         q = `show tables`;
         break;
       case "mysql":
