@@ -3222,7 +3222,7 @@ const saveVlc = (exports.VlcInsert = async (
       vl.action,
       vl.conditionalExpression,
       vl.errorMessage || null,
-      "Y",
+      vl.inUse,
       helper.getCurrentTime(),
       userId,
     ];
