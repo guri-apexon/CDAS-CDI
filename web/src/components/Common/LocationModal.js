@@ -140,6 +140,7 @@ const LocationForm = (props) => {
                 className="activeField MuiSwitch"
                 size="small"
                 labelPlacement="start"
+                disabled={locationUsed}
               />
             </Grid>
           )}
@@ -150,6 +151,7 @@ const LocationForm = (props) => {
               InputProps={{ readOnly: props.locationViewMode }}
               className={props.locationViewMode ? "readOnly_Dropdown" : ""}
               canDeselect={false}
+              disabled={locationUsed}
               size="small"
               fullWidth
             >
