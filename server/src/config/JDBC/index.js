@@ -26,6 +26,8 @@ const sqlServerDriver = path.join(
   "mssql-jdbc-9.2.0.jre8.jar"
 );
 
+const impalaDriver = path.join(__dirname, "Drivers", "ImpalaJDBC41.jar");
+
 const snowflakeDriver = path.join(
   __dirname,
   "Drivers",
@@ -60,6 +62,7 @@ if (!jinst.isJvmCreated()) {
     sqlServerDriver,
     hiveCDHServerDriver,
     snowflakeDriver,
+    impalaDriver,
   ]);
 }
 module.exports = async (
