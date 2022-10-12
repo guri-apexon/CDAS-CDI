@@ -27,6 +27,7 @@ import TextField from "apollo-react/components/TextField";
 import AutocompleteV2 from "apollo-react/components/AutocompleteV2";
 import ApolloProgress from "apollo-react/components/ApolloProgress";
 import Table from "apollo-react/components/Table";
+import Modal from "apollo-react/components/Modal";
 
 import dataSetsValidation from "../../../../components/FormComponents/DataSetsValidation";
 import { MessageContext } from "../../../../components/Providers/MessageProvider";
@@ -119,6 +120,12 @@ const JDBCForm = forwardRef((props, ref) => {
   const [offsetColumn, setOffsetColumn] = useState(null);
   const [triggeredSqlData, setTriggerSqlData] = useState(false);
   const [filterError, setFilterError] = useState(false);
+
+  // handle table change modal
+  const [inputValue, setInputValue] = useState("");
+  const [isTableChangeModalOpen, setIsTableChangeModalOpen] = useState(false);
+  const [tempTableName, setTempTableName] = useState(null);
+
   const messageContext = useContext(MessageContext);
 
   const {
@@ -307,14 +314,46 @@ const JDBCForm = forwardRef((props, ref) => {
   };
 
   const handleTableSelect = (e, obj) => {
-    setTableName(obj);
-    if (!obj?.value) return false;
+    // if table is already select show popup
+    if (tableName && obj && sqlColumns && isCustomSQL === "No") {
+      setIsTableChangeModalOpen(true);
+
+      // store current selected data in temp state
+      setTempTableName(obj);
+
+      // set label to previous selection
+      setInputValue(tableName?.label);
+    } else {
+      setTableName(obj);
+      setInputValue(obj?.label);
+      if (!obj?.value) return false;
+      const colPayload = {
+        ...locationDetail,
+        tableName: obj.value,
+      };
+      dispatch(getSQLColumns(colPayload));
+      setOffsetColumn(null);
+    }
+  };
+
+  // modal functions
+  const handleModalClose = () => {
+    setTempTableName(null);
+    setIsTableChangeModalOpen(false);
+  };
+
+  const handleModalSuccess = () => {
+    setIsTableChangeModalOpen(false);
+    setTableName(tempTableName);
+    setInputValue(tempTableName?.label);
+    if (!tempTableName?.value) return false;
     const colPayload = {
       ...locationDetail,
-      tableName: obj.value,
+      tableName: tempTableName.value,
     };
     dispatch(getSQLColumns(colPayload));
     setOffsetColumn(null);
+    setTempTableName(null);
   };
 
   const handleColumnSelect = (e, v) => {
@@ -339,6 +378,7 @@ const JDBCForm = forwardRef((props, ref) => {
     }
     resetDfStep();
   };
+
   const getJdbcTables = () => {
     dispatch(getSQLTables({ ...locationDetail }));
     setIsPreviewReady(false);
@@ -371,6 +411,7 @@ const JDBCForm = forwardRef((props, ref) => {
   useEffect(() => {
     if (locationDetail && isCustomSQL === "No") {
       setTableName(null);
+      setInputValue("");
       setOffsetColumn(null);
       getJdbcTables();
     }
@@ -403,6 +444,7 @@ const JDBCForm = forwardRef((props, ref) => {
         setFilterCondition(initialValue.conditionalExpression);
       if (initialValue.tableName) {
         setTableName(initialValue.tableName);
+        setInputValue(initialValue?.tableName?.label || "");
       }
       if (initialValue.offsetColumn) {
         setOffsetColumn(initialValue.offsetColumn);
@@ -423,6 +465,12 @@ const JDBCForm = forwardRef((props, ref) => {
       setDefaultValues();
     },
   }));
+
+  const handleInputChange = (event, newValue, reason) => {
+    if (reason !== "reset") {
+      setInputValue(newValue);
+    }
+  };
 
   return (
     <form className="jdbc-form">
@@ -524,6 +572,8 @@ const JDBCForm = forwardRef((props, ref) => {
                   id="tableName"
                   label="Table Name"
                   matchFrom="any"
+                  onInputChange={handleInputChange}
+                  inputValue={inputValue}
                   value={tableName}
                   source={sqlTables.map((e) => ({
                     label: e.tableName,
@@ -618,6 +668,20 @@ const JDBCForm = forwardRef((props, ref) => {
               )}
             </>
           )}
+
+          {/* Modal for changing table name */}
+          <Modal
+            open={isTableChangeModalOpen || false}
+            variant="warning"
+            title="Change Table"
+            onClose={handleModalClose}
+            message="Do you want to replace the table name? Doing so will lead to loss of columns saved earlier."
+            buttonProps={[
+              { label: "Cancel", onClick: handleModalClose },
+              { label: "Ok", onClick: handleModalSuccess },
+            ]}
+            id="overWrite"
+          />
           {isPreviewReady && <PreviewColumns previewSQL={previewSQL} />}
         </div>
       </Paper>
