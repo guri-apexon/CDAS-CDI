@@ -12,6 +12,7 @@ import MenuItem from "apollo-react/components/MenuItem";
 import Grid from "apollo-react/components/Grid";
 import Button from "apollo-react/components/Button";
 import Table from "apollo-react/components/Table";
+import Modal from "apollo-react/components/Modal";
 import {
   ReduxFormRadioGroup,
   ReduxFormSwitch,
@@ -99,14 +100,71 @@ const DataSetsFormBase = (props) => {
   const [selectedTable, setSelectedTable] = useState(null);
   const [isColumnAPICalled, setIsColumnAPICalled] = useState(false);
 
+  // handle table change modal
+  const [inputValue, setInputValue] = useState("");
+  const [isTableChangeModalOpen, setIsTableChangeModalOpen] = useState(false);
+  const [tempTableName, setTempTableName] = useState(null);
+
   const onChangeOffsetColumn = (obj) => {
     setSelectedOffsetColumns(obj);
     change("offsetColumn", obj.value);
   };
+
   const changeTableName = (obj) => {
-    const tableName = obj?.value || null;
+    // if table is already select show popup
+    if (
+      selectedTable &&
+      obj &&
+      sqlColumns &&
+      formValues?.isCustomSQL === "No"
+    ) {
+      setIsTableChangeModalOpen(true);
+
+      // store current selected data in temp state
+      setTempTableName(obj);
+
+      // set label to previous selection
+      setInputValue(selectedTable?.label);
+    } else {
+      const tableName = obj?.value || null;
+      if (!tableName) return;
+      setSelectedTable(obj);
+      setSelectedOffsetColumns(null);
+      change("offsetColumn", null);
+      change("tableName", tableName);
+      // console.log("TableName::::", tableName);
+      if (formValues?.isCustomSQL === "No") {
+        setSqlColumnsArr([]);
+        dispatch(
+          getSQLColumns({
+            ...locationDetail,
+            tableName,
+          })
+        );
+      } else {
+        setSqlColumnsArr([]);
+      }
+    }
+  };
+
+  const handleInputChange = (event, newValue, reason) => {
+    if (reason !== "reset") {
+      setInputValue(newValue);
+    }
+  };
+
+  // modal functions
+  const handleModalClose = () => {
+    setTempTableName(null);
+    setIsTableChangeModalOpen(false);
+  };
+
+  const handleModalSuccess = () => {
+    setIsTableChangeModalOpen(false);
+
+    const tableName = tempTableName?.value || null;
     if (!tableName) return;
-    setSelectedTable(obj);
+    setSelectedTable(tempTableName);
     setSelectedOffsetColumns(null);
     change("offsetColumn", null);
     change("tableName", tableName);
@@ -122,7 +180,10 @@ const DataSetsFormBase = (props) => {
     } else {
       setSqlColumnsArr([]);
     }
+
+    setTempTableName(null);
   };
+
   useEffect(() => {}, [formValues.tableName]);
 
   useEffect(() => {
@@ -250,9 +311,13 @@ const DataSetsFormBase = (props) => {
         label: values?.tableName,
         value: values?.tableName,
       };
-      if (tableObj) setSelectedTable(tableObj);
+      if (tableObj) {
+        setSelectedTable(tableObj);
+        setInputValue(tableObj?.label);
+      }
     } else {
       setSelectedTable(null);
+      setInputValue("");
     }
     if (!values || !values?.clinicalDataType) {
       setCdtValue(null);
@@ -379,6 +444,8 @@ const DataSetsFormBase = (props) => {
                   style={{ width: 300, display: "block" }}
                   canDeselect={false}
                   disabled={prodLock || !canUpdateDataFlow}
+                  onInputChange={handleInputChange}
+                  inputValue={inputValue}
                   input={{
                     value: selectedTable,
                     onChange: changeTableName,
@@ -447,6 +514,19 @@ const DataSetsFormBase = (props) => {
               )}
             </>
           )}
+          {/* Modal for changing table name */}
+          <Modal
+            open={isTableChangeModalOpen || false}
+            variant="warning"
+            title="Change Table"
+            onClose={handleModalClose}
+            message="Do you want to replace the table name? Doing so will lead to loss of columns saved earlier."
+            buttonProps={[
+              { label: "Cancel", onClick: handleModalClose },
+              { label: "Ok", onClick: handleModalSuccess },
+            ]}
+            id="overWrite"
+          />
           {showPreview && <PreviewColumns previewSQL={previewSQL} />}
         </div>
       </Paper>
