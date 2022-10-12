@@ -523,6 +523,7 @@ const JDBCForm = forwardRef((props, ref) => {
                   key={tableName}
                   id="tableName"
                   label="Table Name"
+                  matchFrom="any"
                   value={tableName}
                   source={sqlTables.map((e) => ({
                     label: e.tableName,
@@ -608,6 +609,7 @@ const JDBCForm = forwardRef((props, ref) => {
                   className="smallSize_autocomplete"
                   onChange={handleColumnSelect}
                   variant="search"
+                  matchFrom="any"
                   singleSelect
                   enableVirtualization
                   required

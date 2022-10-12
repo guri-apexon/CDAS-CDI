@@ -375,6 +375,7 @@ const DataSetsFormBase = (props) => {
                   name="tableName"
                   id="tableName"
                   label="Table Name"
+                  matchFrom="any"
                   fullWidth
                   style={{ width: 300, display: "block" }}
                   canDeselect={false}
