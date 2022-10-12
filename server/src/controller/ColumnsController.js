@@ -239,7 +239,7 @@ exports.updateColumns = async (req, res) => {
 
     if (!helper.isSftp(oldData.connectiontype)) {
       if (oldData.incremental === "Y" && values?.length > 1) {
-        console.log("Multiple Column Update", values);
+        console.log("Multiple Column Update");
         let isPrimary = false;
 
         values.forEach((e) => {
