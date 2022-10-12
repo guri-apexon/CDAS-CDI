@@ -772,13 +772,6 @@ const columns = [
     filterFunction: createStringSearchFilter("dataflow_name"),
     filterComponent: TextFieldFilter,
   },
-  {
-    header: "Data Flow Type",
-    accessor: "dataflow_type",
-    sortFunction: compareStrings,
-    filterFunction: createStringSearchFilter("dataflow_type"),
-    filterComponent: TextFieldFilter,
-  },
 ];
 
 const ActionColumn = [
@@ -796,6 +789,13 @@ const columnsToAdd = [
   //   filterFunction: createStringArraySearchFilter("packagename"),
   //   filterComponent: createAutocompleteFilter("packagename"),
   // },
+  {
+    header: "Data Flow Type",
+    accessor: "dataflow_type",
+    sortFunction: compareStrings,
+    filterFunction: createStringSearchFilter("dataflow_type"),
+    filterComponent: TextFieldFilter,
+  },
   {
     header: "Clinical Data Type",
     accessor: "clinicaldatatypename",
