@@ -79,7 +79,7 @@ exports.saveDatasetColumns = async (req, res) => {
     const oldData = tempData[0];
 
     if (!helper.isSftp(oldData.connectiontype)) {
-      if (oldData.incremental === "Y" && values?.length > 1) {
+      if (oldData.incremental === "Y" && values?.length > 0) {
         let isPrimary = false;
 
         values.forEach((e) => {
@@ -239,6 +239,7 @@ exports.updateColumns = async (req, res) => {
 
     if (!helper.isSftp(oldData.connectiontype)) {
       if (oldData.incremental === "Y" && values?.length > 1) {
+        console.log("Multiple Column Update");
         let isPrimary = false;
 
         values.forEach((e) => {
@@ -252,6 +253,39 @@ exports.updateColumns = async (req, res) => {
             res,
             "One or more columns must be set as Primary Key and Required before saving the dataset"
           );
+        }
+      } else {
+        console.log("Single Column Update");
+        if (oldData.incremental === "Y") {
+          const { rows: columData } = await DB.executeQuery(
+            `select externalid, primarykey,required from ${schemaName}.columndefinition where datasetid='${dsId}' and columnid !='${values[0]?.dbColumnId}'`
+          );
+
+          let oldPrimary = false;
+          let reqPrimary = false;
+
+          columData.forEach((e) => {
+            if (e.primarykey === 1 && e.required === 1) {
+              oldPrimary = true;
+            }
+          });
+
+          if (!oldPrimary) {
+            if (values[0]?.primaryKey && values[0].required) {
+              if (
+                values[0]?.primaryKey.toLowerCase() === "yes" &&
+                values[0]?.required.toLowerCase() === "yes"
+              ) {
+                reqPrimary = true;
+              }
+              if (!reqPrimary) {
+                return apiResponse.ErrorResponse(
+                  res,
+                  "One or more columns must be set as Primary Key and Required before saving the dataset"
+                );
+              }
+            }
+          }
         }
       }
     }
