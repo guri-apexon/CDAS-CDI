@@ -43,6 +43,7 @@ import {
   DateFilter,
   dateFilterCustom,
   compareDates,
+  getLatestDateFromIngestionData,
 } from "../../utils/index";
 
 import { ReactComponent as FailedIcon } from "../../components/Icons/Failed.svg";
@@ -102,6 +103,8 @@ const StatusCell = ({ row, column: { accessor } }) => {
   const { datasetId } = useParams();
 
   const isCDIHomePage = location.pathname.includes("/cdihome/ingestion-report");
+
+  const isSameTime = row?.TransferDate !== row?.LatestTime || false;
 
   const isDisabled = isCDIHomePage || canReadIngestionIssues;
 
@@ -230,7 +233,7 @@ const StatusCell = ({ row, column: { accessor } }) => {
             />
           </Tooltip>
           <Link
-            disabled={!isDisabled}
+            disabled={isSameTime || !isDisabled}
             onClick={() => {
               if (isCDIHomePage) {
                 history.push(`/cdihome/ingestion-issues/${datasetId}`);
@@ -505,7 +508,7 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
-    const rows =
+    let rows =
       transferHistory?.records?.length > 0 && transferLogFilter
         ? transferHistory?.records.filter((rec) => {
             if (transferLogFilter === "ingestion_issues") {
@@ -525,6 +528,14 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
             return rec;
           })
         : transferHistory?.records;
+
+    // get latest process with error date from data
+    const latestTimeWithError = getLatestDateFromIngestionData?.(rows) || null;
+    if (latestTimeWithError) {
+      rows = rows.map((item) => {
+        return { ...item, LatestTime: latestTimeWithError };
+      });
+    }
 
     setTableRows(rows ?? []);
     setTotalLog(transferHistory.totalSize ?? 0);
