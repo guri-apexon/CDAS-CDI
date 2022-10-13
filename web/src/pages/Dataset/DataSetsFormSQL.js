@@ -195,16 +195,19 @@ const DataSetsFormBase = (props) => {
           value: e.columnName,
         }));
       setSqlColumnsArr(filtered);
-      const selected = filtered.find(
-        (x) => x.value === initialValues.offsetColumn
-      );
-      if (selected) {
-        setSelectedOffsetColumns(selected);
-      } else {
-        setSelectedOffsetColumns(null);
-      }
     }
   }, [sqlColumns]);
+
+  useEffect(() => {
+    const selected = sqlColumnsArr.find(
+      (x) => x.value === initialValues.offsetColumn
+    );
+    if (selected) {
+      setSelectedOffsetColumns(selected);
+    } else {
+      setSelectedOffsetColumns(null);
+    }
+  }, [sqlColumnsArr, initialValues.offsetColumn]);
 
   useEffect(() => {
     if (formValues && ["Yes", "No"].includes(formValues)) {
