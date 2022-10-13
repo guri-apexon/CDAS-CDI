@@ -871,3 +871,30 @@ export const checkLOVError = (input, returnBool = false) => {
   }
   return input && !isVlcTildSaparated(input) ? true : false;
 };
+
+export const getLatestDateFromIngestionData = (rowData) => {
+  if (!rowData) return null;
+
+  // get latest date from rows
+  let latestDate =
+    Math.max(
+      ...rowData?.map(
+        (ele) =>
+          ele?.FileTransferStatus?.toLowerCase() === "processed with errors" &&
+          new Date(ele.TransferDate)
+      )
+    ) || null;
+  if (latestDate) latestDate = new Date(latestDate);
+
+  // get latest object of that date
+  const latestObject =
+    rowData?.filter((ele) => {
+      const date = new Date(ele.TransferDate);
+      return (
+        ele?.FileTransferStatus?.toLowerCase() === "processed with errors" &&
+        date.getTime() === latestDate.getTime()
+      );
+    }) || null;
+
+  return latestObject?.[0]?.TransferDate || null;
+};
