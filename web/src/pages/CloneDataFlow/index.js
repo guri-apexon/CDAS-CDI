@@ -372,7 +372,7 @@ const CloneDataFlow = () => {
   };
 
   return (
-    <div className={classes.root} style={{ height: `calc(100vh - 120px)` }}>
+    <div className={classes.root} style={{ height: `calc(100vh - 120px)` }} data-testid="clonedftestid">
       {/* {loading && <Loader />} */}
       {isShowAlertBox && (
         <AlertBox

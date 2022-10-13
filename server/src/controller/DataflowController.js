@@ -11,7 +11,10 @@ const { addDataflowHistory } = require("./CommonController");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 const externalFunction = require("../createDataflow/externalDataflowFunctions");
 const datasetHelper = require("../helpers/datasetHelper");
-const { checkPermissionStudy } = require("../helpers/userHelper");
+const {
+  checkPermissionStudy,
+  updateAndValidateLOV,
+} = require("../helpers/userHelper");
 const { Console } = require("winston/lib/winston/transports");
 
 exports.checkUserStudyAlterPermission = async (req, res) => {
@@ -165,27 +168,6 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       protocolNumberStandard,
       serviceOwners,
     } = req.body;
-    //Logger added for API_log start -- shankar
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
-    ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
-    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        ExternalId,
-        null,
-        null,
-        null,
-        null,
-        null,
-        "createDataFlow",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "createDataFlow Started",
-      ]
-    );
-    //Logger added for API_log end -- shankar
-
     let errorBody = {
       timestamp: helper.getCurrentTime(),
       ExternalId: ExternalId,
@@ -201,6 +183,32 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
 
     if (!permission)
       return apiResponse.unauthorizedResponse(res, "Unauthorized Access");
+
+    //Logger added for API_log start -- shankar
+    if (
+      process.env.CDI_LOGGING === "DEBUG" ||
+      process.env.CDI_LOGGING === "INFO"
+    ) {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
+          ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
+        [
+          ExternalId,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "createDataFlow",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "createDataFlow Started",
+        ]
+      );
+      //Logger added for API_log end -- shankar
+    }
 
     if (externalSystemName !== "CDI") {
       var dataRes = await externalFunction.insertValidation(req.body);
@@ -231,6 +239,35 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
 
     console.log("Success");
     // return;
+
+    // Column Definition Primary and required validation
+    if (!ExternalId && !helper.isSftp(connectionType)) {
+      console.log("CDI JDBC", connectionType);
+      if (dataPackage && Array.isArray(dataPackage)) {
+        for (let each of dataPackage) {
+          if (each.dataSet && each.dataSet.length > 0) {
+            for (let obj of each.dataSet) {
+              if (helper.stringToBoolean(obj.incremental)) {
+                if (obj.columnDefinition && obj.columnDefinition.length > 0) {
+                  let isPrimary = false;
+                  for (let el of obj.columnDefinition) {
+                    if (el.primaryKey === "Yes" && el.required === "Yes") {
+                      isPrimary = true;
+                    }
+                  }
+                  if (!isPrimary) {
+                    return apiResponse.ErrorResponse(
+                      res,
+                      "One or more columns must be set as Primary Key and Required before saving the dataset"
+                    );
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
 
     let ResponseBody = {};
 
@@ -445,24 +482,29 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     }
 
     //Logger added for API_log start -- shankar
-    await DB.executeQuery(
-      `INSERT INTO ${schemaName}.api_log
+    if (
+      process.env.CDI_LOGGING === "DEBUG" ||
+      process.env.CDI_LOGGING === "INFO"
+    ) {
+      await DB.executeQuery(
+        `INSERT INTO ${schemaName}.api_log
     ( extrnl_id, dataflowid, datapackageid, datasetid, dsqcruleid, columnid, method_name, api_nm, adt_usr, adt_ts, comment)
     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`,
-      [
-        ExternalId,
-        createdDF.dataFlowId,
-        null,
-        null,
-        null,
-        null,
-        "createDataFlow",
-        "/v1/api/dataflow/create",
-        userId,
-        helper.getCurrentTime(),
-        "createDataFlow End",
-      ]
-    );
+        [
+          ExternalId,
+          createdDF.dataFlowId,
+          null,
+          null,
+          null,
+          null,
+          "createDataFlow",
+          "/v1/api/dataflow/create",
+          userId,
+          helper.getCurrentTime(),
+          "createDataFlow End",
+        ]
+      );
+    }
     //Logger added for API_log end -- shankar
 
     await DB.executeQuery(
@@ -719,17 +761,20 @@ exports.updateDataFlow = async (req, res) => {
               }
             }
 
-            if (dsErrArray.length > 0) {
-              let dsErrRes = dsErrArray.join(" '|' ");
+            const errorList = helper.primaryKeyValidations(dataStructure, obj);
+
+            if (errorList && errorList?.length > 0) {
+              let dsErrRes = errorList.join(" '|' ");
               dsNewObj.message = dsErrRes;
               isval = true;
             }
+
             dpNewObj.dataSets.push(dsNewObj);
 
             if (obj.columnDefinition?.length) {
               dsNewObj.columnDefinition = [];
-              let clErrArray = [];
               for (let el of obj.columnDefinition) {
+                let clErrArray = [];
                 let clNewObj = {
                   ExternalId: el.ExternalId,
                 };
@@ -747,11 +792,6 @@ exports.updateDataFlow = async (req, res) => {
                     "Column Definition Level delFlag  required and it's either 0 or 1"
                   );
                 }
-                helper.primaryKeyValidations(
-                  dataStructure,
-                  dataPackage,
-                  clErrArray
-                );
                 if (clErrArray.length > 0) {
                   let clErrRes = clErrArray.join(" '|' ");
                   clNewObj.message = clErrRes;
@@ -783,42 +823,7 @@ exports.updateDataFlow = async (req, res) => {
             }
           }
         }
-        if (isval) {
-          errorBody.errors.push(dfErrObj);
-          return apiResponse.validationErrorWithData(
-            res,
-            "Data flow key validation message.",
-            errorBody
-          );
-        }
       }
-    }
-
-    //primary key validations starts
-    if (dataPackage && dataPackage.length && isCDI) {
-      dfErrObj.dataPackages = [];
-      let isval = false;
-      let dpNewObj = {};
-
-      dfErrObj.dataPackages.push(dpNewObj);
-      // Data Set External Id validation
-      dpNewObj.dataSets = [];
-
-      let dsNewObj = {};
-
-      dpNewObj.dataSets.push(dsNewObj);
-
-      dsNewObj.columnDefinition = [];
-      let clErrArray = [];
-      let clNewObj = {};
-
-      helper.primaryKeyValidations(dataStructure, dataPackage, clErrArray);
-      if (clErrArray.length > 0) {
-        let clErrRes = clErrArray.join(" '|' ");
-        clNewObj.message = clErrRes;
-        isval = true;
-      }
-      dsNewObj.columnDefinition.push(clNewObj);
       if (isval) {
         errorBody.errors.push(dfErrObj);
         return apiResponse.validationErrorWithData(
@@ -829,6 +834,47 @@ exports.updateDataFlow = async (req, res) => {
       }
     }
 
+    //primary key validations starts
+    if (dataPackage && dataPackage.length > 0 && isCDI) {
+      dfErrObj.dataPackages = [];
+      let isVal = false;
+      if (dataPackage && Array.isArray(dataPackage)) {
+        for (let i = 0; i < dataPackage.length; i++) {
+          let dpNewObj = {};
+
+          dfErrObj.dataPackages.push(dpNewObj);
+          dpNewObj.dataSets = [];
+
+          if (
+            dataPackage[i]?.dataSet &&
+            Array.isArray(dataPackage[i]?.dataSet)
+          ) {
+            for (let k = 0; k < dataPackage[i].dataSet.length; k++) {
+              let dsNewObj = {};
+
+              const errorList = helper.primaryKeyValidations(
+                dataStructure,
+                dataPackage[i].dataSet[k]
+              );
+              if (errorList && errorList?.length > 0) {
+                let dsErrRes = errorList.join(" '|' ");
+                dsNewObj.message = dsErrRes;
+                isVal = true;
+                dpNewObj.dataSets.push(dsNewObj);
+              }
+            }
+          }
+        }
+      }
+      if (isVal) {
+        errorBody.errors.push(dfErrObj);
+        return apiResponse.validationErrorWithData(
+          res,
+          "Data flow key validation message.",
+          errorBody
+        );
+      }
+    }
     // primary key validation ends
 
     // data package configuration validatiaon for both internal and external system
@@ -1346,34 +1392,33 @@ exports.updateDataFlow = async (req, res) => {
                                         vlc.conditionalExpressionNumber;
                                       errObj.ID = currentVlc.dsqcruleid;
 
-                                      if (currentVlc.active_yn === "N") {
-                                        // (errObj.message = `This - Qc Rules already removed`),
-                                        //   (isAnyError = true);
-                                      } else {
-                                        var VlcDataUpdate =
-                                          await externalFunction
-                                            .vlcUpdate(
-                                              vlc,
-                                              obj.qcType,
-                                              DFId,
-                                              DPId,
-                                              DSId,
-                                              DFVer,
-                                              userId
-                                            )
-                                            .then((res) => {
-                                              if (res && res.sucRes) {
-                                                // dsResObj.vlc.push(res.sucRes);
-                                                isSomthingUpdate = true;
-                                              }
-                                              if (res && res.errRes?.length) {
-                                                let vlcErrRes =
-                                                  res.errRes.join(" '|' ");
-                                                errObj.message = vlcErrRes;
-                                                isAnyError = true;
-                                              }
-                                            });
-                                      }
+                                      // if (currentVlc.active_yn === "N") {
+                                      //   // (errObj.message = `This - Qc Rules already removed`),
+                                      //   //   (isAnyError = true);
+                                      // } else {
+                                      var VlcDataUpdate = await externalFunction
+                                        .vlcUpdate(
+                                          vlc,
+                                          obj.qcType,
+                                          DFId,
+                                          DPId,
+                                          DSId,
+                                          DFVer,
+                                          userId
+                                        )
+                                        .then((res) => {
+                                          if (res && res.sucRes) {
+                                            // dsResObj.vlc.push(res.sucRes);
+                                            isSomthingUpdate = true;
+                                          }
+                                          if (res && res.errRes?.length) {
+                                            let vlcErrRes =
+                                              res.errRes.join(" '|' ");
+                                            errObj.message = vlcErrRes;
+                                            isAnyError = true;
+                                          }
+                                        });
+                                      // }
                                       dsErrObj.vlc.push(errObj);
                                     } else {
                                       var VlcDataInsert = await externalFunction
@@ -2170,7 +2215,8 @@ exports.hardDeleteNew = async (req, res) => {
         dataFlowId,
         dataFlowName,
         "delete",
-        fsrStatus || "QUEUE", //"temp", //fsrStatus, // we are not getting any fsr status as of now
+        // fsrStatus || "QUEUE", //"temp", //fsrStatus, // we are not getting any fsr status as of now
+        "QUEUE", // updated as part of ALM-1333
         userId,
         curDate,
         studyId,

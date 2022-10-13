@@ -574,7 +574,7 @@ const DataFlow = ({
     };
   }, []);
   return (
-    <div className={classes.root}>
+    <div className={classes.root} data-testid="createdftestid">
       {(loading || upsertLoading) && <Loader />}
       {error && (
         <Banner

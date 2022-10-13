@@ -26,6 +26,8 @@ const sqlServerDriver = path.join(
   "mssql-jdbc-9.2.0.jre8.jar"
 );
 
+const impalaDriver = path.join(__dirname, "Drivers", "ImpalaJDBC41.jar");
+
 const snowflakeDriver = path.join(
   __dirname,
   "Drivers",
@@ -60,6 +62,7 @@ if (!jinst.isJvmCreated()) {
     sqlServerDriver,
     hiveCDHServerDriver,
     snowflakeDriver,
+    impalaDriver,
   ]);
 }
 module.exports = async (
@@ -123,7 +126,9 @@ module.exports = async (
                       console.log("err:executeQuery:::: ", err, resultset);
                       res.status(500).json({
                         status: 0,
-                        message: errorMessage || "Something wrong with query",
+                        message:
+                          errorMessage ||
+                          "Query Compilation Error, check query syntax.",
                         error: err,
                       });
                     } else {
@@ -148,7 +153,7 @@ module.exports = async (
                             message:
                               callSrc === "fetchTables"
                                 ? "No Tables Returned. Please reach out to admins"
-                                : "No data returned. Please reach out to admin.",
+                                : "No records found.",
                           });
                         }
                       });

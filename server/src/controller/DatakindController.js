@@ -6,7 +6,7 @@ const constants = require("../config/constants");
 const { DB_SCHEMA_NAME: schemaName } = constants;
 
 const CommonController = require("./CommonController");
-const { isClinicalDataPartOfDataFlow } = require("../helpers/userHelper");
+const { checkDataKindPartOfSyncDataFlow } = require("../helpers/userHelper");
 
 async function checkIsExistInDF(dkId) {
   let listQuery = `select distinct (d3.datakindid) from ${schemaName}.dataflow d
@@ -184,22 +184,20 @@ exports.createDataKind = async (req, res) => {
         }
 
         // update datakind and related dataflow'
-        const isDataKindPartOfDataFlow = await isClinicalDataPartOfDataFlow(
+        const isDataKindPartOfDataFlow = await checkDataKindPartOfSyncDataFlow(
           dkId
         );
 
-        if (isExist) {
-          if (isDataKindPartOfDataFlow) {
-            if (
-              dkName !== existingDK?.rows[0]?.name ||
-              dkESName !== existingDK?.rows[0]?.extrnl_sys_nm ||
-              (existingDK?.rows[0]?.active === 1 && dkStatus === 0)
-            ) {
-              return apiResponse.ErrorResponse(
-                res,
-                getClinicalTypeErrorMsg(existingDK?.rows[0]?.name)
-              );
-            }
+        if (isExist || isDataKindPartOfDataFlow) {
+          if (
+            dkName !== existingDK?.rows[0]?.name ||
+            dkESName !== existingDK?.rows[0]?.extrnl_sys_nm ||
+            (existingDK?.rows[0]?.active === 1 && dkStatus === 0)
+          ) {
+            return apiResponse.ErrorResponse(
+              res,
+              getClinicalTypeErrorMsg(existingDK?.rows[0]?.name)
+            );
           }
           const updatedData = await DB.executeQuery(updateQuery, [
             ...payload,

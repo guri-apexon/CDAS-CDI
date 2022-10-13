@@ -936,7 +936,7 @@ export default function DSColumnTable({
   }, [rows]);
 
   return (
-    <div>
+    <div data-testid="dscolumnstable">
       <div style={{ marginBottom: 32 }}>
         <input
           type="file"
@@ -949,9 +949,9 @@ export default function DSColumnTable({
         <Table
           title="Dataset Column Settings"
           subtitle={`${
-            rows.length > 1
-              ? `${rows.length} dataset columns`
-              : `${rows.length} dataset column`
+            rows?.length > 1
+              ? `${rows?.length} dataset columns`
+              : `${rows?.length} dataset column`
           }`}
           columns={
             editedBackup.length
