@@ -108,6 +108,8 @@ const StatusCell = ({ row, column: { accessor } }) => {
 
   const isDisabled = isCDIHomePage || canReadIngestionIssues;
 
+  const hideViewLink = row?.HideView || false;
+
   // if (
   //   status?.toLowerCase() === "loaded without issues" ||
   //   status?.toLowerCase() === "successful"
@@ -232,19 +234,21 @@ const StatusCell = ({ row, column: { accessor } }) => {
               Icon={StatusExclamation}
             />
           </Tooltip>
-          <Link
-            disabled={isSameTime || !isDisabled}
-            onClick={() => {
-              if (isCDIHomePage) {
-                history.push(`/cdihome/ingestion-issues/${datasetId}`);
-              } else {
-                history.push(`/dashboard/ingestion-issues/${datasetId}`);
-              }
-            }}
-            style={{ fontWeight: 500, marginLeft: 8 }}
-          >
-            View
-          </Link>
+          {!hideViewLink && (
+            <Link
+              disabled={isSameTime || !isDisabled}
+              onClick={() => {
+                if (isCDIHomePage) {
+                  history.push(`/cdihome/ingestion-issues/${datasetId}`);
+                } else {
+                  history.push(`/dashboard/ingestion-issues/${datasetId}`);
+                }
+              }}
+              style={{ fontWeight: 500, marginLeft: 8 }}
+            >
+              View
+            </Link>
+          )}
         </div>
       )}
       {status?.toLowerCase() === "queued" && (
@@ -529,11 +533,19 @@ const TransferLog = ({ datasetProperties, transferLogFilter }) => {
           })
         : transferHistory?.records;
 
-    // get latest process with error date from data
-    const latestTimeWithError = getLatestDateFromIngestionData?.(rows) || null;
-    if (latestTimeWithError) {
+    const checkSuccess = getLatestDateFromIngestionData(rows, true) || false;
+    if (!checkSuccess) {
+      // get latest process with error date from data
+      const latestTimeWithError =
+        getLatestDateFromIngestionData?.(rows) || null;
+      if (latestTimeWithError) {
+        rows = rows.map((item) => {
+          return { ...item, LatestTime: latestTimeWithError };
+        });
+      }
+    } else {
       rows = rows.map((item) => {
-        return { ...item, LatestTime: latestTimeWithError };
+        return { ...item, HideView: checkSuccess };
       });
     }
 

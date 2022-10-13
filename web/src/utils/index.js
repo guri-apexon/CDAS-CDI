@@ -872,29 +872,95 @@ export const checkLOVError = (input, returnBool = false) => {
   return input && !isVlcTildSaparated(input) ? true : false;
 };
 
-export const getLatestDateFromIngestionData = (rowData) => {
-  if (!rowData) return null;
+// checks latest date and returns that object
+export const getLatestDateOnData = (
+  rowData,
+  sendOnlyObj = false,
+  checkForErrorOnly = false
+) => {
+  // case when we need to only check for proceed with errors
+  if (checkForErrorOnly) {
+    let latestDate =
+      Math.max(
+        ...rowData?.map(
+          (ele) =>
+            ele?.FileTransferStatus?.toLowerCase() ===
+              "processed with errors" && new Date(ele?.TransferDate)
+        )
+      ) || null;
+    if (latestDate) latestDate = new Date(latestDate);
 
-  // get latest date from rows
-  let latestDate =
-    Math.max(
-      ...rowData?.map(
-        (ele) =>
+    // get latest object of that date
+    const latestObject =
+      rowData?.filter((ele) => {
+        const date = new Date(ele?.TransferDate);
+        return (
           ele?.FileTransferStatus?.toLowerCase() === "processed with errors" &&
-          new Date(ele.TransferDate)
-      )
-    ) || null;
+          date.getTime() === latestDate.getTime()
+        );
+      }) || null;
+
+    return latestObject || null;
+  }
+
+  let arrayIndex = null;
+  let latestDate =
+    Math.max(...rowData?.map((ele) => new Date(ele?.TransferDate))) || null;
   if (latestDate) latestDate = new Date(latestDate);
 
   // get latest object of that date
   const latestObject =
-    rowData?.filter((ele) => {
-      const date = new Date(ele.TransferDate);
-      return (
-        ele?.FileTransferStatus?.toLowerCase() === "processed with errors" &&
-        date.getTime() === latestDate.getTime()
-      );
+    rowData?.filter((ele, index) => {
+      const date = new Date(ele?.TransferDate);
+      if (date?.getTime?.() === latestDate?.getTime?.()) {
+        arrayIndex = index;
+        return true;
+      }
+      return false;
     }) || null;
+
+  if (sendOnlyObj) return latestObject;
+
+  return { arrayIndex, latestObject };
+};
+
+export const getLatestDateFromIngestionData = (
+  rowData,
+  checkSuccess = false
+) => {
+  if (!rowData) return null;
+
+  // check if first object and proceed
+  if (checkSuccess) {
+    const { arrayIndex, latestObject } = getLatestDateOnData(rowData);
+
+    // case when latest status if successfull
+    if (latestObject?.[0]?.FileTransferStatus?.toLowerCase() === "successful") {
+      return true;
+    }
+
+    // case when latest status if failed
+    if (latestObject?.[0]?.FileTransferStatus?.toLowerCase() === "failed") {
+      // remove latest status field
+      const updatedRowData = rowData.slice();
+      updatedRowData.splice(arrayIndex, 1);
+
+      if (updatedRowData) {
+        const latestObjectSecond = getLatestDateOnData(updatedRowData, true);
+        if (
+          latestObjectSecond?.[0]?.FileTransferStatus?.toLowerCase() ===
+          "successful"
+        ) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  // get latest object of that date
+  const latestObject = getLatestDateOnData(rowData, true, true);
 
   return latestObject?.[0]?.TransferDate || null;
 };
