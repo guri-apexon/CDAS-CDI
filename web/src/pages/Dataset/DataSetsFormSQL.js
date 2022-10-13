@@ -107,7 +107,7 @@ const DataSetsFormBase = (props) => {
 
   const onChangeOffsetColumn = (obj) => {
     setSelectedOffsetColumns(obj);
-    change("offsetColumn", obj.value);
+    change("offsetColumn", obj?.value);
   };
 
   const changeTableName = (obj) => {
@@ -501,6 +501,7 @@ const DataSetsFormBase = (props) => {
                   source={sqlColumnsArr || []}
                   label="Offset Column"
                   size="small"
+                  matchFrom="any"
                   fullWidth
                   style={{ width: 300, display: "block" }}
                   blurOnSelect={false}
