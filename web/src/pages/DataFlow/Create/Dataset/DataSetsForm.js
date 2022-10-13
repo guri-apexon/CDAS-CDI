@@ -258,7 +258,7 @@ const DataSetsFormBase = (props) => {
                 disabled={formValues === "SAS"}
                 inputProps={{ maxLength: 255 }}
                 size="small"
-                label="Footer Row Number"
+                label="Last Footer Row Offset from End of Data Table"
               />
 
               <ReduxFormTextField
@@ -274,7 +274,11 @@ const DataSetsFormBase = (props) => {
                 name="path"
                 id="path"
                 size="small"
-                label="sFTP Folder Path"
+                label={
+                  dataPackage?.noPackageConfig === 0
+                    ? "Subfolder path within package (blank if located at root within package)"
+                    : "sFTP Folder Path"
+                }
               />
 
               {/* Hidden Fields For Path Validation */}
@@ -326,7 +330,7 @@ const DataSetsFormBase = (props) => {
                 id="transferFrequency"
                 inputProps={{ maxLength: 255 }}
                 size="small"
-                label="Transfer Frequency"
+                label="Transfer Frequency (days)"
               />
               <ReduxFormTextField
                 fullWidth
@@ -401,7 +405,6 @@ const CreateDataSetsForm = connect((state, ownProps) => {
     path: ownProps.initialValues.path || formDataStore.path || "",
     sftpPathValue: ownProps?.dataPackage?.path || "",
   };
-  // console.log("state.dataSets", initialValues, ownProps.initialValues);
   return {
     initialValues, // pull initial values from account reducer
     enableReinitialize: true,
