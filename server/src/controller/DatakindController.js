@@ -402,8 +402,20 @@ exports.getDKList = async (req, res) => {
       filter = `where extrnl_sys_nm = '${extrnl_sys_nm}'`;
     }
 
-    let getDKListQuery = `SELECT datakindid as "ID", name as "dkName", extrnl_sys_nm as "dkESName", extrnl_id as "dkExternalId", dk_desc as "dkDesc", active as "dkStatus" from ${schemaName}.datakind 
-    ${filter} order by name`;
+    let getDKListQuery = `SELECT dk.datakindid as "ID",
+        dk.name as "dkName",
+        dk.extrnl_sys_nm as "dkESName",
+        dk.extrnl_id as "dkExternalId",
+        dk.dk_desc as "dkDesc",
+        dk.active as "dkStatus" ,
+        case count(ds.datakindid)
+        when 0 then false else true
+        end "linkedToDataflow"
+        from  ${schemaName}.datakind dk
+        left join  ${schemaName}.dataset ds
+        on dk.datakindid = ds.datakindid
+    ${filter} group by dk.datakindid,dk.name,dk.extrnl_sys_nm,dk.extrnl_id,dk.dk_desc,dk.active
+    order by dk.name`;
     // console.log(getDKListQuery);
     let dbQuery = await DB.executeQuery(getDKListQuery);
     Logger.info({ message: "getDKList" });

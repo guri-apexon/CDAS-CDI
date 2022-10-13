@@ -153,6 +153,7 @@ export default function CDTList() {
   const { cdtList, loading } = useSelector((state) => state.cdiadmin);
   const [ensList, setENSList] = useState([]);
   const [addCDTList, setAddCDTList] = useState([]);
+  const [isExistInDataFlow, setIsExistInDataFlow] = useState(false);
 
   const { canUpdate: canUpdateClinicalData, canCreate: canCreateClinicalData } =
     usePermission(Categories.CONFIGURATION, Features.CLINICAL_DATA_TYPE_SETUP);
@@ -165,6 +166,7 @@ export default function CDTList() {
     setViewModal(false);
     setTimeout(() => {
       setSelectedRow(null);
+      setIsExistInDataFlow(false);
       setENS("");
       setCName("");
       setStatus(true);
@@ -223,6 +225,7 @@ export default function CDTList() {
       setAddCDTList([...filteredList]);
     }
     setSelectedRow(Id);
+    setIsExistInDataFlow(selected?.linkedToDataflow);
     setENS(dkESName || "");
     setCName(dkName || "");
     setDesc(dkDesc || "");
@@ -442,7 +445,9 @@ export default function CDTList() {
                     error={nameError || reqNameError || CharError}
                     disabled={
                       selectedRow &&
-                      (!canUpdateClinicalData || ens === "GDMPM-DAS")
+                      (!canUpdateClinicalData ||
+                        ens === "GDMPM-DAS" ||
+                        isExistInDataFlow)
                     }
                   />
                 </div>
@@ -457,7 +462,9 @@ export default function CDTList() {
                       size="small"
                       disabled={
                         selectedRow &&
-                        (!canUpdateClinicalData || ens === "GDMPM-DAS")
+                        (!canUpdateClinicalData ||
+                          ens === "GDMPM-DAS" ||
+                          isExistInDataFlow)
                       }
                     />
                   </div>
@@ -480,7 +487,9 @@ export default function CDTList() {
                     error={reqENSError}
                     disabled={
                       selectedRow &&
-                      (!canUpdateClinicalData || ens === "GDMPM-DAS")
+                      (!canUpdateClinicalData ||
+                        ens === "GDMPM-DAS" ||
+                        isExistInDataFlow)
                     }
                   >
                     {selectedRow && ens === "GDMPM-DAS"
