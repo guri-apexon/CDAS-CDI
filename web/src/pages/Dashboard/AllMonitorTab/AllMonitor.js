@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 // components
-import { neutral8, orange } from "apollo-react/colors";
+import { neutral8, orange, red } from "apollo-react/colors";
 import Grid from "apollo-react/components/Grid";
 import Hero from "apollo-react/components/Hero";
 import Loader from "apollo-react/components/Loader";
@@ -26,7 +26,7 @@ import { ReactComponent as DatasetsIcon } from "../../../components/Icons/datase
 import { getAllIngestionOfStudy } from "../../../store/actions/DashboardAction";
 import { getUserInfo, getUserId } from "../../../utils/index";
 import { moreColumnsWithFrozen } from "../MonitorTab/columns.data";
-import { ReactComponent as FailureIcon } from "../../../components/Icons/failure.svg";
+import { ReactComponent as FailureIcon } from "../../../components/Icons/Failed.svg";
 import { ReactComponent as StaleIcon } from "../../../components/Icons/Stale-grey.svg";
 import { queryParamsFull } from "../MonitorTab/helper";
 import {
@@ -227,9 +227,9 @@ export default function MonitorTab({ userID }) {
             value={summary?.data_refresh_alerts}
             icon={() => {
               return (
-                <StatusExclamationIcon
-                  style={{ color: orange }}
+                <FailureIcon
                   className="newMonitor-icon"
+                  style={{ color: red }}
                 />
               );
             }}
@@ -244,7 +244,12 @@ export default function MonitorTab({ userID }) {
             subtitle={`Files which were processed successfully but in which dataset configuration or VLC compliance issues were identified (will be listed as "PROCESSED WITH ERRORS" in data flow monitor)`}
             value={summary?.datasetwithissues}
             icon={() => {
-              return <FailureIcon style={{ fill: "#e20000" }} />;
+              return (
+                <StatusExclamationIcon
+                  style={{ color: orange }}
+                  className="newMonitor-icon"
+                />
+              );
             }}
             color="orange"
             handlePeekOpen={handlePeekOpen}

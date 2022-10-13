@@ -390,7 +390,7 @@ export const columns = [
     ),
   },
   {
-    header: "Primary?",
+    header: "Primary Key?",
     accessor: "primaryKey",
     customCell: editablePrimarySelectCell(["Yes", "No"]),
     sortFunction: compareStrings,

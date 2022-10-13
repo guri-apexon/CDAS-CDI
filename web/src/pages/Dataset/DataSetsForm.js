@@ -65,6 +65,8 @@ const DataSetsFormBase = (props) => {
 
   const dashboard = useSelector((state) => state.dashboard);
   const { prot_id: protId } = dashboard?.selectedCard;
+  const isNoPackage =
+    props?.dataPackage?.selectedDSDetails?.datapackageName === "No package";
 
   const { canUpdate: canUpdateDataFlow, canCreate: CanCreateDataFlow } =
     useStudyPermission(
@@ -259,7 +261,7 @@ const DataSetsFormBase = (props) => {
                 disabled={formValues.fileType === "SAS" || !canUpdateDataFlow}
                 inputProps={{ maxLength: 255 }}
                 size="small"
-                label="Footer Row Number"
+                label="Last Footer Row Offset from End of Data Table"
               />
 
               <ReduxFormTextField
@@ -277,7 +279,11 @@ const DataSetsFormBase = (props) => {
                 name="folderPath"
                 id="folderPath"
                 size="small"
-                label="sFTP Folder Path"
+                label={
+                  isNoPackage
+                    ? "sFTP Folder Path"
+                    : "Subfolder path within package (blank if located at root within package)"
+                }
                 disabled={!canUpdateDataFlow}
               />
 
@@ -330,7 +336,7 @@ const DataSetsFormBase = (props) => {
                 id="transferFrequency"
                 inputProps={{ maxLength: 255 }}
                 size="small"
-                label="Transfer Frequency"
+                label="Transfer Frequency (days)"
                 disabled={!canUpdateDataFlow}
                 // required
               />
@@ -398,6 +404,7 @@ const DataSetsForm = connect((state) => ({
     "clinicalDataType",
     "fileNamingConvention"
   ),
+  dataPackage: state.dataPackage,
   defaultDelimiter: state.dataSets.defaultDelimiter,
   defaultEscapeCharacter: state.dataSets.defaultEscapeCharacter,
   defaultQuote: state.dataSets.defaultQuote,
