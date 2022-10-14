@@ -723,9 +723,9 @@ exports.updateDataFlow = async (req, res) => {
         // Data Set External Id validation
         if (each.dataSet?.length) {
           dpNewObj.dataSets = [];
-          let dsErrArray = [];
 
           for (let obj of each.dataSet) {
+            let dsErrArray = [];
             let dsNewObj = {
               ExternalId: obj.ExternalId,
             };
@@ -763,8 +763,13 @@ exports.updateDataFlow = async (req, res) => {
 
             const errorList = helper.primaryKeyValidations(dataStructure, obj);
 
-            if (errorList && errorList?.length > 0) {
+            if (errorList && errorList?.length) {
               let dsErrRes = errorList.join(" '|' ");
+              dsErrArray.push(dsErrRes);
+            }
+
+            if (dsErrArray && dsErrArray.length) {
+              let dsErrRes = dsErrArray.join(" '|' ");
               dsNewObj.message = dsErrRes;
               isval = true;
             }
