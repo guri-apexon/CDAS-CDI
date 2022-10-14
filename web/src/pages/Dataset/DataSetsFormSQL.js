@@ -98,7 +98,7 @@ const DataSetsFormBase = (props) => {
   const [sqlColumnsArr, setSqlColumnsArr] = useState([]);
   const [cdtValue, setCdtValue] = useState(null);
   const [selectedTable, setSelectedTable] = useState(null);
-  const [isColumnAPICalled, setIsColumnAPICalled] = useState(false);
+  const [isColumnAPICalled, setIsColumnAPICalled] = useState("");
 
   // handle table change modal
   const [inputValue, setInputValue] = useState("");
@@ -195,6 +195,7 @@ const DataSetsFormBase = (props) => {
           value: e.columnName,
         }));
       setSqlColumnsArr(filtered);
+      setIsColumnAPICalled("");
     }
   }, [sqlColumns]);
 
@@ -228,7 +229,7 @@ const DataSetsFormBase = (props) => {
     if (
       formValues?.isCustomSQL === "No" &&
       formValues?.tableName &&
-      !isColumnAPICalled
+      isColumnAPICalled !== formValues?.tableName
     ) {
       setSqlColumnsArr([]);
       dispatch(
@@ -237,7 +238,7 @@ const DataSetsFormBase = (props) => {
           tableName: formValues.tableName,
         })
       );
-      setIsColumnAPICalled(true);
+      setIsColumnAPICalled(formValues?.tableName);
     }
   }, [formValues.tableName]);
 
@@ -514,7 +515,9 @@ const DataSetsFormBase = (props) => {
                   limitChips={5}
                   alwaysLimitChips
                   chipColor="white"
-                  disabled={prodLock || !canUpdateDataFlow}
+                  disabled={
+                    prodLock || !canUpdateDataFlow || isColumnAPICalled !== ""
+                  }
                 />
               )}
             </>
