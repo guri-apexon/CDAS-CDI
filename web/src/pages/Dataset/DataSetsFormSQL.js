@@ -394,7 +394,7 @@ const DataSetsFormBase = (props) => {
                   forcePopupIcon
                   popupIcon={<SearchIcon fontSize="extraSmall" />}
                   fullWidth
-                  required
+                  // required
                   disabled={prodLock || !canUpdateDataFlow}
                 />
               )}
@@ -405,7 +405,7 @@ const DataSetsFormBase = (props) => {
             id="isCustomSQL"
             size="small"
             label="Custom SQL Query"
-            required
+            // required
             disabled={testProdLock || !canUpdateDataFlow}
             canDeselect={false}
           >
@@ -464,7 +464,7 @@ const DataSetsFormBase = (props) => {
                   forcePopupIcon
                   popupIcon={<SearchIcon fontSize="extraSmall" />}
                   singleSelect
-                  required
+                  // required
                   blurOnSelect={false}
                   clearOnBlur={false}
                   filterSelectedOptions={false}

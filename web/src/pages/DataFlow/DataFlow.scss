@@ -52,6 +52,10 @@
     cursor: pointer;
   }
 }
+.offset_column {
+  display: block;
+  max-width: 300px;
+}
 .dataset-data-flow-type {
   display: grid;
   label {

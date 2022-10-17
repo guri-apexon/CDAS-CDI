@@ -521,7 +521,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 popupIcon={<SearchIcon fontSize="extraSmall" />}
                 variant="search"
                 fullWidth
-                required
+                // required
               />
             </Grid>
           </Grid>
@@ -587,7 +587,7 @@ const JDBCForm = forwardRef((props, ref) => {
                   popupIcon={<SearchIcon fontSize="extraSmall" />}
                   variant="search"
                   fullWidth
-                  required
+                  // required
                 />
                 {/* <Autocomplete
                   name="tableName"
@@ -634,7 +634,7 @@ const JDBCForm = forwardRef((props, ref) => {
                 size="small"
                 label="Type of Data"
                 value={dataType}
-                required
+                // required
                 onChange={handleDTChange}
                 className="dataset-data-flow-type"
               >
@@ -656,13 +656,13 @@ const JDBCForm = forwardRef((props, ref) => {
                       label: e.columnName,
                       value: e.columnName,
                     }))}
-                  className="smallSize_autocomplete"
+                  className="smallSize_autocomplete offset_column"
                   onChange={handleColumnSelect}
                   variant="search"
                   matchFrom="any"
                   singleSelect
                   enableVirtualization
-                  required
+                  // required
                   fullWidth
                 />
               )}
