@@ -656,14 +656,13 @@ const JDBCForm = forwardRef((props, ref) => {
                       label: e.columnName,
                       value: e.columnName,
                     }))}
-                  className="smallSize_autocomplete"
+                  className="smallSize_autocomplete offset_column"
                   onChange={handleColumnSelect}
                   variant="search"
                   matchFrom="any"
                   singleSelect
                   enableVirtualization
                   // required
-                  style={{ maxWidth: 300, display: "block" }}
                   fullWidth
                 />
               )}
