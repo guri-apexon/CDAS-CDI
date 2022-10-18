@@ -1155,11 +1155,10 @@ exports.updateDataFlow = async (req, res) => {
                                     )
                                       saveFlagYes = true;
                                   }
-                                  if (!saveFlagYes)
-                                    return apiResponse.ErrorResponse(
-                                      res,
-                                      `Cannot switch to Incremental if a primaryKey has not been defined as primaryKey is mandatory for incremental.`
-                                    );
+                                  if (!saveFlagYes) {
+                                    dsErrObj.message = `Cannot switch to Incremental if a primaryKey has not been defined as primaryKey is mandatory for incremental.`;
+                                    isAnyError = true;
+                                  }
                                 }
                                 if (
                                   dataflow.data_in_cdr === "Y" &&
@@ -1168,10 +1167,8 @@ exports.updateDataFlow = async (req, res) => {
                                   dataPackage[i].dataSet[k].incremental ===
                                     false
                                 ) {
-                                  return apiResponse.ErrorResponse(
-                                    res,
-                                    `Cannot switch to Cumulative if the dataflow has been synced once.`
-                                  );
+                                  dsErrObj.message = `Cannot switch to Cumulative if the dataflow has been synced once.`;
+                                  isAnyError = true;
                                 }
                               }
                             }
