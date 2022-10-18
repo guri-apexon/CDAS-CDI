@@ -251,7 +251,10 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
                 if (obj.columnDefinition && obj.columnDefinition.length > 0) {
                   let isPrimary = false;
                   for (let el of obj.columnDefinition) {
-                    if (el.primaryKey === "Yes" && el.required === "Yes") {
+                    if (
+                      (el.primaryKey === "Yes" || el.primaryKey === 1) &&
+                      (el.required === "Yes" || el.required === 1)
+                    ) {
                       isPrimary = true;
                     }
                   }
