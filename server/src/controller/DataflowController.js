@@ -112,7 +112,7 @@ const createDataflowName = (exports.createDataflowName = async (
     `select vend_id,active,vend_nm from ${schemaName}.vendor where vend_id='${vendorId}';`
   );
   if (!selectedVendor) return false;
-
+  console.log("deployment test===>");
   let dfNewName = `${selectedVendor.vend_nm}-${prtNbrStnd}-${desc}`;
   if (testFlag) {
     dfNewName = `TST-${dfNewName}`;
