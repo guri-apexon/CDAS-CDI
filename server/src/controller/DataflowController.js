@@ -259,7 +259,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
                     }
                   }
                   if (!isPrimary) {
-                    return apiResponse.ErrorResponse(
+                    return apiResponse.validationErrorWithData(
                       res,
                       "One or more columns must be set as Primary Key and Required before saving the dataset"
                     );
@@ -277,7 +277,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
     let studyId = null;
     let dFTimestamp = helper.getCurrentTime();
     if (!vendorid || !protocolNumberStandard || !description) {
-      return apiResponse.ErrorResponse(
+      return apiResponse.validationErrorWithData(
         res,
         "Vendor name , protocol number and description is required"
       );
@@ -287,7 +287,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       `select prot_id from study where prot_nbr_stnd ='${protocolNumberStandard}';`
     );
     if (!studyRows?.length) {
-      return apiResponse.ErrorResponse(res, "Study not found");
+      return apiResponse.validationErrorWithData(res, "Study not found");
     }
     studyId = studyRows[0].prot_id;
 
@@ -334,13 +334,13 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       );
 
       if (!selectedLocation) {
-        return apiResponse.ErrorResponse(
+        return apiResponse.validationErrorWithData(
           res,
           `Location does not exist for ${externalSystemName}`
         );
       }
       if (selectedLocation.active !== 1) {
-        return apiResponse.ErrorResponse(
+        return apiResponse.validationErrorWithData(
           res,
           `Location is not active in ${externalSystemName}`
         );
@@ -351,7 +351,7 @@ const creatDataflow = (exports.createDataflow = async (req, res, isCDI) => {
       rows: [selectedVendor],
     } = await DB.executeQuery(q);
     if (!selectedVendor) {
-      return apiResponse.ErrorResponse(res, `Vendor doesn't exist.`);
+      return apiResponse.validationErrorWithData(res, `Vendor doesn't exist.`);
     }
 
     // var DFTestname = `${selectedVendor.vend_nm}-${protocolNumberStandard}-${description}`;
@@ -2066,7 +2066,7 @@ exports.fetchdataflowDetails = async (req, res) => {
     });
     const { rows: response } = await DB.executeQuery(q);
     if (!response.length) {
-      return apiResponse.ErrorResponse(
+      return apiResponse.validationErrorWithData(
         res,
         "There is no dataflow exist with this id"
       );
@@ -2292,7 +2292,7 @@ exports.updateDataflowConfig = async (req, res) => {
     //   );
     // }
     if (dataStructure !== "TabularRaveSOD" && dataSet_count == 0) {
-      return apiResponse.ErrorResponse(
+      return apiResponse.validationErrorWithData(
         res,
         "Please add or active at-least one dataset in order to save the configuration"
       );
@@ -2318,7 +2318,10 @@ exports.updateDataflowConfig = async (req, res) => {
         `SELECT vend_id as "vendorID", src_loc_id as "locationName", testflag as "testFlag", type as "dataStructure", description, connectiontype as "connectionType", serv_ownr as "serviceOwners", expt_fst_prd_dt as "firstFileDate" from ${schemaName}.dataflow WHERE dataflowid='${dataflowId}';`
       );
       if (!existDf) {
-        return apiResponse.ErrorResponse(res, "Dataflow doesn't exist");
+        return apiResponse.validationErrorWithData(
+          res,
+          "Dataflow doesn't exist"
+        );
       }
 
       // NOTE: getting protocol id in protocolNumberStandard, this is to be fixed by the original developer
@@ -2414,7 +2417,7 @@ exports.updateDataflowConfig = async (req, res) => {
       // console.log("diffObj", diffObj, "existDf", existDf);
 
       if (!Object.keys(diffObj).length) {
-        return apiResponse.ErrorResponse(
+        return apiResponse.validationErrorWithData(
           res,
           "Please change some values to update dataflow config"
         );
@@ -2447,7 +2450,7 @@ exports.updateDataflowConfig = async (req, res) => {
         );
       }
     } else {
-      return apiResponse.ErrorResponse(
+      return apiResponse.validationErrorWithData(
         res,
         "Vendor name , protocol number and description is required"
       );
