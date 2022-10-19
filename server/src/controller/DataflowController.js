@@ -2115,6 +2115,7 @@ exports.fetchdataflowDetails = async (req, res) => {
             dataKind: el.datakindid,
             fileNamingConvention: el.datasetname,
             columnDefinition: [],
+            conditionalExpression: el?.dataset_fltr || null,
             active: el.dsActive,
           };
           const cdArr = [];
