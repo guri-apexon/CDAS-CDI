@@ -932,28 +932,14 @@ export const getLatestDateFromIngestionData = (
 
   // check if first object and proceed
   if (checkSuccess) {
-    const { arrayIndex, latestObject } = getLatestDateOnData(rowData);
+    const { latestObject } = getLatestDateOnData(rowData);
 
-    // case when latest status if successfull
-    if (latestObject?.[0]?.FileTransferStatus?.toLowerCase() === "successful") {
+    // case when latest status if successful or failed
+    if (
+      latestObject?.[0]?.FileTransferStatus?.toLowerCase() === "successful" ||
+      latestObject?.[0]?.FileTransferStatus?.toLowerCase() === "failed"
+    ) {
       return true;
-    }
-
-    // case when latest status if failed
-    if (latestObject?.[0]?.FileTransferStatus?.toLowerCase() === "failed") {
-      // remove latest status field
-      const updatedRowData = rowData.slice();
-      updatedRowData.splice(arrayIndex, 1);
-
-      if (updatedRowData) {
-        const latestObjectSecond = getLatestDateOnData(updatedRowData, true);
-        if (
-          latestObjectSecond?.[0]?.FileTransferStatus?.toLowerCase() ===
-          "successful"
-        ) {
-          return true;
-        }
-      }
     }
 
     return false;
